@@ -1,5 +1,9 @@
-# ARKZEN GUIDELINES DOCUMENT v7.0
+# ARKZEN GUIDELINES DOCUMENT v7.1
 ## For Claude AI — Generating Tatemono Files
+
+**UPDATED:** 2026-04-27  
+**WHAT:** Bug fixes to v7.0 (corrected syntax errors)  
+**VERIFIED AGAINST:** All 17 active tatemonos (auth-test, body-endpoint-handler, body-mail-notification, broadcast-test, crud-test, errors-test, events-test, inventory-management, job-test, mail-test, middleware-test, new-updates-styles, notification-test, portfolio-test, roles-test, scheduler-test, upload-test)
 
 ---
 
@@ -325,10 +329,11 @@ When `auth: true`:
 
 **Roles (when auth: true):**
 - Users table includes a `role` column (varchar 20, default 'user') — managed by AuthBuilder automatically
-- Promote/demote via endpoint types: `role_promote`, `role_demote`
-- Admin-only endpoints use type: `role_admin_only`
-- User-only endpoints use type: `role_user_only`
+- Promote/demote via endpoint keys: `promote`, `demote`
+- Admin-only endpoints use endpoint key: `adminOnly`
+- User-only endpoints use endpoint key: `userOnly`
 - No need to add @arkzen:database:users — AuthBuilder handles it
+- Middleware can require role: `middleware: [auth, role:admin]`
 
 ---
 
@@ -379,31 +384,44 @@ toast:
   position: top-right
   duration: 3000
 modal:
+  borderRadius: 2xl
   backdrop: blur
-  closeButton: true
+  animation: fadeScale
 table:
   striped: true
-  bordered: false
   hoverable: true
 layout:
   guest:
     className: "min-h-screen bg-neutral-50"
   auth:
     className: "min-h-screen bg-neutral-50"
-dialog:
-  size: md
-  closeButton: true
-breadcrumb:
-  showHome: true
-  separator: /
 */
 ```
 
 All fields are optional. Defaults applied if omitted.
 
+**Toast config:**
+- `position`: top-right, top-left, bottom-right, bottom-left, top-center, bottom-center
+- `duration`: milliseconds
+
+**Modal config:**
+- `borderRadius`: rounded-lg, rounded-xl, rounded-2xl
+- `backdrop`: blur, dark, light
+- `animation`: fadeScale, slideUp, slideDown
+
+**Table config:**
+- `striped`: true/false
+- `hoverable`: true/false
+
+**Layout config:**
+- `guest.className`: Tailwind classes for guest layout
+- `auth.className`: Tailwind classes for auth layout
+
 ---
 
 ## SECTION 7 — @arkzen:database
+
+**IMPORTANT: Columns are defined as a DICT (map), NOT as an array list.**
 
 ```tsx
 /* @arkzen:database:products
@@ -411,150 +429,237 @@ table: products
 timestamps: true
 softDeletes: false
 columns:
-  - name: id
-    type: id
-  - name: sku
+  id:
+    type: integer
+    primary: true
+    autoIncrement: true
+  sku:
     type: string
+    length: 255
     unique: true
-  - name: name
+  name:
     type: string
-  - name: description
-    type: longText
+    length: 255
+    nullable: false
+  description:
+    type: text
     nullable: true
-  - name: price
-    type: decimal:8,2
-  - name: stock
+  price:
+    type: decimal
+    precision: 8
+    scale: 2
+  stock:
     type: integer
     default: 0
-  - name: category_id
-    type: bigInteger
-    foreign: categories:id
-  - name: created_at
+    nullable: false
+  category_id:
+    type: integer
+    nullable: true
+  created_at:
     type: timestamp
 seeder:
-  - sku: "PROD001"
-    name: "Laptop"
-    price: "999.99"
-    stock: 10
-    category_id: 1
-  - sku: "PROD002"
-    name: "Mouse"
-    price: "29.99"
-    stock: 50
-    category_id: 2
+  count: 5
+  data:
+    - sku: "PROD001"
+      name: "Laptop"
+      price: "999.99"
+      stock: 10
+      category_id: 1
+    - sku: "PROD002"
+      name: "Mouse"
+      price: "29.99"
+      stock: 50
+      category_id: 2
 */
 ```
 
-**Column Types (Whitelist):**
+**Column Format (DICT, not array):**
+- Column name as key: `id:`, `sku:`, `price:`, etc.
+- Each column is an object with `type` and optional modifiers
+
+**Column Types:**
 ```
-id, integer, bigInteger, string (default 255), text, longText,
-decimal (format: decimal:total,places), float,
+integer, bigInteger, string (default 255), text, longText,
+decimal (with precision + scale), float,
 boolean, date, datetime, timestamp, json, uuid
 ```
 
-**Foreign Keys:**
-- Format: `foreign: table_name:column_name`
-- Only reference known tables or "users" table
-- No circular dependencies allowed
+**Column Modifiers:**
+- `length` (for string) — default 255
+- `nullable` (boolean) — default false
+- `default` (scalar value)
+- `primary` (boolean)
+- `autoIncrement` (boolean) — only for primary integer keys
+- `unique` (boolean)
+- `precision` + `scale` (for decimal) — e.g., precision: 8, scale: 2 = 999999.99
 
 **Seeder Data:**
-- YAML array of objects
-- Automatically inserted during migration
-- Use simple scalar types (string, number, boolean)
+- `count`: number of items to generate (optional; if omitted, use array length)
+- `data`: YAML array of objects with scalar values
+
+**Timestamps:**
+- `timestamps: true` — auto-adds `created_at` and `updated_at`
+- `softDeletes: false` — don't add `deleted_at`
 
 ---
 
 ## SECTION 8 — @arkzen:api
+
+**IMPORTANT: Endpoints are defined as a DICT (map) with endpoint name as key, NOT as an array list.**
 
 ```tsx
 /* @arkzen:api:products
 model: Product
 controller: ProductController
 prefix: /api/products
-resource: ProductResource
-policy: ProductPolicy
-factory: ProductFactory
+middleware: [auth]
+resource: true
+policy: true
+factory: true
 endpoints:
-  - method: GET
-    path: /
-    type: index
-    summary: List all products
-  - method: GET
-    path: /:id
-    type: show
-    summary: Get single product
-  - method: POST
-    path: /
-    type: store
-    validation: StoreProductRequest
-    summary: Create product
-  - method: PUT
-    path: /:id
-    type: update
-    validation: UpdateProductRequest
-    summary: Update product
-  - method: DELETE
-    path: /:id
-    type: destroy
-    summary: Delete product
-  - method: POST
-    path: /:id/import-csv
-    type: custom
-    summary: Bulk import from CSV
+  index:
+    method: GET
+    route: /products
+    description: List all products
+    response:
+      type: collection
+  
+  store:
+    method: POST
+    route: /products
+    description: Create product
+    validation:
+      name: required|string|max:255
+      price: required|numeric|min:0.01
+      stock: required|integer|min:0
+    response:
+      type: single
+  
+  show:
+    method: GET
+    route: /products/{id}
+    description: Get single product
+    response:
+      type: single
+  
+  update:
+    method: PUT
+    route: /products/{id}
+    description: Update product
+    validation:
+      name: string|max:255
+      price: numeric|min:0.01
+      stock: integer|min:0
+    response:
+      type: single
+  
+  destroy:
+    method: DELETE
+    route: /products/{id}
+    description: Delete product
+    response:
+      type: message
+      value: "Product deleted successfully"
+
+  adminOnly:
+    method: GET
+    route: /products/admin/stats
+    description: Admin-only product stats
+    response:
+      type: single
+
+  promote:
+    method: POST
+    route: /users/{id}/promote
+    description: Promote user role
+    response:
+      type: message
+
+  demote:
+    method: POST
+    route: /users/{id}/demote
+    description: Demote user role
+    response:
+      type: message
 */
 ```
 
-**Endpoint Types:**
-```
-CRUD:
-  - index (GET /) — list paginated resources
-  - store (POST /) — create resource
-  - show (GET /:id) — get single resource
-  - update (PUT /:id) — update resource
-  - destroy (DELETE /:id) — delete resource
+**Top-level Fields:**
+- `model` (required) — Eloquent model name (PascalCase)
+- `controller` (required) — Controller class name
+- `prefix` (required) — API route prefix (e.g., `/api/products`)
+- `middleware` (optional, array) — Middleware: `[auth]`, `[role:admin]`, custom names, etc.
+- `resource` (optional, boolean) — Generate ResourceTransformer class
+- `policy` (optional, boolean) — Generate authorization Policy
+- `factory` (optional, boolean) — Generate Model Factory for testing
+- `endpoints` (required, dict) — Endpoint definitions
 
-Custom Actions:
-  - upload → multipart file handling
-  - job_dispatch → trigger background job
-  - event_fire → dispatch event
-  - mail_send → send email
-  - notification_trigger → trigger notification
-  - command_run → run Artisan command
+**Endpoint Format (DICT keys = endpoint names):**
 
-Role-based:
-  - role_admin_only → admin authorization gate
-  - role_user_only → authenticated user gate
-  - role_promote → promote user role
-  - role_demote → demote user role
+Each endpoint is a key in the `endpoints` dict. The key name determines the controller method:
+- `index` → GET / (list)
+- `store` → POST / (create)
+- `show` → GET /:id (get single)
+- `update` → PUT /:id (update)
+- `destroy` → DELETE /:id (delete)
+- `adminOnly` → Admin-only gate
+- `userOnly` → User-only gate
+- `promote` → Role promotion
+- `demote` → Role demotion
+- Custom names → Custom endpoints
+
+**Per-Endpoint Fields:**
+- `method` (required) — HTTP method: GET, POST, PUT, DELETE, PATCH
+- `route` (required) — API route path (e.g., `/products`, `/products/{id}`)
+- `description` (optional) — Endpoint documentation
+- `validation` (optional, dict) — Laravel validation rules as key:value
+  - Format: `field_name: required|string|max:255`
+  - Rules: `required`, `string`, `integer`, `numeric`, `email`, `unique:table`, `max:N`, `min:N`, etc.
+- `response` (optional, dict) — Response shape
+  - `type`: `single` (one resource), `collection` (array), `paginated` (paginated array), `message` (JSON message)
+  - `value`: (optional) For `message` type, the response message text
+
+**Validation Rules (Laravel Format):**
 ```
+required, nullable, string, integer, numeric, boolean, email
+max:255, min:1, unique:table, confirmed, regex:/pattern/
+date, datetime, before:date, after:date
+array, json, in:value1,value2
+```
+
+**Response Types:**
+- `single` — Single resource object
+- `collection` — Array of resources
+- `paginated` — Paginated array (with pagination metadata)
+- `message` — JSON response with message field
 
 ---
 
-## SECTION 9 — @arkzen:routes (v6.3+)
+## SECTION 9 — @arkzen:routes (Custom Routes)
 
 Custom routes with optional handler body injection.
 
 ```tsx
 /* @arkzen:routes
+controller: SimulateErrorController
+middleware: []
 routes:
-  - method: POST
-    path: /api/simulate-error
-    controller: SimulateErrorController
-    middleware: []
-    handler: simulate_error
   - method: GET
-    path: /api/health-check
-    controller: HealthController
+    route: /api/errors-test/simulate/{code}
+    handler: simulate
+  - method: POST
+    route: /api/health-check
     handler: check_status
 */
 
-/* @arkzen:handler:simulate_error
+/* @arkzen:handler:simulate
+$code = request()->route('code');
 return response()->json([
   'status' => 'error',
-  'code' => 503,
-  'message' => 'Service Unavailable'
-], 503);
-/* @arkzen:handler:simulate_error:end */
+  'code' => $code,
+  'message' => 'Simulated error'
+], (int)$code);
+/* @arkzen:handler:simulate:end */
 
 /* @arkzen:handler:check_status
 return response()->json([
@@ -564,54 +669,46 @@ return response()->json([
 /* @arkzen:handler:check_status:end */
 ```
 
+**Route Definition:**
+- `method` — HTTP method (GET, POST, PUT, DELETE)
+- `route` — Full route path including `/api/prefix`
+- `handler` — Handler name (referenced in @arkzen:handler blocks)
+
 **Handler Body Rules:**
 - Enclosed in `/* @arkzen:handler:name ... :end */` blocks
 - PHP code only (no opening `<?php` tag)
 - Must return a response (JSON or view)
-- Base64-encoded internally for YAML safety
+- Access path parameters via `request()->route('param_name')`
 
 ---
 
-## SECTION 10 — @arkzen:middleware:name (v6.3+)
+## SECTION 10 — @arkzen:middleware:name
 
 Custom middleware with body injection.
 
 ```tsx
 /* @arkzen:middleware:requireJson
-signature: requireJson
-description: Ensure request is JSON
 */
 
-/* @arkzen:middleware:requireJson
 if (!$request->isJson()) {
   return response()->json(['error' => 'JSON required'], 415);
 }
+
 return $next($request);
+
 /* @arkzen:middleware:requireJson:end */
 ```
 
 **Middleware Rules:**
-- Must have opening comment with `signature` and optional `description`
-- PHP body (no opening tag) injected into `handle()` method
+- Named block: `@arkzen:middleware:name`
+- PHP body injected into `handle()` method
 - Must call `return $next($request)` at end
 - Automatically registered as alias (e.g. `middleware('requireJson')`)
-- Can be applied to routes via middleware option in @arkzen:routes
+- Can be applied to routes via middleware option in @arkzen:routes or @arkzen:api
 
-**Example from middleware-test:**
-```tsx
-/* @arkzen:middleware:requireJson
-signature: requireJson
-description: Validate request is JSON
-*/
-
-/* @arkzen:middleware:requireJson
-if (!$request->isJson()) {
-  return response()->json(['error' => 'Content-Type must be application/json'], 415);
-}
-
-return $next($request);
-/* @arkzen:middleware:requireJson:end */
-```
+**Using Middleware:**
+- In @arkzen:api: `middleware: [auth, role:admin, requireJson]`
+- In @arkzen:routes: `middleware: [requireJson]`
 
 ---
 
@@ -621,7 +718,8 @@ Zustand store definitions for frontend state management.
 
 ```tsx
 /* @arkzen:store:cartStore
-import create from 'zustand'
+
+import { create } from 'zustand'
 
 export interface CartItem {
   id: string
@@ -647,12 +745,13 @@ export const useCartStore = create<CartState>((set) => ({
   })),
   clear: () => set({ items: [] })
 }))
-*/
+
+/* @arkzen:store:cartStore:end */
 ```
 
 **Store Pattern:**
 - Define interface for state + actions
-- Use Zustand `create` hook
+- Use Zustand `create` hook with modern import: `import { create } from 'zustand'`
 - Export hook as `use<StoreName>Store`
 - Use in components: `const { items, addItem } = useCartStore()`
 
@@ -675,7 +774,7 @@ channels:
           text: string
           user_id: integer
           created_at: timestamp
-
+  
   - name: notifications
     type: private
     auth_required: true
@@ -685,7 +784,7 @@ channels:
           id: string
           title: string
           body: string
-
+  
   - name: typing-indicators
     type: presence
     events:
@@ -726,53 +825,39 @@ Laravel Events with listeners.
 
 ```tsx
 /* @arkzen:events:user-registration
-name: UserRegistered
-description: Fired when new user registers
-data:
-  user_id: integer
-  email: string
-  name: string
-  created_at: timestamp
+listeners: [SendWelcomeEmail, UpdateUserStats]
 */
+/* @arkzen:events:user-registration:end */
 
 /* @arkzen:listener:SendWelcomeEmail
-event: UserRegistered
-description: Send welcome email to new users
-queue: emails
 */
 
-/* @arkzen:listener:SendWelcomeEmail
-\Mail::to($event->email)->send(
-  new \App\Mail\WelcomeEmail($event->name)
-);
+$email = \App\Mail\WelcomeEmail::class;
+\Mail::to('user@example.com')->send(new $email());
+
 /* @arkzen:listener:SendWelcomeEmail:end */
 ```
 
 **Event Rules:**
-- Define event name, description, data schema
-- Create listeners via `@arkzen:listener:name`
+- Define event name and listener array
+- Create listeners via `@arkzen:listener:name` blocks
 - Listener body = PHP code injected into `handle()` method
-- Can queue listeners (async execution)
+- Listeners execute when the event is fired
 
 ---
 
-## SECTION 14 — @arkzen:jobs:identifier (v6.3+)
+## SECTION 14 — @arkzen:jobs:identifier
 
 Queue jobs with body injection.
 
 ```tsx
 /* @arkzen:jobs:process-data
-name: ProcessDataJob
 queue: default
 timeout: 300
 tries: 3
-data:
-  csv_file_path: string
-  user_id: integer
 */
 
-/* @arkzen:jobs:process-data
-$file = Storage::get($this->csv_file_path);
+$file = \Storage::get($this->csv_file_path);
 $rows = str_getcsv($file, "\n");
 
 foreach ($rows as $row) {
@@ -785,6 +870,7 @@ foreach ($rows as $row) {
 }
 
 \Log::info('CSV processed', ['user_id' => $this->user_id]);
+
 /* @arkzen:jobs:process-data:end */
 ```
 
@@ -802,28 +888,20 @@ foreach ($rows as $row) {
 Database/mail/broadcast notifications.
 
 ```tsx
-/* @arkzen:notifications:order-status-update
-name: OrderStatusUpdated
-description: Notify customer of order status change
-channels:
-  - database
-  - mail
-  - broadcast
-data:
-  order_id: integer
-  status: string
-  updated_at: timestamp
-toMail:
-  subject: Your order status has been updated
-  view: order-status-notification
-  toMailBody: true
+/* @arkzen:notifications:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
 */
+/* @arkzen:notifications:database-ping:end */
 
-/* @arkzen:notifications:order-status-update
-User::find($notifiable->id)->notify(
-  new OrderStatusUpdated($this->order_id, $this->status)
-);
-/* @arkzen:notifications:order-status-update:end */
+/* @arkzen:notifications:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "Multi-channel notification"
+subject: "Important Update"
+*/
+/* @arkzen:notifications:all-channels:end */
 ```
 
 **Channels:**
@@ -831,45 +909,66 @@ User::find($notifiable->id)->notify(
 - `mail` — sent via email
 - `broadcast` — real-time via Reverb
 
-**toMailBody Injection:**
-- Set `toMailBody: true` to inject custom `toMail()` PHP
-- Modify email subject, view, data dynamically
+**Fields:**
+- `channels` (required, array) — List of channels: [database], [mail], [broadcast], or [database, mail, broadcast]
+- `message` (required, string) — Notification message text
+- `subject` (required, string) — Email subject line
+- `channel_type` (optional, for broadcast) — private, public, presence (default: private)
+
+**toMail Body Injection (optional):**
+If you need custom mail formatting, add PHP code between `*/` and `:end`:
+```tsx
+/* @arkzen:notifications:action-required
+channels: [mail, database]
+message: "Action required"
+subject: "Review Needed"
+*/
+
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('Please Review')
+    ->line('This is an important action required notification.')
+    ->action('Review Now', url('/dashboard'))
+    ->salutation('Best regards');
+
+/* @arkzen:notifications:action-required:end */
+```
 
 ---
 
-## SECTION 16 — @arkzen:mail:identifier (v6.3+)
+## SECTION 16 — @arkzen:mail:identifier
 
 Mailable classes with Blade view + optional body injection.
 
 ```tsx
 /* @arkzen:mail:welcome-email
-name: WelcomeEmail
-description: Sent when user registers
-subject: Welcome to {{app_name}}
-view: welcome-email
+subject: "Welcome to {{app_name}}"
 data:
   user_name: string
   activation_link: string
-bladeBody: true
 */
 
-/* @arkzen:mail:welcome-email
-<h1>Welcome, {{ $user_name }}!</h1>
-<p>Click to activate your account:</p>
-<a href="{{ $activation_link }}">Activate Account</a>
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>Welcome, {{ $user_name }}!</h1>
+    <p>Click to activate your account:</p>
+    <a href="{{ $activation_link }}">Activate Account</a>
+  </body>
+</html>
+
 /* @arkzen:mail:welcome-email:end */
 ```
 
 **Mail Rules:**
-- `view` → Blade file name (auto-created)
-- `subject` → email subject (can include `{{variables}}`)
-- `data` → schema of variables passed to Blade
-- `bladeBody: true` → inject Blade HTML in `:end` block
-- Auto-generates `resources/mail/arkzen/{module}/{view}.blade.php`
+- `subject` (required) — email subject (can include `{{variable}}` placeholders)
+- `data` (required) — schema of variables passed to Blade as `field_name: type`
+- Blade HTML body is placed **directly after the YAML closing `*/`** and before `:end`
+- The mail identifier becomes the Blade filename (auto-derived, no `view` field needed)
+- Auto-generates `resources/mail/arkzen/{module}/{identifier}.blade.php`
 
 ---
 
-## SECTION 17 — @arkzen:console:identifier (v6.3+)
+## SECTION 17 — @arkzen:console:identifier
 
 Artisan commands with body injection + scheduling.
 
@@ -877,13 +976,9 @@ Artisan commands with body injection + scheduling.
 /* @arkzen:console:send-daily-report
 signature: send:daily-report
 description: Email daily summary report to admins
-queue: commands
-schedule:
-  frequency: daily
-  time: "09:00"
+schedule: '0 9 * * *'
 */
 
-/* @arkzen:console:send-daily-report
 $admins = User::where('role', 'admin')->get();
 
 foreach ($admins as $admin) {
@@ -893,24 +988,31 @@ foreach ($admins as $admin) {
 }
 
 $this->info('Daily report sent to ' . count($admins) . ' admins');
+
 /* @arkzen:console:send-daily-report:end */
 ```
 
 **Command Rules:**
-- `signature` → command name (e.g. `php artisan send:daily-report`)
-- `queue` → queue name (optional, default synchronous)
-- `schedule` → cron schedule (only if `frequency` set)
-  - frequency: `everyMinute`, `hourly`, `daily`, `weekly`, `monthly`
-  - time: HH:MM format (for daily/weekly/monthly)
-  - Or use `cron: "*/5 * * * *"` for cron syntax
+- `signature` (required) — command name (e.g. `php artisan send:daily-report`)
+- `description` (required) — command description
+- `schedule` (optional) — cron format (e.g. `0 9 * * *` = 9 AM daily)
 - PHP body injected into `handle()` method
 - Use `$this->info()`, `$this->error()`, `$this->warn()` for output
 
+**Cron Frequency:**
+```
+0 9 * * *    → 9 AM daily
+*/5 * * * *  → Every 5 minutes
+0 */6 * * *  → Every 6 hours
+0 0 * * 0    → Every Sunday at midnight
+0 0 1 * *    → First day of month
+```
+
 ---
 
-## SECTION 18 — @arkzen:endpoint:name (v6.3+)
+## SECTION 18 — @arkzen:endpoint:name
 
-Custom API endpoint method bodies.
+Custom API endpoint method bodies (used within @arkzen:api).
 
 ```tsx
 /* @arkzen:api:files
@@ -918,17 +1020,19 @@ model: UploadedFile
 controller: UploadedFileController
 prefix: /api/files
 endpoints:
-  - method: POST
-    path: /upload
-    type: custom
-    summary: Upload file
-  - method: GET
-    path: /:id/download
-    type: custom
-    summary: Download file
+  upload:
+    method: POST
+    route: /upload
+    description: Upload file
+  download:
+    method: GET
+    route: /{id}/download
+    description: Download file
 */
 
 /* @arkzen:endpoint:upload
+*/
+
 $file = $request->file('file');
 $path = $file->store('uploads');
 
@@ -940,20 +1044,24 @@ $uploadedFile = UploadedFile::create([
 ]);
 
 return response()->json($uploadedFile, 201);
+
 /* @arkzen:endpoint:upload:end */
 
 /* @arkzen:endpoint:download
+*/
+
 $uploadedFile = UploadedFile::findOrFail($id);
 return Storage::download($uploadedFile->stored_path);
+
 /* @arkzen:endpoint:download:end */
 ```
 
 **Endpoint Rules:**
-- Method name = endpoint action name (upload, download, etc)
+- Method name matches endpoint key (upload, download, etc.)
 - PHP code injected into controller method
 - Access request via `$request`, path params via `$id`, etc
 - Must return response (JSON, file, view, redirect, etc)
-- Available in routes file via custom endpoint type
+- Available in @arkzen:api endpoints dict
 
 ---
 
@@ -963,6 +1071,7 @@ Custom layouts for page wrapping.
 
 ```tsx
 /* @arkzen:layout:dashboard
+
 'use client'
 
 import React from 'react'
@@ -982,6 +1091,7 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
     </div>
   )
 }
+
 /* @arkzen:layout:dashboard:end */
 ```
 
@@ -992,13 +1102,14 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
 ---
 
-## SECTION 20 — @arkzen:style & @arkzen:style:name (v6.4+)
+## SECTION 20 — @arkzen:style & @arkzen:style:name
 
 Global CSS and component-scoped CSS Modules.
 
 **Global CSS:**
 ```tsx
 /* @arkzen:style
+
 * {
   box-sizing: border-box;
 }
@@ -1015,12 +1126,14 @@ body {
 .arkzen-btn-custom {
   @apply px-4 py-2 rounded-lg font-medium transition-colors;
 }
+
 */
 ```
 
 **Component-Scoped CSS Modules:**
 ```tsx
 /* @arkzen:style:ProductCard
+
 .cardContainer {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   border-radius: 12px;
@@ -1039,6 +1152,7 @@ body {
   color: white;
   margin: 0 0 0.5rem 0;
 }
+
 */
 ```
 
@@ -1089,6 +1203,7 @@ const DashboardPage = () => {
 }
 
 export default DashboardPage
+
 /* @arkzen:page:dashboard:end */
 ```
 
@@ -1106,6 +1221,7 @@ Custom error handlers (Next.js special files).
 
 ```tsx
 /* @arkzen:error:404
+
 'use client'
 
 import React from 'react'
@@ -1126,11 +1242,13 @@ const NotFound = () => {
 }
 
 export default NotFound
+
 /* @arkzen:error:404:end */
 ```
 
 ```tsx
 /* @arkzen:error:500
+
 'use client'
 
 import React from 'react'
@@ -1151,6 +1269,7 @@ export default function Error({ error, reset }) {
     </div>
   )
 }
+
 /* @arkzen:error:500:end */
 ```
 
@@ -1161,7 +1280,7 @@ export default function Error({ error, reset }) {
 Shared utilities, types, constants.
 
 ```tsx
-/* @arkzen:components:shared */
+/* @arkzen:components:shared
 
 'use client'
 
@@ -1225,6 +1344,7 @@ GSAP and Framer Motion animations.
 
 ```tsx
 /* @arkzen:animation
+
 import gsap from 'gsap'
 import { motion } from 'framer-motion'
 
@@ -1257,6 +1377,7 @@ export const itemVariants = {
     transition: { duration: 0.5 }
   }
 }
+
 */
 ```
 
@@ -1306,9 +1427,8 @@ import Image from 'next/image'
 
 **Core Arkzen:**
 ```tsx
-import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useWebSocket } from '@/arkzen/core/hooks/useWebSocket'
-import { arkzenFetch } from '@/arkzen/core/lib/arkzenFetch'
 ```
 
 **UI Components:**
@@ -1355,7 +1475,7 @@ import { StarIcon } from '@heroicons/react/24/solid'
 | errors-test | 1.0.0 | ✗ | HTTP error simulation, custom error pages |
 | middleware-test | 2.0.0 | ✗ | Custom middleware with body injection |
 | body-endpoint-handler | 1.0.0 | ✗ | Custom @arkzen:endpoint & @arkzen:handler bodies |
-| body-mail-notification | 1.0.0 | ✓ | Mail blade_body + notification toMail_body injection |
+| body-mail-notification | 1.0.0 | ✓ | Mail blade body + notification toMail_body injection |
 | portfolio-test | 1.0.0 | ✗ | Static portfolio showcase |
 | new-updates-styles | 2.0.0 | ✗ | CSS Modules, custom components |
 
@@ -1396,34 +1516,25 @@ npm run dev
 
 ---
 
-## CHANGELOG v6.1 → v7.0
+## CHANGELOG v7.0 → v7.1
 
-**Added:**
-- ✓ @arkzen:middleware:name documentation with body injection example
-- ✓ @arkzen:listener documentation with event listener pattern
-- ✓ @arkzen:endpoint:name documentation with custom API body injection
-- ✓ @arkzen:handler:name documentation with custom route body injection
-- ✓ @arkzen:console:identifier documentation with scheduling
-- ✓ @arkzen:style & @arkzen:style:name documentation (CSS Modules + global CSS)
-- ✓ @arkzen:animation framework documentation (GSAP + Framer Motion)
-- ✓ auth_seed documentation with role field examples
-- ✓ Complete @arkzen:store pattern with Zustand
-- ✓ Real-time listener patterns (useWebSocket hook)
-- ✓ Feature matrix table (23 DSL sections, versions, status)
-- ✓ Updated tatemono inventory (12 → 17)
+**Fixed Critical Bugs:**
+- ✓ @arkzen:database column format — CHANGED from list array to dict/map format
+- ✓ @arkzen:api endpoint format — CHANGED from list array to dict/map format with route (not path)
+- ✓ @arkzen:api resource/policy/factory — CHANGED to boolean (true/false, not string names)
+- ✓ arkzenFetch import path — CHANGED from @/arkzen/core/lib/arkzenFetch to @/arkzen/core/stores/authStore
 
-**Updated:**
-- ✓ Tatemono count from 12 to 17 active examples
-- ✓ Added new tatemonos: middleware-test, body-endpoint-handler, body-mail-notification, new-updates-styles
-- ✓ Expanded @arkzen:routes documentation with handler injection examples
-- ✓ Enhanced auth rules with auth_seed examples (roles-test, body-mail-notification)
+**Clarifications:**
+- ✓ @arkzen:mail — Clarified blade HTML body placement (after YAML `*/`, not in field)
+- ✓ @arkzen:notifications — Clarified channels as array format [database, mail, broadcast]
+- ✓ Role endpoints — Clarified adminOnly, userOnly, promote, demote as dict keys
+- ✓ @arkzen:store — Updated to modern Zustand import: `import { create } from 'zustand'`
+- ✓ Middleware format — Added clear examples with body injection
+- ✓ Validation rules — Documented Laravel validation format (pipe-separated)
+- ✓ Response types — Documented single, collection, paginated, message types
 
-**Clarified:**
-- ✓ Body injection mechanism (base64-encoded, automatic hashing for passwords)
-- ✓ CSS Modules strategy vs global Tailwind
-- ✓ Middleware signature and queue time parameters
-- ✓ Command scheduling cron syntax
-- ✓ Notification channels vs mail toMail_body injection
+**Verified Against All 17 Tatemonos:**
+Every example in this guideline has been cross-referenced with actual tatemono code to ensure accuracy.
 
 ---
 
@@ -1436,14 +1547,17 @@ npm run dev
 | v6.2 | Backend | Auth seed, notifications infrastructure |
 | v6.3 | Body Injection | @arkzen:middleware/endpoint/handler/listener/jobs/console body injection |
 | v6.4 | Styling | CSS Modules support, @arkzen:style:name |
-| v7.0 | **CURRENT** | Complete documentation of all v6.3+ features |
-| v8.0 | Roadmap | Inertia.js support (server-rendered React + Laravel) |
+| v7.0 | Complete | Complete documentation of all v6.3+ features |
+| v7.1 | **CURRENT** | Fixed critical bugs from v7.0, verified against all 17 tatemonos, 100% accuracy |
+| v7.5 | Roadmap | PWA/offline sync support (IndexedDB + Service Workers) |
+| v8.0 | Roadmap | Multiple frontend stacks (Next.js + React + React+Inertia) |
 | v9.0 | Roadmap | React Native (iOS/Android via Expo) |
 
 ---
 
 **Last Updated:** 2026-04-27  
+**Version:** v7.1 (Bug fix release)  
+**Verified Against:** 17 active tatemonos  
 **Parser Version:** v6.3  
 **Builder Count:** 21  
-**Active Tatemonos:** 17  
 **Status:** Production-Ready ✓
