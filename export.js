@@ -87,7 +87,7 @@ const PROJ_BACK   = path.join(PROJECT_DIR, 'backend')
 // ─────────────────────────────────────────────
 
 const content     = fs.readFileSync(tatPath, 'utf-8')
-const hasBackend  = content.includes('@arkzen:api') || content.includes('@arkzen:database:') || content.includes('@arkzen:jobs:') || content.includes('@arkzen:events:') || content.includes('@arkzen:realtime:') || content.includes('@arkzen:notifications:') || content.includes('@arkzen:mail:') || content.includes('@arkzen:console:') || content.includes('@arkzen:routes') || content.includes('@arkzen:store:')
+const hasBackend  = content.includes('auth: true') || content.includes('@arkzen:api') || content.includes('@arkzen:database:') || content.includes('@arkzen:jobs:') || content.includes('@arkzen:events:') || content.includes('@arkzen:realtime:') || content.includes('@arkzen:notifications:') || content.includes('@arkzen:mail:') || content.includes('@arkzen:console:') || content.includes('@arkzen:routes') || content.includes('@arkzen:store:')
 const hasRealtime = content.includes('@arkzen:realtime') || content.includes('@arkzen:notifications')
 const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events')
 const tatSnake    = tatName.replace(/-/g, '_')   // ← ADDED
