@@ -20,69 +20,239 @@
 
 ---
 
-## Version 8 — Inertia.js Support (React + Laravel)
+## Version 7.5 — Progressive Web App (PWA) & Offline Sync
 
-### Why Inertia.js?
-- React on the frontend + Laravel backend (no separate API)
-- Server-side rendered React components
-- Faster initial load than SPA
-- Better SEO than Next.js SPA
-- Simpler setup than separate API + frontend
+### Why PWA?
+- Works offline with local storage and sync
+- Can be saved to home screen like native apps
+- Automatic sync when internet connection returns
+- Single codebase (Next.js) with offline-first architecture
+- Service Workers for offline support
 
 ### New Capabilities
 ```
-├── Frontend Stack
-│   └── React 18 + TypeScript (Inertia.js)
-│       - No Next.js
-│       - Laravel serves React components
-│       - Vite for build
-│       - Automatic code splitting
+├── Offline Storage
+│   └── IndexedDB + Service Workers
+│       - Cache pages and assets
+│       - Store mutations locally while offline
+│       - Queue operations for sync
 │
-├── Backend (Same as v7)
-│   └── Laravel 13 (with Inertia route helpers)
-│       - @inertia() response helper
-│       - Automatic props merging
-│       - Server-side validation errors → frontend
+├── Sync Engine
+│   └── Automatic conflict-free sync (CRDT)
+│       - Same Reverb backend for real-time
+│       - Offline queue → Online sync
+│       - Merge conflicts resolved automatically
 │
-├── Routing
-│   └── Pure Laravel routes (no Next.js routing)
-│       - route('dashboard') generates links
-│       - Inertia handles navigation
+├── App Shell
+│   └── Installable to home screen
+│       - Web app manifest (manifest.json)
+│       - Icon + splash screen
+│       - Works like native app
 │
-├── Page Generation
-│   └── @arkzen:page blocks → React/Inertia pages
-│       - Auto-wired to Laravel routes
-│       - Props typed with TypeScript
-│       - Automatic form handling with Inertia
-│
-├── Component System
-│   └── Same as v7 (individual files + shared utilities)
-│
-└── Styling
-    └── Same as v7 (CSS DSL + Tailwind)
+└── UX Improvements
+    └── Connection status indicator
+        - Show when syncing
+        - Show when offline
+        - Retry failed operations
 ```
 
 ### Implementation Plan
-1. **Phase 1**: Create `Inertia.ts` builder (Phase 8.1)
-   - Parse @arkzen:page blocks → React Inertia components
+1. **Phase 1**: Service Worker setup (Phase 7.5.1)
+   - Offline page caching
+   - Asset caching strategy
+   
+2. **Phase 2**: Local sync queue (Phase 7.5.2)
+   - IndexedDB for local persistence
+   - Queue API calls while offline
+   
+3. **Phase 3**: Automatic sync (Phase 7.5.3)
+   - Detect online/offline status
+   - Flush queue when online
+   - Handle merge conflicts with CRDT
+   
+4. **Phase 4**: PWA manifest (Phase 7.5.4)
+   - Web app manifest generation
+   - Icon management
+   - Installable to home screen
+
+### What Stays the Same
+- Tatemono file format
+- Component separation
+- CSS/Style DSL
+- Auth system
+- Real-time (Reverb)
+
+---
+
+## Version 8 — Multiple Frontend Stack Options
+
+### Why Multiple Stacks?
+- Different use cases need different approaches
+- Developers can choose architecture they prefer
+- Same backend, different frontend targets
+- Future-proof for evolving requirements
+
+### Three Frontend Stack Options
+
+#### Option 1: Next.js + Laravel (Decoupled - Already in v7)
+**Architecture**: Next.js SPA ↔ REST API ← Laravel Backend
+
+```
+├── Frontend Stack
+│   └── Next.js 16 + TypeScript
+│       - Client-side rendering (SPA)
+│       - Full frontend flexibility
+│       - Separate from backend
+│
+├── Backend
+│   └── Laravel 13 (API-only mode)
+│       - Serves REST API
+│       - No views/blade templates
+│       - Sanctum for auth
+│
+├── Communication
+│   └── RESTful API
+│       - JSON requests/responses
+│       - Fully decoupled
+│       - Can run on separate servers
+│
+└── Use Cases
+    └── Large frontend team
+        - Complex UI requirements
+        - Frontend and backend teams working independently
+        - Microservices architecture
+```
+
+#### Option 2: React + Laravel (Decoupled - New in v8)
+**Architecture**: React SPA ↔ REST API ← Laravel Backend
+
+```
+├── Frontend Stack
+│   └── React 18 + TypeScript + Vite
+│       - Client-side rendering (SPA)
+│       - Same API flexibility as Next.js
+│       - Lightweight compared to Next.js
+│
+├── Backend
+│   └── Laravel 13 (API-only mode)
+│       - Same REST API as Next.js option
+│       - Sanctum authentication
+│
+├── Communication
+│   └── RESTful API
+│       - Same as Next.js + Laravel
+│       - Fully decoupled
+│       - Frontend and backend independent
+│
+└── Use Cases
+    └── Prefer React over Next.js
+        - Simpler project structure
+        - More lightweight SPA
+        - Team expertise with React/Vite
+```
+
+#### Option 3: React + Inertia.js + Laravel (Monolithic - New in v8)
+**Architecture**: Laravel (with React) ← Tightly Integrated
+
+```
+├── Frontend Stack
+│   └── React 18 + TypeScript (Inertia.js adapter)
+│       - Server-side rendered React components
+│       - Props passed from Laravel
+│       - No separate API calls needed
+│       - Vite for build
+│
+├── Backend
+│   └── Laravel 13 (Monolithic)
+│       - Serves React components via Blade
+│       - @inertia() route helper
+│       - Server-side validation errors → frontend
+│       - Same blade.php as entry point
+│
+├── Communication
+│   └── Inertia Protocol (not REST)
+│       - Components receive props from server
+│       - Form submissions via Inertia
+│       - Automatic CSRF handling
+│       - No JSON API needed
+│
+├── Routing
+│   └── Pure Laravel routes
+│       - route('dashboard') generates links
+│       - Inertia handles navigation
+│       - Type-safe props with TypeScript
+│
+└── Use Cases
+    └── Monolithic preference
+        - Tightly integrated frontend + backend
+        - Faster initial load (SSR)
+        - Better SEO than SPA
+        - Simpler deployment (single app)
+```
+
+### Why Three Options?
+
+### New Capabilities
+
+#### Option 1: Next.js + Laravel
+```
+(Same as v7)
+```
+
+#### Option 2: React + Laravel
+```
+(Same as Next.js + Laravel, but with React)
+```
+
+#### Option 3: React + Inertia.js + Laravel
+
+### Implementation Plan
+
+#### For Option 1 (Next.js + Laravel)
+- Already complete in v7
+
+#### For Option 2 (React + Laravel)
+1. **Phase 1**: Create `ReactBuilder.ts` builder (Phase 8.1)
+   - Parse @arkzen:page blocks → React components
+   - Generate `src/Pages/*.tsx`
+   - Setup Vite configuration
+   
+2. **Phase 2**: Route registration (Phase 8.2)
+   - API endpoint generation
+   - Type-safe API client
+   
+3. **Phase 3**: Form handling (Phase 8.3)
+   - useForm hook with validation
+   - API submission handling
+   
+4. **Phase 4**: Real-time support (Phase 8.4)
+   - arkzenFetch for API calls
+   - WebSocket integration for Reverb
+   
+5. **Phase 5**: Asset management (Phase 8.5)
+   - Vite asset pipeline
+
+#### For Option 3 (React + Inertia.js + Laravel)
+1. **Phase 1**: Create `InertiaBuilder.ts` builder (Phase 8.1i)
+   - Parse @arkzen:page blocks → React/Inertia pages
    - Generate `resources/js/Pages/*.tsx`
    - Auto-wire to Laravel routes
-
-2. **Phase 2**: Route registration (Phase 8.2)
+   
+2. **Phase 2**: Route registration (Phase 8.2i)
    - Inertia route helpers
-   - Automatic route generation from pages
    - Props type definitions
-
-3. **Phase 3**: Form handling (Phase 8.3)
-   - useForm hook integration
+   - Automatic route generation
+   
+3. **Phase 3**: Form handling (Phase 8.3i)
+   - useForm hook (Inertia form helper)
    - Automatic validation error display
    - Server-side CSRF handling
-
-4. **Phase 4**: Real-time support (Phase 8.4)
+   
+4. **Phase 4**: Real-time support (Phase 8.4i)
    - Laravel Echo for Reverb
-   - Real-time updates without WebSocket wrapper
-
-5. **Phase 5**: Asset management (Phase 8.5)
+   - Real-time updates without API wrapper
+   
+5. **Phase 5**: Asset management (Phase 8.5i)
    - Vite asset pipeline
    - Favicon + static file serving
 
@@ -90,16 +260,28 @@
 - Tatemono file format (@arkzen:* blocks)
 - Component separation strategy
 - CSS/Style DSL
-- Auth system (Sanctum works with Inertia)
-- Real-time (Reverb)
+- Auth system (Sanctum works with all options)
+- Real-time (Reverb works with all options)
 - Jobs, events, notifications
 - Generator logic (Phase builders)
+- Database (@arkzen:database blocks)
+- API generation (@arkzen:api blocks)
 
-### What Changes
-- Frontend build: Vite instead of Next.js webpack
-- Routing: Laravel routes instead of Next.js routing
-- Page location: `resources/js/Pages/` instead of `app/`
-- Entry point: Single `app.blade.php` instead of per-page `page.tsx`
+### Key Differences Between Options
+
+| Feature | Next.js + Laravel | React + Laravel | React + Inertia.js |
+|---------|-------------------|-----------------|-------------------|
+| **Coupling** | Fully Decoupled | Fully Decoupled | Monolithic |
+| **Routing** | Next.js routing | React Router | Laravel routes |
+| **Rendering** | Client-side (SPA) | Client-side (SPA) | Server-side (SSR) |
+| **Build** | Next.js webpack | Vite | Vite |
+| **SEO** | Requires SSG/ISR | Requires extra setup | Native SSR |
+| **Initial Load** | Moderate | Moderate | Faster |
+| **API Calls** | REST API | REST API | Props-based |
+| **Validation** | Client-side | Client-side | Server-side |
+| **Complexity** | Higher | Moderate | Lower |
+| **Team Size** | Large (frontend + backend) | Medium | Small/Medium |
+| **Best For** | Complex frontends | React preference | Monolithic apps |
 
 ---
 
@@ -192,10 +374,11 @@
 
 ## Roadmap Timeline
 
-| Version | Frontend | Backend | Status | Timeline |
-|---------|----------|---------|--------|----------|
+| Version | Frontend Options | Backend | Status | Timeline |
+|---------|------------------|---------|--------|----------|
 | v7 (Current) | Next.js 16 | Laravel 13 | ✓ Complete | Now |
-| v8 | Inertia.js (React) | Laravel 13 | Planned | 2-3 months |
+| v7.5 | Next.js 16 (PWA) | Laravel 13 | Planned | 1-2 months |
+| v8 | Next.js / React / React+Inertia | Laravel 13 | Planned | 2-3 months after v7.5 |
 | v9 | React Native | Laravel 13 | Planned | 3-4 months after v8 |
 
 ---
@@ -222,15 +405,17 @@
 - **Future-proof** — Expandable to Vue, Svelte, etc.
 
 **Arkzen will be the first full-stack scaffolder that generates:**
-- Web SPAs (Next.js)
-- Server-rendered apps (Inertia.js)
+- Web SPAs (Next.js, React)
+- Server-rendered apps (React + Inertia.js)
+- Offline-first PWAs (works like native apps)
 - Native mobile apps (React Native)
 - **All from a single tatemono file**
 
 ### Power Rating
 - **v7**: 9/10 (Enterprise web apps)
-- **v8**: 9.5/10 (Web apps + server-rendered + mobile web)
-- **v9**: 10/10 (Complete ecosystem — web + mobile native)
+- **v7.5**: 9.3/10 (Web apps + offline + PWA)
+- **v8**: 9.7/10 (3 frontend options + web apps + offline + PWA)
+- **v9**: 10/10 (Complete ecosystem — web + mobile native + offline + PWA)
 
 ---
 
@@ -246,12 +431,30 @@ Phase X.Y: Feature Name
 └── Side effects: Register routes, update imports, etc.
 ```
 
-### Adding New Frameworks (v8-v9)
-1. Create new builder file: `InertiaBuilder.ts`, `ReactNativeBuilder.ts`
-2. Create new type: `InertiaPage`, `NativeScreen`
-3. Update parser to detect `@arkzen:page:* /* @arkzen:page:framework:inertia */`
-4. Update export.ts to call new builders
-5. Test with showcase tatemonos
+### Adding New Frameworks (v7.5-v9)
+1. **For PWA support (v7.5)**:
+   - Generate Service Worker boilerplate
+   - Create IndexedDB sync queue logic
+   - Generate manifest.json for installable web app
+   - Update Next.js app to support offline mode
+   
+2. **For React + Laravel (v8)**:
+   - Create new builder file: `ReactBuilder.ts`
+   - Create new type: `ReactPage`
+   - Update parser to detect framework option
+   - Update export.ts to call new builders
+   
+3. **For React + Inertia.js (v8)**:
+   - Create new builder file: `InertiaBuilder.ts`
+   - Create new type: `InertiaPage`
+   - Update parser to detect framework option
+   - Update export.ts to call new builders
+   
+4. **For React Native (v9)**:
+   - Create new builder file: `ReactNativeBuilder.ts`
+   - Create new type: `NativeScreen`
+   - Update parser to detect @arkzen:native blocks
+   - Update export.ts to call new builders
 
 ### Backward Compatibility
 - v8 + v9 are **additive**, not breaking
@@ -260,12 +463,21 @@ Phase X.Y: Feature Name
 
 ---
 
-## Success Metrics for v8-v9
+### Success Metrics for v7.5-v9
 
-### v8 (Inertia.js)
-- ✓ Can generate functional Inertia app from tatemono
-- ✓ Form handling works (validation, submission)
-- ✓ Real-time updates work
+### v7.5 (PWA & Offline Sync)
+- ✓ Can install web app to home screen
+- ✓ Works offline with local storage
+- ✓ Automatic sync when online
+- ✓ Merge conflicts handled with CRDT
+- ✓ Connection status shows in UI
+
+### v8 (Multiple Frontend Stacks)
+- ✓ Can generate functional Next.js + Laravel app
+- ✓ Can generate functional React + Laravel app
+- ✓ Can generate functional React + Inertia.js app
+- ✓ Form handling works in all options
+- ✓ Real-time updates work in all options
 - ✓ No manual file editing required
 
 ### v9 (React Native)

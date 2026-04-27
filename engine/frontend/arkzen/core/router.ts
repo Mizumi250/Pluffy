@@ -196,9 +196,10 @@ function generatePageFile(
     }
     
     // Remove 'use client' directives and React imports (we'll provide them)
-    raw = raw.replace(/^['"]use client['"];?\s*\n?/gm, '')
-    raw = raw.replace(/^import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\n?/gm, '')
-    raw = raw.replace(/^import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\n?/gm, '')
+    raw = raw.replace(/\s*['"]use client['"];?\s*\n?/gm, '')
+    raw = raw.replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
+    raw = raw.replace(/\s*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
+    raw = raw.replace(/\s*import\s+React\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')  // plain React import
     
     const cleaned = raw.trim()
     if (cleaned) componentCodeLines.push(cleaned)
@@ -206,9 +207,12 @@ function generatePageFile(
   
   componentCode = componentCodeLines.join('\n\n')
   
-  // Build merged React import
+  // Build merged React import — only if no React import exists in componentCode
   const hooksArray = Array.from(reactHooks).sort()
-  const reactImport = `import React, { ${hooksArray.join(', ')} } from 'react'`
+  const hasReactInComponents = /import\s+React/.test(componentCode)
+  const reactImport = hasReactInComponents 
+    ? '' 
+    : `import React${hooksArray.length > 0 ? `, { ${hooksArray.join(', ')} }` : ''} from 'react'`
 
   return `'use client'
 // ============================================================
@@ -218,7 +222,7 @@ function generatePageFile(
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${reactImport}
+${reactImport ? reactImport + '\n' : ''}
 import { motion } from 'framer-motion'
 ${layoutImport}
 ${animImport}

@@ -58,6 +58,15 @@ endpoints:
       type: single
 */
 
+/* @arkzen:endpoint:index
+*/
+$query = \App\Models\Arkzen\JobTest\JobResult::query();
+$query->orderBy('created_at', 'desc');
+$perPage = $request->get('per_page', 15);
+$results = $query->paginate($perPage);
+return response()->json($results);
+/* @arkzen:endpoint:index:end */
+
 /* @arkzen:jobs:process-data
 queue: default
 tries: 3
