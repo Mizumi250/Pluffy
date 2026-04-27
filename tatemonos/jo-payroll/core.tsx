@@ -175,6 +175,8 @@ seeder:
       basic_pay: 346.00
       disbursement_type: "CASH"
       jor_pyrl_group: "GROUP A"
+      sss_number: "05-6789012-3"
+      sss_amount: 100.00
       status: "inactive"
     - jor_number: 6
       name_of_jo: "FLORES, CARMEN"
@@ -299,6 +301,7 @@ export interface JobOrder {
   basic_pay: number
   disbursement_type: 'CASH' | 'ATM'
   jor_pyrl_group?: string
+  hdmf_no?: string
   sss_number?: string
   sss_amount?: number
   calamity_loan?: number
@@ -348,10 +351,81 @@ export const usePayrollStore = create<PayrollState>((set) => ({
 
 */
 
-/* @arkzen:components:shared
+/* @arkzen:components:shared */
 
-import React from 'react'
-import { FileText, Download, Users, Banknote, TrendingDown, Wallet, Building2, Landmark, CreditCard, Calendar } from 'lucide-react'
+import React, { useState, useEffect, useMemo } from 'react'
+import { create } from 'zustand'
+import {
+  FileText, Download, Users, Banknote, TrendingDown, Wallet,
+  Building2, Landmark, CreditCard, Calendar, Database,
+  Plus, Search, Edit2, Trash2, Menu,
+} from 'lucide-react'
+
+// ─── Store ────────────────────────────────────────────────────────────────────
+// FIX: Store is defined here inside @arkzen:components:shared so it is inlined
+// into every generated page alongside the component code. The @arkzen:store
+// block is parsed but NOT automatically injected into page files by the router,
+// so any page that uses usePayrollStore() must have the store code present in
+// the same generated file.
+
+export interface JobOrder {
+  id: number
+  jor_number: number
+  name_of_jo: string
+  job_title: string
+  funding: string
+  basic_pay: number
+  disbursement_type: 'CASH' | 'ATM'
+  jor_pyrl_group?: string
+  hdmf_no?: string
+  sss_number?: string
+  sss_amount?: number
+  calamity_loan?: number
+  hdmf_mpl?: number
+  hdmf_premium?: number
+  status: 'active' | 'inactive'
+}
+
+export interface PayrollSummary {
+  total_active: number
+  total_atm: number
+  total_cash: number
+  total_basic_pay: number
+  total_sss: number
+  total_hdmf_premium: number
+  total_deductions: number
+  net_pay: number
+}
+
+interface PayrollState {
+  jobOrders: JobOrder[]
+  summary: PayrollSummary | null
+  isLoading: boolean
+  setJobOrders: (orders: JobOrder[]) => void
+  setSummary: (summary: PayrollSummary) => void
+  setLoading: (loading: boolean) => void
+  addJobOrder: (order: JobOrder) => void
+  updateJobOrder: (id: number, order: JobOrder) => void
+  removeJobOrder: (id: number) => void
+}
+
+export const usePayrollStore = create<PayrollState>((set) => ({
+  jobOrders: [],
+  summary: null,
+  isLoading: false,
+  setJobOrders: (orders) => set({ jobOrders: orders }),
+  setSummary: (summary) => set({ summary }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  addJobOrder: (order) => set((state) => ({ jobOrders: [...state.jobOrders, order] })),
+  updateJobOrder: (id, order) => set((state) => ({
+    jobOrders: state.jobOrders.map(jo => jo.id === id ? order : jo)
+  })),
+  removeJobOrder: (id) => set((state) => ({
+    jobOrders: state.jobOrders.filter(jo => jo.id !== id)
+  })),
+}))
+
+// ─── Constants ───────────────────────────────────────────────────────────────
 
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
@@ -370,6 +444,8 @@ export const formatPeso = (amount?: number) => {
   if (!amount) return '₱0.00'
   return `₱${Number(amount).toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
+
+// ─── UI Components ────────────────────────────────────────────────────────────
 
 export const StatCard: React.FC<{
   label: string
@@ -440,7 +516,7 @@ export const JOForm: React.FC<{
   onSave: (data: any) => void
   onCancel: () => void
 }> = ({ initial, onSave, onCancel }) => {
-  const [data, setData] = React.useState(initial || {})
+  const [data, setData] = useState(initial || {})
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -537,19 +613,27 @@ export const JOForm: React.FC<{
 
 /* @arkzen:components:shared:end */
 
-/* @arkzen:components:layout
+/* @arkzen:layout:app */
+
+// FIX: Import AppLayout from the generated components directory (relative to
+// the custom layout file at arkzen/core/layouts/custom/app.tsx).
+// The old import `@/components/layout` was wrong — that path doesn't exist.
+// AppLayout is generated into app/jo-payroll/components/_components.tsx,
+// but custom layouts live at arkzen/core/layouts/custom/ so we cannot
+// use a relative path to the app folder. The correct approach is to inline
+// AppLayout in the layout block itself.
 
 import React, { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, FileText, Database, Banknote, Building2, Landmark, CreditCard, Calendar } from 'lucide-react'
+import { Menu, FileText, Database, Banknote, Building2, Landmark, Calendar } from 'lucide-react'
 
-const NAV_ITEMS = [
-  { href: '/', label: 'Dashboard', icon: FileText },
-  { href: '/job-database', label: 'JO Database', icon: Database },
-  { href: '/cash-atm', label: 'Cash / ATM', icon: Banknote },
-  { href: '/sss-deductions', label: 'SSS', icon: Building2 },
-  { href: '/hdmf', label: 'HDMF', icon: Landmark },
-  { href: '/appointments', label: 'Appointments', icon: Calendar },
+const APP_NAV_ITEMS = [
+  { href: '/jo-payroll', label: 'Dashboard', icon: FileText },
+  { href: '/jo-payroll/job-database', label: 'JO Database', icon: Database },
+  { href: '/jo-payroll/cash-atm', label: 'Cash / ATM', icon: Banknote },
+  { href: '/jo-payroll/sss-deductions', label: 'SSS', icon: Building2 },
+  { href: '/jo-payroll/hdmf', label: 'HDMF', icon: Landmark },
+  { href: '/jo-payroll/appointments', label: 'Appointments', icon: Calendar },
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -560,12 +644,8 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   return (
     <div className="flex h-screen bg-neutral-50 overflow-hidden">
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/20 z-30 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
       )}
-
       <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-60 bg-white border-r border-neutral-100 flex flex-col transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
         <div className="px-5 py-5 border-b border-neutral-100">
           <div className="flex items-center gap-2">
@@ -578,19 +658,14 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             </div>
           </div>
         </div>
-
         <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+          {APP_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href
             return (
               <button
                 key={href}
                 onClick={() => { router.push(href); setSidebarOpen(false) }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  active
-                    ? 'bg-violet-50 text-violet-700'
-                    : 'text-neutral-600 hover:bg-neutral-50'
-                }`}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-violet-50 text-violet-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
               >
                 <Icon size={16} />
                 {label}
@@ -598,18 +673,13 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             )
           })}
         </nav>
-
         <div className="px-5 py-4 border-t border-neutral-100">
           <p className="text-xs text-neutral-400">v1.0.0</p>
         </div>
       </aside>
-
       <div className="flex-1 flex flex-col min-w-0">
         <header className="h-14 bg-white border-b border-neutral-100 flex items-center px-5 gap-3 flex-shrink-0">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="lg:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors"
-          >
+          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors">
             <Menu size={18} className="text-neutral-600" />
           </button>
           <div className="flex-1" />
@@ -617,23 +687,10 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {new Date().toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' })}
           </div>
         </header>
-
-        <main className="flex-1 overflow-y-auto p-6">
-          {children}
-        </main>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
       </div>
     </div>
   )
-}
-
-/* @arkzen:components:layout:end */
-
-/* @arkzen:layout:app
-
-import { AppLayout } from '@/components/layout'
-
-export const RootLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  return <AppLayout>{children}</AppLayout>
 }
 
 /* @arkzen:layout:app:end */
@@ -648,7 +705,7 @@ const DashboardPage = () => {
     const fetchSummary = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders/stats/summary`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders/stats/summary`)
         const data = await res.json()
         setSummary(data)
       } catch (e) {
@@ -661,7 +718,7 @@ const DashboardPage = () => {
   }, [])
 
   if (isLoading) {
-    return <div className="text-center py-12">Loading...</div>
+    return <div className="text-center py-12 text-neutral-500">Loading...</div>
   }
 
   return (
@@ -727,17 +784,17 @@ const DashboardPage = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <a href="/job-database" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
+        <a href="/jo-payroll/job-database" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
           <Database size={20} className="text-violet-600 mb-2" />
           <p className="font-medium text-neutral-900">Job Database</p>
           <p className="text-xs text-neutral-500 mt-1">Manage all job orders</p>
         </a>
-        <a href="/cash-atm" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
+        <a href="/jo-payroll/cash-atm" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
           <Banknote size={20} className="text-blue-600 mb-2" />
           <p className="font-medium text-neutral-900">Cash / ATM</p>
           <p className="text-xs text-neutral-500 mt-1">Disbursement groups</p>
         </a>
-        <a href="/sss-deductions" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
+        <a href="/jo-payroll/sss-deductions" className="bg-white border border-neutral-100 rounded-lg p-5 hover:shadow-sm transition-all">
           <Building2 size={20} className="text-rose-600 mb-2" />
           <p className="font-medium text-neutral-900">SSS Deductions</p>
           <p className="text-xs text-neutral-500 mt-1">Track deductions</p>
@@ -764,7 +821,7 @@ const JobDatabasePage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
         setJobOrders(data)
       } catch (e) {
@@ -788,21 +845,37 @@ const JobDatabasePage = () => {
   const handleDelete = async (id: number) => {
     if (!confirm('Delete this job order?')) return
     try {
-      await fetch(`${API_BASE}/job-orders/${id}`, { method: 'DELETE' })
+      await fetch(`${API_BASE}/api/jo-payroll/job-orders/${id}`, { method: 'DELETE' })
       removeJobOrder(id)
     } catch (e) {
       console.error(e)
     }
   }
 
-  const handleSaved = (jo: JobOrder) => {
-    if (editTarget) {
-      updateJobOrder(jo.id, jo)
-    } else {
-      addJobOrder(jo)
+  const handleSave = async (formData: any) => {
+    try {
+      if (editTarget) {
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders/${editTarget.id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+        const updated = await res.json()
+        updateJobOrder(updated.id, updated)
+      } else {
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(formData),
+        })
+        const created = await res.json()
+        addJobOrder(created)
+      }
+      setFormOpen(false)
+      setEditTarget(null)
+    } catch (e) {
+      console.error(e)
     }
-    setFormOpen(false)
-    setEditTarget(null)
   }
 
   return (
@@ -847,7 +920,7 @@ const JobDatabasePage = () => {
         <div className="mb-4 p-4 border border-neutral-200 rounded-lg bg-white">
           <JOForm
             initial={editTarget}
-            onSave={handleSaved}
+            onSave={handleSave}
             onCancel={() => { setFormOpen(false); setEditTarget(null) }}
           />
         </div>
@@ -881,22 +954,22 @@ const JobDatabasePage = () => {
                       {jo.disbursement_type}
                     </span>
                   </td>
-                  <td className="px-4 py-3">
-                    <StatusBadge status={jo.status} />
-                  </td>
-                  <td className="px-4 py-3 text-right flex items-center justify-end gap-1">
-                    <button
-                      onClick={() => { setEditTarget(jo); setFormOpen(true) }}
-                      className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-600"
-                    >
-                      <Edit2 size={14} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(jo.id)}
-                      className="p-1.5 rounded-lg hover:bg-red-50 transition-colors text-neutral-600 hover:text-red-600"
-                    >
-                      <Trash2 size={14} />
-                    </button>
+                  <td className="px-4 py-3"><StatusBadge status={jo.status} /></td>
+                  <td className="px-4 py-3 text-right">
+                    <div className="flex items-center justify-end gap-1">
+                      <button
+                        onClick={() => { setEditTarget(jo); setFormOpen(true) }}
+                        className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors text-neutral-600"
+                      >
+                        <Edit2 size={14} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(jo.id)}
+                        className="p-1.5 rounded-lg hover:bg-red-50 transition-colors text-neutral-600 hover:text-red-600"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))
@@ -920,7 +993,7 @@ const CashAtmPage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
         setJobOrders(data)
       } catch (e) {
@@ -986,7 +1059,7 @@ const SssDeductionsPage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
         setJobOrders(data)
       } catch (e) {
@@ -1060,7 +1133,7 @@ const HdmfPage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
         setJobOrders(data)
       } catch (e) {
@@ -1135,7 +1208,7 @@ const AppointmentsPage = () => {
     const load = async () => {
       setLoading(true)
       try {
-        const res = await fetch(`${API_BASE}/job-orders`)
+        const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
         setJobOrders(data)
       } catch (e) {
@@ -1152,7 +1225,7 @@ const AppointmentsPage = () => {
     if (!acc[group]) acc[group] = []
     acc[group].push(jo)
     return acc
-  }, {} as Record<string, any[]>)
+  }, {} as Record<string, JobOrder[]>)
 
   return (
     <div>

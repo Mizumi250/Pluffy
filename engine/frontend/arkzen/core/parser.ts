@@ -617,12 +617,21 @@ function parseAllPages(content: string): ArkzenPage[] {
     // Raw content between opening comment and closing marker
     let raw = content.slice(openCommentEnd + 2, closeIdx).trim()
 
-    // Extract layout from @arkzen:page:layout:X declaration inside the block
-    let layout: string = 'auth'  // default
-    const layoutMatch = raw.match(/\/\* @arkzen:page:layout:([a-zA-Z0-9_-]+) \*\//)
+    // Extract layout from @arkzen:page:layout:X declaration inside the block.
+    //
+    // BUG FIX: The outer while-loop matches /* @arkzen:page:layout:X */ as a new
+    // page pattern, sees pageName === 'layout', and skips it — advancing searchFrom
+    // PAST the layout line. By the time we read `raw`, the layout marker may have
+    // already been consumed by the loop and stripped from the slice.
+    //
+    // Fix: scan the full content slice (openCommentEnd → closeIdx) directly so we
+    // catch the layout declaration regardless of whether the outer loop skipped it.
+    let layout: string = 'guest'  // safe default (was 'auth' which forced /login redirects)
+    const blockContent = content.slice(openCommentEnd + 2, closeIdx)
+    const layoutMatch  = blockContent.match(/\/\* @arkzen:page:layout:([a-zA-Z0-9_-]+) \*\//)
     if (layoutMatch) {
       layout = layoutMatch[1]
-      // Remove layout declaration line from raw code
+      // Remove layout declaration line from raw code so it doesn't appear in generated page
       raw = raw.replace(/\/\* @arkzen:page:layout:[a-zA-Z0-9_-]+ \*\/\n?/, '').trim()
     }
 
