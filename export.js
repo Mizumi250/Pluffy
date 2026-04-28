@@ -596,6 +596,84 @@ if (fs.existsSync(pkgPath)) {
 }
 
 // ─────────────────────────────────────────────
+// STEP 8b — STRIP TATEMONO PREFIX FROM FRONTEND PAGE URLS
+//
+// Renames app/tatName/ → app/ (merging into root)
+// Replaces all page-level /${tatName} references in .tsx/.ts/.js files
+// Leaves /api/${tatName}/... untouched — API prefix stays as-is
+// ─────────────────────────────────────────────
+
+log(`Stripping page URL prefix /${tatName} from frontend...`)
+
+// 1. Move app/tatName/* up to app/
+const tatAppDir  = path.join(PROJ_FRONT, 'app', tatName)
+const rootAppDir = path.join(PROJ_FRONT, 'app')
+
+if (fs.existsSync(tatAppDir)) {
+  const entries = fs.readdirSync(tatAppDir)
+  for (const entry of entries) {
+    const src  = path.join(tatAppDir, entry)
+    const dest = path.join(rootAppDir, entry)
+    fs.renameSync(src, dest)
+  }
+  fs.rmdirSync(tatAppDir)
+  success(`app/${tatName}/ → app/ (folder hoisted)`)
+} else {
+  warn(`app/${tatName}/ not found — skipping folder hoist`)
+}
+
+// 2. Root page is already app/page.tsx after hoisting — no redirect needed
+success('app/page.tsx → already hoisted from app/${tatName}/page.tsx')
+
+// 3. Find all .tsx/.ts/.js files in frontend (skip node_modules, .next)
+function getAllFiles(dir, exts, results = []) {
+  if (!fs.existsSync(dir)) return results
+  for (const entry of fs.readdirSync(dir)) {
+    const full = path.join(dir, entry)
+    if (entry === 'node_modules' || entry === '.next') continue
+    if (fs.statSync(full).isDirectory()) {
+      getAllFiles(full, exts, results)
+    } else if (exts.some(e => full.endsWith(e))) {
+      results.push(full)
+    }
+  }
+  return results
+}
+
+const frontendFiles = getAllFiles(PROJ_FRONT, ['.tsx', '.ts', '.js', '.jsx'])
+
+// 4. Replace page-level /${tatName} but NOT /api/${tatName}
+//    Strategy: replace /${tatName}/ and /${tatName}' and /${tatName}"
+//    but skip anything preceded by /api
+let replacedCount = 0
+for (const file of frontendFiles) {
+  let content = fs.readFileSync(file, 'utf-8')
+  const before = content
+
+  // Replace /${tatName}/something → /something  (but not /api/${tatName}/something)
+  content = content.replace(
+    new RegExp(`(?<!/api)(/${tatName})/`, 'g'),
+    '/'
+  )
+  // Replace /${tatName}' or /${tatName}" or /${tatName}` (end of string refs)
+  content = content.replace(
+    new RegExp(`(?<!/api)(/${tatName})(['"\`])`, 'g'),
+    '/$2'
+  )
+  // Replace /${tatName}) — router.push('/tatName')
+  content = content.replace(
+    new RegExp(`(?<!/api)(/${tatName})\\)`, 'g'),
+    '/)'
+  )
+
+  if (content !== before) {
+    fs.writeFileSync(file, content)
+    replacedCount++
+  }
+}
+success(`Page URL prefix stripped from ${replacedCount} files`)
+
+// ─────────────────────────────────────────────
 // STEP 9 — STRIP ENGINE-ONLY PROVIDERS
 //
 // ArkzenServiceProvider depends on RegistryReader which manages
