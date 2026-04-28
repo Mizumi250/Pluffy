@@ -42,7 +42,7 @@ function checkSetup() {
 function startBackend() {
   log('backend', 'Starting Laravel on http://localhost:8000')
 
-  const proc = spawn('php', ['artisan', 'serve', '--port=8000'], {
+   const proc = spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
     cwd: BACKEND_DIR,
     stdio: 'pipe',
   })

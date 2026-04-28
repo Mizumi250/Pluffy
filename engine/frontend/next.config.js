@@ -1,6 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  allowedDevOrigins: ['192.168.137.77'], // Add your IP here
+  allowedDevOrigins: ['192.168.43.1'], // your hotspot IP
   experimental: {
     forceSwcTransforms: false,
   },
@@ -17,5 +17,4 @@ const nextConfig = {
     ]
   },
 }
-
 module.exports = nextConfig
