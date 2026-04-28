@@ -6,6 +6,41 @@
     <priority>1</priority>
   </url>
   <url>
+    <loc>http://localhost:3000/jo-payroll</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/job-database</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/cash-atm</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/sss</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/hdmf</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/appointments</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/payslip</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://localhost:3000/auth-test/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -101,6 +136,21 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>http://localhost:3000/new-updates-styles</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/new-updates-styles/about</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/new-updates-styles/features</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://localhost:3000/notification-test/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -112,6 +162,11 @@
   </url>
   <url>
     <loc>http://localhost:3000/notification-test/dashboard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/portfolio-test</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -137,56 +192,6 @@
   </url>
   <url>
     <loc>http://localhost:3000/upload-test/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/portfolio-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/new-updates-styles</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/new-updates-styles/about</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/new-updates-styles/features</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/job-database</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/cash-atm</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/sss-deductions</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/hdmf</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/appointments</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

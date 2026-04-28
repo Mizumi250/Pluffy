@@ -3,6 +3,24 @@
   "project": "frontend",
   "modules": [
     {
+      "name": "jo-payroll",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/jo-payroll/core.tsx",
+      "pages": [
+        "index",
+        "job-database",
+        "cash-atm",
+        "sss",
+        "hdmf",
+        "appointments",
+        "payslip"
+      ],
+      "registered": "2026-04-28T01:05:41.209Z",
+      "lastUpdated": "2026-04-28T01:28:20.105Z",
+      "auth": false
+    },
+    {
       "name": "auth-test",
       "version": "1.0.0",
       "status": "active",
@@ -12,8 +30,8 @@
         "register",
         "dashboard"
       ],
-      "registered": "2026-04-21T03:52:52.413Z",
-      "lastUpdated": "2026-04-27T19:02:11.013Z",
+      "registered": "2026-04-28T01:15:39.161Z",
+      "lastUpdated": "2026-04-28T01:28:17.592Z",
       "auth": true
     },
     {
@@ -24,8 +42,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:52.878Z",
-      "lastUpdated": "2026-04-27T19:02:11.691Z",
+      "registered": "2026-04-28T01:15:39.889Z",
+      "lastUpdated": "2026-04-28T01:28:18.036Z",
       "auth": false
     },
     {
@@ -38,8 +56,8 @@
         "register",
         "dashboard"
       ],
-      "registered": "2026-04-21T03:52:53.457Z",
-      "lastUpdated": "2026-04-27T19:02:12.460Z",
+      "registered": "2026-04-28T01:15:40.486Z",
+      "lastUpdated": "2026-04-28T01:28:18.629Z",
       "auth": true
     },
     {
@@ -52,8 +70,8 @@
         "register",
         "dashboard"
       ],
-      "registered": "2026-04-21T03:52:53.736Z",
-      "lastUpdated": "2026-04-27T19:02:12.712Z",
+      "registered": "2026-04-28T01:15:40.774Z",
+      "lastUpdated": "2026-04-28T01:28:18.913Z",
       "auth": true
     },
     {
@@ -64,8 +82,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:54.019Z",
-      "lastUpdated": "2026-04-27T19:02:13.055Z",
+      "registered": "2026-04-28T01:15:41.032Z",
+      "lastUpdated": "2026-04-28T01:28:19.221Z",
       "auth": false
     },
     {
@@ -76,8 +94,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:54.242Z",
-      "lastUpdated": "2026-04-27T19:02:13.297Z",
+      "registered": "2026-04-28T01:15:41.307Z",
+      "lastUpdated": "2026-04-28T01:28:19.433Z",
       "auth": false
     },
     {
@@ -88,8 +106,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:54.516Z",
-      "lastUpdated": "2026-04-27T19:02:13.533Z",
+      "registered": "2026-04-28T01:15:41.637Z",
+      "lastUpdated": "2026-04-28T01:28:19.641Z",
       "auth": false
     },
     {
@@ -100,8 +118,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:54.768Z",
-      "lastUpdated": "2026-04-27T19:02:13.767Z",
+      "registered": "2026-04-28T01:15:41.857Z",
+      "lastUpdated": "2026-04-28T01:28:19.852Z",
       "auth": false
     },
     {
@@ -112,8 +130,8 @@
       "pages": [
         "dashboard"
       ],
-      "registered": "2026-04-21T03:52:54.982Z",
-      "lastUpdated": "2026-04-27T19:02:14.442Z",
+      "registered": "2026-04-28T01:15:42.363Z",
+      "lastUpdated": "2026-04-28T01:28:20.308Z",
       "auth": false
     },
     {
@@ -126,8 +144,8 @@
         "register",
         "dashboard"
       ],
-      "registered": "2026-04-21T03:52:55.196Z",
-      "lastUpdated": "2026-04-27T19:02:14.680Z",
+      "registered": "2026-04-28T01:15:42.601Z",
+      "lastUpdated": "2026-04-28T01:28:20.517Z",
       "auth": true
     },
     {
@@ -138,72 +156,8 @@
       "pages": [
         "index"
       ],
-      "registered": "2026-04-21T03:52:55.425Z",
-      "lastUpdated": "2026-04-27T19:02:14.973Z",
-      "auth": false
-    },
-    {
-      "name": "notification-test",
-      "version": "2.1.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/notification-test/core.tsx",
-      "pages": [
-        "login",
-        "register",
-        "dashboard"
-      ],
-      "registered": "2026-04-21T03:52:55.633Z",
-      "lastUpdated": "2026-04-27T19:02:15.358Z",
-      "auth": true
-    },
-    {
-      "name": "roles-test",
-      "version": "2.1.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/roles-test/core.tsx",
-      "pages": [
-        "login",
-        "register",
-        "dashboard"
-      ],
-      "registered": "2026-04-21T03:52:56.622Z",
-      "lastUpdated": "2026-04-27T19:02:16.513Z",
-      "auth": true
-    },
-    {
-      "name": "scheduler-test",
-      "version": "2.0.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/scheduler-test/core.tsx",
-      "pages": [
-        "dashboard"
-      ],
-      "registered": "2026-04-21T03:52:56.877Z",
-      "lastUpdated": "2026-04-27T19:02:16.782Z",
-      "auth": false
-    },
-    {
-      "name": "upload-test",
-      "version": "1.0.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
-      "pages": [
-        "dashboard"
-      ],
-      "registered": "2026-04-21T03:52:57.130Z",
-      "lastUpdated": "2026-04-27T19:02:17.032Z",
-      "auth": false
-    },
-    {
-      "name": "portfolio-test",
-      "version": "1.0.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/portfolio-test/core.tsx",
-      "pages": [
-        "index"
-      ],
-      "registered": "2026-04-26T09:38:40.719Z",
-      "lastUpdated": "2026-04-27T19:02:15.517Z",
+      "registered": "2026-04-28T01:15:42.926Z",
+      "lastUpdated": "2026-04-28T01:28:20.800Z",
       "auth": false
     },
     {
@@ -216,25 +170,72 @@
         "about",
         "features"
       ],
-      "registered": "2026-04-26T13:23:45.478Z",
-      "lastUpdated": "2026-04-27T19:02:15.144Z",
+      "registered": "2026-04-28T01:15:43.117Z",
+      "lastUpdated": "2026-04-28T01:28:20.966Z",
       "auth": false
     },
     {
-      "name": "jo-payroll",
+      "name": "notification-test",
+      "version": "2.1.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/notification-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-04-28T01:15:43.426Z",
+      "lastUpdated": "2026-04-28T01:28:21.174Z",
+      "auth": true
+    },
+    {
+      "name": "portfolio-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/jo-payroll/core.tsx",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/portfolio-test/core.tsx",
       "pages": [
-        "index",
-        "job-database",
-        "cash-atm",
-        "sss-deductions",
-        "hdmf",
-        "appointments"
+        "index"
       ],
-      "registered": "2026-04-27T15:19:01.067Z",
-      "lastUpdated": "2026-04-27T19:11:18.282Z",
+      "registered": "2026-04-28T01:15:43.585Z",
+      "lastUpdated": "2026-04-28T01:28:21.332Z",
+      "auth": false
+    },
+    {
+      "name": "roles-test",
+      "version": "2.1.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/roles-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-04-28T01:15:44.563Z",
+      "lastUpdated": "2026-04-28T01:28:22.259Z",
+      "auth": true
+    },
+    {
+      "name": "scheduler-test",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/scheduler-test/core.tsx",
+      "pages": [
+        "dashboard"
+      ],
+      "registered": "2026-04-28T01:15:44.840Z",
+      "lastUpdated": "2026-04-28T01:28:22.472Z",
+      "auth": false
+    },
+    {
+      "name": "upload-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
+      "pages": [
+        "dashboard"
+      ],
+      "registered": "2026-04-28T01:15:45.250Z",
+      "lastUpdated": "2026-04-28T01:28:22.680Z",
       "auth": false
     }
   ]

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — JobOrderResource
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-04-27T19:11:18.068387Z
+// Generated: 2026-04-28T01:28:20.065143Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\JoPayroll;
@@ -36,6 +36,8 @@ class JobOrderResource extends JsonResource
             'last_name' => $this->last_name,
             'first_name' => $this->first_name,
             'middle_name' => $this->middle_name,
+            'appointment_date' => $this->appointment_date,
+            'appointment_order' => $this->appointment_order,
             'status' => $this->status,
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
