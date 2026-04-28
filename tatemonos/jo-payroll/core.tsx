@@ -435,7 +435,7 @@ $orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order
 return response()->json($orders);
 /* @arkzen:endpoint:appointments:end */
 
-/* @arkzen:layout:app
+/* @arkzen:layout:app */
 
 'use client'
 
@@ -578,7 +578,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
 /* @arkzen:layout:app:end */
 
-/* @arkzen:components:shared
+/* @arkzen:components:shared */
 
 'use client'
 
@@ -1055,7 +1055,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
 
 /* @arkzen:components:shared:end */
 
-/* @arkzen:animation
+/* @arkzen:animation */
 
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -1114,7 +1114,7 @@ export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement>) => {
 
 */
 
-/* @arkzen:page:index
+/* @arkzen:page:index */
 /* @arkzen:page:layout:app */
 
 const DashboardPage = () => {
@@ -1349,7 +1349,7 @@ const DashboardPage = () => {
 
 /* @arkzen:page:index:end */
 
-/* @arkzen:page:job-database
+/* @arkzen:page:job-database */
 /* @arkzen:page:layout:app */
 
 const JobDatabasePage = () => {
@@ -1487,7 +1487,7 @@ const JobDatabasePage = () => {
 
 /* @arkzen:page:job-database:end */
 
-/* @arkzen:page:cash-atm
+/* @arkzen:page:cash-atm */
 /* @arkzen:page:layout:app */
 
 const CashAtmPage = () => {
@@ -1595,7 +1595,7 @@ const CashAtmPage = () => {
 
 /* @arkzen:page:cash-atm:end */
 
-/* @arkzen:page:sss
+/* @arkzen:page:sss */
 /* @arkzen:page:layout:app */
 
 const SssPage = () => {
@@ -1700,7 +1700,7 @@ const SssPage = () => {
 
 /* @arkzen:page:sss:end */
 
-/* @arkzen:page:hdmf
+/* @arkzen:page:hdmf */
 /* @arkzen:page:layout:app */
 
 const HdmfPage = () => {
@@ -1808,7 +1808,7 @@ const HdmfPage = () => {
 
 /* @arkzen:page:hdmf:end */
 
-/* @arkzen:page:appointments
+/* @arkzen:page:appointments */
 /* @arkzen:page:layout:app */
 
 const AppointmentsPage = () => {
@@ -1913,7 +1913,7 @@ const AppointmentsPage = () => {
 
 /* @arkzen:page:appointments:end */
 
-/* @arkzen:page:payslip
+/* @arkzen:page:payslip */
 /* @arkzen:page:layout:app */
 
 const PayslipPage = () => {

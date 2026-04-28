@@ -2,79 +2,140 @@
 // ARKZEN CUSTOM LAYOUT — app
 // Generated from tatemono: jo-payroll
 
-// FIX: Import AppLayout from the generated components directory (relative to
-// the custom layout file at arkzen/core/layouts/custom/app.tsx).
-// The old import `@/components/layout` was wrong — that path doesn't exist.
-// AppLayout is generated into app/jo-payroll/components/_components.tsx,
-// but custom layouts live at arkzen/core/layouts/custom/ so we cannot
-// use a relative path to the app folder. The correct approach is to inline
-// AppLayout in the layout block itself.
+'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Menu, FileText, Database, Banknote, Building2, Landmark, Calendar } from 'lucide-react'
+import {
+  LayoutDashboard, Database, Banknote, Building2,
+  Landmark, CalendarDays, Menu, X, ChevronRight,
+  LogOut, Bell
+} from 'lucide-react'
 
-const APP_NAV_ITEMS = [
-  { href: '/jo-payroll', label: 'Dashboard', icon: FileText },
-  { href: '/jo-payroll/job-database', label: 'JO Database', icon: Database },
-  { href: '/jo-payroll/cash-atm', label: 'Cash / ATM', icon: Banknote },
-  { href: '/jo-payroll/sss-deductions', label: 'SSS', icon: Building2 },
-  { href: '/jo-payroll/hdmf', label: 'HDMF', icon: Landmark },
-  { href: '/jo-payroll/appointments', label: 'Appointments', icon: Calendar },
+const NAV_ITEMS = [
+  { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },
+  { href: '/jo-payroll/job-database', label: 'JO Database',  icon: Database        },
+  { href: '/jo-payroll/cash-atm',     label: 'Cash / ATM',   icon: Banknote        },
+  { href: '/jo-payroll/sss',          label: 'SSS',          icon: Building2       },
+  { href: '/jo-payroll/hdmf',         label: 'HDMF',         icon: Landmark        },
+  { href: '/jo-payroll/appointments', label: 'Appointments', icon: CalendarDays    },
+  { href: '/jo-payroll/payslip',      label: 'Payslip',      icon: Banknote        },
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const pathname = usePathname()
-  const router = useRouter()
-  const [sidebarOpen, setSidebarOpen] = useState(false)
+  const pathname  = usePathname()
+  const router    = useRouter()
+  const [open, setOpen]       = useState(false)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => { setMounted(true) }, [])
+
+  const currentLabel = NAV_ITEMS.find(n => n.href === pathname)?.label ?? 'J.O Payroll'
 
   return (
-    <div className="flex h-screen bg-neutral-50 overflow-hidden">
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setSidebarOpen(false)} />
+    <div className="flex h-screen bg-[#F4F5F7] overflow-hidden font-['DM_Sans',sans-serif]">
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+        .nav-pill { transition: all 0.2s cubic-bezier(.4,0,.2,1); }
+        .nav-pill:hover { transform: translateX(3px); }
+        .nav-pill.active { transform: translateX(0); }
+        .sidebar-glow { box-shadow: 4px 0 24px rgba(0,0,0,0.08); }
+      `}</style>
+
+      {/* Mobile overlay */}
+      {open && (
+        <div
+          className="fixed inset-0 bg-black/30 z-30 lg:hidden backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        />
       )}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-60 bg-white border-r border-neutral-100 flex flex-col transition-transform duration-200 lg:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <div className="px-5 py-5 border-b border-neutral-100">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-violet-600 rounded-lg flex items-center justify-center">
-              <FileText size={15} className="text-white" />
-            </div>
-            <div>
-              <p className="text-sm font-semibold text-neutral-900">J.O Payroll</p>
-              <p className="text-xs text-neutral-400 mt-0.5">Admin System</p>
-            </div>
+
+      {/* ── Sidebar ────────────────────────────────────────────── */}
+      <aside
+        className={`
+          fixed lg:static inset-y-0 left-0 z-40 w-[72px] bg-neutral-900 flex flex-col
+          sidebar-glow transition-all duration-300 lg:translate-x-0
+          ${open ? 'translate-x-0 w-60' : '-translate-x-full lg:translate-x-0'}
+        `}
+      >
+        {/* Logo */}
+        <div className="h-16 flex items-center justify-center border-b border-neutral-800 shrink-0">
+          <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
+            <span className="text-neutral-900 font-['Syne',sans-serif] font-800 text-sm">J.</span>
           </div>
         </div>
-        <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-          {APP_NAV_ITEMS.map(({ href, label, icon: Icon }) => {
+
+        {/* Nav */}
+        <nav className="flex-1 py-4 flex flex-col gap-1 px-2 overflow-y-auto">
+          {NAV_ITEMS.map(({ href, label, icon: Icon }) => {
             const active = pathname === href
             return (
               <button
                 key={href}
-                onClick={() => { router.push(href); setSidebarOpen(false) }}
-                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${active ? 'bg-violet-50 text-violet-700' : 'text-neutral-600 hover:bg-neutral-50'}`}
+                onClick={() => { router.push(href); setOpen(false) }}
+                title={label}
+                className={`nav-pill w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-sm font-medium group relative
+                  ${active
+                    ? 'active bg-white text-neutral-900'
+                    : 'text-neutral-400 hover:bg-neutral-800 hover:text-white'
+                  }`}
               >
-                <Icon size={16} />
-                {label}
+                <Icon size={18} className="shrink-0" />
+                <span className={`whitespace-nowrap overflow-hidden transition-all duration-200 ${open ? 'opacity-100 w-auto' : 'opacity-0 w-0 lg:hidden'}`}>
+                  {label}
+                </span>
+                {/* Tooltip for collapsed state on desktop */}
+                <span className="absolute left-full ml-3 px-2.5 py-1 bg-neutral-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity hidden lg:block z-50 border border-neutral-700">
+                  {label}
+                </span>
               </button>
             )
           })}
         </nav>
-        <div className="px-5 py-4 border-t border-neutral-100">
-          <p className="text-xs text-neutral-400">v1.0.0</p>
+
+        {/* Bottom logout */}
+        <div className="px-2 pb-4 shrink-0">
+          <button
+            className="nav-pill w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-neutral-500 hover:bg-neutral-800 hover:text-red-400 group relative"
+            title="Logout"
+          >
+            <LogOut size={18} className="shrink-0" />
+            <span className="absolute left-full ml-3 px-2.5 py-1 bg-neutral-900 text-white text-xs rounded-lg whitespace-nowrap opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity hidden lg:block z-50 border border-neutral-700">
+              Logout
+            </span>
+          </button>
         </div>
       </aside>
+
+      {/* ── Content ────────────────────────────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0">
-        <header className="h-14 bg-white border-b border-neutral-100 flex items-center px-5 gap-3 flex-shrink-0">
-          <button onClick={() => setSidebarOpen(!sidebarOpen)} className="lg:hidden p-1.5 rounded-lg hover:bg-neutral-100 transition-colors">
-            <Menu size={18} className="text-neutral-600" />
+        {/* Top bar */}
+        <header className="h-16 bg-white border-b border-neutral-100 flex items-center px-6 gap-4 shrink-0 shadow-sm">
+          <button
+            onClick={() => setOpen(!open)}
+            className="lg:hidden p-2 rounded-xl hover:bg-neutral-100 transition-colors"
+          >
+            {open ? <X size={18} /> : <Menu size={18} />}
           </button>
-          <div className="flex-1" />
-          <div className="text-xs text-neutral-400 font-medium">
-            {new Date().toLocaleDateString('en-PH', { weekday: 'short', month: 'short', day: 'numeric' })}
+          <div className="flex-1">
+            <p className="text-xs text-neutral-400 font-medium uppercase tracking-widest">J.O. PAYROLL SYSTEM</p>
+            <h1 className="text-sm font-semibold text-neutral-900 font-['Syne',sans-serif] -mt-0.5">{currentLabel}</h1>
+          </div>
+          <div className="flex items-center gap-3">
+            <button className="relative p-2 rounded-xl hover:bg-neutral-100 transition-colors">
+              <Bell size={18} className="text-neutral-500" />
+              <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />
+            </button>
+            <div className="w-9 h-9 bg-neutral-900 rounded-xl flex items-center justify-center">
+              <span className="text-white text-xs font-semibold font-['Syne',sans-serif]">LGU</span>
+            </div>
           </div>
         </header>
-        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+
+        {/* Page content */}
+        <main className="flex-1 overflow-y-auto p-6">
+          {mounted ? children : null}
+        </main>
       </div>
     </div>
   )
