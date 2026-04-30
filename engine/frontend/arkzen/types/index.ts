@@ -17,6 +17,19 @@ export interface ArkzenAuthSeedUser {
   role: string
 }
 
+export interface ArkzenPWAMeta {
+  name: string
+  short_name: string
+  description: string
+  theme_color: string
+  background_color: string
+  display: 'standalone' | 'fullscreen' | 'minimal-ui' | 'browser'
+  orientation?: 'portrait' | 'landscape' | 'any'
+  start_url: string
+  offline: boolean
+  icons?: { src: string; sizes: string; type: string; purpose?: string }[]
+}
+
 export interface ArkzenMeta {
   name: string
   version: string
@@ -24,6 +37,7 @@ export interface ArkzenMeta {
   auth: boolean
   dependencies: string[]
   favicon?: string
+  pwa?: ArkzenPWAMeta
   authSeed?: {
     users: ArkzenAuthSeedUser[]
   }

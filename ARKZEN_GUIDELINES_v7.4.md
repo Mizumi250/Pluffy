@@ -1,9 +1,10 @@
-# ARKZEN GUIDELINES DOCUMENT v7.1
+# ARKZEN GUIDELINES DOCUMENT v7.4
 ## For Claude AI — Generating Tatemono Files
 
-**UPDATED:** 2026-04-27  
-**WHAT:** Bug fixes to v7.0 (corrected syntax errors)  
-**VERIFIED AGAINST:** All 17 active tatemonos (auth-test, body-endpoint-handler, body-mail-notification, broadcast-test, crud-test, errors-test, events-test, inventory-management, job-test, mail-test, middleware-test, new-updates-styles, notification-test, portfolio-test, roles-test, scheduler-test, upload-test)
+**UPDATED:** 2026-04-28  
+**WHAT:** Import placement rules, PWA/offline DSL (v7.5 implemented early), `'use client'` rules, custom layout rules, store-in-components rule, `@arkzen:page` declaration syntax fix, layout collision fix, font personality rules, image placement rules, strict API block rules  
+**VERIFIED AGAINST:** All 18 active tatemonos + barbershop-booking (19th tatemono)  
+**NEW SECTIONS:** 3A (Import Placement), 3B (`'use client'` Rules), 19A (Custom Layout Best Practices), 19B (Layout Collision Fix), 30A (Font Rules), 30B (Image Placement), 30C (Strict API Rules)
 
 ---
 
@@ -245,7 +246,7 @@ blue, emerald, violet, amber, rose — use Tailwind's 600–700 shades for solid
 ```
 1. One Tatemono = one complete isolated system
 2. File extension is always .tsx
-3. File lives at: tatemonos/<name>/core.tsx
+3. File lives at: tatemonos/<n>/core.tsx
 4. Tatemono name is always lowercase with hyphens
    CORRECT:   pos-system
    CORRECT:   project-management
@@ -279,9 +280,237 @@ blue, emerald, violet, amber, rose — use Tailwind's 600–700 shades for solid
    @arkzen:animation                (optional, once)
 
 7. Everything is TypeScript strictly typed — no 'any'
-8. All imports go inside @arkzen:components blocks
+8. All imports go inside @arkzen:components blocks or @arkzen:layout blocks (see Section 3A)
 9. Each Tatemono is a fully self-contained isolated system
 10. Tatemonos do NOT share anything with each other
+```
+
+---
+
+## SECTION 3A — ⚠️ IMPORT PLACEMENT RULES (NEW — CRITICAL)
+
+This is the #1 source of bugs in AI-generated tatemonos. Follow these rules exactly.
+
+### The Golden Rule
+
+> **Imports belong in the block where they are used. Never in `@arkzen:page` blocks.**
+
+The engine generates each `@arkzen:page` as a separate Next.js page file. The engine automatically injects the component code from `@arkzen:components` into every page. If you put imports inside `@arkzen:page`, they collide with what the engine already injected.
+
+### Where imports go
+
+| Block | Can have imports? | Notes |
+|-------|------------------|-------|
+| `@arkzen:components:*` | ✅ YES — this is the primary home for all imports | Engine strips duplicate React imports automatically |
+| `@arkzen:layout:*` | ✅ YES — layout blocks are self-contained files | Must include all imports the layout needs |
+| `@arkzen:store:*` | ✅ YES — store files are separate generated files | Include `import { create } from 'zustand'` here |
+| `@arkzen:animation` | ✅ YES — animation file is a separate generated file | Import gsap/framer here |
+| `@arkzen:page:*` | ❌ NO — page blocks must NOT contain import statements | The engine provides React, layout, and all component code |
+| `@arkzen:endpoint:*` | ❌ NO — PHP blocks only, no JS/TS imports | |
+| `@arkzen:handler:*` | ❌ NO — PHP blocks only | |
+
+### What the engine does automatically (do NOT duplicate these)
+
+The engine's router AUTOMATICALLY adds to every generated page file:
+```tsx
+'use client'
+import React, { useRef, useEffect, ...detected_hooks } from 'react'
+import { motion } from 'framer-motion'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'  // or AuthLayout or CustomLayout
+// + all component code from @arkzen:components blocks (inline, not as import)
+```
+
+**Never manually write any of the above in `@arkzen:page` blocks.** The engine already handles them.
+
+### Correct pattern — all imports in `@arkzen:components`
+
+```tsx
+/* @arkzen:components:shared */
+
+'use client'
+
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
+import { Plus, Trash2, Edit2, Search, ChevronDown } from 'lucide-react'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+
+// Types, constants, utilities, and shared components defined here...
+export interface MyModel { ... }
+export const MY_CONSTANTS = [...]
+export const MySharedComponent = () => { ... }
+
+/* @arkzen:components:shared:end */
+```
+
+```tsx
+/* @arkzen:page:dashboard
+/* @arkzen:page:layout:app */
+
+// NO imports here — they come from @arkzen:components above
+
+const DashboardPage = () => {
+  const [data, setData] = useState([])  // useState is available — engine detected it
+  
+  return (
+    <div>
+      <MySharedComponent />   {/* available — injected from @arkzen:components */}
+    </div>
+  )
+}
+
+export default DashboardPage
+
+/* @arkzen:page:dashboard:end */
+```
+
+### React hooks auto-detection
+
+The engine scans `@arkzen:components` and detects all used React hooks. It builds the merged `import React, { useState, useEffect, ... }` automatically. This means:
+
+- If you use `useState` in components → available in all pages
+- If you use `useEffect` in components → available in all pages
+- If you need a hook ONLY in a specific page, add a dummy usage or usage comment in components
+- `useRef` and `useEffect` are always added by the engine (needed for animations)
+
+### Multiple `@arkzen:components` blocks
+
+If you have multiple `@arkzen:components` blocks, ALL of them are merged and injected into every page. This means you only need to declare each import ONCE across all component blocks combined.
+
+```tsx
+/* @arkzen:components:types */
+'use client'
+import React, { useState, useEffect } from 'react'
+import { Plus, Trash2 } from 'lucide-react'
+
+export interface Product { ... }
+export type ProductStatus = 'active' | 'inactive'
+/* @arkzen:components:types:end */
+
+/* @arkzen:components:ui */
+// No need to re-import React or lucide — already imported above
+// Engine merges all components blocks into one file
+export const ProductCard = ({ product }: { product: Product }) => { ... }
+export const StatusBadge = ({ status }: { status: ProductStatus }) => { ... }
+/* @arkzen:components:ui:end */
+```
+
+---
+
+## SECTION 3B — ⚠️ `'use client'` DIRECTIVE RULES (NEW — CRITICAL)
+
+### The Rule
+
+```
+'use client' belongs in @arkzen:components and @arkzen:layout blocks.
+NEVER put 'use client' in @arkzen:page blocks.
+NEVER put 'use client' in @arkzen:store blocks.
+```
+
+### Why
+
+The engine prepends `'use client'` automatically to all generated files:
+- `_components.tsx` — engine adds `'use client'` at top
+- `page.tsx` (each page) — engine adds `'use client'` at top
+- Custom layout files — engine adds `'use client'` at top
+
+If you add `'use client'` inside `@arkzen:page`, it becomes a duplicate directive inside the generated file body — which causes Next.js to crash.
+
+### The engine strips 'use client' from component code
+
+The router automatically strips `'use client'` from `@arkzen:components` raw content before injecting into pages. This means:
+
+✅ Writing `'use client'` in `@arkzen:components` is safe — it will be stripped when inlined into pages, but it documents intent.
+
+❌ Writing `'use client'` in `@arkzen:page` blocks is NOT safe — the engine does NOT strip it from page blocks.
+
+### Summary table
+
+| Block | Write `'use client'`? | Reason |
+|-------|----------------------|--------|
+| `@arkzen:components:*` | ✅ Write it (optional but good practice) | Engine strips it from inline injection |
+| `@arkzen:layout:*` | ✅ Write it (required) | Layout is a standalone file, needs directive |
+| `@arkzen:page:*` | ❌ Never write it | Engine adds it at top; duplicate = crash |
+| `@arkzen:store:*` | ❌ Never write it | Zustand stores are not React components |
+| `@arkzen:animation` | ❌ Never write it | Animation file is server-safe utility |
+
+---
+
+## SECTION 3C — ⚠️ ZUSTAND STORE RULES (NEW — CRITICAL)
+
+### The Store-in-Components Rule
+
+**When pages need to use a Zustand store, the store code MUST be defined inside `@arkzen:components`, not only in `@arkzen:store`.**
+
+This is because the engine generates each page as a standalone file. `@arkzen:store` creates a separate `/stores/` file. But that store file is NOT automatically imported into page files — you would need to manually import it, which creates cross-file dependencies the engine doesn't wire.
+
+**The correct approach:**
+
+```tsx
+/* @arkzen:store:myStore */
+
+import { create } from 'zustand'
+
+// Store defined here too — this creates the standalone /stores/myStore.ts file
+// But pages won't auto-import from it
+
+/* @arkzen:store:myStore:end */
+
+/* @arkzen:components:shared */
+
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { create } from 'zustand'  // Import create here too
+
+// ─── Store (inline in components so all pages can use it) ─────────────────────
+export interface MyItem { id: number; name: string }
+
+interface MyState {
+  items: MyItem[]
+  setItems: (items: MyItem[]) => void
+  addItem: (item: MyItem) => void
+}
+
+export const useMyStore = create<MyState>((set) => ({
+  items: [],
+  setItems: (items) => set({ items }),
+  addItem: (item) => set((state) => ({ items: [...state.items, item] })),
+}))
+
+// ─── Other shared components ──────────────────────────────────────────────────
+export const MyComponent = () => {
+  const { items } = useMyStore()
+  return <div>{items.length} items</div>
+}
+
+/* @arkzen:components:shared:end */
+```
+
+**Or skip `@arkzen:store` entirely** and just define the store inside `@arkzen:components`. The `@arkzen:store` block is useful when you want a standalone store file for external use, but for tatemono-internal pages, `@arkzen:components` is the source of truth.
+
+### Alternative: Single-block approach (simpler, recommended for AI generation)
+
+For most tatemonos, skip `@arkzen:store` entirely and define stores directly in `@arkzen:components`:
+
+```tsx
+/* @arkzen:components:shared */
+
+'use client'
+
+import React, { useState, useEffect, useMemo } from 'react'
+import { create } from 'zustand'
+import { Plus, Trash2 } from 'lucide-react'
+
+// Store lives here — accessible by all pages
+export const useOrderStore = create<OrderState>((set) => ({ ... }))
+
+// Types, constants, components also live here
+export interface Order { ... }
+export const OrderCard = () => { ... }
+
+/* @arkzen:components:shared:end */
 ```
 
 ---
@@ -311,7 +540,7 @@ When `auth: false`:
 - Use `arkzenFetch` only if the Tatemono needs to call its own public API
 
 When `auth: true`:
-- You MUST call `setActiveTatemono('<name>')` once in the first `@arkzen:components` block:
+- You MUST call `setActiveTatemono('<n>')` once in the first `@arkzen:components` block:
   ```tsx
   import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
   if (typeof window !== 'undefined') {
@@ -716,6 +945,8 @@ return $next($request);
 
 Zustand store definitions for frontend state management.
 
+> ⚠️ See Section 3C for the critical rule: stores must ALSO be defined in `@arkzen:components` for pages to use them. `@arkzen:store` alone is NOT enough.
+
 ```tsx
 /* @arkzen:store:cartStore
 
@@ -1097,8 +1328,202 @@ export const DashboardLayout: React.FC<{ children: React.ReactNode }> = ({ child
 
 **Layout Rules:**
 - Must export component named `<LayoutName>Layout` (PascalCase)
+  - `layout:app` → export `AppLayout`
+  - `layout:dashboard` → export `DashboardLayout`
+  - `layout:admin` → export `AdminLayout`
 - Must accept `children: React.ReactNode` prop
-- Apply in pages: `/* @arkzen:page:dashboard /* @arkzen:page:layout:dashboard */`
+- Must include `'use client'` at the top (layouts are standalone files)
+- Apply in pages: `/* @arkzen:page:layout:dashboard */`
+
+---
+
+## SECTION 19A — ⚠️ CUSTOM LAYOUT BEST PRACTICES (NEW — CRITICAL)
+
+### Where custom layouts live — COLLISION FIXED (v7.3)
+
+The engine now writes custom layout files **namespaced per tatemono**:
+```
+engine/frontend/arkzen/core/layouts/custom/<tatemono-name>-<layout-name>.tsx
+```
+
+This means **each tatemono gets its own isolated layout file** — no more collisions.
+
+**How it works:**
+```
+jo-payroll   + @arkzen:layout:app  → custom/jo-payroll-app.tsx   → exports AppLayout
+barbershop   + @arkzen:layout:app  → custom/barbershop-app.tsx   → exports AppLayout
+pos-system   + @arkzen:layout:app  → custom/pos-system-app.tsx   → exports AppLayout
+```
+
+All three export `AppLayout` but from different files — zero collision ever.
+
+**Naming convention (layout name itself):**
+```
+@arkzen:layout:app       ← standard — works for all tatemonos now (no collision)
+@arkzen:layout:sidebar   ← alternative name
+@arkzen:layout:mobile    ← for mobile-first layouts
+```
+
+### How the engine references custom layouts in pages
+
+When a page declares `/* @arkzen:page:layout:app */`, the engine generates:
+```tsx
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
+```
+(for the jo-payroll tatemono)
+
+The import path is: `@/arkzen/core/layouts/custom/<tatemono-name>-<layout-name>`  
+The import component is always: `<PascalCase(layout-name)>Layout`
+
+This means:
+- `@arkzen:layout:app` in jo-payroll → file `jo-payroll-app.tsx` → import `AppLayout`
+- `@arkzen:layout:app` in barbershop → file `barbershop-app.tsx` → import `AppLayout`
+- `@arkzen:layout:sidebar` in pos-system → file `pos-system-sidebar.tsx` → import `SidebarLayout`
+
+### Custom layout CANNOT import from @arkzen:components
+
+Custom layout files are written to `arkzen/core/layouts/custom/`. Page files are written to `app/<tatemono-name>/`. These are different directories. A custom layout file **cannot** import components from `@/app/<tatemono-name>/components/_components` because that creates a circular or invalid dependency.
+
+**The correct pattern: Self-contained layouts**
+
+All components the layout needs (navbar, sidebar, navigation items, etc.) must be **inlined directly in the layout block itself**. Do not try to import from `@arkzen:components`.
+
+```tsx
+/* @arkzen:layout:app
+
+'use client'
+
+import React, { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, Settings, Users } from 'lucide-react'
+
+// ── Nav config inlined here (cannot import from @arkzen:components) ──────────
+const NAV_ITEMS = [
+  { href: '/my-app', label: 'Home', icon: Home },
+  { href: '/my-app/users', label: 'Users', icon: Users },
+  { href: '/my-app/settings', label: 'Settings', icon: Settings },
+]
+
+// ── Sidebar inlined here ──────────────────────────────────────────────────────
+const Sidebar = () => {
+  const pathname = usePathname()
+  const router = useRouter()
+  return (
+    <aside className="w-60 bg-white border-r border-neutral-100 flex flex-col">
+      <nav className="flex-1 px-3 py-4">
+        {NAV_ITEMS.map(({ href, label, icon: Icon }) => (
+          <button
+            key={href}
+            onClick={() => router.push(href)}
+            className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+              pathname === href ? 'bg-blue-50 text-blue-700' : 'text-neutral-600 hover:bg-neutral-50'
+            }`}
+          >
+            <Icon size={16} />
+            {label}
+          </button>
+        ))}
+      </nav>
+    </aside>
+  )
+}
+
+// ── Main Layout export ────────────────────────────────────────────────────────
+export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  return (
+    <div className="flex h-screen bg-neutral-50 overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 overflow-y-auto p-6">{children}</main>
+    </div>
+  )
+}
+
+/* @arkzen:layout:app:end */
+```
+
+### Custom layout with mobile sidebar toggle (complete pattern)
+
+```tsx
+/* @arkzen:layout:app
+
+'use client'
+
+import React, { useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Menu, X } from 'lucide-react'
+
+// Replace these nav items with your tatemono's actual routes
+const APP_NAV = [
+  { href: '/my-app', label: 'Dashboard' },
+  { href: '/my-app/records', label: 'Records' },
+  { href: '/my-app/reports', label: 'Reports' },
+]
+
+export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const pathname = usePathname()
+  const router = useRouter()
+  const [open, setOpen] = useState(false)
+
+  return (
+    <div className="flex h-screen bg-neutral-50 overflow-hidden">
+      {/* Mobile overlay */}
+      {open && (
+        <div className="fixed inset-0 bg-black/20 z-30 lg:hidden" onClick={() => setOpen(false)} />
+      )}
+
+      {/* Sidebar */}
+      <aside className={`fixed lg:static inset-y-0 left-0 z-40 w-60 bg-white border-r border-neutral-100 flex flex-col transition-transform duration-200 lg:translate-x-0 ${open ? 'translate-x-0' : '-translate-x-full'}`}>
+        <div className="px-5 py-4 border-b border-neutral-100">
+          <p className="text-sm font-semibold text-neutral-900">My App</p>
+        </div>
+        <nav className="flex-1 px-3 py-4 space-y-0.5">
+          {APP_NAV.map(({ href, label }) => (
+            <button
+              key={href}
+              onClick={() => { router.push(href); setOpen(false) }}
+              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                pathname === href ? 'bg-neutral-900 text-white' : 'text-neutral-600 hover:bg-neutral-50'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </nav>
+      </aside>
+
+      {/* Content area */}
+      <div className="flex-1 flex flex-col min-w-0">
+        <header className="h-14 bg-white border-b border-neutral-100 flex items-center px-5">
+          <button onClick={() => setOpen(!open)} className="lg:hidden p-1.5 rounded-lg hover:bg-neutral-100 mr-3">
+            <Menu size={18} className="text-neutral-600" />
+          </button>
+          <div className="flex-1" />
+        </header>
+        <main className="flex-1 overflow-y-auto p-6">{children}</main>
+      </div>
+    </div>
+  )
+}
+
+/* @arkzen:layout:app:end */
+```
+
+### Page layout declaration syntax
+
+```tsx
+/* @arkzen:page:dashboard
+/* @arkzen:page:layout:app */
+
+const DashboardPage = () => {
+  return <div>...</div>
+}
+
+export default DashboardPage
+
+/* @arkzen:page:dashboard:end */
+```
+
+**Critical:** The layout declaration `/* @arkzen:page:layout:app */` must be on its own line immediately after the page opening marker. It uses `*/` to close the comment inline — this is intentional and parsed by the engine.
 
 ---
 
@@ -1184,15 +1609,7 @@ Page definitions.
 /* @arkzen:page:dashboard
 /* @arkzen:page:layout:auth */
 
-'use client'
-
-import React, { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LayoutDashboard } from 'lucide-react'
-
 const DashboardPage = () => {
-  const router = useRouter()
   const { user } = useAuthStore()
   
   return (
@@ -1212,6 +1629,17 @@ export default DashboardPage
 - Default to `layout:guest` if not specified
 - Export default component named `<PageName>Page` (PascalCase)
 - One `/* @arkzen:page:name ... :end */` block per page
+- **NO imports inside page blocks** — see Section 3A
+- **NO `'use client'` inside page blocks** — see Section 3B
+- All hooks (useState, useEffect, etc.) are available because the engine injects component code
+
+**What's automatically available inside page blocks:**
+```
+React, useState, useEffect, useMemo, useCallback (detected from @arkzen:components)
+useRef, useEffect (always added by engine for animations)
+motion (from framer-motion, always added)
+All exports from @arkzen:components blocks (types, stores, components, utilities)
+```
 
 ---
 
@@ -1221,8 +1649,6 @@ Custom error handlers (Next.js special files).
 
 ```tsx
 /* @arkzen:error:404
-
-'use client'
 
 import React from 'react'
 import Link from 'next/link'
@@ -1277,26 +1703,36 @@ export default function Error({ error, reset }) {
 
 ## SECTION 23 — @arkzen:components:identifier
 
-Shared utilities, types, constants.
+Shared utilities, types, constants, and components. **This is the heart of every Tatemono.**
 
 ```tsx
 /* @arkzen:components:shared
 
 'use client'
 
-import React from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-import { useWebSocket } from '@/arkzen/core/hooks/useWebSocket'
-import { Loading, Badge, Avatar } from '@/arkzen/core/components'
-import { ChevronRight, Plus, Trash2 } from 'lucide-react'
+import { create } from 'zustand'
+import { ChevronRight, Plus, Trash2, Edit2, Search } from 'lucide-react'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
 
 // Activate auth context (only if auth: true)
-if (typeof window !== 'undefined') {
-  setActiveTatemono('your-tatemono-name')
+// if (typeof window !== 'undefined') { setActiveTatemono('your-tatemono-name') }
+
+// ─── Store (define here so pages can use it) ─────────────────────────────────
+interface AppState {
+  items: Product[]
+  setItems: (items: Product[]) => void
 }
 
-// Types
+export const useAppStore = create<AppState>((set) => ({
+  items: [],
+  setItems: (items) => set({ items }),
+}))
+
+// ─── Types ───────────────────────────────────────────────────────────────────
 export interface Product {
   id: string
   name: string
@@ -1310,15 +1746,15 @@ export interface ApiResponse<T> {
   errors?: string[]
 }
 
-// Constants
+// ─── Constants ───────────────────────────────────────────────────────────────
 export const PRODUCT_CATEGORIES = ['Electronics', 'Books', 'Clothing']
-export const API_BASE = '/api/your-tatemono'
+export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
 
-// Utilities
+// ─── Utilities ───────────────────────────────────────────────────────────────
 export const formatPrice = (price: number) => `$${price.toFixed(2)}`
 export const truncate = (str: string, len: number) => str.length > len ? str.slice(0, len) + '...' : str
 
-// Shared Components
+// ─── Shared Components ───────────────────────────────────────────────────────
 export const PageHeader: React.FC<{ title: string; action?: React.ReactNode }> = ({ title, action }) => (
   <div className="flex items-center justify-between mb-8">
     <h1 className="text-2xl font-bold text-neutral-900">{title}</h1>
@@ -1330,11 +1766,13 @@ export const PageHeader: React.FC<{ title: string; action?: React.ReactNode }> =
 ```
 
 **Components Rules:**
-- Must use `'use client'` directive
+- Must use `'use client'` directive (engine strips it when inlining into pages, but keep it for clarity)
+- Put ALL imports here — this is the only place imports belong
+- Define stores here (not just in `@arkzen:store`) so pages can access them
 - Export shared types, constants, utilities, components
 - Available across all pages in tatemono
 - One `@arkzen:components` block per identifier/group
-- Common identifiers: `shared`, `admin`, `public`, `dashboard`
+- Multiple blocks are all merged into one `_components.tsx` file
 
 ---
 
@@ -1392,7 +1830,7 @@ export const itemVariants = {
 
 ## SECTION 25 — ASSETS FOLDER
 
-Store static media at `tatemonos/<name>/assets/`. Auto-categorized:
+Store static media at `tatemonos/<n>/assets/`. Auto-categorized:
 
 ```
 assets/
@@ -1425,10 +1863,14 @@ import Image from 'next/image'
 
 ## SECTION 26 — AVAILABLE IMPORTS
 
+These are valid import paths inside `@arkzen:components` blocks:
+
 **Core Arkzen:**
 ```tsx
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useWebSocket } from '@/arkzen/core/hooks/useWebSocket'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
 ```
 
 **UI Components:**
@@ -1455,9 +1897,22 @@ import { SparklesIcon, AcademicCapIcon } from '@heroicons/react/24/outline'
 import { StarIcon } from '@heroicons/react/24/solid'
 ```
 
+**Next.js (use in components, NOT in pages):**
+```tsx
+import { useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
+import Image from 'next/image'
+import Link from 'next/link'
+```
+
+**Zustand:**
+```tsx
+import { create } from 'zustand'
+```
+
 ---
 
-## SECTION 27 — ACTIVE TATEMONOS (17 Total)
+## SECTION 27 — ACTIVE TATEMONOS (19 Total)
 
 | Name | Version | Auth | Purpose |
 |------|---------|------|---------|
@@ -1478,6 +1933,8 @@ import { StarIcon } from '@heroicons/react/24/solid'
 | body-mail-notification | 1.0.0 | ✓ | Mail blade body + notification toMail_body injection |
 | portfolio-test | 1.0.0 | ✗ | Static portfolio showcase |
 | new-updates-styles | 2.0.0 | ✗ | CSS Modules, custom components |
+| **jo-payroll** | **1.0.0** | **✗** | **Job Order payroll, deductions, LGU management** |
+| **barbershop-booking** | **1.0.0** | **✗** | **Barbershop appointment booking with bottom sheet UX** |
 
 ---
 
@@ -1510,31 +1967,473 @@ npm run dev
 
 ---
 
-## SECTION 29 — DESIGN EXAMPLES
+## SECTION 29 — AI GENERATION CHECKLIST
 
-[See Section 2C for Button, Card, Table, Form, Page Header examples]
+Before submitting a generated Tatemono, verify every item:
+
+```
+IMPORTS
+□ All imports are inside @arkzen:components or @arkzen:layout blocks
+□ NO import statements inside @arkzen:page blocks
+□ NO duplicate imports across components blocks (merge them)
+□ Each package imported ONCE total across all component blocks
+
+'use client'
+□ 'use client' written in @arkzen:components (fine — engine strips it)
+□ 'use client' written in @arkzen:layout (required)
+□ NO 'use client' in @arkzen:page blocks
+□ NO 'use client' in @arkzen:store blocks
+
+STORES
+□ If pages use a store, the store is defined in @arkzen:components (not only @arkzen:store)
+□ import { create } from 'zustand' is in @arkzen:components if store is there
+□ Store hook exported as useXxxStore
+
+CUSTOM LAYOUTS
+□ Layout component named <PascalCase(layout-name)>Layout
+□ Layout accepts children: React.ReactNode
+□ Layout is self-contained — no imports from @arkzen:components
+□ All nav items, sidebar, header code is inlined in the layout block
+□ Layout name is unique enough to not conflict with other tatemonos
+
+PAGES
+□ Every page has /* @arkzen:page:layout:xxx */ on its second line
+□ Page component exported as default
+□ Page component named <PageName>Page (PascalCase)
+□ No import statements inside page blocks
+□ All used types/stores/components come from @arkzen:components
+
+SECTION ORDER
+□ meta → config → database → api → routes → middleware → store → realtime →
+  events → listener → jobs → notifications → mail → console → endpoint →
+  handler → layout → components → style → page → error → animation
+```
 
 ---
 
-## CHANGELOG v7.0 → v7.1
 
-**Fixed Critical Bugs:**
-- ✓ @arkzen:database column format — CHANGED from list array to dict/map format
-- ✓ @arkzen:api endpoint format — CHANGED from list array to dict/map format with route (not path)
-- ✓ @arkzen:api resource/policy/factory — CHANGED to boolean (true/false, not string names)
-- ✓ arkzenFetch import path — CHANGED from @/arkzen/core/lib/arkzenFetch to @/arkzen/core/stores/authStore
+---
 
-**Clarifications:**
-- ✓ @arkzen:mail — Clarified blade HTML body placement (after YAML `*/`, not in field)
-- ✓ @arkzen:notifications — Clarified channels as array format [database, mail, broadcast]
-- ✓ Role endpoints — Clarified adminOnly, userOnly, promote, demote as dict keys
-- ✓ @arkzen:store — Updated to modern Zustand import: `import { create } from 'zustand'`
-- ✓ Middleware format — Added clear examples with body injection
-- ✓ Validation rules — Documented Laravel validation format (pipe-separated)
-- ✓ Response types — Documented single, collection, paginated, message types
+## SECTION 19B — ⚠️ CUSTOM LAYOUT COLLISION FIX (v7.3 — CRITICAL)
 
-**Verified Against All 17 Tatemonos:**
-Every example in this guideline has been cross-referenced with actual tatemono code to ensure accuracy.
+**The problem (pre-v7.3):** Both `jo-payroll` and `barbershop-booking` used `@arkzen:layout:app`. Both wrote to `custom/app.tsx`. The last tatemono to rebuild would overwrite the other's layout — causing the wrong header/sidebar to appear in the wrong tatemono.
+
+**The fix (v7.3):** The router now namespaces every custom layout file by tatemono name. You NEVER need to manually rename your layout blocks. Just use `@arkzen:layout:app` and the engine handles isolation automatically.
+
+**What changed in router.ts:**
+- Layout write path: `custom/app.tsx` → `custom/{tatName}-app.tsx`
+- Layout import path updated to match
+
+**Migration:** If you have old tatemonos using `@arkzen:layout:app`, they will automatically get their own namespaced file on next rebuild. No changes to your tatemono files needed.
+
+---
+
+## SECTION 30A — ⚠️ FONT RULES (NEW — CRITICAL)
+
+**NEVER use the same font across every tatemono.** Every tatemono must have a font personality matching its purpose and audience.
+
+### How to load fonts
+
+Load via Google Fonts `@import` inside your page's inline `<style>` tag:
+```tsx
+return (
+  <>
+    <style>{`
+      @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@400;500&display=swap');
+      .my-root { font-family: 'Syne', sans-serif; }
+    `}</style>
+    <div className="my-root">...</div>
+  </>
+)
+```
+
+Or via `@arkzen:style` global CSS block:
+```
+/* @arkzen:style
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+body { font-family: 'Inter', sans-serif; }
+*/
+```
+
+### Font personality guide
+
+| Tatemono type | Primary font | Accent/Mono font |
+|---|---|---|
+| LGU / Government / Formal | Inter, IBM Plex Sans, Source Sans 3 | IBM Plex Mono |
+| Barbershop / Grooming | Syne | DM Mono |
+| Restaurant / Food | Playfair Display | Lato |
+| Tech / SaaS / Dashboard | Geist, Space Grotesk | JetBrains Mono |
+| Portfolio / Creative | Fraunces, Cabinet Grotesk | Clash Display |
+| E-commerce / Shop | DM Sans, Plus Jakarta Sans | DM Mono |
+| Medical / Clinic | Nunito, Open Sans | — |
+| Fitness / Gym | Bebas Neue | Inter |
+| Real Estate | Cormorant Garamond | Raleway |
+| Education / School | Nunito, Quicksand | Source Code Pro |
+| Finance / Banking | Inter | IBM Plex Mono |
+| Events / Ticketing | Clash Display | Space Mono |
+
+### Rules
+```
+1. Pick ONE heading font and ONE body/mono font per tatemono
+2. Load only the weights you actually use (reduces Google Fonts request size)
+3. Always include a fallback: 'Syne', sans-serif
+4. Title of the tatemono/brand should use the heading font
+5. Data-heavy fields (codes, prices, IDs) should use the mono font
+6. Never mix more than 2 font families in one tatemono
+```
+
+---
+
+## SECTION 30B — ⚠️ IMAGE PLACEMENT RULES (NEW)
+
+### Option A: `assets/` folder (recommended for production)
+
+```
+tatemonos/
+  my-tatemono/
+    core.tsx
+    assets/              ← create this folder
+      logo.png
+      hero.jpg
+      barber-bg.webp
+      team/
+        marcus.jpg
+        james.jpg
+```
+
+Engine automatically copies `tatemonos/<name>/assets/` → `public/tatemonos/<name>/` on every build.
+
+**Usage in JSX:**
+```tsx
+<img src="/tatemonos/my-tatemono/logo.png" alt="Logo" />
+<img src="/tatemonos/my-tatemono/team/marcus.jpg" alt="Marcus" />
+
+// With Next.js Image component
+import Image from 'next/image'
+<Image src="/tatemonos/my-tatemono/hero.jpg" alt="Hero" width={800} height={600} />
+```
+
+### Option B: Online placeholder images (for prototyping/seeding)
+
+```tsx
+// Pravatar — realistic person photos (by index 1-70)
+"https://i.pravatar.cc/150?img=11"     // 150x150 avatar
+"https://i.pravatar.cc/300?img=33"     // 300x300 larger
+
+// UI Avatars — initials-based
+"https://ui-avatars.com/api/?name=Marcus+Lee&background=0a0a0a&color=fff&size=150"
+
+// Unsplash — scene/background/product photos
+"https://images.unsplash.com/photo-{PHOTO_ID}?w=400&q=80"
+
+// Picsum — random beautiful photos
+"https://picsum.photos/400/300?random=1"
+"https://picsum.photos/seed/barbershop/400/300"  // consistent per seed word
+```
+
+### Option C: Seeded DB URLs (dynamic per record)
+
+Store URL in database seed and load from API:
+```yaml
+seeds:
+  - { name: "Marcus Lee", photo: "https://i.pravatar.cc/150?img=11" }
+  - { name: "James Rivera", photo: "https://i.pravatar.cc/150?img=15" }
+```
+
+Render from fetched data:
+```tsx
+{barber.photo && <img src={barber.photo} className="w-12 h-12 rounded-full object-cover" />}
+```
+
+### Rules
+```
+1. Always add width + height or use object-cover for images — prevents layout shift
+2. Always add alt text — accessibility + SEO
+3. For circular avatars: rounded-full + object-cover + fixed w/h
+4. For seeded images: store URL in DB photo column, nullable
+5. For production: use assets/ folder — not online URLs
+6. For prototyping: pravatar.cc is reliable and free, no API key needed
+```
+
+---
+
+## SECTION 30C — ⚠️ STRICT API BLOCK RULES (NEW — CRITICAL)
+
+These rules are the #1 source of YAML parse errors in tatemonos.
+
+### Rule 1: One resource per block — ALWAYS
+
+```
+❌ WRONG — multiple resources in one block:
+/* @arkzen:api
+resource: barbers
+routes: ...
+resource: services    ← YAML duplicate key error!
+routes: ...
+*/
+
+✅ CORRECT — separate named block per resource:
+/* @arkzen:api:barbers
+resource: barbers
+routes: ...
+*/
+
+/* @arkzen:api:services
+resource: services
+routes: ...
+*/
+```
+
+### Rule 2: Always quote paths with `{params}`
+
+```yaml
+❌ WRONG:
+- { method: GET, path: /barbers/{id}, action: show }
+  # YAML parses {id} as an object — parse error!
+
+✅ CORRECT:
+- { method: GET, path: "/barbers/{id}", action: show }
+  # Quoted — YAML treats it as a string
+```
+
+### Rule 3: Identifier must be unique per tatemono
+
+```
+/* @arkzen:api:barbers   ← unique
+/* @arkzen:api:services  ← unique
+/* @arkzen:api:bookings  ← unique
+```
+
+### Rule 4: For custom endpoints, always add a separate `@arkzen:endpoint` block
+
+```
+/* @arkzen:api:bookings
+resource: bookings
+routes:
+  - { method: GET, path: /bookings/slots, action: slots }
+*/
+
+/* @arkzen:endpoint
+method: GET
+path: /bookings/slots
+description: Returns available slots
+*/
+// PHP code here
+$slots = [...];
+return response()->json(['slots' => $slots]);
+/* @arkzen:endpoint:end */
+```
+
+---
+
+---
+
+## SECTION 31 — ⚠️ PWA & OFFLINE MODE (v7.5 — IMPLEMENTED)
+
+Arkzen v7.4 ships the full v7.5 PWA roadmap ahead of schedule. Add a `pwa:` block inside `@arkzen:meta` to make any tatemono installable and offline-capable.
+
+### DSL Syntax
+
+```yaml
+/* @arkzen:meta
+name: barbershop-booking
+version: 1.0.0
+label: Barbershop Booking
+auth: false
+pwa:
+  name: "The Blade & Co."        ← Full name (shown on splash screen)
+  short_name: "Blade Co."        ← Short name (shown on home screen icon)
+  description: "Book your next haircut easily"
+  theme_color: "#0a0a0a"         ← Browser chrome / status bar color
+  background_color: "#f5f5f0"    ← Splash screen background
+  display: standalone             ← standalone | fullscreen | minimal-ui | browser
+  orientation: portrait           ← portrait | landscape | any
+  start_url: /barbershop-booking  ← Where app opens when launched from home screen
+  offline: true                   ← Enable IndexedDB sync queue
+  icons:                          ← Optional — uses default paths if omitted
+    - { src: /tatemonos/barbershop-booking/icon-192.png, sizes: 192x192, type: image/png }
+    - { src: /tatemonos/barbershop-booking/icon-512.png, sizes: 512x512, type: image/png }
+    - { src: /tatemonos/barbershop-booking/icon-mask.png, sizes: 512x512, type: image/png, purpose: maskable }
+*/
+```
+
+### What gets generated
+
+When `pwa:` is detected in meta, the engine generates **5 files automatically** — zero manual work:
+
+| File | Location | Purpose |
+|---|---|---|
+| `manifest-{name}.json` | `public/` | Web app manifest — enables "Add to Home Screen" |
+| `sw-{name}.js` | `public/` | Service Worker — caching, offline, sync queue |
+| `usePWA-{name}.ts` | `arkzen/core/hooks/` | React hook for online/sync/install state |
+| `app/{name}/offline/page.tsx` | auto | Offline fallback page shown when no cache |
+| `app/{name}/layout.tsx` | updated | Manifest + theme-color meta injected |
+
+### Phase breakdown (all 4 phases implemented)
+
+**Phase 1 — Service Worker caching:**
+- Pages cached on first visit
+- Assets (JS, CSS, images) cached automatically
+- Navigation falls back to cached page if offline
+- API GETs fall back to cached response if offline
+
+**Phase 2 — Offline mutation queue:**
+- POST/PUT/PATCH/DELETE calls while offline → saved to IndexedDB
+- Returns `{ queued: true }` response to UI (202 status)
+- Queue persists across page refreshes and app restarts
+- Tatemono-scoped: each tatemono has its own queue namespace
+
+**Phase 3 — Automatic sync:**
+- When connection returns → queue flushes automatically
+- Background Sync API used when available
+- `online` event fallback for all browsers
+- Success/failure messages sent to app via `postMessage`
+- Clients notified: `ARKZEN_SYNC_COMPLETE`, `ARKZEN_SYNC_SUCCESS`, `ARKZEN_PENDING_COUNT`
+
+**Phase 4 — Installable web app:**
+- `manifest.json` auto-generated per tatemono
+- `beforeinstallprompt` captured → `installApp()` function exposed
+- `display: standalone` makes it look like a native app
+- Apple PWA meta tags included for iOS Safari
+
+### Using the PWA hook in your page
+
+```tsx
+/* @arkzen:page:index */
+
+// usePWA is auto-imported from the generated hook — no import needed
+const IndexPage = () => {
+  const { isOnline, isSyncing, pendingCount, isInstallable, installApp } = usePWA()
+
+  return (
+    <>
+      {/* PWAStatusBar auto-shows when offline or syncing */}
+      <PWAStatusBar />
+
+      <div>
+        {!isOnline && <div>You're offline — {pendingCount} changes queued</div>}
+        {isInstallable && (
+          <button onClick={installApp}>Install App</button>
+        )}
+        {/* rest of your UI */}
+      </div>
+    </>
+  )
+}
+/* @arkzen:page:index:end */
+```
+
+### Default icon paths (if icons not specified in DSL)
+
+Place your icons in the tatemono assets folder:
+```
+tatemonos/
+  barbershop-booking/
+    assets/
+      icon-192.png    ← 192×192 standard icon
+      icon-512.png    ← 512×512 large icon
+      icon-mask.png   ← 512×512 maskable icon (safe zone padding)
+```
+Engine copies these to `public/tatemonos/barbershop-booking/` automatically.
+
+### Testing PWA locally
+
+```bash
+# Must serve over HTTPS or localhost for SW to register
+# Arkzen dev server (localhost) works fine
+# Open browser DevTools → Application → Service Workers
+# Application → Manifest → check installability
+# Application → Storage → IndexedDB → arkzen-sync-queue → mutations
+```
+
+### Rules
+```
+1. pwa: block is optional — omit it for non-PWA tatemonos
+2. offline: true enables the IndexedDB mutation queue
+3. offline: false = manifest + install only, no queue
+4. Icons must be PNG — WebP not supported in all PWA contexts
+5. start_url must match tatemono name: /my-tatemono
+6. theme_color should match your tatemono's primary color
+7. Use maskable icons for Android — 512x512 with 20% safe zone padding
+8. PWAStatusBar handles all UI — add it to your page root
+```
+
+---
+## SECTION 30 — DESIGN EXAMPLES
+
+[See Section 2C for Button, Card, Table, Form, Page Header examples]  
+[See Section 19A for complete custom layout examples]
+
+---
+
+## CHANGELOG v7.3 → v7.4
+
+**New Sections:**
+- ✅ Section 31 — PWA & Offline Mode (v7.5 roadmap implemented early)
+
+**Engine Changes:**
+- ✅ `pwa-builder.ts` — new builder (678 lines) implementing all 4 PWA phases
+- ✅ `types/index.ts` — `ArkzenPWAMeta` interface added to `ArkzenMeta`
+- ✅ `parser.ts` — `pwa:` block parsed from `@arkzen:meta`
+- ✅ `builder.ts` — Step 2b added, calls `generatePWAFiles()` when pwa detected
+
+**What's generated per PWA tatemono:**
+- `public/manifest-{name}.json` — installable web app manifest
+- `public/sw-{name}.js` — service worker (cache + offline queue + auto-sync)
+- `arkzen/core/hooks/usePWA-{name}.ts` — React hook + PWAStatusBar component
+- `app/{name}/offline/page.tsx` — offline fallback page
+
+---
+
+## CHANGELOG v7.2 → v7.3
+
+**New Sections:**
+- ✅ Section 19B — Custom Layout Collision Fix (router.ts patched, auto-namespaced)
+- ✅ Section 30A — Font Rules (personality guide per tatemono type)
+- ✅ Section 30B — Image Placement Rules (assets/ folder, online URLs, seeded DB)
+- ✅ Section 30C — Strict API Block Rules (one resource per block, quote {params})
+
+**Engine Changes:**
+- ✅ `router.ts` patched — custom layouts now write to `{tatName}-{layoutName}.tsx`
+- ✅ Layout import path updated to match namespaced filename
+- ✅ Zero collision between tatemonos using same layout name
+
+**Root Cause of barbershop-booking Issues:**
+1. **Layout collision** — both `jo-payroll` and `barbershop-booking` used `@arkzen:layout:app`, fighting over `custom/app.tsx`. Fixed by namespacing.
+2. **YAML `{id}` unquoted** — `path: /barbers/{id}` parsed as object. Fixed by quoting.
+3. **Multiple resources in one `@arkzen:api` block** — caused duplicate key error. Fixed by separate named blocks.
+4. **Animation as function** — `const x = () => \`...\`` instead of `const x = \`...\``. Fixed.
+5. **`export const API_BASE` exported** — leaked to other tatemonos. Fixed to private `const`.
+
+---
+
+## CHANGELOG v7.1 → v7.2
+
+**New Sections:**
+- ✅ Section 3A — Import Placement Rules (critical — where imports go)
+- ✅ Section 3B — `'use client'` Directive Rules (critical — no 'use client' in pages)
+- ✅ Section 3C — Zustand Store Rules (stores must be in components for pages to use)
+- ✅ Section 19A — Custom Layout Best Practices (self-contained layouts, naming, syntax)
+- ✅ Section 29 — AI Generation Checklist (pre-flight verification)
+
+**Updated Sections:**
+- ✅ Section 3 — Added rules 8 and onwards to reference new sections
+- ✅ Section 11 (@arkzen:store) — Added warning linking to Section 3C
+- ✅ Section 19 (@arkzen:layout) — Added layout naming conventions
+- ✅ Section 21 (@arkzen:page) — Added explicit "no imports" and "no use client" rule
+- ✅ Section 23 (@arkzen:components) — Added store-in-components pattern, restructured
+- ✅ Section 26 (available imports) — Added Next.js imports, Zustand, clarified scope
+- ✅ Section 27 (active tatemonos) — Added jo-payroll to the table
+
+**Root Cause of jo-payroll Issues:**
+
+Jo-payroll was AI-generated with v7.1 and encountered these bugs:
+1. **Store duplication** — store defined in `@arkzen:store:payrollStore` AND duplicated in `@arkzen:components:shared` with conflicting definitions. Fix: define store ONLY in `@arkzen:components`, skip `@arkzen:store` if pages need the store.
+2. **Import duplication** — the original AI generation put imports in `@arkzen:store`, then duplicated them in `@arkzen:components`. Fix: all imports belong in `@arkzen:components` only.
+3. **Custom layout imports** — original generation tried to import layout components from non-existent paths. Fix: layout blocks must be fully self-contained with all nav/sidebar code inlined.
+4. **`'use client'` placement** — `'use client'` was written in wrong positions in some blocks. Fix: only in `@arkzen:components` and `@arkzen:layout`.
+
+All of these are now documented and covered by the checklist in Section 29.
 
 ---
 
@@ -1548,16 +2447,19 @@ Every example in this guideline has been cross-referenced with actual tatemono c
 | v6.3 | Body Injection | @arkzen:middleware/endpoint/handler/listener/jobs/console body injection |
 | v6.4 | Styling | CSS Modules support, @arkzen:style:name |
 | v7.0 | Complete | Complete documentation of all v6.3+ features |
-| v7.1 | **CURRENT** | Fixed critical bugs from v7.0, verified against all 17 tatemonos, 100% accuracy |
-| v7.5 | Roadmap | PWA/offline sync support (IndexedDB + Service Workers) |
+| v7.1 | Bug fixes | Fixed critical bugs from v7.0, verified against all 17 tatemonos |
+| v7.2 | Archived | Import rules, 'use client' rules, store-in-components rule, custom layout best practices, AI checklist |
+| v7.3 | Archived | Layout collision fix (namespaced per tatemono), font personality rules, image placement rules, strict API block rules |
+| v7.4 | **CURRENT** | PWA/offline DSL implemented (all 4 phases), pwa-builder.ts, usePWA hook, ServiceWorker, IndexedDB sync queue, manifest generation |
+| v7.5 | ✅ Done Early | Merged into v7.4 — PWA/offline sync (IndexedDB + Service Workers) |
 | v8.0 | Roadmap | Multiple frontend stacks (Next.js + React + React+Inertia) |
 | v9.0 | Roadmap | React Native (iOS/Android via Expo) |
 
 ---
 
-**Last Updated:** 2026-04-27  
-**Version:** v7.1 (Bug fix release)  
-**Verified Against:** 17 active tatemonos  
+**Last Updated:** 2026-04-28  
+**Version:** v7.4  
+**Verified Against:** 19 active tatemonos (jo-payroll + barbershop-booking AI-generated)  
 **Parser Version:** v6.3  
 **Builder Count:** 21  
 **Status:** Production-Ready ✓

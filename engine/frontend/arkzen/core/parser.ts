@@ -226,6 +226,8 @@ function parseMeta(content: string): ArkzenMeta {
 
   if (!parsed.name) throw new Error('[Arkzen Parser] meta.name is required')
 
+  const pwaRaw = parsed.pwa as Record<string, any> | undefined
+
   return {
     name:         String(parsed.name),
     version:      String(parsed.version ?? '1.0.0'),
@@ -233,6 +235,18 @@ function parseMeta(content: string): ArkzenMeta {
     auth:         Boolean(parsed.auth ?? false),
     dependencies: (parsed.dependencies as string[]) ?? [],
     favicon:      parsed.favicon ? String(parsed.favicon) : undefined,
+    pwa:          pwaRaw ? {
+      name:             String(pwaRaw.name             ?? parsed.name),
+      short_name:       String(pwaRaw.short_name       ?? parsed.name),
+      description:      String(pwaRaw.description      ?? parsed.description ?? ''),
+      theme_color:      String(pwaRaw.theme_color      ?? '#0a0a0a'),
+      background_color: String(pwaRaw.background_color ?? '#ffffff'),
+      display:         (pwaRaw.display                 ?? 'standalone') as any,
+      orientation:     (pwaRaw.orientation             ?? 'any') as any,
+      start_url:        String(pwaRaw.start_url        ?? \`/\${parsed.name}\`),
+      offline:          Boolean(pwaRaw.offline         ?? true),
+      icons:            pwaRaw.icons ?? undefined,
+    } : undefined,
     authSeed:     parsed.auth_seed
       ? {
           users: ((parsed.auth_seed as any).users ?? []).map((u: any) => ({

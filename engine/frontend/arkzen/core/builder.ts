@@ -13,6 +13,7 @@ import { registerPage, unregisterPage, softUnregisterPage } from './router'
 import { updateRegistry, removeFromRegistry }           from './registry'
 import type { ParsedTatemono, BuildResult, BuildStep }  from '../types'
 import { triggerBackendBuild, triggerBackendRemove }    from './backend-bridge'
+import { generatePWAFiles }                              from './pwa-builder'
 
 export async function buildTatemono(filePath: string): Promise<BuildResult> {
   const fileName      = path.basename(filePath, '.tsx')
@@ -56,6 +57,22 @@ export async function buildTatemono(filePath: string): Promise<BuildResult> {
     const message = error instanceof Error ? error.message : String(error)
     steps.push({ name: 'Register Frontend Pages', status: 'failed', message })
     errors.push(message)
+  }
+
+  // ─── STEP 2b: Generate PWA (if pwa block in meta) ──────────
+  if (parsed.meta.pwa) {
+    try {
+      generatePWAFiles(parsed, parsed.meta.pwa)
+      steps.push({
+        name:    'Generate PWA',
+        status:  'success',
+        message: `PWA generated: manifest, service worker, offline page, usePWA hook`,
+      })
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      steps.push({ name: 'Generate PWA', status: 'failed', message })
+      // Non-fatal — continue build
+    }
   }
 
   // ─── STEP 3: Trigger Backend Build ───────────
