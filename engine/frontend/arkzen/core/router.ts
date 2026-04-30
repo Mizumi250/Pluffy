@@ -30,7 +30,7 @@ function getLayoutImport(layout: string, meta: { name: string }): string {
     case 'guest': return `import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'`
     case 'auth':  return `import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'`
     default:
-      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${layout}'`
+      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${meta.name}-${layout}'`
   }
 }
 
@@ -306,9 +306,9 @@ function generateCustomLayouts(tatemono: ParsedTatemono, baseDir: string): void 
   fs.mkdirSync(customLayoutDir, { recursive: true })
 
   for (const layout of tatemono.layouts) {
-    const fileName = `${layout.name}.tsx`
+    const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(customLayoutDir, fileName)
-    const content  = `'use client'\n// ARKZEN CUSTOM LAYOUT — ${layout.name}\n// Generated from tatemono: ${tatemono.meta.name}\n\n${layout.raw}\n`
+    const content  = `'use client'\n// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name}\n// Generated from tatemono: ${tatemono.meta.name}\n\n${layout.raw}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Router] ✓ Custom layout: ${fileName}`)
   }

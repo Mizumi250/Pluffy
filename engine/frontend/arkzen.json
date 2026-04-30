@@ -17,7 +17,7 @@
         "payslip"
       ],
       "registered": "2026-04-28T01:05:41.209Z",
-      "lastUpdated": "2026-04-28T07:43:07.351Z",
+      "lastUpdated": "2026-04-30T01:48:56.147Z",
       "auth": false
     },
     {
@@ -31,7 +31,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:39.161Z",
-      "lastUpdated": "2026-04-28T07:43:04.624Z",
+      "lastUpdated": "2026-04-30T01:48:52.405Z",
       "auth": true
     },
     {
@@ -43,7 +43,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:39.889Z",
-      "lastUpdated": "2026-04-28T07:43:05.224Z",
+      "lastUpdated": "2026-04-30T01:48:53.524Z",
       "auth": false
     },
     {
@@ -57,7 +57,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:40.486Z",
-      "lastUpdated": "2026-04-28T07:43:05.820Z",
+      "lastUpdated": "2026-04-30T01:48:54.273Z",
       "auth": true
     },
     {
@@ -71,7 +71,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:40.774Z",
-      "lastUpdated": "2026-04-28T07:43:06.111Z",
+      "lastUpdated": "2026-04-30T01:48:54.511Z",
       "auth": true
     },
     {
@@ -83,7 +83,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:41.032Z",
-      "lastUpdated": "2026-04-28T07:43:06.413Z",
+      "lastUpdated": "2026-04-30T01:48:54.756Z",
       "auth": false
     },
     {
@@ -95,7 +95,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:41.307Z",
-      "lastUpdated": "2026-04-28T07:43:06.623Z",
+      "lastUpdated": "2026-04-30T01:48:55.375Z",
       "auth": false
     },
     {
@@ -107,7 +107,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:41.637Z",
-      "lastUpdated": "2026-04-28T07:43:06.845Z",
+      "lastUpdated": "2026-04-30T01:48:55.612Z",
       "auth": false
     },
     {
@@ -119,7 +119,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:41.857Z",
-      "lastUpdated": "2026-04-28T07:43:07.073Z",
+      "lastUpdated": "2026-04-30T01:48:55.844Z",
       "auth": false
     },
     {
@@ -131,7 +131,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:42.363Z",
-      "lastUpdated": "2026-04-28T07:43:07.628Z",
+      "lastUpdated": "2026-04-30T01:48:56.401Z",
       "auth": false
     },
     {
@@ -145,7 +145,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:42.601Z",
-      "lastUpdated": "2026-04-28T07:43:07.907Z",
+      "lastUpdated": "2026-04-30T01:48:56.706Z",
       "auth": true
     },
     {
@@ -157,7 +157,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:42.926Z",
-      "lastUpdated": "2026-04-28T07:43:08.244Z",
+      "lastUpdated": "2026-04-30T01:48:57.013Z",
       "auth": false
     },
     {
@@ -171,7 +171,7 @@
         "features"
       ],
       "registered": "2026-04-28T01:15:43.117Z",
-      "lastUpdated": "2026-04-28T07:43:08.416Z",
+      "lastUpdated": "2026-04-30T01:48:57.186Z",
       "auth": false
     },
     {
@@ -185,7 +185,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:43.426Z",
-      "lastUpdated": "2026-04-28T07:43:08.654Z",
+      "lastUpdated": "2026-04-30T01:48:57.415Z",
       "auth": true
     },
     {
@@ -197,7 +197,7 @@
         "index"
       ],
       "registered": "2026-04-28T01:15:43.585Z",
-      "lastUpdated": "2026-04-28T07:43:08.809Z",
+      "lastUpdated": "2026-04-30T01:48:57.573Z",
       "auth": false
     },
     {
@@ -211,7 +211,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:44.563Z",
-      "lastUpdated": "2026-04-28T07:43:09.848Z",
+      "lastUpdated": "2026-04-30T01:48:58.537Z",
       "auth": true
     },
     {
@@ -223,7 +223,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:44.840Z",
-      "lastUpdated": "2026-04-28T07:43:10.149Z",
+      "lastUpdated": "2026-04-30T01:48:58.821Z",
       "auth": false
     },
     {
@@ -235,7 +235,7 @@
         "dashboard"
       ],
       "registered": "2026-04-28T01:15:45.250Z",
-      "lastUpdated": "2026-04-28T07:43:10.362Z",
+      "lastUpdated": "2026-04-30T01:48:59.049Z",
       "auth": false
     },
     {
@@ -247,7 +247,20 @@
         "index"
       ],
       "registered": "2026-04-28T05:56:50.074Z",
-      "lastUpdated": "2026-04-28T07:43:53.643Z",
+      "lastUpdated": "2026-04-30T01:48:52.603Z",
+      "auth": false
+    },
+    {
+      "name": "dtr-geofencing",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/dtr-geofencing/core.tsx",
+      "pages": [
+        "index",
+        "admin"
+      ],
+      "registered": "2026-04-30T00:54:16.512Z",
+      "lastUpdated": "2026-04-30T01:55:32.271Z",
       "auth": false
     }
   ]
