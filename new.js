@@ -11,8 +11,8 @@ const fs   = require('fs')
 const path = require('path')
 
 const ENGINE_DIR   = __dirname
-const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend')
-const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend')
+const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend', 'nextjs')
+const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend', 'laravel')
 
 // Default projects folder — sits next to arkzen-engine
 const PROJECTS_DIR = path.join(ENGINE_DIR, '..', 'projects')

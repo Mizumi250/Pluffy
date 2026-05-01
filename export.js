@@ -38,8 +38,11 @@ const path = require('path')
 
 const ROOT_DIR      = __dirname
 const ENGINE_DIR    = path.join(ROOT_DIR, 'engine')
-const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend')
-const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend')
+// Read active stack from arkzen.json
+const arkzenJson    = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
+const activeStack   = arkzenJson.activeStack ?? 'nextjs'
+const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', activeStack)
+const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend', 'laravel')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 const PROJECTS_DIR  = path.join(ROOT_DIR, 'projects')
 

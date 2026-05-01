@@ -1,0 +1,37 @@
+{
+  "name": "arkzen-react-vite-engine",
+  "version": "1.0.0",
+  "description": "Arkzen Engine — React+Vite stack. Same tatemono DSL, Vite-powered SPA.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "arkzen": "tsx watch arkzen.ts",
+    "dev": "concurrently \"npm run arkzen\" \"vite --port 3000 --host 0.0.0.0\"",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "framer-motion": "^11.0.0",
+    "gsap": "^3.12.0",
+    "js-yaml": "^4.1.0",
+    "laravel-echo": "^2.3.4",
+    "lucide-react": "^0.400.0",
+    "pusher-js": "^8.5.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "react-router-dom": "^6.28.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.4.0"
+  }
+}

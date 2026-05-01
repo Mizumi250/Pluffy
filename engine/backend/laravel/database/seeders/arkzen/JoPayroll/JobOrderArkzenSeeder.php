@@ -1,0 +1,252 @@
+<?php
+
+// ============================================================
+// ARKZEN GENERATED SEEDER — JobOrderArkzenSeeder
+// Tatemono: jo-payroll  |  Connection: jo_payroll
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-01T09:26:54.792134Z
+// ============================================================
+
+namespace Database\Seeders\Arkzen\JoPayroll;
+
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+
+class JobOrderArkzenSeeder extends Seeder
+{
+    public function run(): void
+    {
+        DB::connection('jo_payroll')->table('jo_payroll_job_orders')->truncate();
+
+        DB::connection('jo_payroll')->table('jo_payroll_job_orders')->insert([
+            [
+                'jor_number' => 1,
+                'name_of_jo' => 'DELA CRUZ, JUAN A.',
+                'job_title' => 'LABORER',
+                'funding' => 'PUBLIC SERVICES',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '01-2345678-9',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 1,
+                'status' => 'active',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 2,
+                'name_of_jo' => 'REYES, MARIA B.',
+                'job_title' => 'LABORER',
+                'funding' => 'ADMIN',
+                'basic_pay' => 346,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '02-3456789-0',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 2,
+                'status' => 'active',
+                'cash_card_number' => '4111111111111111',
+                'calamity_loan' => 200,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 3,
+                'name_of_jo' => 'GARCIA, PEDRO C.',
+                'job_title' => 'LABORER',
+                'funding' => 'MAINTENANCE',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '03-4567890-1',
+                'sss_amount' => 100,
+                'hdmf_premium' => 0,
+                'appointment_order' => 3,
+                'status' => 'active',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 4,
+                'name_of_jo' => 'SANTOS, ANA D.',
+                'job_title' => 'UTILITY WORKER',
+                'funding' => 'SANITATION',
+                'basic_pay' => 346,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '04-5678901-2',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 4,
+                'status' => 'active',
+                'cash_card_number' => '4222222222222222',
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 500,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 5,
+                'name_of_jo' => 'LOPEZ, JOSE E.',
+                'job_title' => 'LABORER',
+                'funding' => 'SUPPLIES',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '05-6789012-3',
+                'sss_amount' => 100,
+                'hdmf_premium' => 0,
+                'appointment_order' => 5,
+                'status' => 'inactive',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 6,
+                'name_of_jo' => 'FLORES, CARMEN F.',
+                'job_title' => 'UTILITY WORKER',
+                'funding' => 'HUMAN RESOURCES',
+                'basic_pay' => 346,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '06-7890123-4',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 6,
+                'status' => 'active',
+                'cash_card_number' => '4333333333333333',
+                'calamity_loan' => 100,
+                'hdmf_mpl' => 200,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 7,
+                'name_of_jo' => 'BAUTISTA, CARLO G.',
+                'job_title' => 'LABORER',
+                'funding' => 'PUBLIC SERVICES',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '07-8901234-5',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 7,
+                'status' => 'active',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 8,
+                'name_of_jo' => 'MENDOZA, LITA H.',
+                'job_title' => 'CLERK',
+                'funding' => 'ADMIN',
+                'basic_pay' => 380,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '08-9012345-6',
+                'sss_amount' => 120,
+                'hdmf_premium' => 100,
+                'appointment_order' => 8,
+                'status' => 'active',
+                'cash_card_number' => '4444444444444444',
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 9,
+                'name_of_jo' => 'TORRES, RAMON I.',
+                'job_title' => 'LABORER',
+                'funding' => 'MAINTENANCE',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '09-0123456-7',
+                'sss_amount' => 100,
+                'hdmf_premium' => 0,
+                'appointment_order' => 9,
+                'status' => 'active',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 10,
+                'name_of_jo' => 'VILLANUEVA, ROSA J.',
+                'job_title' => 'UTILITY WORKER',
+                'funding' => 'SANITATION',
+                'basic_pay' => 346,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '10-1234567-8',
+                'sss_amount' => 100,
+                'hdmf_premium' => 100,
+                'appointment_order' => 10,
+                'status' => 'active',
+                'cash_card_number' => '4555555555555555',
+                'calamity_loan' => 150,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 11,
+                'name_of_jo' => 'RAMOS, EDGAR K.',
+                'job_title' => 'LABORER',
+                'funding' => 'SUPPLIES',
+                'basic_pay' => 346,
+                'disbursement_type' => 'CASH',
+                'jor_pyrl_group' => 'GROUP A',
+                'sss_number' => '11-2345678-9',
+                'sss_amount' => 100,
+                'hdmf_premium' => 0,
+                'appointment_order' => 11,
+                'status' => 'active',
+                'cash_card_number' => NULL,
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 0,
+                'created_at' => now(),
+                'updated_at' => now()
+            ],
+            [
+                'jor_number' => 12,
+                'name_of_jo' => 'CASTRO, LINDA L.',
+                'job_title' => 'CLERK',
+                'funding' => 'HUMAN RESOURCES',
+                'basic_pay' => 380,
+                'disbursement_type' => 'ATM',
+                'jor_pyrl_group' => 'GROUP B',
+                'sss_number' => '12-3456789-0',
+                'sss_amount' => 120,
+                'hdmf_premium' => 100,
+                'appointment_order' => 12,
+                'status' => 'active',
+                'cash_card_number' => '4666666666666666',
+                'calamity_loan' => 0,
+                'hdmf_mpl' => 300,
+                'created_at' => now(),
+                'updated_at' => now()
+            ]
+        ]);
+    }
+}

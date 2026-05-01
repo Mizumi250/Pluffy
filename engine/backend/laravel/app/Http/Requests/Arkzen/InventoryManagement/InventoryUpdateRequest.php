@@ -1,0 +1,30 @@
+<?php
+
+// ============================================================
+// ARKZEN GENERATED REQUEST — InventoryUpdateRequest
+// Tatemono: inventory-management
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-01T09:26:54.543479Z
+// ============================================================
+
+namespace App\Http\Requests\Arkzen\InventoryManagement;
+
+use Illuminate\Foundation\Http\FormRequest;
+
+class InventoryUpdateRequest extends FormRequest
+{
+    public function authorize(): bool { return true; }
+
+    public function rules(): array
+    {
+        return [
+            'name' => 'sometimes|string|max:255',
+            'quantity' => 'sometimes|integer|min:0',
+            'price' => 'sometimes|numeric|min:0',
+            'category' => 'nullable|string|max:100',
+            'description' => 'nullable|string',
+        ];
+    }
+
+    public function messages(): array { return []; }
+}

@@ -16,8 +16,8 @@ const path = require('path')
 
 const ROOT_DIR    = __dirname
 const ENGINE_DIR  = path.join(ROOT_DIR, 'engine')
-const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend')
-const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend')
+const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend', 'nextjs')
+const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend', 'laravel')
 const PROJECTS_DIR = path.join(ROOT_DIR, 'projects')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 
@@ -100,6 +100,8 @@ function ensureStructure() {
   // Create required directories
   const dirs = [
     ENGINE_DIR,
+    path.join(ENGINE_DIR, 'frontend'),
+    path.join(ENGINE_DIR, 'backend'),
     FRONTEND_DIR,
     BACKEND_DIR,
     PROJECTS_DIR,
@@ -114,19 +116,19 @@ function ensureStructure() {
   // Move frontend/ to engine/frontend/ if not already moved
   const oldFrontend = path.join(ROOT_DIR, 'frontend')
   if (fs.existsSync(oldFrontend) && !fs.existsSync(path.join(FRONTEND_DIR, 'package.json'))) {
-    log('Moving frontend/ to engine/frontend/...')
+    log('Moving frontend/ to engine/frontend/nextjs/...')
     fs.cpSync(oldFrontend, FRONTEND_DIR, { recursive: true })
     fs.rmSync(oldFrontend, { recursive: true, force: true })
-    success('frontend/ moved to engine/frontend/')
+    success('frontend/ moved to engine/frontend/nextjs/')
   }
 
   // Move backend/ to engine/backend/ if not already moved
   const oldBackend = path.join(ROOT_DIR, 'backend')
   if (fs.existsSync(oldBackend) && !fs.existsSync(path.join(BACKEND_DIR, 'artisan'))) {
-    log('Moving backend/ to engine/backend/...')
+    log('Moving backend/ to engine/backend/laravel/...')
     fs.cpSync(oldBackend, BACKEND_DIR, { recursive: true })
     fs.rmSync(oldBackend, { recursive: true, force: true })
-    success('backend/ moved to engine/backend/')
+    success('backend/ moved to engine/backend/laravel/')
   }
 
   // Move flat tatemono files to folder/core.tsx structure
@@ -176,7 +178,7 @@ function setupFrontend() {
     if (ok2) {
       success('Frontend packages installed')
     } else {
-      error('npm install failed. Try manually: cd engine/frontend && npm install --force')
+      error('npm install failed. Try manually: cd engine/frontend/nextjs && npm install --force')
       process.exit(1)
     }
   }
@@ -458,8 +460,9 @@ function printDone() {
   ✓ ARKZEN ENGINE SETUP COMPLETE
 
   Structure:
-    engine/frontend/   ← Next.js engine core
-    engine/backend/    ← Laravel engine core
+    engine/frontend/nextjs/   ← Next.js engine core
+    engine/frontend/react-vite/ ← React+Vite (v8)
+    engine/backend/laravel/    ← Laravel engine core
     tatemonos/         ← your tatemono files
     projects/          ← exported standalone projects
 

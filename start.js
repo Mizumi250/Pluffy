@@ -12,8 +12,13 @@ const fs = require('fs')
 
 const ROOT_DIR    = __dirname
 const ENGINE_DIR  = path.join(ROOT_DIR, 'engine')
-const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend')
-const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend')
+const STACKS_DIR   = path.join(ENGINE_DIR, 'frontend')
+const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend', 'laravel')
+
+// Active stack — read from arkzen.json
+const arkzenJson   = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
+const activeStack  = arkzenJson.activeStack ?? 'nextjs'
+const FRONTEND_DIR = path.join(STACKS_DIR, activeStack)
 
 function log(src, msg) {
   let prefix = ''
@@ -130,8 +135,9 @@ function startReverb() {
 }
 
 function startFrontend() {
-  log('frontend', 'Starting Next.js + Arkzen Watcher on http://localhost:3000')
+  log('frontend', `Starting ${activeStack} + Arkzen Watcher on http://localhost:3000`)
 
+  // All stacks use same 'npm run dev' — each has its own package.json with correct dev script
   const proc = spawn('npm', ['run', 'dev'], {
     cwd: FRONTEND_DIR,
     stdio: 'pipe',
@@ -192,6 +198,39 @@ process.on('SIGINT', () => {
   process.exit(0)
 })
 
+// ── Stack switcher — triggered by: node arkzen.js switch <stack>
+// Or send SIGUSR1 signal to running process
+process.on('SIGUSR1', () => {
+  const json     = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
+  const newStack = json.activeStack ?? 'nextjs'
+  if (newStack === activeStack) {
+    log('frontend', `Already on stack: ${activeStack}`)
+    return
+  }
+  log('frontend', `Switching stack: ${activeStack} → ${newStack}...`)
+  frontend.kill()
+  setTimeout(() => {
+    const newFrontendDir = path.join(ENGINE_DIR, 'frontend', newStack)
+    const newProc = spawn('npm', ['run', 'dev'], {
+      cwd: newFrontendDir,
+      stdio: 'pipe',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
+    newProc.stdout.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('frontend', line.trim())
+      })
+    })
+    newProc.stderr.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('frontend', line.trim())
+      })
+    })
+    log('frontend', `✓ Switched to: ${newStack}`)
+  }, 1000)
+})
+
 console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
-console.log('  Engine watches:   engine/frontend/tatemono/')
+console.log(`  Engine watches:   engine/frontend/${activeStack}/`)
+  console.log(`  Active stack:     ${activeStack} (change in arkzen.json)`)
 console.log('  Export project:   node export.js project-name\n')
