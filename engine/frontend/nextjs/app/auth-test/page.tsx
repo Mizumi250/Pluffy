@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — auth-test
 // Visiting /auth-test redirects to /auth-test/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-01T09:26:51.524Z
+// Generated: 2026-05-02T10:11:35.042Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

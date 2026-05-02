@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — TimeRecord
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-01T09:26:53.818221Z
+// Generated: 2026-05-02T10:11:37.442698Z
 // ============================================================
 
 namespace App\Models\Arkzen\DtrGeofencing;
@@ -38,5 +38,8 @@ class TimeRecord extends Model
         'within_geofence' => 'boolean'
     ];
 
-
+    public function employee()
+    {
+        return $this->belongsTo(\App\Models\Arkzen\DtrGeofencing\Employee::class, 'employee_id');
+    }
 }

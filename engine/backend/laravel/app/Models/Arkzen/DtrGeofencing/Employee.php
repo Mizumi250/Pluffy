@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Employee
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-01T09:26:53.817337Z
+// Generated: 2026-05-02T10:11:37.441515Z
 // ============================================================
 
 namespace App\Models\Arkzen\DtrGeofencing;
@@ -32,5 +32,8 @@ class Employee extends Model
         'is_active' => 'boolean'
     ];
 
-
+    public function employees()
+    {
+        return $this->hasMany(\App\Models\Arkzen\DtrGeofencing\TimeRecord::class, 'employee_id');
+    }
 }
