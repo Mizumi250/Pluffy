@@ -3,7 +3,7 @@
 // Next.js segment-scoped 404 handler.
 // Rendered when notFound() is called or no route matches under /queue-flow.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-03T04:46:59.751Z
+// Generated: 2026-05-03T14:04:06.312Z
 // ============================================================
 
 import React from 'react'

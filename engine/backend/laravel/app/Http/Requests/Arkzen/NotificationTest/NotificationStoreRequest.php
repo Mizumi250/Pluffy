@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — NotificationStoreRequest
 // Tatemono: notification-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T04:37:28.114490Z
+// Generated: 2026-05-03T13:54:39.565416Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\NotificationTest;

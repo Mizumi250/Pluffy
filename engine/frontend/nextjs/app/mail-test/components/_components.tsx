@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — mail-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T04:37:27.434Z
+// Generated: 2026-05-03T13:54:38.796Z
 // ============================================================
 
 'use client'

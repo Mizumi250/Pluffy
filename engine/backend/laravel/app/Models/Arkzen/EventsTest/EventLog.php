@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — EventLog
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T04:37:26.462770Z
+// Generated: 2026-05-03T13:54:37.820089Z
 // ============================================================
 
 namespace App\Models\Arkzen\EventsTest;
