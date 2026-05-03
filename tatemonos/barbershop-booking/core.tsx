@@ -69,6 +69,7 @@ routes:
 */
 
 /* @arkzen:endpoint
+*/
 method: GET
 path: /bookings/slots
 description: Returns available time slots for a barber on a given date

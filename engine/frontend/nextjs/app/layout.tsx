@@ -1,6 +1,6 @@
 import '@/styles/globals.css'
 import { ToastProvider } from '@/arkzen/core/components/Toast'
-import { getRegistry } from '@/arkzen/core/registry'
+import { ArkzenDslErrorOverlay } from '@/arkzen/core/components/ArkzenDslErrorOverlay'
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
@@ -18,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ToastProvider position="top-right">
           {children}
         </ToastProvider>
+        <ArkzenDslErrorOverlay />
       </body>
     </html>
   )

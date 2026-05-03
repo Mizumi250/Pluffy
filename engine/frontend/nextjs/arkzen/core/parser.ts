@@ -1294,6 +1294,119 @@ function parseAllErrorHandlers(content: string): ArkzenErrorHandler[] {
 // VALIDATION
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// DSL TAG VALIDATOR v1.0
+// Catches missing */ on code block opening tags and missing :end */ closing tags
+// Runs BEFORE any parsing so errors are clear, not cascaded TypeScript crashes
+// ─────────────────────────────────────────────
+
+interface DslTagError {
+  line:    number
+  tag:     string
+  problem: string
+  fix:     string
+}
+
+const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'page', 'style', 'error']
+const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware']
+const YAML_ONLY_TAGS  = ['meta', 'config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
+
+function validateDslTags(content: string, filePath: string): void {
+  const lines     = content.split('\n')
+  const errors: DslTagError[] = []
+  const tatemono  = path.basename(path.dirname(filePath))
+
+  for (let i = 0; i < lines.length; i++) {
+    const line    = lines[i]
+    const lineNum = i + 1
+    const trimmed = line.trim()
+
+    if (!trimmed.startsWith('/* @arkzen:')) continue
+    if (trimmed.includes(':end */'))        continue
+    if (trimmed.match(/^\/\* @arkzen:page:layout:/)) continue
+
+    const tagMatch = trimmed.match(/^\/\* @arkzen:([a-zA-Z]+)/)
+    if (!tagMatch) continue
+    const tagType = tagMatch[1]
+
+    const hasInlineClose = trimmed.endsWith('*/')
+
+    // Code blocks must have */ on same line
+    if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose) {
+      const fullTag = trimmed.replace('/* ', '').trim()
+      errors.push({
+        line:    lineNum,
+        tag:     fullTag,
+        problem: `Missing \`*/\` on opening tag`,
+        fix:     `Change to: ${trimmed.trimEnd()} */`,
+      })
+    }
+
+    // Body separator blocks must have */ on the next line
+    if (BODY_SEP_TAGS.includes(tagType) && !hasInlineClose) {
+      const nextLine = lines[i + 1]?.trim() ?? ''
+      if (nextLine !== '*/') {
+        const fullTag = trimmed.replace('/* ', '').trim()
+        errors.push({
+          line:    lineNum,
+          tag:     fullTag,
+          problem: `Missing body separator \`*/\` on line ${lineNum + 1}`,
+          fix:     `Add \`*/\` on the line immediately after the opening tag`,
+        })
+      }
+    }
+
+    // Every non-YAML block must have a matching :end */
+    if (YAML_ONLY_TAGS.includes(tagType)) continue
+
+    const identMatch = trimmed.match(/^\/\* @arkzen:([a-zA-Z][a-zA-Z0-9:_\-{}.]*)/);
+    if (!identMatch) continue
+    const fullIdent = identMatch[1].replace(/\s*\*\/$/, '').trim()
+
+    const endMarker = `/* @arkzen:${fullIdent}:end */`
+    if (!content.includes(endMarker)) {
+      errors.push({
+        line:    lineNum,
+        tag:     `@arkzen:${fullIdent}`,
+        problem: `Missing closing tag`,
+        fix:     `Add \`/* @arkzen:${fullIdent}:end */\` after the block content`,
+      })
+    }
+  }
+
+  if (errors.length === 0) return
+
+  // Terminal output
+  const R = '\x1b[31m', Y = '\x1b[33m', C = '\x1b[36m', B = '\x1b[1m', X = '\x1b[0m', D = '\x1b[2m'
+
+  console.error(`\n${R}${B}╔════════════════════════════════════════════════════╗`)
+  console.error(`║         ARKZEN DSL ERROR — ${tatemono.padEnd(23)}║`)
+  console.error(`╚════════════════════════════════════════════════════╝${X}`)
+  console.error(`${D}  ${filePath}${X}\n`)
+
+  for (const err of errors) {
+    console.error(`  ${R}✖${X} ${B}Line ${err.line}${X} — ${C}${err.tag}${X}`)
+    console.error(`    ${Y}Problem:${X} ${err.problem}`)
+    console.error(`    ${Y}Fix:${X}     ${err.fix}`)
+    console.error()
+  }
+
+  console.error(`${R}${B}  ${errors.length} DSL error(s). Fix these before the engine runs.${X}\n`)
+
+  // Write error JSON for UI overlay
+  try {
+    const errorDir = path.resolve(__dirname, '../../public/arkzen-errors')
+    fs.mkdirSync(errorDir, { recursive: true })
+    fs.writeFileSync(
+      path.join(errorDir, `${tatemono}.json`),
+      JSON.stringify({ tatemono, filePath, errors, timestamp: Date.now() }, null, 2),
+      'utf-8'
+    )
+  } catch { /* silently skip */ }
+
+  throw new Error(`[Arkzen DSL Error] ${tatemono}: ${errors.length} tag error(s). See terminal for details.`)
+}
+
 function validateFileName(filePath: string, meta: ArkzenMeta): void {
   const fileName = path.basename(filePath, '.tsx')
   if (fileName === 'core') return
@@ -1402,6 +1515,15 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const consoles      = parseAllConsoles(content)
 
   const animation = extractSectionWithPosition(content, 'animation') ?? undefined
+
+  validateDslTags(content, filePath)
+
+  // Clear any existing DSL error file for this tatemono on successful parse
+  try {
+    const tatemono  = path.basename(path.dirname(filePath))
+    const errorFile = path.resolve(__dirname, '../../public/arkzen-errors', `${tatemono}.json`)
+    if (fs.existsSync(errorFile)) fs.unlinkSync(errorFile)
+  } catch { /* ignore */ }
 
   validateFileName(filePath, meta)
   validateTableNames(databases)

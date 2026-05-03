@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — JobOrderController
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-02T10:11:38.375316Z
+// Generated: 2026-05-03T02:58:32.022205Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\JoPayroll;
@@ -95,9 +95,34 @@ class JobOrderController extends Controller
      */
     public function summary(Request $request): JsonResponse
     {
-        // Custom endpoint: summary
-        // Add @arkzen:endpoint:summary ... :end block to your tatemono to inject logic.
-        return response()->json(['message' => 'Not implemented']);
+        $activeJOs   = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'active')->get();
+        $inactiveJOs = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'inactive')->count();
+        $totalCash   = $activeJOs->where('disbursement_type', 'CASH')->count();
+        $totalAtm    = $activeJOs->where('disbursement_type', 'ATM')->count();
+        $totalBasicPay      = $activeJOs->sum('basic_pay');
+        $totalSss           = $activeJOs->sum('sss_amount');
+        $totalHdmfPremium   = $activeJOs->sum('hdmf_premium');
+        $totalHdmfMpl       = $activeJOs->sum('hdmf_mpl');
+        $totalCalamityLoan  = $activeJOs->sum('calamity_loan');
+        $totalDeductions    = $totalSss + $totalHdmfPremium + $totalHdmfMpl + $totalCalamityLoan;
+        $netPay             = $totalBasicPay - $totalDeductions;
+        $fundingBreakdown   = $activeJOs->groupBy('funding')->map(fn($g) => ['count' => $g->count(), 'total_pay' => $g->sum('basic_pay')]);
+        $groupBreakdown     = $activeJOs->groupBy('jor_pyrl_group')->map(fn($g) => $g->count());
+        return response()->json([
+          'total_active'        => $activeJOs->count(),
+          'total_inactive'      => $inactiveJOs,
+          'total_atm'           => $totalAtm,
+          'total_cash'          => $totalCash,
+          'total_basic_pay'     => $totalBasicPay,
+          'total_sss'           => $totalSss,
+          'total_hdmf_premium'  => $totalHdmfPremium,
+          'total_hdmf_mpl'      => $totalHdmfMpl,
+          'total_calamity_loan' => $totalCalamityLoan,
+          'total_deductions'    => $totalDeductions,
+          'net_pay'             => $netPay,
+          'funding_breakdown'   => $fundingBreakdown,
+          'group_breakdown'     => $groupBreakdown,
+        ]);
     }
 
     /**
@@ -105,9 +130,9 @@ class JobOrderController extends Controller
      */
     public function byGroup(Request $request): JsonResponse
     {
-        // Custom endpoint: byGroup
-        // Add @arkzen:endpoint:byGroup ... :end block to your tatemono to inject logic.
-        return response()->json(['message' => 'Not implemented']);
+        $group = request()->route('group');
+        $orders = \App\Models\Arkzen\JoPayroll\JobOrder::where('jor_pyrl_group', $group)->where('status', 'active')->orderBy('jor_number')->get();
+        return response()->json($orders);
     }
 
     /**
@@ -115,8 +140,7 @@ class JobOrderController extends Controller
      */
     public function appointments(Request $request): JsonResponse
     {
-        // Custom endpoint: appointments
-        // Add @arkzen:endpoint:appointments ... :end block to your tatemono to inject logic.
-        return response()->json(['message' => 'Not implemented']);
+        $orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order')->orderBy('appointment_order')->get();
+        return response()->json($orders);
     }
 }
