@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — QueueUpdated
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T14:04:06.712049Z
+// Generated: 2026-05-03T14:17:20.775722Z
 // ============================================================
 
 namespace App\Events\Arkzen\QueueFlow;

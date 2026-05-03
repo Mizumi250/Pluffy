@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — roles-test/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T13:54:40.199Z
+// Generated: 2026-05-03T14:35:53.486Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Ticket
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T14:04:06.457186Z
+// Generated: 2026-05-03T14:35:53.286804Z
 // ============================================================
 
 namespace App\Models\Arkzen\QueueFlow;
@@ -39,6 +39,6 @@ class Ticket extends Model
 
     public function queue()
     {
-        return $this->belongsTo(\App\Models\Arkzen\QueueFlow\Queue::class, 'queue_id');
+        return $this->belongsTo(\App\Models\Arkzen\QueueFlow\QueueFlowQueue::class, 'queue_id');
     }
 }

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — roles-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T13:54:40.198Z
+// Generated: 2026-05-03T14:35:53.486Z
 // ============================================================
 
 'use client'

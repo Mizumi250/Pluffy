@@ -73,7 +73,7 @@ columns:
     autoIncrement: true
   queue_id:
     type: foreignId
-    foreign: queues.id
+    foreign: queue_flow_queues.id
     nullable: false
   ticket_number:
     type: string
@@ -181,7 +181,7 @@ endpoints:
       type: single
 */
 
-/* @arkzen:endpoint:join_queue
+/* @arkzen:handler:join_queue
 */
 $queueId      = $request->input('queue_id');
 $customerName = $request->input('customer_name', 'Guest');
@@ -205,20 +205,24 @@ $waiting = \App\Models\Arkzen\QueueFlow\Ticket::where('queue_id', $queueId)
   ->where('position', '<', $ticket->position)
   ->count();
 
-broadcast(new \App\Events\Arkzen\QueueFlow\QueueUpdated([
-  'queue_id' => $queueId,
-  'action'   => 'joined',
-  'ticket'   => $ticket,
-]))->toOthers();
+try {
+  broadcast(new \App\Events\Arkzen\QueueFlow\Broadcast\QueueUpdated([
+    'queue_id' => $queueId,
+    'action'   => 'joined',
+    'ticket'   => $ticket,
+  ]))->toOthers();
+} catch (\Throwable $e) {
+  \Illuminate\Support\Facades\Log::warning('[QueueFlow] broadcast failed: ' . $e->getMessage());
+}
 
 return response()->json([
   'ticket'         => $ticket,
   'position'       => $waiting + 1,
   'estimated_wait' => ($waiting) * $queue->avg_wait_minutes,
 ]);
-/* @arkzen:endpoint:join_queue:end */
+/* @arkzen:handler:join_queue:end */
 
-/* @arkzen:endpoint:call_next
+/* @arkzen:handler:call_next
 */
 $queueId = $request->input('queue_id');
 
@@ -239,18 +243,22 @@ if (!$next) {
 
 $next->update(['status' => 'serving', 'called_at' => now()]);
 
-broadcast(new \App\Events\Arkzen\QueueFlow\QueueUpdated([
-  'queue_id' => $queueId,
-  'action'   => 'called',
-  'ticket'   => $next,
-]))->toOthers();
+try {
+  broadcast(new \App\Events\Arkzen\QueueFlow\Broadcast\QueueUpdated([
+    'queue_id' => $queueId,
+    'action'   => 'called',
+    'ticket'   => $next,
+  ]))->toOthers();
+} catch (\Throwable $e) {
+  \Illuminate\Support\Facades\Log::warning('[QueueFlow] broadcast failed: ' . $e->getMessage());
+}
 
 return response()->json(['ticket' => $next]);
-/* @arkzen:endpoint:call_next:end */
+/* @arkzen:handler:call_next:end */
 
-/* @arkzen:endpoint:queue_status
+/* @arkzen:handler:queue_status
 */
-$queueId = $request->route('queue_id');
+$queueId = $params[0] ?? null;
 
 $queue = \App\Models\Arkzen\QueueFlow\Queue::findOrFail($queueId);
 
@@ -274,12 +282,12 @@ return response()->json([
   'done_count' => $done_count,
   'total_waiting' => $waiting->count(),
 ]);
-/* @arkzen:endpoint:queue_status:end */
+/* @arkzen:handler:queue_status:end */
 
-/* @arkzen:endpoint:my_ticket
+/* @arkzen:handler:my_ticket
 */
-$ticketNumber = $request->route('ticket_number');
-$queueId      = $request->route('queue_id');
+$ticketNumber = $params[1] ?? null;
+$queueId      = $params[0] ?? null;
 
 $ticket = \App\Models\Arkzen\QueueFlow\Ticket::where('ticket_number', $ticketNumber)
   ->where('queue_id', $queueId)
@@ -299,7 +307,7 @@ return response()->json([
   'is_serving'     => $ticket->status === 'serving',
   'is_done'        => $ticket->status === 'done',
 ]);
-/* @arkzen:endpoint:my_ticket:end */
+/* @arkzen:handler:my_ticket:end */
 
 /* @arkzen:routes
 controller: QueueController
@@ -321,13 +329,13 @@ routes:
 
 /* @arkzen:realtime:queue-flow.{queueId}
 type: public
-event: QueueUpdated
 */
 
-/* @arkzen:events:queue-updated
-model: Ticket
-payload: [queue_id, action, ticket]
+/* @arkzen:realtime:queue-updated
+channel: queue-flow.{queueId}
+type: public
 */
+/* @arkzen:realtime:queue-updated:end */
 
 /* @arkzen:layout:app */
 

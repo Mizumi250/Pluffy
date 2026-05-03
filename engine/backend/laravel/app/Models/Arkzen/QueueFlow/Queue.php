@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Queue
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T14:04:06.450821Z
+// Generated: 2026-05-03T14:35:53.285995Z
 // ============================================================
 
 namespace App\Models\Arkzen\QueueFlow;
@@ -34,8 +34,5 @@ class Queue extends Model
         'avg_wait_minutes' => 'integer'
     ];
 
-    public function queues()
-    {
-        return $this->hasMany(\App\Models\Arkzen\QueueFlow\Ticket::class, 'queue_id');
-    }
+
 }
