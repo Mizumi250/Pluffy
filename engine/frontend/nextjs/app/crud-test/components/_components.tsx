@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — crud-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T02:58:30.667Z
+// Generated: 2026-05-03T12:58:07.486Z
 // ============================================================
 
 'use client'

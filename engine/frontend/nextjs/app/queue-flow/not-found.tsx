@@ -3,17 +3,17 @@
 // Next.js segment-scoped 404 handler.
 // Rendered when notFound() is called or no route matches under /queue-flow.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-03T04:00:13.989Z
+// Generated: 2026-05-03T04:46:59.751Z
 // ============================================================
 
 import React from 'react'
 import { ErrorScreen } from './components'
 
 const NotFoundPage = () => (
-  <div className="min-h-screen bg-[#0f0f1a] flex items-center justify-center px-6">
-    <div className="text-center">
-      <p className="text-6xl font-black text-violet-500/20 mb-4">404</p>
-      <p className="text-white/40 text-sm">Page not found</p>
+  <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+    <div style={{ textAlign: 'center' }}>
+      <p style={{ fontSize: 64, fontWeight: 900, color: 'rgba(74,114,216,0.20)', marginBottom: 16 }}>404</p>
+      <p style={{ color: '#7a9bc4', fontSize: 14 }}>Page not found</p>
     </div>
   </div>
 )
