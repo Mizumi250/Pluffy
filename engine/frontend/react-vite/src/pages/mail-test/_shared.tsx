@@ -1,10 +1,11 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — mail-test [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:20.947Z
+// Generated: 2026-05-04T08:31:08.768Z
 // ============================================================
 
-import React, { useState, useEffect } from 'react'import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 if (typeof window !== 'undefined') {

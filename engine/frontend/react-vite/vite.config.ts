@@ -12,6 +12,16 @@ import path  from 'path'
 import fs    from 'fs'
 
 const READY_FLAG = path.resolve(__dirname, 'src/arkzen/generated/.arkzen-ready')
+const PROCESS_START_TS = Date.now()
+
+function isFreshReadyFlag(minTimestamp: number): boolean {
+  if (!fs.existsSync(READY_FLAG)) return false
+  try {
+    return fs.statSync(READY_FLAG).mtimeMs >= minTimestamp
+  } catch {
+    return false
+  }
+}
 
 function arkzenReadyPlugin(): Plugin {
   return {
@@ -24,11 +34,11 @@ function arkzenReadyPlugin(): Plugin {
       const POLL_MS     = 200
       const start       = Date.now()
 
-      if (!fs.existsSync(READY_FLAG)) {
+      if (!isFreshReadyFlag(PROCESS_START_TS)) {
         process.stdout.write('[Arkzen Vite] ⏳ Waiting for Arkzen initial build')
       }
 
-      while (!fs.existsSync(READY_FLAG)) {
+      while (!isFreshReadyFlag(PROCESS_START_TS)) {
         if (Date.now() - start > TIMEOUT_MS) {
           process.stdout.write('\n')
           console.warn('[Arkzen Vite] ⚠ Timed out waiting for Arkzen ready flag — starting anyway')

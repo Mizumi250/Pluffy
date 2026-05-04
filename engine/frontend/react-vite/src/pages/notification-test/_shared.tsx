@@ -1,10 +1,11 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — notification-test [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:21.118Z
+// Generated: 2026-05-04T08:31:08.939Z
 // ============================================================
 
-import React, { useState, useEffect, useRef } from 'react'import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
+import React, { useState, useEffect, useRef } from 'react'
+import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 if (typeof window !== 'undefined') {

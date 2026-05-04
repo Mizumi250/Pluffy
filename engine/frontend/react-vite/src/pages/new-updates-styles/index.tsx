@@ -2,17 +2,16 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:21.101Z
+// Generated: 2026-05-04T08:31:08.930Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Link } from 'react-router-dom'
 import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
@@ -39,7 +38,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              href={link.path}
+              to={link.path}
               className={`navbar-link ${currentPath === link.path ? 'navbar-link-active' : ''}`}
             >
               {link.name}
@@ -62,7 +61,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              href={link.path}
+              to={link.path}
               onClick={() => setIsOpen(false)}
               className={`navbar-mobile-link ${currentPath === link.path ? 'navbar-mobile-link-active' : ''}`}
             >

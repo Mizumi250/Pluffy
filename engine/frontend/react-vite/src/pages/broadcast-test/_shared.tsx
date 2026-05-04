@@ -1,10 +1,11 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — broadcast-test [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:20.278Z
+// Generated: 2026-05-04T08:31:08.144Z
 // ============================================================
 
-import React, { useState, useEffect, useRef, useCallback, memo } from 'react'import { Radio } from 'lucide-react'
+import React, { useState, useEffect, useRef, useCallback, memo } from 'react'
+import { Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 if (typeof window !== 'undefined') {

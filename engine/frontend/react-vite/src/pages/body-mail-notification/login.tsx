@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:19.831Z
+// Generated: 2026-05-04T08:31:07.696Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -71,7 +71,7 @@ const StatusDot = ({ status }: { status: string }) => (
 // ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login }  = useAuthStore()
-  const navigate = useNavigate()
+  const router     = useNavigate()
   const { toast, success: toastSuccess, error: toastError } = useToast()
   const [email, setEmail]       = useState('test@body-mail-notification.com')
   const [password, setPassword] = useState('password123')
@@ -80,7 +80,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true)
     const ok = await login(email, password)
-    if (ok) { toastSuccess('Logged in'); navigate('/body-mail-notification/dashboard') }
+    if (ok) { toastSuccess('Logged in'); router('/body-mail-notification/dashboard') }
     else     { toastError('Invalid credentials') }
     setLoading(false)
   }

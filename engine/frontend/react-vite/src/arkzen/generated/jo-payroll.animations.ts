@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — jo-payroll [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:20.732Z
+// Generated: 2026-05-04T08:31:08.559Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -59,5 +59,8 @@ export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement>) => {
 
   return () => ctx.revert()
 }
-
-*/
+export const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
+}

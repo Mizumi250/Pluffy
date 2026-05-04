@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:20.950Z
+// Generated: 2026-05-04T08:31:08.771Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -38,7 +38,7 @@ interface MailType {
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
-  const navigate = useNavigate()
+  const router          = useNavigate()
   const { user, logout } = useAuthStore()
 
   const mailTypes: MailType[] = [
@@ -106,7 +106,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    navigate('/mail-test/login')
+    router('/mail-test/login')
   }
 
   const formatTime = (ts: string) => {

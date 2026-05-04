@@ -42,6 +42,67 @@ function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
 
+function stripNextImports(raw: string): string {
+  return raw
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+Link\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+}
+
+function normalizeRouterCalls(raw: string): string {
+  let out = raw
+  const navigateVars = [...out.matchAll(/\bconst\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*useNavigate\(\)/g)]
+    .map(m => m[1])
+
+  for (const varName of navigateVars) {
+    out = out
+      .replace(new RegExp(`\\b${varName}\\.push\\(`, 'g'), `${varName}(`)
+      .replace(new RegExp(`\\b${varName}\\.replace\\(`, 'g'), `${varName}(`)
+  }
+
+  return out
+}
+
+function normalizeForVite(raw: string): string {
+  return normalizeRouterCalls(
+    stripNextImports(raw)
+      .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/\busePathname\(\)/g, 'useLocation().pathname')
+      .replace(/\buseRouter\b/g, 'useNavigate')
+      .replace(/(<Link\b[^>]*?)\bhref=/g, '$1to=')
+      .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
+  )
+}
+
+function ensureRouterDomImports(raw: string): string {
+  const needsNavigate = /\buseNavigate\s*\(/.test(raw)
+  const needsLocation = /\buseLocation\s*\(/.test(raw)
+  const needsLink = /<Link\b/.test(raw)
+  const needed = [
+    needsNavigate && 'useNavigate',
+    needsLocation && 'useLocation',
+    needsLink && 'Link',
+  ].filter(Boolean) as string[]
+
+  if (needed.length === 0) return raw
+
+  const importRegex = /^import\s+\{([^}]*)\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*$/m
+  const existing = raw.match(importRegex)
+  if (!existing) {
+    return `import { ${needed.join(', ')} } from 'react-router-dom'\n${raw}`
+  }
+
+  const existingSpecifiers = existing[1]
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+
+  const merged = [...new Set([...existingSpecifiers, ...needed])].sort()
+  return raw.replace(importRegex, `import { ${merged.join(', ')} } from 'react-router-dom'`)
+}
+
 // ─── Layout helpers ────────────────────────────────────────────────────────────
 
 function getLayoutImport(layout: string, tatName: string): string {
@@ -76,30 +137,16 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
 
   // Components raw — strip React/Next imports, they come from the page header
   const componentCode = tatemono.components
-    .map(c => c.raw
-      .replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+React\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
-      .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
-      .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
+    .map(c => normalizeForVite(c.raw)
+      .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
       .trim()
     )
     .join('\n\n')
 
   // Clean page.raw — strip Next.js-specific code not valid in Vite
-  const cleanPageRaw = page.raw
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
-    .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
-    .replace(/\buseRouter\b/g, 'useNavigate')
-    .replace(/\busePathname\b/g, 'useLocation')
-    .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
+  const cleanPageRaw = normalizeForVite(page.raw)
     // FIX v1.2: strip any `export default XxxPage` already in the raw page body
     // so the Arkzen wrapper below is the only default export in the file
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
@@ -112,6 +159,8 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const needsReducer  = /\buseReducer\s*\(/.test(allCode)
   const needsCtx      = /\buseContext\s*\(/.test(allCode)
   const needsUseMemo  = /\buseMemo\s*\(/.test(allCode)
+  const needsLocation = /\buseLocation\s*\(/.test(allCode)
+  const needsLink     = /<Link\b/.test(allCode)
 
   const reactHooks = [
     'useRef',
@@ -129,6 +178,13 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const componentName = match ? match[1] : toPascalCase(page.name) + 'Page'
   const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
 
+  const routerDomSpecifiers = [
+    'useNavigate',
+    needsLocation && 'useLocation',
+    needsLink && 'Link',
+  ].filter(Boolean).join(', ')
+  const routerDomImport = `import { ${routerDomSpecifiers} } from 'react-router-dom'`
+
   return `// ============================================================
 // ARKZEN GENERATED PAGE — ${tatName}/${page.name} [React+Vite]
 // Layout: ${layout} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
@@ -138,7 +194,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
 
 import React, { ${reactHooks} } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+${routerDomImport}
 ${layoutImport}
 ${animImport}
 
@@ -291,7 +347,8 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   for (const layout of tatemono.layouts) {
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(LAYOUTS_DIR, fileName)
-    const content  = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Vite]\n\n${layout.raw}\n`
+    const normalizedLayout = ensureRouterDomImports(normalizeForVite(layout.raw).trim())
+    const content  = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Vite]\n\n${normalizedLayout}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Vite Router] ✓ Custom layout: ${fileName}`)
   }
@@ -303,24 +360,63 @@ function generateSharedComponents(tatemono: ParsedTatemono, tatDir: string): voi
   if (tatemono.components.length === 0) return
   ensureDir(tatDir)
 
+  const sharedBody = tatemono.components.map(c => normalizeForVite(c.raw).trim()).join('\n\n')
+  const normalizedSharedBody = ensureRouterDomImports(sharedBody)
+
   const content = `// ============================================================
 // ARKZEN GENERATED SHARED — ${tatemono.meta.name} [React+Vite]
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${tatemono.components.map(c => c.raw
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
-    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
-    .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
-    .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
-    .trim()
-  ).join('\n\n')}
+${normalizedSharedBody}
 `
   fs.writeFileSync(path.join(tatDir, '_shared.tsx'), content, 'utf-8')
   console.log(`[Arkzen Vite Router] ✓ Shared components: _shared.tsx`)
+}
+
+function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string; routePath: string } | null {
+  const hasIndex = tatemono.pages.some(p => p.name === 'index')
+  if (hasIndex) return null
+
+  const firstGuest = tatemono.pages.find(p => p.layout === 'guest')
+  const firstAuth = tatemono.pages.find(p => p.layout === 'auth')
+  const firstPage = tatemono.pages[0]
+
+  const target = tatemono.meta.auth
+    ? (firstGuest ?? firstAuth ?? firstPage)
+    : (firstAuth ?? firstGuest ?? firstPage)
+
+  if (!target) return null
+
+  const destination = `/${tatemono.meta.name}/${target.name}`
+  const fileName = '__root_redirect'
+  const componentName = `ArkzenRootRedirect_${toPascalCase(tatemono.meta.name)}`
+  const content = `// ============================================================
+// ARKZEN GENERATED ROOT REDIRECT — ${tatemono.meta.name} [React+Vite]
+// Visiting /${tatemono.meta.name} redirects to ${destination}
+// DO NOT EDIT — edit tatemono instead
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React from 'react'
+import { Navigate } from 'react-router-dom'
+
+const ${componentName} = () => {
+  return <Navigate to="${destination}" replace />
+}
+
+export default ${componentName}
+`
+
+  const tatDir = path.join(PAGES_DIR, tatemono.meta.name)
+  fs.writeFileSync(path.join(tatDir, `${fileName}.tsx`), content, 'utf-8')
+  console.log(`[Arkzen Vite Router] ✓ Root redirect: /${tatemono.meta.name} → ${destination}`)
+
+  return {
+    fileName,
+    routePath: `/${tatemono.meta.name}`,
+  }
 }
 
 // ─── Main: register tatemono pages ────────────────────────────────────────────
@@ -355,6 +451,16 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
 
     newRoutes.push({ tatName, pageName: page.name, path: routePath, auth: tatemono.meta.auth })
     console.log(`[Arkzen Vite Router] ✓ /${tatName}${page.name === 'index' ? '' : '/' + page.name} [vite]`)
+  }
+
+  const rootRedirect = generateRootRedirectPage(tatemono)
+  if (rootRedirect) {
+    newRoutes.push({
+      tatName,
+      pageName: rootRedirect.fileName,
+      path: rootRedirect.routePath,
+      auth: tatemono.meta.auth,
+    })
   }
 
   writeRouteRegistry([...existingRoutes, ...newRoutes])

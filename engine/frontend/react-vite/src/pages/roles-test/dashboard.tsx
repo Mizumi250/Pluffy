@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:21.308Z
+// Generated: 2026-05-04T08:31:09.119Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -21,7 +21,7 @@ if (typeof window !== 'undefined') {
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
-  const navigate = useNavigate()
+  const router = useNavigate()
   const { user, logout, refreshUser } = useAuthStore()
 
   type TestResult = { status: 'idle' | 'pass' | 'fail'; message: string }
@@ -75,7 +75,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     await logout()
     router.refresh()
-    navigate('/roles-test/login')
+    router('/roles-test/login')
   }
 
   const resultStyle = (s: TestResult['status']) =>

@@ -1,6 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — queue-flow/app [React+Vite]
 
-import React, { useState } from 'react'import { LayoutGrid, Ticket, Settings, WifiOff } from 'lucide-react'
+import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useState } from 'react'
+import { LayoutGrid, Ticket, Settings, WifiOff } from 'lucide-react'
 
 const NAV = [
   { href: '/queue-flow',        icon: LayoutGrid, label: 'Display'  },
@@ -9,8 +11,8 @@ const NAV = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
+  const pathname = useLocation().pathname
+  const router   = useNavigate()
   const [online, setOnline] = React.useState(true)
 
   React.useEffect(() => {
@@ -57,7 +59,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             return (
               <button
                 key={href}
-                onClick={() => navigate(href)}
+                onClick={() => router(href)}
                 className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all"
               >
                 <div style={{

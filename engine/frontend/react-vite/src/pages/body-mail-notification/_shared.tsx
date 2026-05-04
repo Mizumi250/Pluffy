@@ -1,10 +1,11 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-mail-notification [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:19.830Z
+// Generated: 2026-05-04T08:31:07.695Z
 // ============================================================
 
-import React, { useState, useEffect, useCallback } from 'react'import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import React, { useState, useEffect, useCallback } from 'react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)

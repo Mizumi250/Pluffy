@@ -1,6 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — jo-payroll/app [React+Vite]
 
-import React, { useState, useEffect } from 'react'import {
+import { useNavigate, useLocation } from 'react-router-dom'
+import React, { useState, useEffect } from 'react'
+import {
   LayoutDashboard, Database, Banknote, Building2,
   Landmark, CalendarDays, Menu, X, ChevronRight,
   LogOut, Bell
@@ -17,8 +19,8 @@ const NAV_ITEMS = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { pathname } = useLocation()
-  const navigate = useNavigate()
+  const pathname  = useLocation().pathname
+  const router    = useNavigate()
   const [open, setOpen]       = useState(false)
   const [mounted, setMounted] = useState(false)
 
@@ -66,7 +68,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             return (
               <button
                 key={href}
-                onClick={() => { navigate(href); setOpen(false) }}
+                onClick={() => { router(href); setOpen(false) }}
                 title={label}
                 className={`nav-pill w-full flex items-center gap-3 px-2.5 py-2.5 rounded-xl text-sm font-medium group relative
                   ${active

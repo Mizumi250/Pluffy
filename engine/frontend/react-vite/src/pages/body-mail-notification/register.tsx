@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:19.832Z
+// Generated: 2026-05-04T08:31:07.697Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -71,7 +71,7 @@ const StatusDot = ({ status }: { status: string }) => (
 // ── Page component from @arkzen:page:register ─────────────────────────────
 const RegisterPage = () => {
   const { register } = useAuthStore()
-  const navigate = useNavigate()
+  const router       = useNavigate()
   const { toast, success: toastSuccess, error: toastError } = useToast()
   const [name, setName]         = useState('')
   const [email, setEmail]       = useState('')
@@ -81,7 +81,7 @@ const RegisterPage = () => {
   const handleRegister = async () => {
     setLoading(true)
     const ok = await register(name, email, password)
-    if (ok) { toastSuccess('Account created'); navigate('/body-mail-notification/dashboard') }
+    if (ok) { toastSuccess('Account created'); router('/body-mail-notification/dashboard') }
     else     { toastError('Registration failed') }
     setLoading(false)
   }

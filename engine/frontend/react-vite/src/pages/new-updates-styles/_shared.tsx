@@ -1,11 +1,11 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — new-updates-styles [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:21.098Z
+// Generated: 2026-05-04T08:31:08.929Z
 // ============================================================
 
+import { Link } from 'react-router-dom'
 import React, { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
 import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
@@ -32,7 +32,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              href={link.path}
+              to={link.path}
               className={`navbar-link ${currentPath === link.path ? 'navbar-link-active' : ''}`}
             >
               {link.name}
@@ -55,7 +55,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              href={link.path}
+              to={link.path}
               onClick={() => setIsOpen(false)}
               className={`navbar-mobile-link ${currentPath === link.path ? 'navbar-mobile-link-active' : ''}`}
             >

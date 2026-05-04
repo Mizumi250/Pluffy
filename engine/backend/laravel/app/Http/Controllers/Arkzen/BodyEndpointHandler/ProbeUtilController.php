@@ -5,7 +5,7 @@
 // Tatemono: body-endpoint-handler
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-05-04T03:28:19.615701Z
+// Generated: 2026-05-04T08:31:07.483384Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BodyEndpointHandler;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — auth-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T03:28:19.498Z
+// Generated: 2026-05-04T08:31:07.365Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,13 +22,13 @@ if (typeof window !== 'undefined') {
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
-  const navigate = useNavigate()
+  const router = useNavigate()
   const { user, logout } = useAuthStore()
 
   const handleLogout = async () => {
     await logout();
     router.refresh();
-    navigate('/auth-test/login');
+    router('/auth-test/login');
   };
 
   return (
