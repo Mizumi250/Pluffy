@@ -8,10 +8,10 @@ import * as path from 'path'
 import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildViteTatemono, rebuildViteTatemono, removeViteTatemono } from './vite-builder'
-import { checkBackendHealth } from '../../../frontend/nextjs/arkzen/core/backend-bridge'
+import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
 
 // Root is 3 levels up from engine/frontend/react-vite/arkzen/core/
-const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..', '..')
+const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
 const DEBOUNCE_MS = 500
 

@@ -20,9 +20,9 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from '../../../frontend/nextjs/arkzen/core/parser'
+import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
 import { registerNativeScreens, unregisterNativeScreens } from './native-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../../../frontend/nextjs/arkzen/core/backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
 export interface NativeBuildResult {
   success:  boolean
@@ -45,8 +45,7 @@ export async function buildNativeTatemono(corePath: string): Promise<NativeBuild
   // Step 1: Parse (reuses Next.js parser — same DSL)
   let parsed: Awaited<ReturnType<typeof parseTatemono>>
   try {
-    const content = fs.readFileSync(corePath, 'utf-8')
-    parsed = parseTatemono(content)
+    parsed = parseTatemono(corePath)
     steps.push({
       name:    'Parse Tatemono',
       status:  'success',

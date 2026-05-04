@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Arkzen Engine — Frontend core. Watches /modules, parses tatemonos, builds everything.",
   "private": true,
+  "type": "module",
   "scripts": {
     "arkzen": "tsx watch arkzen.ts",
     "dev": "concurrently \"npm run arkzen\" \"next dev --webpack\"",

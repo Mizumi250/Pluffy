@@ -70,17 +70,32 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
       .replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
       .replace(/\s*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
       .replace(/\s*import\s+React\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
+      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
+      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
+      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
+      .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
+      .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
       .trim()
     )
     .join('\n\n')
+
+  // Clean page.raw — strip Next.js-specific code not valid in Vite
+  const cleanPageRaw = page.raw
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
+    .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
+    .replace(/\buseRouter\b/g, 'useNavigate')
+    .replace(/\busePathname\b/g, 'useLocation')
+    .trim()
 
   // Extract component name
   const match = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
   const componentName = match ? match[1] : toPascalCase(page.name) + 'Page'
   const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
 
-  return `'use client'
-// ============================================================
+  return `// ============================================================
 // ARKZEN GENERATED PAGE — ${tatName}/${page.name} [React+Vite]
 // Layout: ${layout} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
 // DO NOT EDIT — edit tatemono instead
@@ -97,7 +112,7 @@ ${animImport}
 ${componentCode}
 
 // ── Page component from @arkzen:page:${page.name} ─────────────────────────────
-${page.raw.trim()}
+${cleanPageRaw}
 
 // ── Arkzen wrapper ─────────────────────────────────────────────────────────────
 const ${wrapperName} = () => {
@@ -237,14 +252,20 @@ function generateSharedComponents(tatemono: ParsedTatemono, tatDir: string): voi
   if (tatemono.components.length === 0) return
   ensureDir(tatDir)
 
-  const content = `'use client'
-// ============================================================
+  const content = `// ============================================================
 // ARKZEN GENERATED SHARED — ${tatemono.meta.name} [React+Vite]
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${tatemono.components.map(c => c.raw.trim()).join('\n\n')}
+${tatemono.components.map(c => c.raw
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
+    .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
+    .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
+    .trim()
+  ).join('\n\n')}
 `
   fs.writeFileSync(path.join(tatDir, '_shared.tsx'), content, 'utf-8')
   console.log(`[Arkzen Vite Router] ✓ Shared components: _shared.tsx`)

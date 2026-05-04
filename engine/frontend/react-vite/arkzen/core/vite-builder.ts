@@ -7,9 +7,9 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from '../../../frontend/nextjs/arkzen/core/parser'
+import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
 import { registerVitePages, unregisterVitePages } from './vite-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../../../frontend/nextjs/arkzen/core/backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
 export interface ViteBuildResult {
   success:  boolean
@@ -32,8 +32,7 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
   // Step 1: Parse
   let parsed: Awaited<ReturnType<typeof parseTatemono>>
   try {
-    const content = fs.readFileSync(corePath, 'utf-8')
-    parsed = parseTatemono(content)
+    parsed = parseTatemono(corePath)
     steps.push({ name: 'Parse Tatemono', status: 'success', message: `Parsed ${tatName} — ${parsed.pages.length} page(s)` })
     console.log(`[Arkzen Vite Parser] ✓ Parsed: ${tatName} v${parsed.meta.version}`)
     console.log(`[Arkzen Vite Parser]   Pages: ${parsed.pages.map(p => p.name).join(', ')}`)

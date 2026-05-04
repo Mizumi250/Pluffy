@@ -5,6 +5,8 @@
 // Usage:
 //   node arkzen.js switch nextjs
 //   node arkzen.js switch react-vite
+//   node arkzen.js switch react-inertia
+//   node arkzen.js switch native
 //   node arkzen.js stack          ← show current stack
 //   node arkzen.js stacks         ← list all available stacks
 // ============================================================
@@ -17,9 +19,10 @@ const JSON_PATH  = path.join(ROOT_DIR, 'arkzen.json')
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
 
 const VALID_STACKS = {
-  'nextjs':     path.join(ENGINE_DIR, 'frontend', 'nextjs'),
-  'react-vite': path.join(ENGINE_DIR, 'frontend', 'react-vite'),
-  'native':     path.join(ENGINE_DIR, 'frontend', 'native'),
+  'nextjs':        path.join(ENGINE_DIR, 'frontend', 'nextjs'),
+  'react-vite':    path.join(ENGINE_DIR, 'frontend', 'react-vite'),
+  'react-inertia': path.join(ENGINE_DIR, 'frontend', 'react-inertia'),
+  'native':        path.join(ENGINE_DIR, 'frontend', 'react-native'),
 }
 
 function readConfig() {
@@ -88,7 +91,7 @@ switch (command) {
     for (const [name, dir] of Object.entries(VALID_STACKS)) {
       const installed = fs.existsSync(path.join(dir, 'node_modules'))
       const isCurrent = name === active
-      console.log(`  ${isCurrent ? '→' : ' '} ${name.padEnd(12)} ${installed ? '✓ installed' : '✗ not installed'} ${isCurrent ? '(active)' : ''}`)
+      console.log(`  ${isCurrent ? '→' : ' '} ${name.padEnd(14)} ${installed ? '✓ installed' : '✗ not installed'} ${isCurrent ? '(active)' : ''}`)
     }
     break
   }
@@ -98,6 +101,6 @@ switch (command) {
     console.log('  node arkzen.js switch <stack>   Switch active stack')
     console.log('  node arkzen.js stack             Show current stack')
     console.log('  node arkzen.js stacks            List all stacks\n')
-    console.log('Available stacks: nextjs, react-vite, native\n')
+    console.log('Available stacks: nextjs, react-vite, react-inertia, native\n')
   }
 }

@@ -8,9 +8,9 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from '../../../frontend/nextjs/arkzen/core/parser'
+import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
 import { registerInertiaPages, unregisterInertiaPages } from './inertia-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../../../frontend/nextjs/arkzen/core/backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
 export interface InertiaBuildResult {
   success:  boolean
@@ -33,8 +33,7 @@ export async function buildInertiaTatemono(corePath: string): Promise<InertiaBui
   // Step 1: Parse (reuses Next.js parser — same DSL)
   let parsed: Awaited<ReturnType<typeof parseTatemono>>
   try {
-    const content = fs.readFileSync(corePath, 'utf-8')
-    parsed = parseTatemono(content)
+    parsed = parseTatemono(corePath)
     steps.push({
       name:    'Parse Tatemono',
       status:  'success',

@@ -234,6 +234,7 @@ const ENGINE_ONLY_FRONTEND = new Set([
   'arkzen/core/builder.ts',
   'arkzen/core/watcher.ts',
   'arkzen/core/backend-bridge.ts',
+  'arkzen/types/index.ts',
   'validate.js',
   'arkzen.ts',
   'arkzen.config.ts',
