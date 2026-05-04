@@ -2,10 +2,10 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:25:42.486Z
+// Generated: 2026-05-04T02:57:32.127Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '@/layouts/custom/dtr-geofencing-app'

@@ -1,10 +1,20 @@
 // ============================================================
-// ARKZEN ENGINE — VITE ROUTER v1.0
+// ARKZEN ENGINE — VITE ROUTER v1.2
 // React+Vite stack equivalent of router.ts
 // Reads same ParsedTatemono, generates Vite-compatible output:
 //   src/pages/{tatName}/{pageName}.tsx   ← page components
 //   src/arkzen/generated/routes.ts       ← React Router route registry
 //   src/arkzen/generated/{name}.animations.ts ← GSAP animations
+//
+// v1.2 fixes (uniform with Next.js router):
+//   • Strip any existing `export default` from page raw before
+//     appending the Arkzen wrapper — prevents double default export
+//   • Normalize animation fn: strip existing `export` before adding
+//     it back — prevents `export export const` when tatemono already
+//     writes `export const joPayrollAnimations`
+//   • Auto-detect memo/useCallback/useReducer/useContext/useMemo
+//     and add to React import
+//   • Replace process.env.NEXT_PUBLIC_* → import.meta.env.VITE_*
 // ============================================================
 
 import * as fs   from 'fs'
@@ -32,7 +42,7 @@ function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
 
-// ─── Layout import for Vite (uses React Router navigate instead of Next redirect) ──
+// ─── Layout helpers ────────────────────────────────────────────────────────────
 
 function getLayoutImport(layout: string, tatName: string): string {
   switch (layout) {
@@ -64,7 +74,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
     ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
     : ''
 
-  // Components raw
+  // Components raw — strip React/Next imports, they come from the page header
   const componentCode = tatemono.components
     .map(c => c.raw
       .replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
@@ -75,6 +85,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
       .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
       .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
       .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
+      .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
       .trim()
     )
     .join('\n\n')
@@ -88,10 +99,33 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
     .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
     .replace(/\buseRouter\b/g, 'useNavigate')
     .replace(/\busePathname\b/g, 'useLocation')
+    .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
+    // FIX v1.2: strip any `export default XxxPage` already in the raw page body
+    // so the Arkzen wrapper below is the only default export in the file
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
 
-  // Extract component name
-  const match = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
+  // Detect which React hooks are actually used in the combined output
+  const allCode       = componentCode + '\n' + cleanPageRaw
+  const needsMemo     = /\bmemo\s*\(/.test(allCode)
+  const needsCb       = /\buseCallback\s*\(/.test(allCode)
+  const needsReducer  = /\buseReducer\s*\(/.test(allCode)
+  const needsCtx      = /\buseContext\s*\(/.test(allCode)
+  const needsUseMemo  = /\buseMemo\s*\(/.test(allCode)
+
+  const reactHooks = [
+    'useRef',
+    'useEffect',
+    'useState',
+    needsMemo    && 'memo',
+    needsCb      && 'useCallback',
+    needsReducer && 'useReducer',
+    needsCtx     && 'useContext',
+    needsUseMemo && 'useMemo',
+  ].filter(Boolean).join(', ')
+
+  // Extract the page component name from raw
+  const match         = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
   const componentName = match ? match[1] : toPascalCase(page.name) + 'Page'
   const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
 
@@ -102,7 +136,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { ${reactHooks} } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 ${layoutImport}
@@ -153,6 +187,9 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
     .replace(/import.*from ['"]gsap\/ScrollTrigger['"]\s*;?\n?/g, '')
     .replace(/import React.*from ['"]react['"]\s*;?\n?/g, '')
     .replace(/gsap\.registerPlugin\(.*\)\s*;?\n?/g, '')
+    // FIX v1.2: strip any existing `export` on the fn before re-adding it —
+    // prevents `export export const` when tatemono writes `export const animFn`
+    .replace(new RegExp(`\\bexport\\s+const\\s+${animFnName}\\b`), `const ${animFnName}`)
     .replace(`const ${animFnName}`, `export const ${animFnName}`)
     .trim()
 
@@ -172,7 +209,7 @@ ${clean}
 `
 }
 
-// ─── Update route registry ─────────────────────────────────────────────────────
+// ─── Route registry ────────────────────────────────────────────────────────────
 
 interface ViteRoute {
   tatName:  string
@@ -231,7 +268,7 @@ ${routeArray}
   fs.writeFileSync(ROUTES_FILE, content, 'utf-8')
 }
 
-// ─── Generate custom layouts ───────────────────────────────────────────────────
+// ─── Custom layouts ────────────────────────────────────────────────────────────
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
   if (tatemono.layouts.length === 0) return
@@ -246,7 +283,7 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   }
 }
 
-// ─── Generate shared components file ──────────────────────────────────────────
+// ─── Shared components ─────────────────────────────────────────────────────────
 
 function generateSharedComponents(tatemono: ParsedTatemono, tatDir: string): void {
   if (tatemono.components.length === 0) return
@@ -264,6 +301,7 @@ ${tatemono.components.map(c => c.raw
     .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?\s*\n?/gm, '')
     .replace(/\s*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?\s*\n?/gm, '')
     .replace(/^['"]use client['"]\s*;?\s*\n?/gm, '')
+    .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
     .trim()
   ).join('\n\n')}
 `
@@ -278,13 +316,9 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   const tatDir  = path.join(PAGES_DIR, tatName)
   ensureDir(tatDir)
 
-  // Generate shared components
   generateSharedComponents(tatemono, tatDir)
-
-  // Generate custom layouts
   generateCustomLayouts(tatemono)
 
-  // Generate animation file
   const animContent = generateAnimationFile(tatemono)
   if (animContent) {
     ensureDir(GENERATED_DIR)
@@ -293,7 +327,6 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Vite Router] ✓ Animation file generated`)
   }
 
-  // Generate each page
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ViteRoute[] = []
 
@@ -306,17 +339,10 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
       ? `/${tatName}`
       : `/${tatName}/${page.name}`
 
-    newRoutes.push({
-      tatName,
-      pageName: page.name,
-      path:     routePath,
-      auth:     tatemono.meta.auth,
-    })
-
+    newRoutes.push({ tatName, pageName: page.name, path: routePath, auth: tatemono.meta.auth })
     console.log(`[Arkzen Vite Router] ✓ /${tatName}${page.name === 'index' ? '' : '/' + page.name} [vite]`)
   }
 
-  // Update route registry
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Vite Router] ✓ Route registry updated: ${newRoutes.length} page(s)`)
 }
@@ -324,21 +350,18 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
 // ─── Remove tatemono pages ─────────────────────────────────────────────────────
 
 export function unregisterVitePages(tatName: string): void {
-  // Remove page files
   const tatDir = path.join(PAGES_DIR, tatName)
   if (fs.existsSync(tatDir)) {
     fs.rmSync(tatDir, { recursive: true, force: true })
     console.log(`[Arkzen Vite Router] ✓ Removed pages: ${tatName}`)
   }
 
-  // Remove animation file
   const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
   if (fs.existsSync(animPath)) {
     fs.rmSync(animPath)
     console.log(`[Arkzen Vite Router] ✓ Animation file removed`)
   }
 
-  // Remove from route registry
   const routes = readExistingRoutes().filter(r => r.tatName !== tatName)
   writeRouteRegistry(routes)
   console.log(`[Arkzen Vite Router] ✓ Route registry updated`)

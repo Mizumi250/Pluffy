@@ -2,10 +2,10 @@
 // ARKZEN GENERATED PAGE — queue-flow/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:25:43.226Z
+// Generated: 2026-05-04T02:57:32.970Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '@/layouts/custom/queue-flow-app'

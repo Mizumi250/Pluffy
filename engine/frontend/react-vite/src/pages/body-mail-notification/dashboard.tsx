@@ -2,10 +2,10 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:25:41.634Z
+// Generated: 2026-05-04T02:57:31.339Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AuthLayout }  from '@/layouts/AuthLayout'

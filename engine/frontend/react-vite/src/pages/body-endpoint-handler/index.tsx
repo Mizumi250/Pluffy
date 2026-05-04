@@ -2,10 +2,10 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:25:41.196Z
+// Generated: 2026-05-04T02:57:31.036Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
