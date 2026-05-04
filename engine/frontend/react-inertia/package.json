@@ -1,0 +1,34 @@
+{
+  "name": "arkzen-inertia-engine",
+  "version": "1.0.0",
+  "description": "Arkzen Engine — React+Inertia.js+Laravel stack. Same tatemono DSL, monolithic SSR.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "arkzen": "tsx watch arkzen.ts",
+    "dev": "npm run arkzen",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@inertiajs/react": "^1.0.0",
+    "chokidar": "^3.6.0",
+    "framer-motion": "^11.0.0",
+    "gsap": "^3.12.0",
+    "js-yaml": "^4.1.0",
+    "lucide-react": "^0.400.0",
+    "react": "^18.3.0",
+    "react-dom": "^18.3.0",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@types/js-yaml": "^4.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "concurrently": "^8.2.2",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.4.0"
+  }
+}
