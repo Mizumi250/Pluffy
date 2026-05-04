@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:57:31.339Z
+// Generated: 2026-05-04T03:28:19.833Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -71,7 +71,7 @@ const StatusDot = ({ status }: { status: string }) => (
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const { user, logout } = useAuthStore()
-  const router           = useNavigate()
+  const navigate = useNavigate()
   const { toast, success: toastSuccess, error: toastError } = useToast()
 
   const [log,     setLog]     = useState<SendLogEntry[]>([])
@@ -134,7 +134,7 @@ const DashboardPage = () => {
     } catch { toastError('Clear failed') }
   }
 
-  const handleLogout = async () => { await logout(); router.push('/body-mail-notification') }
+  const handleLogout = async () => { await logout(); navigate('/body-mail-notification') }
 
   const card: React.CSSProperties = {
     background: '#fff', borderRadius: 14, padding: 28,

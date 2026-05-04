@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-mail-notification [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:57:31.335Z
+// Generated: 2026-05-04T03:28:19.830Z
 // ============================================================
 
 import React, { useState, useEffect, useCallback } from 'react'import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'

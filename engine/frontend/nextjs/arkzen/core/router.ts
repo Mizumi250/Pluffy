@@ -274,8 +274,22 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
     .replace(/import.*from ['"]gsap\/ScrollTrigger['"][;]?\n?/g, '')
     .replace(/import React.*from ['"]react['"][;]?\n?/g, '')
     .replace(/gsap\.registerPlugin\(.*\)[;]?\n?/g, '')
+    // strip existing `export` before re-adding — prevents `export export const`
+    .replace(new RegExp(`\\bexport\\s+const\\s+${animFnName}\\b`), `const ${animFnName}`)
     .replace(`const ${animFnName}`, `export const ${animFnName}`)
+    // strip trailing */ — tatemono wraps animation in block comment; closing */ leaks
+    .replace(/\*\/\s*$/, '')
     .trim()
+
+  // Auto-inject pageVariants when the tatemono didn't define one.
+  // Pages always import { animFn, pageVariants } — if missing, SWC/esbuild hard-fails.
+  const hasPageVariants = /export\s+const\s+pageVariants\b/.test(cleanAnimation)
+  const pageVariantsBlock = hasPageVariants ? '' : `
+export const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
+}`
 
   return `// ============================================================
 // ARKZEN GENERATED ANIMATIONS — ${tatemono.meta.name}
@@ -289,7 +303,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-${cleanAnimation}
+${cleanAnimation}${pageVariantsBlock}
 `
 }
 

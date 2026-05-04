@@ -1,10 +1,6 @@
 // ARKZEN CUSTOM LAYOUT — dtr-geofencing/app [React+Vite]
 
-'use client'
-
-import React, { useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
+import React, { useState } from 'react'import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },
@@ -12,8 +8,8 @@ const NAV = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const pathname = usePathname()
-  const router   = useRouter()
+  const { pathname } = useLocation()
+  const navigate = useNavigate()
   const [open, setOpen] = useState(false)
 
   return (
@@ -30,7 +26,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {NAV.map(({ href, label }) => (
               <button
                 key={href}
-                onClick={() => router.push(href)}
+                onClick={() => navigate(href)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   pathname === href
                     ? 'bg-white/10 text-white'
@@ -53,7 +49,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {NAV.map(({ href, label, icon: Icon }) => (
               <button
                 key={href}
-                onClick={() => { router.push(href); setOpen(false) }}
+                onClick={() => { navigate(href); setOpen(false) }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all text-left"
               >
                 <Icon size={15} /> {label}

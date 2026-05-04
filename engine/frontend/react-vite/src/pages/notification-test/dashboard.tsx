@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:57:32.910Z
+// Generated: 2026-05-04T03:28:21.125Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -29,7 +29,7 @@ const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
-  const router = useNavigate()
+  const navigate = useNavigate()
   const { user, logout } = useAuthStore()
   const [inbox, setInbox] = useState<any[]>([])
   const [popup, setPopup] = useState<string | null>(null)
@@ -215,7 +215,7 @@ const DashboardPage = () => {
     wsRef.current?.close()
     await logout()
     router.refresh()
-    router.replace('/notification-test/login')
+    navigate('/notification-test/login')
   }
 
   const statusColor = {

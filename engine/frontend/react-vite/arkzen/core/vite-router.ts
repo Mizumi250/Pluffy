@@ -191,7 +191,21 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
     // prevents `export export const` when tatemono writes `export const animFn`
     .replace(new RegExp(`\\bexport\\s+const\\s+${animFnName}\\b`), `const ${animFnName}`)
     .replace(`const ${animFnName}`, `export const ${animFnName}`)
+    // FIX v1.3: strip trailing */ — tatemono wraps animation code in a JS block
+    // comment so TS ignores it; the closing */ leaks into raw causing esbuild error
+    .replace(/\*\/\s*$/, '')
     .trim()
+
+  // FIX v1.3: auto-inject pageVariants when the tatemono didn't define one.
+  // Both stacks always import { animFn, pageVariants } from the animation file.
+  // If pageVariants is missing, esbuild hard-fails. Tatemono-defined takes priority.
+  const hasPageVariants = /export\s+const\s+pageVariants\b/.test(clean)
+  const pageVariantsBlock = hasPageVariants ? '' : `
+export const pageVariants = {
+  initial: { opacity: 0, y: 12 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
+  exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
+}`
 
   return `// ============================================================
 // ARKZEN GENERATED ANIMATIONS — ${tatemono.meta.name} [React+Vite]
@@ -205,7 +219,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-${clean}
+${clean}${pageVariantsBlock}
 `
 }
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:57:31.806Z
+// Generated: 2026-05-04T03:28:20.284Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, memo, useCallback } from 'react'
@@ -113,7 +113,7 @@ ChannelPanel.displayName = 'ChannelPanel'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
-  const router = useNavigate()
+  const navigate = useNavigate()
   const { user, logout } = useAuthStore()
 
   // ── per-channel state ──────────────────────────────────────
@@ -304,7 +304,7 @@ const DashboardPage = () => {
     wsRef.current?.close()
     await logout()
     router.refresh()
-    router.replace('/broadcast-test/login')
+    navigate('/broadcast-test/login')
   }
 
   // ── useCallback send handlers — stable references, won't cause ChannelPanel to re-render

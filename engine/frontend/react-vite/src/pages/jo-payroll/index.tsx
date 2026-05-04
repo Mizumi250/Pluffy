@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T02:57:32.603Z
+// Generated: 2026-05-04T03:28:20.736Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react'
@@ -484,7 +484,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const DashboardPage = () => {
   const { summary, setSummary, jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
-  const router = useNavigate()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const load = async () => {
@@ -551,13 +551,13 @@ const DashboardPage = () => {
             </p>
             <div className="flex gap-3 mt-4">
               <button
-                onClick={() => router.push('/jo-payroll/job-database')}
+                onClick={() => navigate('/jo-payroll/job-database')}
                 className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white text-xs font-semibold rounded-xl hover:bg-neutral-700 transition-colors"
               >
                 <Plus size={13} /> Add J.O. Worker
               </button>
               <button
-                onClick={() => router.push('/jo-payroll/payslip')}
+                onClick={() => navigate('/jo-payroll/payslip')}
                 className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl hover:bg-neutral-50 transition-colors"
               >
                 <Printer size={13} /> Generate Payslip
@@ -641,7 +641,7 @@ const DashboardPage = () => {
             subtitle="Recent entries"
             action={
               <button
-                onClick={() => router.push('/jo-payroll/job-database')}
+                onClick={() => navigate('/jo-payroll/job-database')}
                 className="text-xs font-medium text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors"
               >
                 View all <ArrowUpRight size={13} />

@@ -1,12 +1,56 @@
 // ============================================================
-// ARKZEN — Vite Config (React+Vite stack)
+// ARKZEN — Vite Config (React+Vite stack) v1.1
+//
+// v1.1: arkzenReadyPlugin — polls for src/arkzen/generated/.arkzen-ready
+//   before allowing Vite's buildStart to proceed. This ensures the
+//   initial dep scan never reads stale generated pages from a
+//   previous session (race condition fix).
 // ============================================================
-import { defineConfig } from 'vite'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
-import path from 'path'
+import path  from 'path'
+import fs    from 'fs'
+
+const READY_FLAG = path.resolve(__dirname, 'src/arkzen/generated/.arkzen-ready')
+
+function arkzenReadyPlugin(): Plugin {
+  return {
+    name: 'arkzen-ready',
+    async buildStart() {
+      // Only gate during dev server startup, not production builds
+      if (process.env.NODE_ENV === 'production') return
+
+      const TIMEOUT_MS  = 60_000  // 60s max wait
+      const POLL_MS     = 200
+      const start       = Date.now()
+
+      if (!fs.existsSync(READY_FLAG)) {
+        process.stdout.write('[Arkzen Vite] ⏳ Waiting for Arkzen initial build')
+      }
+
+      while (!fs.existsSync(READY_FLAG)) {
+        if (Date.now() - start > TIMEOUT_MS) {
+          process.stdout.write('\n')
+          console.warn('[Arkzen Vite] ⚠ Timed out waiting for Arkzen ready flag — starting anyway')
+          return
+        }
+        process.stdout.write('.')
+        await new Promise(r => setTimeout(r, POLL_MS))
+      }
+
+      if (Date.now() - start > 0) {
+        process.stdout.write('\n')
+      }
+      console.log(`[Arkzen Vite] ✓ Pages ready — starting Vite dep scan`)
+    },
+  }
+}
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    arkzenReadyPlugin(),
+    react(),
+  ],
   resolve: {
     alias: [
       // @/arkzen/core → engine root arkzen/core  (matches Next.js structure)
