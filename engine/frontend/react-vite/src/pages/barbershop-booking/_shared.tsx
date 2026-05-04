@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — barbershop-booking [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T08:31:07.380Z
+// Generated: 2026-05-04T11:25:49.442Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
