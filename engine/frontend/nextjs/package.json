@@ -5,9 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync:shared": "tsx arkzen/sync.ts",
     "arkzen": "tsx watch arkzen.ts",
-    "dev": "concurrently \"npm run arkzen\" \"next dev --webpack\"",
-    "build": "next build",
+    "dev": "npm run sync:shared && concurrently \"npm run arkzen\" \"next dev --webpack\"",
+    "build": "npm run sync:shared && next build",
     "start": "next start"
   },
   "dependencies": {

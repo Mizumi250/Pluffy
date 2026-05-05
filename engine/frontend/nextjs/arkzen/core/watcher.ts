@@ -9,6 +9,7 @@ import chokidar from 'chokidar'
 import { buildTatemono, rebuildTatemono, removeTatemono, rebuildAll } from './builder'
 import { checkBackendHealth } from './backend-bridge'
 import { listRegistry, getRegistry, getRegistryEntry } from './registry'
+import { syncSharedCoreToCurrentStack } from './shared-sync'
 
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
@@ -89,6 +90,7 @@ async function startup(): Promise<void> {
   console.log(`[Arkzen] Watching tatemonos at: ${MODULES_DIR}`)
 
   fs.mkdirSync(MODULES_DIR, { recursive: true })
+  syncSharedCoreToCurrentStack('Arkzen')
 
   console.log(`\n[Arkzen] Checking Laravel backend...`)
   const backendHealthy = await checkBackendHealth()

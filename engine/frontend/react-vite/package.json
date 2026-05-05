@@ -5,9 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync:shared": "tsx arkzen/sync.ts",
     "arkzen": "tsx watch arkzen.ts",
-    "dev": "concurrently \"npm run arkzen\" \"vite --port 3000 --host 0.0.0.0\"",
-    "build": "tsc && vite build",
+    "dev": "npm run sync:shared && concurrently \"npm run arkzen\" \"vite --port 3000 --host 0.0.0.0\"",
+    "build": "npm run sync:shared && tsc && vite build",
     "preview": "vite preview"
   },
   "dependencies": {

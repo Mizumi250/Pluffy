@@ -8,6 +8,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 import { registerVitePages, unregisterVitePages } from './vite-router'
 import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
@@ -21,6 +22,8 @@ export interface ViteBuildResult {
 // ─── Build ────────────────────────────────────────────────────────────────────
 
 export async function buildViteTatemono(corePath: string): Promise<ViteBuildResult> {
+  syncSharedCoreToCurrentStack('Arkzen Vite Builder')
+
   const tatName = path.basename(path.dirname(corePath))
   const steps: ViteBuildResult['steps'] = []
   const errors: string[] = []

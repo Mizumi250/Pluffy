@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — CHART
 // arkzen/core/components/Chart.tsx

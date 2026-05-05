@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — useCRDT
 // arkzen/core/hooks/useCRDT.ts

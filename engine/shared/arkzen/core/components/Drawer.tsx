@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — DRAWER COMPONENT
 // Three tiers of customization:

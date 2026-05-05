@@ -14,6 +14,7 @@ import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildViteTatemono, rebuildViteTatemono, removeViteTatemono } from './vite-builder'
 import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 
 // Root is 3 levels up from engine/frontend/react-vite/arkzen/core/
 const ROOT_DIR      = path.resolve(process.cwd(), '..', '..', '..')
@@ -72,6 +73,7 @@ export async function startViteWatcher(): Promise<void> {
 
   fs.mkdirSync(MODULES_DIR,   { recursive: true })
   fs.mkdirSync(GENERATED_DIR, { recursive: true })
+  syncSharedCoreToCurrentStack('Arkzen Vite')
 
   // Remove stale ready flag so Vite waits for THIS build to finish
   if (fs.existsSync(READY_FLAG)) fs.unlinkSync(READY_FLAG)

@@ -9,6 +9,7 @@ import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildNativeTatemono, rebuildNativeTatemono, removeNativeTatemono } from './native-builder'
 import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 
 // Root is 3 levels up from engine/frontend/react-native/arkzen/core/
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
@@ -68,6 +69,7 @@ export async function startNativeWatcher(): Promise<void> {
   console.log(`[Arkzen Native] ⚠ To run the app: open the generated Expo project separately`)
 
   fs.mkdirSync(MODULES_DIR, { recursive: true })
+  syncSharedCoreToCurrentStack('Arkzen Native')
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {

@@ -21,6 +21,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 import { registerNativeScreens, unregisterNativeScreens } from './native-router'
 import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
@@ -34,6 +35,8 @@ export interface NativeBuildResult {
 // ─── Build ────────────────────────────────────────────────────────────────────
 
 export async function buildNativeTatemono(corePath: string): Promise<NativeBuildResult> {
+  syncSharedCoreToCurrentStack('Arkzen Native Builder')
+
   const tatName = path.basename(path.dirname(corePath))
   const steps: NativeBuildResult['steps'] = []
   const errors: string[] = []

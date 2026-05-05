@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-05T13:04:09.447Z
+// Generated: 2026-05-05T15:14:18.391Z
 // ============================================================
 
 'use client'

@@ -9,6 +9,7 @@ import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildInertiaTatemono, rebuildInertiaTatemono, removeInertiaTatemono } from './inertia-builder'
 import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 
 // Root is 3 levels up from engine/frontend/react-inertia/arkzen/core/
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
@@ -67,6 +68,7 @@ export async function startInertiaWatcher(): Promise<void> {
   console.log(`[Arkzen Inertia] NOTE: Run 'php artisan serve' in backend/laravel/ for app`)
 
   fs.mkdirSync(MODULES_DIR, { recursive: true })
+  syncSharedCoreToCurrentStack('Arkzen Inertia')
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {

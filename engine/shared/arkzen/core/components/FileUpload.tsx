@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — FILE UPLOAD
 // arkzen/core/components/FileUpload.tsx

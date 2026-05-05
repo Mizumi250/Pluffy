@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — useMutation
 // arkzen/core/hooks/useMutation.ts

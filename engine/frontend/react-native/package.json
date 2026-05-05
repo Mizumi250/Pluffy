@@ -5,8 +5,9 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync:shared": "tsx arkzen/sync.ts",
     "arkzen": "tsx watch arkzen.ts",
-    "dev": "npm run arkzen"
+    "dev": "npm run sync:shared && npm run arkzen"
   },
   "dependencies": {
     "@react-navigation/native": "^6.1.0",

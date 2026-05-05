@@ -12,6 +12,7 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
+      "@/arkzen/core/*": ["./arkzen/core/*"],
       "@/*": ["./resources/js/*"]
     },
     "outDir": "./dist"

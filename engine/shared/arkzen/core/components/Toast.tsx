@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — TOAST COMPONENT v5.0
 // Added: renderToast slot for full custom toast rendering

@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — MODAL COMPONENT
 // Three tiers of customization:

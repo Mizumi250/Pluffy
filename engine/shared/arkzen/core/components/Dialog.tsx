@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — DIALOG COMPONENT
 // Three tiers of customization:

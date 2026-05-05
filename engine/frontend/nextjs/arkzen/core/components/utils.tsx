@@ -1,3 +1,4 @@
+
 'use client'
 
 // ============================================================
@@ -9,7 +10,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ChevronRight, ChevronLeft, Home, Loader2, PackageOpen } from 'lucide-react'
-import Link from 'next/link'
+import { Link } from '@/arkzen/core/adapters/Link'
 
 // ─────────────────────────────────────────────
 // BREADCRUMB

@@ -14,8 +14,11 @@ import { updateRegistry, removeFromRegistry }           from './registry'
 import type { ParsedTatemono, BuildResult, BuildStep }  from '../types'
 import { triggerBackendBuild, triggerBackendRemove }    from './backend-bridge'
 import { generatePWAFiles }                              from './pwa-builder'
+import { syncSharedCoreToCurrentStack }                 from './shared-sync'
 
 export async function buildTatemono(filePath: string): Promise<BuildResult> {
+  syncSharedCoreToCurrentStack('Arkzen Builder')
+
   const fileName      = path.basename(filePath, '.tsx')
   const tatemonoName  = fileName === 'core'
     ? path.basename(path.dirname(filePath))

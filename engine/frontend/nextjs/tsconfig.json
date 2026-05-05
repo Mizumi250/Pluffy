@@ -18,9 +18,8 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/arkzen/core/*": ["./arkzen/core/*"],
+      "@/*": ["./*"]
     },
     "incremental": true,
     "plugins": [

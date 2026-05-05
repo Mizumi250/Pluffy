@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — SORTABLE LIST
 // arkzen/core/components/SortableList.tsx

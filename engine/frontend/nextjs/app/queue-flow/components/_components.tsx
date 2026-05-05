@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-05T13:04:11.455Z
+// Generated: 2026-05-05T15:14:21.362Z
 // ============================================================
 
 'use client'

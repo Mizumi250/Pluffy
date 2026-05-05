@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — useQuery
 // arkzen/core/hooks/useQuery.ts

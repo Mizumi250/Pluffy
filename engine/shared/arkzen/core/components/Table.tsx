@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — TABLE COMPONENT v2.0
 // arkzen/core/components/Table.tsx

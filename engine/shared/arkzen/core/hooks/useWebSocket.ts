@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — useWebSocket
 // arkzen/core/hooks/useWebSocket.ts

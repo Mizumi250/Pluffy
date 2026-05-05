@@ -1,3 +1,5 @@
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — COMPONENTS INDEX
 // All built-in engine components exported from one place

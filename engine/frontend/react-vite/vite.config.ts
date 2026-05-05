@@ -69,11 +69,11 @@ export default defineConfig({
         find: '@/arkzen/core/adapters',
         replacement: path.resolve(__dirname, './arkzen/core/adapters'),
       },
-      // @/arkzen/core → engine/shared/arkzen/core (single source of truth)
-      // components/, hooks/, lib/ all live here — shared across all stacks
+      // @/arkzen/core → local stack copy
+      // synced from engine/shared on Arkzen build/start
       {
         find: '@/arkzen/core',
-        replacement: path.resolve(__dirname, '../../shared/arkzen/core'),
+        replacement: path.resolve(__dirname, './arkzen/core'),
       },
       // @/ → src/  (everything else: pages, layouts, arkzen/generated, etc.)
       {

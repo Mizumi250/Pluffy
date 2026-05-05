@@ -10,9 +10,16 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   resolve: {
-    alias: {
-      '@': path.resolve(__dirname, './resources/js'),
-    },
+    alias: [
+      {
+        find: '@/arkzen/core',
+        replacement: path.resolve(__dirname, './arkzen/core'),
+      },
+      {
+        find: '@',
+        replacement: path.resolve(__dirname, './resources/js'),
+      },
+    ],
   },
   build: {
     // Output goes into Laravel public/build — served by Laravel

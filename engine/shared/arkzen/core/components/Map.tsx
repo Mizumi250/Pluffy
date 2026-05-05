@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — MAP
 // arkzen/core/components/Map.tsx

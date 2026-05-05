@@ -9,6 +9,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
+import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
 import { registerInertiaPages, unregisterInertiaPages } from './inertia-router'
 import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
 
@@ -22,6 +23,8 @@ export interface InertiaBuildResult {
 // ─── Build ────────────────────────────────────────────────────────────────────
 
 export async function buildInertiaTatemono(corePath: string): Promise<InertiaBuildResult> {
+  syncSharedCoreToCurrentStack('Arkzen Inertia Builder')
+
   const tatName = path.basename(path.dirname(corePath))
   const steps: InertiaBuildResult['steps'] = []
   const errors: string[] = []

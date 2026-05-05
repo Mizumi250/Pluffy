@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — RICH TEXT EDITOR
 // arkzen/core/components/RichTextEditor.tsx

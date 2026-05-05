@@ -5,9 +5,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync:shared": "tsx arkzen/sync.ts",
     "arkzen": "tsx watch arkzen.ts",
-    "dev": "npm run arkzen",
-    "build": "tsc"
+    "dev": "npm run sync:shared && npm run arkzen",
+    "build": "npm run sync:shared && tsc"
   },
   "dependencies": {
     "@inertiajs/react": "^1.0.0",

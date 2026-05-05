@@ -1,3 +1,5 @@
+'use client'
+
 // Re-exports from utils for individual imports
 export {
   Breadcrumb,

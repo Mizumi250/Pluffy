@@ -1,4 +1,6 @@
 
+'use client'
+
 // ============================================================
 // ARKZEN ENGINE — UTILITY COMPONENTS v5.0
 // Added render slots to: Breadcrumb, Badge, Avatar,
