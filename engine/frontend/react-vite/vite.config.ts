@@ -63,11 +63,17 @@ export default defineConfig({
   ],
   resolve: {
     alias: [
-      // @/arkzen/core → engine root arkzen/core  (matches Next.js structure)
-      // Must be listed BEFORE the catch-all @/ rule
+      // @/arkzen/core/adapters → this stack's own adapters (MUST be first — more specific)
+      // Each stack owns only its adapters/ folder (Link.tsx etc.)
+      {
+        find: '@/arkzen/core/adapters',
+        replacement: path.resolve(__dirname, './arkzen/core/adapters'),
+      },
+      // @/arkzen/core → engine/shared/arkzen/core (single source of truth)
+      // components/, hooks/, lib/ all live here — shared across all stacks
       {
         find: '@/arkzen/core',
-        replacement: path.resolve(__dirname, './arkzen/core'),
+        replacement: path.resolve(__dirname, '../../shared/arkzen/core'),
       },
       // @/ → src/  (everything else: pages, layouts, arkzen/generated, etc.)
       {

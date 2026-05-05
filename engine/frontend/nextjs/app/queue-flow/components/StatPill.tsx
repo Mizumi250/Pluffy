@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T14:35:53.222Z
+// Generated: 2026-05-05T13:04:11.457Z
 // ============================================================
 
 export { StatPill } from './_components'

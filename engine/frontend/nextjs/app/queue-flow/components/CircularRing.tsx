@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CircularRing
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-03T14:35:53.222Z
+// Generated: 2026-05-05T13:04:11.456Z
 // ============================================================
 
 export { CircularRing } from './_components'
