@@ -2,13 +2,14 @@
 // ARKZEN GENERATED PAGE — roles-test/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:52.181Z
+// Generated: 2026-05-05T23:34:32.843Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────

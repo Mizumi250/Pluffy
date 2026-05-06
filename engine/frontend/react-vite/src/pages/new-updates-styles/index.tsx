@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — new-updates-styles/index [React+Vite]
-// Layout: guest | Auth: false | Guest-only: true
+// Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:51.982Z
+// Generated: 2026-05-05T23:34:32.374Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { useNavigate, Link } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
 
+import './styles/global.css'
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
@@ -236,7 +237,7 @@ const ArkzenPage_NewUpdatesStyles_Index = () => {
   }, [])
 
   return (
-    <GuestLayout guestOnly={true}>
+    <GuestLayout>
       <motion.div
         ref={pageRef}
         variants={{}}

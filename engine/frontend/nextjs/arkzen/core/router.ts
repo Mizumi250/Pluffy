@@ -12,6 +12,7 @@ import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { writeSitemap } from './sitemap'
 import { getRegistry } from './registry'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
+import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 
 const APP_DIR   = path.resolve(process.cwd(), 'app')
 const PAGES_DIR = path.resolve(process.cwd(), 'pages')
@@ -449,40 +450,11 @@ ${hasFavicon ? metadataCode + '\n\n' : ''}export default function ${toPascalCase
 }
 
 // ─────────────────────────────────────────────
-// GENERATE CSS STYLES — v6.4
-// Generates global.css for @arkzen:style and CSS Modules for named styles
+// GENERATE CSS STYLES (shared emitter)
 // ─────────────────────────────────────────────
 
-function generateGlobalStyleFile(tatemono: ParsedTatemono, tatemonoDir: string): void {
-  const globalStyles = tatemono.styles.filter(s => !s.name)
-  if (globalStyles.length === 0) return
-
-  const stylesFolder = path.join(tatemonoDir, 'styles')
-  if (!fs.existsSync(stylesFolder)) {
-    fs.mkdirSync(stylesFolder, { recursive: true })
-  }
-
-  const globalStyle = globalStyles[0]
-  const content = globalStyle.raw
-
-  fs.writeFileSync(path.join(stylesFolder, 'global.css'), content, 'utf-8')
-  console.log(`[Arkzen Router] ✓ Global style: styles/global.css`)
-}
-
-function generateCSSModuleFiles(tatemono: ParsedTatemono, tatemonoDir: string): void {
-  const namedStyles = tatemono.styles.filter(s => s.name)
-  if (namedStyles.length === 0) return
-
-  const stylesFolder = path.join(tatemonoDir, 'styles')
-  if (!fs.existsSync(stylesFolder)) {
-    fs.mkdirSync(stylesFolder, { recursive: true })
-  }
-
-  for (const style of namedStyles) {
-    const filename = `${style.name}.module.css`
-    fs.writeFileSync(path.join(stylesFolder, filename), style.raw, 'utf-8')
-    console.log(`[Arkzen Router] ✓ Style module: styles/${filename}`)
-  }
+function generateStyleFiles(tatemono: ParsedTatemono, tatemonoDir: string): void {
+  emitTatemonoStyles(tatemono, tatemonoDir, { loggerLabel: 'Arkzen Router' })
 }
 
 // ─────────────────────────────────────────────
@@ -578,8 +550,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
     generateTatemonoLayout(tatemono, tatemonoDir)
 
     // v6.4: generate CSS styles (global + CSS Modules)
-    generateGlobalStyleFile(tatemono, tatemonoDir)
-    generateCSSModuleFiles(tatemono, tatemonoDir)
+    generateStyleFiles(tatemono, tatemonoDir)
 
     // v5.1: auto-generate root redirect when no index page is declared
     const rootRedirect = generateRootRedirect(tatemono)
@@ -620,8 +591,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
     generateErrorHandlers(tatemono, tatemonoDir)
 
     // v6.4: generate CSS styles (global + CSS Modules)
-    generateGlobalStyleFile(tatemono, tatemonoDir)
-    generateCSSModuleFiles(tatemono, tatemonoDir)
+    generateStyleFiles(tatemono, tatemonoDir)
 
     // v5.1: auto-generate root redirect when no index page is declared
     const rootRedirectPages = generateRootRedirect(tatemono)

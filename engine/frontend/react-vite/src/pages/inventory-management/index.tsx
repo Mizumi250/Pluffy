@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Vite]
-// Layout: guest | Auth: false | Guest-only: true
+// Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:51.343Z
+// Generated: 2026-05-05T23:34:31.541Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
+
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
@@ -248,7 +249,7 @@ const ArkzenPage_InventoryManagement_Index = () => {
   }, [])
 
   return (
-    <GuestLayout guestOnly={true}>
+    <GuestLayout>
       <motion.div
         ref={pageRef}
         variants={pageVariants}

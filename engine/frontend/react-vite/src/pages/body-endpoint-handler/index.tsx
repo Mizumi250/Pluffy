@@ -1,14 +1,15 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
-// Layout: guest | Auth: false | Guest-only: true
+// Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T12:46:10.566Z
+// Generated: 2026-05-05T23:34:29.873Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
@@ -338,7 +339,7 @@ const ArkzenPage_BodyEndpointHandler_Index = () => {
   }, [])
 
   return (
-    <GuestLayout guestOnly={true}>
+    <GuestLayout>
       <motion.div
         ref={pageRef}
         variants={{}}

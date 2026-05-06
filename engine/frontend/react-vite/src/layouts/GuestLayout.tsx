@@ -3,33 +3,47 @@
 // For login/register pages — redirects to dashboard if already authed
 // ============================================================
 import React, { useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 interface GuestLayoutProps {
   children: React.ReactNode
+  redirectIfAuth?: boolean
   guestOnly?: boolean
+  redirectTo?: string
+  className?: string
 }
 
-export function GuestLayout({ children, guestOnly }: GuestLayoutProps) {
+export function GuestLayout({
+  children,
+  redirectIfAuth = false,
+  guestOnly = false,
+  redirectTo,
+  className = '',
+}: GuestLayoutProps) {
   const navigate = useNavigate()
+  const location = useLocation()
+  const shouldGuard = redirectIfAuth || guestOnly
 
   useEffect(() => {
-    if (!guestOnly) return
-    // Check if any auth cookie exists — if so redirect to dashboard
+    if (!shouldGuard) return
+
     const cookies = document.cookie.split(';').map(c => c.trim())
     const hasAuth = cookies.some(c => c.startsWith('arkzen-auth-'))
+
     if (hasAuth) {
-      // Find which tatemono by cookie name
       const authCookie = cookies.find(c => c.startsWith('arkzen-auth-'))
       if (authCookie) {
         const tatName = authCookie.split('=')[0].replace('arkzen-auth-', '')
-        navigate(`/${tatName}/dashboard`, { replace: true })
+        const fallbackTatName = location.pathname.split('/').filter(Boolean)[0]
+        const targetTatName = tatName || fallbackTatName
+        const destination = redirectTo ?? (targetTatName ? `/${targetTatName}/dashboard` : '/dashboard')
+        navigate(destination, { replace: true })
       }
     }
-  }, [guestOnly, navigate])
+  }, [location.pathname, navigate, redirectTo, shouldGuard])
 
   return (
-    <div style={{ minHeight: '100vh' }}>
+    <div className={className}>
       {children}
     </div>
   )

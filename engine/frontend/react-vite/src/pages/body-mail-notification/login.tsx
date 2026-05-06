@@ -2,13 +2,14 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T12:46:10.861Z
+// Generated: 2026-05-05T23:34:30.226Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────

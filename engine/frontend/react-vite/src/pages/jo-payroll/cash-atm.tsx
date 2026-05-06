@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:51.411Z
+// Generated: 2026-05-05T23:34:31.614Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '@/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'

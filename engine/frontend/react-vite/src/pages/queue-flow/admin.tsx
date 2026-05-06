@@ -2,13 +2,14 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:52.078Z
+// Generated: 2026-05-05T23:34:32.476Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '@/layouts/custom/queue-flow-app'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────

@@ -2,13 +2,14 @@
 // ARKZEN GENERATED PAGE — notification-test/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:51.992Z
+// Generated: 2026-05-05T23:34:32.388Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────

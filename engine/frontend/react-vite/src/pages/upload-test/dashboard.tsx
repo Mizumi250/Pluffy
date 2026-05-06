@@ -1,14 +1,15 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — upload-test/dashboard [React+Vite]
-// Layout: guest | Auth: false | Guest-only: true
+// Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-04T11:25:53.021Z
+// Generated: 2026-05-05T23:34:33.745Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/layouts/GuestLayout'
+
 
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
@@ -203,7 +204,7 @@ const ArkzenPage_UploadTest_Dashboard = () => {
   }, [])
 
   return (
-    <GuestLayout guestOnly={true}>
+    <GuestLayout>
       <motion.div
         ref={pageRef}
         variants={{}}

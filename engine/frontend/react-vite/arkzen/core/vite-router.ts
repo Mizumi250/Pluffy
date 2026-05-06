@@ -20,6 +20,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage } from '../types'
+import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 
 const SRC_DIR        = path.resolve(process.cwd(), 'src')
 const PAGES_DIR      = path.join(SRC_DIR, 'pages')
@@ -123,17 +124,22 @@ function getLayoutComponent(layout: string): string {
 
 // ─── Generate a single page file ──────────────────────────────────────────────
 
-function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
+function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalStyle: boolean): string {
   const tatName       = tatemono.meta.name
   const layout        = page.layout ?? (tatemono.meta.auth ? 'auth' : 'none')
   const isAuthLayout  = layout === 'auth'
-  const isGuestOnly   = layout === 'guest'
+  const isGuestLayout = layout === 'guest'
+  const isGuestOnly   = isGuestLayout && (
+    (page as { guestOnly?: boolean }).guestOnly === true ||
+    (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
+  )
   const layoutImport  = layout !== 'none' ? getLayoutImport(layout, tatName) : ''
   const layoutComp    = layout !== 'none' ? getLayoutComponent(layout) : 'React.Fragment'
   const animFnName    = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
   const animImport    = animFnName
     ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
     : ''
+  const styleImport = hasGlobalStyle ? `import './styles/global.css'` : ''
 
   // Components raw — strip React/Next imports, they come from the page header
   const componentCode = tatemono.components
@@ -197,6 +203,7 @@ import { motion } from 'framer-motion'
 ${routerDomImport}
 ${layoutImport}
 ${animImport}
+${styleImport}
 
 // ── Shared components from @arkzen:components:shared ──────────────────────────
 ${componentCode}
@@ -428,6 +435,7 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
 
   generateSharedComponents(tatemono, tatDir)
   generateCustomLayouts(tatemono)
+  const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Vite Router' })
 
   const animContent = generateAnimationFile(tatemono)
   if (animContent) {
@@ -441,7 +449,7 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   const newRoutes: ViteRoute[] = []
 
   for (const page of tatemono.pages) {
-    const pageContent = generatePageFile(tatemono, page)
+    const pageContent = generatePageFile(tatemono, page, styleInfo.hasGlobalStyle)
     const pagePath    = path.join(tatDir, `${page.name}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 

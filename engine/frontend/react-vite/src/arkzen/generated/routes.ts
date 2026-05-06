@@ -13,6 +13,36 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
+// ROUTE:auth-test:login:/auth-test/login:true
+const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
+// ROUTE:auth-test:register:/auth-test/register:true
+const ArkzenPage_AuthTest_Register = lazy(() => import('@/pages/auth-test/register'))
+// ROUTE:auth-test:dashboard:/auth-test/dashboard:true
+const ArkzenPage_AuthTest_Dashboard = lazy(() => import('@/pages/auth-test/dashboard'))
+// ROUTE:auth-test:__root_redirect:/auth-test:true
+const ArkzenPage_AuthTest_RootRedirect = lazy(() => import('@/pages/auth-test/__root_redirect'))
+// ROUTE:barbershop-booking:index:/barbershop-booking:false
+const ArkzenPage_BarbershopBooking_Index = lazy(() => import('@/pages/barbershop-booking/index'))
+// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:false
+const ArkzenPage_BodyEndpointHandler_Index = lazy(() => import('@/pages/body-endpoint-handler/index'))
+// ROUTE:body-mail-notification:login:/body-mail-notification/login:true
+const ArkzenPage_BodyMailNotification_Login = lazy(() => import('@/pages/body-mail-notification/login'))
+// ROUTE:body-mail-notification:register:/body-mail-notification/register:true
+const ArkzenPage_BodyMailNotification_Register = lazy(() => import('@/pages/body-mail-notification/register'))
+// ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:true
+const ArkzenPage_BodyMailNotification_Dashboard = lazy(() => import('@/pages/body-mail-notification/dashboard'))
+// ROUTE:body-mail-notification:__root_redirect:/body-mail-notification:true
+const ArkzenPage_BodyMailNotification_RootRedirect = lazy(() => import('@/pages/body-mail-notification/__root_redirect'))
+// ROUTE:broadcast-test:login:/broadcast-test/login:true
+const ArkzenPage_BroadcastTest_Login = lazy(() => import('@/pages/broadcast-test/login'))
+// ROUTE:broadcast-test:register:/broadcast-test/register:true
+const ArkzenPage_BroadcastTest_Register = lazy(() => import('@/pages/broadcast-test/register'))
+// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:true
+const ArkzenPage_BroadcastTest_Dashboard = lazy(() => import('@/pages/broadcast-test/dashboard'))
+// ROUTE:broadcast-test:__root_redirect:/broadcast-test:true
+const ArkzenPage_BroadcastTest_RootRedirect = lazy(() => import('@/pages/broadcast-test/__root_redirect'))
+// ROUTE:crud-test:index:/crud-test:false
+const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 // ROUTE:dtr-geofencing:index:/dtr-geofencing:false
 const ArkzenPage_DtrGeofencing_Index = lazy(() => import('@/pages/dtr-geofencing/index'))
 // ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:false
@@ -89,38 +119,23 @@ const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/schedul
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
-// ROUTE:auth-test:login:/auth-test/login:true
-const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
-// ROUTE:auth-test:register:/auth-test/register:true
-const ArkzenPage_AuthTest_Register = lazy(() => import('@/pages/auth-test/register'))
-// ROUTE:auth-test:dashboard:/auth-test/dashboard:true
-const ArkzenPage_AuthTest_Dashboard = lazy(() => import('@/pages/auth-test/dashboard'))
-// ROUTE:auth-test:__root_redirect:/auth-test:true
-const ArkzenPage_AuthTest_RootRedirect = lazy(() => import('@/pages/auth-test/__root_redirect'))
-// ROUTE:barbershop-booking:index:/barbershop-booking:false
-const ArkzenPage_BarbershopBooking_Index = lazy(() => import('@/pages/barbershop-booking/index'))
-// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:false
-const ArkzenPage_BodyEndpointHandler_Index = lazy(() => import('@/pages/body-endpoint-handler/index'))
-// ROUTE:body-mail-notification:login:/body-mail-notification/login:true
-const ArkzenPage_BodyMailNotification_Login = lazy(() => import('@/pages/body-mail-notification/login'))
-// ROUTE:body-mail-notification:register:/body-mail-notification/register:true
-const ArkzenPage_BodyMailNotification_Register = lazy(() => import('@/pages/body-mail-notification/register'))
-// ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:true
-const ArkzenPage_BodyMailNotification_Dashboard = lazy(() => import('@/pages/body-mail-notification/dashboard'))
-// ROUTE:body-mail-notification:__root_redirect:/body-mail-notification:true
-const ArkzenPage_BodyMailNotification_RootRedirect = lazy(() => import('@/pages/body-mail-notification/__root_redirect'))
-// ROUTE:broadcast-test:login:/broadcast-test/login:true
-const ArkzenPage_BroadcastTest_Login = lazy(() => import('@/pages/broadcast-test/login'))
-// ROUTE:broadcast-test:register:/broadcast-test/register:true
-const ArkzenPage_BroadcastTest_Register = lazy(() => import('@/pages/broadcast-test/register'))
-// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:true
-const ArkzenPage_BroadcastTest_Dashboard = lazy(() => import('@/pages/broadcast-test/dashboard'))
-// ROUTE:broadcast-test:__root_redirect:/broadcast-test:true
-const ArkzenPage_BroadcastTest_RootRedirect = lazy(() => import('@/pages/broadcast-test/__root_redirect'))
-// ROUTE:crud-test:index:/crud-test:false
-const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
+  { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
+  { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
+  { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },
+  { path: '/auth-test', name: '__root_redirect', tatemono: 'auth-test', component: ArkzenPage_AuthTest_RootRedirect, auth: true },
+  { path: '/barbershop-booking', name: 'index', tatemono: 'barbershop-booking', component: ArkzenPage_BarbershopBooking_Index, auth: false },
+  { path: '/body-endpoint-handler', name: 'index', tatemono: 'body-endpoint-handler', component: ArkzenPage_BodyEndpointHandler_Index, auth: false },
+  { path: '/body-mail-notification/login', name: 'login', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Login, auth: true },
+  { path: '/body-mail-notification/register', name: 'register', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Register, auth: true },
+  { path: '/body-mail-notification/dashboard', name: 'dashboard', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Dashboard, auth: true },
+  { path: '/body-mail-notification', name: '__root_redirect', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_RootRedirect, auth: true },
+  { path: '/broadcast-test/login', name: 'login', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Login, auth: true },
+  { path: '/broadcast-test/register', name: 'register', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Register, auth: true },
+  { path: '/broadcast-test/dashboard', name: 'dashboard', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Dashboard, auth: true },
+  { path: '/broadcast-test', name: '__root_redirect', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_RootRedirect, auth: true },
+  { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
   { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
@@ -159,19 +174,4 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
-  { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
-  { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
-  { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },
-  { path: '/auth-test', name: '__root_redirect', tatemono: 'auth-test', component: ArkzenPage_AuthTest_RootRedirect, auth: true },
-  { path: '/barbershop-booking', name: 'index', tatemono: 'barbershop-booking', component: ArkzenPage_BarbershopBooking_Index, auth: false },
-  { path: '/body-endpoint-handler', name: 'index', tatemono: 'body-endpoint-handler', component: ArkzenPage_BodyEndpointHandler_Index, auth: false },
-  { path: '/body-mail-notification/login', name: 'login', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Login, auth: true },
-  { path: '/body-mail-notification/register', name: 'register', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Register, auth: true },
-  { path: '/body-mail-notification/dashboard', name: 'dashboard', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Dashboard, auth: true },
-  { path: '/body-mail-notification', name: '__root_redirect', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_RootRedirect, auth: true },
-  { path: '/broadcast-test/login', name: 'login', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Login, auth: true },
-  { path: '/broadcast-test/register', name: 'register', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Register, auth: true },
-  { path: '/broadcast-test/dashboard', name: 'dashboard', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Dashboard, auth: true },
-  { path: '/broadcast-test', name: '__root_redirect', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_RootRedirect, auth: true },
-  { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
 ]
