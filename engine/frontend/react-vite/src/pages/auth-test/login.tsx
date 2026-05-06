@@ -2,13 +2,13 @@
 // ARKZEN GENERATED PAGE — auth-test/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:29.831Z
+// Generated: 2026-05-06T08:40:02.721Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { GuestLayout } from '@/layouts/GuestLayout'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
 
 

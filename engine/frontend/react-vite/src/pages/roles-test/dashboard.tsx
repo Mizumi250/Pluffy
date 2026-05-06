@@ -2,13 +2,13 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:32.845Z
+// Generated: 2026-05-06T08:40:04.827Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { AuthLayout }  from '@/layouts/AuthLayout'
+import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 
 
 

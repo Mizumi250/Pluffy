@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — QueueArkzenSeeder
 // Tatemono: queue-flow  |  Connection: queue_flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:06:46.514127Z
+// Generated: 2026-05-06T08:40:04.769192Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\QueueFlow;

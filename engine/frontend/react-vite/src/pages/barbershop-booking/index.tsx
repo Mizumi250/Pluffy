@@ -2,13 +2,13 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:29.856Z
+// Generated: 2026-05-06T08:40:02.750Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { GuestLayout } from '@/layouts/GuestLayout'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { barbershopBookingAnimations, pageVariants } from '@/arkzen/generated/barbershop-booking.animations'
 
 

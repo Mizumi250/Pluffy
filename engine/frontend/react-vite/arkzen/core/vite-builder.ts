@@ -10,10 +10,10 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono }                          from '../parser'
-import { syncSharedCoreToCurrentStack }           from '../shared-sync'
+import { parseTatemono }                          from './parser'
+import { syncSharedCoreToCurrentStack }           from './shared-sync'
 import { registerVitePages, unregisterVitePages } from './vite-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from './backend-bridge'
 import { parsePWAConfig, generatePWAFiles } from './pwa-builder'
 
 export interface ViteBuildResult {

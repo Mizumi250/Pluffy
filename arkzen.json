@@ -2,7 +2,7 @@
   "engine": "1.0.0",
   "project": "arkzen-engine",
   "modules": [],
-  "activeStack": "nextjs",
+  "activeStack": "react-vite",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",

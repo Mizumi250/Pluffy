@@ -16,8 +16,8 @@ import * as path from 'path'
 import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildViteTatemono, rebuildViteTatemono, removeViteTatemono } from './vite-builder'
-import { checkBackendHealth }         from '../backend-bridge'
-import { syncSharedCoreToCurrentStack } from '../shared-sync'
+import { checkBackendHealth }         from './backend-bridge'
+import { syncSharedCoreToCurrentStack } from './shared-sync'
 
 const ROOT_DIR      = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR   = path.join(ROOT_DIR, 'tatemonos')

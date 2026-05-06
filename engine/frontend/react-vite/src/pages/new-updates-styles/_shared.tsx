@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — new-updates-styles [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:32.371Z
+// Generated: 2026-05-06T08:40:04.574Z
 // ============================================================
 
 import { Link } from 'react-router-dom'

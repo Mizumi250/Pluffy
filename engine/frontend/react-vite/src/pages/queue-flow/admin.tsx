@@ -2,13 +2,13 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:32.476Z
+// Generated: 2026-05-06T08:40:04.705Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { AppLayout } from '@/layouts/custom/queue-flow-app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 
 
 

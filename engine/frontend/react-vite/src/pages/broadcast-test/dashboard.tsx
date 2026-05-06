@@ -2,13 +2,13 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-05T23:34:30.737Z
+// Generated: 2026-05-06T08:40:03.656Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, memo, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { AuthLayout }  from '@/layouts/AuthLayout'
+import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 
 
 
