@@ -25,7 +25,7 @@ import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 const SRC_DIR        = path.resolve(process.cwd(), 'src')
 const PAGES_DIR      = path.join(SRC_DIR, 'pages')
 const GENERATED_DIR  = path.join(SRC_DIR, 'arkzen', 'generated')
-const LAYOUTS_DIR    = path.join(SRC_DIR, 'layouts', 'custom')
+const LAYOUTS_DIR    = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
 const ROUTES_FILE    = path.join(GENERATED_DIR, 'routes.ts')
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -108,9 +108,9 @@ function ensureRouterDomImports(raw: string): string {
 
 function getLayoutImport(layout: string, tatName: string): string {
   switch (layout) {
-    case 'guest': return `import { GuestLayout } from '@/layouts/GuestLayout'`
-    case 'auth':  return `import { AuthLayout }  from '@/layouts/AuthLayout'`
-    default:      return `import { ${toPascalCase(layout)}Layout } from '@/layouts/custom/${tatName}-${layout}'`
+    case 'guest': return `import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'`
+    case 'auth':  return `import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'`
+    default:      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${tatName}-${layout}'`
   }
 }
 

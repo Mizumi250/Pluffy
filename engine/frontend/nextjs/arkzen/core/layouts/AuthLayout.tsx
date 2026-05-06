@@ -1,25 +1,24 @@
-'use client'
-
 // ============================================================
-// ARKZEN ENGINE — AUTH LAYOUT v6.0 (PER-TATEMONO AUTH)
-// Empty protected layout. No structure imposed.
-// Redirects unauthenticated users to the tatemono's login page.
-// Shows a minimal loader while auth check runs.
+// ARKZEN ENGINE — SHARED AUTH LAYOUT v1.0
+// Framework-agnostic. Router calls injected via useArkzenRouter().
 //
-// v6.0: Derives the tatemono slug from the URL path and registers
-// it via setActiveTatemono() so the auth store hits the correct
-// isolated backend (/api/{slug}/auth/*). Each tatemono is fully
-// independent — no shared user pool.
+// Each stack ships adapters/router.ts that maps:
+//   useArkzenRouter() → useRouter/useNavigate
+//   useArkzenPathname() → usePathname/useLocation().pathname
+//
+// This file lives in engine/shared and is sync-copied into
+// each stack's arkzen/core/layouts/ by shared-sync.ts.
+// DO NOT import from next/navigation or react-router-dom here.
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
 import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
 export interface AuthLayoutProps {
   children:     React.ReactNode
   requireAuth?: boolean
-  redirectTo?:  string    // override redirect target (default: /{tatemono}/login)
+  redirectTo?:  string
   className?:   string
 }
 
@@ -29,13 +28,12 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   redirectTo,
   className = '',
 }) => {
-  const router                              = useRouter()
-  const pathname                            = usePathname()
-  const { isAuthenticated, fetchMe, token } = useAuthStore()
+  const router                              = useArkzenRouter()
+  const pathname                            = useArkzenPathname()
+  const { fetchMe, token }                  = useAuthStore()
   const [checking, setChecking]             = useState(requireAuth)
 
   useEffect(() => {
-    // Derive tatemono slug from URL and register it BEFORE any auth network call
     const segments = pathname.split('/').filter(Boolean)
     const tatemono = segments[0] ?? ''
     if (tatemono) setActiveTatemono(tatemono)
@@ -63,7 +61,6 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     check()
   }, [requireAuth, token])
 
-  // Minimal loader while auth check runs — no flash of content
   if (checking) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-neutral-50">

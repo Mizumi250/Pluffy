@@ -1,16 +1,20 @@
 // ============================================================
-// ARKZEN ENGINE — VITE BUILDER v1.0
-// Orchestrates tatemono build for React+Vite stack
-// Reuses same parser as Next.js — DSL is identical
-// Only the output (page files, routes) differs
+// ARKZEN ENGINE — VITE BUILDER v2.0
+// Orchestrates tatemono build for React+Vite stack.
+//
+// v2.0: All imports now resolve locally — no more cross-stack
+//       relative path imports from ../../../nextjs/.
+//       parser, backend-bridge, shared-sync live in this
+//       stack's arkzen/core/ (synced from engine/shared).
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { parseTatemono }                          from '../parser'
+import { syncSharedCoreToCurrentStack }           from '../shared-sync'
 import { registerVitePages, unregisterVitePages } from './vite-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from '../backend-bridge'
+import { parsePWAConfig, generatePWAFiles } from './pwa-builder'
 
 export interface ViteBuildResult {
   success:  boolean
@@ -18,8 +22,6 @@ export interface ViteBuildResult {
   errors:   string[]
   steps:    { name: string; status: 'success' | 'failed'; message?: string }[]
 }
-
-// ─── Build ────────────────────────────────────────────────────────────────────
 
 export async function buildViteTatemono(corePath: string): Promise<ViteBuildResult> {
   syncSharedCoreToCurrentStack('Arkzen Vite Builder')
@@ -32,7 +34,6 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
   console.log(`[Arkzen Vite Builder] Building: ${tatName}`)
   console.log(`[Arkzen Vite Builder] ════════════════════════════════`)
 
-  // Step 1: Parse
   let parsed: Awaited<ReturnType<typeof parseTatemono>>
   try {
     parsed = parseTatemono(corePath)
@@ -46,7 +47,6 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
     return { success: false, tatemono: tatName, errors: [message], steps }
   }
 
-  // Step 2: Register frontend pages
   try {
     registerVitePages(parsed)
     steps.push({ name: 'Register Vite Pages', status: 'success', message: `${parsed.pages.length} page(s) registered` })
@@ -57,7 +57,6 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
     console.error(`[Arkzen Vite Builder] ✗ Page registration failed:`, message)
   }
 
-  // Step 3: Backend build (same as Next.js — Laravel API is shared)
   const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
   if (isStatic) {
     steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Static tatemono — no backend' })
@@ -77,19 +76,14 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
   const success = errors.length === 0
   console.log(`\n[Arkzen Vite Builder] Build ${success ? '✓ COMPLETE' : '✗ FAILED'}: ${tatName}`)
   steps.forEach(s => console.log(`  ${s.status === 'success' ? '✓' : '✗'} ${s.name}: ${s.message ?? ''}`))
-
   return { success, tatemono: tatName, errors, steps }
 }
-
-// ─── Rebuild ──────────────────────────────────────────────────────────────────
 
 export async function rebuildViteTatemono(corePath: string): Promise<ViteBuildResult> {
   const tatName = path.basename(path.dirname(corePath))
   unregisterVitePages(tatName)
   return buildViteTatemono(corePath)
 }
-
-// ─── Remove ───────────────────────────────────────────────────────────────────
 
 export function removeViteTatemono(tatName: string): void {
   unregisterVitePages(tatName)

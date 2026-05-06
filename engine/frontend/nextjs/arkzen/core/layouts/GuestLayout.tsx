@@ -1,37 +1,25 @@
-'use client'
-
 // ============================================================
-// ARKZEN ENGINE — GUEST LAYOUT v6.0
-// Empty public layout. No structure imposed.
+// ARKZEN ENGINE — SHARED GUEST LAYOUT v1.0
+// Framework-agnostic. Router calls injected via useArkzenRouter().
 //
 // TWO GUARD MODES:
+//   redirectIfAuth / guestOnly → bounce authed users to dashboard
+//   Neither                    → fully public, no redirect
 //
-//   redirectIfAuth (default when meta: auth: true)
-//     → Logged-in users get bounced to /{tatemono}/dashboard.
-//       Use on: login, register, forgot-password pages.
-//       i.e. "you're already in, go back home"
-//
-//   guestOnly
-//     → SAME behaviour as redirectIfAuth.
-//       Explicit alias for clarity in tatemono declarations.
-//       Use this when you want to be obvious about intent.
-//       Both props do the same thing — guestOnly is just
-//       self-documenting for pages like login/register.
-//
-//   Neither prop set → public page, no redirects at all.
-//     Use on: landing, about, pricing, etc.
-//     Authenticated and unauthenticated users both see it.
+// This file lives in engine/shared and is sync-copied into
+// each stack's arkzen/core/layouts/ by shared-sync.ts.
+// DO NOT import from next/navigation or react-router-dom here.
 // ============================================================
 
-import React, { useEffect } from 'react'
-import { useRouter, usePathname } from 'next/navigation'
+import React, { useEffect, useState } from 'react'
+import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
 import { useAuthStore } from '../stores/authStore'
 
 export interface GuestLayoutProps {
   children:        React.ReactNode
-  redirectIfAuth?: boolean   // redirect logged-in users → dashboard
-  guestOnly?:      boolean   // alias of redirectIfAuth, more explicit
-  redirectTo?:     string    // override redirect target
+  redirectIfAuth?: boolean
+  guestOnly?:      boolean
+  redirectTo?:     string
   className?:      string
 }
 
@@ -42,13 +30,11 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
   redirectTo,
   className = '',
 }) => {
-  const router                              = useRouter()
-  const pathname                            = usePathname()
+  const router                              = useArkzenRouter()
+  const pathname                            = useArkzenPathname()
   const { isAuthenticated, fetchMe, token } = useAuthStore()
-  const shouldGuard = redirectIfAuth || guestOnly
-
-  // ── Add this ──
-  const [checking, setChecking] = React.useState(shouldGuard)
+  const shouldGuard                         = redirectIfAuth || guestOnly
+  const [checking, setChecking]             = useState(shouldGuard)
 
   useEffect(() => {
     if (!shouldGuard) { setChecking(false); return }
@@ -67,21 +53,20 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
         const tatemono = segments[0] ?? ''
         router.replace(redirectTo ?? (tatemono ? `/${tatemono}/dashboard` : '/dashboard'))
       } else {
-        setChecking(false) // ← not authenticated, safe to show the page
+        setChecking(false)
       }
     }
 
     check()
   }, [shouldGuard, token])
 
-  // ── Block render until we know auth state ──
   if (checking) {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
-    </div>
-  )
-}
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+        <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
+      </div>
+    )
+  }
 
   return (
     <div className={className}>

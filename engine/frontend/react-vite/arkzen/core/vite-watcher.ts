@@ -1,22 +1,24 @@
 // ============================================================
-// ARKZEN ENGINE — VITE WATCHER v1.1
-// Mirrors nextjs/watcher.ts but calls vite-router instead
-// Watches same tatemonos/ folder — same DSL, different output
+// ARKZEN ENGINE — VITE WATCHER v2.0
+// Mirrors nextjs/watcher.ts but calls vite-router instead.
+// Watches same tatemonos/ folder — same DSL, different output.
 //
-// v1.1 changes:
-//   • Write src/arkzen/generated/.arkzen-ready after initial build
-//     so vite.config.ts plugin can delay server start until
-//     all pages are freshly generated (fixes stale-file race condition)
+// v2.0: Imports now resolve locally — no ../../../nextjs/ paths.
+//       backend-bridge and shared-sync come from arkzen/core/
+//       (synced from engine/shared at startup).
+//
+// v1.1 (kept): Write src/arkzen/generated/.arkzen-ready after
+//   initial build so vite.config.ts plugin can delay server
+//   start until all pages are freshly generated.
 // ============================================================
 
 import * as path from 'path'
 import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildViteTatemono, rebuildViteTatemono, removeViteTatemono } from './vite-builder'
-import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { checkBackendHealth }         from '../backend-bridge'
+import { syncSharedCoreToCurrentStack } from '../shared-sync'
 
-// Root is 3 levels up from engine/frontend/react-vite/arkzen/core/
 const ROOT_DIR      = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR   = path.join(ROOT_DIR, 'tatemonos')
 const GENERATED_DIR = path.join(process.cwd(), 'src', 'arkzen', 'generated')
@@ -67,7 +69,7 @@ async function rebuildAllFromRoot(): Promise<void> {
 
 export async function startViteWatcher(): Promise<void> {
   console.log(`\n╔════════════════════════════════════════╗`)
-  console.log(`║    ARKZEN ENGINE v1.1 — REACT+VITE     ║`)
+  console.log(`║    ARKZEN ENGINE v2.0 — REACT+VITE     ║`)
   console.log(`╚════════════════════════════════════════╝`)
   console.log(`[Arkzen Vite] Watching tatemonos at: ${MODULES_DIR}`)
 
@@ -75,7 +77,6 @@ export async function startViteWatcher(): Promise<void> {
   fs.mkdirSync(GENERATED_DIR, { recursive: true })
   syncSharedCoreToCurrentStack('Arkzen Vite')
 
-  // Remove stale ready flag so Vite waits for THIS build to finish
   if (fs.existsSync(READY_FLAG)) fs.unlinkSync(READY_FLAG)
 
   const backendHealthy = await checkBackendHealth()
@@ -87,16 +88,14 @@ export async function startViteWatcher(): Promise<void> {
 
   await rebuildAllFromRoot()
 
-  // Signal Vite that all pages are freshly generated — Vite plugin polls this file
   fs.writeFileSync(READY_FLAG, Date.now().toString(), 'utf-8')
   console.log(`[Arkzen Vite] ✓ Ready flag written — Vite will now start dep scan`)
-
   console.log(`\n[Arkzen Vite] ✓ Engine ready. Drop tatemonos at: tatemonos/<name>/core.tsx\n`)
 
   const watcher = chokidar.watch(MODULES_DIR, {
-    ignored: /(^|[\/\\])\../,
-    persistent: true,
-    ignoreInitial: true,
+    ignored:          /(^|[\/\\])\../,
+    persistent:       true,
+    ignoreInitial:    true,
     awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 },
   })
 

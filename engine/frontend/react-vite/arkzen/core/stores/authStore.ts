@@ -1,13 +1,14 @@
 // ============================================================
-// ARKZEN ENGINE — GLOBAL AUTH STORE v4.1 (COOKIE + PER-TATEMONO)
-// React+Vite edition — drop into:
-//   engine/frontend/react-vite/src/arkzen/core/stores/authStore.ts
+// ARKZEN ENGINE — SHARED AUTH STORE v1.0
+// Framework-agnostic. No next/navigation or react-router imports.
+// Works identically in Next.js, React+Vite, React+Inertia,
+// React Native — any stack that has zustand + fetch.
 //
-// Identical logic to the Next.js version but:
-//   • No Next.js imports (none were needed anyway — all logic is
-//     pure browser/client-side)
-//   • process.env.NEXT_PUBLIC_* is NOT referenced here; env vars
-//     for Vite live in import.meta.env.VITE_* inside page files
+// Cookie helpers use document.cookie (web stacks only).
+// For React Native, override setCookie/clearCookie in the adapter.
+//
+// This file lives in engine/shared and is sync-copied into
+// each stack's arkzen/core/stores/ by shared-sync.ts.
 // ============================================================
 
 import { create } from 'zustand'
@@ -38,10 +39,12 @@ function getAuthBase(): string {
 // ─────────────────────────────────────────────
 
 function setCookie(slug: string, token: string): void {
+  if (typeof document === 'undefined') return
   document.cookie = `arkzen-auth-${slug}=${token}; path=/; SameSite=Lax`
 }
 
 function clearCookie(slug: string): void {
+  if (typeof document === 'undefined') return
   document.cookie = `arkzen-auth-${slug}=; path=/; max-age=0`
 }
 
@@ -55,15 +58,9 @@ async function safeJson<T = Record<string, unknown>>(res: Response): Promise<T> 
     return JSON.parse(text) as T
   } catch {
     const status = res.status
-    if (status === 0 || !res.url) {
-      throw new Error('Cannot reach the server. Is the backend running?')
-    }
-    if (status >= 500) {
-      throw new Error(`Server error (${status}). Check the Laravel logs.`)
-    }
-    if (status === 404) {
-      throw new Error(`API route not found (${status}). Check your backend routes.`)
-    }
+    if (status === 0 || !res.url) throw new Error('Cannot reach the server. Is the backend running?')
+    if (status >= 500)            throw new Error(`Server error (${status}). Check the Laravel logs.`)
+    if (status === 404)           throw new Error(`API route not found (${status}). Check your backend routes.`)
     throw new Error(`Unexpected server response (${status}). Expected JSON but got HTML.`)
   }
 }
@@ -108,22 +105,16 @@ export const useAuthStore = create<AuthState>()(
       isAuthenticated: false,
       isLoading:       false,
 
-      // ── Login ────────────────────────────────
       login: async (email, password) => {
         set({ isLoading: true })
         try {
-          const res = await fetch(`${getAuthBase()}/login`, {
+          const res  = await fetch(`${getAuthBase()}/login`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
             body:    JSON.stringify({ email, password }),
           })
-
           const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
-
-          if (!res.ok) {
-            throw new Error(data.message ?? 'Login failed. Check your credentials.')
-          }
-
+          if (!res.ok) throw new Error(data.message ?? 'Login failed. Check your credentials.')
           set({ user: data.user, token: data.token, isAuthenticated: true })
           setCookie(getSlug(), data.token)
         } finally {
@@ -131,27 +122,16 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // ── Register ─────────────────────────────
       register: async (name, email, password, passwordConfirmation) => {
         set({ isLoading: true })
         try {
-          const res = await fetch(`${getAuthBase()}/register`, {
+          const res  = await fetch(`${getAuthBase()}/register`, {
             method:  'POST',
             headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-            body:    JSON.stringify({
-              name,
-              email,
-              password,
-              password_confirmation: passwordConfirmation,
-            }),
+            body:    JSON.stringify({ name, email, password, password_confirmation: passwordConfirmation }),
           })
-
           const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
-
-          if (!res.ok) {
-            throw new Error(data.message ?? 'Registration failed.')
-          }
-
+          if (!res.ok) throw new Error(data.message ?? 'Registration failed.')
           set({ user: data.user, token: data.token, isAuthenticated: true })
           setCookie(getSlug(), data.token)
         } finally {
@@ -159,7 +139,6 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // ── Logout ───────────────────────────────
       logout: async () => {
         const { token } = get()
         try {
@@ -172,32 +151,22 @@ export const useAuthStore = create<AuthState>()(
             },
           })
         } catch {
-          // Logout locally even if request fails
+          // logout locally even if request fails
         } finally {
           set({ user: null, token: null, isAuthenticated: false })
           clearCookie(getSlug())
         }
       },
 
-      // ── Fetch Current User ────────────────────
       fetchMe: async () => {
         const { token } = get()
         if (!token) { set({ isAuthenticated: false }); return }
-
         set({ isLoading: true })
         try {
           const res = await fetch(`${getAuthBase()}/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Accept':        'application/json',
-            },
+            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
           })
-
-          if (!res.ok) {
-            set({ user: null, token: null, isAuthenticated: false })
-            return
-          }
-
+          if (!res.ok) { set({ user: null, token: null, isAuthenticated: false }); return }
           const user = await safeJson<ArkzenUser>(res)
           set({ user, isAuthenticated: true })
         } catch {
@@ -207,18 +176,15 @@ export const useAuthStore = create<AuthState>()(
         }
       },
 
-      // ── Refresh User ─────────────────────────
       refreshUser: async () => {
         await get().fetchMe()
       },
 
-      // ── Manual setToken ───────────────────────
       setToken: (token, user) => {
         set({ token, user, isAuthenticated: true })
         setCookie(getSlug(), token)
       },
 
-      // ── Clear ─────────────────────────────────
       clear: () => {
         set({ user: null, token: null, isAuthenticated: false })
         clearCookie(getSlug())
@@ -233,7 +199,7 @@ export const useAuthStore = create<AuthState>()(
 )
 
 // ─────────────────────────────────────────────
-// FETCH HELPER
+// FETCH HELPERS
 // ─────────────────────────────────────────────
 
 export async function arkzenFetch(url: string, options: RequestInit = {}): Promise<Response> {
@@ -242,8 +208,8 @@ export async function arkzenFetch(url: string, options: RequestInit = {}): Promi
   return fetch(url, {
     ...options,
     headers: {
-      'Content-Type':  'application/json',
-      'Accept':        'application/json',
+      'Content-Type': 'application/json',
+      'Accept':       'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },

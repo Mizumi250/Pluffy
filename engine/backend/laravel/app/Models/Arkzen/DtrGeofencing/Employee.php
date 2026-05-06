@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Employee
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-05T23:44:19.595609Z
+// Generated: 2026-05-06T06:08:27.666867Z
 // ============================================================
 
 namespace App\Models\Arkzen\DtrGeofencing;

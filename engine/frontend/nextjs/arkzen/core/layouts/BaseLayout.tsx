@@ -1,58 +1,58 @@
 'use client'
 
 // ============================================================
-// ARKZEN ENGINE — BASE LAYOUT
+// ARKZEN ENGINE — SHARED BASE LAYOUT v1.0
 // Three tiers of customization:
 //   1. Default        — pass nothing, works out of the box
 //   2. Configured     — pass brandName, navItems, brandLogo
 //   3. Full Custom    — pass sidebar/topbar slots, replace everything
-//      The slot replaces the entire section's DOM/structure.
-//      Routing, auth guard, and mobile logic still run underneath.
+//
+// Framework-agnostic. Uses:
+//   - ArkzenLink from ../adapters/Link (next/link or react-router Link)
+//   - useArkzenRouter / useArkzenPathname from ../adapters/router
+//
+// This file lives in engine/shared and is sync-copied into
+// each stack's arkzen/core/layouts/ by shared-sync.ts.
 // ============================================================
 
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { ArkzenLink } from '../adapters/Link'
+import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
 import {
   LayoutDashboard, Settings, Menu, X,
   ChevronRight, Bell, Search, LogOut
 } from 'lucide-react'
 import { Avatar } from '../components/Avatar'
 import { Tooltip } from '../components/utils'
-import { useAuthStore } from '../stores/authStore';
+import { useAuthStore } from '../stores/authStore'
+
 // ─────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────
 
 export interface NavItem {
   label: string
-  href: string
-  icon: React.ReactNode
+  href:  string
+  icon:  React.ReactNode
 }
 
 export interface BaseLayoutProps {
   children: React.ReactNode
-  auth?: boolean
+  auth?:    boolean
 
-  // ── Tier 2: Simple config overrides ─────────
-  brandName?: string
-  brandLogo?: React.ReactNode
-  navItems?: NavItem[]
-  userName?: string
-  userAvatar?: string
+  brandName?:   string
+  brandLogo?:   React.ReactNode
+  navItems?:    NavItem[]
+  userName?:    string
+  userAvatar?:  string
 
-  // ── Tier 3: Full slot overrides ─────────────
-  // Pass any of these to take complete control of that section.
-  // Your JSX replaces the entire section — structure, skeleton,
-  // element order, everything. Auth guard still runs.
-  sidebar?: React.ReactNode        // replaces entire sidebar (desktop + mobile)
-  topbar?: React.ReactNode         // replaces entire topbar
-  mobileDrawer?: React.ReactNode   // replaces mobile drawer panel only
+  sidebar?:       React.ReactNode
+  topbar?:        React.ReactNode
+  mobileDrawer?:  React.ReactNode
 
-  // ── Extra class hooks ────────────────────────
-  className?: string               // wrapper div
-  mainClassName?: string           // <main> content area
+  className?:      string
+  mainClassName?:  string
 }
 
 // ─────────────────────────────────────────────
@@ -69,11 +69,11 @@ const defaultNavItems: NavItem[] = [
 // ─────────────────────────────────────────────
 
 const NavLink: React.FC<{ item: NavItem; collapsed: boolean }> = ({ item, collapsed }) => {
-  const pathname = usePathname()
+  const pathname = useArkzenPathname()
   const isActive = pathname === item.href
 
   const inner = (
-    <Link
+    <ArkzenLink
       href={item.href}
       className={`
         relative flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium
@@ -102,7 +102,7 @@ const NavLink: React.FC<{ item: NavItem; collapsed: boolean }> = ({ item, collap
       {isActive && !collapsed && (
         <ChevronRight size={14} className="ml-auto opacity-60" />
       )}
-    </Link>
+    </ArkzenLink>
   )
 
   if (collapsed) {
@@ -113,22 +113,21 @@ const NavLink: React.FC<{ item: NavItem; collapsed: boolean }> = ({ item, collap
 }
 
 // ─────────────────────────────────────────────
-// DEFAULT SIDEBAR (extracted so slots can skip it)
+// DEFAULT SIDEBAR
 // ─────────────────────────────────────────────
 
 export const DefaultSidebar: React.FC<{
-  navItems: NavItem[]
-  brandName: string
-  brandLogo?: React.ReactNode
-  collapsed: boolean
-  onCollapse: () => void
+  navItems:    NavItem[]
+  brandName:   string
+  brandLogo?:  React.ReactNode
+  collapsed:   boolean
+  onCollapse:  () => void
 }> = ({ navItems, brandName, brandLogo, collapsed, onCollapse }) => (
   <motion.aside
     animate={{ width: collapsed ? 72 : 240 }}
     transition={{ type: 'spring', stiffness: 350, damping: 35 }}
     className="hidden md:flex flex-col h-full bg-white dark:bg-neutral-900 border-r border-neutral-100 dark:border-neutral-800 overflow-hidden flex-shrink-0"
   >
-    {/* Brand */}
     <div className={`flex items-center h-16 px-4 border-b border-neutral-100 dark:border-neutral-800 ${collapsed ? 'justify-center' : 'gap-3'}`}>
       <div className="w-8 h-8 rounded-xl bg-neutral-900 dark:bg-white flex items-center justify-center flex-shrink-0">
         {brandLogo ?? <span className="text-white dark:text-neutral-900 text-xs font-bold">{brandName[0]}</span>}
@@ -148,14 +147,12 @@ export const DefaultSidebar: React.FC<{
       </AnimatePresence>
     </div>
 
-    {/* Nav */}
     <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
       {navItems.map(item => (
         <NavLink key={item.href} item={item} collapsed={collapsed} />
       ))}
     </nav>
 
-    {/* Collapse toggle */}
     <div className="px-3 py-4 border-t border-neutral-100 dark:border-neutral-800">
       <button
         onClick={onCollapse}
@@ -186,8 +183,8 @@ export const DefaultSidebar: React.FC<{
 // ─────────────────────────────────────────────
 
 export const DefaultTopbar: React.FC<{
-  userName?: string
-  userAvatar?: string
+  userName?:        string
+  userAvatar?:      string
   onMobileMenuOpen: () => void
 }> = ({ userName, userAvatar, onMobileMenuOpen }) => (
   <header className="h-16 flex items-center justify-between px-6 bg-white dark:bg-neutral-900 border-b border-neutral-100 dark:border-neutral-800 flex-shrink-0">
@@ -216,9 +213,9 @@ export const DefaultTopbar: React.FC<{
 // ─────────────────────────────────────────────
 
 export const DefaultMobileDrawer: React.FC<{
-  navItems: NavItem[]
+  navItems:  NavItem[]
   brandName: string
-  onClose: () => void
+  onClose:   () => void
 }> = ({ navItems, brandName, onClose }) => (
   <motion.aside
     className="fixed left-0 top-0 h-full w-64 z-50 bg-white dark:bg-neutral-900 flex flex-col md:hidden"
@@ -247,36 +244,31 @@ export const DefaultMobileDrawer: React.FC<{
 
 export const BaseLayout: React.FC<BaseLayoutProps> = ({
   children,
-  auth = false,
-  brandName = 'Arkzen',
+  auth          = false,
+  brandName     = 'Arkzen',
   brandLogo,
-  navItems = defaultNavItems,
+  navItems      = defaultNavItems,
   userName,
   userAvatar,
   sidebar,
   topbar,
   mobileDrawer,
-  className = '',
+  className     = '',
   mainClassName = '',
 }) => {
-  const [collapsed, setCollapsed]     = useState(false)
-  const [mobileOpen, setMobileOpen]   = useState(false)
-  const router                        = useRouter()
+  const [collapsed, setCollapsed]   = useState(false)
+  const [mobileOpen, setMobileOpen] = useState(false)
+  const router                      = useArkzenRouter()
+  const { token, fetchMe }          = useAuthStore()
 
-  // ── Auth guard ───────────────────────────────
-    const { token, fetchMe, isAuthenticated } = useAuthStore()
+  useEffect(() => {
+    if (!auth) return
+    if (!token) { router.replace('/login'); return }
+    fetchMe().then(() => {
+      if (!useAuthStore.getState().isAuthenticated) router.replace('/login')
+    })
+  }, [auth, token])
 
-    useEffect(() => {
-      if (!auth) return
-      if (!token) { router.replace('/login'); return }
-      fetchMe().then(() => {
-        if (!useAuthStore.getState().isAuthenticated) router.replace('/login')
-      })
-    }, [auth, token])
-
-  // ── Resolved sidebar ─────────────────────────
-  // If user passes sidebar slot, render it directly (desktop only).
-  // Mobile drawer uses mobileDrawer slot or DefaultMobileDrawer.
   const resolvedSidebar = sidebar ?? (
     <DefaultSidebar
       navItems={navItems}
@@ -306,10 +298,8 @@ export const BaseLayout: React.FC<BaseLayoutProps> = ({
   return (
     <div className={`flex h-screen bg-neutral-50 dark:bg-neutral-950 overflow-hidden ${className}`}>
 
-      {/* ─── SIDEBAR (Desktop) ─────────────────── */}
       {resolvedSidebar}
 
-      {/* ─── MOBILE DRAWER ─────────────────────── */}
       <AnimatePresence>
         {mobileOpen && (
           <>
@@ -325,7 +315,6 @@ export const BaseLayout: React.FC<BaseLayoutProps> = ({
         )}
       </AnimatePresence>
 
-      {/* ─── MAIN CONTENT ──────────────────────── */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {resolvedTopbar}
         <main className={`flex-1 overflow-y-auto ${mainClassName}`}>

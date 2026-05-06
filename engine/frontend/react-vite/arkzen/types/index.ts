@@ -1,12 +1,17 @@
 // ============================================================
-// ARKZEN ENGINE — VITE TYPES v1.0
+// ARKZEN ENGINE — VITE TYPES v2.0
 // arkzen/types/index.ts
-// Re-exports all types from nextjs types — DSL is identical.
-// Vite-specific additions below the re-export block.
+//
+// v2.0: Types now imported from the engine-level shared types
+//       (engine/frontend/nextjs/arkzen/types) which is the
+//       single source of truth for ParsedTatemono and all DSL
+//       types. Vite-specific additions below the re-export.
+//
+// NOTE: The nextjs types file is the canonical DSL type source.
+//       All stacks re-export from it. When we move types to
+//       engine/shared in v9, this import path updates there.
 // ============================================================
 
-// Re-export everything from the canonical Next.js types
-// (Single source of truth — all stacks share the same ParsedTatemono)
 export type {
   ArkzenAuthSeedUser,
   ArkzenPWAMeta,
@@ -47,17 +52,3 @@ export type {
 } from '../../../frontend/nextjs/arkzen/types'
 
 // ─── Vite-specific types ──────────────────────────────────────────────────────
-
-export interface ViteBuildResult {
-  success:  boolean
-  tatemono: string
-  errors:   string[]
-  steps:    { name: string; status: 'success' | 'failed'; message?: string }[]
-}
-
-export interface ViteRoute {
-  tatName:  string
-  pageName: string
-  path:     string
-  auth:     boolean
-}
