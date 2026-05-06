@@ -1,17 +1,22 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED CORE SYNC v2.0
+// ARKZEN ENGINE — SHARED CORE SYNC v2.1
 //
 // Copies engine/shared/arkzen/core/* into the current stack's
 // arkzen/core/ so every stack gets identical shared logic.
 //
-// v2.0 — expanded sync surface:
-//   Folders:  components/, hooks/, lib/, layouts/, stores/
-//   Files:    parser.ts, backend-bridge.ts, assets.ts,
-//             validator.ts, sitemap.ts
+// v2.1 — pwa-builder.ts now syncs as pwa-builder.shared.ts
+//   so each stack's thin pwa-builder.ts wrapper is never
+//   overwritten by the shared copy.
+//
+// Folders:  components/, hooks/, lib/, layouts/, stores/
+// Files:    parser.ts, backend-bridge.ts, assets.ts,
+//           validator.ts, sitemap.ts
+// Special:  pwa-builder.ts → pwa-builder.shared.ts
 //
 // NEVER synced (each stack owns these):
 //   adapters/router.ts   — framework-specific (next/navigation vs react-router-dom)
 //   adapters/Link.tsx    — framework-specific (next/link vs react-router Link)
+//   pwa-builder.ts       — stack-specific thin wrapper
 //   generated/           — runtime output
 //   vite-*/builder/router/watcher — stack engine files
 //
@@ -22,7 +27,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 const SHARED_FOLDERS = ['components', 'hooks', 'lib', 'layouts', 'stores'] as const
-const SHARED_FILES   = ['parser.ts', 'backend-bridge.ts', 'assets.ts', 'validator.ts', 'sitemap.ts', 'pwa-builder.ts'] as const
+const SHARED_FILES   = ['parser.ts', 'backend-bridge.ts', 'assets.ts', 'validator.ts', 'sitemap.ts'] as const
 
 // Files inside shared folders that must NOT be overwritten per-stack
 const ADAPTER_PROTECTED = new Set(['router.ts', 'Link.tsx', 'Link.ts'])
@@ -53,7 +58,13 @@ export function syncSharedCoreToCurrentStack(label: string): void {
     copyFileIfChanged(src, dest)
   }
 
-  console.log(`[${label}] ✓ Synced shared core (${[...SHARED_FOLDERS, ...SHARED_FILES].join(', ')})`)
+  // Special: pwa-builder.ts syncs as pwa-builder.shared.ts
+  // so each stack's thin pwa-builder.ts wrapper is never overwritten
+  const pwaSrc  = path.join(sharedCoreDir, 'pwa-builder.ts')
+  const pwaDest = path.join(stackCoreDir,  'pwa-builder.shared.ts')
+  if (fs.existsSync(pwaSrc)) copyFileIfChanged(pwaSrc, pwaDest)
+
+  console.log(`[${label}] ✓ Synced shared core (${[...SHARED_FOLDERS, ...SHARED_FILES, 'pwa-builder.shared.ts'].join(', ')})`)
 }
 
 function copyFileIfChanged(src: string, dest: string): void {
