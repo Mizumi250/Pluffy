@@ -1,27 +1,26 @@
 // ============================================================
 // ARKZEN ENGINE — INERTIA ROUTER v1.0
-// React+Inertia.js stack equivalent of router.ts / vite-router.ts
+// Equivalent of vite-router.ts for the Inertia stack.
 //
-// KEY DIFFERENCES from Next.js / React+Vite:
-//   - Pages go to resources/js/Pages/{tat}/{page}.tsx (Laravel convention)
-//   - No React Router — navigation is Inertia Link + router
-//   - useNavigate() → router.visit() from @inertiajs/react
-//   - Auth redirects handled server-side by Laravel middleware
-//   - Props come from Laravel (Inertia::render('Page', $props))
-//   - No layout wrapper injection — layouts are Inertia persistent layouts
-//   - Page registry is a flat map (used by resources/js/app.tsx resolver)
+// KEY DIFFERENCES from vite-router:
+//   1. Pages land in laravel-inertia/resources/js/Pages/{tat}/{Page}.tsx
+//      (inside the Laravel backend folder) NOT in a local src/pages/
+//   2. No route registry file — Laravel handles routing via web.php
+//      (RouteRegistrar in laravel-inertia writes routes/modules/{tat}.php)
+//   3. No React Router — navigation via Inertia router.visit()
+//   4. Page props come from Inertia::render() via usePage<Props>()
+//   5. No .arkzen-ready flag — Laravel Vite plugin manages HMR directly
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage } from '../types'
+import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 
-// Relative to engine/frontend/react-inertia/
-const RESOURCES_DIR  = path.resolve(process.cwd(), 'resources', 'js')
-const PAGES_DIR      = path.join(RESOURCES_DIR, 'Pages')
-const LAYOUTS_DIR    = path.join(RESOURCES_DIR, 'Layouts', 'custom')
-const GENERATED_DIR  = path.join(RESOURCES_DIR, 'arkzen', 'generated')
-const REGISTRY_FILE  = path.join(GENERATED_DIR, 'pages.ts')
+// Pages land INSIDE the laravel-inertia backend
+const ROOT_DIR   = path.resolve(process.cwd(), '..', '..', '..')
+const BACKEND_DIR = path.join(ROOT_DIR, 'engine', 'backend', 'laravel-inertia')
+const PAGES_DIR  = path.join(BACKEND_DIR, 'resources', 'js', 'Pages')
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -38,214 +37,198 @@ function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
 
-// ─── Generate a single Inertia page file ──────────────────────────────────────
-//
-// Inertia pages are plain React components that receive props from Laravel.
-// Key patterns:
-//   - usePage() from @inertiajs/react to access shared props (auth, flash, etc.)
-//   - router.visit('/path') instead of navigate()
-//   - useForm() from @inertiajs/react for form submissions (no manual fetch needed)
-//   - Persistent layouts via static property on the component
+// Strip Next.js-specific imports not valid in Inertia/Vite
+function stripNextImports(raw: string): string {
+  return raw
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+Link\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+}
 
-function generateInertiaPageFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
-  const tatName      = tatemono.meta.name
-  const layout       = page.layout ?? (tatemono.meta.auth ? 'auth' : 'none')
-  const animFnName   = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
-  const animImport   = animFnName
+// Strip react-router-dom imports — Inertia uses its own router
+function stripReactRouterImports(raw: string): string {
+  return raw
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+}
+
+// Normalize code to be Inertia-compatible
+function normalizeForInertia(raw: string): string {
+  return stripReactRouterImports(
+    stripNextImports(raw)
+      .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      // usePathname → useArkzenPathname from adapters
+      .replace(/\busePathname\(\)/g, 'useArkzenPathname()')
+      // useRouter / useNavigate → useArkzenRouter
+      .replace(/\buseRouter\b/g, 'useArkzenRouter')
+      .replace(/\buseNavigate\b/g, 'useArkzenRouter')
+      // env vars: NEXT_PUBLIC_ → VITE_ (laravel-inertia still uses Vite)
+      .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
+  )
+}
+
+// Get layout import path — adapters live in resources/js/arkzen/core/
+function getLayoutImport(layout: string, tatName: string): string {
+  const layoutMap: Record<string, string> = {
+    auth:  `import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'`,
+    guest: `import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'`,
+    blank: `import { BlankLayout } from '@/arkzen/core/layouts/BlankLayout'`,
+  }
+  if (layoutMap[layout]) return layoutMap[layout]
+  // Custom layout
+  const customName = toPascalCase(layout) + 'Layout'
+  return `import { ${customName} } from '@/arkzen/core/layouts/custom/${layout}'`
+}
+
+function getLayoutComponent(layout: string): string {
+  const compMap: Record<string, string> = {
+    auth:  'AuthLayout',
+    guest: 'GuestLayout',
+    blank: 'BlankLayout',
+  }
+  return compMap[layout] ?? (toPascalCase(layout) + 'Layout')
+}
+
+// ─── Generate a single Inertia page file ──────────────────────────────────────
+
+function generateInertiaPageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalStyle: boolean): string {
+  const tatName       = tatemono.meta.name
+  const layout        = page.layout ?? (tatemono.meta.auth ? 'auth' : 'none')
+  const isAuthLayout  = layout === 'auth'
+  const isGuestLayout = layout === 'guest'
+  const isGuestOnly   = isGuestLayout && (
+    (page as { guestOnly?: boolean }).guestOnly === true ||
+    (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
+  )
+  const layoutImport = layout !== 'none' ? getLayoutImport(layout, tatName) : ''
+  const layoutComp   = layout !== 'none' ? getLayoutComponent(layout) : 'React.Fragment'
+
+  const animFnName = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
+  const animImport = animFnName
     ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
     : ''
 
-  // Layout import for Inertia persistent layout pattern
-  let layoutImport = ''
-  let layoutLine   = ''
-  if (layout === 'auth') {
-    layoutImport = `import { AuthLayout } from '@/Layouts/AuthLayout'`
-    layoutLine   = `\n${toPascalCase(page.name)}Page.layout = (page: React.ReactNode) => <AuthLayout>{page}</AuthLayout>`
-  } else if (layout === 'guest') {
-    layoutImport = `import { GuestLayout } from '@/Layouts/GuestLayout'`
-    layoutLine   = `\n${toPascalCase(page.name)}Page.layout = (page: React.ReactNode) => <GuestLayout>{page}</GuestLayout>`
-  } else if (layout !== 'none') {
-    layoutImport = `import { ${toPascalCase(layout)}Layout } from '@/Layouts/custom/${tatName}-${layout}'`
-    layoutLine   = `\n${toPascalCase(page.name)}Page.layout = (page: React.ReactNode) => <${toPascalCase(layout)}Layout>{page}</${toPascalCase(layout)}Layout>`
-  }
+  const styleImport = hasGlobalStyle ? `import '../styles/global.css'` : ''
 
-  // Strip React imports from component code (we inject our own)
+  // Normalize component code
   const componentCode = tatemono.components
-    .map(c => c.raw
-      .replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-      .replace(/\s*import\s+React\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
+    .map(c => normalizeForInertia(c.raw)
+      .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
       .trim()
     )
     .join('\n\n')
 
-  const match = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
+  const cleanPageRaw = normalizeForInertia(page.raw)
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    .trim()
+
+  const allCode = componentCode + '\n' + cleanPageRaw
+  const needsMemo    = /\bmemo\s*\(/.test(allCode)
+  const needsCb      = /\buseCallback\s*\(/.test(allCode)
+  const needsReducer = /\buseReducer\s*\(/.test(allCode)
+  const needsCtx     = /\buseContext\s*\(/.test(allCode)
+  const needsUseMemo = /\buseMemo\s*\(/.test(allCode)
+
+  const reactHooks = [
+    'useRef',
+    'useEffect',
+    'useState',
+    needsMemo    && 'memo',
+    needsCb      && 'useCallback',
+    needsReducer && 'useReducer',
+    needsCtx     && 'useContext',
+    needsUseMemo && 'useMemo',
+  ].filter(Boolean).join(', ')
+
+  const match         = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
   const componentName = match ? match[1] : toPascalCase(page.name) + 'Page'
+  const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
+
+  // Inertia page props type — passed from Inertia::render() in controller
+  const propsTypeName = `${toPascalCase(tatName)}${toPascalCase(page.name)}Props`
 
   return `// ============================================================
 // ARKZEN GENERATED PAGE — ${tatName}/${page.name} [React+Inertia]
-// Layout: ${layout} | Auth: ${layout === 'auth'}
+// Layout: ${layout} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
-//
-// INERTIA NOTES:
-//   - Props come from Laravel via Inertia::render('${toPascalCase(tatName)}/${toPascalCase(page.name)}', $props)
-//   - Use usePage().props to access shared props (auth user, flash, etc.)
-//   - Use router.visit('/path') instead of navigate()
-//   - Use useForm() for form submissions (no manual fetch/axios needed)
-//   - Auth is enforced server-side by Laravel middleware
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
-import { usePage, router, useForm, Link } from '@inertiajs/react'
+import React, { ${reactHooks} } from 'react'
 import { motion } from 'framer-motion'
+import { usePage, router } from '@inertiajs/react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 ${layoutImport}
 ${animImport}
+${styleImport}
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
+// Props passed from Laravel via Inertia::render()
+export type ${propsTypeName} = {
+  auth?: { user?: Record<string, unknown> }
+  flash?: { success?: string; error?: string }
+  errors?: Record<string, string>
+  [key: string]: unknown
+}
+
 ${componentCode}
 
-// ── Page component from @arkzen:page:${page.name} ─────────────────────────────
-// NOTE: In Inertia, this component receives typed props from Laravel
-// Access them via: const { auth, flash, ...props } = usePage().props
-${page.raw.trim()}
-${layoutLine}
+${cleanPageRaw}
 
-export default ${componentName}
-`
-}
+// ── Arkzen Inertia wrapper ────────────────────────────────────
+function ${wrapperName}() {
+  const props = usePage<${propsTypeName}>().props
+  ${animFnName ? `const animations = ${animFnName}()` : ''}
 
-// ─── Generate animation file (same pattern as vite-router) ─────────────────
+  const content = (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      ${animFnName ? `variants={pageVariants}` : ''}
+    >
+      <${componentName} {...props} />
+    </motion.div>
+  )
 
-function generateAnimationFile(tatemono: ParsedTatemono): string | null {
-  if (!tatemono.animation) return null
-
-  const animFnName = toCamelCase(tatemono.meta.name) + 'Animations'
-  const clean = tatemono.animation.raw
-    .replace(/import.*from ['"]gsap['"]\s*;?\n?/g, '')
-    .replace(/import.*from ['"]gsap\/ScrollTrigger['"]\s*;?\n?/g, '')
-    .replace(/import React.*from ['"]react['"]\s*;?\n?/g, '')
-    .replace(/gsap\.registerPlugin\(.*\)\s*;?\n?/g, '')
-    .replace(`const ${animFnName}`, `export const ${animFnName}`)
-    .trim()
-
-  return `// ============================================================
-// ARKZEN GENERATED ANIMATIONS — ${tatemono.meta.name} [React+Inertia]
-// DO NOT EDIT — edit tatemono instead
-// ============================================================
-
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import React from 'react'
-
-gsap.registerPlugin(ScrollTrigger)
-
-${clean}
-`
-}
-
-// ─── Page registry (used by app.tsx resolver) ─────────────────────────────────
-// Inertia resolves pages by name string ('TatName/PageName')
-// We generate a flat map of all registered pages for the resolver
-
-interface InertiaPageEntry {
-  tatName:  string
-  pageName: string
-  filePath: string  // relative import path from app.tsx
-}
-
-function readExistingPages(): InertiaPageEntry[] {
-  if (!fs.existsSync(REGISTRY_FILE)) return []
-  const content = fs.readFileSync(REGISTRY_FILE, 'utf-8')
-  const matches = [...content.matchAll(/\/\/ PAGE:([^:]+):([^:]+):([^\n]+)/g)]
-  return matches.map(m => ({
-    tatName:  m[1],
-    pageName: m[2],
-    filePath: m[3].trim(),
-  }))
-}
-
-function writePageRegistry(pages: InertiaPageEntry[]): void {
-  ensureDir(GENERATED_DIR)
-
-  const entries = pages.map(p =>
-    `  // PAGE:${p.tatName}:${p.pageName}:${p.filePath}\n  '${toPascalCase(p.tatName)}/${toPascalCase(p.pageName)}': () => import('${p.filePath}'),`
-  ).join('\n')
-
-  const content = `// ============================================================
-// ARKZEN GENERATED — Inertia Page Registry
-// Auto-updated when tatemonos are built/removed
-// DO NOT EDIT — managed by Arkzen engine
-//
-// Used in resources/js/app.tsx to resolve Inertia page names
-// Laravel sends: Inertia::render('TatName/PageName', $props)
-// This map resolves that string to the correct React component
-// ============================================================
-
-export type InertiaPageResolver = Record<string, () => Promise<{ default: React.ComponentType }>>
-
-export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
-${entries}
-}
-`
-  fs.writeFileSync(REGISTRY_FILE, content, 'utf-8')
-}
-
-// ─── Generate custom layouts ───────────────────────────────────────────────────
-
-function generateCustomLayouts(tatemono: ParsedTatemono): void {
-  if (tatemono.layouts.length === 0) return
-  ensureDir(LAYOUTS_DIR)
-
-  for (const layout of tatemono.layouts) {
-    const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
-    const filePath = path.join(LAYOUTS_DIR, fileName)
-    const content  = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [Inertia]\n\n${layout.raw}\n`
-    fs.writeFileSync(filePath, content, 'utf-8')
-    console.log(`[Arkzen Inertia Router] ✓ Custom layout: ${fileName}`)
+  ${layout !== 'none'
+    ? `return <${layoutComp}>{content}</${layoutComp}>`
+    : `return content`
   }
 }
 
-// ─── Main: register tatemono pages ────────────────────────────────────────────
+export default ${wrapperName}
+`
+}
+
+// ─── Public API ───────────────────────────────────────────────────────────────
 
 export function registerInertiaPages(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
-  const tatDir  = path.join(PAGES_DIR, toPascalCase(tatName))
+  const tatDir  = path.join(PAGES_DIR, toPascalCase(tatName))  // Pages/InventoryManagement/
   ensureDir(tatDir)
 
-  // Generate custom layouts
-  generateCustomLayouts(tatemono)
-
-  // Generate animation file
-  const animContent = generateAnimationFile(tatemono)
-  if (animContent) {
-    ensureDir(GENERATED_DIR)
-    const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
-    fs.writeFileSync(animPath, animContent, 'utf-8')
-    console.log(`[Arkzen Inertia Router] ✓ Animation file generated`)
-  }
-
-  // Generate each page
-  const existingPages = readExistingPages().filter(p => p.tatName !== tatName)
-  const newPages: InertiaPageEntry[] = []
+  // Emit CSS styles into the Pages folder
+  const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Inertia Router' })
 
   for (const page of tatemono.pages) {
-    const pageContent = generateInertiaPageFile(tatemono, page)
-    const fileName    = `${toPascalCase(page.name)}.tsx`
-    const pagePath    = path.join(tatDir, fileName)
+    const pageContent  = generateInertiaPageFile(tatemono, page, styleInfo.hasGlobalStyle)
+    const pageName     = toPascalCase(page.name)            // dashboard → Dashboard
+    const pagePath     = path.join(tatDir, `${pageName}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 
-    const importPath = `@/Pages/${toPascalCase(tatName)}/${toPascalCase(page.name)}`
-    newPages.push({ tatName, pageName: page.name, filePath: importPath })
+    const routeHint = page.name === 'index'
+      ? `/${tatName}`
+      : `/${tatName}/${page.name}`
 
-    console.log(`[Arkzen Inertia Router] ✓ ${toPascalCase(tatName)}/${toPascalCase(page.name)} [inertia]`)
+    console.log(`[Arkzen Inertia Router] ✓ ${routeHint} → Pages/${toPascalCase(tatName)}/${pageName}.tsx`)
   }
 
-  writePageRegistry([...existingPages, ...newPages])
-  console.log(`[Arkzen Inertia Router] ✓ Page registry updated: ${newPages.length} page(s)`)
+  console.log(`[Arkzen Inertia Router] ✓ ${tatemono.pages.length} page(s) written to laravel-inertia`)
 }
-
-// ─── Remove tatemono pages ─────────────────────────────────────────────────────
 
 export function unregisterInertiaPages(tatName: string): void {
   const tatDir = path.join(PAGES_DIR, toPascalCase(tatName))
@@ -253,14 +236,4 @@ export function unregisterInertiaPages(tatName: string): void {
     fs.rmSync(tatDir, { recursive: true, force: true })
     console.log(`[Arkzen Inertia Router] ✓ Removed pages: ${tatName}`)
   }
-
-  const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
-  if (fs.existsSync(animPath)) {
-    fs.rmSync(animPath)
-    console.log(`[Arkzen Inertia Router] ✓ Animation file removed`)
-  }
-
-  const pages = readExistingPages().filter(p => p.tatName !== tatName)
-  writePageRegistry(pages)
-  console.log(`[Arkzen Inertia Router] ✓ Page registry updated`)
 }

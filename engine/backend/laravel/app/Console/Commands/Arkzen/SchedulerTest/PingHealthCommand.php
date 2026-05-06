@@ -5,7 +5,7 @@
 // Tatemono: scheduler-test
 // Signature: scheduler-test:ping-health
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:05.719370Z
+// Generated: 2026-05-06T11:18:05.933852Z
 // ============================================================
 
 namespace App\Console\Commands\Arkzen\SchedulerTest;

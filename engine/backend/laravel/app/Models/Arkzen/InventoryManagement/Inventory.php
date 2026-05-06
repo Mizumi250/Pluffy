@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Inventory
 // Tatemono: inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.116092Z
+// Generated: 2026-05-06T11:18:02.747454Z
 // ============================================================
 
 namespace App\Models\Arkzen\InventoryManagement;

@@ -2183,7 +2183,7 @@ const NotFoundPage = () => (
 
 'use client'
 
-export default function Error({ error, reset }: { error: Error; reset: () => void }) {
+function Error({ error, reset }: { error: Error; reset: () => void }) {
   return (
     <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ textAlign: 'center' }}>
