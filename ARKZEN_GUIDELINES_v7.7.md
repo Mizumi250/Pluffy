@@ -1,9 +1,15 @@
-# ARKZEN GUIDELINES DOCUMENT v7.7
+# ARKZEN GUIDELINES DOCUMENT v8.0
 ## For Claude AI — Generating Tatemono Files
 
-**UPDATED:** 2026-05-03
-**VERIFIED AGAINST:** 21 active tatemonos + queue-flow debugging session
-**CHANGES FROM v7.6:**
+**UPDATED:** 2026-05-06
+**VERSION:** 8.0 (Previously v7.7 with major design & UX additions)
+**VERIFIED AGAINST:** 21 active tatemonos + queue-flow debugging + design/transition/UX defaults
+**NEW IN v8.0:**
+- ADDED: Section 2D — Transition Defaults (context, drill, continuity transitions as smart fallbacks)
+- ADDED: Section 2E — UX Pattern Defaults (skeleton screens, optimistic UI, progress illusions)
+- EXPANDED: Section 2C — Design Aesthetic Policy with 6-tier fallback system (minimalism, glassmorphism, skeuomorphism, claymorphism, neo-brutalism, liquid glass)
+- CLARIFIED: All design, transition, and UX defaults are completely overridable by user request
+**PREVIOUS (v7.7):**
 - FIXED: `@arkzen:routes` custom handlers MUST use `@arkzen:handler:name` — NOT `@arkzen:endpoint:name`
 - FIXED: `@arkzen:endpoint:name` is ONLY for `@arkzen:api` resource controller methods
 - FIXED: foreignId `foreign:` value must use the ACTUAL generated table name (with tatemono prefix)
@@ -65,7 +71,7 @@ Rules:
 
 ---
 
-## SECTION 2C — DESIGN AESTHETIC POLICY
+## SECTION 2C — DESIGN AESTHETIC POLICY & FALLBACK SYSTEM
 
 Default to Awwwards-quality design. The queue-flow tatemono demonstrates the target quality level:
 - Glassmorphism with `rgba` backgrounds and `backdropFilter: blur`
@@ -73,6 +79,648 @@ Default to Awwwards-quality design. The queue-flow tatemono demonstrates the tar
 - Soft shadows, rounded corners (border-radius 16-28px)
 - Animated SVG components for data visualization
 - Light/pastel color schemes work as well as dark
+
+### Design Fallback System
+
+When no specific design style is requested, apply these design patterns in order of priority (best fit for the system context first):
+
+**Priority 1: Minimalism** (Arkzen default)
+- Clean lines, ample whitespace, typography-focused
+- Best for: content-heavy, data-dense, professional systems
+- Example: task managers, dashboards, admin panels
+- Colors: neutral palette, high contrast text, subtle grays
+
+**Priority 2: Glassmorphism**
+- Frosted glass effect with `rgba + backdrop-filter: blur`
+- Best for: modern, sleek, translucent layers
+- Example: overlay cards, nav bars, modals
+- Colors: semi-transparent overlays, dark/light backgrounds
+
+**Priority 3: Skeuomorphism**
+- Realistic, textured, 3D-like elements (subtle depth)
+- Best for: familiar interactions, banking/finance, legacy users
+- Example: credit card designs, document-like interfaces
+- Colors: realistic shadows, material textures
+
+**Priority 4: Claymorphism**
+- Soft, rounded, 3D-plastic appearance
+- Best for: friendly, playful, approachable applications
+- Example: creative tools, social apps, onboarding flows
+- Colors: pastel, soft shadows, muted tones
+
+**Priority 5: Neo-Brutalism**
+- Raw, bold, high-contrast, thick borders, geometric
+- Best for: statement-making, alternative apps, attention-grabbing
+- Example: experimental tools, artistic platforms, portfolio sites
+- Colors: stark black/white, bold accent colors
+
+**Priority 6: Liquid Glass** (Morphism variant)
+- Flowing, liquid-like shapes, soft gradients, smooth animations
+- Best for: premium, polished, sophisticated experiences
+- Example: high-end products, media apps, design showcases
+- Colors: gradient-heavy, smooth color transitions
+
+**Application Rules:**
+- These are fallback defaults when user doesn't specify a design style
+- Choice depends on system purpose and user demographic
+- Multiple styles CAN be mixed (e.g. minimalist base + glassmorphism accents)
+- Always overrideable: if user specifies "neo-brutalism" or "skeuomorphism", use their request
+- Generate modern, polished interfaces regardless of fallback choice
+- Accessibility (contrast, readability) remains a priority in all styles
+
+---
+
+## SECTION 2D — TRANSITION DEFAULTS
+
+When no specific transition type is requested, apply these transition patterns (non-exclusive, can combine):
+
+### Transition Types (Priority Order)
+
+**Context Transition**
+- Animate based on page/section context
+- Example: opening a detail view slides in from the side, button state change fades
+- Best for: showing relationship between screens
+- Implementation: `transition: all 0.3s ease-out`, transform properties
+
+**Drill Transition**
+- Zoom/scale interaction focusing into detail
+- Example: clicking a card zooms it to fill screen, clicking back zooms out
+- Best for: hierarchical navigation, focused tasks
+- Implementation: `transform: scale()`, `opacity`, positioned stagger
+
+**Continuity Transition**
+- Motion continuity between elements
+- Example: shared element transition, smooth flow between related states
+- Best for: polished, premium feel
+- Implementation: layout animations, morphing shapes, path animations
+
+### UX Transition Patterns (Select 1-2 per interaction)
+
+**Page Transitions:**
+- Default: Context transition (fade + slide: `opacity 0.3s`, `transform 0.4s`)
+- Alternative: Drill transition (zoom: `scale 0.3s`, parent container scaling)
+
+**Modal/Overlay:**
+- Default: Continuity transition (smooth entrance: `scale-in`, fade-in)
+- Recommended duration: 0.25-0.35s
+
+**Button/State Changes:**
+- Default: Context transition (quick feedback: `0.15-0.2s`)
+- Avoid long animations for frequent interactions
+
+**List Item Actions:**
+- Staggered drill transitions (`delay: index * 50ms`)
+- Smooth removal with slide-out + fade
+
+**Application Rules:**
+- These are fallback defaults when user doesn't specify transitions
+- Always overrideable: if user requests "only fade transitions", use only fade
+- Transitions enhance, not distract (keep under 500ms for most interactions)
+- Reduced motion: respect `prefers-reduced-motion` media query
+- Mobile: consider performance, use hardware-accelerated properties (`transform`, `opacity` only)
+
+---
+
+## SECTION 2E — UX PATTERN DEFAULTS
+
+When no specific UX patterns are requested, implement these defaults for modern user experiences:
+
+### Skeleton Screens (Loading States)
+
+**When to use:** API calls, data fetches, page navigations taking >300ms
+
+**Implementation:**
+```tsx
+// ✅ CORRECT — Skeleton with pulsing animation
+const SkeletonCard = () => (
+  <div style={{
+    borderRadius: 12,
+    background: 'linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%)',
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 2s infinite',
+    height: 120,
+    marginBottom: 12,
+  }} />
+)
+
+// In @arkzen:style
+@keyframes shimmer {
+  0% { backgroundPosition: 200% 0; }
+  100% { backgroundPosition: -200% 0; }
+}
+```
+
+**Rules:**
+- Always show skeleton matching final content layout (same height/width)
+- Use neutral grays, avoid colored placeholders
+- Pulse or shimmer effect optional but recommended
+- Hide skeleton on data arrival
+
+### Optimistic UI (Instant Feedback)
+
+**When to use:** Form submissions, action buttons, real-time interactions
+
+**Implementation:**
+```tsx
+// ✅ CORRECT — Update UI before API response
+const addItem = async (itemData) => {
+  // 1. Update UI immediately
+  setItems([...items, { id: 'temp', ...itemData, status: 'pending' }])
+  
+  // 2. Make API call
+  try {
+    const res = await arkzenFetch('/api/items', { method: 'POST', body: itemData })
+    // 3. Update with server response (confirm/fix if needed)
+    setItems(prev => prev.map(item => 
+      item.id === 'temp' ? { ...item, id: res.id, status: 'confirmed' } : item
+    ))
+  } catch (error) {
+    // 4. Revert on error
+    setItems(prev => prev.filter(item => item.id !== 'temp'))
+    showError('Failed to add item')
+  }
+}
+```
+
+**Rules:**
+- Show visual feedback immediately (no waiting for API)
+- Disable button during request
+- Add `pending` or `loading` state indicator
+- Revert changes gracefully on error
+- No network latency visible to user
+
+### Progress Illusions (Perceived Performance)
+
+**When to use:** Long-running operations, file uploads, complex data processing
+
+**Implementation:**
+```tsx
+// ✅ CORRECT — Show realistic progress even when actual progress unknown
+const UploadProgress = ({ file }) => {
+  const [progress, setProgress] = useState(0)
+
+  useEffect(() => {
+    // Fake progress: 0% → 90% quickly, then slow crawl to 99%
+    const interval = setInterval(() => {
+      setProgress(prev => {
+        if (prev < 30) return prev + Math.random() * 20  // Fast ramp
+        if (prev < 90) return prev + Math.random() * 8   // Moderate
+        return Math.min(prev + 1, 99)                      // Slow crawl
+      })
+    }, 200)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  return (
+    <div style={{ width: '100%', height: 4, background: '#e0e0e0', borderRadius: 2 }}>
+      <div style={{
+        width: `${progress}%`,
+        height: '100%',
+        background: 'linear-gradient(90deg, #3a6fd8, #4a72c8)',
+        transition: 'width 0.3s ease-out',
+        borderRadius: 2,
+      }} />
+      <p style={{ marginTop: 8, fontSize: 12, color: '#666' }}>{Math.floor(progress)}%</p>
+    </div>
+  )
+}
+```
+
+**Rules:**
+- Never show 100% until actually complete
+- Use realistic progression (not linear)
+- Show intermediate milestones (buffering, processing, finalizing)
+- Pair with actual progress tracking when available
+- Smoothly animate between progress values
+
+### Combined UX Pattern Example
+
+```tsx
+// Step 1: Skeleton while loading
+if (loading) return <SkeletonCard />
+
+// Step 2: Optimistic update on user action
+const handleSubmit = async (data) => {
+  setItems([...items, data])  // Optimistic
+  setLoading(true)
+  try {
+    const res = await arkzenFetch('/api/items', { method: 'POST', body: data })
+    setItems(prev => prev.map(item => item.id === 'temp' ? res : item))
+  } catch {
+    setItems(items)  // Revert
+    showError('Failed')
+  } finally {
+    setLoading(false)
+  }
+}
+
+// Step 3: Progress animation on time-consuming tasks
+if (uploading) return <UploadProgress />
+
+// Step 4: Final rendered content with transitions
+return <div style={{ animation: 'fadeIn 0.3s' }}>...</div>
+```
+
+### Storytelling & Scroll Triggers
+
+**When to use:** Hero sections, data reveals, timeline views, feature showcases
+
+**Scroll Trigger patterns (GSAP):**
+```tsx
+// ✅ CORRECT — Reveal on scroll
+useEffect(() => {
+  const ctx = gsap.context(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    
+    gsap.to('.hero-text', {
+      scrollTrigger: {
+        trigger: '.hero-section',
+        start: 'top center',
+        end: 'center center',
+        scrub: 1, // smooth scroll-linked animation
+        markers: false,
+      },
+      opacity: 1,
+      y: 0,
+      duration: 1,
+    })
+  }, pageRef)
+  return () => ctx.revert()
+}, [])
+```
+
+**Storytelling variants:**
+- **Progressive reveal**: Text/elements fade in one by one as user scrolls
+- **Parallax depth**: Background moves slower than foreground
+- **Meter/gauge animations**: Values animate to target as they enter viewport
+- **Timeline unroll**: Vertical line connects events, each fades on scroll
+
+---
+
+### Hover Effects & Micro-Interactions
+
+**When to use:** Buttons, cards, links, interactive elements
+
+**Framer Motion hover patterns:**
+```tsx
+// ✅ CORRECT — Magnetic hover button
+<motion.button
+  whileHover={{ scale: 1.05, boxShadow: '0 8px 24px rgba(58, 111, 216, 0.3)' }}
+  whileTap={{ scale: 0.98 }}
+  transition={{ type: 'spring', stiffness: 300 }}
+  style={{ cursor: 'pointer' }}
+>
+  Click Me
+</motion.button>
+
+// Card lift on hover
+<motion.div
+  whileHover={{ y: -8, boxShadow: '0 12px 32px rgba(0,0,0,0.15)' }}
+  transition={{ duration: 0.2 }}
+>
+  Card Content
+</motion.div>
+
+// Icon rotate on hover
+<motion.div
+  whileHover={{ rotate: 360 }}
+  transition={{ duration: 0.6, ease: 'easeOut' }}
+>
+  <Icon size={24} />
+</motion.div>
+```
+
+**Micro-interaction variants:**
+- **Button press**: Scale down on click, ripple effect
+- **Icon pulse**: Icon size oscillates on hover
+- **Link underline**: Animated underline slides in on hover
+- **Color shift**: Background color transitions on hover
+- **Bounce feedback**: Element bounces on interaction completion
+
+---
+
+### 3D Effects & Depth
+
+**When to use:** Premium cards, showcase sections, product displays
+
+**GSAP 3D transforms:**
+```tsx
+// ✅ CORRECT — 3D card flip
+<div
+  onMouseEnter={() => {
+    gsap.to(cardRef.current, {
+      rotationY: 180,
+      duration: 0.6,
+      ease: 'power2.inOut',
+    })
+  }}
+  onMouseLeave={() => {
+    gsap.to(cardRef.current, {
+      rotationY: 0,
+      duration: 0.6,
+      ease: 'power2.inOut',
+    })
+  }}
+  ref={cardRef}
+  style={{
+    perspective: '1000px',
+    transformStyle: 'preserve-3d',
+    width: 200,
+    height: 200,
+  }}
+>
+  Card
+</div>
+
+// 3D perspective on scroll
+gsap.to('.product-card', {
+  scrollTrigger: { trigger: '.products' },
+  rotationX: 5,
+  rotationY: 5,
+  z: 50,
+  duration: 0.8,
+})
+```
+
+**3D effect variants:**
+- **Card flip**: Rotate Y axis to reveal back
+- **Depth perspective**: Z-axis movement + shadow
+- **Tilt effect**: Rotate on mouse position
+- **Cube rotation**: Multi-face 3D navigation
+- **Stacked layers**: Multiple depth planes
+
+---
+
+### Entrance Animations
+
+**When to use:** Page loads, modal opens, list items appear
+
+**Framer Motion entrance patterns:**
+```tsx
+// ✅ CORRECT — Staggered list entrance
+const container = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.2,
+    },
+  },
+}
+
+const item = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
+}
+
+<motion.div variants={container} initial="hidden" animate="visible">
+  {items.map((item) => (
+    <motion.div key={item.id} variants={item}>
+      {item.name}
+    </motion.div>
+  ))}
+</motion.div>
+
+// Page entrance
+<motion.div
+  initial={{ opacity: 0, y: 20 }}
+  animate={{ opacity: 1, y: 0 }}
+  transition={{ duration: 0.4, ease: 'easeOut' }}
+>
+  Page Content
+</motion.div>
+```
+
+**Entrance variants:**
+- **Fade + slide**: Fade in + slide from side/bottom
+- **Stagger**: Children animate one by one
+- **Scale bloom**: Scale from 0 to 1 with fade
+- **Blur reveal**: Blur effect clears on enter
+- **Rotate unfold**: Rotate + scale simultaneously
+
+---
+
+### Loading Animations
+
+**When to use:** Data fetching, file uploads, processing states
+
+**GSAP + Framer Motion spinner patterns:**
+```tsx
+// ✅ CORRECT — Animated spinner
+<motion.div
+  animate={{ rotate: 360 }}
+  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+  style={{ width: 40, height: 40 }}
+>
+  <Loader2 size={40} style={{ color: '#3a6fd8' }} />
+</motion.div>
+
+// Pulse skeleton
+<motion.div
+  animate={{ opacity: [0.5, 1, 0.5] }}
+  transition={{ duration: 1.5, repeat: Infinity }}
+  style={{
+    height: 80,
+    borderRadius: 8,
+    background: '#f0f0f0',
+  }}
+/>
+
+// Morphing loader (GSAP)
+gsap.to('.loader-shape', {
+  morphSVG: '#shape-target',
+  duration: 0.6,
+  repeat: -1,
+  yoyo: true,
+})
+```
+
+**Loading variants:**
+- **Spinning icon**: Rotate 360° infinite
+- **Pulsing dot**: 3 dots animate stagger + fade
+- **Progress bar**: Animated width + shimmer
+- **Skeleton morph**: Placeholder morphs subtly
+- **Wave effect**: Bars rise/fall in sequence
+
+---
+
+### Mouse Animations & Parallax
+
+**When to use:** Hero sections, interactive backgrounds, cursor feedback
+
+**Mouse-tracking patterns:**
+```tsx
+// ✅ CORRECT — Parallax on mouse move
+const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+
+useEffect(() => {
+  const handleMouseMove = (e) => {
+    setMousePos({ x: e.clientX, y: e.clientY })
+  }
+  window.addEventListener('mousemove', handleMouseMove)
+  return () => window.removeEventListener('mousemove', handleMouseMove)
+}, [])
+
+<motion.div
+  style={{
+    x: mousePos.x * 0.05,
+    y: mousePos.y * 0.05,
+  }}
+>
+  Parallax Background
+</motion.div>
+
+// Magnetic button (follow cursor)
+<motion.button
+  animate={{
+    x: (mousePos.x - buttonPos.x) * 0.1,
+    y: (mousePos.y - buttonPos.y) * 0.1,
+  }}
+  transition={{ type: 'spring', stiffness: 150 }}
+>
+  Magnetic Button
+</motion.button>
+```
+
+**Mouse interaction variants:**
+- **Parallax**: Background layers move at different speeds
+- **Magnetic snap**: Element follows cursor, snaps back
+- **Cursor glow**: Custom cursor with trailing glow
+- **Hover shift**: Element moves toward cursor on hover
+- **Drag inertia**: Smooth momentum on drag release
+
+---
+
+### Background Animations
+
+**When to use:** Page backgrounds, decorative elements, ambient effects
+
+**Background animation patterns:**
+```tsx
+// ✅ CORRECT — Animated gradient background
+<div
+  style={{
+    background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+    backgroundSize: '400% 400%',
+    animation: 'gradientShift 15s ease infinite',
+    minHeight: '100vh',
+  }}
+>
+  Content
+</div>
+
+// In @arkzen:style
+@keyframes gradientShift {
+  0% { backgroundPosition: 0% 50%; }
+  50% { backgroundPosition: 100% 50%; }
+  100% { backgroundPosition: 0% 50%; }
+}
+
+// Floating shapes (GSAP)
+gsap.to('.float-shape', {
+  y: -30,
+  rotation: 360,
+  duration: 4,
+  repeat: -1,
+  yoyo: true,
+  ease: 'sine.inOut',
+})
+
+// Blob morphing
+<motion.div
+  animate={{
+    borderRadius: ['30% 70% 70% 30%', '70% 30% 30% 70%', '30% 70% 70% 30%'],
+  }}
+  transition={{ duration: 8, repeat: Infinity }}
+  style={{
+    width: 200,
+    height: 200,
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+  }}
+/>
+```
+
+**Background variants:**
+- **Gradient shift**: Animated gradient colors
+- **Particle system**: Small animated particles
+- **Floating shapes**: Orbs/shapes move smoothly
+- **Blob morph**: Organic shape morphs continuously
+- **Grid animation**: Grid tiles light up in pattern
+
+---
+
+### Combined Animation Sequence
+
+**When to use:** Hero sections, landing pages, premium showcases
+
+```tsx
+// ✅ CORRECT — Full animation sequence
+export const HeroAnimation = () => {
+  const pageRef = useRef(null)
+
+  useEffect(() => {
+    const ctx = gsap.context(() => {
+      const tl = gsap.timeline()
+
+      // 1. Background fade in
+      tl.from('.hero-bg', { opacity: 0, duration: 0.6 })
+
+      // 2. Title entrance (stagger)
+      tl.from('.hero-title', {
+        opacity: 0,
+        y: 30,
+        duration: 0.8,
+        staggerBy: 0.1,
+      }, 0.2)
+
+      // 3. Button appears + scale
+      tl.from('.hero-btn', {
+        opacity: 0,
+        scale: 0.8,
+        duration: 0.5,
+      }, 0.5)
+
+      // 4. Scroll trigger for content below
+      gsap.registerPlugin(ScrollTrigger)
+      gsap.to('.content-section', {
+        scrollTrigger: { trigger: '.content-section' },
+        opacity: 1,
+        y: 0,
+        duration: 0.8,
+      })
+    }, pageRef)
+
+    return () => ctx.revert()
+  }, [])
+
+  return (
+    <div ref={pageRef}>
+      {/* Hero section animations */}
+    </div>
+  )
+}
+```
+
+**Sequence formula:**
+1. Background/ambient enter
+2. Hero content (title, subtitle) stagger in
+3. CTAs appear + scale
+4. Scroll triggers for sections below
+5. Hover states + micro-interactions on all interactive elements
+
+---
+
+**Application Rules:**
+- These are fallback defaults when user doesn't specify animation patterns
+- Always overrideable: if user requests "minimal animations", use restraint
+- Performance-first: use `transform` & `opacity` only (GPU-accelerated)
+- Mobile: reduce animation complexity, no parallax on low-end devices
+- Accessibility: respect `prefers-reduced-motion` for all animations
+- Combine patterns: entrance → scroll trigger → hover → exit as flow requires
+- Test on real networks (3G, 4G) and devices to validate performance
+- Frontend-heavy: these animations are expected defaults for modern tatemonos
 
 ---
 

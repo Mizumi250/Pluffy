@@ -372,6 +372,139 @@
 
 ---
 
+---
+
+## Version 10 — Desktop Application Support
+
+### Why Desktop?
+- Windows/macOS/Linux from single codebase
+- Reuse React skills (same as web)
+- Same backend (Laravel works for all platforms)
+- Desktop-specific features (file system, window management, native dialogs)
+
+### Two Desktop Options
+
+#### Option 1: Electron + React
+**Architecture**: React SPA ↔ Electron Bridge ↔ REST API ← Laravel Backend
+
+```
+├── Frontend Stack
+│   └── React 18 + TypeScript + Webpack
+│       - Electron renderer process
+│       - IPC communication with main process
+│       - Full Node.js access via preload
+│
+├── Backend
+│   └── Electron Main Process (Node.js)
+│       - Window management
+│       - File system operations
+│       - Native dialogs
+│       - System integrations
+│
+└── Use Cases
+    └── Established ecosystem
+        - Proven production apps (Discord, VS Code, Slack)
+        - Extensive library ecosystem
+        - Large developer community
+        - Best for teams that know Node.js
+```
+
+#### Option 2: Tauri + React
+**Architecture**: React SPA ↔ Tauri Bridge ↔ Rust Kernel ↔ REST API ← Laravel Backend
+
+```
+├── Frontend Stack
+│   └── React 18 + TypeScript + Vite
+│       - Tauri webview integration
+│       - Lightweight (~10-50MB)
+│       - IPC with Rust backend
+│
+├── Backend
+│   └── Tauri Rust Core
+│       - System-level operations
+│       - Better performance than Node.js
+│       - Smaller bundle size
+│       - C library integration
+│
+└── Use Cases
+    └── Modern, lightweight choice
+        - Growing ecosystem (VS Code extensions, Discord plugins)
+        - Technically superior architecture
+        - Best for teams willing to learn Rust
+        - Future-proof as Tauri adoption grows
+```
+
+### Implementation Plan
+
+#### For Electron (Phase 10.1)
+1. Create `ElectronBuilder.ts` builder
+   - Parse @arkzen:page blocks → React components
+   - Generate Electron main process
+   - IPC bridge generation
+   
+2. Window management
+   - Title bar customization
+   - System tray support
+   - Native menus
+   
+3. File system integration
+   - File open/save dialogs
+   - Document handling
+   
+4. Build & packaging
+   - Electron-builder config
+   - Code signing
+   - Auto-update system
+
+#### For Tauri (Phase 10.2)
+1. Create `TauriBuilder.ts` builder
+   - Parse @arkzen:page blocks → React components
+   - Generate Tauri Rust core
+   - Command handler generation
+   
+2. Rust integration
+   - Command definitions (TypeScript ↔ Rust IPC)
+   - System operations
+   
+3. Window management
+   - Native window controls
+   - System tray (native)
+   - Native menus
+   
+4. Build & packaging
+   - Tauri.conf.json generation
+   - Code signing
+   - Multi-platform builds
+
+### What Stays the Same
+- Tatemono file format (@arkzen:* blocks)
+- Component separation strategy
+- CSS/Style DSL
+- Auth system (Sanctum works with both)
+- Real-time (Reverb works with both)
+- Backend (@arkzen:api, @arkzen:database, etc.)
+
+### What Changes
+- Platform-specific window APIs (Electron IPC vs Tauri commands)
+- Build configs (electron-builder vs tauri.conf.json)
+- File structure slightly (but same component generation)
+
+### Key Differences
+
+| Feature | Electron | Tauri |
+|---------|----------|-------|
+| **Bundle Size** | 150-200MB | 10-50MB |
+| **Memory Usage** | 100-200MB | 30-80MB |
+| **Startup Time** | Moderate | Fast |
+| **Learning Curve** | Easy (Node.js) | Medium (Rust) |
+| **Ecosystem** | Massive | Growing |
+| **Job Market** | Many Electron devs | Few Tauri specialists |
+| **Future Proof** | Mature, stable | Rising, cutting-edge |
+| **Performance** | Good | Excellent |
+| **Best For | Teams with Node.js expertise | Teams willing to learn Rust |
+
+---
+
 ## Roadmap Timeline
 
 | Version | Frontend Options | Backend | Status | Timeline |
@@ -380,6 +513,7 @@
 | v7.5 | Next.js 16 (PWA) | Laravel 13 | Planned | 1-2 months |
 | v8 | Next.js / React / React+Inertia | Laravel 13 | Planned | 2-3 months after v7.5 |
 | v9 | React Native | Laravel 13 | Planned | 3-4 months after v8 |
+| v10 | Electron / Tauri | Laravel 13 | Planned | 4-5 months after v9 |
 
 ---
 
