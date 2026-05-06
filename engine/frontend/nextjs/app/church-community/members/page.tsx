@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — church-community/members
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T11:18:01.311Z
+// Generated: 2026-05-06T13:26:25.477Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -16,13 +16,32 @@ import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/chur
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
-  Image as ImageIcon, Plus, Trash2, Edit2, Search, X, Upload, Tag,
-  Calendar, Users, Archive, ChevronDown, Loader2, Eye, Filter, Check,
-  AlertCircle, LogIn, LogOut, UserPlus, Camera, Settings
+  Image as ImageIcon, Plus, Trash2, Search, X, Upload, Tag,
+  Calendar, Users, Loader2, Eye, Check, LogIn, UserPlus, Camera,
 } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useToast } from '@/arkzen/core/components/Toast'
-import { Modal } from '@/arkzen/core/components/Modal'
+
+// ─── Design tokens (Zutto palette) ───────────────────────────────────────
+export const Z = {
+  bg:          'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+  card:        'rgba(255,255,255,0.88)',
+  cardSolid:   '#ffffff',
+  purple:      '#7b6cf6',
+  purpleLight: '#a78bfa',
+  purpleGrad:  'linear-gradient(135deg, #7b6cf6 0%, #a78bfa 100%)',
+  cyanGrad:    'linear-gradient(135deg, #6ec6f5 0%, #7b6cf6 100%)',
+  textDark:    '#1a1a2e',
+  textMid:     '#4a5580',
+  textSoft:    '#8b9cc8',
+  textMuted:   '#b0bcd4',
+  border:      'rgba(255,255,255,0.7)',
+  shadow:      '0 8px 32px rgba(100,120,180,0.12)',
+  shadowPurp:  '0 6px 20px rgba(123,108,246,0.32)',
+  radius:      '20px',
+  radiusSm:    '12px',
+  radiusXl:    '28px',
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -35,7 +54,6 @@ export interface ChurchEvent {
   event_date: string
   cover_photo_url: string | null
   is_members_only: boolean
-  photo_count?: number
   created_at: string
 }
 
@@ -92,11 +110,8 @@ interface FeedStore {
 }
 
 export const useFeedStore = create<FeedStore>((set) => ({
-  events: [],
-  selectedEvent: null,
-  photos: [],
-  loadingEvents: false,
-  loadingPhotos: false,
+  events: [], selectedEvent: null, photos: [],
+  loadingEvents: false, loadingPhotos: false,
   setEvents: (events) => set({ events }),
   setSelectedEvent: (selectedEvent) => set({ selectedEvent }),
   setPhotos: (photos) => set({ photos }),
@@ -116,10 +131,7 @@ interface MemberStore {
 }
 
 export const useMemberStore = create<MemberStore>((set) => ({
-  members: [],
-  loading: false,
-  searchQuery: '',
-  roleFilter: 'all',
+  members: [], loading: false, searchQuery: '', roleFilter: 'all',
   setMembers: (members) => set({ members }),
   setLoading: (loading) => set({ loading }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
@@ -138,13 +150,8 @@ interface InventoryStore {
 }
 
 export const useInventoryStore = create<InventoryStore>((set) => ({
-  photos: [],
-  totalCount: 0,
-  totalSize: 0,
-  eventCount: 0,
-  allTags: [],
-  activeTag: null,
-  loading: false,
+  photos: [], totalCount: 0, totalSize: 0, eventCount: 0,
+  allTags: [], activeTag: null, loading: false,
   setData: (d) => set((s) => ({ ...s, ...d })),
 }))
 
@@ -154,40 +161,31 @@ export const formatDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
 export const formatRelativeTime = (d: string) => {
-  const now = new Date()
-  const date = new Date(d)
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
-  return formatDate(d)
+  const diffMs = Date.now() - new Date(d).getTime()
+  const m = Math.floor(diffMs / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
 }
 
 export const formatFileSize = (bytes: number | null) => {
   if (!bytes) return '—'
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / 1048576).toFixed(1)} MB`
 }
 
-export const roleColors: Record<Role, string> = {
-  pastor: 'bg-amber-800',
-  elder: 'bg-emerald-700',
-  deacon: 'bg-blue-700',
-  leader: 'bg-purple-700',
-  member: 'bg-stone-500',
+export const roleBadge: Record<Role, { bg: string; text: string }> = {
+  pastor:  { bg: 'linear-gradient(135deg,#7b6cf6,#a78bfa)', text: '#fff' },
+  elder:   { bg: 'linear-gradient(135deg,#6ec6f5,#7b6cf6)', text: '#fff' },
+  deacon:  { bg: 'linear-gradient(135deg,#a78bfa,#c084fc)', text: '#fff' },
+  leader:  { bg: 'linear-gradient(135deg,#818cf8,#6ec6f5)', text: '#fff' },
+  member:  { bg: 'rgba(176,188,212,0.5)',                   text: '#4a5580' },
 }
 
 export const roleLabel: Record<Role, string> = {
-  pastor: 'Pastor',
-  elder: 'Elder',
-  deacon: 'Deacon',
-  leader: 'Leader',
-  member: 'Member',
+  pastor: 'Pastor', elder: 'Elder', deacon: 'Deacon', leader: 'Leader', member: 'Member',
 }
 
 export const getInitials = (name: string) =>
@@ -196,19 +194,131 @@ export const getInitials = (name: string) =>
 // ─── Skeleton ─────────────────────────────────────────────────────────────
 
 export const SkeletonBox: React.FC<{ width?: string; height?: number; radius?: number }> = ({
-  width = '100%', height = 80, radius = 8,
+  width = '100%', height = 80, radius = 12,
 }) => (
-  <div style={{
-    width,
-    height,
-    borderRadius: radius,
-    background: 'linear-gradient(90deg, #f3ede5 25%, #e6dac8 50%, #f3ede5 75%)',
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 1.8s infinite',
-  }} />
+  <div
+    style={{
+      width, height, borderRadius: radius,
+      background: 'linear-gradient(90deg, rgba(200,210,230,0.5) 25%, rgba(220,228,242,0.8) 50%, rgba(200,210,230,0.5) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.8s infinite',
+    }}
+  />
 )
 
-// ─── Instagram‑style Post Card ───────────────────────────────────────────
+// ─── ZCard ────────────────────────────────────────────────────────────────
+
+export const ZCard: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
+  children, className = '', style = {}
+}) => (
+  <div
+    className={className}
+    style={{
+      background: Z.card,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: Z.radius,
+      border: `1px solid ${Z.border}`,
+      boxShadow: Z.shadow,
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+)
+
+// ─── ZButton ──────────────────────────────────────────────────────────────
+
+export const ZButton: React.FC<{
+  children: React.ReactNode
+  onClick?: () => void
+  disabled?: boolean
+  variant?: 'purple' | 'cyan' | 'ghost' | 'outline'
+  className?: string
+  fullWidth?: boolean
+}> = ({ children, onClick, disabled, variant = 'purple', className = '', fullWidth }) => {
+  const styles: Record<string, React.CSSProperties> = {
+    purple:  { background: Z.purpleGrad, color: '#fff', boxShadow: Z.shadowPurp },
+    cyan:    { background: Z.cyanGrad,   color: '#fff', boxShadow: '0 6px 20px rgba(110,198,245,0.3)' },
+    ghost:   { background: 'rgba(123,108,246,0.08)', color: Z.purple },
+    outline: { background: 'transparent', color: Z.textMid, border: `1px solid rgba(180,190,215,0.6)` },
+  }
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex items-center justify-center gap-2 font-semibold rounded-full transition-all ${fullWidth ? 'w-full' : ''} ${className}`}
+      style={{
+        padding: '10px 24px',
+        fontSize: 14,
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        ...styles[variant],
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ─── ZInput ───────────────────────────────────────────────────────────────
+
+export const ZInput: React.FC<{
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+  onKeyDown?: (e: React.KeyboardEvent) => void
+}> = ({ value, onChange, placeholder, type = 'text', onKeyDown }) => (
+  <input
+    type={type}
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    onKeyDown={onKeyDown}
+    placeholder={placeholder}
+    style={{
+      width: '100%',
+      padding: '10px 16px',
+      borderRadius: '12px',
+      border: '1.5px solid rgba(200,210,230,0.6)',
+      background: 'rgba(255,255,255,0.7)',
+      color: Z.textDark,
+      fontSize: 14,
+      outline: 'none',
+    }}
+    onFocus={e => { e.target.style.borderColor = Z.purple; e.target.style.boxShadow = `0 0 0 3px rgba(123,108,246,0.12)` }}
+    onBlur={e => { e.target.style.borderColor = 'rgba(200,210,230,0.6)'; e.target.style.boxShadow = 'none' }}
+  />
+)
+
+// ─── Avatar ───────────────────────────────────────────────────────────────
+
+export const Avatar: React.FC<{ name: string; photoUrl?: string | null; size?: number }> = ({
+  name, photoUrl, size = 36,
+}) => (
+  photoUrl ? (
+    <img
+      src={photoUrl}
+      alt={name}
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.8)' }}
+    />
+  ) : (
+    <div
+      style={{
+        width: size, height: size, borderRadius: '50%',
+        background: Z.purpleGrad,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontSize: size * 0.33, fontWeight: 700,
+        border: '2px solid rgba(255,255,255,0.8)',
+        flexShrink: 0,
+      }}
+    >
+      {getInitials(name)}
+    </div>
+  )
+)
+
+// ─── Post Card (Zutto style) ──────────────────────────────────────────────
 
 interface PostCardProps {
   photo: Photo
@@ -236,103 +346,76 @@ export const PostCard: React.FC<PostCardProps> = ({ photo, onLike, onComment }) 
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden transition hover:shadow-md">
+    <ZCard style={{ overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
+      className="hover:scale-[1.01]"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-sm font-bold">
-            {photo.uploader?.name ? getInitials(photo.uploader.name) : '👤'}
-          </div>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={photo.uploader?.name ?? 'Member'} size={36} />
           <div>
-            <p className="text-sm font-semibold text-amber-900">{photo.uploader?.name ?? 'Church Member'}</p>
-            <p className="text-xs text-amber-400">{formatRelativeTime(photo.created_at)}</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: Z.textDark }}>{photo.uploader?.name ?? 'Church Member'}</p>
+            <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
           </div>
         </div>
-        <button className="text-amber-300 hover:text-amber-500">
-          <MoreHorizontal size={18} />
-        </button>
+        <button style={{ color: Z.textMuted }}><MoreHorizontal size={18} /></button>
       </div>
 
       {/* Image */}
-      <div className="relative bg-amber-50 aspect-square cursor-pointer" onClick={onComment}>
+      <div
+        style={{ position: 'relative', aspectRatio: '1', background: 'rgba(200,210,230,0.3)', cursor: 'pointer' }}
+        onClick={onComment}
+      >
         {photo.url ? (
-          <img src={photo.url} alt={photo.caption ?? photo.file_name} className="w-full h-full object-cover" loading="lazy" />
+          <img src={photo.url} alt={photo.caption ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-amber-300"><ImageIcon size={48} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: Z.textMuted }}>
+            <ImageIcon size={40} />
+          </div>
         )}
       </div>
 
       {/* Actions */}
-      <div className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={handleLike} className="transition hover:scale-105">
-            <Heart size={22} className={liked ? 'fill-red-500 text-red-500' : 'text-amber-400'} />
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, transition: 'transform 0.15s' }} className="hover:scale-110">
+            <Heart size={20} fill={liked ? '#ef4444' : 'none'} />
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{likesCount > 0 ? likesCount.toLocaleString() : ''}</span>
           </button>
-          <button onClick={onComment} className="text-amber-400 hover:text-amber-600"><MessageCircle size={22} /></button>
-          <button className="text-amber-400 hover:text-amber-600"><Share2 size={22} /></button>
+          <button onClick={onComment} style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft }}>
+            <MessageCircle size={20} />
+          </button>
+          <button style={{ color: Z.textSoft }}><Share2 size={20} /></button>
         </div>
-        <button className="text-amber-400 hover:text-amber-600"><Bookmark size={22} /></button>
-      </div>
-
-      {/* Likes */}
-      <div className="px-3 pb-1">
-        <p className="text-sm font-semibold text-amber-800">{likesCount.toLocaleString()} likes</p>
+        <button style={{ color: Z.textSoft }}><Bookmark size={20} /></button>
       </div>
 
       {/* Caption */}
       {photo.caption && (
-        <div className="px-3 pb-2">
-          <p className="text-sm">
-            <span className="font-semibold text-amber-800 mr-2">{photo.uploader?.name ?? 'Member'}</span>
-            <span className="text-stone-600">{photo.caption}</span>
+        <div style={{ padding: '0 16px 10px' }}>
+          <p style={{ fontSize: 13, color: Z.textMid }}>
+            <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{photo.uploader?.name ?? 'Member'}</span>
+            {photo.caption}
           </p>
         </div>
       )}
 
       {/* Tags */}
       {photo.tags && photo.tags.length > 0 && (
-        <div className="px-3 pb-2 flex flex-wrap gap-1">
+        <div style={{ padding: '0 16px 14px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {photo.tags.map(tag => (
-            <span key={tag} className="text-xs text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">#{tag}</span>
+            <span key={tag} style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20,
+              background: 'rgba(123,108,246,0.1)', color: Z.purple,
+            }}>#{tag}</span>
           ))}
         </div>
       )}
-    </div>
+    </ZCard>
   )
 }
 
-// ─── Photo Grid (simple) ──────────────────────────────────────────────────
-
-export const SimplePhotoGrid: React.FC<{ photos: Photo[]; loading?: boolean; onPhotoClick: (photo: Photo) => void }> = ({
-  photos, loading, onPhotoClick
-}) => {
-  if (loading) {
-    return (
-      <div className="grid grid-cols-3 gap-1">
-        {Array.from({ length: 9 }).map((_, i) => <SkeletonBox key={i} height={120} radius={0} />)}
-      </div>
-    )
-  }
-  if (photos.length === 0) {
-    return <div className="text-center py-12 text-amber-400">No photos yet</div>
-  }
-  return (
-    <div className="grid grid-cols-3 gap-1">
-      {photos.map(photo => (
-        <button key={photo.id} onClick={() => onPhotoClick(photo)} className="relative aspect-square bg-amber-50 overflow-hidden group">
-          {photo.url ? (
-            <img src={photo.url} alt="" className="w-full h-full object-cover transition group-hover:scale-105" loading="lazy" />
-          ) : (
-            <div className="flex items-center justify-center h-full text-amber-300"><ImageIcon size={24} /></div>
-          )}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
-        </button>
-      ))}
-    </div>
-  )
-}
-
-// ─── Lightbox (Instagram style) ──────────────────────────────────────────
+// ─── Lightbox ─────────────────────────────────────────────────────────────
 
 interface LightboxState {
   photo: Photo | null
@@ -346,10 +429,7 @@ interface LightboxState {
 }
 
 export const useLightboxStore = create<LightboxState>((set) => ({
-  photo: null,
-  open: false,
-  comments: [],
-  loadingComments: false,
+  photo: null, open: false, comments: [], loadingComments: false,
   setPhoto: (photo) => set({ photo }),
   setOpen: (open) => set({ open }),
   setComments: (comments) => set({ comments }),
@@ -393,8 +473,7 @@ export const PhotoLightbox: React.FC = () => {
     setSubmitting(true)
     try {
       const res = await arkzenFetch(`/api/church-community/photos/${photo.id}/comments`, {
-        method: 'POST',
-        body: { body: commentText },
+        method: 'POST', body: { body: commentText },
       })
       setComments([...comments, res.comment])
       setCommentText('')
@@ -408,70 +487,89 @@ export const PhotoLightbox: React.FC = () => {
   if (!open || !photo) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-      <div className="relative max-w-5xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(20,20,40,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={() => setOpen(false)}
+    >
+      <div
+        style={{
+          position: 'relative', maxWidth: 900, width: '100%', maxHeight: '90vh',
+          background: '#fff', borderRadius: 24, overflow: 'hidden',
+          display: 'flex', flexDirection: 'row',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.3)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Image */}
-        <div className="md:w-2/3 bg-black flex items-center justify-center min-h-[300px]">
-          {photo.url ? (
-            <img src={photo.url} alt={photo.caption ?? ''} className="max-w-full max-h-[70vh] object-contain" />
-          ) : (
-            <div className="text-white/30"><ImageIcon size={48} /></div>
-          )}
+        <div style={{ flex: '0 0 60%', background: '#0d0d1a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+          {photo.url
+            ? <img src={photo.url} alt={photo.caption ?? ''} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+            : <div style={{ color: 'rgba(255,255,255,0.2)' }}><ImageIcon size={48} /></div>
+          }
         </div>
 
-        {/* Info */}
-        <div className="md:w-1/3 flex flex-col bg-white">
-          <div className="p-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold">
-                {photo.uploader?.name ? getInitials(photo.uploader.name) : '👤'}
-              </div>
+        {/* Info panel */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f2f8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Avatar name={photo.uploader?.name ?? 'Member'} size={34} />
               <div>
-                <p className="text-sm font-semibold">{photo.uploader?.name ?? 'Member'}</p>
-                <p className="text-xs text-amber-400">{formatRelativeTime(photo.created_at)}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: Z.textDark }}>{photo.uploader?.name ?? 'Member'}</p>
+                <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-600"><X size={20} /></button>
+            <button onClick={() => setOpen(false)} style={{ color: Z.textMuted }}><X size={20} /></button>
           </div>
 
           {photo.caption && (
-            <div className="p-4 border-b">
-              <p className="text-sm"><span className="font-semibold mr-2">{photo.uploader?.name ?? 'Member'}</span>{photo.caption}</p>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8' }}>
+              <p style={{ fontSize: 13, color: Z.textMid }}>{photo.caption}</p>
             </div>
           )}
 
           {photo.tags && photo.tags.length > 0 && (
-            <div className="px-4 py-2 border-b flex flex-wrap gap-1">
-              {photo.tags.map(tag => <span key={tag} className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">#{tag}</span>)}
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {photo.tags.map(tag => (
+                <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(123,108,246,0.08)', color: Z.purple, fontWeight: 600 }}>#{tag}</span>
+              ))}
             </div>
           )}
 
-          <div className="p-4 border-b flex items-center gap-6">
-            <button onClick={handleLike} className="flex items-center gap-1 text-stone-600 hover:text-red-500">
-              <Heart size={20} className={liked ? 'fill-red-500 text-red-500' : ''} /> {localLikes}
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', gap: 20 }}>
+            <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, fontSize: 13 }}>
+              <Heart size={18} fill={liked ? '#ef4444' : 'none'} /> {localLikes}
             </button>
-            <button className="flex items-center gap-1 text-stone-600"><MessageCircle size={20} /> {comments.length}</button>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft, fontSize: 13 }}>
+              <MessageCircle size={18} /> {comments.length}
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {loadingComments ? <SkeletonBox height={60} /> : comments.map(c => (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {loadingComments ? <SkeletonBox height={50} /> : comments.map(c => (
               <div key={c.id}>
-                <p className="text-sm"><span className="font-semibold mr-2">{c.user?.name ?? 'Member'}</span>{c.body}</p>
-                <p className="text-xs text-amber-300 mt-0.5">{formatRelativeTime(c.created_at)}</p>
+                <p style={{ fontSize: 13, color: Z.textMid }}>
+                  <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{c.user?.name ?? 'Member'}</span>
+                  {c.body}
+                </p>
+                <p style={{ fontSize: 10, color: Z.textMuted, marginTop: 2 }}>{formatRelativeTime(c.created_at)}</p>
               </div>
             ))}
           </div>
 
-          <div className="p-4 border-t flex gap-2">
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f2f8', display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleComment()}
               placeholder="Add a comment..."
-              className="flex-1 px-3 py-2 rounded-full border border-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400 text-sm"
+              style={{ flex: 1, padding: '8px 14px', borderRadius: 20, border: '1.5px solid #e8eaf6', fontSize: 13, outline: 'none', background: '#f8f9ff', color: Z.textDark }}
             />
-            <button onClick={handleComment} disabled={submitting} className="text-amber-600 font-semibold text-sm disabled:opacity-50">
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Post'}
+            <button
+              onClick={handleComment}
+              disabled={submitting}
+              style={{ background: Z.purpleGrad, color: '#fff', border: 'none', borderRadius: 20, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+            >
+              {submitting ? <Loader2 size={14} className="animate-spin" /> : 'Post'}
             </button>
           </div>
         </div>
@@ -491,18 +589,16 @@ const MembersPage = () => {
       try {
         const data = await arkzenFetch('/api/church-community/members')
         setMembers(Array.isArray(data) ? data : data?.data ?? [])
-      } catch {
-        showToast('Failed to load members', 'error')
-      } finally {
-        setLoading(false)
-      }
+      } catch { showToast('Failed to load members', 'error') }
+      finally { setLoading(false) }
     }
     load()
   }, [])
 
   const filtered = members.filter(m => {
     const matchRole = roleFilter === 'all' || m.role === roleFilter
-    const matchSearch = !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchSearch = !searchQuery ||
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (m.email ?? '').toLowerCase().includes(searchQuery.toLowerCase())
     return matchRole && matchSearch && m.is_active
   })
@@ -511,57 +607,84 @@ const MembersPage = () => {
 
   return (
     <div className="animate-fadeIn">
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={16} />
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Members</h2>
+        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Our church family directory</p>
+      </div>
+
+      {/* Search + role filters */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+        <div style={{ position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: Z.textMuted }} size={15} />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search members..."
-            className="w-full pl-9 pr-4 py-2 rounded-full border border-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
+            style={{
+              width: '100%', padding: '10px 16px 10px 40px', borderRadius: 16,
+              border: '1.5px solid rgba(200,210,230,0.6)',
+              background: 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(10px)',
+              color: Z.textDark, fontSize: 14, outline: 'none', boxSizing: 'border-box',
+            }}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {roles.map(role => (
-            <button
-              key={role}
-              onClick={() => setRoleFilter(role)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap ${
-                roleFilter === role
-                  ? 'bg-amber-700 text-white'
-                  : 'bg-white text-amber-700 border border-amber-200'
-              }`}
-            >
-              {role === 'all' ? 'All' : roleLabel[role as Role]}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+          {roles.map(role => {
+            const active = roleFilter === role
+            return (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role)}
+                style={{
+                  padding: '6px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer',
+                  background: active ? Z.purpleGrad : 'rgba(255,255,255,0.75)',
+                  color: active ? '#fff' : Z.textMid,
+                  border: active ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
+                  boxShadow: active ? Z.shadowPurp : 'none',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {role === 'all' ? 'All' : roleLabel[role as Role]}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => <SkeletonBox key={i} height={200} radius={16} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
+          {Array.from({ length: 8 }).map((_, i) => <SkeletonBox key={i} height={200} radius={20} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-amber-400">No members found</div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: Z.textMuted }}>No members found</div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
           {filtered.map(member => (
-            <div key={member.id} className="bg-white rounded-xl shadow-sm border border-amber-100 p-4 text-center hover:shadow-md transition">
-              {member.photo_url ? (
-                <img src={member.photo_url} alt={member.name} className="w-24 h-24 rounded-full mx-auto object-cover border-2 border-amber-200" />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-amber-100 mx-auto flex items-center justify-center text-2xl text-amber-600">
-                  {getInitials(member.name)}
-                </div>
-              )}
-              <h3 className="mt-3 font-semibold text-amber-900">{member.name}</h3>
-              <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs text-white ${roleColors[member.role]}`}>
+            <ZCard
+              key={member.id}
+              style={{ padding: 20, textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              className="hover:scale-[1.02]"
+            >
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                <Avatar name={member.name} photoUrl={member.photo_url} size={64} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: Z.textDark, marginBottom: 6 }}>{member.name}</p>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20,
+                background: roleBadge[member.role].bg,
+                color: roleBadge[member.role].text,
+                display: 'inline-block',
+              }}>
                 {roleLabel[member.role]}
               </span>
-              {member.bio && <p className="text-xs text-stone-400 mt-2 line-clamp-2">{member.bio}</p>}
-            </div>
+              {member.bio && (
+                <p style={{ fontSize: 11, color: Z.textSoft, marginTop: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {member.bio}
+                </p>
+              )}
+            </ZCard>
           ))}
         </div>
       )}

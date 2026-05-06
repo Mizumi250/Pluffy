@@ -426,7 +426,14 @@ function generateTatemonoLayout(tatemono: ParsedTatemono, tatemonoDir: string): 
   const hasGlobalStyle = tatemono.styles.some(s => !s.name)
   const hasFavicon = !!tatemono.meta.favicon
 
-  if (!hasFavicon && !hasGlobalStyle) return // Nothing to add to layout
+  if (!hasFavicon && !hasGlobalStyle) {
+    const stale = path.join(tatemonoDir, 'layout.tsx')
+    if (fs.existsSync(stale)) {
+      fs.unlinkSync(stale)
+      console.log(`[Arkzen Router] 🧹 Removed stale layout.tsx (no favicon or global style)`)
+    }
+    return
+  }
 
   const globalImport = hasGlobalStyle ? `import './styles/global.css'\n` : ''
   

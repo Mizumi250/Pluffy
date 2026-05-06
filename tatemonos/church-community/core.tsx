@@ -1,6 +1,6 @@
 /* @arkzen:meta
 name: church-community
-version: 1.0.0
+version: 2.0.0
 label: Grace Community Church
 auth: true
 description: Church community platform with event photo sharing, member directory, image inventory, and admin controls
@@ -515,23 +515,22 @@ return response()->json([
 
 'use client'
 
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, FolderImage, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
+import { Home, Users, Images, LayoutDashboard, LogOut, Search, Bell } from 'lucide-react'
 import { useAuthStore } from '@/arkzen/core/stores/authStore'
 
 const NAV = [
-  { href: '/church-community',           icon: Home,           label: 'Feed' },
-  { href: '/church-community/members',   icon: Users,          label: 'Members' },
-  { href: '/church-community/inventory', icon: FolderImage,    label: 'Inventory' },
-  { href: '/church-community/admin',     icon: LayoutDashboard,label: 'Admin' },
+  { href: '/church-community',           icon: Home,            label: 'Feed' },
+  { href: '/church-community/members',   icon: Users,           label: 'Members' },
+  { href: '/church-community/inventory', icon: Images,          label: 'Gallery' },
+  { href: '/church-community/admin',     icon: LayoutDashboard, label: 'Admin' },
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const pathname = usePathname()
   const router = useRouter()
   const { user, logout } = useAuthStore()
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const handleLogout = async () => {
     await logout()
@@ -539,16 +538,33 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-amber-50 via-orange-50 to-white">
+    <div
+      className="min-h-screen"
+      style={{ background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)' }}
+    >
       {/* Desktop header */}
-      <header className="sticky top-0 z-30 bg-white/80 backdrop-blur-md border-b border-amber-100">
+      <header
+        className="sticky top-0 z-30"
+        style={{
+          background: 'rgba(255,255,255,0.72)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderBottom: '1px solid rgba(255,255,255,0.6)',
+          boxShadow: '0 2px 20px rgba(100,120,160,0.08)',
+        }}
+      >
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-amber-700 flex items-center justify-center shadow-md">
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center shadow-md"
+                style={{ background: 'linear-gradient(135deg, #7b6cf6, #a78bfa)' }}
+              >
                 <span className="text-white text-sm font-bold">✝</span>
               </div>
-              <h1 className="text-xl font-semibold text-amber-900 tracking-tight">Grace Community Church</h1>
+              <h1 className="text-lg font-bold" style={{ color: '#1a1a2e', letterSpacing: '-0.02em' }}>
+                Grace Community
+              </h1>
             </div>
 
             {/* Desktop nav */}
@@ -559,60 +575,84 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
                   <button
                     key={href}
                     onClick={() => router.push(href)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-                      active
-                        ? 'bg-amber-100 text-amber-800 shadow-sm'
-                        : 'text-amber-600 hover:bg-amber-50 hover:text-amber-800'
-                    }`}
+                    className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium transition-all"
+                    style={{
+                      background: active ? 'linear-gradient(135deg, #7b6cf6, #a78bfa)' : 'transparent',
+                      color: active ? '#fff' : '#6b7db3',
+                      boxShadow: active ? '0 4px 15px rgba(123,108,246,0.35)' : 'none',
+                    }}
                   >
-                    <Icon size={16} />
+                    <Icon size={15} />
                     {label}
                   </button>
                 )
               })}
             </nav>
 
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-amber-600 hidden sm:inline">{user?.name ?? 'Admin'}</span>
+            <div className="flex items-center gap-3">
               <button
+                className="w-9 h-9 rounded-full flex items-center justify-center transition"
+                style={{ background: 'rgba(255,255,255,0.8)', color: '#8b9cc8' }}
+              >
+                <Search size={16} />
+              </button>
+              <button
+                className="w-9 h-9 rounded-full flex items-center justify-center"
+                style={{ background: 'rgba(255,255,255,0.8)', color: '#8b9cc8' }}
+              >
+                <Bell size={16} />
+              </button>
+              <div
+                className="w-9 h-9 rounded-full flex items-center justify-center text-white text-sm font-bold cursor-pointer"
+                style={{ background: 'linear-gradient(135deg, #7b6cf6, #6ec6f5)' }}
                 onClick={handleLogout}
-                className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-200 text-amber-700 hover:bg-amber-50 transition"
+                title="Logout"
               >
-                <LogOut size={14} /> Logout
-              </button>
-              <button
-                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="md:hidden p-2 rounded-full hover:bg-amber-100"
-              >
-                {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-              </button>
+                {user?.name?.[0]?.toUpperCase() ?? 'U'}
+              </div>
             </div>
           </div>
         </div>
       </header>
 
       {/* Mobile bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white/90 backdrop-blur-lg border-t border-amber-100 z-40">
-        <div className="flex justify-around items-center py-2">
+      <nav
+        className="md:hidden fixed bottom-0 left-0 right-0 z-40"
+        style={{
+          background: 'rgba(255,255,255,0.85)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255,255,255,0.7)',
+          boxShadow: '0 -4px 20px rgba(100,120,160,0.1)',
+        }}
+      >
+        <div className="flex justify-around items-center py-3">
           {NAV.map(({ href, icon: Icon, label }) => {
             const active = pathname === href || (href !== '/church-community' && pathname.startsWith(href))
             return (
               <button
                 key={href}
-                onClick={() => { router.push(href); setMobileMenuOpen(false) }}
-                className={`flex flex-col items-center gap-0.5 py-1 px-3 rounded-full transition ${
-                  active ? 'text-amber-700' : 'text-amber-400'
-                }`}
+                onClick={() => router.push(href)}
+                className="flex flex-col items-center gap-1 transition"
               >
-                <Icon size={20} />
-                <span className="text-[10px] font-medium">{label}</span>
+                <Icon
+                  size={22}
+                  style={{ color: active ? '#7b6cf6' : '#b0bcd4' }}
+                  strokeWidth={active ? 2.5 : 1.8}
+                />
+                <span
+                  className="text-[10px] font-medium"
+                  style={{ color: active ? '#7b6cf6' : '#b0bcd4' }}
+                >
+                  {label}
+                </span>
               </button>
             )
           })}
         </div>
       </nav>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 pb-24 md:pb-8">
         {children}
       </main>
     </div>
@@ -625,17 +665,36 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
 'use client'
 
-import React, { useState, useEffect, useCallback, useRef } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
-  Image as ImageIcon, Plus, Trash2, Edit2, Search, X, Upload, Tag,
-  Calendar, Users, Archive, ChevronDown, Loader2, Eye, Filter, Check,
-  AlertCircle, LogIn, LogOut, UserPlus, Camera, Settings
+  Image as ImageIcon, Plus, Trash2, Search, X, Upload, Tag,
+  Calendar, Users, Loader2, Eye, Check, LogIn, UserPlus, Camera,
 } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useToast } from '@/arkzen/core/components/Toast'
-import { Modal } from '@/arkzen/core/components/Modal'
+
+// ─── Design tokens (Zutto palette) ───────────────────────────────────────
+export const Z = {
+  bg:          'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+  card:        'rgba(255,255,255,0.88)',
+  cardSolid:   '#ffffff',
+  purple:      '#7b6cf6',
+  purpleLight: '#a78bfa',
+  purpleGrad:  'linear-gradient(135deg, #7b6cf6 0%, #a78bfa 100%)',
+  cyanGrad:    'linear-gradient(135deg, #6ec6f5 0%, #7b6cf6 100%)',
+  textDark:    '#1a1a2e',
+  textMid:     '#4a5580',
+  textSoft:    '#8b9cc8',
+  textMuted:   '#b0bcd4',
+  border:      'rgba(255,255,255,0.7)',
+  shadow:      '0 8px 32px rgba(100,120,180,0.12)',
+  shadowPurp:  '0 6px 20px rgba(123,108,246,0.32)',
+  radius:      '20px',
+  radiusSm:    '12px',
+  radiusXl:    '28px',
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────
 
@@ -648,7 +707,6 @@ export interface ChurchEvent {
   event_date: string
   cover_photo_url: string | null
   is_members_only: boolean
-  photo_count?: number
   created_at: string
 }
 
@@ -705,11 +763,8 @@ interface FeedStore {
 }
 
 export const useFeedStore = create<FeedStore>((set) => ({
-  events: [],
-  selectedEvent: null,
-  photos: [],
-  loadingEvents: false,
-  loadingPhotos: false,
+  events: [], selectedEvent: null, photos: [],
+  loadingEvents: false, loadingPhotos: false,
   setEvents: (events) => set({ events }),
   setSelectedEvent: (selectedEvent) => set({ selectedEvent }),
   setPhotos: (photos) => set({ photos }),
@@ -729,10 +784,7 @@ interface MemberStore {
 }
 
 export const useMemberStore = create<MemberStore>((set) => ({
-  members: [],
-  loading: false,
-  searchQuery: '',
-  roleFilter: 'all',
+  members: [], loading: false, searchQuery: '', roleFilter: 'all',
   setMembers: (members) => set({ members }),
   setLoading: (loading) => set({ loading }),
   setSearchQuery: (searchQuery) => set({ searchQuery }),
@@ -751,13 +803,8 @@ interface InventoryStore {
 }
 
 export const useInventoryStore = create<InventoryStore>((set) => ({
-  photos: [],
-  totalCount: 0,
-  totalSize: 0,
-  eventCount: 0,
-  allTags: [],
-  activeTag: null,
-  loading: false,
+  photos: [], totalCount: 0, totalSize: 0, eventCount: 0,
+  allTags: [], activeTag: null, loading: false,
   setData: (d) => set((s) => ({ ...s, ...d })),
 }))
 
@@ -767,40 +814,31 @@ export const formatDate = (d: string) =>
   new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
 
 export const formatRelativeTime = (d: string) => {
-  const now = new Date()
-  const date = new Date(d)
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-  const diffDays = Math.floor(diffMs / 86400000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m`
-  if (diffHours < 24) return `${diffHours}h`
-  if (diffDays < 7) return `${diffDays}d`
-  return formatDate(d)
+  const diffMs = Date.now() - new Date(d).getTime()
+  const m = Math.floor(diffMs / 60000)
+  if (m < 1) return 'just now'
+  if (m < 60) return `${m}m ago`
+  const h = Math.floor(m / 60)
+  if (h < 24) return `${h}h ago`
+  return `${Math.floor(h / 24)}d ago`
 }
 
 export const formatFileSize = (bytes: number | null) => {
   if (!bytes) return '—'
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
+  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`
+  return `${(bytes / 1048576).toFixed(1)} MB`
 }
 
-export const roleColors: Record<Role, string> = {
-  pastor: 'bg-amber-800',
-  elder: 'bg-emerald-700',
-  deacon: 'bg-blue-700',
-  leader: 'bg-purple-700',
-  member: 'bg-stone-500',
+export const roleBadge: Record<Role, { bg: string; text: string }> = {
+  pastor:  { bg: 'linear-gradient(135deg,#7b6cf6,#a78bfa)', text: '#fff' },
+  elder:   { bg: 'linear-gradient(135deg,#6ec6f5,#7b6cf6)', text: '#fff' },
+  deacon:  { bg: 'linear-gradient(135deg,#a78bfa,#c084fc)', text: '#fff' },
+  leader:  { bg: 'linear-gradient(135deg,#818cf8,#6ec6f5)', text: '#fff' },
+  member:  { bg: 'rgba(176,188,212,0.5)',                   text: '#4a5580' },
 }
 
 export const roleLabel: Record<Role, string> = {
-  pastor: 'Pastor',
-  elder: 'Elder',
-  deacon: 'Deacon',
-  leader: 'Leader',
-  member: 'Member',
+  pastor: 'Pastor', elder: 'Elder', deacon: 'Deacon', leader: 'Leader', member: 'Member',
 }
 
 export const getInitials = (name: string) =>
@@ -809,19 +847,131 @@ export const getInitials = (name: string) =>
 // ─── Skeleton ─────────────────────────────────────────────────────────────
 
 export const SkeletonBox: React.FC<{ width?: string; height?: number; radius?: number }> = ({
-  width = '100%', height = 80, radius = 8,
+  width = '100%', height = 80, radius = 12,
 }) => (
-  <div style={{
-    width,
-    height,
-    borderRadius: radius,
-    background: 'linear-gradient(90deg, #f3ede5 25%, #e6dac8 50%, #f3ede5 75%)',
-    backgroundSize: '200% 100%',
-    animation: 'shimmer 1.8s infinite',
-  }} />
+  <div
+    style={{
+      width, height, borderRadius: radius,
+      background: 'linear-gradient(90deg, rgba(200,210,230,0.5) 25%, rgba(220,228,242,0.8) 50%, rgba(200,210,230,0.5) 75%)',
+      backgroundSize: '200% 100%',
+      animation: 'shimmer 1.8s infinite',
+    }}
+  />
 )
 
-// ─── Instagram‑style Post Card ───────────────────────────────────────────
+// ─── ZCard ────────────────────────────────────────────────────────────────
+
+export const ZCard: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
+  children, className = '', style = {}
+}) => (
+  <div
+    className={className}
+    style={{
+      background: Z.card,
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      borderRadius: Z.radius,
+      border: `1px solid ${Z.border}`,
+      boxShadow: Z.shadow,
+      ...style,
+    }}
+  >
+    {children}
+  </div>
+)
+
+// ─── ZButton ──────────────────────────────────────────────────────────────
+
+export const ZButton: React.FC<{
+  children: React.ReactNode
+  onClick?: () => void
+  disabled?: boolean
+  variant?: 'purple' | 'cyan' | 'ghost' | 'outline'
+  className?: string
+  fullWidth?: boolean
+}> = ({ children, onClick, disabled, variant = 'purple', className = '', fullWidth }) => {
+  const styles: Record<string, React.CSSProperties> = {
+    purple:  { background: Z.purpleGrad, color: '#fff', boxShadow: Z.shadowPurp },
+    cyan:    { background: Z.cyanGrad,   color: '#fff', boxShadow: '0 6px 20px rgba(110,198,245,0.3)' },
+    ghost:   { background: 'rgba(123,108,246,0.08)', color: Z.purple },
+    outline: { background: 'transparent', color: Z.textMid, border: `1px solid rgba(180,190,215,0.6)` },
+  }
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      className={`flex items-center justify-center gap-2 font-semibold rounded-full transition-all ${fullWidth ? 'w-full' : ''} ${className}`}
+      style={{
+        padding: '10px 24px',
+        fontSize: 14,
+        opacity: disabled ? 0.5 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        ...styles[variant],
+      }}
+    >
+      {children}
+    </button>
+  )
+}
+
+// ─── ZInput ───────────────────────────────────────────────────────────────
+
+export const ZInput: React.FC<{
+  value: string
+  onChange: (v: string) => void
+  placeholder?: string
+  type?: string
+  onKeyDown?: (e: React.KeyboardEvent) => void
+}> = ({ value, onChange, placeholder, type = 'text', onKeyDown }) => (
+  <input
+    type={type}
+    value={value}
+    onChange={e => onChange(e.target.value)}
+    onKeyDown={onKeyDown}
+    placeholder={placeholder}
+    style={{
+      width: '100%',
+      padding: '10px 16px',
+      borderRadius: '12px',
+      border: '1.5px solid rgba(200,210,230,0.6)',
+      background: 'rgba(255,255,255,0.7)',
+      color: Z.textDark,
+      fontSize: 14,
+      outline: 'none',
+    }}
+    onFocus={e => { e.target.style.borderColor = Z.purple; e.target.style.boxShadow = `0 0 0 3px rgba(123,108,246,0.12)` }}
+    onBlur={e => { e.target.style.borderColor = 'rgba(200,210,230,0.6)'; e.target.style.boxShadow = 'none' }}
+  />
+)
+
+// ─── Avatar ───────────────────────────────────────────────────────────────
+
+export const Avatar: React.FC<{ name: string; photoUrl?: string | null; size?: number }> = ({
+  name, photoUrl, size = 36,
+}) => (
+  photoUrl ? (
+    <img
+      src={photoUrl}
+      alt={name}
+      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.8)' }}
+    />
+  ) : (
+    <div
+      style={{
+        width: size, height: size, borderRadius: '50%',
+        background: Z.purpleGrad,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        color: '#fff', fontSize: size * 0.33, fontWeight: 700,
+        border: '2px solid rgba(255,255,255,0.8)',
+        flexShrink: 0,
+      }}
+    >
+      {getInitials(name)}
+    </div>
+  )
+)
+
+// ─── Post Card (Zutto style) ──────────────────────────────────────────────
 
 interface PostCardProps {
   photo: Photo
@@ -849,103 +999,76 @@ export const PostCard: React.FC<PostCardProps> = ({ photo, onLike, onComment }) 
   }
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-amber-100 overflow-hidden transition hover:shadow-md">
+    <ZCard style={{ overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
+      className="hover:scale-[1.01]"
+    >
       {/* Header */}
-      <div className="flex items-center justify-between p-3">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-sm font-bold">
-            {photo.uploader?.name ? getInitials(photo.uploader.name) : '👤'}
-          </div>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Avatar name={photo.uploader?.name ?? 'Member'} size={36} />
           <div>
-            <p className="text-sm font-semibold text-amber-900">{photo.uploader?.name ?? 'Church Member'}</p>
-            <p className="text-xs text-amber-400">{formatRelativeTime(photo.created_at)}</p>
+            <p style={{ fontSize: 14, fontWeight: 600, color: Z.textDark }}>{photo.uploader?.name ?? 'Church Member'}</p>
+            <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
           </div>
         </div>
-        <button className="text-amber-300 hover:text-amber-500">
-          <MoreHorizontal size={18} />
-        </button>
+        <button style={{ color: Z.textMuted }}><MoreHorizontal size={18} /></button>
       </div>
 
       {/* Image */}
-      <div className="relative bg-amber-50 aspect-square cursor-pointer" onClick={onComment}>
+      <div
+        style={{ position: 'relative', aspectRatio: '1', background: 'rgba(200,210,230,0.3)', cursor: 'pointer' }}
+        onClick={onComment}
+      >
         {photo.url ? (
-          <img src={photo.url} alt={photo.caption ?? photo.file_name} className="w-full h-full object-cover" loading="lazy" />
+          <img src={photo.url} alt={photo.caption ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
         ) : (
-          <div className="flex items-center justify-center h-full text-amber-300"><ImageIcon size={48} /></div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: Z.textMuted }}>
+            <ImageIcon size={40} />
+          </div>
         )}
       </div>
 
       {/* Actions */}
-      <div className="p-3 flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button onClick={handleLike} className="transition hover:scale-105">
-            <Heart size={22} className={liked ? 'fill-red-500 text-red-500' : 'text-amber-400'} />
+      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
+          <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, transition: 'transform 0.15s' }} className="hover:scale-110">
+            <Heart size={20} fill={liked ? '#ef4444' : 'none'} />
+            <span style={{ fontSize: 13, fontWeight: 600 }}>{likesCount > 0 ? likesCount.toLocaleString() : ''}</span>
           </button>
-          <button onClick={onComment} className="text-amber-400 hover:text-amber-600"><MessageCircle size={22} /></button>
-          <button className="text-amber-400 hover:text-amber-600"><Share2 size={22} /></button>
+          <button onClick={onComment} style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft }}>
+            <MessageCircle size={20} />
+          </button>
+          <button style={{ color: Z.textSoft }}><Share2 size={20} /></button>
         </div>
-        <button className="text-amber-400 hover:text-amber-600"><Bookmark size={22} /></button>
-      </div>
-
-      {/* Likes */}
-      <div className="px-3 pb-1">
-        <p className="text-sm font-semibold text-amber-800">{likesCount.toLocaleString()} likes</p>
+        <button style={{ color: Z.textSoft }}><Bookmark size={20} /></button>
       </div>
 
       {/* Caption */}
       {photo.caption && (
-        <div className="px-3 pb-2">
-          <p className="text-sm">
-            <span className="font-semibold text-amber-800 mr-2">{photo.uploader?.name ?? 'Member'}</span>
-            <span className="text-stone-600">{photo.caption}</span>
+        <div style={{ padding: '0 16px 10px' }}>
+          <p style={{ fontSize: 13, color: Z.textMid }}>
+            <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{photo.uploader?.name ?? 'Member'}</span>
+            {photo.caption}
           </p>
         </div>
       )}
 
       {/* Tags */}
       {photo.tags && photo.tags.length > 0 && (
-        <div className="px-3 pb-2 flex flex-wrap gap-1">
+        <div style={{ padding: '0 16px 14px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
           {photo.tags.map(tag => (
-            <span key={tag} className="text-xs text-amber-500 bg-amber-50 px-2 py-0.5 rounded-full">#{tag}</span>
+            <span key={tag} style={{
+              fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20,
+              background: 'rgba(123,108,246,0.1)', color: Z.purple,
+            }}>#{tag}</span>
           ))}
         </div>
       )}
-    </div>
+    </ZCard>
   )
 }
 
-// ─── Photo Grid (simple) ──────────────────────────────────────────────────
-
-export const SimplePhotoGrid: React.FC<{ photos: Photo[]; loading?: boolean; onPhotoClick: (photo: Photo) => void }> = ({
-  photos, loading, onPhotoClick
-}) => {
-  if (loading) {
-    return (
-      <div className="grid grid-cols-3 gap-1">
-        {Array.from({ length: 9 }).map((_, i) => <SkeletonBox key={i} height={120} radius={0} />)}
-      </div>
-    )
-  }
-  if (photos.length === 0) {
-    return <div className="text-center py-12 text-amber-400">No photos yet</div>
-  }
-  return (
-    <div className="grid grid-cols-3 gap-1">
-      {photos.map(photo => (
-        <button key={photo.id} onClick={() => onPhotoClick(photo)} className="relative aspect-square bg-amber-50 overflow-hidden group">
-          {photo.url ? (
-            <img src={photo.url} alt="" className="w-full h-full object-cover transition group-hover:scale-105" loading="lazy" />
-          ) : (
-            <div className="flex items-center justify-center h-full text-amber-300"><ImageIcon size={24} /></div>
-          )}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
-        </button>
-      ))}
-    </div>
-  )
-}
-
-// ─── Lightbox (Instagram style) ──────────────────────────────────────────
+// ─── Lightbox ─────────────────────────────────────────────────────────────
 
 interface LightboxState {
   photo: Photo | null
@@ -959,10 +1082,7 @@ interface LightboxState {
 }
 
 export const useLightboxStore = create<LightboxState>((set) => ({
-  photo: null,
-  open: false,
-  comments: [],
-  loadingComments: false,
+  photo: null, open: false, comments: [], loadingComments: false,
   setPhoto: (photo) => set({ photo }),
   setOpen: (open) => set({ open }),
   setComments: (comments) => set({ comments }),
@@ -1006,8 +1126,7 @@ export const PhotoLightbox: React.FC = () => {
     setSubmitting(true)
     try {
       const res = await arkzenFetch(`/api/church-community/photos/${photo.id}/comments`, {
-        method: 'POST',
-        body: { body: commentText },
+        method: 'POST', body: { body: commentText },
       })
       setComments([...comments, res.comment])
       setCommentText('')
@@ -1021,70 +1140,89 @@ export const PhotoLightbox: React.FC = () => {
   if (!open || !photo) return null
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center p-4" onClick={() => setOpen(false)}>
-      <div className="relative max-w-5xl w-full max-h-[90vh] bg-white rounded-2xl overflow-hidden flex flex-col md:flex-row" onClick={e => e.stopPropagation()}>
+    <div
+      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(20,20,40,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+      onClick={() => setOpen(false)}
+    >
+      <div
+        style={{
+          position: 'relative', maxWidth: 900, width: '100%', maxHeight: '90vh',
+          background: '#fff', borderRadius: 24, overflow: 'hidden',
+          display: 'flex', flexDirection: 'row',
+          boxShadow: '0 32px 80px rgba(0,0,0,0.3)',
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Image */}
-        <div className="md:w-2/3 bg-black flex items-center justify-center min-h-[300px]">
-          {photo.url ? (
-            <img src={photo.url} alt={photo.caption ?? ''} className="max-w-full max-h-[70vh] object-contain" />
-          ) : (
-            <div className="text-white/30"><ImageIcon size={48} /></div>
-          )}
+        <div style={{ flex: '0 0 60%', background: '#0d0d1a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
+          {photo.url
+            ? <img src={photo.url} alt={photo.caption ?? ''} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
+            : <div style={{ color: 'rgba(255,255,255,0.2)' }}><ImageIcon size={48} /></div>
+          }
         </div>
 
-        {/* Info */}
-        <div className="md:w-1/3 flex flex-col bg-white">
-          <div className="p-4 border-b flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs font-bold">
-                {photo.uploader?.name ? getInitials(photo.uploader.name) : '👤'}
-              </div>
+        {/* Info panel */}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+          <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f2f8' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Avatar name={photo.uploader?.name ?? 'Member'} size={34} />
               <div>
-                <p className="text-sm font-semibold">{photo.uploader?.name ?? 'Member'}</p>
-                <p className="text-xs text-amber-400">{formatRelativeTime(photo.created_at)}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: Z.textDark }}>{photo.uploader?.name ?? 'Member'}</p>
+                <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
               </div>
             </div>
-            <button onClick={() => setOpen(false)} className="text-stone-400 hover:text-stone-600"><X size={20} /></button>
+            <button onClick={() => setOpen(false)} style={{ color: Z.textMuted }}><X size={20} /></button>
           </div>
 
           {photo.caption && (
-            <div className="p-4 border-b">
-              <p className="text-sm"><span className="font-semibold mr-2">{photo.uploader?.name ?? 'Member'}</span>{photo.caption}</p>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8' }}>
+              <p style={{ fontSize: 13, color: Z.textMid }}>{photo.caption}</p>
             </div>
           )}
 
           {photo.tags && photo.tags.length > 0 && (
-            <div className="px-4 py-2 border-b flex flex-wrap gap-1">
-              {photo.tags.map(tag => <span key={tag} className="text-xs text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full">#{tag}</span>)}
+            <div style={{ padding: '8px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+              {photo.tags.map(tag => (
+                <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(123,108,246,0.08)', color: Z.purple, fontWeight: 600 }}>#{tag}</span>
+              ))}
             </div>
           )}
 
-          <div className="p-4 border-b flex items-center gap-6">
-            <button onClick={handleLike} className="flex items-center gap-1 text-stone-600 hover:text-red-500">
-              <Heart size={20} className={liked ? 'fill-red-500 text-red-500' : ''} /> {localLikes}
+          <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', gap: 20 }}>
+            <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, fontSize: 13 }}>
+              <Heart size={18} fill={liked ? '#ef4444' : 'none'} /> {localLikes}
             </button>
-            <button className="flex items-center gap-1 text-stone-600"><MessageCircle size={20} /> {comments.length}</button>
+            <button style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft, fontSize: 13 }}>
+              <MessageCircle size={18} /> {comments.length}
+            </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {loadingComments ? <SkeletonBox height={60} /> : comments.map(c => (
+          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {loadingComments ? <SkeletonBox height={50} /> : comments.map(c => (
               <div key={c.id}>
-                <p className="text-sm"><span className="font-semibold mr-2">{c.user?.name ?? 'Member'}</span>{c.body}</p>
-                <p className="text-xs text-amber-300 mt-0.5">{formatRelativeTime(c.created_at)}</p>
+                <p style={{ fontSize: 13, color: Z.textMid }}>
+                  <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{c.user?.name ?? 'Member'}</span>
+                  {c.body}
+                </p>
+                <p style={{ fontSize: 10, color: Z.textMuted, marginTop: 2 }}>{formatRelativeTime(c.created_at)}</p>
               </div>
             ))}
           </div>
 
-          <div className="p-4 border-t flex gap-2">
+          <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f2f8', display: 'flex', gap: 8, alignItems: 'center' }}>
             <input
               value={commentText}
               onChange={e => setCommentText(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleComment()}
               placeholder="Add a comment..."
-              className="flex-1 px-3 py-2 rounded-full border border-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400 text-sm"
+              style={{ flex: 1, padding: '8px 14px', borderRadius: 20, border: '1.5px solid #e8eaf6', fontSize: 13, outline: 'none', background: '#f8f9ff', color: Z.textDark }}
             />
-            <button onClick={handleComment} disabled={submitting} className="text-amber-600 font-semibold text-sm disabled:opacity-50">
-              {submitting ? <Loader2 size={16} className="animate-spin" /> : 'Post'}
+            <button
+              onClick={handleComment}
+              disabled={submitting}
+              style={{ background: Z.purpleGrad, color: '#fff', border: 'none', borderRadius: 20, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
+            >
+              {submitting ? <Loader2 size={14} className="animate-spin" /> : 'Post'}
             </button>
           </div>
         </div>
@@ -1104,85 +1242,87 @@ const IndexPage = () => {
   const { setPhoto, setOpen } = useLightboxStore()
 
   useEffect(() => {
-    const loadEvents = async () => {
+    const load = async () => {
       setLoadingEvents(true)
       try {
         const data = await arkzenFetch('/api/church-community/events')
         const list = Array.isArray(data) ? data : data?.data ?? []
         setEvents(list)
         if (list.length > 0 && !selectedEvent) setSelectedEvent(list[0])
-      } catch {
-        showToast('Failed to load events', 'error')
-      } finally {
-        setLoadingEvents(false)
-      }
+      } catch { showToast('Failed to load events', 'error') }
+      finally { setLoadingEvents(false) }
     }
-    loadEvents()
+    load()
   }, [])
 
   useEffect(() => {
     if (!selectedEvent) return
-    const loadPhotos = async () => {
+    const load = async () => {
       setLoadingPhotos(true)
       try {
         const data = await arkzenFetch(`/api/church-community/events/${selectedEvent.id}/photos`)
         setPhotos(data?.photos ?? [])
-      } catch {
-        showToast('Failed to load photos', 'error')
-      } finally {
-        setLoadingPhotos(false)
-      }
+      } catch { showToast('Failed to load photos', 'error') }
+      finally { setLoadingPhotos(false) }
     }
-    loadPhotos()
+    load()
   }, [selectedEvent])
-
-  const handlePhotoClick = (photo: Photo) => {
-    setPhoto(photo)
-    setOpen(true)
-  }
 
   return (
     <div className="animate-fadeIn">
-      {/* Event selector (horizontal scroll on mobile) */}
-      <div className="mb-6 overflow-x-auto pb-2">
-        <div className="flex gap-2 min-w-max">
-          {loadingEvents ? (
-            Array.from({ length: 3 }).map((_, i) => <SkeletonBox key={i} width={120} height={40} radius={20} />)
-          ) : (
-            events.map(ev => (
-              <button
-                key={ev.id}
-                onClick={() => setSelectedEvent(ev)}
-                className={`px-4 py-2 rounded-full text-sm font-medium transition whitespace-nowrap ${
-                  selectedEvent?.id === ev.id
-                    ? 'bg-amber-700 text-white shadow-md'
-                    : 'bg-white text-amber-700 border border-amber-200 hover:bg-amber-50'
-                }`}
-              >
-                {ev.title}
-              </button>
-            ))
-          )}
+      {/* Page title */}
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Community Feed</h2>
+        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Moments from our church family</p>
+      </div>
+
+      {/* Event pill selector */}
+      <div style={{ overflowX: 'auto', paddingBottom: 8, marginBottom: 24 }}>
+        <div style={{ display: 'flex', gap: 8, minWidth: 'max-content' }}>
+          {loadingEvents
+            ? Array.from({ length: 3 }).map((_, i) => <SkeletonBox key={i} width={110} height={36} radius={20} />)
+            : events.map(ev => {
+                const active = selectedEvent?.id === ev.id
+                return (
+                  <button
+                    key={ev.id}
+                    onClick={() => setSelectedEvent(ev)}
+                    style={{
+                      padding: '8px 18px', borderRadius: 20, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap',
+                      background: active ? Z.purpleGrad : 'rgba(255,255,255,0.75)',
+                      color: active ? '#fff' : Z.textMid,
+                      border: active ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
+                      boxShadow: active ? Z.shadowPurp : Z.shadow,
+                      backdropFilter: 'blur(10px)',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s',
+                    }}
+                  >
+                    {ev.title}
+                  </button>
+                )
+              })
+          }
         </div>
       </div>
 
-      {/* Instagram feed - 3 column grid on desktop, single column on mobile */}
+      {/* Photo grid */}
       {selectedEvent ? (
-        <div className="space-y-4">
-          {loadingPhotos ? (
-            Array.from({ length: 3 }).map((_, i) => <SkeletonBox key={i} height={400} radius={16} />)
-          ) : photos.length === 0 ? (
-            <div className="text-center py-16 text-amber-400">No photos yet for this event</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {photos.map(photo => (
-                <PostCard key={photo.id} photo={photo} onLike={() => {}} onComment={() => handlePhotoClick(photo)} />
-              ))}
-            </div>
-          )}
-        </div>
+        loadingPhotos ? (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            {Array.from({ length: 3 }).map((_, i) => <SkeletonBox key={i} height={360} radius={20} />)}
+          </div>
+        ) : photos.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '64px 0', color: Z.textMuted }}>No photos yet for this event</div>
+        ) : (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
+            {photos.map(photo => (
+              <PostCard key={photo.id} photo={photo} onLike={() => {}} onComment={() => { setPhoto(photo); setOpen(true) }} />
+            ))}
+          </div>
+        )
       ) : (
-        <div className="text-center py-16 text-amber-400">Select an event to see the feed</div>
+        <div style={{ textAlign: 'center', padding: '64px 0', color: Z.textMuted }}>Select an event to see the feed</div>
       )}
 
       <PhotoLightbox />
@@ -1205,18 +1345,16 @@ const MembersPage = () => {
       try {
         const data = await arkzenFetch('/api/church-community/members')
         setMembers(Array.isArray(data) ? data : data?.data ?? [])
-      } catch {
-        showToast('Failed to load members', 'error')
-      } finally {
-        setLoading(false)
-      }
+      } catch { showToast('Failed to load members', 'error') }
+      finally { setLoading(false) }
     }
     load()
   }, [])
 
   const filtered = members.filter(m => {
     const matchRole = roleFilter === 'all' || m.role === roleFilter
-    const matchSearch = !searchQuery || m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    const matchSearch = !searchQuery ||
+      m.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (m.email ?? '').toLowerCase().includes(searchQuery.toLowerCase())
     return matchRole && matchSearch && m.is_active
   })
@@ -1225,57 +1363,84 @@ const MembersPage = () => {
 
   return (
     <div className="animate-fadeIn">
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-amber-400" size={16} />
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Members</h2>
+        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Our church family directory</p>
+      </div>
+
+      {/* Search + role filters */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 24 }}>
+        <div style={{ position: 'relative' }}>
+          <Search style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: Z.textMuted }} size={15} />
           <input
             type="text"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
             placeholder="Search members..."
-            className="w-full pl-9 pr-4 py-2 rounded-full border border-amber-200 focus:outline-none focus:ring-1 focus:ring-amber-400"
+            style={{
+              width: '100%', padding: '10px 16px 10px 40px', borderRadius: 16,
+              border: '1.5px solid rgba(200,210,230,0.6)',
+              background: 'rgba(255,255,255,0.8)',
+              backdropFilter: 'blur(10px)',
+              color: Z.textDark, fontSize: 14, outline: 'none', boxSizing: 'border-box',
+            }}
           />
         </div>
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {roles.map(role => (
-            <button
-              key={role}
-              onClick={() => setRoleFilter(role)}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition whitespace-nowrap ${
-                roleFilter === role
-                  ? 'bg-amber-700 text-white'
-                  : 'bg-white text-amber-700 border border-amber-200'
-              }`}
-            >
-              {role === 'all' ? 'All' : roleLabel[role as Role]}
-            </button>
-          ))}
+        <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
+          {roles.map(role => {
+            const active = roleFilter === role
+            return (
+              <button
+                key={role}
+                onClick={() => setRoleFilter(role)}
+                style={{
+                  padding: '6px 16px', borderRadius: 20, fontSize: 12, fontWeight: 600, whiteSpace: 'nowrap', cursor: 'pointer',
+                  background: active ? Z.purpleGrad : 'rgba(255,255,255,0.75)',
+                  color: active ? '#fff' : Z.textMid,
+                  border: active ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
+                  boxShadow: active ? Z.shadowPurp : 'none',
+                  transition: 'all 0.2s',
+                }}
+              >
+                {role === 'all' ? 'All' : roleLabel[role as Role]}
+              </button>
+            )
+          })}
         </div>
       </div>
 
       {loading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-          {Array.from({ length: 8 }).map((_, i) => <SkeletonBox key={i} height={200} radius={16} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
+          {Array.from({ length: 8 }).map((_, i) => <SkeletonBox key={i} height={200} radius={20} />)}
         </div>
       ) : filtered.length === 0 ? (
-        <div className="text-center py-12 text-amber-400">No members found</div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: Z.textMuted }}>No members found</div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: 16 }}>
           {filtered.map(member => (
-            <div key={member.id} className="bg-white rounded-xl shadow-sm border border-amber-100 p-4 text-center hover:shadow-md transition">
-              {member.photo_url ? (
-                <img src={member.photo_url} alt={member.name} className="w-24 h-24 rounded-full mx-auto object-cover border-2 border-amber-200" />
-              ) : (
-                <div className="w-24 h-24 rounded-full bg-amber-100 mx-auto flex items-center justify-center text-2xl text-amber-600">
-                  {getInitials(member.name)}
-                </div>
-              )}
-              <h3 className="mt-3 font-semibold text-amber-900">{member.name}</h3>
-              <span className={`inline-block mt-1 px-2 py-0.5 rounded-full text-xs text-white ${roleColors[member.role]}`}>
+            <ZCard
+              key={member.id}
+              style={{ padding: 20, textAlign: 'center', cursor: 'pointer', transition: 'transform 0.2s, box-shadow 0.2s' }}
+              className="hover:scale-[1.02]"
+            >
+              <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12 }}>
+                <Avatar name={member.name} photoUrl={member.photo_url} size={64} />
+              </div>
+              <p style={{ fontSize: 14, fontWeight: 700, color: Z.textDark, marginBottom: 6 }}>{member.name}</p>
+              <span style={{
+                fontSize: 11, fontWeight: 700, padding: '3px 12px', borderRadius: 20,
+                background: roleBadge[member.role].bg,
+                color: roleBadge[member.role].text,
+                display: 'inline-block',
+              }}>
                 {roleLabel[member.role]}
               </span>
-              {member.bio && <p className="text-xs text-stone-400 mt-2 line-clamp-2">{member.bio}</p>}
-            </div>
+              {member.bio && (
+                <p style={{ fontSize: 11, color: Z.textSoft, marginTop: 8, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                  {member.bio}
+                </p>
+              )}
+            </ZCard>
           ))}
         </div>
       )}
@@ -1294,7 +1459,7 @@ const InventoryPage = () => {
   const { setPhoto, setOpen } = useLightboxStore()
 
   const load = useCallback(async (tag?: string | null) => {
-    setData({ loading: true })
+    setData({ loading: true, activeTag: tag ?? null })
     try {
       const params = tag ? `?tag=${encodeURIComponent(tag)}` : ''
       const data = await arkzenFetch(`/api/church-community/inventory${params}`)
@@ -1314,65 +1479,77 @@ const InventoryPage = () => {
 
   useEffect(() => { load(null) }, [])
 
-  const sizeMB = (totalSize / (1024 * 1024)).toFixed(1)
+  const stats = [
+    { label: 'Total Photos', value: totalCount },
+    { label: 'Events', value: eventCount },
+    { label: 'Storage', value: `${(totalSize / 1048576).toFixed(1)} MB` },
+    { label: 'Tags', value: allTags.length },
+  ]
 
   return (
     <div className="animate-fadeIn">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white p-3 rounded-xl text-center border border-amber-100">
-          <p className="text-2xl font-bold text-amber-800">{totalCount}</p>
-          <p className="text-xs text-amber-400">Total Photos</p>
-        </div>
-        <div className="bg-white p-3 rounded-xl text-center border border-amber-100">
-          <p className="text-2xl font-bold text-amber-800">{eventCount}</p>
-          <p className="text-xs text-amber-400">Events</p>
-        </div>
-        <div className="bg-white p-3 rounded-xl text-center border border-amber-100">
-          <p className="text-2xl font-bold text-amber-800">{sizeMB} MB</p>
-          <p className="text-xs text-amber-400">Storage</p>
-        </div>
-        <div className="bg-white p-3 rounded-xl text-center border border-amber-100">
-          <p className="text-2xl font-bold text-amber-800">{allTags.length}</p>
-          <p className="text-xs text-amber-400">Tags</p>
-        </div>
+      <div style={{ marginBottom: 20 }}>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Photo Gallery</h2>
+        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Full image inventory</p>
       </div>
 
+      {/* Stats row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
+        {stats.map(s => (
+          <ZCard key={s.label} style={{ padding: '14px 12px', textAlign: 'center' }}>
+            <p style={{ fontSize: 22, fontWeight: 800, background: Z.purpleGrad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</p>
+            <p style={{ fontSize: 11, color: Z.textMuted, marginTop: 2 }}>{s.label}</p>
+          </ZCard>
+        ))}
+      </div>
+
+      {/* Tag filters */}
       {allTags.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-6">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
           <button
             onClick={() => load(null)}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-              !activeTag ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-200'
-            }`}
-          >
-            All
-          </button>
+            style={{
+              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+              background: !activeTag ? Z.purpleGrad : 'rgba(255,255,255,0.7)',
+              color: !activeTag ? '#fff' : Z.textMid,
+              border: !activeTag ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
+              boxShadow: !activeTag ? Z.shadowPurp : 'none',
+            }}
+          >All</button>
           {allTags.map(tag => (
             <button
               key={tag}
               onClick={() => load(tag)}
-              className={`px-3 py-1 rounded-full text-xs font-medium transition ${
-                activeTag === tag ? 'bg-amber-700 text-white' : 'bg-white text-amber-700 border border-amber-200'
-              }`}
-            >
-              #{tag}
-            </button>
+              style={{
+                padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer',
+                background: activeTag === tag ? Z.purpleGrad : 'rgba(255,255,255,0.7)',
+                color: activeTag === tag ? '#fff' : Z.textMid,
+                border: activeTag === tag ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
+                boxShadow: activeTag === tag ? Z.shadowPurp : 'none',
+              }}
+            >#{tag}</button>
           ))}
         </div>
       )}
 
+      {/* Grid */}
       {loading ? (
-        <div className="grid grid-cols-3 gap-1">
-          {Array.from({ length: 9 }).map((_, i) => <SkeletonBox key={i} height={120} radius={0} />)}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
+          {Array.from({ length: 9 }).map((_, i) => <SkeletonBox key={i} height={130} radius={0} />)}
         </div>
       ) : photos.length === 0 ? (
-        <div className="text-center py-12 text-amber-400">No photos found</div>
+        <div style={{ textAlign: 'center', padding: '48px 0', color: Z.textMuted }}>No photos found</div>
       ) : (
-        <div className="grid grid-cols-3 gap-1">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 4, borderRadius: 20, overflow: 'hidden' }}>
           {photos.map(photo => (
-            <button key={photo.id} onClick={() => { setPhoto(photo); setOpen(true) }} className="relative aspect-square bg-amber-50 overflow-hidden group">
-              <img src={photo.url} alt="" className="w-full h-full object-cover transition group-hover:scale-105" loading="lazy" />
-              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition" />
+            <button
+              key={photo.id}
+              onClick={() => { setPhoto(photo); setOpen(true) }}
+              style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', cursor: 'pointer', background: 'rgba(200,210,230,0.3)' }}
+              className="group"
+            >
+              <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} loading="lazy" className="group-hover:scale-105" />
+              <div style={{ position: 'absolute', inset: 0, background: 'rgba(123,108,246,0)', transition: 'background 0.3s' }} className="group-hover:bg-[rgba(123,108,246,0.2)]" />
             </button>
           ))}
         </div>
@@ -1419,41 +1596,30 @@ const AdminPage = () => {
 
   const handleUpload = async () => {
     if (!photoForm.event_id || !photoForm.url || !photoForm.file_name) {
-      showToast('Event, URL, and filename are required', 'error')
-      return
+      showToast('Event, URL, and filename are required', 'error'); return
     }
     setUploading(true)
     try {
       const tags = photoForm.tags ? photoForm.tags.split(',').map(t => t.trim()).filter(Boolean) : []
       await arkzenFetch('/api/church-community/photos', {
-        method: 'POST',
-        body: { ...photoForm, event_id: Number(photoForm.event_id), tags },
+        method: 'POST', body: { ...photoForm, event_id: Number(photoForm.event_id), tags },
       })
       showToast('Photo uploaded successfully', 'success')
       setPhotoForm({ event_id: '', url: '', caption: '', file_name: '', tags: '' })
-    } catch {
-      showToast('Upload failed', 'error')
-    } finally {
-      setUploading(false)
-    }
+    } catch { showToast('Upload failed', 'error') }
+    finally { setUploading(false) }
   }
 
   const handleCreateEvent = async () => {
-    if (!eventForm.title || !eventForm.event_date) {
-      showToast('Title and date are required', 'error')
-      return
-    }
+    if (!eventForm.title || !eventForm.event_date) { showToast('Title and date are required', 'error'); return }
     setCreatingEvent(true)
     try {
       const ev = await arkzenFetch('/api/church-community/events', { method: 'POST', body: eventForm })
       setEvents(prev => [ev, ...prev])
       showToast('Event created', 'success')
       setEventForm({ title: '', description: '', event_date: '', is_members_only: false })
-    } catch {
-      showToast('Failed to create event', 'error')
-    } finally {
-      setCreatingEvent(false)
-    }
+    } catch { showToast('Failed to create event', 'error') }
+    finally { setCreatingEvent(false) }
   }
 
   const handleDeleteEvent = async (id: number) => {
@@ -1462,9 +1628,7 @@ const AdminPage = () => {
       await arkzenFetch(`/api/church-community/events/${id}`, { method: 'DELETE' })
       setEvents(prev => prev.filter(e => e.id !== id))
       showToast('Event deleted', 'success')
-    } catch {
-      showToast('Failed to delete event', 'error')
-    }
+    } catch { showToast('Failed to delete', 'error') }
   }
 
   const handleCreateMember = async () => {
@@ -1475,11 +1639,8 @@ const AdminPage = () => {
       setMembers(prev => [m, ...prev])
       showToast('Member added', 'success')
       setMemberForm({ name: '', role: 'member', email: '', bio: '' })
-    } catch {
-      showToast('Failed to add member', 'error')
-    } finally {
-      setCreatingMember(false)
-    }
+    } catch { showToast('Failed to add member', 'error') }
+    finally { setCreatingMember(false) }
   }
 
   const handleDeleteMember = async (id: number) => {
@@ -1488,97 +1649,123 @@ const AdminPage = () => {
       await arkzenFetch(`/api/church-community/members/${id}`, { method: 'DELETE' })
       setMembers(prev => prev.filter(m => m.id !== id))
       showToast('Member removed', 'success')
-    } catch {
-      showToast('Failed to remove member', 'error')
-    }
+    } catch { showToast('Failed to remove', 'error') }
   }
 
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '10px 14px', borderRadius: 12, fontSize: 14,
+    border: '1.5px solid rgba(200,210,230,0.6)',
+    background: 'rgba(255,255,255,0.7)', color: Z.textDark, outline: 'none', boxSizing: 'border-box',
+  }
+
+  const SectionCard: React.FC<{ icon: React.ReactNode; title: string; children: React.ReactNode }> = ({ icon, title, children }) => (
+    <ZCard style={{ overflow: 'hidden' }}>
+      <div style={{ padding: '14px 18px', display: 'flex', alignItems: 'center', gap: 8, borderBottom: '1px solid rgba(200,210,230,0.3)', background: 'rgba(123,108,246,0.04)' }}>
+        <span style={{ color: Z.purple }}>{icon}</span>
+        <span style={{ fontSize: 14, fontWeight: 700, color: Z.textDark }}>{title}</span>
+      </div>
+      <div style={{ padding: 18 }}>{children}</div>
+    </ZCard>
+  )
+
   return (
-    <div className="animate-fadeIn space-y-6">
-      <div className="grid md:grid-cols-2 gap-6">
+    <div className="animate-fadeIn" style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div>
+        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Admin Panel</h2>
+        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Manage your church community</p>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
         {/* Upload Photo */}
-        <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
-          <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center gap-2">
-            <Upload size={16} className="text-amber-600" /> <span className="font-medium">Upload Photo</span>
-          </div>
-          <div className="p-5 space-y-3">
-            <select value={photoForm.event_id} onChange={e => setPhotoForm(f => ({ ...f, event_id: e.target.value }))} className="w-full p-2 border rounded-lg">
+        <SectionCard icon={<Upload size={16} />} title="Upload Photo">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <select value={photoForm.event_id} onChange={e => setPhotoForm(f => ({ ...f, event_id: e.target.value }))} style={inputStyle}>
               <option value="">Select event</option>
               {events.map(ev => <option key={ev.id} value={ev.id}>{ev.title}</option>)}
             </select>
-            <input type="text" placeholder="Photo URL" value={photoForm.url} onChange={e => setPhotoForm(f => ({ ...f, url: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <input type="text" placeholder="Filename" value={photoForm.file_name} onChange={e => setPhotoForm(f => ({ ...f, file_name: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <input type="text" placeholder="Caption" value={photoForm.caption} onChange={e => setPhotoForm(f => ({ ...f, caption: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <input type="text" placeholder="Tags (comma separated)" value={photoForm.tags} onChange={e => setPhotoForm(f => ({ ...f, tags: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <button onClick={handleUpload} disabled={uploading} className="w-full bg-amber-700 text-white py-2 rounded-lg hover:bg-amber-800 transition disabled:opacity-50">
-              {uploading ? <Loader2 size={16} className="animate-spin inline" /> : 'Upload'}
-            </button>
+            <input type="text" placeholder="Photo URL" value={photoForm.url} onChange={e => setPhotoForm(f => ({ ...f, url: e.target.value }))} style={inputStyle} />
+            <input type="text" placeholder="Filename" value={photoForm.file_name} onChange={e => setPhotoForm(f => ({ ...f, file_name: e.target.value }))} style={inputStyle} />
+            <input type="text" placeholder="Caption" value={photoForm.caption} onChange={e => setPhotoForm(f => ({ ...f, caption: e.target.value }))} style={inputStyle} />
+            <input type="text" placeholder="Tags (comma separated)" value={photoForm.tags} onChange={e => setPhotoForm(f => ({ ...f, tags: e.target.value }))} style={inputStyle} />
+            <ZButton onClick={handleUpload} disabled={uploading} fullWidth>
+              {uploading ? <Loader2 size={15} className="animate-spin" /> : 'Upload Photo'}
+            </ZButton>
           </div>
-        </div>
+        </SectionCard>
 
         {/* Add Member */}
-        <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
-          <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center gap-2">
-            <UserPlus size={16} className="text-amber-600" /> <span className="font-medium">Add Member</span>
-          </div>
-          <div className="p-5 space-y-3">
-            <input type="text" placeholder="Name" value={memberForm.name} onChange={e => setMemberForm(f => ({ ...f, name: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <select value={memberForm.role} onChange={e => setMemberForm(f => ({ ...f, role: e.target.value as Role }))} className="w-full p-2 border rounded-lg">
+        <SectionCard icon={<UserPlus size={16} />} title="Add Member">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <input type="text" placeholder="Full Name" value={memberForm.name} onChange={e => setMemberForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />
+            <select value={memberForm.role} onChange={e => setMemberForm(f => ({ ...f, role: e.target.value as Role }))} style={inputStyle}>
               {(['pastor','elder','deacon','leader','member'] as Role[]).map(r => <option key={r} value={r}>{roleLabel[r]}</option>)}
             </select>
-            <input type="email" placeholder="Email" value={memberForm.email} onChange={e => setMemberForm(f => ({ ...f, email: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <textarea placeholder="Bio" rows={2} value={memberForm.bio} onChange={e => setMemberForm(f => ({ ...f, bio: e.target.value }))} className="w-full p-2 border rounded-lg" />
-            <button onClick={handleCreateMember} disabled={creatingMember} className="w-full bg-amber-700 text-white py-2 rounded-lg hover:bg-amber-800 transition disabled:opacity-50">
-              {creatingMember ? <Loader2 size={16} className="animate-spin inline" /> : 'Add Member'}
-            </button>
+            <input type="email" placeholder="Email" value={memberForm.email} onChange={e => setMemberForm(f => ({ ...f, email: e.target.value }))} style={inputStyle} />
+            <textarea placeholder="Bio" rows={3} value={memberForm.bio} onChange={e => setMemberForm(f => ({ ...f, bio: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} />
+            <ZButton onClick={handleCreateMember} disabled={creatingMember} fullWidth>
+              {creatingMember ? <Loader2 size={15} className="animate-spin" /> : 'Add Member'}
+            </ZButton>
           </div>
-        </div>
+        </SectionCard>
       </div>
 
       {/* Create Event */}
-      <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
-        <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center gap-2">
-          <Calendar size={16} className="text-amber-600" /> <span className="font-medium">Create Event</span>
+      <SectionCard icon={<Calendar size={16} />} title="Create Event">
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
+          <input type="text" placeholder="Event Title" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))} style={inputStyle} />
+          <input type="date" value={eventForm.event_date} onChange={e => setEventForm(f => ({ ...f, event_date: e.target.value }))} style={inputStyle} />
+          <textarea placeholder="Description" rows={1} value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))} style={{ ...inputStyle, resize: 'vertical' }} />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <input type="checkbox" id="mo" checked={eventForm.is_members_only} onChange={e => setEventForm(f => ({ ...f, is_members_only: e.target.checked }))} style={{ accentColor: Z.purple }} />
+            <label htmlFor="mo" style={{ fontSize: 13, color: Z.textMid, cursor: 'pointer' }}>Members only</label>
+          </div>
         </div>
-        <div className="p-5 space-y-3">
-          <input type="text" placeholder="Title" value={eventForm.title} onChange={e => setEventForm(f => ({ ...f, title: e.target.value }))} className="w-full p-2 border rounded-lg" />
-          <input type="date" value={eventForm.event_date} onChange={e => setEventForm(f => ({ ...f, event_date: e.target.value }))} className="w-full p-2 border rounded-lg" />
-          <textarea placeholder="Description" rows={2} value={eventForm.description} onChange={e => setEventForm(f => ({ ...f, description: e.target.value }))} className="w-full p-2 border rounded-lg" />
-          <label className="flex items-center gap-2"><input type="checkbox" checked={eventForm.is_members_only} onChange={e => setEventForm(f => ({ ...f, is_members_only: e.target.checked }))} /> Members only</label>
-          <button onClick={handleCreateEvent} disabled={creatingEvent} className="w-full bg-amber-700 text-white py-2 rounded-lg hover:bg-amber-800 transition disabled:opacity-50">
-            {creatingEvent ? <Loader2 size={16} className="animate-spin inline" /> : 'Create Event'}
-          </button>
+        <div style={{ marginTop: 12 }}>
+          <ZButton onClick={handleCreateEvent} disabled={creatingEvent}>
+            {creatingEvent ? <Loader2 size={15} className="animate-spin" /> : 'Create Event'}
+          </ZButton>
         </div>
-      </div>
+      </SectionCard>
 
-      {/* Manage Events */}
-      <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
-        <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center gap-2">
-          <Calendar size={16} className="text-amber-600" /> <span className="font-medium">Manage Events ({events.length})</span>
-        </div>
-        <div className="divide-y">
-          {events.map(ev => (
-            <div key={ev.id} className="flex justify-between items-center p-3">
-              <div><p className="font-medium">{ev.title}</p><p className="text-xs text-amber-400">{formatDate(ev.event_date)}</p></div>
-              <button onClick={() => handleDeleteEvent(ev.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16} /></button>
-            </div>
-          ))}
-        </div>
-      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+        {/* Manage Events */}
+        <SectionCard icon={<Calendar size={16} />} title={`Events (${events.length})`}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {events.map(ev => (
+              <div key={ev.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(200,210,230,0.3)' }}>
+                <div>
+                  <p style={{ fontSize: 14, fontWeight: 600, color: Z.textDark }}>{ev.title}</p>
+                  <p style={{ fontSize: 11, color: Z.textMuted }}>{formatDate(ev.event_date)}</p>
+                </div>
+                <button onClick={() => handleDeleteEvent(ev.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
 
-      {/* Manage Members */}
-      <div className="bg-white rounded-2xl border border-amber-100 overflow-hidden">
-        <div className="bg-amber-50 px-5 py-3 border-b border-amber-100 flex items-center gap-2">
-          <Users size={16} className="text-amber-600" /> <span className="font-medium">Manage Members ({members.length})</span>
-        </div>
-        <div className="divide-y">
-          {members.map(m => (
-            <div key={m.id} className="flex justify-between items-center p-3">
-              <div><p className="font-medium">{m.name}</p><span className={`text-xs text-white px-2 py-0.5 rounded-full ${roleColors[m.role]}`}>{roleLabel[m.role]}</span></div>
-              <button onClick={() => handleDeleteMember(m.id)} className="text-red-400 hover:text-red-600"><Trash2 size={16} /></button>
-            </div>
-          ))}
-        </div>
+        {/* Manage Members */}
+        <SectionCard icon={<Users size={16} />} title={`Members (${members.length})`}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+            {members.map(m => (
+              <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: '1px solid rgba(200,210,230,0.3)' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <Avatar name={m.name} size={28} />
+                  <div>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: Z.textDark }}>{m.name}</p>
+                    <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 20, background: roleBadge[m.role].bg, color: roleBadge[m.role].text }}>
+                      {roleLabel[m.role]}
+                    </span>
+                  </div>
+                </div>
+                <button onClick={() => handleDeleteMember(m.id)} style={{ color: '#ef4444', background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}>
+                  <Trash2 size={15} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
       </div>
     </div>
   )
@@ -1602,30 +1789,52 @@ const LoginPage = () => {
     try {
       await login(form.email, form.password)
       router.push('/church-community')
-    } catch {
-      showToast('Invalid credentials', 'error')
-    } finally {
-      setLoading(false)
-    }
+    } catch { showToast('Invalid credentials', 'error') }
+    finally { setLoading(false) }
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 to-white">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-amber-100">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-amber-700 flex items-center justify-center mx-auto mb-3">
-            <span className="text-white text-xl">✝</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-amber-900">Grace Community Church</h1>
-          <p className="text-amber-500 text-sm">Sign in to your account</p>
+    <div
+      style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+      }}
+    >
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+          borderRadius: 28, boxShadow: '0 20px 60px rgba(100,120,180,0.18)',
+          border: '1px solid rgba(255,255,255,0.8)',
+          padding: 40, width: '100%', maxWidth: 420,
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 32 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%', background: Z.purpleGrad,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px',
+            boxShadow: Z.shadowPurp, fontSize: 20, color: '#fff',
+          }}>✝</div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Grace Community</h1>
+          <p style={{ fontSize: 13, color: Z.textSoft, marginTop: 4 }}>Sign in to your account</p>
         </div>
-        <div className="space-y-4">
-          <input type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full p-3 border rounded-lg focus:ring-1 focus:ring-amber-400" />
-          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} onKeyDown={e => e.key === 'Enter' && handleLogin()} className="w-full p-3 border rounded-lg focus:ring-1 focus:ring-amber-400" />
-          <button onClick={handleLogin} disabled={loading} className="w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition disabled:opacity-50">
-            {loading ? <Loader2 size={18} className="animate-spin inline" /> : 'Sign In'}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <input type="email" placeholder="Email address" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+            style={{ width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px solid rgba(200,210,230,0.6)', background: 'rgba(255,255,255,0.7)', color: Z.textDark, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+          />
+          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} onKeyDown={e => e.key === 'Enter' && handleLogin()}
+            style={{ width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px solid rgba(200,210,230,0.6)', background: 'rgba(255,255,255,0.7)', color: Z.textDark, fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+          />
+          <button
+            onClick={handleLogin} disabled={loading}
+            style={{ width: '100%', padding: '13px', borderRadius: 14, background: Z.purpleGrad, color: '#fff', fontWeight: 700, fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: Z.shadowPurp, marginTop: 4 }}
+          >
+            {loading ? <Loader2 size={18} style={{ display: 'inline', animation: 'spin 1s linear infinite' }} /> : 'Sign In'}
           </button>
         </div>
+        <p style={{ textAlign: 'center', fontSize: 12, color: Z.textSoft, marginTop: 20 }}>
+          Don't have an account?{' '}
+          <a href="/church-community/register" style={{ color: Z.purple, fontWeight: 700, textDecoration: 'none' }}>Register</a>
+        </p>
       </div>
     </div>
   )
@@ -1650,32 +1859,55 @@ const RegisterPage = () => {
     try {
       await register(form.name, form.email, form.password, form.password_confirmation)
       router.push('/church-community')
-    } catch {
-      showToast('Registration failed', 'error')
-    } finally {
-      setLoading(false)
-    }
+    } catch { showToast('Registration failed', 'error') }
+    finally { setLoading(false) }
+  }
+
+  const inputStyle: React.CSSProperties = {
+    width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px solid rgba(200,210,230,0.6)',
+    background: 'rgba(255,255,255,0.7)', color: Z.textDark, fontSize: 14, outline: 'none', boxSizing: 'border-box',
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-amber-50 to-white">
-      <div className="bg-white rounded-2xl shadow-xl p-8 w-full max-w-md border border-amber-100">
-        <div className="text-center mb-6">
-          <div className="w-12 h-12 rounded-full bg-amber-700 flex items-center justify-center mx-auto mb-3">
-            <span className="text-white text-xl">✝</span>
-          </div>
-          <h1 className="text-2xl font-semibold text-amber-900">Create Account</h1>
+    <div
+      style={{
+        minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+        background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+      }}
+    >
+      <div
+        style={{
+          background: 'rgba(255,255,255,0.88)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+          borderRadius: 28, boxShadow: '0 20px 60px rgba(100,120,180,0.18)',
+          border: '1px solid rgba(255,255,255,0.8)',
+          padding: 40, width: '100%', maxWidth: 420,
+        }}
+      >
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div style={{
+            width: 52, height: 52, borderRadius: '50%', background: Z.purpleGrad,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 14px',
+            boxShadow: Z.shadowPurp, fontSize: 20, color: '#fff',
+          }}>✝</div>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Create Account</h1>
+          <p style={{ fontSize: 13, color: Z.textSoft, marginTop: 4 }}>Join our church community</p>
         </div>
-        <div className="space-y-3">
-          <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} className="w-full p-3 border rounded-lg" />
-          <input type="email" placeholder="Email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} className="w-full p-3 border rounded-lg" />
-          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} className="w-full p-3 border rounded-lg" />
-          <input type="password" placeholder="Confirm Password" value={form.password_confirmation} onChange={e => setForm(f => ({ ...f, password_confirmation: e.target.value }))} className="w-full p-3 border rounded-lg" />
-          <button onClick={handleRegister} disabled={loading} className="w-full bg-amber-700 text-white py-3 rounded-lg hover:bg-amber-800 transition disabled:opacity-50">
-            {loading ? <Loader2 size={18} className="animate-spin inline" /> : 'Register'}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <input type="text" placeholder="Full Name" value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))} style={inputStyle} />
+          <input type="email" placeholder="Email address" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))} style={inputStyle} />
+          <input type="password" placeholder="Password" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} style={inputStyle} />
+          <input type="password" placeholder="Confirm Password" value={form.password_confirmation} onChange={e => setForm(f => ({ ...f, password_confirmation: e.target.value }))} style={inputStyle} />
+          <button
+            onClick={handleRegister} disabled={loading}
+            style={{ width: '100%', padding: 13, borderRadius: 14, background: Z.purpleGrad, color: '#fff', fontWeight: 700, fontSize: 15, border: 'none', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading ? 0.6 : 1, boxShadow: Z.shadowPurp, marginTop: 4 }}
+          >
+            {loading ? <Loader2 size={18} style={{ display: 'inline', animation: 'spin 1s linear infinite' }} /> : 'Create Account'}
           </button>
         </div>
-        <p className="text-center text-sm text-amber-400 mt-4">Already have an account? <a href="/church-community/login" className="text-amber-700">Sign in</a></p>
+        <p style={{ textAlign: 'center', fontSize: 12, color: Z.textSoft, marginTop: 20 }}>
+          Already have an account?{' '}
+          <a href="/church-community/login" style={{ color: Z.purple, fontWeight: 700, textDecoration: 'none' }}>Sign in</a>
+        </p>
       </div>
     </div>
   )
@@ -1686,11 +1918,18 @@ const RegisterPage = () => {
 /* @arkzen:error:404 */
 
 const NotFoundPage = () => (
-  <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-white">
-    <div className="text-center">
-      <p className="text-7xl font-light text-amber-300">404</p>
-      <p className="text-amber-700 mt-2">Page not found</p>
-      <a href="/church-community" className="inline-block mt-4 px-4 py-2 bg-amber-700 text-white rounded-full text-sm">Go home</a>
+  <div style={{
+    minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+    background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+  }}>
+    <div style={{ textAlign: 'center' }}>
+      <p style={{ fontSize: 80, fontWeight: 800, background: Z.purpleGrad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1 }}>404</p>
+      <p style={{ color: Z.textMid, marginTop: 8, fontSize: 15 }}>Page not found</p>
+      <a href="/church-community" style={{
+        display: 'inline-block', marginTop: 20, padding: '10px 28px', borderRadius: 20,
+        background: Z.purpleGrad, color: '#fff', fontWeight: 700, fontSize: 14,
+        textDecoration: 'none', boxShadow: Z.shadowPurp,
+      }}>Go home</a>
     </div>
   </div>
 )
@@ -1703,11 +1942,21 @@ const NotFoundPage = () => (
 
 function Error({ reset }: { error: Error; reset: () => void }) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-amber-50 to-white">
-      <div className="text-center">
-        <p className="text-7xl font-light text-amber-300">500</p>
-        <p className="text-amber-700 mt-2">Something went wrong</p>
-        <button onClick={reset} className="mt-4 px-4 py-2 bg-amber-700 text-white rounded-full text-sm">Try again</button>
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
+    }}>
+      <div style={{ textAlign: 'center' }}>
+        <p style={{ fontSize: 80, fontWeight: 800, background: Z.purpleGrad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1 }}>500</p>
+        <p style={{ color: Z.textMid, marginTop: 8, fontSize: 15 }}>Something went wrong</p>
+        <button
+          onClick={reset}
+          style={{
+            display: 'inline-block', marginTop: 20, padding: '10px 28px', borderRadius: 20,
+            background: Z.purpleGrad, color: '#fff', fontWeight: 700, fontSize: 14,
+            border: 'none', cursor: 'pointer', boxShadow: Z.shadowPurp,
+          }}
+        >Try again</button>
       </div>
     </div>
   )
@@ -1722,17 +1971,21 @@ import { gsap } from 'gsap'
 const churchCommunityAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.animate-fadeIn',
-      { opacity: 0, y: 12 },
-      { opacity: 1, y: 0, duration: 0.4, ease: 'power2.out' }
+      { opacity: 0, y: 16 },
+      { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }
+    )
+    gsap.fromTo('[data-zcard]',
+      { opacity: 0, y: 20, scale: 0.97 },
+      { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out', stagger: 0.06 }
     )
   }, pageRef)
   return () => ctx.revert()
 }
 
 export const pageVariants = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
+  initial: { opacity: 0, y: 16 },
+  animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
+  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
 }
 
 /* @arkzen:animation:end */

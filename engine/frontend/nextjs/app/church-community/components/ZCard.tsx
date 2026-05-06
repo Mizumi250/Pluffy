@@ -1,9 +1,9 @@
 'use client'
 // ============================================================
-// ARKZEN GENERATED COMPONENT — SimplePhotoGrid
+// ARKZEN GENERATED COMPONENT — ZCard
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T11:18:01.302Z
+// Generated: 2026-05-06T13:26:25.465Z
 // ============================================================
 
-export { SimplePhotoGrid } from './_components'
+export { ZCard } from './_components'
