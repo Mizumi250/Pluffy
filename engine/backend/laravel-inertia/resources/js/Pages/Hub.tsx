@@ -1,0 +1,213 @@
+// ============================================================
+// ARKZEN — INERTIA HUB PAGE
+// resources/js/Pages/Hub.tsx
+//
+// Equivalent of ArkzenHub in react-vite/App.tsx and nextjs.
+// Rendered at GET / via routes/modules/hub.pages.php.
+// Reads tatemonos from /api/arkzen/registry (same endpoint
+// used by other stacks), falls back to scanning known routes.
+// DO NOT EDIT — this is an engine-managed file.
+// ============================================================
+
+import React, { useEffect, useState } from 'react'
+import { motion } from 'framer-motion'
+import { router } from '@inertiajs/react'
+import {
+  Layers, Play, Clock,
+  CheckCircle, AlertCircle, Plus, Terminal,
+} from 'lucide-react'
+
+interface TatemonoEntry {
+  name: string
+  version: string
+  status: 'active' | 'inactive' | 'error'
+  registered: string
+  lastUpdated: string
+}
+
+interface RegistryData {
+  engine: string
+  project: string
+  modules: TatemonoEntry[]
+}
+
+// ── Tatemono Card ─────────────────────────────────────────────
+const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: number }) => {
+  const statusColor = {
+    active:   'bg-emerald-50 text-emerald-600',
+    inactive: 'bg-neutral-100 text-neutral-500',
+    error:    'bg-red-50 text-red-600',
+  }[tatemono.status]
+
+  const StatusIcon = {
+    active:   CheckCircle,
+    inactive: Clock,
+    error:    AlertCircle,
+  }[tatemono.status]
+
+  // Inertia uses server-side routes — navigate via router.visit
+  const routePath = `/${tatemono.name}`
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: index * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="group relative bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
+      onClick={() => router.visit(routePath)}
+    >
+      <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mb-4 ${statusColor}`}>
+        <StatusIcon size={11} />
+        {tatemono.status}
+      </div>
+
+      <h3 className="text-base font-semibold text-neutral-900 mb-1 leading-tight">
+        {tatemono.name}
+      </h3>
+      <p className="text-xs text-neutral-400 font-mono mb-4">v{tatemono.version}</p>
+
+      <div className="text-xs text-neutral-400 space-y-1 mb-6">
+        <div>Registered: {new Date(tatemono.registered).toLocaleDateString()}</div>
+        <div>Updated: {new Date(tatemono.lastUpdated).toLocaleDateString()}</div>
+      </div>
+
+      <div className="flex gap-2">
+        <button
+          onClick={(e) => { e.stopPropagation(); router.visit(routePath) }}
+          className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl bg-neutral-900 text-white hover:bg-neutral-700 transition-colors"
+        >
+          <Play size={11} />
+          Open
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); navigator.clipboard.writeText(tatemono.name) }}
+          className="px-3 py-2 text-xs font-medium rounded-xl border border-neutral-200 text-neutral-600 hover:bg-neutral-50 transition-colors"
+        >
+          Copy
+        </button>
+      </div>
+
+      <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-neutral-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+    </motion.div>
+  )
+}
+
+// ── Hub ───────────────────────────────────────────────────────
+export default function Hub() {
+  const [registry, setRegistry] = useState<RegistryData | null>(null)
+  const [loading, setLoading]   = useState(true)
+
+  useEffect(() => {
+    fetchRegistry()
+    const interval = setInterval(fetchRegistry, 3000)
+    return () => clearInterval(interval)
+  }, [])
+
+  const fetchRegistry = async () => {
+    try {
+      const res = await fetch('/api/arkzen/registry')
+      if (res.ok) {
+        setRegistry(await res.json())
+        return
+      }
+    } catch {}
+    finally {
+      setLoading(false)
+    }
+  }
+
+  const active = registry?.modules.filter(m => m.status === 'active').length ?? 0
+  const total  = registry?.modules.length ?? 0
+  const errors = registry?.modules.filter(m => m.status === 'error').length ?? 0
+
+  return (
+    <div className="min-h-screen bg-neutral-50">
+      {/* Header */}
+      <div className="border-b border-neutral-100 bg-white">
+        <div className="max-w-6xl mx-auto px-6 py-5 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl bg-neutral-900 flex items-center justify-center">
+              <span className="text-white text-xs font-bold">A</span>
+            </div>
+            <div>
+              <h1 className="text-sm font-semibold text-neutral-900">Arkzen Engine</h1>
+              <p className="text-xs text-neutral-400">Inertia Stack</p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-6 text-sm">
+            <div className="flex items-center gap-1.5 text-emerald-600">
+              <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-medium">Engine running</span>
+            </div>
+            <div className="text-xs text-neutral-400">
+              {active} active · {total} total {errors > 0 ? `· ${errors} errors` : ''}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="max-w-6xl mx-auto px-6 py-10">
+        {/* Stats */}
+        <div className="grid grid-cols-3 gap-4 mb-10">
+          {[
+            { label: 'Active Tatemonos', value: active,   icon: Layers,       color: 'text-blue-600',    bg: 'bg-blue-50'    },
+            { label: 'Total Built',      value: total,    icon: CheckCircle,  color: 'text-emerald-600', bg: 'bg-emerald-50' },
+            { label: 'Errors',           value: errors,   icon: AlertCircle,  color: 'text-red-600',     bg: 'bg-red-50'     },
+          ].map((stat, i) => (
+            <motion.div
+              key={stat.label}
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: i * 0.06 }}
+              className="bg-white rounded-2xl border border-neutral-100 p-5 flex items-center gap-4"
+            >
+              <div className={`w-10 h-10 rounded-xl ${stat.bg} flex items-center justify-center`}>
+                <stat.icon size={18} className={stat.color} />
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-neutral-900">{stat.value}</p>
+                <p className="text-xs text-neutral-400">{stat.label}</p>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Tatemono list */}
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-sm font-semibold text-neutral-900">Tatemonos</h2>
+          <div className="flex items-center gap-2 text-xs text-neutral-400">
+            <Terminal size={12} />
+            Drop a tatemono into tatemonos/ to build
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <div key={i} className="bg-white rounded-2xl border border-neutral-100 p-6 h-48 animate-pulse" />
+            ))}
+          </div>
+        ) : !registry || registry.modules.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="text-center py-24"
+          >
+            <div className="w-16 h-16 rounded-2xl bg-neutral-100 flex items-center justify-center mx-auto mb-4">
+              <Plus size={24} className="text-neutral-400" />
+            </div>
+            <h3 className="text-sm font-semibold text-neutral-900 mb-1">No tatemonos yet</h3>
+            <p className="text-sm text-neutral-400">Drop a tatemono file into tatemonos/</p>
+          </motion.div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {registry.modules.map((tatemono, i) => (
+              <TatemonoCard key={tatemono.name} tatemono={tatemono} index={i} />
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}

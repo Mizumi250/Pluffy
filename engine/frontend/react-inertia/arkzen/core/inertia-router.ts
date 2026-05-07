@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — INERTIA ROUTER v1.0
+// ARKZEN ENGINE — INERTIA ROUTER v1.1
 // Equivalent of vite-router.ts for the Inertia stack.
 //
 // KEY DIFFERENCES from vite-router:
@@ -10,6 +10,10 @@
 //   3. No React Router — navigation via Inertia router.visit()
 //   4. Page props come from Inertia::render() via usePage<Props>()
 //   5. No .arkzen-ready flag — Laravel Vite plugin manages HMR directly
+//
+// v1.1: ensureHubRoute() — writes routes/modules/hub.pages.php (GET / → Hub)
+//   and warns if Hub.tsx is missing. Called on every registerInertiaPages()
+//   so the hub is always present after any tatemono build.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -18,9 +22,9 @@ import type { ParsedTatemono, ArkzenPage } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 
 // Pages land INSIDE the laravel-inertia backend
-const ROOT_DIR   = path.resolve(process.cwd(), '..', '..', '..')
+const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
 const BACKEND_DIR = path.join(ROOT_DIR, 'engine', 'backend', 'laravel-inertia')
-const PAGES_DIR  = path.join(BACKEND_DIR, 'resources', 'js', 'Pages')
+const PAGES_DIR   = path.join(BACKEND_DIR, 'resources', 'js', 'Pages')
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,7 +72,7 @@ function normalizeForInertia(raw: string): string {
   )
 }
 
-// Get layout import path — adapters live in resources/js/arkzen/core/
+// Get layout import path — layouts live in resources/js/arkzen/core/layouts/
 function getLayoutImport(layout: string, tatName: string): string {
   const layoutMap: Record<string, string> = {
     auth:  `import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'`,
@@ -205,7 +209,7 @@ export default ${wrapperName}
 }
 
 // ─── Route file writer ────────────────────────────────────────────────────────
-// Writes routes/modules/{tatName}.php directly — no bridge involvement.
+// Writes routes/modules/{tatName}.pages.php directly — no bridge involvement.
 // The bridge handles models/migrations/controllers. This handles page routes.
 
 const ROUTES_DIR = path.join(BACKEND_DIR, 'routes', 'modules')
@@ -244,6 +248,46 @@ function generatePageRouteFile(tatemono: ParsedTatemono): string {
   return lines.join('\n')
 }
 
+// ─── Hub route ────────────────────────────────────────────────────────────────
+// Writes routes/modules/hub.pages.php (GET / → Hub Inertia page) once.
+// This is the Inertia equivalent of Next's app/page.tsx and Vite's App.tsx
+// hub — same permanent static entry point, just needs a route file because
+// Laravel doesn't do filesystem routing.
+
+function ensureHubRoute(): void {
+  const hubRouteFile = path.join(ROUTES_DIR, 'hub.pages.php')
+  const hubPageFile  = path.join(PAGES_DIR, 'Hub.tsx')
+
+  if (!fs.existsSync(hubRouteFile)) {
+    const content = [
+      `<?php`,
+      `// ============================================================`,
+      `// ARKZEN ENGINE — HUB ROUTE [Inertia/Web]`,
+      `// Serves the Arkzen Hub at GET /`,
+      `// Equivalent of app/page.tsx (Next) and App.tsx hub (Vite).`,
+      `// DO NOT EDIT — engine-managed file.`,
+      `// ============================================================`,
+      ``,
+      `use Illuminate\\Support\\Facades\\Route;`,
+      ``,
+      `Route::middleware(['web'])->group(function () {`,
+      `    Route::get('/', function () {`,
+      `        return \\Inertia\\Inertia::render('Hub');`,
+      `    });`,
+      `});`,
+      ``,
+    ].join('\n')
+
+    fs.mkdirSync(ROUTES_DIR, { recursive: true })
+    fs.writeFileSync(hubRouteFile, content, 'utf-8')
+    console.log('[Arkzen Inertia Router] ✓ Hub route written: routes/modules/hub.pages.php')
+  }
+
+  if (!fs.existsSync(hubPageFile)) {
+    console.warn('[Arkzen Inertia Router] ⚠ Hub.tsx missing — copy it to resources/js/Pages/Hub.tsx')
+  }
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function registerInertiaPages(tatemono: ParsedTatemono): void {
@@ -276,6 +320,9 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
   console.log(`[Arkzen Inertia Router] ✓ Page routes written: routes/modules/${tatName}.pages.php`)
 
   console.log(`[Arkzen Inertia Router] ✓ ${tatemono.pages.length} page(s) written to laravel-inertia`)
+
+  // Ensure hub route + page exist — idempotent, only writes if missing
+  ensureHubRoute()
 }
 
 export function unregisterInertiaPages(tatName: string): void {

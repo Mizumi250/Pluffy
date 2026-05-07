@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — INERTIA BUILDER v1.0
+// ARKZEN ENGINE — INERTIA BUILDER v1.1
 // Orchestrates tatemono build for React+Inertia stack.
 //
 // KEY DIFFERENCE from vite-builder / nextjs builder:
@@ -9,6 +9,10 @@
 //   Backend (models, migrations, routes, auth) still go via the
 //   backend bridge to laravel-inertia's ArkzenEngineController —
 //   same HTTP bridge pattern, different port (8001).
+//
+// v1.1: syncSharedCoreToLaravelInertia() — also spreads engine/shared/arkzen/core
+//   directly into laravel-inertia/resources/js/arkzen/core/ so Vite's @/ alias
+//   resolves correctly and export.js ships a fully self-contained Laravel app.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -19,8 +23,45 @@ import { registerInertiaPages, unregisterInertiaPages } from './inertia-router'
 import { triggerBackendBuild, triggerBackendRemove }     from './backend-bridge'
 import type { InertiaBuildResult }      from '../types'
 
+// ─── Sync shared core → laravel-inertia/resources/js/arkzen/core/ ─────────────
+//
+// engine/shared/arkzen/core/ is the source of truth for all stacks.
+// shared-sync already spreads it to engine/frontend/react-inertia/arkzen/core/
+// but Vite runs from laravel-inertia/ and @/ points to resources/js/ —
+// so we need the core to also live there for imports and export.js to work.
+//
+// After cpSync of shared core, we overlay the inertia-specific adapters
+// (Link.tsx, router.ts) so they're never overwritten by the shared copy.
+// ──────────────────────────────────────────────────────────────────────────────
+function syncSharedCoreToLaravelInertia(): void {
+  const rootDir        = path.resolve(process.cwd(), '..', '..', '..')
+  const sharedCoreDir  = path.join(rootDir, 'engine', 'shared', 'arkzen', 'core')
+  const destCoreDir    = path.join(rootDir, 'engine', 'backend', 'laravel-inertia', 'resources', 'js', 'arkzen', 'core')
+  const inertiaAdapters = path.join(process.cwd(), 'arkzen', 'core', 'adapters')
+
+  if (!fs.existsSync(sharedCoreDir)) {
+    console.warn('[Arkzen Inertia Builder] ⚠ Shared core not found — skipping laravel-inertia sync')
+    return
+  }
+
+  // Spread shared core into resources/js/arkzen/core/
+  fs.cpSync(sharedCoreDir, destCoreDir, { recursive: true })
+
+  // Overlay inertia-specific adapters (Link.tsx uses @inertiajs/react, router.ts uses Inertia router)
+  // These must win over anything shared may have copied into adapters/
+  if (fs.existsSync(inertiaAdapters)) {
+    fs.cpSync(inertiaAdapters, path.join(destCoreDir, 'adapters'), { recursive: true })
+  }
+
+  console.log('[Arkzen Inertia Builder] ✓ Synced shared core → laravel-inertia/resources/js/arkzen/core/')
+}
+
 export async function buildInertiaTatemono(corePath: string): Promise<InertiaBuildResult> {
+  // Spread shared core → engine/frontend/react-inertia/arkzen/core/ (engine runtime)
   syncSharedCoreToCurrentStack('Arkzen Inertia Builder')
+
+  // Spread shared core → laravel-inertia/resources/js/arkzen/core/ (Vite + export target)
+  syncSharedCoreToLaravelInertia()
 
   const tatName = path.basename(path.dirname(corePath))
   const steps: InertiaBuildResult['steps'] = []

@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — church-community [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-07T07:52:53.961Z
+// Generated: 2026-05-07T11:41:47.349Z
 // Pages: index, members, inventory, admin, login, register
 // ============================================================
 
