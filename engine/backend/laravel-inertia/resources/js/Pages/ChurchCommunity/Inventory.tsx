@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/inventory [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T07:37:40.942Z
+// Generated: 2026-05-07T07:52:53.953Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'

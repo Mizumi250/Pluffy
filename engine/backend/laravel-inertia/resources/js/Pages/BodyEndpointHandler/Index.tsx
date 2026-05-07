@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T07:37:40.055Z
+// Generated: 2026-05-07T07:52:52.535Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
