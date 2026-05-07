@@ -12,6 +12,10 @@ use App\Http\Controllers\Arkzen\ArkzenEngineController;
 // Health check — frontend bridge pings this on startup
 Route::get('/health', [ArkzenEngineController::class, 'health']);
 
+// Registry — Hub page polls this to display all tatemonos
+// Reads arkzen.json written by the frontend watcher
+Route::get('/registry', [ArkzenEngineController::class, 'registry']);
+
 // Build — receives tatemono data and builds everything
 Route::post('/build', [ArkzenEngineController::class, 'build']);
 

@@ -4,7 +4,7 @@
 //
 // Equivalent of ArkzenHub in react-vite/App.tsx and nextjs.
 // Rendered at GET / via routes/modules/hub.pages.php.
-// Reads tatemonos from /api/arkzen/registry (same endpoint
+// Reads tatemonos from /arkzen/registry (same endpoint
 // used by other stacks), falls back to scanning known routes.
 // DO NOT EDIT — this is an engine-managed file.
 // ============================================================
@@ -105,7 +105,7 @@ export default function Hub() {
 
   const fetchRegistry = async () => {
     try {
-      const res = await fetch('/api/arkzen/registry')
+      const res = await fetch('/arkzen/registry')
       if (res.ok) {
         setRegistry(await res.json())
         return

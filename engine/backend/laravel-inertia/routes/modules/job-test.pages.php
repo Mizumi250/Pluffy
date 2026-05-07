@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — job-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-07T11:41:47.974Z
+// Generated: 2026-05-07T23:55:10.392Z
 // Pages: dashboard
 // ============================================================
 

@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — INERTIA BUILDER v1.1
+// ARKZEN ENGINE — INERTIA BUILDER v1.2
 // Orchestrates tatemono build for React+Inertia stack.
 //
 // KEY DIFFERENCE from vite-builder / nextjs builder:
@@ -10,9 +10,18 @@
 //   backend bridge to laravel-inertia's ArkzenEngineController —
 //   same HTTP bridge pattern, different port (8001).
 //
-// v1.1: syncSharedCoreToLaravelInertia() — also spreads engine/shared/arkzen/core
-//   directly into laravel-inertia/resources/js/arkzen/core/ so Vite's @/ alias
-//   resolves correctly and export.js ships a fully self-contained Laravel app.
+// v1.2: registry + PWA wired in.
+//   - updateRegistry() / removeFromRegistry() now called on every
+//     successful build and removal. Previously inertia-builder never
+//     wrote arkzen.json, so the Hub page's /api/arkzen/registry call
+//     always returned an empty module list.
+//   - generatePWAFiles() called when tatemono.meta.pwa is set.
+//     Previously the inertia stack silently skipped PWA generation.
+//
+// v1.1 (kept): syncSharedCoreToLaravelInertia() — also spreads
+//   engine/shared/arkzen/core directly into laravel-inertia/resources/js/
+//   arkzen/core/ so Vite's @/ alias resolves correctly and export.js
+//   ships a fully self-contained Laravel app.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -21,6 +30,8 @@ import { parseTatemono }                from './parser'
 import { syncSharedCoreToCurrentStack } from './shared-sync'
 import { registerInertiaPages, unregisterInertiaPages } from './inertia-router'
 import { triggerBackendBuild, triggerBackendRemove }     from './backend-bridge'
+import { updateRegistry, removeFromRegistry }            from './registry'
+import { parsePWAConfig, generatePWAFiles }              from './pwa-builder'
 import type { InertiaBuildResult }      from '../types'
 
 // ─── Sync shared core → laravel-inertia/resources/js/arkzen/core/ ─────────────
@@ -51,6 +62,16 @@ function syncSharedCoreToLaravelInertia(): void {
   // These must win over anything shared may have copied into adapters/
   if (fs.existsSync(inertiaAdapters)) {
     fs.cpSync(inertiaAdapters, path.join(destCoreDir, 'adapters'), { recursive: true })
+  }
+
+  // Overlay the custom layouts directory — shared core doesn't have inertia-specific custom layouts
+  const inertiaCustomLayouts = path.join(
+    rootDir, 'engine', 'backend', 'laravel-inertia', 'resources', 'js', 'arkzen', 'core', 'layouts', 'custom'
+  )
+  const engineCustomLayouts = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
+  if (fs.existsSync(engineCustomLayouts)) {
+    fs.mkdirSync(inertiaCustomLayouts, { recursive: true })
+    fs.cpSync(engineCustomLayouts, inertiaCustomLayouts, { recursive: true })
   }
 
   console.log('[Arkzen Inertia Builder] ✓ Synced shared core → laravel-inertia/resources/js/arkzen/core/')
@@ -113,6 +134,36 @@ export async function buildInertiaTatemono(corePath: string): Promise<InertiaBui
     }
   }
 
+  // ── Step 4: PWA generation ─────────────────────────────────
+  if (parsed.meta.pwa) {
+    try {
+      const pwaConfig = parsePWAConfig(parsed)
+      if (pwaConfig) {
+        generatePWAFiles(parsed, pwaConfig)
+        steps.push({ name: 'PWA', status: 'success', message: `PWA files generated for ${tatName}` })
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err)
+      steps.push({ name: 'PWA', status: 'failed', message })
+      errors.push(message)
+      console.error(`[Arkzen Inertia Builder] ✗ PWA generation failed:`, message)
+    }
+  }
+
+  // ── Step 5: Registry update ────────────────────────────────
+  // v1.2: Write to arkzen.json so Hub page has data to display.
+  // Laravel reads the same file via RegistryReader.php and serves
+  // it at GET /api/arkzen/registry.
+  try {
+    updateRegistry(parsed)
+    steps.push({ name: 'Registry', status: 'success', message: `${tatName} registered in arkzen.json` })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    steps.push({ name: 'Registry', status: 'failed', message })
+    // Non-fatal — don't push to errors or abort
+    console.warn(`[Arkzen Inertia Builder] ⚠ Registry update failed (non-fatal):`, message)
+  }
+
   const success = errors.length === 0
   console.log(`\n[Arkzen Inertia Builder] Build ${success ? '✓ COMPLETE' : '✗ FAILED'}: ${tatName}`)
   steps.forEach(s => console.log(`  ${s.status === 'success' ? '✓' : '✗'} ${s.name}: ${s.message ?? ''}`))
@@ -127,6 +178,7 @@ export async function rebuildInertiaTatemono(corePath: string): Promise<InertiaB
 
 export function removeInertiaTatemono(tatName: string): void {
   unregisterInertiaPages(tatName)
+  removeFromRegistry(tatName)                    // ← v1.2: was missing
   triggerBackendRemove(tatName).catch(() => {})
   console.log(`[Arkzen Inertia Builder] ✓ Removed: ${tatName}`)
 }

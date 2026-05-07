@@ -1,7 +1,300 @@
 {
   "engine": "1.0.0",
   "project": "arkzen-engine",
-  "modules": [],
+  "modules": [
+    {
+      "name": "auth-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/auth-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:15.619Z",
+      "lastUpdated": "2026-05-07T23:51:30.404Z",
+      "auth": true
+    },
+    {
+      "name": "barbershop-booking",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/barbershop-booking/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:15.641Z",
+      "lastUpdated": "2026-05-07T23:51:30.423Z",
+      "auth": false
+    },
+    {
+      "name": "body-endpoint-handler",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-endpoint-handler/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:15.964Z",
+      "lastUpdated": "2026-05-07T23:51:30.755Z",
+      "auth": false
+    },
+    {
+      "name": "body-mail-notification",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-mail-notification/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:16.454Z",
+      "lastUpdated": "2026-05-07T23:51:31.213Z",
+      "auth": true
+    },
+    {
+      "name": "broadcast-test",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/broadcast-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:16.532Z",
+      "lastUpdated": "2026-05-07T23:51:31.292Z",
+      "auth": true
+    },
+    {
+      "name": "church-community",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/church-community/core.tsx",
+      "pages": [
+        "index",
+        "members",
+        "inventory",
+        "admin",
+        "login",
+        "register"
+      ],
+      "registered": "2026-05-07T23:46:16.645Z",
+      "lastUpdated": "2026-05-07T23:51:31.397Z",
+      "auth": true
+    },
+    {
+      "name": "crud-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/crud-test/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:16.748Z",
+      "lastUpdated": "2026-05-07T23:51:31.495Z",
+      "auth": false
+    },
+    {
+      "name": "dtr-geofencing",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/dtr-geofencing/core.tsx",
+      "pages": [
+        "index",
+        "admin"
+      ],
+      "registered": "2026-05-07T23:46:16.876Z",
+      "lastUpdated": "2026-05-07T23:51:31.612Z",
+      "auth": false
+    },
+    {
+      "name": "errors-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/errors-test/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:16.889Z",
+      "lastUpdated": "2026-05-07T23:51:31.623Z",
+      "auth": false
+    },
+    {
+      "name": "events-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/events-test/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:16.961Z",
+      "lastUpdated": "2026-05-07T23:51:31.713Z",
+      "auth": false
+    },
+    {
+      "name": "inventory-management",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/inventory-management/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:17.040Z",
+      "lastUpdated": "2026-05-07T23:51:31.786Z",
+      "auth": false
+    },
+    {
+      "name": "jo-payroll",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/jo-payroll/core.tsx",
+      "pages": [
+        "index",
+        "job-database",
+        "cash-atm",
+        "sss",
+        "hdmf",
+        "appointments",
+        "payslip"
+      ],
+      "registered": "2026-05-07T23:46:17.164Z",
+      "lastUpdated": "2026-05-07T23:51:31.908Z",
+      "auth": false
+    },
+    {
+      "name": "job-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/job-test/core.tsx",
+      "pages": [
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:17.234Z",
+      "lastUpdated": "2026-05-07T23:51:31.976Z",
+      "auth": false
+    },
+    {
+      "name": "mail-test",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/mail-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:17.302Z",
+      "lastUpdated": "2026-05-07T23:51:32.044Z",
+      "auth": true
+    },
+    {
+      "name": "middleware-test",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/middleware-test/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:17.397Z",
+      "lastUpdated": "2026-05-07T23:51:32.140Z",
+      "auth": false
+    },
+    {
+      "name": "new-updates-styles",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/new-updates-styles/core.tsx",
+      "pages": [
+        "index",
+        "about",
+        "features"
+      ],
+      "registered": "2026-05-07T23:46:17.412Z",
+      "lastUpdated": "2026-05-07T23:51:32.158Z",
+      "auth": false
+    },
+    {
+      "name": "notification-test",
+      "version": "2.1.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/notification-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:17.482Z",
+      "lastUpdated": "2026-05-07T23:51:32.232Z",
+      "auth": true
+    },
+    {
+      "name": "portfolio-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/portfolio-test/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-07T23:46:17.494Z",
+      "lastUpdated": "2026-05-07T23:51:32.242Z",
+      "auth": false
+    },
+    {
+      "name": "queue-flow",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/queue-flow/core.tsx",
+      "pages": [
+        "index",
+        "join",
+        "admin"
+      ],
+      "registered": "2026-05-07T23:46:17.613Z",
+      "lastUpdated": "2026-05-07T23:51:32.360Z",
+      "auth": false
+    },
+    {
+      "name": "roles-test",
+      "version": "2.1.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/roles-test/core.tsx",
+      "pages": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:18.362Z",
+      "lastUpdated": "2026-05-07T23:51:33.108Z",
+      "auth": true
+    },
+    {
+      "name": "scheduler-test",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/scheduler-test/core.tsx",
+      "pages": [
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:18.447Z",
+      "lastUpdated": "2026-05-07T23:51:33.184Z",
+      "auth": false
+    },
+    {
+      "name": "upload-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
+      "pages": [
+        "dashboard"
+      ],
+      "registered": "2026-05-07T23:46:18.508Z",
+      "lastUpdated": "2026-05-07T23:51:33.243Z",
+      "auth": false
+    }
+  ],
   "activeStack": "react-inertia",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",

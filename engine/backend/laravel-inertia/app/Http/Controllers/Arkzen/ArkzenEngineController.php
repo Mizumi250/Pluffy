@@ -56,6 +56,7 @@ use App\Arkzen\Builders\JobBuilder;
 use App\Arkzen\Builders\NotificationBuilder;
 use App\Arkzen\Builders\MailBuilder;
 use App\Arkzen\Builders\ConsoleBuilder;
+use App\Arkzen\Readers\RegistryReader;
 
 class ArkzenEngineController extends Controller
 {
@@ -64,8 +65,20 @@ class ArkzenEngineController extends Controller
         return response()->json([
             'status'  => 'ok',
             'engine'  => 'Arkzen Backend Engine',
-            'version' => '6.0.0',
+            'version' => '6.1.0',
         ]);
+    }
+
+    // ─────────────────────────────────────────────
+    // REGISTRY
+    // Reads arkzen.json written by the frontend watcher.
+    // Polled by the Hub page every 3 s to display tatemonos.
+    // Same endpoint pattern used by react-vite and next.js stacks.
+    // ─────────────────────────────────────────────
+
+    public function registry(): JsonResponse
+    {
+        return response()->json(RegistryReader::read());
     }
 
     // ─────────────────────────────────────────────
