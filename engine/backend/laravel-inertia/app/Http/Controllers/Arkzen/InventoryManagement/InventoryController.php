@@ -1,94 +1,87 @@
 <?php
 
-// ============================================================
-// ARKZEN GENERATED CONTROLLER — InventoryController
-// Tatemono: inventory-management
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.119126Z
-// ============================================================
-
 namespace App\Http\Controllers\Arkzen\InventoryManagement;
 
 use Illuminate\Routing\Controller;
 use App\Models\Arkzen\InventoryManagement\Inventory;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class InventoryController extends Controller
 {
     /**
      * Get paginated list of inventories
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): Response
     {
         $query = Inventory::query();
 
-        if ($request->filled('search')) {
-            $query->where(function ($q) use ($request) {
-                $q->orWhere('name', 'like', '%' . $request->search . '%');
-                $q->orWhere('description', 'like', '%' . $request->search . '%');
-            });
-        }
 
         $perPage = $request->get('per_page', 15);
-        $results = $query->paginate($perPage);
+        $items   = $query->paginate($perPage);
 
-        return response()->json($results);
+        return Inertia::render('InventoryManagement/Index', [
+            'items'   => $items,
+            'filters' => $request->only(['search', 'per_page']),
+        ]);
     }
 
     /**
      * Get single inventory item
      */
-    public function show(Inventory $inventory): JsonResponse
+    public function show(Inventory $inventory): Response
     {
-        return response()->json($inventory);
+        return Inertia::render('InventoryManagement/Show', [
+            'inventory' => $inventory,
+        ]);
     }
 
     /**
      * Create new inventory item
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|unique:inventory_management.inventory_management_inventories',
+            'sku' => 'required|string|unique:inventories',
             'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'category' => 'nullable|string|max:100',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $inventory = Inventory::create($validated);
 
-        return response()->json($inventory, 201);
+        return redirect()->back()->with('success', 'Inventory created successfully.');
     }
 
     /**
      * Update inventory item
      */
-    public function update(Request $request, Inventory $inventory): JsonResponse
+    public function update(Request $request, Inventory $inventory): RedirectResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'quantity' => 'sometimes|integer|min:0',
             'price' => 'sometimes|numeric|min:0',
             'category' => 'nullable|string|max:100',
-            'description' => 'nullable|string'
+            'description' => 'nullable|string',
         ]);
 
         $inventory->update($validated);
 
-        return response()->json($inventory);
+        return redirect()->back()->with('success', 'Inventory updated successfully.');
     }
 
     /**
      * Delete inventory item
      */
-    public function destroy(Inventory $inventory): JsonResponse
+    public function destroy(Inventory $inventory): RedirectResponse
     {
         $inventory->delete();
 
-        return response()->json(['message' => 'Item deleted successfully']);
+        return redirect()->back()->with('success', 'Inventory deleted successfully.');
     }
 }

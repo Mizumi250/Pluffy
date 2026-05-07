@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — middleware-test
+// ARKZEN GENERATED ROUTES — middleware-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.524634Z
+// Generated: 2026-05-07T07:37:41.772942Z
 // Resources: PingLog
 // Custom controllers: 
 // ============================================================
@@ -16,8 +16,8 @@ use App\Http\Middleware\Arkzen\MiddlewareTest\RequireJson;
 app('router')->aliasMiddleware('requireJson', \App\Http\Middleware\Arkzen\MiddlewareTest\RequireJson::class);
 
 // ── PingLog ─────────────────────────────
-Route::middleware(['api', 'requireJson'])
-    ->prefix('/api/middleware-test')
+Route::middleware(['web', 'requireJson'])
+    ->prefix('/middleware-test')
     ->group(function () {
 
         // Returns all ping logs — passes through requireJson middleware

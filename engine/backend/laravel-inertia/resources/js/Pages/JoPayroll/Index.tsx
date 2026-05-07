@@ -1,0 +1,742 @@
+// ============================================================
+// ARKZEN GENERATED PAGE — jo-payroll/index [React+Inertia]
+// Layout: app | Auth: false | Guest-only: false
+// DO NOT EDIT — edit tatemono instead
+// Generated: 2026-05-07T07:37:41.440Z
+// ============================================================
+
+import React, { useRef, useEffect, useState, useMemo } from 'react'
+import { motion } from 'framer-motion'
+import { usePage, router } from '@inertiajs/react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+
+
+// Props passed from Laravel via Inertia::render()
+export type JoPayrollIndexProps = {
+  auth?: { user?: Record<string, unknown> }
+  flash?: { success?: string; error?: string }
+  errors?: Record<string, string>
+  [key: string]: unknown
+}
+
+import { create } from 'zustand'
+import {
+  Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
+  Users, Banknote, CreditCard, Building2, Landmark,
+  TrendingUp, TrendingDown, Wallet, AlertCircle,
+  Download, FileText, Filter, MoreHorizontal, Eye,
+  CalendarDays, ArrowUpRight, ArrowDownRight, Clock,
+  CheckCircle, XCircle, RefreshCw, Printer
+} from 'lucide-react'
+
+// ─── Types ─────────────────────────────────────────────────────────────────
+export interface JobOrder {
+  id: number
+  jor_number: number
+  name_of_jo: string
+  job_title: string
+  funding: string
+  basic_pay: number
+  disbursement_type: 'CASH' | 'ATM'
+  jor_pyrl_group?: string
+  hdmf_no?: string
+  sss_number?: string
+  sss_amount?: number
+  calamity_loan?: number
+  hdmf_mpl?: number
+  hdmf_premium?: number
+  cash_card_number?: string
+  last_name?: string
+  first_name?: string
+  middle_name?: string
+  appointment_date?: string
+  appointment_order?: number
+  status: 'active' | 'inactive'
+  created_at?: string
+}
+
+export interface PayrollSummary {
+  total_active: number
+  total_inactive: number
+  total_atm: number
+  total_cash: number
+  total_basic_pay: number
+  total_sss: number
+  total_hdmf_premium: number
+  total_hdmf_mpl: number
+  total_calamity_loan: number
+  total_deductions: number
+  net_pay: number
+  funding_breakdown?: Record<string, { count: number; total_pay: number }>
+  group_breakdown?: Record<string, number>
+}
+
+// ─── Store ──────────────────────────────────────────────────────────────────
+interface PayrollState {
+  jobOrders: JobOrder[]
+  summary: PayrollSummary | null
+  isLoading: boolean
+  searchQuery: string
+  activeTab: string
+  setJobOrders: (orders: JobOrder[]) => void
+  setSummary: (summary: PayrollSummary) => void
+  setLoading: (loading: boolean) => void
+  setSearchQuery: (q: string) => void
+  setActiveTab: (tab: string) => void
+  addJobOrder: (order: JobOrder) => void
+  updateJobOrder: (id: number, order: JobOrder) => void
+  removeJobOrder: (id: number) => void
+}
+
+export const usePayrollStore = create<PayrollState>((set) => ({
+  jobOrders: [],
+  summary: null,
+  isLoading: false,
+  searchQuery: '',
+  activeTab: 'All',
+  setJobOrders: (orders) => set({ jobOrders: orders }),
+  setSummary: (summary) => set({ summary }),
+  setLoading: (loading) => set({ isLoading: loading }),
+  setSearchQuery: (q) => set({ searchQuery: q }),
+  setActiveTab: (tab) => set({ activeTab: tab }),
+  addJobOrder: (order) => set((s) => ({ jobOrders: [...s.jobOrders, order] })),
+  updateJobOrder: (id, order) => set((s) => ({ jobOrders: s.jobOrders.map(j => j.id === id ? order : j) })),
+  removeJobOrder: (id) => set((s) => ({ jobOrders: s.jobOrders.filter(j => j.id !== id) })),
+}))
+
+// ─── Constants ──────────────────────────────────────────────────────────────
+const API_BASE = ''
+export const FUNDING_OPTIONS = ['PUBLIC SERVICES', 'ADMIN', 'MAINTENANCE', 'SANITATION', 'SUPPLIES', 'HUMAN RESOURCES']
+export const JOB_TITLES = ['LABORER', 'UTILITY WORKER', 'CLERK', 'DRIVER', 'SECURITY GUARD']
+export const PYRL_GROUPS = ['GROUP A', 'GROUP B', 'GROUP C']
+
+export const formatPeso = (v?: number) =>
+  v == null ? '₱0.00' : `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+export const formatDate = (d?: string) =>
+  d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
+
+export const getInitials = (name: string) => {
+  const parts = name.replace(/,/g, '').trim().split(/\s+/)
+  return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase()
+}
+
+// Avatar color based on name hash
+export const getAvatarColor = (name: string) => {
+  const colors = [
+    'bg-violet-100 text-violet-700',
+    'bg-blue-100 text-blue-700',
+    'bg-emerald-100 text-emerald-700',
+    'bg-amber-100 text-amber-700',
+    'bg-rose-100 text-rose-700',
+    'bg-cyan-100 text-cyan-700',
+  ]
+  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return colors[hash % colors.length]
+}
+
+// ─── Shared UI Components ───────────────────────────────────────────────────
+
+export const Spinner = () => (
+  <div className="flex items-center justify-center py-16">
+    <div className="w-8 h-8 border-2 border-neutral-200 border-t-neutral-900 rounded-full animate-spin" />
+  </div>
+)
+
+export const EmptyRow = ({ message }: { message: string }) => (
+  <div className="flex flex-col items-center justify-center py-16 text-center">
+    <div className="w-12 h-12 bg-neutral-100 rounded-2xl flex items-center justify-center mb-3">
+      <FileText size={20} className="text-neutral-400" />
+    </div>
+    <p className="text-sm font-medium text-neutral-500">{message}</p>
+    <p className="text-xs text-neutral-400 mt-1">Try adjusting your filters or add a new entry.</p>
+  </div>
+)
+
+// Stat card — matches the "11 Courses completed / 4 in progress" chips from the reference UI
+export const StatChip = ({
+  value, label, icon: Icon, accent = 'neutral'
+}: {
+  value: string | number
+  label: string
+  icon: React.ElementType
+  accent?: 'neutral' | 'violet' | 'emerald' | 'rose' | 'amber' | 'blue'
+}) => {
+  const accents: Record<string, string> = {
+    neutral: 'bg-white border-neutral-100',
+    violet:  'bg-violet-50 border-violet-100',
+    emerald: 'bg-emerald-50 border-emerald-100',
+    rose:    'bg-rose-50 border-rose-100',
+    amber:   'bg-amber-50 border-amber-100',
+    blue:    'bg-blue-50 border-blue-100',
+  }
+  const iconAccents: Record<string, string> = {
+    neutral: 'text-neutral-600',
+    violet:  'text-violet-600',
+    emerald: 'text-emerald-600',
+    rose:    'text-rose-600',
+    amber:   'text-amber-600',
+    blue:    'text-blue-600',
+  }
+  return (
+    <div className={`flex-1 min-w-[120px] rounded-2xl border p-4 ${accents[accent]}`}>
+      <div className="flex items-start justify-between mb-3">
+        <Icon size={18} className={iconAccents[accent]} />
+      </div>
+      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
+    </div>
+  )
+}
+
+// Page section header — matching the reference UI style
+export const SectionHeader = ({
+  title, subtitle, action
+}: {
+  title: string
+  subtitle?: string
+  action?: React.ReactNode
+}) => (
+  <div className="flex items-center justify-between mb-5">
+    <div>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
+    </div>
+    {action}
+  </div>
+)
+
+// Tab pills — matching the "All Courses / The Newest / Top Rated" row from reference
+export const TabPills = ({
+  tabs, active, onChange
+}: {
+  tabs: string[]
+  active: string
+  onChange: (t: string) => void
+}) => (
+  <div className="flex gap-1 flex-wrap">
+    {tabs.map(t => (
+      <button
+        key={t}
+        onClick={() => onChange(t)}
+        className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-150
+          ${active === t
+            ? 'bg-neutral-900 text-white'
+            : 'text-neutral-400 hover:text-neutral-700 hover:bg-neutral-100'
+          }`}
+      >
+        {t}
+      </button>
+    ))}
+  </div>
+)
+
+// JO row — replaces the "course row" in the reference UI
+export const JORow = ({
+  jo, onEdit, onDelete
+}: {
+  jo: JobOrder
+  onEdit: (jo: JobOrder) => void
+  onDelete: (id: number) => void
+}) => {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const initials = getInitials(jo.name_of_jo)
+  const avatarColor = getAvatarColor(jo.name_of_jo)
+  const deductions = (jo.sss_amount ?? 0) + (jo.hdmf_premium ?? 0) + (jo.hdmf_mpl ?? 0) + (jo.calamity_loan ?? 0)
+  const netPay = jo.basic_pay - deductions
+
+  return (
+    <div className="flex items-center gap-4 py-3 border-b border-neutral-50 hover:bg-neutral-50/80 transition-colors group px-1 rounded-xl">
+      {/* Avatar */}
+      <div className={`w-9 h-9 rounded-xl flex items-center justify-center text-xs font-bold shrink-0 ${avatarColor}`}>
+        {initials}
+      </div>
+      {/* Name + role */}
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-neutral-900 truncate">{jo.name_of_jo}</p>
+        <p className="text-xs text-neutral-400 mt-0.5">{jo.job_title} · {jo.funding}</p>
+      </div>
+      {/* Pay info */}
+      <div className="hidden sm:flex flex-col items-end shrink-0">
+        <p className="text-xs font-semibold text-neutral-900">{formatPeso(netPay)}</p>
+        <p className="text-xs text-neutral-400">net pay</p>
+      </div>
+      {/* Disbursement badge */}
+      <div className="hidden md:block shrink-0">
+        <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+          jo.disbursement_type === 'ATM'
+            ? 'bg-blue-50 text-blue-700'
+            : 'bg-amber-50 text-amber-700'
+        }`}>
+          {jo.disbursement_type}
+        </span>
+      </div>
+      {/* Status dot */}
+      <div className="shrink-0">
+        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium ${
+          jo.status === 'active'
+            ? 'bg-emerald-50 text-emerald-700'
+            : 'bg-neutral-100 text-neutral-500'
+        }`}>
+          <span className={`w-1.5 h-1.5 rounded-full ${jo.status === 'active' ? 'bg-emerald-500' : 'bg-neutral-400'}`} />
+          {jo.status}
+        </span>
+      </div>
+      {/* Action button — "View course" style */}
+      <div className="relative shrink-0">
+        <button
+          onClick={() => setMenuOpen(!menuOpen)}
+          className="opacity-0 group-hover:opacity-100 flex items-center gap-1.5 px-3 py-1.5 bg-neutral-900 text-white rounded-lg text-xs font-medium hover:bg-neutral-700 transition-all"
+        >
+          Actions
+        </button>
+        {menuOpen && (
+          <>
+            <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+            <div className="absolute right-0 top-full mt-1 w-36 bg-white border border-neutral-100 rounded-xl shadow-lg overflow-hidden z-20">
+              <button
+                onClick={() => { onEdit(jo); setMenuOpen(false) }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 transition-colors"
+              >
+                <Edit2 size={13} /> Edit Record
+              </button>
+              <button
+                onClick={() => { onDelete(jo.id); setMenuOpen(false) }}
+                className="w-full flex items-center gap-2.5 px-3 py-2.5 text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+              >
+                <Trash2 size={13} /> Delete
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Modal / Drawer for add/edit JO ──────────────────────────────────────────
+export const JOFormModal = ({
+  open, onClose, onSave, initial
+}: {
+  open: boolean
+  onClose: () => void
+  onSave: (data: Partial<JobOrder>) => void
+  initial?: JobOrder | null
+}) => {
+  const [form, setForm] = useState<Partial<JobOrder>>(initial ?? {
+    jor_number: 0,
+    name_of_jo: '',
+    job_title: 'LABORER',
+    funding: 'PUBLIC SERVICES',
+    basic_pay: 346,
+    disbursement_type: 'CASH',
+    jor_pyrl_group: 'GROUP A',
+    sss_amount: 0,
+    hdmf_premium: 0,
+    hdmf_mpl: 0,
+    calamity_loan: 0,
+    status: 'active',
+  })
+
+  useEffect(() => {
+    setForm(initial ?? {
+      jor_number: 0, name_of_jo: '', job_title: 'LABORER',
+      funding: 'PUBLIC SERVICES', basic_pay: 346,
+      disbursement_type: 'CASH', jor_pyrl_group: 'GROUP A',
+      sss_amount: 0, hdmf_premium: 0, hdmf_mpl: 0, calamity_loan: 0, status: 'active',
+    })
+  }, [initial, open])
+
+  const set = (k: keyof JobOrder, v: unknown) => setForm(f => ({ ...f, [k]: v }))
+
+  const inputCls = "w-full px-3 py-2 text-sm border border-neutral-200 rounded-xl bg-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-900/10 focus:border-neutral-400 transition-colors"
+  const labelCls = "text-xs font-semibold text-neutral-600 mb-1 block"
+
+  if (!open) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative w-full max-w-xl bg-white rounded-2xl shadow-2xl overflow-hidden">
+        {/* Header */}
+        <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+          <div>
+            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+              {initial ? 'Edit Job Order' : 'New Job Order'}
+            </h3>
+            <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>
+          </div>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-neutral-100 transition-colors">
+            <X size={16} className="text-neutral-500" />
+          </button>
+        </div>
+        {/* Body */}
+        <div className="px-6 py-5 max-h-[70vh] overflow-y-auto space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>JOR Number</label>
+              <input type="number" className={inputCls} value={form.jor_number ?? ''} onChange={e => set('jor_number', +e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Status</label>
+              <select className={inputCls} value={form.status ?? 'active'} onChange={e => set('status', e.target.value)}>
+                <option value="active">Active</option>
+                <option value="inactive">Inactive</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className={labelCls}>Full Name (LAST, FIRST MI.)</label>
+            <input type="text" className={inputCls} value={form.name_of_jo ?? ''} placeholder="DELA CRUZ, JUAN A." onChange={e => set('name_of_jo', e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Job Title</label>
+              <select className={inputCls} value={form.job_title ?? 'LABORER'} onChange={e => set('job_title', e.target.value)}>
+                {JOB_TITLES.map(t => <option key={t}>{t}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>Funding Source</label>
+              <select className={inputCls} value={form.funding ?? ''} onChange={e => set('funding', e.target.value)}>
+                {FUNDING_OPTIONS.map(f => <option key={f}>{f}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Basic Pay (₱/day)</label>
+              <input type="number" step="0.01" className={inputCls} value={form.basic_pay ?? ''} onChange={e => set('basic_pay', +e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Disbursement</label>
+              <select className={inputCls} value={form.disbursement_type ?? 'CASH'} onChange={e => set('disbursement_type', e.target.value as 'CASH' | 'ATM')}>
+                <option value="CASH">CASH</option>
+                <option value="ATM">ATM</option>
+              </select>
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>Payroll Group</label>
+              <select className={inputCls} value={form.jor_pyrl_group ?? 'GROUP A'} onChange={e => set('jor_pyrl_group', e.target.value)}>
+                {PYRL_GROUPS.map(g => <option key={g}>{g}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className={labelCls}>SSS Number</label>
+              <input type="text" className={inputCls} value={form.sss_number ?? ''} placeholder="00-0000000-0" onChange={e => set('sss_number', e.target.value)} />
+            </div>
+          </div>
+          <p className="text-xs font-bold text-neutral-500 uppercase tracking-widest pt-1">Deductions</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className={labelCls}>SSS Amount</label>
+              <input type="number" step="0.01" className={inputCls} value={form.sss_amount ?? 0} onChange={e => set('sss_amount', +e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>HDMF Premium</label>
+              <input type="number" step="0.01" className={inputCls} value={form.hdmf_premium ?? 0} onChange={e => set('hdmf_premium', +e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>HDMF MPL</label>
+              <input type="number" step="0.01" className={inputCls} value={form.hdmf_mpl ?? 0} onChange={e => set('hdmf_mpl', +e.target.value)} />
+            </div>
+            <div>
+              <label className={labelCls}>Calamity Loan</label>
+              <input type="number" step="0.01" className={inputCls} value={form.calamity_loan ?? 0} onChange={e => set('calamity_loan', +e.target.value)} />
+            </div>
+          </div>
+          {form.disbursement_type === 'ATM' && (
+            <div>
+              <label className={labelCls}>Cash Card Number</label>
+              <input type="text" className={inputCls} value={form.cash_card_number ?? ''} onChange={e => set('cash_card_number', e.target.value)} />
+            </div>
+          )}
+        </div>
+        {/* Footer */}
+        <div className="flex gap-3 px-6 py-4 border-t border-neutral-100 bg-neutral-50">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-600 hover:bg-neutral-100 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => onSave(form)}
+            className="flex-1 py-2 rounded-xl bg-neutral-900 text-white text-sm font-semibold hover:bg-neutral-700 transition-colors"
+          >
+            {initial ? 'Save Changes' : 'Add JO'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// Mini bar chart for funding breakdown
+export const FundingBar = ({ label, count, total, max }: { label: string; count: number; total: number; max: number }) => (
+  <div className="flex items-center gap-3 py-1.5">
+    <p className="text-xs text-neutral-500 w-28 truncate shrink-0">{label}</p>
+    <div className="flex-1 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+      <div
+        className="h-full bg-neutral-900 rounded-full transition-all duration-700"
+        style={{ width: `${max > 0 ? (count / max) * 100 : 0}%` }}
+      />
+    </div>
+    <p className="text-xs font-semibold text-neutral-700 w-6 text-right shrink-0">{count}</p>
+  </div>
+)
+
+const DashboardPage = () => {
+  const { summary, setSummary, jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+  const router = useArkzenRouter()
+
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true)
+      try {
+        const [sumRes, joRes] = await Promise.all([
+          fetch(`${API_BASE}/api/jo-payroll/job-orders/stats/summary`),
+          fetch(`${API_BASE}/api/jo-payroll/job-orders`),
+        ])
+        const sumData = await sumRes.json()
+        const joData  = await joRes.json()
+        setSummary(sumData)
+        setJobOrders(joData)
+      } catch {
+        // Use realistic mock data if API is unavailable
+        setSummary({
+          total_active: 11, total_inactive: 1, total_atm: 6, total_cash: 5,
+          total_basic_pay: 4142, total_sss: 1140, total_hdmf_premium: 1100,
+          total_hdmf_mpl: 1000, total_calamity_loan: 450,
+          total_deductions: 3690, net_pay: 452,
+          funding_breakdown: {
+            'PUBLIC SERVICES': { count: 2, total_pay: 692 },
+            'ADMIN': { count: 2, total_pay: 726 },
+            'MAINTENANCE': { count: 2, total_pay: 692 },
+            'SANITATION': { count: 2, total_pay: 692 },
+            'SUPPLIES': { count: 2, total_pay: 692 },
+            'HUMAN RESOURCES': { count: 2, total_pay: 726 },
+          },
+          group_breakdown: { 'GROUP A': 6, 'GROUP B': 6 },
+        })
+      } finally {
+        setLoading(false)
+      }
+    }
+    load()
+  }, [])
+
+  const recentJOs = useMemo(() => jobOrders.slice(0, 5), [jobOrders])
+  const maxFunding = useMemo(() => {
+    if (!summary?.funding_breakdown) return 1
+    return Math.max(...Object.values(summary.funding_breakdown).map(v => v.count))
+  }, [summary])
+
+  if (isLoading) return <Spinner />
+
+  const today = new Date().toLocaleDateString('en-PH', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
+
+  return (
+    <div className="space-y-5 max-w-6xl mx-auto">
+      {/* ── Top row: Welcome + Stat chips ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+        {/* Welcome banner */}
+        <div className="welcome-banner lg:col-span-2 bg-white rounded-2xl p-6 border border-neutral-100 shadow-sm flex items-center gap-5">
+          <div className="flex-1">
+            <p className="text-xs text-neutral-400 font-medium mb-1">
+              {today}
+            </p>
+            <h2 className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif] mb-1">
+              J.O. Payroll Overview
+            </h2>
+            <p className="text-sm text-neutral-500 leading-relaxed">
+              Manage all Job Order workers, track deductions, and process payroll for the LGU.
+            </p>
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => router.push('/jo-payroll/job-database')}
+                className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white text-xs font-semibold rounded-xl hover:bg-neutral-700 transition-colors"
+              >
+                <Plus size={13} /> Add J.O. Worker
+              </button>
+              <button
+                onClick={() => router.push('/jo-payroll/payslip')}
+                className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl hover:bg-neutral-50 transition-colors"
+              >
+                <Printer size={13} /> Generate Payslip
+              </button>
+            </div>
+          </div>
+          {/* Decorative illustration area */}
+          <div className="hidden md:flex items-center justify-center w-28 h-28 bg-neutral-50 rounded-2xl shrink-0">
+            <div className="text-center">
+              <p className="text-4xl font-black font-['Syne',sans-serif] text-neutral-900">
+                {summary?.total_active ?? 0}
+              </p>
+              <p className="text-xs text-neutral-400 font-medium mt-0.5">Active JOs</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Quick stats column */}
+        <div className="flex flex-col gap-3">
+          <div className="stat-chip bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-emerald-50 rounded-xl flex items-center justify-center shrink-0">
+                <TrendingUp size={16} className="text-emerald-600" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.net_pay)}</p>
+                <p className="text-xs text-neutral-400">Net Pay (Active)</p>
+              </div>
+            </div>
+          </div>
+          <div className="stat-chip bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 bg-rose-50 rounded-xl flex items-center justify-center shrink-0">
+                <TrendingDown size={16} className="text-rose-600" />
+              </div>
+              <div>
+                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_deductions)}</p>
+                <p className="text-xs text-neutral-400">Total Deductions</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Stat chips row ── */}
+      <div className="flex gap-3 overflow-x-auto pb-1">
+        <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+          <Users size={16} className="text-neutral-400 mb-2" />
+          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_active ?? 0}</p>
+          <p className="text-xs text-neutral-500 font-medium mt-0.5">Active Workers</p>
+        </div>
+        <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+          <Banknote size={16} className="text-amber-500 mb-2" />
+          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_cash ?? 0}</p>
+          <p className="text-xs text-neutral-500 font-medium mt-0.5">Cash Disbursement</p>
+        </div>
+        <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+          <CreditCard size={16} className="text-blue-500 mb-2" />
+          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_atm ?? 0}</p>
+          <p className="text-xs text-neutral-500 font-medium mt-0.5">ATM Disbursement</p>
+        </div>
+        <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+          <Wallet size={16} className="text-violet-500 mb-2" />
+          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_basic_pay)}</p>
+          <p className="text-xs text-neutral-500 font-medium mt-0.5">Gross Pay</p>
+        </div>
+        <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
+          <AlertCircle size={16} className="text-neutral-400 mb-2" />
+          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_inactive ?? 0}</p>
+          <p className="text-xs text-neutral-500 font-medium mt-0.5">Inactive Workers</p>
+        </div>
+      </div>
+
+      {/* ── Main two-column section ── */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+
+        {/* Recent JO list — reference "Courses" list */}
+        <div className="section-card lg:col-span-3 bg-white rounded-2xl border border-neutral-100 shadow-sm p-5">
+          <SectionHeader
+            title="Job Orders"
+            subtitle="Recent entries"
+            action={
+              <button
+                onClick={() => router.push('/jo-payroll/job-database')}
+                className="text-xs font-medium text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors"
+              >
+                View all <ArrowUpRight size={13} />
+              </button>
+            }
+          />
+          <div className="space-y-0">
+            {recentJOs.length === 0
+              ? <EmptyRow message="No job orders found" />
+              : recentJOs.map(jo => <JORow key={jo.id} jo={jo} onEdit={() => {}} onDelete={() => {}} />)
+            }
+          </div>
+        </div>
+
+        {/* Funding breakdown — reference "Your statistics" panel */}
+        <div className="section-card lg:col-span-2 bg-white rounded-2xl border border-neutral-100 shadow-sm p-5">
+          <SectionHeader title="Funding Breakdown" subtitle="Active workers by source" />
+
+          {/* Group chips */}
+          <div className="flex gap-2 mb-5">
+            {Object.entries(summary?.group_breakdown ?? {}).map(([g, count]) => (
+              <div key={g} className="flex-1 bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">
+                <p className="text-lg font-bold text-neutral-900 font-['Syne',sans-serif]">{count as number}</p>
+                <p className="text-xs text-neutral-400 font-medium mt-0.5">{g}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Bars */}
+          <div className="space-y-1">
+            {Object.entries(summary?.funding_breakdown ?? {}).map(([label, v]) => (
+              <FundingBar
+                key={label}
+                label={label}
+                count={(v as { count: number }).count}
+                total={(v as { total_pay: number }).total_pay}
+                max={maxFunding}
+              />
+            ))}
+          </div>
+
+          {/* Premium CTA — reference "Learn even more!" card */}
+          <div className="mt-5 bg-neutral-900 rounded-2xl p-4 text-white">
+            <p className="text-sm font-bold font-['Syne',sans-serif] mb-1">Deduction Summary</p>
+            <p className="text-xs text-neutral-400 mb-3">Total monthly deductions across all active workers.</p>
+            <div className="space-y-1.5">
+              {[
+                { label: 'SSS', value: summary?.total_sss },
+                { label: 'HDMF Premium', value: summary?.total_hdmf_premium },
+                { label: 'HDMF MPL', value: summary?.total_hdmf_mpl },
+                { label: 'Calamity Loan', value: summary?.total_calamity_loan },
+              ].map(({ label, value }) => (
+                <div key={label} className="flex items-center justify-between">
+                  <p className="text-xs text-neutral-400">{label}</p>
+                  <p className="text-xs font-semibold text-white">{formatPeso(value)}</p>
+                </div>
+              ))}
+              <div className="border-t border-neutral-700 pt-1.5 flex items-center justify-between">
+                <p className="text-xs font-semibold text-white">Total</p>
+                <p className="text-xs font-bold text-emerald-400">{formatPeso(summary?.total_deductions)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Arkzen Inertia wrapper ────────────────────────────────────
+function ArkzenPage_JoPayroll_Index() {
+  const props = usePage<JoPayrollIndexProps>().props
+  const animations = joPayrollAnimations()
+
+  const content = (
+    <motion.div
+      initial="initial"
+      animate="animate"
+      exit="exit"
+      variants={pageVariants}
+    >
+      <DashboardPage {...props} />
+    </motion.div>
+  )
+
+  return <AppLayout>{content}</AppLayout>
+}
+
+export default ArkzenPage_JoPayroll_Index

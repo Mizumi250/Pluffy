@@ -1,67 +1,46 @@
 <?php
 
-// ============================================================
-// ARKZEN GENERATED CONTROLLER — MailLogController
-// Tatemono: mail-test
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.444155Z
-// ============================================================
-
 namespace App\Http\Controllers\Arkzen\MailTest;
 
 use Illuminate\Routing\Controller;
 use App\Models\Arkzen\MailTest\MailLog;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MailLogController extends Controller
 {
     /**
      * Get all mail logs
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): Response
     {
         $query = MailLog::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $results = $query->paginate($perPage);
+        $items   = $query->paginate($perPage);
 
-        return response()->json($results);
+        return Inertia::render('MailTest/Index', [
+            'items'   => $items,
+            'filters' => $request->only(['search', 'per_page']),
+        ]);
     }
 
     /**
      * Send an email
      */
-    public function store(Request $request): JsonResponse
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
             'mail' => 'required|string',
             'to' => 'required|email',
-            'data' => 'array'
+            'data' => 'array',
         ]);
 
-        $user = $request->user('sanctum');
+        $mailLog = MailLog::create($validated);
 
-        $mailKey = $validated['mail'];
-        $className = \Illuminate\Support\Str::studly(str_replace('-', '_', $mailKey)) . 'Mail';
-        $fullClass = "\\App\\Mail\\Arkzen\\MailTest\\" . $className;
-
-        if (!class_exists($fullClass)) {
-            throw new \InvalidArgumentException('Unknown mail type: ' . $mailKey);
-        }
-
-        \Mail::to($validated['to'])->send(new $fullClass( ...array_values($validated['data'] ?? []) ));
-
-        $mailLog = MailLog::create([
-            'user_id'   => $user?->id,
-            'to_email'  => $validated['to'],
-            'subject'   => $fullClass::$subject ?? $mailKey,
-            'mail_class'=> $fullClass,
-            'status'    => 'sent',
-        ]);
-
-        return response()->json($mailLog, 201);
+        return redirect()->back()->with('success', 'MailLog created successfully.');
     }
 }

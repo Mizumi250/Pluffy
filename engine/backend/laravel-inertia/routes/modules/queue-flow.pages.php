@@ -1,0 +1,28 @@
+<?php
+// ============================================================
+// ARKZEN GENERATED PAGE ROUTES — queue-flow [Inertia/Web]
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-07T07:37:41.944Z
+// Pages: index, join, admin
+// ============================================================
+
+use Illuminate\Support\Facades\Route;
+
+// ── Inertia Page Routes ──────────────────────────────────────
+Route::middleware(['web'])->group(function () {
+    // Page: index
+    Route::get('/queue-flow', function () {
+        return \Inertia\Inertia::render('QueueFlow/Index');
+    });
+
+    // Page: join
+    Route::get('/queue-flow/join', function () {
+        return \Inertia\Inertia::render('QueueFlow/Join');
+    });
+
+    // Page: admin
+    Route::get('/queue-flow/admin', function () {
+        return \Inertia\Inertia::render('QueueFlow/Admin');
+    });
+
+});

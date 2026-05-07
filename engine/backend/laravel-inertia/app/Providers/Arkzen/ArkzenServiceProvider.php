@@ -122,7 +122,7 @@ class ArkzenServiceProvider extends ServiceProvider
         $routeFile = base_path("routes/modules/{$tatemonoName}.php");
 
         if (File::exists($routeFile)) {
-            Route::middleware(['api'])
+            Route::middleware(['web'])
                 ->group($routeFile);
         }
     }

@@ -1,0 +1,13 @@
+{
+    "NOTE": "In engine/backend/laravel-inertia/composer.json, add inertiajs/inertia-laravel to require block",
+
+    "require": {
+        "php": "^8.3",
+        "laravel/framework": "^13.0",
+        "laravel/reverb": "^1.10",
+        "laravel/sanctum": "^4.0",
+        "laravel/tinker": "^3.0",
+        "symfony/yaml": "^8.0",
+        "inertiajs/inertia-laravel": "^2.0"
+    }
+}

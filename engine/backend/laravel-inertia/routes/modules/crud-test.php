@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — crud-test
+// ARKZEN GENERATED ROUTES — crud-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:03.787689Z
+// Generated: 2026-05-07T07:37:41.084482Z
 // Resources: Item
 // Custom controllers: 
 // ============================================================
@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\CrudTest\ItemController;
 
 // ── Item ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/crud-test')
+Route::middleware(['web'])
+    ->prefix('/crud-test')
     ->group(function () {
 
         // Get all items

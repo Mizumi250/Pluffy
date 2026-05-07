@@ -1,17 +1,20 @@
 // ============================================================
 // ARKZEN ENGINE — INERTIA WATCHER v1.0
-// Mirrors vite-watcher.ts but calls inertia-router instead
-// Watches same tatemonos/ folder — same DSL, different output
+// Mirrors vite-watcher.ts but calls inertia-builder instead.
+// Watches same tatemonos/ folder — same DSL, different output.
+//
+// Output goes into:
+//   ../../backend/laravel-inertia/resources/js/Pages/{tat}/
+//   ../../backend/laravel-inertia/routes/modules/{tat}.php (via bridge)
 // ============================================================
 
 import * as path from 'path'
 import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildInertiaTatemono, rebuildInertiaTatemono, removeInertiaTatemono } from './inertia-builder'
-import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { checkBackendHealth }            from './backend-bridge'
+import { syncSharedCoreToCurrentStack }  from './shared-sync'
 
-// Root is 3 levels up from engine/frontend/react-inertia/arkzen/core/
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
 const DEBOUNCE_MS = 500
@@ -59,22 +62,19 @@ async function rebuildAllFromRoot(): Promise<void> {
 }
 
 export async function startInertiaWatcher(): Promise<void> {
-  console.log(`\n╔════════════════════════════════════════════╗`)
-  console.log(`║  ARKZEN ENGINE v1.0 — REACT+INERTIA.JS     ║`)
-  console.log(`╚════════════════════════════════════════════╝`)
+  console.log(`\n╔════════════════════════════════════════╗`)
+  console.log(`║   ARKZEN ENGINE v1.0 — REACT+INERTIA   ║`)
+  console.log(`╚════════════════════════════════════════╝`)
   console.log(`[Arkzen Inertia] Watching tatemonos at: ${MODULES_DIR}`)
-  console.log(`[Arkzen Inertia] Pages output: resources/js/Pages/`)
-  console.log(`[Arkzen Inertia] NOTE: Run 'npm run dev' in react-inertia/ for Vite HMR`)
-  console.log(`[Arkzen Inertia] NOTE: Run 'php artisan serve' in backend/laravel/ for app`)
 
   fs.mkdirSync(MODULES_DIR, { recursive: true })
   syncSharedCoreToCurrentStack('Arkzen Inertia')
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen Inertia] ✓ Laravel backend is running`)
+    console.log(`[Arkzen Inertia] ✓ Laravel-Inertia backend is running`)
   } else {
-    console.warn(`[Arkzen Inertia] ⚠ Laravel backend not reachable — start it first`)
+    console.warn(`[Arkzen Inertia] ⚠ Laravel-Inertia backend not reachable — pages will still generate`)
   }
 
   await rebuildAllFromRoot()
@@ -82,9 +82,9 @@ export async function startInertiaWatcher(): Promise<void> {
   console.log(`\n[Arkzen Inertia] ✓ Engine ready. Drop tatemonos at: tatemonos/<name>/core.tsx\n`)
 
   const watcher = chokidar.watch(MODULES_DIR, {
-    ignored: /(^|[\/\\])\../,
-    persistent: true,
-    ignoreInitial: true,
+    ignored:          /(^|[\/\\])\../,
+    persistent:       true,
+    ignoreInitial:    true,
     awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 },
   })
 

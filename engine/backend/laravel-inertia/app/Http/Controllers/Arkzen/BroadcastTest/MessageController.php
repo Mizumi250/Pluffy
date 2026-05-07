@@ -1,73 +1,55 @@
 <?php
 
-// ============================================================
-// ARKZEN GENERATED CONTROLLER — MessageController
-// Tatemono: broadcast-test
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:03.704963Z
-// ============================================================
-
 namespace App\Http\Controllers\Arkzen\BroadcastTest;
 
 use Illuminate\Routing\Controller;
 use App\Models\Arkzen\BroadcastTest\Message;
 use Illuminate\Http\Request;
-use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class MessageController extends Controller
 {
     /**
      * Get recent messages
      */
-    public function index(Request $request): JsonResponse
+    public function index(Request $request): Response
     {
         $query = Message::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $results = $query->paginate($perPage);
+        $items   = $query->paginate($perPage);
 
-        return response()->json($results);
+        return Inertia::render('BroadcastTest/Index', [
+            'items'   => $items,
+            'filters' => $request->only(['search', 'per_page']),
+        ]);
     }
 
     /**
-         * Send a message and broadcast it on the selected channel type
-         */
-        public function store(Request $request): JsonResponse
-        {
-            $validated = $request->validate([
+     * Send a message and broadcast it on the selected channel type
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        $validated = $request->validate([
             'content' => 'required|string|max:500',
-            'channel_type' => 'sometimes|string|max:50'
-            ]);
+            'channel_type' => 'sometimes|string|max:50',
+        ]);
 
-            $message     = Message::create($validated);
-            $channelType = $validated['channel_type'] ?? 'public';
+        $message = Message::create($validated);
 
-            $map = [
-                'public'   => '\App\Events\Arkzen\BroadcastTest\Broadcast\\MessageSentPublic',
-                'private'  => '\App\Events\Arkzen\BroadcastTest\Broadcast\\MessageSentPrivate',
-                'presence' => '\App\Events\Arkzen\BroadcastTest\Broadcast\\MessageSentPresence',
-            ];
-
-            if ($channelType === 'private') {
-                broadcast(new \App\Events\Arkzen\BroadcastTest\Broadcast\MessageSentPrivate($request->user('sanctum')?->id, $message->toArray()));
-            } elseif ($channelType === 'presence') {
-                broadcast(new \App\Events\Arkzen\BroadcastTest\Broadcast\MessageSentPresence($message->toArray()));
-            } else {
-                broadcast(new \App\Events\Arkzen\BroadcastTest\Broadcast\MessageSentPublic($message->toArray()));
-            }
-
-            return response()->json($message, 201);
-        }
+        return redirect()->back()->with('success', 'Message created successfully.');
+    }
 
     /**
      * Delete a message
      */
-    public function destroy(Message $message): JsonResponse
+    public function destroy(Message $message): RedirectResponse
     {
         $message->delete();
 
-        return response()->json(['message' => 'Message deleted']);
+        return redirect()->back()->with('success', 'Message deleted successfully.');
     }
 }

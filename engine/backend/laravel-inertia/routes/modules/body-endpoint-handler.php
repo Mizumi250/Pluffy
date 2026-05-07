@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — body-endpoint-handler
+// ARKZEN GENERATED ROUTES — body-endpoint-handler [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:02.879480Z
+// Generated: 2026-05-07T07:37:40.146064Z
 // Resources: ProbeResult
 // Custom controllers: ProbeUtilController
 // ============================================================
@@ -13,8 +13,8 @@ use App\Http\Controllers\Arkzen\BodyEndpointHandler\ProbeResultController;
 use App\Http\Controllers\Arkzen\BodyEndpointHandler\ProbeUtilController;
 
 // ── ProbeResult ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/body-endpoint-handler')
+Route::middleware(['web'])
+    ->prefix('/body-endpoint-handler')
     ->group(function () {
 
         // List all probe results
@@ -35,9 +35,9 @@ Route::middleware(['api'])
     });
 
 // ── Custom: ProbeUtilController ─────────────────────────────
-Route::middleware(['api'])
+Route::middleware(['web'])
     ->group(function () {
-        Route::get('api/body-endpoint-handler/ping', [ProbeUtilController::class, 'ping']);
-        Route::post('api/body-endpoint-handler/record-handler', [ProbeUtilController::class, 'recordHandler']);
-        Route::get('api/body-endpoint-handler/latest', [ProbeUtilController::class, 'latest']);
+    Route::get('api/body-endpoint-handler/ping', [ProbeUtilController::class, 'ping']);
+    Route::post('api/body-endpoint-handler/record-handler', [ProbeUtilController::class, 'recordHandler']);
+    Route::get('api/body-endpoint-handler/latest', [ProbeUtilController::class, 'latest']);
     });

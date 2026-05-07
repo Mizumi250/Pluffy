@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — jo-payroll
+// ARKZEN GENERATED ROUTES — jo-payroll [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.230618Z
+// Generated: 2026-05-07T07:37:41.517268Z
 // Resources: JobOrder
 // Custom controllers: 
 // ============================================================
@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\JoPayroll\JobOrderController;
 
 // ── JobOrder ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/jo-payroll')
+Route::middleware(['web'])
+    ->prefix('/jo-payroll')
     ->group(function () {
 
         // List all job orders

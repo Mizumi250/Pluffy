@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — job-test
+// ARKZEN GENERATED ROUTES — job-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.351007Z
+// Generated: 2026-05-07T07:37:41.624970Z
 // Resources: JobResult
 // Custom controllers: 
 // ============================================================
@@ -12,8 +12,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\JobTest\JobResultController;
 
 // ── JobResult ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/job-test')
+Route::middleware(['web'])
+    ->prefix('/job-test')
     ->group(function () {
 
         // Get all job results

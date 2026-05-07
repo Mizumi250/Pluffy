@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — queue-flow
+// ARKZEN GENERATED ROUTES — queue-flow [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T08:40:04.767411Z
+// Generated: 2026-05-07T07:37:42.029656Z
 // Resources: Queue, Ticket
 // Custom controllers: QueueController
 // ============================================================
@@ -13,8 +13,8 @@ use App\Http\Controllers\Arkzen\QueueFlow\QueueController;
 use App\Http\Controllers\Arkzen\QueueFlow\TicketController;
 
 // ── Queue ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/queue-flow')
+Route::middleware(['web'])
+    ->prefix('/queue-flow')
     ->group(function () {
 
         // Get all queues
@@ -35,8 +35,8 @@ Route::middleware(['api'])
     });
 
 // ── Ticket ─────────────────────────────
-Route::middleware(['api'])
-    ->prefix('/api/queue-flow')
+Route::middleware(['web'])
+    ->prefix('/queue-flow')
     ->group(function () {
 
         // Get all tickets
@@ -51,10 +51,10 @@ Route::middleware(['api'])
     });
 
 // ── Custom: QueueController ─────────────────────────────
-Route::middleware(['api'])
+Route::middleware(['web'])
     ->group(function () {
-        Route::post('api/queue-flow/join', [QueueController::class, 'join_queue']);
-        Route::post('api/queue-flow/call-next', [QueueController::class, 'call_next']);
-        Route::get('api/queue-flow/status/{queue_id}', [QueueController::class, 'queue_status']);
-        Route::get('api/queue-flow/my-ticket/{queue_id}/{ticket_number}', [QueueController::class, 'my_ticket']);
+    Route::post('api/queue-flow/join', [QueueController::class, 'join_queue']);
+    Route::post('api/queue-flow/call-next', [QueueController::class, 'call_next']);
+    Route::get('api/queue-flow/status/{queue_id}', [QueueController::class, 'queue_status']);
+    Route::get('api/queue-flow/my-ticket/{queue_id}/{ticket_number}', [QueueController::class, 'my_ticket']);
     });

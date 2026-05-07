@@ -204,20 +204,62 @@ export default ${wrapperName}
 `
 }
 
+// ─── Route file writer ────────────────────────────────────────────────────────
+// Writes routes/modules/{tatName}.php directly — no bridge involvement.
+// The bridge handles models/migrations/controllers. This handles page routes.
+
+const ROUTES_DIR = path.join(BACKEND_DIR, 'routes', 'modules')
+
+function generatePageRouteFile(tatemono: ParsedTatemono): string {
+  const tatName   = tatemono.meta.name
+  const tatPascal = toPascalCase(tatName)
+  const lines: string[] = []
+
+  lines.push(`<?php`)
+  lines.push(`// ============================================================`)
+  lines.push(`// ARKZEN GENERATED PAGE ROUTES — ${tatName} [Inertia/Web]`)
+  lines.push(`// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.`)
+  lines.push(`// Generated: ${new Date().toISOString()}`)
+  lines.push(`// Pages: ${tatemono.pages.map(p => p.name).join(', ')}`)
+  lines.push(`// ============================================================`)
+  lines.push(``)
+  lines.push(`use Illuminate\\Support\\Facades\\Route;`)
+  lines.push(``)
+  lines.push(`// ── Inertia Page Routes ──────────────────────────────────────`)
+  lines.push(`Route::middleware(['web'])->group(function () {`)
+
+  for (const page of tatemono.pages) {
+    const pagePascal = toPascalCase(page.name)
+    const routePath  = page.name === 'index' ? `/${tatName}` : `/${tatName}/${page.name}`
+    lines.push(`    // Page: ${page.name}`)
+    lines.push(`    Route::get('${routePath}', function () {`)
+    lines.push(`        return \\Inertia\\Inertia::render('${tatPascal}/${pagePascal}');`)
+    lines.push(`    });`)
+    lines.push(``)
+  }
+
+  lines.push(`});`)
+  lines.push(``)
+
+  return lines.join('\n')
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function registerInertiaPages(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
-  const tatDir  = path.join(PAGES_DIR, toPascalCase(tatName))  // Pages/InventoryManagement/
+  const tatDir  = path.join(PAGES_DIR, toPascalCase(tatName))
   ensureDir(tatDir)
+  ensureDir(ROUTES_DIR)
 
   // Emit CSS styles into the Pages folder
   const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Inertia Router' })
 
+  // Write React page files
   for (const page of tatemono.pages) {
-    const pageContent  = generateInertiaPageFile(tatemono, page, styleInfo.hasGlobalStyle)
-    const pageName     = toPascalCase(page.name)            // dashboard → Dashboard
-    const pagePath     = path.join(tatDir, `${pageName}.tsx`)
+    const pageContent = generateInertiaPageFile(tatemono, page, styleInfo.hasGlobalStyle)
+    const pageName    = toPascalCase(page.name)
+    const pagePath    = path.join(tatDir, `${pageName}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 
     const routeHint = page.name === 'index'
@@ -227,13 +269,27 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Inertia Router] ✓ ${routeHint} → Pages/${toPascalCase(tatName)}/${pageName}.tsx`)
   }
 
+  // Write Laravel page route file directly — bypasses bridge
+  // Bridge will merge its own data routes into the same file via RouteRegistrar
+  const pageRouteFile = path.join(ROUTES_DIR, `${tatName}.pages.php`)
+  fs.writeFileSync(pageRouteFile, generatePageRouteFile(tatemono), 'utf-8')
+  console.log(`[Arkzen Inertia Router] ✓ Page routes written: routes/modules/${tatName}.pages.php`)
+
   console.log(`[Arkzen Inertia Router] ✓ ${tatemono.pages.length} page(s) written to laravel-inertia`)
 }
 
 export function unregisterInertiaPages(tatName: string): void {
+  // Remove React pages
   const tatDir = path.join(PAGES_DIR, toPascalCase(tatName))
   if (fs.existsSync(tatDir)) {
     fs.rmSync(tatDir, { recursive: true, force: true })
     console.log(`[Arkzen Inertia Router] ✓ Removed pages: ${tatName}`)
+  }
+
+  // Remove page route file
+  const pageRouteFile = path.join(ROUTES_DIR, `${tatName}.pages.php`)
+  if (fs.existsSync(pageRouteFile)) {
+    fs.rmSync(pageRouteFile, { force: true })
+    console.log(`[Arkzen Inertia Router] ✓ Removed page routes: ${tatName}.pages.php`)
   }
 }
