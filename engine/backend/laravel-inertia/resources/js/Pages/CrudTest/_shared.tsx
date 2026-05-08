@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — crud-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T01:35:29.166Z
+// Generated: 2026-05-08T02:18:55.121Z
 // ============================================================
 
 import { Boxes } from 'lucide-react'

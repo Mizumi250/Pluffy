@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-endpoint-handler [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T01:35:27.874Z
+// Generated: 2026-05-08T02:18:53.691Z
 // ============================================================
 
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'

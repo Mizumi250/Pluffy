@@ -20,10 +20,12 @@ createInertiaApp({
     title: (title) => `${title} — ${appName}`,
 
     // Resolves Pages/{TatName}/{Page}.tsx automatically
+    // eager: true so Vite (and Tailwind's scanner) processes ALL page files
+    // at build time — lazy glob causes Tailwind to purge every className
     resolve: (name) =>
         resolvePageComponent(
             `./Pages/${name}.tsx`,
-            import.meta.glob('./Pages/**/*.tsx'),
+            import.meta.glob('./Pages/**/*.tsx', { eager: true }),
         ),
 
     setup({ el, App, props }) {

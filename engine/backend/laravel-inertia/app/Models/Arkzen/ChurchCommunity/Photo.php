@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Photo
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T01:35:29.127715Z
+// Generated: 2026-05-08T02:18:55.066470Z
 // ============================================================
 
 namespace App\Models\Arkzen\ChurchCommunity;

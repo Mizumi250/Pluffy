@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/admin [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T01:35:28.992Z
+// Generated: 2026-05-08T02:18:54.964Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — church-community/inventory
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T13:26:25.481Z
+// Generated: 2026-05-08T15:11:44.345Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,561 +15,185 @@ import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/chur
 // Utilities, types, and helper functions from @arkzen:components
 import { create } from 'zustand'
 import {
-  Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
-  Image as ImageIcon, Plus, Trash2, Search, X, Upload, Tag,
-  Calendar, Users, Loader2, Eye, Check, LogIn, UserPlus, Camera,
+  Heart, MessageCircle, Share2, Bookmark, MoreHorizontal,
+  Image as ImageIcon, Plus, Trash2, Search, X, Upload,
+  Calendar, Users, Loader2, LogIn, UserPlus, Send,
 } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useToast } from '@/arkzen/core/components/Toast'
+export { useTheme, LIGHT, DARK } from '@/arkzen/core/layouts/custom/church-community-app'
 
-// ─── Design tokens (Zutto palette) ───────────────────────────────────────
-export const Z = {
-  bg:          'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
-  card:        'rgba(255,255,255,0.88)',
-  cardSolid:   '#ffffff',
-  purple:      '#7b6cf6',
-  purpleLight: '#a78bfa',
-  purpleGrad:  'linear-gradient(135deg, #7b6cf6 0%, #a78bfa 100%)',
-  cyanGrad:    'linear-gradient(135deg, #6ec6f5 0%, #7b6cf6 100%)',
-  textDark:    '#1a1a2e',
-  textMid:     '#4a5580',
-  textSoft:    '#8b9cc8',
-  textMuted:   '#b0bcd4',
-  border:      'rgba(255,255,255,0.7)',
-  shadow:      '0 8px 32px rgba(100,120,180,0.12)',
-  shadowPurp:  '0 6px 20px rgba(123,108,246,0.32)',
-  radius:      '20px',
-  radiusSm:    '12px',
-  radiusXl:    '28px',
-}
+// ─── Types ────────────────────────────────────────────────────────────────────
+export type Role = 'pastor'|'elder'|'deacon'|'leader'|'member'
+export interface ChurchEvent { id:number; title:string; description:string|null; event_date:string; cover_photo_url:string|null; is_members_only:boolean; created_at:string }
+export interface Photo { id:number; event_id:number; uploader_id:number; url:string; thumbnail_url:string|null; caption:string|null; file_name:string; file_size:number|null; tags:string[]|null; likes_count:number; liked?:boolean; uploader?:{id:number;name:string}; event?:ChurchEvent; created_at:string }
+export interface Member { id:number; name:string; role:Role; photo_url:string|null; email:string|null; bio:string|null; joined_at:string|null; is_active:boolean }
+export interface Comment { id:number; photo_id:number; user_id:number; body:string; user?:{id:number;name:string}; created_at:string }
 
-// ─── Types ────────────────────────────────────────────────────────────────
+// ─── Stores ───────────────────────────────────────────────────────────────────
+export const useFeedStore = create<any>((set:any) => ({ events:[], selectedEvent:null, photos:[], loadingEvents:false, loadingPhotos:false, setEvents:(e:any)=>set({events:e}), setSelectedEvent:(e:any)=>set({selectedEvent:e}), setPhotos:(p:any)=>set({photos:p}), setLoadingEvents:(v:any)=>set({loadingEvents:v}), setLoadingPhotos:(v:any)=>set({loadingPhotos:v}) }))
+export const useMemberStore = create<any>((set:any) => ({ members:[], loading:false, searchQuery:'', roleFilter:'all', setMembers:(m:any)=>set({members:m}), setLoading:(v:any)=>set({loading:v}), setSearchQuery:(q:any)=>set({searchQuery:q}), setRoleFilter:(r:any)=>set({roleFilter:r}) }))
+export const useInventoryStore = create<any>((set:any) => ({ photos:[], totalCount:0, totalSize:0, eventCount:0, allTags:[], activeTag:null, loading:false, setData:(d:any)=>set((s:any)=>({...s,...d})) }))
+export const useLightboxStore = create<any>((set:any) => ({ photo:null, open:false, comments:[], loadingComments:false, setPhoto:(p:any)=>set({photo:p}), setOpen:(v:any)=>set({open:v}), setComments:(c:any)=>set({comments:c}), setLoadingComments:(v:any)=>set({loadingComments:v}) }))
 
-export type Role = 'pastor' | 'elder' | 'deacon' | 'leader' | 'member'
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+export const formatDate = (d:string) => new Date(d).toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'})
+export const formatRelativeTime = (d:string) => { const m=Math.floor((Date.now()-new Date(d).getTime())/60000); if(m<1)return'just now'; if(m<60)return`${m}m ago`; const h=Math.floor(m/60); if(h<24)return`${h}h ago`; return`${Math.floor(h/24)}d ago` }
+export const formatFileSize = (b:number|null) => { if(!b)return'—'; if(b<1048576)return`${(b/1024).toFixed(0)} KB`; return`${(b/1048576).toFixed(1)} MB` }
+export const getInitials = (n:string) => n.split(' ').map((w:string)=>w[0]).join('').slice(0,2).toUpperCase()
+export const roleBadge: Record<Role,{bg:string;text:string}> = { pastor:{bg:'linear-gradient(135deg,#6c5ce7,#a29bfe)',text:'#fff'}, elder:{bg:'linear-gradient(135deg,#0984e3,#74b9ff)',text:'#fff'}, deacon:{bg:'linear-gradient(135deg,#a29bfe,#fd79a8)',text:'#fff'}, leader:{bg:'linear-gradient(135deg,#00b894,#55efc4)',text:'#fff'}, member:{bg:'rgba(140,150,180,0.2)',text:'#6c7a99'} }
+export const roleLabel: Record<Role,string> = { pastor:'Pastor', elder:'Elder', deacon:'Deacon', leader:'Leader', member:'Member' }
 
-export interface ChurchEvent {
-  id: number
-  title: string
-  description: string | null
-  event_date: string
-  cover_photo_url: string | null
-  is_members_only: boolean
-  created_at: string
-}
-
-export interface Photo {
-  id: number
-  event_id: number
-  uploader_id: number
-  url: string
-  thumbnail_url: string | null
-  caption: string | null
-  file_name: string
-  file_size: number | null
-  tags: string[] | null
-  likes_count: number
-  liked?: boolean
-  uploader?: { id: number; name: string }
-  event?: ChurchEvent
-  created_at: string
-}
-
-export interface Member {
-  id: number
-  name: string
-  role: Role
-  photo_url: string | null
-  email: string | null
-  bio: string | null
-  joined_at: string | null
-  is_active: boolean
-}
-
-export interface Comment {
-  id: number
-  photo_id: number
-  user_id: number
-  body: string
-  user?: { id: number; name: string }
-  created_at: string
-}
-
-// ─── Stores ────────────────────────────────────────────────────────────────
-
-interface FeedStore {
-  events: ChurchEvent[]
-  selectedEvent: ChurchEvent | null
-  photos: Photo[]
-  loadingEvents: boolean
-  loadingPhotos: boolean
-  setEvents: (e: ChurchEvent[]) => void
-  setSelectedEvent: (e: ChurchEvent | null) => void
-  setPhotos: (p: Photo[]) => void
-  setLoadingEvents: (v: boolean) => void
-  setLoadingPhotos: (v: boolean) => void
-}
-
-export const useFeedStore = create<FeedStore>((set) => ({
-  events: [], selectedEvent: null, photos: [],
-  loadingEvents: false, loadingPhotos: false,
-  setEvents: (events) => set({ events }),
-  setSelectedEvent: (selectedEvent) => set({ selectedEvent }),
-  setPhotos: (photos) => set({ photos }),
-  setLoadingEvents: (loadingEvents) => set({ loadingEvents }),
-  setLoadingPhotos: (loadingPhotos) => set({ loadingPhotos }),
-}))
-
-interface MemberStore {
-  members: Member[]
-  loading: boolean
-  searchQuery: string
-  roleFilter: string
-  setMembers: (m: Member[]) => void
-  setLoading: (v: boolean) => void
-  setSearchQuery: (q: string) => void
-  setRoleFilter: (r: string) => void
-}
-
-export const useMemberStore = create<MemberStore>((set) => ({
-  members: [], loading: false, searchQuery: '', roleFilter: 'all',
-  setMembers: (members) => set({ members }),
-  setLoading: (loading) => set({ loading }),
-  setSearchQuery: (searchQuery) => set({ searchQuery }),
-  setRoleFilter: (roleFilter) => set({ roleFilter }),
-}))
-
-interface InventoryStore {
-  photos: Photo[]
-  totalCount: number
-  totalSize: number
-  eventCount: number
-  allTags: string[]
-  activeTag: string | null
-  loading: boolean
-  setData: (d: Partial<InventoryStore>) => void
-}
-
-export const useInventoryStore = create<InventoryStore>((set) => ({
-  photos: [], totalCount: 0, totalSize: 0, eventCount: 0,
-  allTags: [], activeTag: null, loading: false,
-  setData: (d) => set((s) => ({ ...s, ...d })),
-}))
-
-// ─── Utilities ────────────────────────────────────────────────────────────
-
-export const formatDate = (d: string) =>
-  new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
-
-export const formatRelativeTime = (d: string) => {
-  const diffMs = Date.now() - new Date(d).getTime()
-  const m = Math.floor(diffMs / 60000)
-  if (m < 1) return 'just now'
-  if (m < 60) return `${m}m ago`
-  const h = Math.floor(m / 60)
-  if (h < 24) return `${h}h ago`
-  return `${Math.floor(h / 24)}d ago`
-}
-
-export const formatFileSize = (bytes: number | null) => {
-  if (!bytes) return '—'
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(0)} KB`
-  return `${(bytes / 1048576).toFixed(1)} MB`
-}
-
-export const roleBadge: Record<Role, { bg: string; text: string }> = {
-  pastor:  { bg: 'linear-gradient(135deg,#7b6cf6,#a78bfa)', text: '#fff' },
-  elder:   { bg: 'linear-gradient(135deg,#6ec6f5,#7b6cf6)', text: '#fff' },
-  deacon:  { bg: 'linear-gradient(135deg,#a78bfa,#c084fc)', text: '#fff' },
-  leader:  { bg: 'linear-gradient(135deg,#818cf8,#6ec6f5)', text: '#fff' },
-  member:  { bg: 'rgba(176,188,212,0.5)',                   text: '#4a5580' },
-}
-
-export const roleLabel: Record<Role, string> = {
-  pastor: 'Pastor', elder: 'Elder', deacon: 'Deacon', leader: 'Leader', member: 'Member',
-}
-
-export const getInitials = (name: string) =>
-  name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────
-
-export const SkeletonBox: React.FC<{ width?: string; height?: number; radius?: number }> = ({
-  width = '100%', height = 80, radius = 12,
-}) => (
-  <div
-    style={{
-      width, height, borderRadius: radius,
-      background: 'linear-gradient(90deg, rgba(200,210,230,0.5) 25%, rgba(220,228,242,0.8) 50%, rgba(200,210,230,0.5) 75%)',
-      backgroundSize: '200% 100%',
-      animation: 'shimmer 1.8s infinite',
-    }}
-  />
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+export const Skel: React.FC<{w?:string;h?:number;r?:number;T:any}> = ({w='100%',h=80,r=12,T}) => (
+  <div style={{width:w,height:h,borderRadius:r,background:`linear-gradient(90deg,${T.skeletonA} 25%,${T.skeletonB} 50%,${T.skeletonA} 75%)`,backgroundSize:'200% 100%',animation:'shimmer 1.8s infinite'}} />
 )
 
-// ─── ZCard ────────────────────────────────────────────────────────────────
-
-export const ZCard: React.FC<{ children: React.ReactNode; className?: string; style?: React.CSSProperties }> = ({
-  children, className = '', style = {}
-}) => (
-  <div
-    className={className}
-    style={{
-      background: Z.card,
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderRadius: Z.radius,
-      border: `1px solid ${Z.border}`,
-      boxShadow: Z.shadow,
-      ...style,
-    }}
-  >
+// ─── GCard ────────────────────────────────────────────────────────────────────
+export const GCard: React.FC<{children:React.ReactNode;style?:React.CSSProperties;T:any;onClick?:()=>void}> = ({children,style={},T,onClick}) => (
+  <div onClick={onClick} style={{background:T.surface,backdropFilter:'blur(20px)',WebkitBackdropFilter:'blur(20px)',borderRadius:20,border:`1px solid ${T.border}`,boxShadow:T.shadow,transition:'background 0.35s,border-color 0.35s',cursor:onClick?'pointer':undefined,...style}}>
     {children}
   </div>
 )
 
-// ─── ZButton ──────────────────────────────────────────────────────────────
-
-export const ZButton: React.FC<{
-  children: React.ReactNode
-  onClick?: () => void
-  disabled?: boolean
-  variant?: 'purple' | 'cyan' | 'ghost' | 'outline'
-  className?: string
-  fullWidth?: boolean
-}> = ({ children, onClick, disabled, variant = 'purple', className = '', fullWidth }) => {
-  const styles: Record<string, React.CSSProperties> = {
-    purple:  { background: Z.purpleGrad, color: '#fff', boxShadow: Z.shadowPurp },
-    cyan:    { background: Z.cyanGrad,   color: '#fff', boxShadow: '0 6px 20px rgba(110,198,245,0.3)' },
-    ghost:   { background: 'rgba(123,108,246,0.08)', color: Z.purple },
-    outline: { background: 'transparent', color: Z.textMid, border: `1px solid rgba(180,190,215,0.6)` },
-  }
-  return (
-    <button
-      onClick={onClick}
-      disabled={disabled}
-      className={`flex items-center justify-center gap-2 font-semibold rounded-full transition-all ${fullWidth ? 'w-full' : ''} ${className}`}
-      style={{
-        padding: '10px 24px',
-        fontSize: 14,
-        opacity: disabled ? 0.5 : 1,
-        cursor: disabled ? 'not-allowed' : 'pointer',
-        ...styles[variant],
-      }}
-    >
-      {children}
-    </button>
-  )
-}
-
-// ─── ZInput ───────────────────────────────────────────────────────────────
-
-export const ZInput: React.FC<{
-  value: string
-  onChange: (v: string) => void
-  placeholder?: string
-  type?: string
-  onKeyDown?: (e: React.KeyboardEvent) => void
-}> = ({ value, onChange, placeholder, type = 'text', onKeyDown }) => (
-  <input
-    type={type}
-    value={value}
-    onChange={e => onChange(e.target.value)}
-    onKeyDown={onKeyDown}
-    placeholder={placeholder}
-    style={{
-      width: '100%',
-      padding: '10px 16px',
-      borderRadius: '12px',
-      border: '1.5px solid rgba(200,210,230,0.6)',
-      background: 'rgba(255,255,255,0.7)',
-      color: Z.textDark,
-      fontSize: 14,
-      outline: 'none',
-    }}
-    onFocus={e => { e.target.style.borderColor = Z.purple; e.target.style.boxShadow = `0 0 0 3px rgba(123,108,246,0.12)` }}
-    onBlur={e => { e.target.style.borderColor = 'rgba(200,210,230,0.6)'; e.target.style.boxShadow = 'none' }}
-  />
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+export const Avatar: React.FC<{name:string;photoUrl?:string|null;size?:number;ring?:boolean;T:any}> = ({name,photoUrl,size=36,ring,T}) => (
+  photoUrl
+    ? <img src={photoUrl} alt={name} style={{width:size,height:size,borderRadius:'50%',objectFit:'cover',flexShrink:0,border:ring?`2.5px solid ${T.purple}`:`2px solid ${T.border}`}} />
+    : <div style={{width:size,height:size,borderRadius:'50%',background:T.purpleGrad,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontSize:size*0.34,fontWeight:700,flexShrink:0,border:ring?`2.5px solid ${T.purple}`:'2px solid rgba(255,255,255,0.12)'}}>{getInitials(name)}</div>
 )
 
-// ─── Avatar ───────────────────────────────────────────────────────────────
-
-export const Avatar: React.FC<{ name: string; photoUrl?: string | null; size?: number }> = ({
-  name, photoUrl, size = 36,
-}) => (
-  photoUrl ? (
-    <img
-      src={photoUrl}
-      alt={name}
-      style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.8)' }}
-    />
-  ) : (
-    <div
-      style={{
-        width: size, height: size, borderRadius: '50%',
-        background: Z.purpleGrad,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: '#fff', fontSize: size * 0.33, fontWeight: 700,
-        border: '2px solid rgba(255,255,255,0.8)',
-        flexShrink: 0,
-      }}
-    >
-      {getInitials(name)}
+// ─── Story bubble ─────────────────────────────────────────────────────────────
+export const StoryBubble: React.FC<{name:string;photoUrl?:string|null;isAdd?:boolean;T:any}> = ({name,photoUrl,isAdd,T}) => (
+  <div style={{display:'flex',flexDirection:'column',alignItems:'center',gap:5,cursor:'pointer',flexShrink:0}}>
+    <div style={{padding:2,borderRadius:'50%',background:isAdd?T.inputBg:T.purpleGrad,boxShadow:isAdd?'none':T.shadowPurp}}>
+      {isAdd
+        ? <div style={{width:52,height:52,borderRadius:'50%',background:T.purpleGrad,display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',boxShadow:T.shadowPurp}}><Plus size={22}/></div>
+        : <div style={{padding:2,background:T.surfaceSolid,borderRadius:'50%'}}><Avatar name={name} photoUrl={photoUrl} size={52} T={T}/></div>
+      }
     </div>
-  )
+    <span style={{fontSize:10,color:T.textMuted,fontWeight:500,maxWidth:60,textAlign:'center',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+      {isAdd?'Add new':name.split(' ')[0]}
+    </span>
+  </div>
 )
 
-// ─── Post Card (Zutto style) ──────────────────────────────────────────────
+// ─── PostCard ─────────────────────────────────────────────────────────────────
+export const PostCard: React.FC<{photo:Photo;onLike:()=>void;onComment:()=>void;T:any}> = ({photo,onLike,onComment,T}) => {
+  const [liked,setLiked]=useState(photo.liked??false)
+  const [cnt,setCnt]=useState(photo.likes_count)
+  const {showToast}=useToast()
 
-interface PostCardProps {
-  photo: Photo
-  onLike: () => void
-  onComment: () => void
-}
-
-export const PostCard: React.FC<PostCardProps> = ({ photo, onLike, onComment }) => {
-  const [liked, setLiked] = useState(photo.liked ?? false)
-  const [likesCount, setLikesCount] = useState(photo.likes_count)
-  const { showToast } = useToast()
-
-  const handleLike = async () => {
-    const newLiked = !liked
-    setLiked(newLiked)
-    setLikesCount(prev => newLiked ? prev + 1 : prev - 1)
-    try {
-      await arkzenFetch(`/api/church-community/photos/${photo.id}/like`, { method: 'POST' })
-      onLike()
-    } catch {
-      setLiked(!newLiked)
-      setLikesCount(prev => newLiked ? prev - 1 : prev + 1)
-      showToast('Failed to like', 'error')
-    }
+  const handleLike=async()=>{
+    const n=!liked; setLiked(n); setCnt(p=>n?p+1:p-1)
+    try{ await arkzenFetch(`/api/church-community/photos/${photo.id}/like`,{method:'POST'}); onLike() }
+    catch{ setLiked(!n); setCnt(p=>n?p-1:p+1); showToast('Failed to like','error') }
   }
 
   return (
-    <ZCard style={{ overflow: 'hidden', transition: 'transform 0.2s, box-shadow 0.2s' }}
-      className="hover:scale-[1.01]"
-    >
+    <GCard T={T} style={{overflow:'hidden'}}>
       {/* Header */}
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Avatar name={photo.uploader?.name ?? 'Member'} size={36} />
+      <div style={{padding:'12px 14px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{display:'flex',alignItems:'center',gap:9}}>
+          <Avatar name={photo.uploader?.name??'Member'} size={36} T={T}/>
           <div>
-            <p style={{ fontSize: 14, fontWeight: 600, color: Z.textDark }}>{photo.uploader?.name ?? 'Church Member'}</p>
-            <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
+            <p style={{fontSize:13,fontWeight:700,color:T.textPrimary,lineHeight:1.2}}>{photo.uploader?.name??'Church Member'}</p>
+            <p style={{fontSize:11,color:T.textMuted}}>{formatRelativeTime(photo.created_at)}</p>
           </div>
         </div>
-        <button style={{ color: Z.textMuted }}><MoreHorizontal size={18} /></button>
+        <button style={{color:T.textMuted,background:'none',border:'none',cursor:'pointer'}}><MoreHorizontal size={17}/></button>
       </div>
 
       {/* Image */}
-      <div
-        style={{ position: 'relative', aspectRatio: '1', background: 'rgba(200,210,230,0.3)', cursor: 'pointer' }}
-        onClick={onComment}
-      >
-        {photo.url ? (
-          <img src={photo.url} alt={photo.caption ?? ''} style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
-        ) : (
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: Z.textMuted }}>
-            <ImageIcon size={40} />
-          </div>
-        )}
+      <div onClick={onComment} style={{position:'relative',aspectRatio:'1',background:T.inputBg,cursor:'pointer',overflow:'hidden'}}>
+        {photo.url
+          ? <img src={photo.url} alt={photo.caption??''} loading="lazy" style={{width:'100%',height:'100%',objectFit:'cover'}}/>
+          : <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:T.textFaint}}><ImageIcon size={36}/></div>
+        }
       </div>
 
       {/* Actions */}
-      <div style={{ padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-          <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, transition: 'transform 0.15s' }} className="hover:scale-110">
-            <Heart size={20} fill={liked ? '#ef4444' : 'none'} />
-            <span style={{ fontSize: 13, fontWeight: 600 }}>{likesCount > 0 ? likesCount.toLocaleString() : ''}</span>
+      <div style={{padding:'10px 14px 4px',display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+        <div style={{display:'flex',alignItems:'center',gap:16}}>
+          <button onClick={handleLike} style={{display:'flex',alignItems:'center',gap:4,background:'none',border:'none',cursor:'pointer',color:liked?T.heartColor:T.textMuted,transition:'transform 0.15s'}}>
+            <Heart size={21} fill={liked?T.heartColor:'none'}/>
+            {cnt>0&&<span style={{fontSize:12,fontWeight:700}}>{cnt.toLocaleString()}</span>}
           </button>
-          <button onClick={onComment} style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft }}>
-            <MessageCircle size={20} />
-          </button>
-          <button style={{ color: Z.textSoft }}><Share2 size={20} /></button>
+          <button onClick={onComment} style={{display:'flex',alignItems:'center',gap:4,background:'none',border:'none',cursor:'pointer',color:T.textMuted}}><MessageCircle size={21}/></button>
+          <button style={{background:'none',border:'none',cursor:'pointer',color:T.textMuted}}><Share2 size={21}/></button>
         </div>
-        <button style={{ color: Z.textSoft }}><Bookmark size={20} /></button>
+        <button style={{background:'none',border:'none',cursor:'pointer',color:T.textMuted}}><Bookmark size={21}/></button>
       </div>
 
-      {/* Caption */}
-      {photo.caption && (
-        <div style={{ padding: '0 16px 10px' }}>
-          <p style={{ fontSize: 13, color: Z.textMid }}>
-            <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{photo.uploader?.name ?? 'Member'}</span>
-            {photo.caption}
-          </p>
-        </div>
-      )}
-
-      {/* Tags */}
-      {photo.tags && photo.tags.length > 0 && (
-        <div style={{ padding: '0 16px 14px', display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-          {photo.tags.map(tag => (
-            <span key={tag} style={{
-              fontSize: 11, fontWeight: 600, padding: '2px 10px', borderRadius: 20,
-              background: 'rgba(123,108,246,0.1)', color: Z.purple,
-            }}>#{tag}</span>
-          ))}
-        </div>
-      )}
-    </ZCard>
+      {/* Caption + tags */}
+      <div style={{padding:'4px 14px 14px'}}>
+        {photo.caption&&<p style={{fontSize:13,color:T.textSecond,lineHeight:1.5}}><span style={{fontWeight:700,color:T.textPrimary,marginRight:6}}>{photo.uploader?.name??'Member'}</span>{photo.caption}</p>}
+        {photo.tags&&photo.tags.length>0&&(
+          <div style={{display:'flex',flexWrap:'wrap',gap:5,marginTop:6}}>
+            {photo.tags.map((tag:string)=><span key={tag} style={{fontSize:11,fontWeight:600,padding:'2px 9px',borderRadius:20,background:T.inputBg,color:T.purple}}>#{tag}</span>)}
+          </div>
+        )}
+      </div>
+    </GCard>
   )
 }
 
-// ─── Lightbox ─────────────────────────────────────────────────────────────
+// ─── Lightbox ─────────────────────────────────────────────────────────────────
+export const PhotoLightbox: React.FC<{T:any}> = ({T}) => {
+  const {photo,open,comments,loadingComments,setOpen,setComments,setLoadingComments}=useLightboxStore()
+  const {showToast}=useToast()
+  const [commentText,setCommentText]=useState('')
+  const [submitting,setSubmitting]=useState(false)
+  const [localLikes,setLocalLikes]=useState(0)
+  const [liked,setLiked]=useState(false)
 
-interface LightboxState {
-  photo: Photo | null
-  open: boolean
-  comments: Comment[]
-  loadingComments: boolean
-  setPhoto: (p: Photo | null) => void
-  setOpen: (v: boolean) => void
-  setComments: (c: Comment[]) => void
-  setLoadingComments: (v: boolean) => void
-}
+  useEffect(()=>{
+    if(!photo||!open)return
+    setLocalLikes(photo.likes_count); setLiked(photo.liked??false); setLoadingComments(true)
+    arkzenFetch(`/api/church-community/photos/${photo.id}/comments`).then((d:any)=>setComments(d?.comments??[])).catch(()=>{}).finally(()=>setLoadingComments(false))
+  },[photo,open])
 
-export const useLightboxStore = create<LightboxState>((set) => ({
-  photo: null, open: false, comments: [], loadingComments: false,
-  setPhoto: (photo) => set({ photo }),
-  setOpen: (open) => set({ open }),
-  setComments: (comments) => set({ comments }),
-  setLoadingComments: (loadingComments) => set({ loadingComments }),
-}))
+  const handleLike=async()=>{ if(!photo)return; const n=!liked; setLiked(n); setLocalLikes((p:number)=>n?p+1:p-1); try{await arkzenFetch(`/api/church-community/photos/${photo.id}/like`,{method:'POST'})}catch{setLiked(!n);setLocalLikes((p:number)=>n?p-1:p+1)} }
 
-export const PhotoLightbox: React.FC = () => {
-  const { photo, open, comments, loadingComments, setOpen, setComments, setLoadingComments } = useLightboxStore()
-  const { showToast } = useToast()
-  const [commentText, setCommentText] = useState('')
-  const [submitting, setSubmitting] = useState(false)
-  const [localLikes, setLocalLikes] = useState(0)
-  const [liked, setLiked] = useState(false)
-
-  useEffect(() => {
-    if (!photo || !open) return
-    setLocalLikes(photo.likes_count)
-    setLiked(photo.liked ?? false)
-    setLoadingComments(true)
-    arkzenFetch(`/api/church-community/photos/${photo.id}/comments`)
-      .then(d => setComments(d?.comments ?? []))
-      .catch(() => {})
-      .finally(() => setLoadingComments(false))
-  }, [photo, open])
-
-  const handleLike = async () => {
-    if (!photo) return
-    const newLiked = !liked
-    setLiked(newLiked)
-    setLocalLikes(prev => newLiked ? prev + 1 : prev - 1)
-    try {
-      await arkzenFetch(`/api/church-community/photos/${photo.id}/like`, { method: 'POST' })
-    } catch {
-      setLiked(!newLiked)
-      setLocalLikes(prev => newLiked ? prev - 1 : prev + 1)
-    }
+  const handleComment=async()=>{
+    if(!photo||!commentText.trim())return; setSubmitting(true)
+    try{ const res=await arkzenFetch(`/api/church-community/photos/${photo.id}/comments`,{method:'POST',body:{body:commentText}}); setComments([...comments,res.comment]); setCommentText('') }
+    catch{ showToast('Failed to post comment','error') } finally{ setSubmitting(false) }
   }
 
-  const handleComment = async () => {
-    if (!photo || !commentText.trim()) return
-    setSubmitting(true)
-    try {
-      const res = await arkzenFetch(`/api/church-community/photos/${photo.id}/comments`, {
-        method: 'POST', body: { body: commentText },
-      })
-      setComments([...comments, res.comment])
-      setCommentText('')
-    } catch {
-      showToast('Failed to post comment', 'error')
-    } finally {
-      setSubmitting(false)
-    }
-  }
-
-  if (!open || !photo) return null
+  if(!open||!photo)return null
 
   return (
-    <div
-      style={{ position: 'fixed', inset: 0, zIndex: 50, background: 'rgba(20,20,40,0.85)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
-      onClick={() => setOpen(false)}
-    >
-      <div
-        style={{
-          position: 'relative', maxWidth: 900, width: '100%', maxHeight: '90vh',
-          background: '#fff', borderRadius: 24, overflow: 'hidden',
-          display: 'flex', flexDirection: 'row',
-          boxShadow: '0 32px 80px rgba(0,0,0,0.3)',
-        }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Image */}
-        <div style={{ flex: '0 0 60%', background: '#0d0d1a', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 300 }}>
-          {photo.url
-            ? <img src={photo.url} alt={photo.caption ?? ''} style={{ maxWidth: '100%', maxHeight: '80vh', objectFit: 'contain' }} />
-            : <div style={{ color: 'rgba(255,255,255,0.2)' }}><ImageIcon size={48} /></div>
-          }
+    <div onClick={()=>setOpen(false)} style={{position:'fixed',inset:0,zIndex:100,background:'rgba(0,0,0,0.88)',backdropFilter:'blur(10px)',display:'flex',alignItems:'center',justifyContent:'center',padding:16}}>
+      <div onClick={(e:any)=>e.stopPropagation()} style={{display:'flex',maxWidth:960,width:'100%',maxHeight:'92vh',borderRadius:24,overflow:'hidden',background:T.surfaceSolid,boxShadow:'0 40px 100px rgba(0,0,0,0.5)'}}>
+        {/* Photo panel */}
+        <div style={{flex:'0 0 58%',background:'#000',display:'flex',alignItems:'center',justifyContent:'center'}}>
+          {photo.url?<img src={photo.url} alt="" style={{maxWidth:'100%',maxHeight:'92vh',objectFit:'contain'}}/>:<div style={{color:'rgba(255,255,255,0.1)'}}><ImageIcon size={48}/></div>}
         </div>
-
         {/* Info panel */}
-        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-          <div style={{ padding: '16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f0f2f8' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Avatar name={photo.uploader?.name ?? 'Member'} size={34} />
-              <div>
-                <p style={{ fontSize: 14, fontWeight: 700, color: Z.textDark }}>{photo.uploader?.name ?? 'Member'}</p>
-                <p style={{ fontSize: 11, color: Z.textMuted }}>{formatRelativeTime(photo.created_at)}</p>
-              </div>
+        <div style={{flex:1,display:'flex',flexDirection:'column',minWidth:0}}>
+          <div style={{padding:'14px 16px',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:`1px solid ${T.border}`}}>
+            <div style={{display:'flex',alignItems:'center',gap:9}}>
+              <Avatar name={photo.uploader?.name??'Member'} size={34} T={T}/>
+              <div><p style={{fontSize:13,fontWeight:700,color:T.textPrimary}}>{photo.uploader?.name??'Member'}</p><p style={{fontSize:11,color:T.textMuted}}>{formatRelativeTime(photo.created_at)}</p></div>
             </div>
-            <button onClick={() => setOpen(false)} style={{ color: Z.textMuted }}><X size={20} /></button>
+            <button onClick={()=>setOpen(false)} style={{color:T.textMuted,background:'none',border:'none',cursor:'pointer'}}><X size={18}/></button>
           </div>
-
-          {photo.caption && (
-            <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8' }}>
-              <p style={{ fontSize: 13, color: Z.textMid }}>{photo.caption}</p>
-            </div>
-          )}
-
-          {photo.tags && photo.tags.length > 0 && (
-            <div style={{ padding: '8px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', flexWrap: 'wrap', gap: 4 }}>
-              {photo.tags.map(tag => (
-                <span key={tag} style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: 'rgba(123,108,246,0.08)', color: Z.purple, fontWeight: 600 }}>#{tag}</span>
-              ))}
-            </div>
-          )}
-
-          <div style={{ padding: '12px 16px', borderBottom: '1px solid #f0f2f8', display: 'flex', gap: 20 }}>
-            <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 5, color: liked ? '#ef4444' : Z.textSoft, fontSize: 13 }}>
-              <Heart size={18} fill={liked ? '#ef4444' : 'none'} /> {localLikes}
-            </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 5, color: Z.textSoft, fontSize: 13 }}>
-              <MessageCircle size={18} /> {comments.length}
-            </button>
+          {photo.caption&&<div style={{padding:'10px 16px',borderBottom:`1px solid ${T.border}`}}><p style={{fontSize:13,color:T.textSecond,lineHeight:1.5}}><span style={{fontWeight:700,color:T.textPrimary,marginRight:6}}>{photo.uploader?.name??'Member'}</span>{photo.caption}</p></div>}
+          <div style={{padding:'10px 16px',display:'flex',gap:16,borderBottom:`1px solid ${T.border}`}}>
+            <button onClick={handleLike} style={{display:'flex',alignItems:'center',gap:5,color:liked?T.heartColor:T.textMuted,background:'none',border:'none',cursor:'pointer',fontSize:13,fontWeight:700}}><Heart size={18} fill={liked?T.heartColor:'none'}/>{localLikes}</button>
+            <button style={{display:'flex',alignItems:'center',gap:5,color:T.textMuted,background:'none',border:'none',cursor:'pointer',fontSize:13}}><MessageCircle size={18}/>{comments.length}</button>
           </div>
-
-          <div style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {loadingComments ? <SkeletonBox height={50} /> : comments.map(c => (
-              <div key={c.id}>
-                <p style={{ fontSize: 13, color: Z.textMid }}>
-                  <span style={{ fontWeight: 700, color: Z.textDark, marginRight: 6 }}>{c.user?.name ?? 'Member'}</span>
-                  {c.body}
-                </p>
-                <p style={{ fontSize: 10, color: Z.textMuted, marginTop: 2 }}>{formatRelativeTime(c.created_at)}</p>
-              </div>
+          <div style={{flex:1,overflowY:'auto',padding:'12px 16px',display:'flex',flexDirection:'column',gap:12}}>
+            {loadingComments?<Skel h={50} T={T}/>:comments.map((c:Comment)=>(
+              <div key={c.id}><p style={{fontSize:13,color:T.textSecond,lineHeight:1.5}}><span style={{fontWeight:700,color:T.textPrimary,marginRight:6}}>{c.user?.name??'Member'}</span>{c.body}</p><p style={{fontSize:10,color:T.textMuted,marginTop:2}}>{formatRelativeTime(c.created_at)}</p></div>
             ))}
           </div>
-
-          <div style={{ padding: '12px 16px', borderTop: '1px solid #f0f2f8', display: 'flex', gap: 8, alignItems: 'center' }}>
-            <input
-              value={commentText}
-              onChange={e => setCommentText(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleComment()}
-              placeholder="Add a comment..."
-              style={{ flex: 1, padding: '8px 14px', borderRadius: 20, border: '1.5px solid #e8eaf6', fontSize: 13, outline: 'none', background: '#f8f9ff', color: Z.textDark }}
-            />
-            <button
-              onClick={handleComment}
-              disabled={submitting}
-              style={{ background: Z.purpleGrad, color: '#fff', border: 'none', borderRadius: 20, padding: '8px 16px', fontSize: 13, fontWeight: 600, cursor: submitting ? 'not-allowed' : 'pointer', opacity: submitting ? 0.5 : 1 }}
-            >
-              {submitting ? <Loader2 size={14} className="animate-spin" /> : 'Post'}
+          <div style={{padding:'12px 16px',borderTop:`1px solid ${T.border}`,display:'flex',gap:8,alignItems:'center'}}>
+            <input value={commentText} onChange={(e:any)=>setCommentText(e.target.value)} onKeyDown={(e:any)=>e.key==='Enter'&&handleComment()} placeholder="Add a comment…"
+              style={{flex:1,padding:'9px 14px',borderRadius:50,fontSize:13,outline:'none',background:T.inputBg,border:`1.5px solid ${T.inputBorder}`,color:T.textPrimary}}/>
+            <button onClick={handleComment} disabled={submitting} style={{background:T.purpleGrad,color:'#fff',border:'none',borderRadius:50,padding:'9px 16px',fontSize:13,fontWeight:700,cursor:submitting?'not-allowed':'pointer',opacity:submitting?0.5:1,display:'flex',alignItems:'center',gap:4}}>
+              {submitting?<Loader2 size={13} className="animate-spin"/>:<><Send size={13}/> Post</>}
             </button>
           </div>
         </div>
@@ -580,107 +204,74 @@ export const PhotoLightbox: React.FC = () => {
 
 // Page component code (from @arkzen:page:inventory)
 const InventoryPage = () => {
-  const { photos, totalCount, totalSize, eventCount, allTags, activeTag, loading, setData } = useInventoryStore()
-  const { showToast } = useToast()
-  const { setPhoto, setOpen } = useLightboxStore()
+  const {photos,totalCount,totalSize,eventCount,allTags,activeTag,loading,setData}=useInventoryStore()
+  const {showToast}=useToast()
+  const {setPhoto,setOpen}=useLightboxStore()
+  const {T}=useTheme()
 
-  const load = useCallback(async (tag?: string | null) => {
-    setData({ loading: true, activeTag: tag ?? null })
-    try {
-      const params = tag ? `?tag=${encodeURIComponent(tag)}` : ''
-      const data = await arkzenFetch(`/api/church-community/inventory${params}`)
-      setData({
-        photos: data?.photos?.data ?? [],
-        totalCount: data?.total_count ?? 0,
-        totalSize: data?.total_size ?? 0,
-        eventCount: data?.event_count ?? 0,
-        allTags: data?.all_tags ?? [],
-        loading: false,
-      })
-    } catch {
-      showToast('Failed to load inventory', 'error')
-      setData({ loading: false })
-    }
-  }, [])
+  const load=useCallback(async(tag?:string|null)=>{
+    setData({loading:true,activeTag:tag??null})
+    try{
+      const params=tag?`?tag=${encodeURIComponent(tag)}`:''
+      const data=await arkzenFetch(`/api/church-community/inventory${params}`)
+      setData({photos:data?.photos?.data??[],totalCount:data?.total_count??0,totalSize:data?.total_size??0,eventCount:data?.event_count??0,allTags:data?.all_tags??[],loading:false})
+    }catch{ showToast('Failed to load gallery','error'); setData({loading:false}) }
+  },[])
 
-  useEffect(() => { load(null) }, [])
+  useEffect(()=>{load(null)},[])
 
-  const stats = [
-    { label: 'Total Photos', value: totalCount },
-    { label: 'Events', value: eventCount },
-    { label: 'Storage', value: `${(totalSize / 1048576).toFixed(1)} MB` },
-    { label: 'Tags', value: allTags.length },
-  ]
+  const stats=[['Photos',totalCount],['Events',eventCount],['Storage',`${(totalSize/1048576).toFixed(1)} MB`],['Tags',allTags.length]]
 
   return (
-    <div className="animate-fadeIn">
-      <div style={{ marginBottom: 20 }}>
-        <h2 style={{ fontSize: 26, fontWeight: 800, color: Z.textDark, letterSpacing: '-0.03em' }}>Photo Gallery</h2>
-        <p style={{ fontSize: 14, color: Z.textSoft, marginTop: 2 }}>Full image inventory</p>
+    <div>
+      {/* Tab row — Anne Adams style */}
+      <div style={{display:'flex',borderBottom:`2px solid ${T.border}`,marginBottom:20}}>
+        {['Photo','Video','Events','Tags'].map((tab,i)=>(
+          <button key={tab} style={{padding:'10px 20px',fontSize:13,fontWeight:700,border:'none',cursor:'pointer',background:'none',color:i===0?T.purple:T.textMuted,borderBottom:i===0?`2px solid ${T.purple}`:'2px solid transparent',marginBottom:-2,transition:'color 0.2s'}}>{tab}</button>
+        ))}
       </div>
 
-      {/* Stats row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 12, marginBottom: 20 }}>
-        {stats.map(s => (
-          <ZCard key={s.label} style={{ padding: '14px 12px', textAlign: 'center' }}>
-            <p style={{ fontSize: 22, fontWeight: 800, background: Z.purpleGrad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>{s.value}</p>
-            <p style={{ fontSize: 11, color: Z.textMuted, marginTop: 2 }}>{s.label}</p>
-          </ZCard>
+      {/* Stats */}
+      <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:10,marginBottom:20}}>
+        {stats.map(([l,v])=>(
+          <GCard key={String(l)} T={T} style={{padding:'14px 10px',textAlign:'center'}}>
+            <p style={{fontSize:20,fontWeight:800,background:T.purpleGrad,WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent'}}>{v}</p>
+            <p style={{fontSize:10,color:T.textMuted,marginTop:2,fontWeight:600}}>{l}</p>
+          </GCard>
         ))}
       </div>
 
       {/* Tag filters */}
-      {allTags.length > 0 && (
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
-          <button
-            onClick={() => load(null)}
-            style={{
-              padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-              background: !activeTag ? Z.purpleGrad : 'rgba(255,255,255,0.7)',
-              color: !activeTag ? '#fff' : Z.textMid,
-              border: !activeTag ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
-              boxShadow: !activeTag ? Z.shadowPurp : 'none',
-            }}
-          >All</button>
-          {allTags.map(tag => (
-            <button
-              key={tag}
-              onClick={() => load(tag)}
-              style={{
-                padding: '5px 14px', borderRadius: 20, fontSize: 12, fontWeight: 600, cursor: 'pointer',
-                background: activeTag === tag ? Z.purpleGrad : 'rgba(255,255,255,0.7)',
-                color: activeTag === tag ? '#fff' : Z.textMid,
-                border: activeTag === tag ? 'none' : '1.5px solid rgba(200,210,230,0.6)',
-                boxShadow: activeTag === tag ? Z.shadowPurp : 'none',
-              }}
-            >#{tag}</button>
-          ))}
+      {allTags.length>0&&(
+        <div style={{display:'flex',flexWrap:'wrap',gap:8,marginBottom:18}}>
+          {['All',...allTags].map((tag:string,i:number)=>{
+            const isAll=i===0; const active=isAll?!activeTag:activeTag===tag
+            return <button key={tag} onClick={()=>load(isAll?null:tag)} style={{padding:'5px 14px',borderRadius:50,fontSize:12,fontWeight:700,border:'none',cursor:'pointer',background:active?T.purpleGrad:T.surface,color:active?'#fff':T.textMuted,boxShadow:active?T.shadowPurp:'none',transition:'all 0.2s'}}>{isAll?'All':`#${tag}`}</button>
+          })}
         </div>
       )}
 
-      {/* Grid */}
-      {loading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>
-          {Array.from({ length: 9 }).map((_, i) => <SkeletonBox key={i} height={130} radius={0} />)}
-        </div>
-      ) : photos.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '48px 0', color: Z.textMuted }}>No photos found</div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 4, borderRadius: 20, overflow: 'hidden' }}>
-          {photos.map(photo => (
-            <button
-              key={photo.id}
-              onClick={() => { setPhoto(photo); setOpen(true) }}
-              style={{ position: 'relative', aspectRatio: '1', overflow: 'hidden', cursor: 'pointer', background: 'rgba(200,210,230,0.3)' }}
-              className="group"
-            >
-              <img src={photo.url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.3s' }} loading="lazy" className="group-hover:scale-105" />
-              <div style={{ position: 'absolute', inset: 0, background: 'rgba(123,108,246,0)', transition: 'background 0.3s' }} className="group-hover:bg-[rgba(123,108,246,0.2)]" />
-            </button>
-          ))}
-        </div>
-      )}
-      <PhotoLightbox />
+      {/* 3-col Instagram grid */}
+      {loading
+        ? <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3}}>{Array.from({length:9}).map((_,i)=><Skel key={i} h={120} r={0} T={T}/>)}</div>
+        : photos.length===0
+          ? <div style={{textAlign:'center',padding:'48px 0',color:T.textMuted}}>No photos found</div>
+          : <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:3,borderRadius:16,overflow:'hidden'}}>
+              {photos.map((photo:Photo)=>(
+                <div key={photo.id} onClick={()=>{setPhoto(photo);setOpen(true)}} style={{position:'relative',aspectRatio:'1',overflow:'hidden',cursor:'pointer',background:T.inputBg}}>
+                  <img src={photo.url} alt="" loading="lazy" style={{width:'100%',height:'100%',objectFit:'cover',transition:'transform 0.3s'}}
+                    onMouseEnter={(e:any)=>e.currentTarget.style.transform='scale(1.06)'}
+                    onMouseLeave={(e:any)=>e.currentTarget.style.transform='scale(1)'}/>
+                  <div style={{position:'absolute',inset:0,background:'rgba(108,92,231,0)',display:'flex',alignItems:'center',justifyContent:'center',gap:16,transition:'background 0.2s'}}
+                    onMouseEnter={(e:any)=>e.currentTarget.style.background='rgba(108,92,231,0.35)'}
+                    onMouseLeave={(e:any)=>e.currentTarget.style.background='rgba(108,92,231,0)'}>
+                    <span style={{color:'#fff',display:'flex',alignItems:'center',gap:4,fontWeight:700,fontSize:13}}><Heart size={16} fill="#fff"/>{photo.likes_count}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+      }
+      <PhotoLightbox T={T}/>
     </div>
   )
 }

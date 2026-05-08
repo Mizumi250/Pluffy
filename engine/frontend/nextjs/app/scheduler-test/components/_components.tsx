@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T12:24:42.071Z
+// Generated: 2026-05-08T15:11:49.145Z
 // ============================================================
 
 'use client'

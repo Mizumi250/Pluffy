@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — barbershop-booking
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T12:24:35.894Z
+// Generated: 2026-05-08T15:11:42.726Z
 // ============================================================
 
 'use client'

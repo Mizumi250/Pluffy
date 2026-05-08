@@ -1,9 +1,9 @@
 'use client'
 // ============================================================
-// ARKZEN GENERATED COMPONENT — ZCard
+// ARKZEN GENERATED COMPONENT — StoryBubble
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-06T13:26:25.465Z
+// Generated: 2026-05-08T15:11:44.331Z
 // ============================================================
 
-export { ZCard } from './_components'
+export { StoryBubble } from './_components'

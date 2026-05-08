@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T01:35:32.616Z
+// Generated: 2026-05-08T02:18:58.090Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'

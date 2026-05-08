@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — queue-flow [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T01:35:30.438Z
+// Generated: 2026-05-08T02:18:56.543Z
 // ============================================================
 
 import { create } from 'zustand'

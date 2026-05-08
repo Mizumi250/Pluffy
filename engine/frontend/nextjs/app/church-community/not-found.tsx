@@ -3,25 +3,18 @@
 // Next.js segment-scoped 404 handler.
 // Rendered when notFound() is called or no route matches under /church-community.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-06T13:26:25.470Z
+// Generated: 2026-05-08T15:11:44.334Z
 // ============================================================
 
 import React from 'react'
 import { ErrorScreen } from './components'
 
 const NotFoundPage = () => (
-  <div style={{
-    minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-    background: 'linear-gradient(135deg, #c5d0de 0%, #d4dde8 50%, #bcc8d6 100%)',
-  }}>
-    <div style={{ textAlign: 'center' }}>
-      <p style={{ fontSize: 80, fontWeight: 800, background: Z.purpleGrad, WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', lineHeight: 1 }}>404</p>
-      <p style={{ color: Z.textMid, marginTop: 8, fontSize: 15 }}>Page not found</p>
-      <a href="/church-community" style={{
-        display: 'inline-block', marginTop: 20, padding: '10px 28px', borderRadius: 20,
-        background: Z.purpleGrad, color: '#fff', fontWeight: 700, fontSize: 14,
-        textDecoration: 'none', boxShadow: Z.shadowPurp,
-      }}>Go home</a>
+  <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'linear-gradient(160deg,#e8ecf5,#f2f4fc)'}}>
+    <div style={{textAlign:'center'}}>
+      <p style={{fontSize:80,fontWeight:800,background:'linear-gradient(135deg,#6c5ce7,#a29bfe)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',lineHeight:1}}>404</p>
+      <p style={{color:'#8e98b8',marginTop:8,fontSize:15}}>Page not found</p>
+      <a href="/church-community" style={{display:'inline-flex',alignItems:'center',marginTop:20,padding:'11px 28px',borderRadius:50,background:'linear-gradient(135deg,#6c5ce7,#a29bfe)',color:'#fff',fontWeight:700,fontSize:14,textDecoration:'none',boxShadow:'0 6px 20px rgba(108,92,231,0.28)'}}>Go home</a>
     </div>
   </div>
 )
