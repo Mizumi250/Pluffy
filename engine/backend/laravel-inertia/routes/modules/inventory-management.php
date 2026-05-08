@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — inventory-management [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:44.591066Z
+// Generated: 2026-05-08T01:35:29.607293Z
 // Resources: Inventory
 // Custom controllers: 
 // ============================================================
@@ -13,7 +13,7 @@ use App\Http\Controllers\Arkzen\InventoryManagement\InventoryController;
 
 // ── Inventory ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/inventories')
+    ->prefix('/api/inventories')
     ->group(function () {
 
         // Get paginated list of inventories

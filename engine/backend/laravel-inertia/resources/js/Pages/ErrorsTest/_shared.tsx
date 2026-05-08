@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — errors-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:44.240Z
+// Generated: 2026-05-08T01:35:29.457Z
 // ============================================================
 
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — barbershop-booking [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:41.553Z
+// Generated: 2026-05-08T01:35:27.853Z
 // ============================================================
 
 import { create } from 'zustand'

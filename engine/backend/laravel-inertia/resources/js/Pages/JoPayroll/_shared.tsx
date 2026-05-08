@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — jo-payroll [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:44.620Z
+// Generated: 2026-05-08T01:35:29.636Z
 // ============================================================
 
 import { create } from 'zustand'

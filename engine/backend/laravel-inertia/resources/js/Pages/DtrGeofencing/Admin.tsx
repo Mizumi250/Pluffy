@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:43.750Z
+// Generated: 2026-05-08T01:35:29.329Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'

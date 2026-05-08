@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — church-community [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:43.111Z
+// Generated: 2026-05-08T01:35:28.976Z
 // ============================================================
 
 import { create } from 'zustand'

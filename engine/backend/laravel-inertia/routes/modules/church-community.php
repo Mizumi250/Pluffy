@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 // ============================================================
 // ARKZEN GENERATED ROUTES — church-community [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:43.247449Z
+// Generated: 2026-05-08T01:35:29.136687Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================
@@ -84,7 +84,7 @@ Sanctum::usePersonalAccessTokenModel(ChurchCommunityToken::class);
 
 // ── Event ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/church-community')
+    ->prefix('/api/church-community')
     ->group(function () {
 
         // Get all events ordered by event_date desc
@@ -106,7 +106,7 @@ Route::middleware(['web'])
 
 // ── Member ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/church-community')
+    ->prefix('/api/church-community')
     ->group(function () {
 
         // Get all active members optionally filtered by role
@@ -128,7 +128,7 @@ Route::middleware(['web'])
 
 // ── Photo ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/church-community')
+    ->prefix('/api/church-community')
     ->group(function () {
 
         // Get all photos with optional event_id or tag filter

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — events-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:44.262Z
+// Generated: 2026-05-08T01:35:29.472Z
 // ============================================================
 
 import { Flame, Zap } from 'lucide-react'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — JobOrderArkzenSeeder
 // Tatemono: jo-payroll  |  Connection: jo_payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:44.720545Z
+// Generated: 2026-05-08T01:35:29.748503Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\JoPayroll;

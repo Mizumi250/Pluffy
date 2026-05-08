@@ -11,6 +11,7 @@ import { createInertiaApp } from '@inertiajs/react'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createRoot } from 'react-dom/client'
 import { StrictMode } from 'react'
+import { ToastProvider } from './resources/js/arkzen/core/components/Toast'
 import '../css/app.css'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Arkzen'
@@ -29,7 +30,9 @@ createInertiaApp({
     setup({ el, App, props }) {
         createRoot(el).render(
             <StrictMode>
-                <App {...props} />
+                <ToastProvider position="top-right">
+                    <App {...props} />
+                </ToastProvider>
             </StrictMode>,
         )
     },

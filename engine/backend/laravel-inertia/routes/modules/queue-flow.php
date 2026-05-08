@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — queue-flow [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:45.571262Z
+// Generated: 2026-05-08T01:35:30.851002Z
 // Resources: Queue, Ticket
 // Custom controllers: QueueController
 // ============================================================
@@ -14,7 +14,7 @@ use App\Http\Controllers\Arkzen\QueueFlow\TicketController;
 
 // ── Queue ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/queue-flow')
+    ->prefix('/api/queue-flow')
     ->group(function () {
 
         // Get all queues
@@ -36,7 +36,7 @@ Route::middleware(['web'])
 
 // ── Ticket ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/queue-flow')
+    ->prefix('/api/queue-flow')
     ->group(function () {
 
         // Get all tickets

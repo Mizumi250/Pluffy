@@ -12,6 +12,7 @@ import '../css/app.css'
 import { createInertiaApp } from '@inertiajs/react'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createRoot } from 'react-dom/client'
+import { ToastProvider } from '@/arkzen/core/components/Toast'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Arkzen'
 
@@ -26,7 +27,11 @@ createInertiaApp({
         ),
 
     setup({ el, App, props }) {
-        createRoot(el).render(<App {...props} />)
+        createRoot(el).render(
+            <ToastProvider position="top-right">
+                <App {...props} />
+            </ToastProvider>
+        )
     },
 
     // Show a progress bar on navigation (built-in Inertia)

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-mail-notification [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:41.996Z
+// Generated: 2026-05-08T01:35:28.223Z
 // ============================================================
 
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'

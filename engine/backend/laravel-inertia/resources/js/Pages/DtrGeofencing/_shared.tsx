@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — dtr-geofencing [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:43.744Z
+// Generated: 2026-05-08T01:35:29.320Z
 // ============================================================
 
 import { create } from 'zustand'

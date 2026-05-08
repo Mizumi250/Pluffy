@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — upload-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:46.605807Z
+// Generated: 2026-05-08T01:35:32.968235Z
 // Resources: UploadedFile
 // Custom controllers: 
 // ============================================================
@@ -13,7 +13,7 @@ use App\Http\Controllers\Arkzen\UploadTest\UploadedFileController;
 
 // ── UploadedFile ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/upload-test')
+    ->prefix('/api/upload-test')
     ->group(function () {
 
         // List all uploaded files

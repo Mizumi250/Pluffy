@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — queue-flow [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:45.491Z
+// Generated: 2026-05-08T01:35:30.449Z
 // Pages: index, join, admin
 // ============================================================
 

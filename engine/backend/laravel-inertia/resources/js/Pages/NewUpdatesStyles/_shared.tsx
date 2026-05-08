@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — new-updates-styles [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:45.346Z
+// Generated: 2026-05-08T01:35:30.239Z
 // ============================================================
 
 import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'

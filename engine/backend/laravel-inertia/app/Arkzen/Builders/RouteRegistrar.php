@@ -65,8 +65,9 @@ class RouteRegistrar
         // ── Resource API routes ───────────────────
         foreach ($apis as $api) {
             $controllerName = $api['controller'];
-            // Strip /api/ prefix — Inertia routes are web routes, not API routes
-            $prefix         = preg_replace('#^/api/#', '/', $api['prefix']);
+            // Keep the /api/ prefix — frontend calls this path regardless of middleware
+            // Use 'web' middleware instead of 'api', but preserve the route path
+            $prefix         = $api['prefix'];
             $useStatements[] = "use App\\Http\\Controllers\\Arkzen\\{$slugNs}\\{$controllerName};";
 
             $mwResult = MiddlewareBuilder::build([

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — notification-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:45.366Z
+// Generated: 2026-05-08T01:35:30.257Z
 // ============================================================
 
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'

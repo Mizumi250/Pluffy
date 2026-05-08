@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/body-mail-notification/
 // ============================================================
 // ARKZEN GENERATED ROUTES — body-mail-notification [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:42.131718Z
+// Generated: 2026-05-08T01:35:28.313936Z
 // Resources: SendLog
 // Custom controllers: 
 // ============================================================
@@ -81,7 +81,7 @@ Sanctum::usePersonalAccessTokenModel(BodyMailNotificationToken::class);
 
 // ── SendLog ─────────────────────────────
 Route::middleware(['web', 'auth:sanctum'])
-    ->prefix('/body-mail-notification')
+    ->prefix('/api/body-mail-notification')
     ->group(function () {
 
         // All send log entries for the authenticated user

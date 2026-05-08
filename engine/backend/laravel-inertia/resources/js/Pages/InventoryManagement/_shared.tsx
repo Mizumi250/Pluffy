@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — inventory-management [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T00:27:44.503Z
+// Generated: 2026-05-08T01:35:29.548Z
 // ============================================================
 
 import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'

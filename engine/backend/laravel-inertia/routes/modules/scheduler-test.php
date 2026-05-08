@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — scheduler-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:46.512786Z
+// Generated: 2026-05-08T01:35:32.782884Z
 // Resources: CommandRun
 // Custom controllers: 
 // ============================================================
@@ -13,7 +13,7 @@ use App\Http\Controllers\Arkzen\SchedulerTest\CommandRunController;
 
 // ── CommandRun ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/scheduler-test')
+    ->prefix('/api/scheduler-test')
     ->group(function () {
 
         // Get all command run records

@@ -1,5 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — queue-flow/app [React+Inertia]
 
+
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+
 import React, { useState } from 'react'
 import { LayoutGrid, Ticket, Settings, WifiOff } from 'lucide-react'
 

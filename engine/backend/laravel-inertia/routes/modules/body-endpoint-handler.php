@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — body-endpoint-handler [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:41.731393Z
+// Generated: 2026-05-08T01:35:27.982773Z
 // Resources: ProbeResult
 // Custom controllers: ProbeUtilController
 // ============================================================
@@ -14,7 +14,7 @@ use App\Http\Controllers\Arkzen\BodyEndpointHandler\ProbeUtilController;
 
 // ── ProbeResult ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/body-endpoint-handler')
+    ->prefix('/api/body-endpoint-handler')
     ->group(function () {
 
         // List all probe results

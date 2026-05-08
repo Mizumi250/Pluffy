@@ -12,7 +12,7 @@
 
         <!-- Scripts + Styles via Laravel Vite plugin -->
         @viteReactRefresh
-        @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+        @vite(['resources/js/app.tsx'])
 
         <!-- Inertia head (title, meta tags from InertiaHead component) -->
         @inertiaHead

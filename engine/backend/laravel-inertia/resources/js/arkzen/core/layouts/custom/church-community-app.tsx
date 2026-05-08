@@ -1,5 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — church-community/app [React+Inertia]
 
+
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+
 import React, { useState } from 'react'
 import { Home, Users, Images, LayoutDashboard, LogOut, Search, Bell } from 'lucide-react'
 import { useAuthStore } from '@/arkzen/core/stores/authStore'

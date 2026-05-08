@@ -207,7 +207,26 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   for (const layout of tatemono.layouts) {
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(LAYOUTS_DIR, fileName)
-    const normalized = normalizeForInertia(layout.raw).trim()
+    let normalized = normalizeForInertia(layout.raw).trim()
+
+    // Auto-inject @/arkzen/core/adapters/router import if needed
+    const usesRouter = /\b(useArkzenRouter|useArkzenPathname)\s*\(/.test(normalized)
+    const hasRouterImport = /from\s+['"]@\/arkzen\/core\/adapters\/router['"]/.test(normalized)
+
+    if (usesRouter && !hasRouterImport) {
+      // Find the last import statement and inject after it
+      const lastImportMatch = normalized.match(/^([\s\S]*?)(\nimport\s+[^;\n]+;)(?![\s\S]*\nimport\s)/m)
+      const insertPos = lastImportMatch ? lastImportMatch[0].length : 0
+      const routerImport = `\nimport { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'`
+
+      if (insertPos > 0) {
+        normalized = normalized.slice(0, insertPos) + routerImport + normalized.slice(insertPos)
+      } else {
+        // No imports found, add at top after 'use client' or at very beginning
+        normalized = routerImport + '\n\n' + normalized
+      }
+    }
+
     const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Inertia]\n\n${normalized}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Inertia Router] ✓ Custom layout: ${fileName}`)

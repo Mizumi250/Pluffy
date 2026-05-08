@@ -1,5 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — jo-payroll/app [React+Inertia]
 
+
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+
 import React, { useState, useEffect } from 'react'
 import {
   LayoutDashboard, Database, Banknote, Building2,

@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — dtr-geofencing [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T00:27:43.835003Z
+// Generated: 2026-05-08T01:35:29.401661Z
 // Resources: Employee, TimeRecord, DtrSetting
 // Custom controllers: 
 // ============================================================
@@ -15,7 +15,7 @@ use App\Http\Controllers\Arkzen\DtrGeofencing\TimeRecordController;
 
 // ── Employee ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/dtr')
+    ->prefix('/api/dtr')
     ->group(function () {
 
         // Get all employees
@@ -28,7 +28,7 @@ Route::middleware(['web'])
 
 // ── TimeRecord ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/dtr')
+    ->prefix('/api/dtr')
     ->group(function () {
 
         // Get all time records with employee
@@ -47,7 +47,7 @@ Route::middleware(['web'])
 
 // ── DtrSetting ─────────────────────────────
 Route::middleware(['web'])
-    ->prefix('/dtr')
+    ->prefix('/api/dtr')
     ->group(function () {
 
         // Get all settings

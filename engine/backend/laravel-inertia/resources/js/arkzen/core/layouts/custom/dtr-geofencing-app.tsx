@@ -1,5 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — dtr-geofencing/app [React+Inertia]
 
+
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+
 import React, { useState } from 'react'
 import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
 
