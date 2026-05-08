@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — events-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.051Z
+// Generated: 2026-05-08T00:27:44.263Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type EventsTestIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Flame, Zap } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -35,6 +36,7 @@ interface EventLogEntry {
   created_at:   string
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const events = [
     {
@@ -210,17 +212,23 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_EventsTest_Index() {
-  const props = usePage<EventsTestIndexProps>().props
-  
+  const props   = usePage<EventsTestIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

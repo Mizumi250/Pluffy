@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — auth-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:08.735Z
+// Generated: 2026-05-08T00:27:41.525Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type AuthTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Lock, ShieldCheck } from 'lucide-react'
 import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
@@ -30,6 +31,7 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('auth-test')
 }
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const router = useArkzenRouter()
   const { user, logout } = useAuthStore()
@@ -37,7 +39,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     await logout();
     router.refresh();
-    router.replace('/auth-test/login');
+    router('/auth-test/login');
   };
 
   return (
@@ -88,23 +90,29 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_AuthTest_Dashboard() {
-  const props = usePage<AuthTestDashboardProps>().props
-  
+  const props   = usePage<AuthTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>
   )
 
-  return <AuthLayout>{content}</AuthLayout>
+  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
 }
 
 export default ArkzenPage_AuthTest_Dashboard

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.903Z
+// Generated: 2026-05-08T00:27:43.747Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
 
 
@@ -22,6 +22,7 @@ export type DtrGeofencingIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw,
@@ -348,6 +349,7 @@ export const GeofenceMap = () => {
   )
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const pageRef = useRef<HTMLDivElement>(null)
   useEffect(() => { const c = dtrGeofencingAnimations(pageRef); return c }, [])
@@ -526,17 +528,24 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_DtrGeofencing_Index() {
-  const props = usePage<DtrGeofencingIndexProps>().props
-  const animations = dtrGeofencingAnimations()
+  const props   = usePage<DtrGeofencingIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = dtrGeofencingAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <IndexPage {...props} />
     </motion.div>

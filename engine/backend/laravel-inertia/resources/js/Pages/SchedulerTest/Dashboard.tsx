@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:11.701Z
+// Generated: 2026-05-08T00:27:46.450Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type SchedulerTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 import { useMutation }              from '@/arkzen/core/hooks/useMutation'
 import { useQuery }                 from '@/arkzen/core/hooks/useQuery'
@@ -38,6 +39,7 @@ interface CommandRun {
   created_at:   string
 }
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const { toast } = useToast()
 
@@ -161,17 +163,23 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_SchedulerTest_Dashboard() {
-  const props = usePage<SchedulerTestDashboardProps>().props
-  
+  const props   = usePage<SchedulerTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>

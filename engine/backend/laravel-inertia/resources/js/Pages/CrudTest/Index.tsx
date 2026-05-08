@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.774Z
+// Generated: 2026-05-08T00:27:43.278Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type CrudTestIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Boxes } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -39,6 +40,7 @@ type Item = {
 type FormData = { name: string; description: string; status: string; priority: number; tags: string }
 const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const [items, setItems]         = useState<Item[]>([])
   const [loading, setLoading]     = useState(true)
@@ -235,17 +237,23 @@ const remove = async (id: number) => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_CrudTest_Index() {
-  const props = usePage<CrudTestIndexProps>().props
-  
+  const props   = usePage<CrudTestIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

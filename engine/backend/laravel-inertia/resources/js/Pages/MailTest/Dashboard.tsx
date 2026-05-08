@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.483Z
+// Generated: 2026-05-08T00:27:45.128Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type MailTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -46,6 +47,7 @@ interface MailType {
   fields: Record<string, string>
 }
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const router          = useArkzenRouter()
   const { user, logout } = useAuthStore()
@@ -115,7 +117,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    router.replace('/mail-test/login')
+    router('/mail-test/login')
   }
 
   const formatTime = (ts: string) => {
@@ -271,23 +273,29 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_MailTest_Dashboard() {
-  const props = usePage<MailTestDashboardProps>().props
-  
+  const props   = usePage<MailTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>
   )
 
-  return <AuthLayout>{content}</AuthLayout>
+  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
 }
 
 export default ArkzenPage_MailTest_Dashboard

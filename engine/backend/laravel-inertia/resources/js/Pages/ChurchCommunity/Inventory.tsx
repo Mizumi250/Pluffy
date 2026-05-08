@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/inventory [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.658Z
+// Generated: 2026-05-08T00:27:43.121Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/church-community-app'
 import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
 
 
@@ -22,6 +22,7 @@ export type ChurchCommunityInventoryProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
@@ -587,6 +588,7 @@ export const PhotoLightbox: React.FC = () => {
   )
 }
 
+// ── Page component from @arkzen:page:inventory ─────────────────────────────
 const InventoryPage = () => {
   const { photos, totalCount, totalSize, eventCount, allTags, activeTag, loading, setData } = useInventoryStore()
   const { showToast } = useToast()
@@ -693,17 +695,24 @@ const InventoryPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_ChurchCommunity_Inventory() {
-  const props = usePage<ChurchCommunityInventoryProps>().props
-  const animations = churchCommunityAnimations()
+  const props   = usePage<ChurchCommunityInventoryProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = churchCommunityAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <InventoryPage {...props} />
     </motion.div>

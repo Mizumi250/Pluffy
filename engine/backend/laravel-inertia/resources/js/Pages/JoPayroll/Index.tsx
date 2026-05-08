@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.245Z
+// Generated: 2026-05-08T00:27:44.623Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 
 
@@ -22,6 +22,7 @@ export type JoPayrollIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
@@ -491,6 +492,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
   </div>
 )
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const DashboardPage = () => {
   const { summary, setSummary, jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
   const router = useArkzenRouter()
@@ -560,13 +562,13 @@ const DashboardPage = () => {
             </p>
             <div className="flex gap-3 mt-4">
               <button
-                onClick={() => router.push('/jo-payroll/job-database')}
+                onClick={() => router('/jo-payroll/job-database')}
                 className="flex items-center gap-2 px-4 py-2 bg-neutral-900 text-white text-xs font-semibold rounded-xl hover:bg-neutral-700 transition-colors"
               >
                 <Plus size={13} /> Add J.O. Worker
               </button>
               <button
-                onClick={() => router.push('/jo-payroll/payslip')}
+                onClick={() => router('/jo-payroll/payslip')}
                 className="flex items-center gap-2 px-4 py-2 border border-neutral-200 text-neutral-700 text-xs font-semibold rounded-xl hover:bg-neutral-50 transition-colors"
               >
                 <Printer size={13} /> Generate Payslip
@@ -650,7 +652,7 @@ const DashboardPage = () => {
             subtitle="Recent entries"
             action={
               <button
-                onClick={() => router.push('/jo-payroll/job-database')}
+                onClick={() => router('/jo-payroll/job-database')}
                 className="text-xs font-medium text-neutral-500 hover:text-neutral-900 flex items-center gap-1 transition-colors"
               >
                 View all <ArrowUpRight size={13} />
@@ -720,17 +722,24 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_JoPayroll_Index() {
-  const props = usePage<JoPayrollIndexProps>().props
-  const animations = joPayrollAnimations()
+  const props   = usePage<JoPayrollIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = joPayrollAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <DashboardPage {...props} />
     </motion.div>

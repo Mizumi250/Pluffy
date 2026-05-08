@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.140Z
+// Generated: 2026-05-08T00:27:44.507Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type InventoryManagementIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
 import { Modal }      from '@/arkzen/core/components/Modal'
 import { Dialog }     from '@/arkzen/core/components/Dialog'
@@ -82,6 +83,7 @@ const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit:
   )
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const { toast }                                    = useToast()
   const [search, setSearch]                          = useState('')
@@ -246,17 +248,24 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_InventoryManagement_Index() {
-  const props = usePage<InventoryManagementIndexProps>().props
-  const animations = inventoryManagementAnimations()
+  const props   = usePage<InventoryManagementIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = inventoryManagementAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <IndexPage {...props} />
     </motion.div>

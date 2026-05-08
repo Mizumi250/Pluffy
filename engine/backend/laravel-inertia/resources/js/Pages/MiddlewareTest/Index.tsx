@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — middleware-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.572Z
+// Generated: 2026-05-08T00:27:45.220Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,8 +22,10 @@ export type MiddlewareTestIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { ShieldCheck } from 'lucide-react'
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const [logs,    setLogs]    = useState<any[]>([])
   const [message, setMessage] = useState('')
@@ -170,17 +172,23 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_MiddlewareTest_Index() {
-  const props = usePage<MiddlewareTestIndexProps>().props
-  
+  const props   = usePage<MiddlewareTestIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

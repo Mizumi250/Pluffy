@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — roles-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.922Z
+// Generated: 2026-05-08T00:27:45.642Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type RolesTestRegisterProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Shield } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -29,6 +30,7 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('roles-test')
 }
 
+// ── Page component from @arkzen:page:register ─────────────────────────────
 const RegisterPage = () => {
   const { register, isLoading } = useAuthStore()
   const [name,     setName]     = useState('')
@@ -109,23 +111,29 @@ const RegisterPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_RolesTest_Register() {
-  const props = usePage<RolesTestRegisterProps>().props
-  
+  const props   = usePage<RolesTestRegisterProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <RegisterPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_RolesTest_Register

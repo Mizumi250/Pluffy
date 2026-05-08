@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.087Z
+// Generated: 2026-05-08T00:27:41.998Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -22,6 +22,7 @@ export type BodyMailNotificationDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {
@@ -78,6 +79,7 @@ const StatusDot = ({ status }: { status: string }) => (
   }} />
 )
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const { user, logout } = useAuthStore()
   const router           = useArkzenRouter()
@@ -143,7 +145,7 @@ const DashboardPage = () => {
     } catch { toastError('Clear failed') }
   }
 
-  const handleLogout = async () => { await logout(); router.push('/body-mail-notification') }
+  const handleLogout = async () => { await logout(); router('/body-mail-notification') }
 
   const card: React.CSSProperties = {
     background: '#fff', borderRadius: 14, padding: 28,
@@ -261,23 +263,29 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BodyMailNotification_Dashboard() {
-  const props = usePage<BodyMailNotificationDashboardProps>().props
-  
+  const props   = usePage<BodyMailNotificationDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>
   )
 
-  return <AuthLayout>{content}</AuthLayout>
+  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
 }
 
 export default ArkzenPage_BodyMailNotification_Dashboard

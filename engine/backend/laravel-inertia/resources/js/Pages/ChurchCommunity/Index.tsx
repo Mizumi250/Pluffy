@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.654Z
+// Generated: 2026-05-08T00:27:43.115Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/church-community-app'
 import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
 
 
@@ -22,6 +22,7 @@ export type ChurchCommunityIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
@@ -587,6 +588,7 @@ export const PhotoLightbox: React.FC = () => {
   )
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const { events, selectedEvent, photos, loadingEvents, loadingPhotos, setEvents, setSelectedEvent, setPhotos, setLoadingEvents, setLoadingPhotos } = useFeedStore()
   const { showToast } = useToast()
@@ -681,17 +683,24 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_ChurchCommunity_Index() {
-  const props = usePage<ChurchCommunityIndexProps>().props
-  const animations = churchCommunityAnimations()
+  const props   = usePage<ChurchCommunityIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = churchCommunityAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <IndexPage {...props} />
     </motion.div>

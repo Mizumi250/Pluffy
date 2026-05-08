@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.086Z
+// Generated: 2026-05-08T00:27:41.996Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -22,6 +22,7 @@ export type BodyMailNotificationLoginProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {
@@ -78,6 +79,7 @@ const StatusDot = ({ status }: { status: string }) => (
   }} />
 )
 
+// ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login }  = useAuthStore()
   const router     = useArkzenRouter()
@@ -89,7 +91,7 @@ const LoginPage = () => {
   const handleLogin = async () => {
     setLoading(true)
     const ok = await login(email, password)
-    if (ok) { toastSuccess('Logged in'); router.push('/body-mail-notification/dashboard') }
+    if (ok) { toastSuccess('Logged in'); router('/body-mail-notification/dashboard') }
     else     { toastError('Invalid credentials') }
     setLoading(false)
   }
@@ -112,23 +114,29 @@ const LoginPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BodyMailNotification_Login() {
-  const props = usePage<BodyMailNotificationLoginProps>().props
-  
+  const props   = usePage<BodyMailNotificationLoginProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <LoginPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_BodyMailNotification_Login

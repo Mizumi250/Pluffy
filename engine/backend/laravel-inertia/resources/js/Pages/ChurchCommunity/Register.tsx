@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.663Z
+// Generated: 2026-05-08T00:27:43.129Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type ChurchCommunityRegisterProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
@@ -587,6 +588,7 @@ export const PhotoLightbox: React.FC = () => {
   )
 }
 
+// ── Page component from @arkzen:page:register ─────────────────────────────
 const RegisterPage = () => {
   const { register } = useAuthStore()
   const { showToast } = useToast()
@@ -600,7 +602,7 @@ const RegisterPage = () => {
     setLoading(true)
     try {
       await register(form.name, form.email, form.password, form.password_confirmation)
-      router.push('/church-community')
+      router('/church-community')
     } catch { showToast('Registration failed', 'error') }
     finally { setLoading(false) }
   }
@@ -655,23 +657,30 @@ const RegisterPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_ChurchCommunity_Register() {
-  const props = usePage<ChurchCommunityRegisterProps>().props
-  const animations = churchCommunityAnimations()
+  const props   = usePage<ChurchCommunityRegisterProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = churchCommunityAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <RegisterPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_ChurchCommunity_Register

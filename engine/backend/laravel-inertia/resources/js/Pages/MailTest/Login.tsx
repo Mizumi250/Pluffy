@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.481Z
+// Generated: 2026-05-08T00:27:45.126Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type MailTestLoginProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -46,6 +47,7 @@ interface MailType {
   fields: Record<string, string>
 }
 
+// ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail]     = useState('test@arkzen.local')
@@ -127,23 +129,29 @@ const LoginPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_MailTest_Login() {
-  const props = usePage<MailTestLoginProps>().props
-  
+  const props   = usePage<MailTestLoginProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <LoginPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_MailTest_Login

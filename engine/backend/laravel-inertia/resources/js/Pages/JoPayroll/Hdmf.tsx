@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/hdmf [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.254Z
+// Generated: 2026-05-08T00:27:44.631Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 
 
@@ -22,6 +22,7 @@ export type JoPayrollHdmfProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
@@ -491,6 +492,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
   </div>
 )
 
+// ── Page component from @arkzen:page:hdmf ─────────────────────────────
 const HdmfPage = () => {
   const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
   const [search, setSearch] = useState('')
@@ -593,17 +595,24 @@ const HdmfPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_JoPayroll_Hdmf() {
-  const props = usePage<JoPayrollHdmfProps>().props
-  const animations = joPayrollAnimations()
+  const props   = usePage<JoPayrollHdmfProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = joPayrollAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <HdmfPage {...props} />
     </motion.div>

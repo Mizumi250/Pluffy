@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — job-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.391Z
+// Generated: 2026-05-08T00:27:45.018Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,9 +22,11 @@ export type JobTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Cpu } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const [results, setResults]   = useState<any[]>([])
   const [loading, setLoading]   = useState(false)
@@ -147,17 +149,23 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_JobTest_Dashboard() {
-  const props = usePage<JobTestDashboardProps>().props
-  
+  const props   = usePage<JobTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>

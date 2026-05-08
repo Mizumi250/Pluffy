@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.550Z
+// Generated: 2026-05-08T00:27:42.980Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, memo } from 'react'
@@ -22,6 +22,7 @@ export type BroadcastTestLoginProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -121,6 +122,7 @@ const ChannelPanel = memo(({
 })
 ChannelPanel.displayName = 'ChannelPanel'
 
+// ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail]     = useState('')
@@ -159,23 +161,29 @@ const LoginPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BroadcastTest_Login() {
-  const props = usePage<BroadcastTestLoginProps>().props
-  
+  const props   = usePage<BroadcastTestLoginProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <LoginPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_BroadcastTest_Login

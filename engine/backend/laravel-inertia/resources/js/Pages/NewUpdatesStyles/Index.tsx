@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.682Z
+// Generated: 2026-05-08T00:27:45.348Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -12,7 +12,7 @@ import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-import '../styles/global.css'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type NewUpdatesStylesIndexProps = {
@@ -22,6 +22,7 @@ export type NewUpdatesStylesIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
@@ -183,6 +184,7 @@ const getIconComponent = (iconName: string) => {
   return icons[iconName] || null
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const [activeFeature, setActiveFeature] = useState<number | null>(null)
 
@@ -235,17 +237,23 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_NewUpdatesStyles_Index() {
-  const props = usePage<NewUpdatesStylesIndexProps>().props
-  
+  const props   = usePage<NewUpdatesStylesIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

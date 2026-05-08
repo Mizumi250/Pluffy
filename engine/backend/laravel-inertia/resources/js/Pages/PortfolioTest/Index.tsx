@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.777Z
+// Generated: 2026-05-08T00:27:45.468Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type PortfolioTestIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
 
 const PROJECTS = [
@@ -37,6 +38,7 @@ const SKILLS = [
   { name: 'PostgreSQL', category: 'Database', proficiency: 85 }
 ]
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const PortfolioPage = () => {
   const [submitted, setSubmitted] = React.useState(false)
   const categories = Array.from(new Set(SKILLS.map(s => s.category)))
@@ -115,17 +117,23 @@ const PortfolioPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_PortfolioTest_Index() {
-  const props = usePage<PortfolioTestIndexProps>().props
-  
+  const props   = usePage<PortfolioTestIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <PortfolioPage {...props} />
     </motion.div>

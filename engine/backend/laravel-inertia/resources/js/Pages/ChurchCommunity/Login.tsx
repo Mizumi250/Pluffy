@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.661Z
+// Generated: 2026-05-08T00:27:43.127Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type ChurchCommunityLoginProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Send,
@@ -587,6 +588,7 @@ export const PhotoLightbox: React.FC = () => {
   )
 }
 
+// ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login } = useAuthStore()
   const { showToast } = useToast()
@@ -599,7 +601,7 @@ const LoginPage = () => {
     setLoading(true)
     try {
       await login(form.email, form.password)
-      router.push('/church-community')
+      router('/church-community')
     } catch { showToast('Invalid credentials', 'error') }
     finally { setLoading(false) }
   }
@@ -651,23 +653,30 @@ const LoginPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_ChurchCommunity_Login() {
-  const props = usePage<ChurchCommunityLoginProps>().props
-  const animations = churchCommunityAnimations()
+  const props   = usePage<ChurchCommunityLoginProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = churchCommunityAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <LoginPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_ChurchCommunity_Login

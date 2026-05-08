@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:08.754Z
+// Generated: 2026-05-08T00:27:41.558Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type BarbershopBookingIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import { gsap } from 'gsap'
 
@@ -569,6 +570,7 @@ export function BottomSheet() {
   )
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const { barbers, services, setBarbers, setServices, setSelectedBarber, setPanelOpen, setPanelStep, resetBooking, isLoading, setLoading } = useBookingStore()
   const pageRef = useRef<HTMLDivElement>(null)
@@ -692,17 +694,24 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BarbershopBooking_Index() {
-  const props = usePage<BarbershopBookingIndexProps>().props
-  const animations = barbershopBookingAnimations()
+  const props   = usePage<BarbershopBookingIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = barbershopBookingAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <IndexPage {...props} />
     </motion.div>

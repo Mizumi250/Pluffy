@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — errors-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.033Z
+// Generated: 2026-05-08T00:27:44.242Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type ErrorsTestIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { useToast } from '@/arkzen/core/components/Toast'
 
@@ -101,6 +102,7 @@ export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void 
   )
 }
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const [simulating, setSimulating] = useState<number | null>(null)
   const [result, setResult] = useState<{ code: number; body: string } | null>(null)
@@ -221,17 +223,23 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_ErrorsTest_Index() {
-  const props = usePage<ErrorsTestIndexProps>().props
-  
+  const props   = usePage<ErrorsTestIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

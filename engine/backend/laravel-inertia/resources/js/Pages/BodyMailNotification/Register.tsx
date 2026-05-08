@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:09.086Z
+// Generated: 2026-05-08T00:27:41.997Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -22,6 +22,7 @@ export type BodyMailNotificationRegisterProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {
@@ -78,6 +79,7 @@ const StatusDot = ({ status }: { status: string }) => (
   }} />
 )
 
+// ── Page component from @arkzen:page:register ─────────────────────────────
 const RegisterPage = () => {
   const { register } = useAuthStore()
   const router       = useArkzenRouter()
@@ -90,7 +92,7 @@ const RegisterPage = () => {
   const handleRegister = async () => {
     setLoading(true)
     const ok = await register(name, email, password)
-    if (ok) { toastSuccess('Account created'); router.push('/body-mail-notification/dashboard') }
+    if (ok) { toastSuccess('Account created'); router('/body-mail-notification/dashboard') }
     else     { toastError('Registration failed') }
     setLoading(false)
   }
@@ -114,23 +116,29 @@ const RegisterPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BodyMailNotification_Register() {
-  const props = usePage<BodyMailNotificationRegisterProps>().props
-  
+  const props   = usePage<BodyMailNotificationRegisterProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <RegisterPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_BodyMailNotification_Register

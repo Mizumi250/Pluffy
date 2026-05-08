@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.696Z
+// Generated: 2026-05-08T00:27:45.368Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type NotificationTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -37,6 +38,7 @@ const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
 const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
 const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const router = useArkzenRouter()
   const { user, logout } = useAuthStore()
@@ -224,7 +226,7 @@ const DashboardPage = () => {
     wsRef.current?.close()
     await logout()
     router.refresh()
-    router.replace('/notification-test/login')
+    router('/notification-test/login')
   }
 
   const statusColor = {
@@ -365,23 +367,29 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_NotificationTest_Dashboard() {
-  const props = usePage<NotificationTestDashboardProps>().props
-  
+  const props   = usePage<NotificationTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>
   )
 
-  return <AuthLayout>{content}</AuthLayout>
+  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
 }
 
 export default ArkzenPage_NotificationTest_Dashboard

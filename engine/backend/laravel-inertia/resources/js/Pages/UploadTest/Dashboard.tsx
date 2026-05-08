@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — upload-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:11.930Z
+// Generated: 2026-05-08T00:27:46.544Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,9 +22,11 @@ export type UploadTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [files, setFiles]       = useState<any[]>([])
@@ -202,17 +204,23 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_UploadTest_Dashboard() {
-  const props = usePage<UploadTestDashboardProps>().props
-  
+  const props   = usePage<UploadTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>

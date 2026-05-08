@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.694Z
+// Generated: 2026-05-08T00:27:45.366Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type NotificationTestLoginProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -37,6 +38,7 @@ const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
 const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
 const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
+// ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail] = useState('')
@@ -100,23 +102,29 @@ const LoginPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_NotificationTest_Login() {
-  const props = usePage<NotificationTestLoginProps>().props
-  
+  const props   = usePage<NotificationTestLoginProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <LoginPage {...props} />
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
 }
 
 export default ArkzenPage_NotificationTest_Login

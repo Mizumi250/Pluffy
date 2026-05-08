@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/join [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.801Z
+// Generated: 2026-05-08T00:27:45.489Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 
 
 
@@ -22,6 +22,7 @@ export type QueueFlowJoinProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Users, Clock, CheckCircle,
@@ -294,6 +295,7 @@ export const AnnounceBadge = ({ ticket }: { ticket: { ticket_number: string; cus
   )
 }
 
+// ── Page component from @arkzen:page:join ─────────────────────────────
 const JoinPage = () => {
   const { myTicket, setMyTicket } = useQueueStore()
   const [name, setName] = useState('')
@@ -424,17 +426,23 @@ const JoinPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_QueueFlow_Join() {
-  const props = usePage<QueueFlowJoinProps>().props
-  
+  const props   = usePage<QueueFlowJoinProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <JoinPage {...props} />
     </motion.div>

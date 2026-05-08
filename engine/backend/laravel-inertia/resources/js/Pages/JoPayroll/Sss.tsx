@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/sss [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.251Z
+// Generated: 2026-05-08T00:27:44.629Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useMemo } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/app'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 
 
@@ -22,6 +22,7 @@ export type JoPayrollSssProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { create } from 'zustand'
 import {
   Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
@@ -491,6 +492,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
   </div>
 )
 
+// ── Page component from @arkzen:page:sss ─────────────────────────────
 const SssPage = () => {
   const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
   const [search, setSearch] = useState('')
@@ -590,17 +592,24 @@ const SssPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_JoPayroll_Sss() {
-  const props = usePage<JoPayrollSssProps>().props
-  const animations = joPayrollAnimations()
+  const props   = usePage<JoPayrollSssProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    const cleanup = joPayrollAnimations(pageRef)
+    return cleanup
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
-      variants={pageVariants}
     >
       <SssPage {...props} />
     </motion.div>

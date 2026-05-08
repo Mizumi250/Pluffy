@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:08.775Z
+// Generated: 2026-05-08T00:27:41.581Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -22,6 +22,7 @@ export type BodyEndpointHandlerIndexProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {
@@ -69,6 +70,7 @@ const InjectedBadge = ({ injected }: { injected: boolean }) => (
   <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
 )
 
+// ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
   const { toast, success: toastSuccess, error: toastError } = useToast()
 
@@ -337,17 +339,23 @@ const IndexPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_BodyEndpointHandler_Index() {
-  const props = usePage<BodyEndpointHandlerIndexProps>().props
-  
+  const props   = usePage<BodyEndpointHandlerIndexProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <IndexPage {...props} />
     </motion.div>

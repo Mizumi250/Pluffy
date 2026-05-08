@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-07T23:55:10.924Z
+// Generated: 2026-05-08T00:27:45.643Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -22,6 +22,7 @@ export type RolesTestDashboardProps = {
   [key: string]: unknown
 }
 
+// ── Shared components from @arkzen:components:shared ──────────────────────────
 import { Shield } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -29,6 +30,7 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('roles-test')
 }
 
+// ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
   const router = useArkzenRouter()
   const { user, logout, refreshUser } = useAuthStore()
@@ -84,7 +86,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     await logout()
     router.refresh()
-    router.replace('/roles-test/login')
+    router('/roles-test/login')
   }
 
   const resultStyle = (s: TestResult['status']) =>
@@ -244,23 +246,29 @@ const DashboardPage = () => {
   )
 }
 
-// ── Arkzen Inertia wrapper ────────────────────────────────────
+// ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ArkzenPage_RolesTest_Dashboard() {
-  const props = usePage<RolesTestDashboardProps>().props
-  
+  const props   = usePage<RolesTestDashboardProps>().props
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // No animations
+  }, [])
 
   const content = (
     <motion.div
+      ref={pageRef}
+      variants={{}}
       initial="initial"
       animate="animate"
       exit="exit"
-      
     >
       <DashboardPage {...props} />
     </motion.div>
   )
 
-  return <AuthLayout>{content}</AuthLayout>
+  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
 }
 
 export default ArkzenPage_RolesTest_Dashboard
