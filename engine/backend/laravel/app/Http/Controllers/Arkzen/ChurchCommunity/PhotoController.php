@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — PhotoController
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T15:11:44.420205Z
+// Generated: 2026-05-09T12:28:58.001118Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
@@ -19,7 +19,7 @@ use App\Http\Resources\Arkzen\ChurchCommunity\PhotoResource;
 class PhotoController extends Controller
 {
     /**
-     * Get all photos with optional event_id or tag filter
+     * Get all photos
      */
     public function index(Request $request): JsonResponse
     {
@@ -33,7 +33,7 @@ class PhotoController extends Controller
     }
 
     /**
-     * Upload a new photo and associate it with an event
+     * Upload a new photo
      */
     public function store(Request $request): JsonResponse
     {
@@ -52,7 +52,7 @@ class PhotoController extends Controller
     }
 
     /**
-     * Get a single photo with comments
+     * Get a single photo
      */
     public function show(Photo $photo): JsonResponse
     {
@@ -60,7 +60,7 @@ class PhotoController extends Controller
     }
 
     /**
-     * Update photo caption or tags
+     * Update a photo caption or tags
      */
     public function update(Request $request, Photo $photo): JsonResponse
     {
@@ -75,7 +75,7 @@ class PhotoController extends Controller
     }
 
     /**
-     * Delete a photo (admin only)
+     * Delete a photo
      */
     public function destroy(Photo $photo): JsonResponse
     {

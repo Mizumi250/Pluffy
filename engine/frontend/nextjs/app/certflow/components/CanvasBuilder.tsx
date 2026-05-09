@@ -1,9 +1,9 @@
 'use client'
 // ============================================================
-// ARKZEN GENERATED COMPONENT — Skel
+// ARKZEN GENERATED COMPONENT — CanvasBuilder
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T15:11:44.329Z
+// Generated: 2026-05-09T12:36:21.418Z
 // ============================================================
 
-export { Skel } from './_components'
+export { CanvasBuilder } from './_components'

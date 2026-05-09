@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MemberController
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T15:11:44.419266Z
+// Generated: 2026-05-09T12:28:57.998285Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
@@ -19,7 +19,7 @@ use App\Http\Resources\Arkzen\ChurchCommunity\MemberResource;
 class MemberController extends Controller
 {
     /**
-     * Get all active members optionally filtered by role
+     * Get all church members
      */
     public function index(Request $request): JsonResponse
     {
@@ -33,7 +33,7 @@ class MemberController extends Controller
     }
 
     /**
-     * Create a new member record
+     * Add a new church member
      */
     public function store(Request $request): JsonResponse
     {
@@ -51,7 +51,7 @@ class MemberController extends Controller
     }
 
     /**
-     * Get a single member record
+     * Get a single church member
      */
     public function show(Member $member): JsonResponse
     {
@@ -59,7 +59,7 @@ class MemberController extends Controller
     }
 
     /**
-     * Update a member record
+     * Update a church member
      */
     public function update(Request $request, Member $member): JsonResponse
     {
@@ -77,7 +77,7 @@ class MemberController extends Controller
     }
 
     /**
-     * Remove a member from the directory
+     * Remove a church member
      */
     public function destroy(Member $member): JsonResponse
     {

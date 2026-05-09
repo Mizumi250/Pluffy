@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/job-database
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T15:11:46.040Z
+// Generated: 2026-05-09T12:28:59.491Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

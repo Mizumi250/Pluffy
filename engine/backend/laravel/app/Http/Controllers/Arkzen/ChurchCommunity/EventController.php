@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventController
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T15:11:44.418215Z
+// Generated: 2026-05-09T12:28:57.996875Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
@@ -58,7 +58,7 @@ class EventController extends Controller
     }
 
     /**
-     * Update an existing event
+     * Update an existing church event
      */
     public function update(Request $request, Event $event): JsonResponse
     {
@@ -75,7 +75,7 @@ class EventController extends Controller
     }
 
     /**
-     * Delete an event and its associated photos
+     * Delete a church event
      */
     public function destroy(Event $event): JsonResponse
     {

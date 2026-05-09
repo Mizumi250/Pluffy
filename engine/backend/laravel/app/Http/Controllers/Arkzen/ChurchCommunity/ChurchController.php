@@ -5,7 +5,7 @@
 // Tatemono: church-community
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-05-08T15:11:44.421283Z
+// Generated: 2026-05-09T12:28:58.003458Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
@@ -24,8 +24,8 @@ class ChurchController extends Controller
         $event_id = $params[0] ?? null;
 
         $eventId = $params[0] ?? null;
-        $event = \App\Models\Arkzen\ChurchCommunity\Event::findOrFail($eventId);
-        $photos = \App\Models\Arkzen\ChurchCommunity\Photo::where('event_id', $eventId)
+        $event   = \App\Models\Arkzen\ChurchCommunity\Event::findOrFail($eventId);
+        $photos  = \App\Models\Arkzen\ChurchCommunity\Photo::where('event_id', $eventId)
             ->with('uploader')->orderBy('created_at', 'desc')->get();
         return response()->json(['event' => $event, 'photos' => $photos]);
     }
@@ -37,15 +37,18 @@ class ChurchController extends Controller
     {
         $photo_id = $params[0] ?? null;
 
-        $photoId = $params[0] ?? null;
-        $userId  = $request->user()->id ?? 1;
-        $photo = \App\Models\Arkzen\ChurchCommunity\Photo::findOrFail($photoId);
+        $photoId  = $params[0] ?? null;
+        $userId   = $request->user()->id ?? 1;
+        $photo    = \App\Models\Arkzen\ChurchCommunity\Photo::findOrFail($photoId);
         $existing = \App\Models\Arkzen\ChurchCommunity\PhotoLike::where('photo_id', $photoId)->where('user_id', $userId)->first();
         if ($existing) {
-            $existing->delete(); $photo->decrement('likes_count'); $liked = false;
+            $existing->delete();
+            $photo->decrement('likes_count');
+            $liked = false;
         } else {
             \App\Models\Arkzen\ChurchCommunity\PhotoLike::create(['photo_id' => $photoId, 'user_id' => $userId]);
-            $photo->increment('likes_count'); $liked = true;
+            $photo->increment('likes_count');
+            $liked = true;
         }
         return response()->json(['liked' => $liked, 'likes_count' => $photo->fresh()->likes_count]);
     }
@@ -57,8 +60,7 @@ class ChurchController extends Controller
     {
         $photo_id = $params[0] ?? null;
 
-        $photoId = $params[0] ?? null;
-        $photo    = \App\Models\Arkzen\ChurchCommunity\Photo::findOrFail($photoId);
+        $photoId  = $params[0] ?? null;
         $comments = \App\Models\Arkzen\ChurchCommunity\PhotoComment::where('photo_id', $photoId)
             ->with('user')->orderBy('created_at', 'asc')->get();
         return response()->json(['comments' => $comments]);
@@ -75,7 +77,6 @@ class ChurchController extends Controller
         $userId  = $request->user()->id ?? 1;
         $body    = $request->input('body');
         if (!$body) { return response()->json(['error' => 'Comment body required'], 422); }
-        $photo   = \App\Models\Arkzen\ChurchCommunity\Photo::findOrFail($photoId);
         $comment = \App\Models\Arkzen\ChurchCommunity\PhotoComment::create(['photo_id' => $photoId, 'user_id' => $userId, 'body' => $body]);
         return response()->json(['comment' => $comment->load('user')]);
     }
@@ -88,7 +89,7 @@ class ChurchController extends Controller
 
         $tag     = $request->query('tag');
         $eventId = $request->query('event_id');
-        $query = \App\Models\Arkzen\ChurchCommunity\Photo::with(['event', 'uploader'])->orderBy('created_at', 'desc');
+        $query   = \App\Models\Arkzen\ChurchCommunity\Photo::with(['event', 'uploader'])->orderBy('created_at', 'desc');
         if ($eventId) { $query->where('event_id', $eventId); }
         if ($tag)     { $query->whereJsonContains('tags', $tag); }
         $photos     = $query->paginate(20);
