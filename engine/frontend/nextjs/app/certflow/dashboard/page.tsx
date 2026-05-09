@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:36:21.460Z
+// Generated: 2026-05-09T13:45:41.036Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -18,6 +18,12 @@ import { useRouter } from 'next/navigation'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
 import { AnimatePresence } from 'framer-motion'
+import {
+  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
+  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
+  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
+  Menu, X
+} from 'lucide-react'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
@@ -340,11 +346,11 @@ export const CanvasBuilder = ({
         height: Math.round(imgDims.h * scale),
         overflow: 'hidden',
         borderRadius: 16,
-        border: '1.5px solid rgba(255,255,255,0.18)',
-        boxShadow: '0 8px 40px rgba(100,120,255,0.10)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
         cursor: 'crosshair',
         userSelect: 'none',
-        background: 'rgba(255,255,255,0.04)',
+        background: 'rgba(255,255,255,0.6)',
       }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -381,13 +387,13 @@ export const CanvasBuilder = ({
               height: field.height * scale,
               border: isSelected
                 ? '2px solid #6366f1'
-                : '1.5px dashed rgba(99,102,241,0.5)',
+                : '1.5px dashed rgba(99,102,241,0.4)',
               borderRadius: 6,
               background: isSelected
-                ? 'rgba(99,102,241,0.08)'
-                : 'rgba(99,102,241,0.03)',
+                ? 'rgba(99,102,241,0.1)'
+                : 'rgba(99,102,241,0.05)',
               cursor: 'grab',
-              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.2)' : 'none',
+              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
               transition: 'border 0.15s, background 0.15s',
               display: 'flex',
               alignItems: 'center',
@@ -438,7 +444,7 @@ export const CanvasBuilder = ({
         bottom: 10,
         left: '50%',
         transform: 'translateX(-50%)',
-        background: 'rgba(0,0,0,0.45)',
+        background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(8px)',
         color: '#fff',
         fontSize: 11,
@@ -482,13 +488,13 @@ export const PropertyPanel = ({
   }
 
   const row: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }
-  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8 }
+  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 }
   const input: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
     borderRadius: 8,
     padding: '8px 10px',
-    color: '#fff',
+    color: '#0f172a',
     fontSize: 13,
     outline: 'none',
     width: '100%',
@@ -498,7 +504,7 @@ export const PropertyPanel = ({
 
   return (
     <div style={{ padding: '16px 16px 20px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Field Properties
       </div>
 
@@ -576,8 +582,8 @@ export const PropertyPanel = ({
               cursor: 'pointer',
               fontSize: 12,
               fontWeight: 600,
-              background: localField.font_weight === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.font_weight === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.font_weight === v ? '#6366f1' : '#e2e8f0',
+              color: localField.font_weight === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -595,8 +601,8 @@ export const PropertyPanel = ({
               border: 'none',
               cursor: 'pointer',
               fontSize: 14,
-              background: localField.text_align === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.text_align === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.text_align === v ? '#6366f1' : '#e2e8f0',
+              color: localField.text_align === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -612,7 +618,7 @@ export const PropertyPanel = ({
             borderRadius: 11,
             border: 'none',
             cursor: 'pointer',
-            background: localField.is_required ? '#6366f1' : 'rgba(255,255,255,0.15)',
+            background: localField.is_required ? '#6366f1' : '#cbd5e1',
             position: 'relative',
             transition: 'background 0.2s',
           }}>
@@ -627,7 +633,7 @@ export const PropertyPanel = ({
               transition: 'left 0.2s',
             }} />
           </button>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
+          <span style={{ fontSize: 12, color: '#64748b' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
         </div>
       </div>
 
@@ -635,15 +641,15 @@ export const PropertyPanel = ({
         width: '100%',
         padding: '10px',
         borderRadius: 10,
-        border: '1px solid rgba(239,68,68,0.3)',
-        background: 'rgba(239,68,68,0.08)',
-        color: '#f87171',
+        border: '1px solid #fecaca',
+        background: '#fef2f2',
+        color: '#ef4444',
         fontSize: 13,
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'all 0.15s',
       }}>
-        🗑 Delete Field
+        <Trash2 size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} /> Delete Field
       </button>
     </div>
   )
@@ -666,11 +672,11 @@ export const LayersPanel = ({
 
   return (
     <div style={{ padding: '16px 12px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Layers ({fields.length})
       </div>
       {sorted.length === 0 && (
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', paddingTop: 24 }}>
+        <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', paddingTop: 24 }}>
           No fields yet.<br />Double-click canvas to add.
         </div>
       )}
@@ -685,17 +691,17 @@ export const LayersPanel = ({
             padding: '8px 10px',
             borderRadius: 8,
             marginBottom: 4,
-            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
-            border: selectedFieldId === f.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
+            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.1)' : '#f8fafc',
+            border: selectedFieldId === f.id ? '1px solid #6366f1' : '1px solid #e2e8f0',
             cursor: 'pointer',
             transition: 'all 0.12s',
           }}
         >
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 14 }}>{i + 1}</span>
-          <span style={{ flex: 1, fontSize: 12, color: '#e2e8f0', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 10, color: '#64748b', minWidth: 14 }}>{i + 1}</span>
+          <span style={{ flex: 1, fontSize: 12, color: '#0f172a', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {f.label}
           </span>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 10, color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
             {f.field_type}
           </span>
         </div>
@@ -709,6 +715,7 @@ const DashboardPage = () => {
   const { user, logout } = useAuthStore()
   const router           = useRouter()
   const { push: toast }  = useToastStore()
+  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const {
     templates, submissions, scans,
     selectedTemplate, selectedField, activeTab,
@@ -723,8 +730,6 @@ const DashboardPage = () => {
   const [showUpload, setShowUpload]       = useState(false)
   const [savingField, setSavingField]     = useState(false)
   const [generatedLink, setGeneratedLink] = useState<string | null>(null)
-  const [globalFontEdit, setGlobalFontEdit] = useState(false)
-  const sideRef    = useRef<HTMLDivElement>(null)
   const headerRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -766,7 +771,7 @@ const DashboardPage = () => {
       setShowUpload(false)
       setUploadName('')
       setUploadFile(null)
-      toast('Template uploaded! 🎉', 'ok')
+      toast('Template uploaded!', 'ok')
     } catch {
       toast('Upload failed', 'err')
     }
@@ -840,7 +845,7 @@ const DashboardPage = () => {
     const data = await res.json()
     setGeneratedLink(data.link)
     copyToClipboard(data.link)
-    toast('Link copied to clipboard! 📋', 'ok')
+    toast('Link copied to clipboard!', 'ok')
   }
 
   const handleUpdateGlobalFont = async (font: string) => {
@@ -864,67 +869,172 @@ const DashboardPage = () => {
     router.push('/certflow/login')
   }
 
-  // ─── COLORS ─────────────────────────────────────────────────────────────────
-  const glass = {
-    background: 'rgba(255,255,255,0.06)',
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    border: '1px solid rgba(255,255,255,0.10)',
+  const glassCard = {
+    background: 'rgba(255,255,255,0.7)',
+    backdropFilter: 'blur(16px)',
+    WebkitBackdropFilter: 'blur(16px)',
+    border: '1px solid rgba(255,255,255,0.8)',
     borderRadius: 20,
+    boxShadow: '0 4px 24px rgba(0,0,0,0.04)',
   }
 
+  const navItems = [
+    { id: 'templates', label: 'Templates', icon: LayoutTemplate },
+    { id: 'submissions', label: 'Submissions', icon: ClipboardList },
+    { id: 'scans', label: 'Scans', icon: ScanLine },
+  ]
+
   return (
-    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)', color: '#fff', fontFamily: 'Inter, sans-serif', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #eaf3fa 0%, #f5e8fe 100%)', color: '#0f172a', fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif', position: 'relative', overflow: 'hidden' }}>
       {/* Background blobs */}
-      <div style={{ position: 'fixed', top: '5%', left: '10%', width: 600, height: 600, borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }} />
-      <div style={{ position: 'fixed', bottom: '5%', right: '5%', width: 500, height: 500, borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%', background: 'radial-gradient(circle, rgba(167,139,250,0.12) 0%, transparent 70%)', filter: 'blur(50px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', top: '5%', left: '10%', width: 600, height: 600, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.12) 0%, transparent 70%)', filter: 'blur(70px)', pointerEvents: 'none', zIndex: 0 }} />
+      <div style={{ position: 'fixed', bottom: '5%', right: '5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(168,85,247,0.1) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none', zIndex: 0 }} />
 
       <ToastStack />
 
-      {/* HEADER */}
-      <div ref={headerRef} style={{ position: 'relative', zIndex: 10, padding: '20px 28px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 24 }}>🎓</span>
-          <span style={{ fontSize: 18, fontWeight: 800, letterSpacing: -0.5 }}>CertFlow</span>
-          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', background: 'rgba(255,255,255,0.07)', padding: '3px 8px', borderRadius: 6 }}>Admin</span>
-        </div>
-
-        {/* Tabs */}
-        <div style={{ display: 'flex', gap: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 12, padding: 4 }}>
-          {(['templates', 'submissions', 'scans'] as const).map((tab) => (
-            <button key={tab} onClick={() => setActiveTab(tab)} style={{
-              padding: '7px 18px',
-              borderRadius: 9,
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 13,
-              fontWeight: 600,
-              background: activeTab === tab ? 'rgba(99,102,241,0.7)' : 'transparent',
-              color: activeTab === tab ? '#fff' : 'rgba(255,255,255,0.45)',
-              transition: 'all 0.15s',
-              textTransform: 'capitalize',
-            }}>
-              {tab === 'templates' ? '🗂 Templates' : tab === 'submissions' ? '📋 Submissions' : '📡 Scans'}
-            </button>
-          ))}
-        </div>
-
-        <button onClick={handleLogout} style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 16px', color: 'rgba(255,255,255,0.6)', fontSize: 13, cursor: 'pointer' }}>
-          Sign out
-        </button>
+          {/* HEADER - transparent, bold text on left, round glass hamburger on right */}
+    <div ref={headerRef} style={{ 
+      position: 'sticky', top: 0, zIndex: 100, 
+      padding: '0 24px', height: 70, 
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
+      background: 'transparent' 
+    }}>
+      {/* Left side: bold text */}
+      <div style={{ fontSize: 18, fontWeight: 800, color: '#0f172a', letterSpacing: -0.3 }}>
+        Certificate Automation
       </div>
+    
+      {/* Right side: round glass hamburger button */}
+      <button
+        onClick={() => setIsMenuOpen(true)}
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: '50%',
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.05)',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.2s ease',
+        }}
+        onMouseEnter={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 255, 255, 0.9)';
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 6px 16px rgba(0, 0, 0, 0.12)';
+        }}
+        onMouseLeave={(e) => {
+          (e.currentTarget as HTMLButtonElement).style.background = 'rgba(255, 255, 255, 0.65)';
+          (e.currentTarget as HTMLButtonElement).style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.08)';
+        }}
+      >
+        <Menu size={22} color="#0f172a" />
+      </button>
+    </div>
 
-      {/* CONTENT */}
+      {/* DRAWER (Hamburger menu side drawer) */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.3)', backdropFilter: 'blur(4px)', zIndex: 200 }}
+              onClick={() => setIsMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ x: 300 }}
+              animate={{ x: 0 }}
+              exit={{ x: 300 }}
+              transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+              style={{ position: 'fixed', top: 0, right: 0, bottom: 0, width: 280, background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)', boxShadow: '-4px 0 24px rgba(0,0,0,0.08)', zIndex: 201, display: 'flex', flexDirection: 'column', padding: '24px 16px' }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 24 }}>
+                <button onClick={() => setIsMenuOpen(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 8, borderRadius: 8 }}>
+                  <X size={20} color="#64748b" />
+                </button>
+              </div>
+              <div style={{ marginBottom: 32, paddingLeft: 12 }}>
+                <div style={{ fontSize: 11, fontWeight: 600, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: 0.6, marginBottom: 16 }}>Menu</div>
+                {navItems.map((item) => {
+                  const Icon = item.icon
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => {
+                        setActiveTab(item.id as any)
+                        setIsMenuOpen(false)
+                      }}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        width: '100%',
+                        padding: '12px 12px',
+                        borderRadius: 12,
+                        border: 'none',
+                        background: activeTab === item.id ? 'rgba(99,102,241,0.1)' : 'transparent',
+                        color: activeTab === item.id ? '#6366f1' : '#334155',
+                        fontSize: 14,
+                        fontWeight: activeTab === item.id ? 600 : 500,
+                        cursor: 'pointer',
+                        marginBottom: 4,
+                        transition: 'all 0.15s',
+                      }}
+                      onMouseEnter={(e) => { if (activeTab !== item.id) (e.currentTarget as HTMLButtonElement).style.background = 'rgba(0,0,0,0.04)' }}
+                      onMouseLeave={(e) => { if (activeTab !== item.id) (e.currentTarget as HTMLButtonElement).style.background = 'transparent' }}
+                    >
+                      <Icon size={18} />
+                      {item.label}
+                    </button>
+                  )
+                })}
+              </div>
+              <div style={{ marginTop: 'auto', paddingTop: 32, borderTop: '1px solid rgba(0,0,0,0.06)', marginLeft: 12, marginRight: 12 }}>
+                <button
+                  onClick={handleLogout}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 12,
+                    width: '100%',
+                    padding: '12px 12px',
+                    borderRadius: 12,
+                    border: 'none',
+                    background: 'transparent',
+                    color: '#ef4444',
+                    fontSize: 14,
+                    fontWeight: 500,
+                    cursor: 'pointer',
+                    transition: 'background 0.15s',
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget as HTMLButtonElement).style.background = 'rgba(239,68,68,0.08)'}
+                  onMouseLeave={(e) => (e.currentTarget as HTMLButtonElement).style.background = 'transparent'}
+                >
+                  <LogOut size={18} />
+                  Sign out
+                </button>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
+
+      {/* MAIN CONTENT */}
       <div style={{ position: 'relative', zIndex: 5, padding: '24px 28px', maxWidth: 1600, margin: '0 auto' }}>
 
-        {/* ── TEMPLATES TAB ── */}
+        {/* TEMPLATES TAB */}
         {activeTab === 'templates' && (
           <div style={{ display: 'grid', gridTemplateColumns: selectedTemplate ? '260px 1fr 280px' : '1fr', gap: 20 }}>
-
             {/* Left: template list */}
             <div>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-                <span style={{ fontSize: 13, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>Templates ({templates.length})</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#334155' }}>Templates ({templates.length})</span>
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.97 }}
@@ -934,7 +1044,6 @@ const DashboardPage = () => {
                   + Upload
                 </motion.button>
               </div>
-
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
                 {templates.map((t) => (
                   <motion.div
@@ -942,20 +1051,20 @@ const DashboardPage = () => {
                     whileHover={{ scale: 1.02, y: -2 }}
                     onClick={() => handleSelectTemplate(t)}
                     style={{
-                      ...glass,
+                      ...glassCard,
                       padding: '14px 16px',
                       cursor: 'pointer',
-                      border: selectedTemplate?.id === t.id ? '1px solid rgba(99,102,241,0.5)' : '1px solid rgba(255,255,255,0.10)',
-                      background: selectedTemplate?.id === t.id ? 'rgba(99,102,241,0.12)' : 'rgba(255,255,255,0.06)',
+                      border: selectedTemplate?.id === t.id ? '1px solid #6366f1' : '1px solid rgba(255,255,255,0.8)',
+                      background: selectedTemplate?.id === t.id ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.6)',
                     }}
                   >
-                    <div style={{ width: '100%', height: 80, borderRadius: 10, overflow: 'hidden', marginBottom: 10, background: 'rgba(0,0,0,0.3)' }}>
+                    <div style={{ width: '100%', height: 80, borderRadius: 10, overflow: 'hidden', marginBottom: 10, background: '#f1f5f9' }}>
                       <img src={t.file_path} alt={t.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { (e.target as HTMLImageElement).style.display = 'none' }} />
                     </div>
-                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.name}</div>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)' }}>{t.fields?.length ?? 0} fields</span>
-                      {t.is_default && <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.2)', color: '#a5b4fc', padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>DEFAULT</span>}
+                      <span style={{ fontSize: 11, color: '#64748b' }}>{t.fields?.length ?? 0} fields</span>
+                      {t.is_default && <span style={{ fontSize: 10, background: 'rgba(99,102,241,0.15)', color: '#6366f1', padding: '2px 7px', borderRadius: 5, fontWeight: 600 }}>DEFAULT</span>}
                     </div>
                   </motion.div>
                 ))}
@@ -965,50 +1074,41 @@ const DashboardPage = () => {
             {/* Center: canvas */}
             {selectedTemplate && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* Template header */}
-                <div style={{ ...glass, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>{selectedTemplate.name}</span>
-
-                  {/* Global font */}
+                <div style={{ ...glassCard, padding: '14px 20px', display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 15, fontWeight: 700, flex: 1, color: '#0f172a' }}>{selectedTemplate.name}</span>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>Global Font:</span>
+                    <span style={{ fontSize: 11, color: '#64748b' }}>Global Font:</span>
                     <select
                       value={selectedTemplate.global_font}
                       onChange={(e) => handleUpdateGlobalFont(e.target.value)}
-                      style={{ background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 8, padding: '5px 10px', color: '#fff', fontSize: 12, cursor: 'pointer', outline: 'none' }}
+                      style={{ background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 8, padding: '5px 10px', color: '#0f172a', fontSize: 12, cursor: 'pointer', outline: 'none' }}
                     >
                       {FONT_OPTIONS.map((f) => <option key={f} value={f}>{f}</option>)}
                     </select>
                   </div>
-
-                  {/* Generate link */}
                   <motion.button
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={handleGenerateLink}
                     style={{ background: 'linear-gradient(135deg, #10b981, #059669)', border: 'none', borderRadius: 10, padding: '8px 16px', color: '#fff', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
                   >
-                    🔗 Generate Link
+                    <Link2 size={13} style={{ marginRight: 5, verticalAlign: 'middle' }} /> Generate Link
                   </motion.button>
-
                   <motion.button
                     whileHover={{ scale: 1.04 }}
                     whileTap={{ scale: 0.97 }}
                     onClick={() => handleDeleteTemplate(selectedTemplate.id)}
-                    style={{ background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '8px 14px', color: '#f87171', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+                    style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '8px 14px', color: '#ef4444', fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
                   >
                     Delete
                   </motion.button>
                 </div>
-
                 {generatedLink && (
-                  <div style={{ ...glass, padding: '12px 16px', background: 'rgba(16,185,129,0.08)', border: '1px solid rgba(16,185,129,0.25)' }}>
-                    <div style={{ fontSize: 11, color: '#34d399', fontWeight: 700, marginBottom: 4 }}>✅ Client Link (copied to clipboard)</div>
-                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.6)', wordBreak: 'break-all', fontFamily: 'monospace' }}>{generatedLink}</div>
+                  <div style={{ ...glassCard, padding: '12px 16px', background: 'rgba(16,185,129,0.1)', border: '1px solid rgba(16,185,129,0.3)' }}>
+                    <div style={{ fontSize: 11, color: '#10b981', fontWeight: 700, marginBottom: 4, display: 'flex', alignItems: 'center', gap: 5 }}><CheckCircle2 size={13} /> Client Link (copied to clipboard)</div>
+                    <div style={{ fontSize: 12, color: '#334155', wordBreak: 'break-all', fontFamily: 'monospace' }}>{generatedLink}</div>
                   </div>
                 )}
-
-                {/* Canvas */}
                 <CanvasBuilder
                   template={selectedTemplate}
                   fields={selectedTemplate.fields ?? []}
@@ -1020,8 +1120,7 @@ const DashboardPage = () => {
                   onFieldMove={handleFieldMove}
                   onAddField={handleAddField}
                 />
-
-                <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', textAlign: 'center' }}>
+                <div style={{ fontSize: 11, color: '#64748b', textAlign: 'center' }}>
                   {selectedTemplate.fields?.length ?? 0} field{(selectedTemplate.fields?.length ?? 0) !== 1 ? 's' : ''} placed
                 </div>
               </div>
@@ -1030,8 +1129,7 @@ const DashboardPage = () => {
             {/* Right: panels */}
             {selectedTemplate && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-                {/* Layers */}
-                <div style={{ ...glass, overflow: 'hidden' }}>
+                <div style={{ ...glassCard, overflow: 'hidden' }}>
                   <LayersPanel
                     fields={selectedTemplate.fields ?? []}
                     selectedFieldId={selectedField?.id ?? null}
@@ -1039,10 +1137,8 @@ const DashboardPage = () => {
                     onReorder={() => {}}
                   />
                 </div>
-
-                {/* Properties */}
                 {selectedField && (
-                  <div style={{ ...glass, overflow: 'hidden' }}>
+                  <div style={{ ...glassCard, overflow: 'hidden' }}>
                     <PropertyPanel
                       field={selectedField}
                       globalFont={selectedTemplate.global_font}
@@ -1056,45 +1152,45 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {/* ── SUBMISSIONS TAB ── */}
+        {/* SUBMISSIONS TAB */}
         {activeTab === 'submissions' && (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>Submissions ({submissions.length})</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 20, color: '#0f172a' }}>Submissions ({submissions.length})</div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: 16 }}>
               {submissions.map((s) => {
                 const fd = (() => { try { return JSON.parse(s.form_data) } catch { return {} } })()
                 return (
-                  <motion.div key={s.id} whileHover={{ y: -4 }} style={{ ...glass, padding: '20px 22px' }}>
+                  <motion.div key={s.id} whileHover={{ y: -4 }} style={{ ...glassCard, padding: '20px 22px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
-                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📋</div>
+                      <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ClipboardList size={16} color="#fff" /></div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700 }}>Submission #{s.id}</div>
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{new Date(s.created_at).toLocaleString()}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>Submission #{s.id}</div>
+                        <div style={{ fontSize: 11, color: '#64748b' }}>{new Date(s.created_at).toLocaleString()}</div>
                       </div>
-                      <span style={{ marginLeft: 'auto', fontSize: 10, padding: '3px 8px', borderRadius: 6, background: s.email_sent ? 'rgba(16,185,129,0.2)' : 'rgba(245,158,11,0.2)', color: s.email_sent ? '#34d399' : '#fbbf24', fontWeight: 700 }}>
-                        {s.email_sent ? '✉ Sent' : '⏳ Pending'}
+                      <span style={{ marginLeft: 'auto', fontSize: 10, padding: '3px 8px', borderRadius: 6, background: s.email_sent ? 'rgba(16,185,129,0.15)' : 'rgba(245,158,11,0.15)', color: s.email_sent ? '#10b981' : '#f59e0b', fontWeight: 700 }}>
+                        {s.email_sent ? <><Mail size={11} style={{ marginRight: 3 }} /> Sent</> : <><Clock size={11} style={{ marginRight: 3 }} /> Pending</>}
                       </span>
                     </div>
-                    {s.recipient_email && <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.5)', marginBottom: 10 }}>📧 {s.recipient_email}</div>}
-                    <div style={{ background: 'rgba(0,0,0,0.2)', borderRadius: 10, padding: '10px 12px', marginBottom: 12 }}>
+                    {s.recipient_email && <div style={{ fontSize: 12, color: '#64748b', marginBottom: 10 }}>📧 {s.recipient_email}</div>}
+                    <div style={{ background: '#f8fafc', borderRadius: 10, padding: '10px 12px', marginBottom: 12 }}>
                       {Object.entries(fd).slice(0, 4).map(([k, v]) => (
                         <div key={k} style={{ display: 'flex', gap: 8, marginBottom: 4 }}>
-                          <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', minWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>{k}</span>
-                          <span style={{ fontSize: 11, color: '#e2e8f0', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{String(v)}</span>
+                          <span style={{ fontSize: 11, color: '#64748b', minWidth: 80, overflow: 'hidden', textOverflow: 'ellipsis' }}>{k}</span>
+                          <span style={{ fontSize: 11, color: '#0f172a', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{String(v)}</span>
                         </div>
                       ))}
                     </div>
                     {s.qr_code && (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <img src={s.qr_code} alt="QR" style={{ width: 48, height: 48, borderRadius: 8 }} />
-                        <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.submission_token.slice(0, 20)}…</div>
+                        <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>{s.submission_token.slice(0, 20)}…</div>
                       </div>
                     )}
                   </motion.div>
                 )
               })}
               {submissions.length === 0 && (
-                <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: 60, fontSize: 14 }}>
+                <div style={{ gridColumn: '1 / -1', textAlign: 'center', color: '#94a3b8', paddingTop: 60, fontSize: 14 }}>
                   No submissions yet. Share a template link to get started!
                 </div>
               )}
@@ -1102,23 +1198,23 @@ const DashboardPage = () => {
           </div>
         )}
 
-        {/* ── SCANS TAB ── */}
+        {/* SCANS TAB */}
         {activeTab === 'scans' && (
           <div>
-            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 20 }}>QR Scans ({scans.length})</div>
+            <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 20, color: '#0f172a' }}>QR Scans ({scans.length})</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               {scans.map((sc) => (
-                <motion.div key={sc.id} whileHover={{ x: 4 }} style={{ ...glass, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16 }}>📡</div>
+                <motion.div key={sc.id} whileHover={{ x: 4 }} style={{ ...glassCard, padding: '16px 20px', display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #059669)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><ScanLine size={16} color="#fff" /></div>
                   <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 700 }}>Submission #{sc.submission_id}</div>
-                    <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)' }}>{new Date(sc.scanned_at).toLocaleString()}</div>
+                    <div style={{ fontSize: 13, fontWeight: 700, color: '#0f172a' }}>Submission #{sc.submission_id}</div>
+                    <div style={{ fontSize: 11, color: '#64748b' }}>{new Date(sc.scanned_at).toLocaleString()}</div>
                   </div>
-                  {sc.ip_address && <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', fontFamily: 'monospace' }}>{sc.ip_address}</div>}
+                  {sc.ip_address && <div style={{ fontSize: 11, color: '#64748b', fontFamily: 'monospace' }}>{sc.ip_address}</div>}
                 </motion.div>
               ))}
               {scans.length === 0 && (
-                <div style={{ textAlign: 'center', color: 'rgba(255,255,255,0.3)', paddingTop: 60, fontSize: 14 }}>
+                <div style={{ textAlign: 'center', color: '#94a3b8', paddingTop: 60, fontSize: 14 }}>
                   No scans yet. QR codes from submitted certificates will appear here.
                 </div>
               )}
@@ -1134,7 +1230,7 @@ const DashboardPage = () => {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: 24 }}
             onClick={(e) => { if (e.target === e.currentTarget) setShowUpload(false) }}
           >
             <motion.div
@@ -1142,44 +1238,41 @@ const DashboardPage = () => {
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               transition={{ type: 'spring', stiffness: 260, damping: 20 }}
-              style={{ background: 'rgba(30,20,60,0.95)', borderRadius: 24, border: '1px solid rgba(255,255,255,0.12)', padding: '36px 32px', width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,0.5)' }}
+              style={{ background: '#fff', borderRadius: 24, border: '1px solid #e2e8f0', padding: '36px 32px', width: '100%', maxWidth: 480, boxShadow: '0 20px 60px rgba(0,0,0,0.1)' }}
             >
-              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 24, color: '#fff' }}>Upload Template</h2>
-
+              <h2 style={{ fontSize: 20, fontWeight: 800, marginBottom: 24, color: '#0f172a' }}>Upload Template</h2>
               <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.7 }}>Template Name</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.7 }}>Template Name</label>
                 <input
-                  style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+                  style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '12px 14px', color: '#0f172a', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
                   placeholder="e.g. Employee of the Month"
                   value={uploadName}
                   onChange={(e) => setUploadName(e.target.value)}
                 />
               </div>
-
               <div style={{ marginBottom: 28 }}>
-                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.4)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.7 }}>File (PNG, JPG, PDF)</label>
+                <label style={{ display: 'block', fontSize: 11, fontWeight: 700, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.7 }}>File (PNG, JPG, PDF)</label>
                 <div
                   onClick={() => document.getElementById('file-input')?.click()}
                   style={{
-                    border: '2px dashed rgba(99,102,241,0.4)',
+                    border: '2px dashed #cbd5e1',
                     borderRadius: 12,
                     padding: '28px 20px',
                     textAlign: 'center',
                     cursor: 'pointer',
-                    background: uploadFile ? 'rgba(99,102,241,0.08)' : 'rgba(255,255,255,0.03)',
+                    background: uploadFile ? '#f1f5f9' : '#f8fafc',
                     transition: 'all 0.2s',
                   }}
                 >
-                  <div style={{ fontSize: 28, marginBottom: 8 }}>{uploadFile ? '✅' : '📁'}</div>
-                  <div style={{ fontSize: 13, color: uploadFile ? '#a5b4fc' : 'rgba(255,255,255,0.4)' }}>
+                  <div style={{ fontSize: 28, marginBottom: 8, display: 'flex', justifyContent: 'center' }}>{uploadFile ? <CheckCircle2 size={32} color="#10b981" /> : <FolderOpen size={32} color="#94a3b8" />}</div>
+                  <div style={{ fontSize: 13, color: uploadFile ? '#0f172a' : '#64748b' }}>
                     {uploadFile ? uploadFile.name : 'Click to select file'}
                   </div>
                   <input id="file-input" type="file" accept=".png,.jpg,.jpeg,.pdf" style={{ display: 'none' }} onChange={(e) => setUploadFile(e.target.files?.[0] ?? null)} />
                 </div>
               </div>
-
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setShowUpload(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid rgba(255,255,255,0.12)', background: 'transparent', color: 'rgba(255,255,255,0.5)', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+                <button onClick={() => setShowUpload(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: '1px solid #e2e8f0', background: '#fff', color: '#64748b', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
                   Cancel
                 </button>
                 <motion.button

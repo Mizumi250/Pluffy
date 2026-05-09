@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — certflow/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:36:21.436Z
+// Generated: 2026-05-09T13:45:41.034Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -18,6 +18,12 @@ import { useRouter } from 'next/navigation'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
 import { AnimatePresence } from 'framer-motion'
+import {
+  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
+  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
+  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
+  Menu, X
+} from 'lucide-react'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
@@ -340,11 +346,11 @@ export const CanvasBuilder = ({
         height: Math.round(imgDims.h * scale),
         overflow: 'hidden',
         borderRadius: 16,
-        border: '1.5px solid rgba(255,255,255,0.18)',
-        boxShadow: '0 8px 40px rgba(100,120,255,0.10)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
         cursor: 'crosshair',
         userSelect: 'none',
-        background: 'rgba(255,255,255,0.04)',
+        background: 'rgba(255,255,255,0.6)',
       }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -381,13 +387,13 @@ export const CanvasBuilder = ({
               height: field.height * scale,
               border: isSelected
                 ? '2px solid #6366f1'
-                : '1.5px dashed rgba(99,102,241,0.5)',
+                : '1.5px dashed rgba(99,102,241,0.4)',
               borderRadius: 6,
               background: isSelected
-                ? 'rgba(99,102,241,0.08)'
-                : 'rgba(99,102,241,0.03)',
+                ? 'rgba(99,102,241,0.1)'
+                : 'rgba(99,102,241,0.05)',
               cursor: 'grab',
-              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.2)' : 'none',
+              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
               transition: 'border 0.15s, background 0.15s',
               display: 'flex',
               alignItems: 'center',
@@ -438,7 +444,7 @@ export const CanvasBuilder = ({
         bottom: 10,
         left: '50%',
         transform: 'translateX(-50%)',
-        background: 'rgba(0,0,0,0.45)',
+        background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(8px)',
         color: '#fff',
         fontSize: 11,
@@ -482,13 +488,13 @@ export const PropertyPanel = ({
   }
 
   const row: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }
-  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8 }
+  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 }
   const input: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
     borderRadius: 8,
     padding: '8px 10px',
-    color: '#fff',
+    color: '#0f172a',
     fontSize: 13,
     outline: 'none',
     width: '100%',
@@ -498,7 +504,7 @@ export const PropertyPanel = ({
 
   return (
     <div style={{ padding: '16px 16px 20px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Field Properties
       </div>
 
@@ -576,8 +582,8 @@ export const PropertyPanel = ({
               cursor: 'pointer',
               fontSize: 12,
               fontWeight: 600,
-              background: localField.font_weight === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.font_weight === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.font_weight === v ? '#6366f1' : '#e2e8f0',
+              color: localField.font_weight === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -595,8 +601,8 @@ export const PropertyPanel = ({
               border: 'none',
               cursor: 'pointer',
               fontSize: 14,
-              background: localField.text_align === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.text_align === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.text_align === v ? '#6366f1' : '#e2e8f0',
+              color: localField.text_align === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -612,7 +618,7 @@ export const PropertyPanel = ({
             borderRadius: 11,
             border: 'none',
             cursor: 'pointer',
-            background: localField.is_required ? '#6366f1' : 'rgba(255,255,255,0.15)',
+            background: localField.is_required ? '#6366f1' : '#cbd5e1',
             position: 'relative',
             transition: 'background 0.2s',
           }}>
@@ -627,7 +633,7 @@ export const PropertyPanel = ({
               transition: 'left 0.2s',
             }} />
           </button>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
+          <span style={{ fontSize: 12, color: '#64748b' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
         </div>
       </div>
 
@@ -635,15 +641,15 @@ export const PropertyPanel = ({
         width: '100%',
         padding: '10px',
         borderRadius: 10,
-        border: '1px solid rgba(239,68,68,0.3)',
-        background: 'rgba(239,68,68,0.08)',
-        color: '#f87171',
+        border: '1px solid #fecaca',
+        background: '#fef2f2',
+        color: '#ef4444',
         fontSize: 13,
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'all 0.15s',
       }}>
-        🗑 Delete Field
+        <Trash2 size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} /> Delete Field
       </button>
     </div>
   )
@@ -666,11 +672,11 @@ export const LayersPanel = ({
 
   return (
     <div style={{ padding: '16px 12px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Layers ({fields.length})
       </div>
       {sorted.length === 0 && (
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', paddingTop: 24 }}>
+        <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', paddingTop: 24 }}>
           No fields yet.<br />Double-click canvas to add.
         </div>
       )}
@@ -685,17 +691,17 @@ export const LayersPanel = ({
             padding: '8px 10px',
             borderRadius: 8,
             marginBottom: 4,
-            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
-            border: selectedFieldId === f.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
+            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.1)' : '#f8fafc',
+            border: selectedFieldId === f.id ? '1px solid #6366f1' : '1px solid #e2e8f0',
             cursor: 'pointer',
             transition: 'all 0.12s',
           }}
         >
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 14 }}>{i + 1}</span>
-          <span style={{ flex: 1, fontSize: 12, color: '#e2e8f0', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 10, color: '#64748b', minWidth: 14 }}>{i + 1}</span>
+          <span style={{ flex: 1, fontSize: 12, color: '#0f172a', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {f.label}
           </span>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 10, color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
             {f.field_type}
           </span>
         </div>
@@ -729,7 +735,7 @@ const LoginPage = () => {
     setError(null)
     try {
       await login(email, password)
-      toast('Welcome back! 🎓', 'ok')
+      toast('Welcome back!', 'ok')
       router.push('/certflow/dashboard')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed')
@@ -743,7 +749,7 @@ const LoginPage = () => {
   return (
     <div style={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)',
+      background: 'linear-gradient(135deg, #eaf3fa 0%, #f5e8fe 100%)',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
@@ -751,59 +757,79 @@ const LoginPage = () => {
       padding: 24,
       position: 'relative',
       overflow: 'hidden',
+      fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Display", sans-serif',
     }}>
       {/* Blobs */}
-      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '60% 40% 30% 70% / 60% 30% 70% 40%', background: 'radial-gradient(circle, rgba(99,102,241,0.25) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
-      <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: 400, height: 400, borderRadius: '40% 60% 70% 30% / 40% 50% 60% 50%', background: 'radial-gradient(circle, rgba(167,139,250,0.2) 0%, transparent 70%)', filter: 'blur(40px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: 500, height: 500, borderRadius: '50%', background: 'radial-gradient(circle, rgba(99,102,241,0.15) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
+      <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: 400, height: 400, borderRadius: '50%', background: 'radial-gradient(circle, rgba(168,85,247,0.12) 0%, transparent 70%)', filter: 'blur(60px)', pointerEvents: 'none' }} />
 
       <ToastStack />
 
       {/* Logo */}
       <div ref={logoRef} style={{ textAlign: 'center', marginBottom: 32 }}>
-        <div style={{ fontSize: 36, marginBottom: 8 }}>🎓</div>
-        <h1 style={{ fontSize: 28, fontWeight: 800, color: '#fff', letterSpacing: -0.5, margin: 0 }}>CertFlow</h1>
-        <p style={{ color: 'rgba(255,255,255,0.45)', fontSize: 14, marginTop: 4 }}>Admin Portal</p>
+        <div style={{
+          width: 60,
+          height: 60,
+          borderRadius: 18,
+          background: 'rgba(255,255,255,0.8)',
+          backdropFilter: 'blur(12px)',
+          border: '1px solid rgba(255,255,255,0.9)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          margin: '0 auto 12px',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.05)',
+        }}>
+          <GraduationCap size={28} color="#6366f1" />
+        </div>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0f172a', letterSpacing: -0.5, margin: 0 }}>CertFlow</h1>
+        <p style={{ color: '#64748b', fontSize: 13, marginTop: 4 }}>Admin Portal</p>
       </div>
 
       {/* Card */}
       <div ref={cardRef} style={{
         width: '100%',
         maxWidth: 400,
-        background: 'rgba(255,255,255,0.07)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)',
+        background: 'rgba(255,255,255,0.85)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
         borderRadius: 24,
-        border: '1px solid rgba(255,255,255,0.12)',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.4)',
-        padding: '40px 36px',
+        border: '1px solid rgba(255,255,255,0.9)',
+        boxShadow: '0 8px 40px rgba(0,0,0,0.08)',
+        padding: '36px 32px',
       }}>
-        <h2 style={{ fontSize: 20, fontWeight: 700, color: '#fff', margin: '0 0 24px' }}>Sign in</h2>
+        <h2 style={{ fontSize: 19, fontWeight: 700, color: '#0f172a', margin: '0 0 22px' }}>Sign in</h2>
 
         {error && (
-          <div style={{ background: 'rgba(239,68,68,0.15)', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 10, padding: '10px 14px', marginBottom: 16, color: '#f87171', fontSize: 13 }}>
+          <div style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '10px 14px', marginBottom: 16, color: '#ef4444', fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <XCircle size={14} />
             {error}
           </div>
         )}
 
-        <div style={{ marginBottom: 16 }}>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.6 }}>Email</label>
+        <div style={{ marginBottom: 14 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.6 }}>Email</label>
           <input
-            style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '11px 14px', color: '#0f172a', fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border 0.15s' }}
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             onKeyDown={onKeyDown}
+            onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.border = '1px solid #6366f1' }}
+            onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.border = '1px solid #e2e8f0' }}
           />
         </div>
 
-        <div style={{ marginBottom: 28 }}>
-          <label style={{ display: 'block', fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.6 }}>Password</label>
+        <div style={{ marginBottom: 26 }}>
+          <label style={{ display: 'block', fontSize: 11, fontWeight: 600, color: '#64748b', marginBottom: 6, textTransform: 'uppercase', letterSpacing: 0.6 }}>Password</label>
           <input
-            style={{ width: '100%', background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: 12, padding: '12px 14px', color: '#fff', fontSize: 14, outline: 'none', boxSizing: 'border-box' }}
+            style={{ width: '100%', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: 12, padding: '11px 14px', color: '#0f172a', fontSize: 14, outline: 'none', boxSizing: 'border-box', transition: 'border 0.15s' }}
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             onKeyDown={onKeyDown}
+            onFocus={(e) => { (e.currentTarget as HTMLInputElement).style.border = '1px solid #6366f1' }}
+            onBlur={(e) => { (e.currentTarget as HTMLInputElement).style.border = '1px solid #e2e8f0' }}
           />
         </div>
 
@@ -814,23 +840,23 @@ const LoginPage = () => {
           disabled={isLoading}
           style={{
             width: '100%',
-            padding: '14px',
+            padding: '13px',
             borderRadius: 12,
             border: 'none',
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
             color: '#fff',
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: 700,
             cursor: isLoading ? 'not-allowed' : 'pointer',
             opacity: isLoading ? 0.7 : 1,
-            boxShadow: '0 4px 20px rgba(99,102,241,0.4)',
+            boxShadow: '0 4px 16px rgba(99,102,241,0.3)',
             transition: 'opacity 0.2s',
           }}
         >
           {isLoading ? 'Signing in…' : 'Sign in →'}
         </motion.button>
 
-        <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', marginTop: 20 }}>
+        <p style={{ fontSize: 11, color: '#94a3b8', textAlign: 'center', marginTop: 18, fontFamily: 'monospace' }}>
           admin@certflow.com · certflow123
         </p>
       </div>

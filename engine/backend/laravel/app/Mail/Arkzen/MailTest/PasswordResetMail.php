@@ -5,7 +5,7 @@
 // Tatemono: mail-test
 // Subject: Reset your password
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:29:00.126153Z
+// Generated: 2026-05-09T12:55:29.747209Z
 // ============================================================
 
 namespace App\Mail\Arkzen\MailTest;

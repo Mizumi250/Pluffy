@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — roles-test
 // Visiting /roles-test redirects to /roles-test/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:29:01.517Z
+// Generated: 2026-05-09T12:55:31.386Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

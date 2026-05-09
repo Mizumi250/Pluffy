@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:36:21.413Z
+// Generated: 2026-05-09T13:45:41.030Z
 // ============================================================
 
 'use client'
@@ -14,6 +14,12 @@ import { useRouter } from 'next/navigation'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
 import { AnimatePresence } from 'framer-motion'
+import {
+  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
+  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
+  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
+  Menu, X
+} from 'lucide-react'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
@@ -340,11 +346,11 @@ export const CanvasBuilder = ({
         height: Math.round(imgDims.h * scale),
         overflow: 'hidden',
         borderRadius: 16,
-        border: '1.5px solid rgba(255,255,255,0.18)',
-        boxShadow: '0 8px 40px rgba(100,120,255,0.10)',
+        border: '1px solid rgba(0,0,0,0.08)',
+        boxShadow: '0 4px 24px rgba(0,0,0,0.05)',
         cursor: 'crosshair',
         userSelect: 'none',
-        background: 'rgba(255,255,255,0.04)',
+        background: 'rgba(255,255,255,0.6)',
       }}
       onMouseMove={onMouseMove}
       onMouseUp={onMouseUp}
@@ -381,13 +387,13 @@ export const CanvasBuilder = ({
               height: field.height * scale,
               border: isSelected
                 ? '2px solid #6366f1'
-                : '1.5px dashed rgba(99,102,241,0.5)',
+                : '1.5px dashed rgba(99,102,241,0.4)',
               borderRadius: 6,
               background: isSelected
-                ? 'rgba(99,102,241,0.08)'
-                : 'rgba(99,102,241,0.03)',
+                ? 'rgba(99,102,241,0.1)'
+                : 'rgba(99,102,241,0.05)',
               cursor: 'grab',
-              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.2)' : 'none',
+              boxShadow: isSelected ? '0 0 0 3px rgba(99,102,241,0.15)' : 'none',
               transition: 'border 0.15s, background 0.15s',
               display: 'flex',
               alignItems: 'center',
@@ -438,7 +444,7 @@ export const CanvasBuilder = ({
         bottom: 10,
         left: '50%',
         transform: 'translateX(-50%)',
-        background: 'rgba(0,0,0,0.45)',
+        background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(8px)',
         color: '#fff',
         fontSize: 11,
@@ -486,13 +492,13 @@ export const PropertyPanel = ({
   }
 
   const row: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 4, marginBottom: 14 }
-  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: 0.8 }
+  const label: React.CSSProperties = { fontSize: 10, fontWeight: 700, color: '#64748b', textTransform: 'uppercase', letterSpacing: 0.8 }
   const input: React.CSSProperties = {
-    background: 'rgba(255,255,255,0.07)',
-    border: '1px solid rgba(255,255,255,0.12)',
+    background: '#f8fafc',
+    border: '1px solid #e2e8f0',
     borderRadius: 8,
     padding: '8px 10px',
-    color: '#fff',
+    color: '#0f172a',
     fontSize: 13,
     outline: 'none',
     width: '100%',
@@ -502,7 +508,7 @@ export const PropertyPanel = ({
 
   return (
     <div style={{ padding: '16px 16px 20px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 16, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Field Properties
       </div>
 
@@ -580,8 +586,8 @@ export const PropertyPanel = ({
               cursor: 'pointer',
               fontSize: 12,
               fontWeight: 600,
-              background: localField.font_weight === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.font_weight === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.font_weight === v ? '#6366f1' : '#e2e8f0',
+              color: localField.font_weight === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -599,8 +605,8 @@ export const PropertyPanel = ({
               border: 'none',
               cursor: 'pointer',
               fontSize: 14,
-              background: localField.text_align === v ? '#6366f1' : 'rgba(255,255,255,0.08)',
-              color: localField.text_align === v ? '#fff' : 'rgba(255,255,255,0.5)',
+              background: localField.text_align === v ? '#6366f1' : '#e2e8f0',
+              color: localField.text_align === v ? '#fff' : '#0f172a',
               transition: 'all 0.15s',
             }}>{l}</button>
           ))}
@@ -616,7 +622,7 @@ export const PropertyPanel = ({
             borderRadius: 11,
             border: 'none',
             cursor: 'pointer',
-            background: localField.is_required ? '#6366f1' : 'rgba(255,255,255,0.15)',
+            background: localField.is_required ? '#6366f1' : '#cbd5e1',
             position: 'relative',
             transition: 'background 0.2s',
           }}>
@@ -631,7 +637,7 @@ export const PropertyPanel = ({
               transition: 'left 0.2s',
             }} />
           </button>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.55)' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
+          <span style={{ fontSize: 12, color: '#64748b' }}>{localField.is_required ? 'Required' : 'Optional'}</span>
         </div>
       </div>
 
@@ -639,15 +645,15 @@ export const PropertyPanel = ({
         width: '100%',
         padding: '10px',
         borderRadius: 10,
-        border: '1px solid rgba(239,68,68,0.3)',
-        background: 'rgba(239,68,68,0.08)',
-        color: '#f87171',
+        border: '1px solid #fecaca',
+        background: '#fef2f2',
+        color: '#ef4444',
         fontSize: 13,
         fontWeight: 600,
         cursor: 'pointer',
         transition: 'all 0.15s',
       }}>
-        🗑 Delete Field
+        <Trash2 size={14} style={{ marginRight: 6, verticalAlign: 'middle' }} /> Delete Field
       </button>
     </div>
   )
@@ -670,11 +676,11 @@ export const LayersPanel = ({
 
   return (
     <div style={{ padding: '16px 12px' }}>
-      <div style={{ fontSize: 11, fontWeight: 700, color: '#a5b4fc', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
+      <div style={{ fontSize: 11, fontWeight: 700, color: '#6366f1', marginBottom: 12, textTransform: 'uppercase', letterSpacing: 0.8 }}>
         Layers ({fields.length})
       </div>
       {sorted.length === 0 && (
-        <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', textAlign: 'center', paddingTop: 24 }}>
+        <div style={{ fontSize: 12, color: '#94a3b8', textAlign: 'center', paddingTop: 24 }}>
           No fields yet.<br />Double-click canvas to add.
         </div>
       )}
@@ -689,17 +695,17 @@ export const LayersPanel = ({
             padding: '8px 10px',
             borderRadius: 8,
             marginBottom: 4,
-            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.18)' : 'rgba(255,255,255,0.04)',
-            border: selectedFieldId === f.id ? '1px solid rgba(99,102,241,0.4)' : '1px solid transparent',
+            background: selectedFieldId === f.id ? 'rgba(99,102,241,0.1)' : '#f8fafc',
+            border: selectedFieldId === f.id ? '1px solid #6366f1' : '1px solid #e2e8f0',
             cursor: 'pointer',
             transition: 'all 0.12s',
           }}
         >
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', minWidth: 14 }}>{i + 1}</span>
-          <span style={{ flex: 1, fontSize: 12, color: '#e2e8f0', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <span style={{ fontSize: 10, color: '#64748b', minWidth: 14 }}>{i + 1}</span>
+          <span style={{ flex: 1, fontSize: 12, color: '#0f172a', fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {f.label}
           </span>
-          <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', padding: '2px 6px', borderRadius: 4 }}>
+          <span style={{ fontSize: 10, color: '#64748b', background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
             {f.field_type}
           </span>
         </div>
