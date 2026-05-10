@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — dtr-geofencing
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-09T12:55:27.488Z
+// Generated: 2026-05-10T13:17:31.966Z
 // ============================================================
 
 'use client'
