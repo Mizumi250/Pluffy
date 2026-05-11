@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:29.065Z
+// Generated: 2026-05-11T14:21:30.781Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -20,7 +20,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,
@@ -81,9 +81,13 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     setLoading(true)
-    const ok = await login(email, password)
-    if (ok) { toastSuccess('Logged in'); router.push('/body-mail-notification/dashboard') }
-    else     { toastError('Invalid credentials') }
+    try {
+      await login(email, password)
+      toastSuccess('Logged in')
+      router.push('/body-mail-notification/dashboard')
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : 'Invalid credentials')
+    }
     setLoading(false)
   }
 

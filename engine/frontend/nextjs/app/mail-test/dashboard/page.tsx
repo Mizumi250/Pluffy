@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:33.688Z
+// Generated: 2026-05-11T13:31:09.243Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -80,7 +80,9 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/mail-test/logs')
       const d   = await res.json()
-      setLogs(d.data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(d) ? d : (d?.data ?? [])
+      setLogs(items)
     } catch {}
     finally { setLoadingLogs(false) }
   }

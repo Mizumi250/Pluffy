@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:29.067Z
+// Generated: 2026-05-11T14:21:30.782Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -20,7 +20,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,
@@ -82,9 +82,13 @@ const RegisterPage = () => {
 
   const handleRegister = async () => {
     setLoading(true)
-    const ok = await register(name, email, password)
-    if (ok) { toastSuccess('Account created'); router.push('/body-mail-notification/dashboard') }
-    else     { toastError('Registration failed') }
+    try {
+      await register(name, email, password, password)
+      toastSuccess('Account created')
+      router.push('/body-mail-notification/dashboard')
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : 'Registration failed')
+    }
     setLoading(false)
   }
 

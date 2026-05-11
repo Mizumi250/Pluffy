@@ -160,6 +160,7 @@ const IndexPage = () => {
     setLoading(true)
     try {
       const res = await arkzenFetch('/api/crud-test/items')
+      if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
       // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
@@ -216,9 +217,8 @@ const remove = async (id: number) => {
   try {
     const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
     console.log('[DELETE] Response status:', res.status)  // Debug
-    if (res.ok) {
-      await load()  // ← RELOAD from server instead of manual filter
-    }
+    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+    await load()  // ← RELOAD from server instead of manual filter
   } catch (err) {
     console.error('[DELETE] Error:', err)
   } finally { 

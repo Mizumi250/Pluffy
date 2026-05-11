@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:31.968Z
+// Generated: 2026-05-11T13:31:06.342Z
 // ============================================================
 
 export { RecordRow } from './_components'

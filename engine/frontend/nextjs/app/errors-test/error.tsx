@@ -5,7 +5,7 @@
 // Rendered when an unhandled exception is thrown during render under /errors-test.
 // Must be a Client Component — Next.js requirement.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
-// Generated: 2026-05-10T13:17:32.382Z
+// Generated: 2026-05-11T13:31:06.619Z
 // ============================================================
 
 import React from 'react'

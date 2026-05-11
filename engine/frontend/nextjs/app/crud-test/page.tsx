@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — crud-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:31.153Z
+// Generated: 2026-05-11T13:31:06.064Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -53,6 +53,7 @@ const IndexPage = () => {
     setLoading(true)
     try {
       const res = await arkzenFetch('/api/crud-test/items')
+      if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
       // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
@@ -109,9 +110,8 @@ const remove = async (id: number) => {
   try {
     const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
     console.log('[DELETE] Response status:', res.status)  // Debug
-    if (res.ok) {
-      await load()  // ← RELOAD from server instead of manual filter
-    }
+    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+    await load()  // ← RELOAD from server instead of manual filter
   } catch (err) {
     console.error('[DELETE] Error:', err)
   } finally { 

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-mail-notification
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:29.057Z
+// Generated: 2026-05-11T14:21:30.778Z
 // ============================================================
 
 'use client'
@@ -16,7 +16,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,

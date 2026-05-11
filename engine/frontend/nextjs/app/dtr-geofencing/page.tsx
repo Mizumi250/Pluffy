@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-10T13:17:31.971Z
+// Generated: 2026-05-11T13:31:06.344Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useRef as useMapRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
@@ -257,8 +257,8 @@ export const Skeleton = () => (
 
 export const GeofenceMap = () => {
   const { currentPosition, settings, selectedEmployee, distanceToOffice } = useDtrStore()
-  const mapRef = useMapRef<HTMLDivElement>(null)
-  const leafletMapRef = useMapRef<any>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const leafletMapRef = useRef<any>(null)
 
   useEffect(() => {
     if (!currentPosition || !settings || !mapRef.current) return

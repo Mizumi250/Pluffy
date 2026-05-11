@@ -145,7 +145,9 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/job-test/results')
       const d   = await res.json()
-      setResults(d.data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(d) ? d : (d?.data ?? [])
+      setResults(items)
     } finally {
       setLoading(false)
     }

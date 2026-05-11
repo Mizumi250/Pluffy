@@ -321,7 +321,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,
@@ -385,9 +385,13 @@ const LoginPage = () => {
 
   const handleLogin = async () => {
     setLoading(true)
-    const ok = await login(email, password)
-    if (ok) { toastSuccess('Logged in'); router.push('/body-mail-notification/dashboard') }
-    else     { toastError('Invalid credentials') }
+    try {
+      await login(email, password)
+      toastSuccess('Logged in')
+      router.push('/body-mail-notification/dashboard')
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : 'Invalid credentials')
+    }
     setLoading(false)
   }
 
@@ -423,9 +427,13 @@ const RegisterPage = () => {
 
   const handleRegister = async () => {
     setLoading(true)
-    const ok = await register(name, email, password)
-    if (ok) { toastSuccess('Account created'); router.push('/body-mail-notification/dashboard') }
-    else     { toastError('Registration failed') }
+    try {
+      await register(name, email, password, password)
+      toastSuccess('Account created')
+      router.push('/body-mail-notification/dashboard')
+    } catch (err) {
+      toastError(err instanceof Error ? err.message : 'Registration failed')
+    }
     setLoading(false)
   }
 
@@ -474,7 +482,9 @@ const DashboardPage = () => {
     try {
       const res  = await arkzenFetch('/api/body-mail-notification/log')
       const data = await res.json()
-      setLog(data.data ?? data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(data) ? data : (data?.data ?? [])
+      setLog(items)
     } catch { toastError('Failed to load log') }
     setLoading(false)
   }

@@ -4,6 +4,10 @@
 // ARKZEN ENGINE — COMPONENTS INDEX
 // All built-in engine components exported from one place
 // Import in tatemonos: import { Modal, Toast } from '@arkzen/components'
+//
+// v5.1 — Export motion and AnimatePresence from here to avoid
+// duplication. Tatemonos can import from components instead of
+// directly from 'framer-motion'.
 // ============================================================
 
 export { Modal } from './Modal'
@@ -20,3 +24,8 @@ export { PageTransition } from './PageTransition'
 export { Badge } from './Badge'
 export { Avatar } from './Avatar'
 export { EmptyState } from './EmptyState'
+
+// ────────────────────────────────────────────
+// MOTION EXPORTS (for tatemono animations)
+// ────────────────────────────────────────────
+export { motion, AnimatePresence } from 'framer-motion'
