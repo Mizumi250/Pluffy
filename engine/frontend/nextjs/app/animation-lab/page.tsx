@@ -3,13 +3,14 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T12:22:59.553Z
+// Generated: 2026-05-13T14:31:44.311Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
@@ -1296,8 +1297,7 @@ export const CSSCustomPropsSection = () => {
             <div key={offset} style={{
               width: 44, height: 44, borderRadius: 10,
               background: `hsl(${(hue + offset) % 360}, 80%, 55%)`,
-              animation: `css-spin ${speed}s linear infinite`,
-              animationDelay: `${offset / 600}s`,
+              animation: `css-spin ${speed}s linear ${offset / 600}s infinite`,
             }} />
           ))}
         </div>

@@ -121,7 +121,8 @@ function resolveImports(
   const sideEffects: string[] = []
 
   for (const source of sources) {
-    for (const rawLine of source.split('\n')) {
+    const flattened = flattenMultilineImports(source)
+    for (const rawLine of flattened.split('\n')) {
       const line = rawLine.trim()
       if (!line.startsWith('import ')) continue
 
@@ -249,6 +250,61 @@ function resolveImports(
   const strippedSources = sources.map(stripRaw)
 
   return { canonicalBlock, strippedSources }
+}
+
+
+
+
+function flattenMultilineImports(code: string): string {
+  const lines = code.split('\n')
+  const out: string[] = []
+  let inImport = false
+  let buffer = ''
+  let depth = 0
+
+  // Does a string (after collapsing whitespace) look like a full import?
+  const isCompleteImport = (s: string): boolean =>
+    /^import\s+(?:(?:[\w*\s{},]+)\s+from\s+['"][^'"]+['"]|['"][^'"]+['"])\s*;?\s*$/.test(s)
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!inImport && /^\s*import\s/.test(line)) {
+      inImport = true
+      buffer = trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      // Collapse whitespace and test immediately (single‑line import)
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+        depth = 0
+      }
+      continue
+    }
+
+    if (inImport) {
+      buffer += ' ' + trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+      }
+      continue
+    }
+
+    out.push(line)
+  }
+
+  if (inImport && buffer.trim()) {
+    out.push(buffer.replace(/\s+/g, ' '))
+  }
+
+  return out.join('\n')
 }
 
 // ─────────────────────────────────────────────

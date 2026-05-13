@@ -3,11 +3,12 @@
 // ARKZEN GENERATED PAGE — asset-hub/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T12:22:59.750Z
+// Generated: 2026-05-13T13:31:31.204Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { Check, ChevronRight, Copy, Download, Eye, File, FileJson, FileVideo, FolderOpen, Grid, Hexagon, Image, List, Music, Package, Search, Type, Upload, X } from 'lucide-react'
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { assetHubAnimations, pageVariants } from '@/arkzen/generated/asset-hub.animations'

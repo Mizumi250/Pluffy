@@ -3,6 +3,7 @@
 // Generated from tatemono: jo-payroll
 
 import React, { useEffect, useState } from 'react'
+import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
 
 const NAV_ITEMS = [

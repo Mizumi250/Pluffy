@@ -1317,8 +1317,7 @@ export const CSSCustomPropsSection = () => {
             <div key={offset} style={{
               width: 44, height: 44, borderRadius: 10,
               background: `hsl(${(hue + offset) % 360}, 80%, 55%)`,
-              animation: `css-spin ${speed}s linear infinite`,
-              animationDelay: `${offset / 600}s`,
+              animation: `css-spin ${speed}s linear ${offset / 600}s infinite`,
             }} />
           ))}
         </div>

@@ -5,7 +5,7 @@
 // Tatemono: errors-test
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-05-13T12:23:03.813033Z
+// Generated: 2026-05-13T13:31:34.837140Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ErrorsTest;

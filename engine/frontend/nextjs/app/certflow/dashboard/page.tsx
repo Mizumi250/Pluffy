@@ -3,13 +3,14 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T12:23:01.836Z
+// Generated: 2026-05-13T13:31:33.305Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
+import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, GraduationCap, LayoutTemplate, Link2, LogOut, Mail, Menu, PartyPopper, ScanLine, Trash2, Upload, UploadCloud, X, XCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { create } from 'zustand'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
