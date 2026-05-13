@@ -3,19 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — dtr-geofencing
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:34.474Z
+// Generated: 2026-05-13T12:23:03.342Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useCallback, useEffect, useRef } from 'react'
-import { create } from 'zustand'
-import {
-  MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw,
-  User as UserIcon, Clock, Loader2, Navigation, TrendingUp,
-  ChevronDown, LogIn, LogOut
-} from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { create } from 'zustand'
 
 export interface Employee {
   id: number

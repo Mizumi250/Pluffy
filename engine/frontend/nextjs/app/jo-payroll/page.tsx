@@ -3,27 +3,17 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:35.606Z
+// Generated: 2026-05-13T12:23:04.542Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { useRouter } from 'next/navigation'
+import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { useRouter } from 'next/navigation'
-import { create } from 'zustand'
-import {
-  Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
-  Users, Banknote, CreditCard, Building2, Landmark,
-  TrendingUp, TrendingDown, Wallet, AlertCircle,
-  Download, FileText, Filter, MoreHorizontal, Eye,
-  CalendarDays, ArrowUpRight, ArrowDownRight, Clock,
-  CheckCircle, XCircle, RefreshCw, Printer
-} from 'lucide-react'
-
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface JobOrder {
   id: number

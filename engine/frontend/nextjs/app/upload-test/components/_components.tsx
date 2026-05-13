@@ -3,11 +3,12 @@
 // ARKZEN GENERATED SHARED UTILITIES — upload-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:38.987Z
+// Generated: 2026-05-13T12:23:07.787Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
-import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
+
+

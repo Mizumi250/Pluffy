@@ -3,12 +3,11 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.823Z
+// Generated: 2026-05-13T12:23:00.386Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 function useToast() {

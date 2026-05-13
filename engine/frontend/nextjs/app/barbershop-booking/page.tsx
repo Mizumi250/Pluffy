@@ -3,19 +3,17 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.657Z
+// Generated: 2026-05-13T12:23:00.200Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
-
 import { motion } from 'framer-motion'
+import { gsap } from 'gsap'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { barbershopBookingAnimations, pageVariants } from '@/arkzen/generated/barbershop-booking.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { create } from 'zustand'
-import { gsap } from 'gsap'
-
 export interface Barber {
   id: number
   name: string

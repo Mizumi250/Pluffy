@@ -3,13 +3,12 @@
 // ARKZEN GENERATED SHARED UTILITIES — portfolio-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:37.231Z
+// Generated: 2026-05-13T12:23:06.107Z
 // ============================================================
 
-'use client'
-
-import React from 'react'
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
+import React, { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
 
 const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },

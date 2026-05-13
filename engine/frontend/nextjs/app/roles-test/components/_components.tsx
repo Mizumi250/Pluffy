@@ -3,15 +3,14 @@
 // ARKZEN GENERATED SHARED UTILITIES — roles-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:37.675Z
+// Generated: 2026-05-13T12:23:06.627Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Shield } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useRouter } from 'next/navigation'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('roles-test')

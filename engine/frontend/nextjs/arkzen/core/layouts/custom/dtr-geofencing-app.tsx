@@ -2,11 +2,9 @@
 // ARKZEN CUSTOM LAYOUT — dtr-geofencing/app
 // Generated from tatemono: dtr-geofencing
 
-'use client'
-
 import React, { useState } from 'react'
+import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },

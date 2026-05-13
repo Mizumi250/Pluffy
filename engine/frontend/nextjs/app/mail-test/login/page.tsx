@@ -3,20 +3,17 @@
 // ARKZEN GENERATED PAGE — mail-test/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:36.180Z
+// Generated: 2026-05-13T12:23:05.173Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { useRouter } from 'next/navigation'
-import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-
 if (typeof window !== 'undefined') {
   setActiveTatemono('mail-test')
 }

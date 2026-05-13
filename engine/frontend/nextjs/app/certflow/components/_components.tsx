@@ -3,23 +3,15 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:33.177Z
+// Generated: 2026-05-13T12:23:01.823Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { create } from 'zustand'
-import { useRouter } from 'next/navigation'
-import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
-import { AnimatePresence } from 'framer-motion'
-import {
-  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
-  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
-  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
-  Menu, X
-} from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { create } from 'zustand'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
@@ -221,10 +213,6 @@ export const copyToClipboard = (text: string) => {
     document.body.removeChild(el)
   }
 }
-
-'use client'
-
-import React, { useRef, useState, useEffect, useCallback } from 'react'
 
 // ─── CANVAS BUILDER ───────────────────────────────────────────────────────────
 
@@ -459,10 +447,6 @@ export const CanvasBuilder = ({
     </div>
   )
 }
-
-'use client'
-
-import React, { useState } from 'react'
 
 // ─── PROPERTY PANEL ───────────────────────────────────────────────────────────
 

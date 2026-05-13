@@ -3,26 +3,18 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.038Z
+// Generated: 2026-05-13T12:22:59.553Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { create } from 'zustand'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll, useInView } from 'framer-motion'
-import {
-  Play, Pause, RotateCcw, Layers, Zap, Wind, MousePointer2,
-  ArrowDown, Cpu, Sparkles, Box, Move, Type, Eye, ChevronRight,
-  RefreshCw, Maximize2
-} from 'lucide-react'
-
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
 interface AnimLabState {
   activeSection: string

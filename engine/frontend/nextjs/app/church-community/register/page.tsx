@@ -3,19 +3,17 @@
 // ARKZEN GENERATED PAGE — church-community/register
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:33.962Z
+// Generated: 2026-05-13T12:23:02.612Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { Bookmark, Calendar, Heart, Image as ImageIcon, Loader2, MessageCircle, Moon, MoreHorizontal, Plus, Search, Send, Share2, Sun, Trash2, Upload, UserPlus, X } from 'lucide-react'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { create } from 'zustand'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Image as ImageIcon, Plus, Trash2, Search, X, Upload, Calendar, Loader2, Send, Sun, Moon, UserPlus } from 'lucide-react'
-
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 
 export const LIGHT = {

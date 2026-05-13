@@ -3,19 +3,16 @@
 // ARKZEN GENERATED PAGE — errors-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:34.866Z
+// Generated: 2026-05-13T12:23:03.730Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { useToast } from '@/arkzen/core/components/Toast'
-
 type ErrorDef = {
   code: number
   title: string

@@ -3,18 +3,15 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.826Z
+// Generated: 2026-05-13T12:23:00.390Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
 function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {

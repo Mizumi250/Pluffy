@@ -3,21 +3,14 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.022Z
+// Generated: 2026-05-13T12:22:59.489Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { create } from 'zustand'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll, useInView } from 'framer-motion'
-import {
-  Play, Pause, RotateCcw, Layers, Zap, Wind, MousePointer2,
-  ArrowDown, Cpu, Sparkles, Box, Move, Type, Eye, ChevronRight,
-  RefreshCw, Maximize2
-} from 'lucide-react'
+import { create } from 'zustand'
 
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
 interface AnimLabState {

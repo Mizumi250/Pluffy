@@ -3,18 +3,15 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:37.232Z
+// Generated: 2026-05-13T12:23:06.108Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
-
 import { motion } from 'framer-motion'
+import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
-
 const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },
   { id: 2, title: 'Tasks', description: 'Real-time collaboration', image: '✓', url: 'https://example.com', tags: ['React', 'WebSocket'] },

@@ -2,10 +2,8 @@
 // ============================================================
 // ARKZEN GENERATED — errors-test/error.tsx
 // Next.js segment-scoped runtime error boundary.
-// Rendered when an unhandled exception is thrown during render under /errors-test.
-// Must be a Client Component — Next.js requirement.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
-// Generated: 2026-05-13T10:51:34.861Z
+// Generated: 2026-05-13T12:23:03.725Z
 // ============================================================
 
 import React from 'react'

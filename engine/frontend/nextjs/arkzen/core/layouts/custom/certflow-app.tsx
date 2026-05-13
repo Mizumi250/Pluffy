@@ -2,8 +2,6 @@
 // ARKZEN CUSTOM LAYOUT — certflow/app
 // Generated from tatemono: certflow
 
-'use client'
-
 import React from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 

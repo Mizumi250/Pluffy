@@ -2,15 +2,8 @@
 // ARKZEN CUSTOM LAYOUT — jo-payroll/app
 // Generated from tatemono: jo-payroll
 
-'use client'
-
-import React, { useState, useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
-import {
-  LayoutDashboard, Database, Banknote, Building2,
-  Landmark, CalendarDays, Menu, X, ChevronRight,
-  LogOut, Bell
-} from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },

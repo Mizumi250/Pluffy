@@ -1,9 +1,12 @@
 // ============================================================
-// ARKZEN ENGINE — ROUTER v5.0 (fixed)
+// ARKZEN ENGINE — ROUTER v5.1
 // - Pages named "index" are placed directly in tatemono folder (app/name/page.tsx)
 // - Other pages go into subfolders (app/name/dashboard/page.tsx)
 // - Imports are adjusted accordingly (same folder vs parent folder)
 // - Generates sitemap.xml and robots.txt for SEO
+// - v5.1: Unified import resolver — engine owns all imports in generated files.
+//         Authors write imports freely in any block; engine scrapes, deduplicates,
+//         merges, and injects one canonical import block per generated file.
 // ============================================================
 
 import * as fs from 'fs'
@@ -55,6 +58,200 @@ function extractComponentName(pageName: string, raw: string): string {
 }
 
 // ─────────────────────────────────────────────
+// UNIFIED IMPORT RESOLVER — v5.1
+//
+// Scrapes ALL import statements from any raw code strings,
+// deduplicates named exports per module, normalises default
+// vs named gsap import, and returns:
+//   - canonicalImports : the final import block string
+//   - stripped sources : the raw code strings with all import
+//                        lines and 'use client' removed
+// ─────────────────────────────────────────────
+
+interface ResolvedImports {
+  canonicalBlock: string
+  strippedSources: string[]
+}
+
+/**
+ * Known modules that the engine always injects itself.
+ * These are EXCLUDED from the scraped imports — engine handles them.
+ */
+const ENGINE_OWNED_MODULES = new Set([
+  'react',
+  'framer-motion',
+])
+
+function resolveImports(
+  sources: string[],
+  engineRequired: {
+    reactHooks?: string[]         // always-needed React hooks (useRef, useEffect)
+    framerNamed?: string[]        // always-needed framer-motion named exports (motion)
+    extra?: string                // any extra single-line imports to prepend verbatim
+  } = {}
+): ResolvedImports {
+
+  // module → { defaultImport?: string, named: Set<string> }
+  const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
+
+  const getEntry = (mod: string) => {
+    if (!importMap.has(mod)) importMap.set(mod, { named: new Set() })
+    return importMap.get(mod)!
+  }
+
+  // ── Seed engine-required entries ──────────────────────────
+  const reactEntry = getEntry('react')
+  ;(engineRequired.reactHooks ?? ['useRef', 'useEffect']).forEach(h => reactEntry.named.add(h))
+
+  const framerEntry = getEntry('framer-motion')
+  ;(engineRequired.framerNamed ?? ['motion']).forEach(n => framerEntry.named.add(n))
+
+  // ── Patterns ──────────────────────────────────────────────
+  // 1. import DefaultName from 'module'
+  const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  // 2. import { a, b, c } from 'module'
+  const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  // 3. import Default, { a, b } from 'module'
+  const mixedImportRe     = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  // 4. import * as Ns from 'module'
+  const namespaceImportRe = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  // 5. import 'module'  (side-effect)
+  const sideEffectRe      = /^import\s+['"]([^'"]+)['"]\s*;?/
+
+  const sideEffects: string[] = []
+
+  for (const source of sources) {
+    for (const rawLine of source.split('\n')) {
+      const line = rawLine.trim()
+      if (!line.startsWith('import ')) continue
+
+      let m: RegExpMatchArray | null
+
+      // mixed: import Default, { a, b } from 'mod'
+      m = line.match(mixedImportRe)
+      if (m) {
+        const [, def, namedStr, mod] = m
+        const entry = getEntry(mod)
+        // For react, treat React as implicit — only track hooks
+        if (mod !== 'react') entry.defaultImport = def
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
+        continue
+      }
+
+      // namespace: import * as Ns from 'mod'
+      m = line.match(namespaceImportRe)
+      if (m) {
+        const [, ns, mod] = m
+        getEntry(mod).defaultImport = `* as ${ns}`
+        continue
+      }
+
+      // named: import { a, b } from 'mod'
+      m = line.match(namedImportRe)
+      if (m) {
+        const [, namedStr, mod] = m
+        const entry = getEntry(mod)
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
+        continue
+      }
+
+      // default: import Default from 'mod'
+      m = line.match(defaultImportRe)
+      if (m) {
+        const [, def, mod] = m
+        if (mod === 'react') continue // React default handled separately
+        getEntry(mod).defaultImport = def
+        continue
+      }
+
+      // side-effect: import 'mod'
+      m = line.match(sideEffectRe)
+      if (m) {
+        sideEffects.push(`import '${m[1]}'`)
+        continue
+      }
+    }
+  }
+
+  // ── Normalise gsap default → named ────────────────────────
+  // Some tatemonos write `import gsap from 'gsap'` (default),
+  // others write `import { gsap } from 'gsap'` (named).
+  // Canonical form is always named: import { gsap } from 'gsap'
+  if (importMap.has('gsap')) {
+    const gsapEntry = importMap.get('gsap')!
+    if (gsapEntry.defaultImport === 'gsap') {
+      gsapEntry.defaultImport = undefined
+      gsapEntry.named.add('gsap')
+    }
+  }
+
+  // ── Build canonical import block ──────────────────────────
+  const lines: string[] = []
+
+  // 1. React always first — `import React, { hooks } from 'react'`
+  const reactNamed = [...(importMap.get('react')?.named ?? [])]
+    .filter(h => h !== 'React')
+    .sort()
+  lines.push(
+    reactNamed.length > 0
+      ? `import React, { ${reactNamed.join(', ')} } from 'react'`
+      : `import React from 'react'`
+  )
+
+  // 2. framer-motion always second
+  const framerNamed = [...(importMap.get('framer-motion')?.named ?? [])].sort()
+  if (framerNamed.length > 0) {
+    lines.push(`import { ${framerNamed.join(', ')} } from 'framer-motion'`)
+  }
+
+  // 3. All other modules — alphabetical by module name
+  const otherModules = [...importMap.keys()]
+    .filter(m => m !== 'react' && m !== 'framer-motion')
+    .sort()
+
+  for (const mod of otherModules) {
+    const { defaultImport, named } = importMap.get(mod)!
+    const namedArr = [...named].sort()
+
+    if (defaultImport?.startsWith('* as ')) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (defaultImport && namedArr.length > 0) {
+      lines.push(`import ${defaultImport}, { ${namedArr.join(', ')} } from '${mod}'`)
+    } else if (defaultImport) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (namedArr.length > 0) {
+      lines.push(`import { ${namedArr.join(', ')} } from '${mod}'`)
+    }
+  }
+
+  // 4. Side-effects last
+  sideEffects.forEach(s => lines.push(s))
+
+  // 5. Verbatim extra (e.g. layout import, animation import)
+  if (engineRequired.extra) {
+    lines.push(engineRequired.extra)
+  }
+
+  const canonicalBlock = lines.filter(Boolean).join('\n')
+
+  // ── Strip all imports + 'use client' from raw sources ─────
+  const stripRaw = (src: string) =>
+    src
+      .replace(/^\s*['"]use client['"]\s*;?\s*\n?/gm, '')
+      .replace(/^\s*import\s[\s\S]*?from\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '')
+      .replace(/^\s*import\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '') // side-effect imports
+      .trim()
+
+  const strippedSources = sources.map(stripRaw)
+
+  return { canonicalBlock, strippedSources }
+}
+
+// ─────────────────────────────────────────────
 // GENERATE INDIVIDUAL COMPONENT FILES
 // ─────────────────────────────────────────────
 
@@ -64,7 +261,10 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
   const componentsDir = path.join(baseDir, 'components')
   fs.mkdirSync(componentsDir, { recursive: true })
 
-  // Write ONE _components.tsx with ALL utilities, types, helpers
+  // Resolve imports across ALL component blocks into one canonical block
+  const rawSources = tatemono.components.map(c => c.raw.trim())
+  const { canonicalBlock, strippedSources } = resolveImports(rawSources)
+
   const componentsFile = path.join(componentsDir, '_components.tsx')
   const componentsContent = `'use client'
 // ============================================================
@@ -74,7 +274,9 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${tatemono.components.map(c => c.raw.trim()).join('\n\n')}
+${canonicalBlock}
+
+${strippedSources.join('\n\n')}
 `
   fs.writeFileSync(componentsFile, componentsContent, 'utf-8')
   console.log(`[Arkzen Router] ✓ Utilities: _components.tsx`)
@@ -92,7 +294,7 @@ ${tatemono.components.map(c => c.raw.trim()).join('\n\n')}
     const componentMatches = component.raw.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
     for (const match of componentMatches) {
       const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) {  // Skip if all uppercase (constants like FEATURES, COLORS)
+      if (name && !/^[A-Z_]+$/.test(name)) {
         extractedComponents.add(name)
       }
     }
@@ -102,11 +304,11 @@ ${tatemono.components.map(c => c.raw.trim()).join('\n\n')}
   for (const compName of extractedComponents) {
     const fileName = `${compName}.tsx`
     const filePath = path.join(componentsDir, fileName)
-    
+
     const cssImport = stylesByComponent.has(compName)
       ? `import styles from '../styles/${compName}.module.css'\n`
       : ''
-    
+
     const content = `'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — ${compName}
@@ -144,7 +346,6 @@ function generateComponentsIndex(tatemono: ParsedTatemono, baseDir: string): voi
   const componentsDir = path.join(baseDir, 'components')
   const indexPath = path.join(componentsDir, 'index.ts')
 
-  // Export everything from _components (utilities, types, components)
   const content = `// ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
@@ -170,50 +371,46 @@ function generatePageFile(
   const componentName = extractComponentName(page.name, page.raw)
   const layoutImport  = getLayoutImport(page.layout, tatemono.meta)
   const layoutComp    = getLayoutComponent(page.layout)
-  const animImport    = animationFnName
-    ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
-    : ''
   const isAuthLayout  = page.layout === 'auth'
   const isGuestLayout = page.layout === 'guest'
 
-  const isGuestOnly   = isGuestLayout && (
+  const isGuestOnly = isGuestLayout && (
     (page as any).guestOnly === true ||
     (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
   )
 
-  // Extract React hooks/imports from component code so we can merge them
-  const reactHooks = new Set(['useRef', 'useEffect'])
-  const componentCodeLines: string[] = []
-  let componentCode = ''
-  
-  for (const comp of tatemono.components) {
-    let raw = comp.raw.trim()
-    
-    // Extract React imports from component
-    const reactImportMatch = raw.match(/import\s+React[,\s]*\{([^}]*)\}\s+from\s+['"]react['"]/)
-    if (reactImportMatch) {
-      const hooks = reactImportMatch[1].split(',').map(h => h.trim()).filter(h => h && h !== 'React')
-      hooks.forEach(h => reactHooks.add(h))
+  // Collect all sources: all component blocks + this page's raw code
+  const allSources = [
+    ...tatemono.components.map(c => c.raw.trim()),
+    page.raw.trim(),
+  ]
+
+  // Scrape framer-motion named exports from all sources so we don't lose
+  // AnimatePresence, useMotionValue etc. that the tatemono uses
+  const framerNeeded = new Set(['motion'])
+  const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
+  for (const src of allSources) {
+    let m: RegExpMatchArray | null
+    while ((m = framerRe.exec(src)) !== null) {
+      m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
     }
-    
-    // Remove 'use client' directives and React imports (we'll provide them)
-    raw = raw.replace(/\s*['"]use client['"];?\s*\n?/gm, '')
-    raw = raw.replace(/\s*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-    raw = raw.replace(/\s*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')
-    raw = raw.replace(/\s*import\s+React\s+from\s+['"]react['"]\s*;?\s*\n?/gm, '')  // plain React import
-    
-    const cleaned = raw.trim()
-    if (cleaned) componentCodeLines.push(cleaned)
   }
-  
-  componentCode = componentCodeLines.join('\n\n')
-  
-  // Build merged React import — only if no React import exists in componentCode
-  const hooksArray = Array.from(reactHooks).sort()
-  const hasReactInComponents = /import\s+React/.test(componentCode)
-  const reactImport = hasReactInComponents 
-    ? '' 
-    : `import React${hooksArray.length > 0 ? `, { ${hooksArray.join(', ')} }` : ''} from 'react'`
+
+  const animImportLine = animationFnName
+    ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
+    : ''
+
+  const extraLines = [layoutImport, animImportLine].filter(Boolean).join('\n')
+
+  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
+    reactHooks:   ['useRef', 'useEffect'],
+    framerNamed:  [...framerNeeded],
+    extra:        extraLines,
+  })
+
+  // strippedSources: [comp0, comp1, ..., pageRaw]
+  const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
+  const strippedPageCode      = strippedSources[tatemono.components.length] ?? ''
 
   return `'use client'
 // ============================================================
@@ -223,16 +420,13 @@ function generatePageFile(
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${reactImport ? reactImport + '\n' : ''}
-import { motion } from 'framer-motion'
-${layoutImport}
-${animImport}
+${canonicalBlock}
 
 // Utilities, types, and helper functions from @arkzen:components
-${componentCode}
+${strippedComponentCode}
 
 // Page component code (from @arkzen:page:${page.name})
-${page.raw.trim()}
+${strippedPageCode}
 
 // Wrapper for animation + layout
 const ArkzenPage_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)} = () => {
@@ -270,10 +464,13 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
   if (!tatemono.animation) return null
 
   const animFnName = toCamelCase(tatemono.meta.name) + 'Animations'
-  const cleanAnimation = tatemono.animation.raw
-    .replace(/import.*from ['"]gsap['"][;]?\n?/g, '')
-    .replace(/import.*from ['"]gsap\/ScrollTrigger['"][;]?\n?/g, '')
-    .replace(/import React.*from ['"]react['"][;]?\n?/g, '')
+
+  // Resolve imports from animation block — engine owns gsap + ScrollTrigger + React
+  const { strippedSources } = resolveImports([tatemono.animation.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+  })
+  let cleanAnimation = strippedSources[0]
     .replace(/gsap\.registerPlugin\(.*\)[;]?\n?/g, '')
     // strip existing `export` before re-adding — prevents `export export const`
     .replace(new RegExp(`\\bexport\\s+const\\s+${animFnName}\\b`), `const ${animFnName}`)
@@ -283,7 +480,6 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
     .trim()
 
   // Auto-inject pageVariants when the tatemono didn't define one.
-  // Pages always import { animFn, pageVariants } — if missing, SWC/esbuild hard-fails.
   const hasPageVariants = /export\s+const\s+pageVariants\b/.test(cleanAnimation)
   const pageVariantsBlock = hasPageVariants ? '' : `
 export const pageVariants = {
@@ -321,26 +517,37 @@ function generateCustomLayouts(tatemono: ParsedTatemono, baseDir: string): void 
   fs.mkdirSync(customLayoutDir, { recursive: true })
 
   for (const layout of tatemono.layouts) {
+    // Resolve imports in the layout block itself
+    const { canonicalBlock, strippedSources } = resolveImports([layout.raw], {
+      reactHooks:  [],
+      framerNamed: [],
+    })
+
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(customLayoutDir, fileName)
-    const content  = `'use client'\n// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name}\n// Generated from tatemono: ${tatemono.meta.name}\n\n${layout.raw}\n`
+    const content  = `'use client'
+// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name}
+// Generated from tatemono: ${tatemono.meta.name}
+
+${canonicalBlock}
+
+${strippedSources[0]}
+`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Router] ✓ Custom layout: ${fileName}`)
   }
 }
 
 // ─────────────────────────────────────────────
-// GENERATE ERROR HANDLER FILES — v6 (fixed imports + catch‑all for 404)
+// GENERATE ERROR HANDLER FILES — v6
 // ─────────────────────────────────────────────
 
 function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
-  // Strip 'use client' from raw if present — not-found can be server component
   const raw = handler.raw.replace(/'use client'[;]?\n?/, '').trim()
 
   return `// ============================================================
 // ARKZEN GENERATED — ${tatemono.meta.name}/not-found.tsx
 // Next.js segment-scoped 404 handler.
-// Rendered when notFound() is called or no route matches under /${tatemono.meta.name}.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
@@ -361,8 +568,6 @@ function generateErrorFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler
 // ============================================================
 // ARKZEN GENERATED — ${tatemono.meta.name}/error.tsx
 // Next.js segment-scoped runtime error boundary.
-// Rendered when an unhandled exception is thrown during render under /${tatemono.meta.name}.
-// Must be a Client Component — Next.js requirement.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
@@ -394,7 +599,7 @@ export default function CatchAllPage() {
 }
 `
   fs.writeFileSync(path.join(catchAllDir, 'page.tsx'), content, 'utf-8')
-  console.log(`[Arkzen Router] ✓ Catch-all route created for ${tatemono.meta.name} (real 404 status)`)
+  console.log(`[Arkzen Router] ✓ Catch-all route created for ${tatemono.meta.name}`)
 }
 
 function generateErrorHandlers(tatemono: ParsedTatemono, tatemonoDir: string): void {
@@ -436,21 +641,18 @@ function generateTatemonoLayout(tatemono: ParsedTatemono, tatemonoDir: string): 
   }
 
   const globalImport = hasGlobalStyle ? `import './styles/global.css'\n` : ''
-  
+  const metadataImport = hasFavicon ? `import type { Metadata } from 'next'\n` : ''
   const metadataCode = hasFavicon ? `export const metadata: Metadata = {
   icons: {
     icon: '${tatemono.meta.favicon}',
   },
 }` : ''
 
-  const metadataImport = hasFavicon ? `import type { Metadata } from 'next'\n` : ''
-
   const content = `${metadataImport}${globalImport}
 ${hasFavicon ? metadataCode + '\n\n' : ''}export default function ${toPascalCase(tatemono.meta.name)}Layout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 `
-  
   fs.writeFileSync(path.join(tatemonoDir, 'layout.tsx'), content, 'utf-8')
   if (hasGlobalStyle) console.log(`[Arkzen Router] ✓ Global style imported in layout`)
   if (hasFavicon) console.log(`[Arkzen Router] ✓ Favicon configured: ${tatemono.meta.favicon}`)
@@ -465,37 +667,18 @@ function generateStyleFiles(tatemono: ParsedTatemono, tatemonoDir: string): void
 }
 
 // ─────────────────────────────────────────────
-// MAIN REGISTER — creates one route per page
-// ─────────────────────────────────────────────
-
-// ─────────────────────────────────────────────
 // GENERATE ROOT REDIRECT — v5.1
-//
-// Problem: When a tatemono has no page named "index", the router
-// creates app/{name}/_components.tsx but no app/{name}/page.tsx.
-// Visiting /{name} returns a Next.js 404.
-//
-// Fix: If no index page exists, auto-generate a root page.tsx that
-// immediately redirects to the correct landing page:
-//   - First guest page (if auth: true) → login page
-//   - First auth page (if auth: false or no guest page)
-//   - First page overall as final fallback
-//
-// This is a Next.js server redirect so there is no flash — the
-// browser never renders the root URL at all.
 // ─────────────────────────────────────────────
 
 function generateRootRedirect(tatemono: ParsedTatemono): string {
   const pages    = tatemono.pages
   const hasIndex = pages.some(p => p.name === 'index')
-  if (hasIndex) return '' // root is already a real page — nothing needed
+  if (hasIndex) return ''
 
-  // Pick the best landing page
   const firstGuest = pages.find(p => p.layout === 'guest')
   const firstAuth  = pages.find(p => p.layout === 'auth')
   const firstPage  = pages[0]
 
-  // If auth is enabled, the landing page should be the login (guest) page
   const target = tatemono.meta.auth
     ? (firstGuest ?? firstAuth ?? firstPage)
     : (firstAuth  ?? firstGuest ?? firstPage)
@@ -545,21 +728,13 @@ export function registerPage(tatemono: ParsedTatemono): void {
   if (routerType === 'app') {
     const tatemonoDir = path.join(APP_DIR, tatemono.meta.name)
     fs.mkdirSync(tatemonoDir, { recursive: true })
-    
-    // Generate individual component files + index
+
     generateIndividualComponentFiles(tatemono, tatemonoDir)
     generateComponentsIndex(tatemono, tatemonoDir)
-
-    // v6: generate segment-scoped Next.js error handler files + catch‑all for 404
     generateErrorHandlers(tatemono, tatemonoDir)
-
-    // Generate layout.tsx with favicon if specified in meta
     generateTatemonoLayout(tatemono, tatemonoDir)
-
-    // v6.4: generate CSS styles (global + CSS Modules)
     generateStyleFiles(tatemono, tatemonoDir)
 
-    // v5.1: auto-generate root redirect when no index page is declared
     const rootRedirect = generateRootRedirect(tatemono)
     if (rootRedirect) {
       fs.writeFileSync(path.join(tatemonoDir, 'page.tsx'), rootRedirect, 'utf-8')
@@ -571,13 +746,11 @@ export function registerPage(tatemono: ParsedTatemono): void {
 
     for (const page of tatemono.pages) {
       if (page.name === 'index') {
-        // Index page: write page.tsx directly in tatemonoDir (overwrites the redirect)
         const pagePath = path.join(tatemonoDir, 'page.tsx')
         const pageContent = generatePageFile(tatemono, page, animFnName, './components')
         fs.writeFileSync(pagePath, pageContent, 'utf-8')
         console.log(`[Arkzen Router] ✓ /${tatemono.meta.name} [${page.layout}]`)
       } else {
-        // Other pages: create subfolder and write page.tsx inside
         const pageDir = path.join(tatemonoDir, page.name)
         fs.mkdirSync(pageDir, { recursive: true })
         const pageContent = generatePageFile(tatemono, page, animFnName, '../components')
@@ -586,21 +759,14 @@ export function registerPage(tatemono: ParsedTatemono): void {
       }
     }
   } else {
-    // Pages router (similar logic)
     const tatemonoDir = path.join(PAGES_DIR, tatemono.meta.name)
     fs.mkdirSync(tatemonoDir, { recursive: true })
-    
-    // Generate individual component files + index
+
     generateIndividualComponentFiles(tatemono, tatemonoDir)
     generateComponentsIndex(tatemono, tatemonoDir)
-
-    // v6: generate segment-scoped error handler files + catch‑all for 404
     generateErrorHandlers(tatemono, tatemonoDir)
-
-    // v6.4: generate CSS styles (global + CSS Modules)
     generateStyleFiles(tatemono, tatemonoDir)
 
-    // v5.1: auto-generate root redirect when no index page is declared
     const rootRedirectPages = generateRootRedirect(tatemono)
     if (rootRedirectPages) {
       fs.writeFileSync(path.join(tatemonoDir, 'index.tsx'), rootRedirectPages, 'utf-8')
@@ -628,26 +794,19 @@ export function registerPage(tatemono: ParsedTatemono): void {
 
   console.log(`[Arkzen Router] ✓ All pages registered for: ${tatemono.meta.name}`)
 
-  // Distribute assets from tatemono's assets/ folder
   try {
     const tatemonosDir = path.resolve(process.cwd(), '..', '..', 'tatemonos')
     const assetsPath = path.join(tatemonosDir, tatemono.meta.name, 'assets')
     const publicDir = path.resolve(process.cwd(), 'public')
-    
-    // Clean old assets first (in case files were removed from tatemono)
     cleanOldAssets(tatemono.meta.name, publicDir)
-    
-    // Copy new assets
     const hasAssets = copyAssetsToPublic(tatemono.meta.name, assetsPath, publicDir)
     if (!hasAssets) {
-      // No assets folder or it's empty — that's fine, just log it
       console.log(`[Arkzen Assets] No assets folder for ${tatemono.meta.name}`)
     }
   } catch (e) {
     console.log(`[Arkzen Assets] ⚠ Asset distribution skipped: ${e}`)
   }
 
-  // Generate sitemap and robots.txt after all pages registered
   try {
     const registry = getRegistry()
     writeSitemap(registry)
@@ -676,25 +835,11 @@ Sitemap: ${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/sitemap.
 }
 
 // ─────────────────────────────────────────────
-// UNREGISTER — removes entire tatemono directory
-// ─────────────────────────────────────────────
-
-// ─────────────────────────────────────────────
 // UNREGISTER — two modes
-//
-// softUnregister: used during REBUILD — does NOT delete the app/{name}/
-//   folder. registerPage will overwrite files in place. This prevents
-//   Next.js Fast Refresh from seeing a deleted route mid-write and
-//   caching a 404 for the new pages.
-//
-// unregisterPage: used during REMOVE — deletes everything.
 // ─────────────────────────────────────────────
 
 export function softUnregisterPage(tatemononName: string): void {
   console.log(`[Arkzen Router] Soft-unregistering (rebuild): ${tatemononName}`)
-
-  // Only remove the animation file — leave app/{name}/ intact so
-  // Next.js doesn't see a missing route during the write phase.
   const animationPath = path.resolve(
     process.cwd(), 'arkzen', 'generated', `${tatemononName}.animations.ts`
   )
@@ -706,7 +851,6 @@ export function softUnregisterPage(tatemononName: string): void {
 
 export function unregisterPage(tatemononName: string): void {
   console.log(`[Arkzen Router] Unregistering: ${tatemononName}`)
-
   const routerType = detectRouterType()
 
   if (routerType === 'app') {
@@ -723,7 +867,6 @@ export function unregisterPage(tatemononName: string): void {
     }
   }
 
-  // Remove animation file
   const animationPath = path.resolve(
     process.cwd(), 'arkzen', 'generated', `${tatemononName}.animations.ts`
   )
@@ -746,13 +889,7 @@ function toCamelCase(str: string): string {
   return p.charAt(0).toLowerCase() + p.slice(1)
 }
 
-/**
- * Converts a page name to a safe React component name.
- * Handles numeric names like "400" → "Page400" so the identifier is valid JS.
- * e.g. "400" → "Page400Page", "dashboard" → "DashboardPage"
- */
 function toSafeComponentName(pageName: string): string {
   const pascal = toPascalCase(pageName)
-  // If it starts with a digit, prefix with "Page" to make it a valid identifier
   return /^\d/.test(pascal) ? `Page${pascal}` : pascal
 }

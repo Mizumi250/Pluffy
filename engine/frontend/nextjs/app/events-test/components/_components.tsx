@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — events-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:35.115Z
+// Generated: 2026-05-13T12:23:03.987Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect } from 'react'
-import { Flame, Zap } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Flame, Zap } from 'lucide-react'
 
 interface EventLogEntry {
   id:           number

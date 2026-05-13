@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — church-community
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:33.946Z
+// Generated: 2026-05-13T12:23:02.552Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Bookmark, Calendar, Heart, Image as ImageIcon, Loader2, MessageCircle, Moon, MoreHorizontal, Plus, Search, Send, Share2, Sun, Trash2, Upload, UserPlus, X } from 'lucide-react'
 import { create } from 'zustand'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Image as ImageIcon, Plus, Trash2, Search, X, Upload, Calendar, Loader2, Send, Sun, Moon, UserPlus } from 'lucide-react'
 
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 

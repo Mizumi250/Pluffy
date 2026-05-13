@@ -3,20 +3,17 @@
 // ARKZEN GENERATED PAGE — auth-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.385Z
+// Generated: 2026-05-13T12:22:59.924Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Lock, ShieldCheck } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { useRouter } from 'next/navigation'
-import { Lock, ShieldCheck } from 'lucide-react'
-import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-
 // Activate the correct isolated auth context for this Tatemono
 if (typeof window !== 'undefined') {
   setActiveTatemono('auth-test')

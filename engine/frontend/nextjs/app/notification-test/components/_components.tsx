@@ -3,15 +3,14 @@
 // ARKZEN GENERATED SHARED UTILITIES — notification-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:36.989Z
+// Generated: 2026-05-13T12:23:05.856Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
-import { useRouter } from 'next/navigation'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useRouter } from 'next/navigation'
 
 if (typeof window !== 'undefined') {
   setActiveTatemono('notification-test')

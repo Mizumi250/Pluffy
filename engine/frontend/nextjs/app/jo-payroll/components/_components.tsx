@@ -3,22 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — jo-payroll
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:35.593Z
+// Generated: 2026-05-13T12:23:04.518Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useRouter } from 'next/navigation'
 import { create } from 'zustand'
-import {
-  Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
-  Users, Banknote, CreditCard, Building2, Landmark,
-  TrendingUp, TrendingDown, Wallet, AlertCircle,
-  Download, FileText, Filter, MoreHorizontal, Eye,
-  CalendarDays, ArrowUpRight, ArrowDownRight, Clock,
-  CheckCircle, XCircle, RefreshCw, Printer
-} from 'lucide-react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface JobOrder {

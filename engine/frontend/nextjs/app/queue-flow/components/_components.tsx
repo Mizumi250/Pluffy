@@ -3,19 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:37.398Z
+// Generated: 2026-05-13T12:23:06.278Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useCallback, useRef } from 'react'
-import { create } from 'zustand'
-import {
-  Users, Clock, CheckCircle,
-  SkipForward, Volume2,
-  Loader2, ArrowRight, Pause, Calendar
-} from 'lucide-react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { create } from 'zustand'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -229,9 +223,6 @@ export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
   )
 }
 
-'use client'
-
-import React, { useCallback } from 'react'
 export const AdminCallButton = ({
   onCallNext,
   loading,

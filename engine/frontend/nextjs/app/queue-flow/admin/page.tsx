@@ -3,24 +3,16 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:37.408Z
+// Generated: 2026-05-13T12:23:06.287Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { create } from 'zustand'
-import {
-  Users, Clock, CheckCircle,
-  SkipForward, Volume2,
-  Loader2, ArrowRight, Pause, Calendar
-} from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Queue {

@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — crud-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:34.207Z
+// Generated: 2026-05-13T12:23:03.008Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
-import { Boxes } from 'lucide-react'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Boxes } from 'lucide-react'
 
 type Item = {
   id:          number

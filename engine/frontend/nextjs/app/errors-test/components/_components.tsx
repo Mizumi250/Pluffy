@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — errors-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:34.855Z
+// Generated: 2026-05-13T12:23:03.719Z
 // ============================================================
 
-'use client'
-
-import React, { useState } from 'react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 import { useToast } from '@/arkzen/core/components/Toast'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 type ErrorDef = {
   code: number

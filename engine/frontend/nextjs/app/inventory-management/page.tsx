@@ -3,24 +3,22 @@
 // ARKZEN GENERATED PAGE — inventory-management/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:35.358Z
+// Generated: 2026-05-13T12:23:04.245Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-
 import { motion } from 'framer-motion'
+import { Dialog } from '@/arkzen/core/components/Dialog'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { Badge } from '@/arkzen/core/components/utils'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
-import { Modal }      from '@/arkzen/core/components/Modal'
-import { Dialog }     from '@/arkzen/core/components/Dialog'
-import { Badge }      from '@/arkzen/core/components/utils'
-import { useToast }   from '@/arkzen/core/components/Toast'
-import { useQuery }   from '@/arkzen/core/hooks/useQuery'
-import { useMutation } from '@/arkzen/core/hooks/useMutation'
-
 interface InventoryItem {
   id:          number
   name:        string

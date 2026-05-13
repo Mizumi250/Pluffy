@@ -5,7 +5,7 @@
 // Tatemono: mail-test
 // Subject: Your order has been confirmed
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:36.291500Z
+// Generated: 2026-05-13T12:23:05.235381Z
 // ============================================================
 
 namespace App\Mail\Arkzen\MailTest;

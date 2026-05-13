@@ -2,11 +2,9 @@
 // ARKZEN CUSTOM LAYOUT — queue-flow/app
 // Generated from tatemono: queue-flow
 
-'use client'
-
 import React, { useState } from 'react'
+import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutGrid, Ticket, Settings, WifiOff } from 'lucide-react'
 
 const NAV = [
   { href: '/queue-flow',        icon: LayoutGrid, label: 'Display'  },

@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — new-updates-styles
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:36.809Z
+// Generated: 2026-05-13T12:23:05.680Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 

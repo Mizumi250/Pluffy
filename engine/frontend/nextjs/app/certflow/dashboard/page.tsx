@@ -3,28 +3,19 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:33.195Z
+// Generated: 2026-05-13T12:23:01.836Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { gsap } from 'gsap'
+import { useRouter } from 'next/navigation'
+import { create } from 'zustand'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
 
 // Utilities, types, and helper functions from @arkzen:components
-import { create } from 'zustand'
-import { useRouter } from 'next/navigation'
-import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-import { gsap } from 'gsap'
-import { AnimatePresence } from 'framer-motion'
-import {
-  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
-  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
-  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
-  Menu, X
-} from 'lucide-react'
-
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
 }

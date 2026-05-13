@@ -3,19 +3,12 @@
 // ARKZEN GENERATED SHARED UTILITIES — asset-hub
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.208Z
+// Generated: 2026-05-13T12:22:59.741Z
 // ============================================================
 
-'use client'
-
-import React, { useState, useRef, useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { create } from 'zustand'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Image, FileVideo, Music, FileJson, Type, Hexagon,
-  Upload, FolderOpen, Copy, Check, Eye, Download,
-  File, Grid, List, Search, X, ChevronRight, Package
-} from 'lucide-react'
 
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 export type AssetCategory = 'images' | 'fonts' | 'icons' | 'svg' | 'video' | 'audio' | 'data' | 'misc'

@@ -3,14 +3,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — barbershop-booking
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:31.652Z
+// Generated: 2026-05-13T12:23:00.190Z
 // ============================================================
 
-'use client'
-
 import React, { useEffect, useRef } from 'react'
-import { create } from 'zustand'
+import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
+import { create } from 'zustand'
 
 export interface Barber {
   id: number

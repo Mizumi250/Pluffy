@@ -3,21 +3,18 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:51:38.731Z
+// Generated: 2026-05-13T12:23:07.542Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
-
 import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
-
 // Utilities, types, and helper functions from @arkzen:components
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
-import { useMutation }              from '@/arkzen/core/hooks/useMutation'
-import { useQuery }                 from '@/arkzen/core/hooks/useQuery'
-import { useToast }                 from '@/arkzen/core/components/Toast'
-
 interface CommandRun {
   id:           number
   command_name: string
