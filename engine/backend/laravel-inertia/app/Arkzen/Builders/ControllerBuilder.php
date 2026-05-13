@@ -41,6 +41,7 @@ class ControllerBuilder
         $modelName      = $api['model'];
         $endpoints      = $api['endpoints'];
         $useResource    = $api['resource'] ?? false;
+        $usePolicy      = $api['policy'] ?? false;        // ← v6.0
 
         self::$validationTatSlug    = $name;
         self::$validationConnection = ModelBuilder::slugToConnection($name);
@@ -55,10 +56,14 @@ class ControllerBuilder
 
         $methods = $isNativeNotifications
             ? self::generateNativeNotificationMethods($endpoints, $slugNs)
-            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource, $name);
+            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource, $name, $usePolicy);
 
         $resourceImport = $useResource
             ? "use App\\Http\\Resources\\Arkzen\\{$slugNs}\\{$modelName}Resource;\n"
+            : '';
+
+        $policyImport = $usePolicy
+            ? "use Illuminate\\Foundation\\Auth\\Access\\AuthorizesRequests;\n"
             : '';
 
         $content = "<?php
@@ -70,7 +75,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
 use Inertia\Response as InertiaResponse;
-{$resourceImport}
+{$policyImport}{$resourceImport}
 class {$controllerName} extends Controller
 {
 {$methods}
@@ -90,11 +95,18 @@ class {$controllerName} extends Controller
         array $endpoints,
         string $slugNs,
         bool $useResource,
-        string $tatName
+        string $tatName,
+        bool $usePolicy
     ): string {
         $methods = [];
+        
+        // Add trait use if policy is enabled
+        if ($usePolicy) {
+            $methods[] = "    use AuthorizesRequests;";
+        }
+        
         foreach ($endpoints as $name => $endpoint) {
-            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource, $tatName);
+            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource, $tatName, $usePolicy);
         }
         return implode("\n\n", $methods);
     }
@@ -105,7 +117,8 @@ class {$controllerName} extends Controller
         array $endpoint,
         string $slugNs,
         bool $useResource,
-        string $tatName
+        string $tatName,
+        bool $usePolicy
     ): string {
         return match ($name) {
             'index'   => match ($endpoint['type'] ?? '') {
@@ -113,7 +126,7 @@ class {$controllerName} extends Controller
                 default        => self::generateIndex($modelName, $endpoint, $slugNs, $useResource, $tatName),
             },
             'show'    => self::generateShow($modelName, $endpoint, $slugNs, $useResource, $tatName),
-            'update'  => self::generateUpdate($modelName, $endpoint, $slugNs, $useResource),
+            'update'  => self::generateUpdate($modelName, $endpoint, $slugNs, $useResource, $usePolicy),
             'store'   => match ($endpoint['type'] ?? '') {
                 'upload'               => self::generateUploadStore($modelName, $endpoint),
                 'command_run'          => self::generateCommandRun($modelName, $endpoint),
@@ -122,11 +135,11 @@ class {$controllerName} extends Controller
                 'broadcast'            => self::generateBroadcast($modelName, $slugNs, $endpoint),
                 'mail_send'            => self::generateMailSend($modelName, $endpoint, $slugNs),
                 'notification_trigger' => self::generateNotificationTrigger($modelName, $endpoint, $slugNs),
-                default                => self::generateStore($modelName, $endpoint, $slugNs, $useResource),
+                default                => self::generateStore($modelName, $endpoint, $slugNs, $useResource, $usePolicy),
             },
             'destroy' => match ($endpoint['type'] ?? '') {
                 'upload_destroy' => self::generateUploadDestroy($modelName, $endpoint),
-                default          => self::generateDestroy($modelName, $endpoint),
+                default          => self::generateDestroy($modelName, $endpoint, $usePolicy),
             },
             'fileUrl'   => self::generateUploadUrl($modelName, $endpoint),
             'me'        => self::generateCustomMethod($name, $modelName, $endpoint),
@@ -226,17 +239,19 @@ class {$controllerName} extends Controller
         string $model,
         array $endpoint,
         string $slugNs,
-        bool $useResource
+        bool $useResource,
+        bool $usePolicy
     ): string {
         $validation = self::generateValidation($endpoint['validation'] ?? []);
         $varName    = lcfirst($model);
         $message    = $endpoint['response']['value'] ?? "{$model} created successfully";
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('create', {$model}::class);" : '';
 
         return "    /**
      * {$endpoint['description']}
      */
     public function store(Request \$request): RedirectResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -255,17 +270,19 @@ class {$controllerName} extends Controller
         string $model,
         array $endpoint,
         string $slugNs,
-        bool $useResource
+        bool $useResource,
+        bool $usePolicy
     ): string {
         $validation = self::generateValidation($endpoint['validation'] ?? []);
         $varName    = lcfirst($model);
         $message    = $endpoint['response']['value'] ?? "{$model} updated successfully";
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('update', \${$varName});" : '';
 
         return "    /**
      * {$endpoint['description']}
      */
     public function update(Request \$request, {$model} \${$varName}): RedirectResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -280,16 +297,17 @@ class {$controllerName} extends Controller
     // DESTROY — redirect()->back() with flash
     // ─────────────────────────────────────────────
 
-    private static function generateDestroy(string $model, array $endpoint): string
+    private static function generateDestroy(string $model, array $endpoint, bool $usePolicy): string
     {
         $varName = lcfirst($model);
         $message = $endpoint['response']['value'] ?? "{$model} deleted successfully";
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('delete', \${$varName});" : '';
 
         return "    /**
      * {$endpoint['description']}
      */
     public function destroy({$model} \${$varName}): RedirectResponse
-    {
+    {{$authCheck}
         \${$varName}->delete();
 
         return redirect()->back()->with('success', '{$message}');

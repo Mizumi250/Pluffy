@@ -278,6 +278,7 @@ export interface ParsedTatemono {
   components:         ArkzenSection[]
   styles:             ArkzenStyle[]
   middlewareSnippets: ArkzenMiddlewareSnippets
+  policySnippets:     Record<string, string>
 
   animation?: ArkzenSection
 }

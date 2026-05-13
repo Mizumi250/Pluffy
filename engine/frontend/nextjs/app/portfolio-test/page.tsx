@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:10.860Z
+// Generated: 2026-05-13T10:04:49.691Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -106,8 +106,6 @@ const PortfolioPage = () => {
     </div>
   )
 }
-
-export default PortfolioPage
 
 // Wrapper for animation + layout
 const ArkzenPage_PortfolioTest_Index = () => {

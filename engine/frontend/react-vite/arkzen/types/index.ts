@@ -120,7 +120,8 @@ export interface ParsedTatemono {
   stores: ArkzenStore[]; realtimes: ArkzenRealtime[]; events: ArkzenEvent[]
   jobs: ArkzenJob[]; notifications: ArkzenNotification[]; mails: ArkzenMail[]
   consoles: ArkzenConsole[]; components: ArkzenSection[]; styles: ArkzenStyle[]
-  middlewareSnippets: ArkzenMiddlewareSnippets; animation?: ArkzenSection
+  middlewareSnippets: ArkzenMiddlewareSnippets; policySnippets: Record<string, string>
+  animation?: ArkzenSection
 }
 
 export interface ArkzenRegistry { engine: string; project: string; modules: ArkzenRegistryEntry[] }

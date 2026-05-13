@@ -4,12 +4,12 @@
 // ARKZEN GENERATED CONTROLLER — RoleAuditLogController
 // Tatemono: roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:11.825390Z
+// Generated: 2026-05-13T10:04:50.200984Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\RolesTest;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\RolesTest\RoleAuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

@@ -4,12 +4,12 @@
 // ARKZEN GENERATED CONTROLLER — PingLogController
 // Tatemono: middleware-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:09.881716Z
+// Generated: 2026-05-13T10:04:49.016519Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\MiddlewareTest;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\MiddlewareTest\PingLog;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

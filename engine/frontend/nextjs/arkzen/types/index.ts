@@ -305,6 +305,7 @@ export interface ParsedTatemono {
   components:         ArkzenSection[]
   styles:             ArkzenStyle[]  // ← v6.4: CSS + CSS Modules support
   middlewareSnippets: ArkzenMiddlewareSnippets  // ← v5.3
+  policySnippets:     Record<string, string>   // ← v6.0: base64-encoded PHP policy bodies
 
   animation?: ArkzenSection
 }

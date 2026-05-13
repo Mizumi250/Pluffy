@@ -4,20 +4,23 @@
 // ARKZEN GENERATED CONTROLLER — ItemController
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:06.121154Z
+// Generated: 2026-05-13T10:04:46.534910Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\CrudTest;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\CrudTest\Item;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use App\Http\Resources\Arkzen\CrudTest\ItemResource;
 
 class ItemController extends Controller
 {
+    use AuthorizesRequests;
+
     /**
      * Get all items
      */
@@ -37,6 +40,7 @@ class ItemController extends Controller
      */
     public function store(Request $request): JsonResponse
     {
+        $this->authorize('create', Item::class);
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
@@ -63,6 +67,7 @@ class ItemController extends Controller
      */
     public function update(Request $request, Item $item): JsonResponse
     {
+        $this->authorize('update', $item);
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -81,6 +86,7 @@ class ItemController extends Controller
      */
     public function destroy(Item $item): JsonResponse
     {
+        $this->authorize('delete', $item);
         $item->delete();
 
         return response()->json(['message' => 'Item deleted']);

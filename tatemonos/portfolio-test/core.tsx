@@ -116,6 +116,4 @@ const PortfolioPage = () => {
   )
 }
 
-export default PortfolioPage
-
 /* @arkzen:page:index:end */

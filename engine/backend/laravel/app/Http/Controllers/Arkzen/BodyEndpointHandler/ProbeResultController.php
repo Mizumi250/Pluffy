@@ -4,12 +4,12 @@
 // ARKZEN GENERATED CONTROLLER — ProbeResultController
 // Tatemono: body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:03.798242Z
+// Generated: 2026-05-13T10:04:43.942498Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BodyEndpointHandler;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\BodyEndpointHandler\ProbeResult;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

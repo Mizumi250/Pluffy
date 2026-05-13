@@ -112,6 +112,27 @@ endpoints:
       value: Item deleted
 */
 
+/* @arkzen:policy:update
+*/
+// Prevent updates to archived items
+if ($item->status === 'archived') {
+    return false;
+}
+
+// Only allow if user is authenticated (in a real app, check ownership)
+return true;
+/* @arkzen:policy:update:end */
+
+/* @arkzen:policy:delete
+*/
+// Prevent deletion of archived items (must restore first)
+if ($item->status === 'archived') {
+    return false;
+}
+
+return true;
+/* @arkzen:policy:delete:end */
+
 /* @arkzen:components:shared */
 
 'use client'

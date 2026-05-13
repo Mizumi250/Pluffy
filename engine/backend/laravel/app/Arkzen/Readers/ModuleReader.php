@@ -138,6 +138,9 @@ class ModuleReader
         // v8.0: middleware snippets — map of name → base64 PHP body
         $middlewareSnippets = $payload['middlewareSnippets'] ?? [];
 
+        // v6.0: policy snippets — map of methodName (update/delete) → base64 PHP body
+        $policySnippets = $payload['policySnippets'] ?? [];
+
         // v8.1: extract listenerBodies from events — each event config carries
         // a listener_bodies key (base64 JSON map of listenerName → base64 PHP).
         // Merge all events' maps into one flat map for ListenerBuilder.
@@ -158,7 +161,8 @@ class ModuleReader
             'mails'              => $mails,
             'consoles'           => $consoles,
             'middlewareSnippets' => $middlewareSnippets,
-            'listenerBodies'     => $listenerBodies,   // ← v8.1
+            'policySnippets'     => $policySnippets,       // ← v6.0
+            'listenerBodies'     => $listenerBodies,       // ← v8.1
         ];
     }
 

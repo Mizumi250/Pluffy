@@ -119,6 +119,11 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     // ModuleReader reads payload.middlewareSnippets and passes to MiddlewareBuilder.
     // Without this, MiddlewareBuilder always fell through to the TODO stub.
     middlewareSnippets: tatemono.middlewareSnippets ?? {},
+
+    // ← v6.0: policy PHP bodies — map of methodName → base64-encoded policy method body
+    // Parser extracts these from @arkzen:policy:methodName ... :end DSL blocks.
+    // ModuleReader reads payload.policySnippets and passes to PolicyBuilder for injection.
+    policySnippets: tatemono.policySnippets ?? {},
   }
 
   try {

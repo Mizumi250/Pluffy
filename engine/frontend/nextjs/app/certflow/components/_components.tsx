@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:05.100Z
+// Generated: 2026-05-13T10:04:45.095Z
 // ============================================================
 
 'use client'

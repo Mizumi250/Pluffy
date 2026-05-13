@@ -4,12 +4,12 @@
 // ARKZEN GENERATED CONTROLLER — CommandRunController
 // Tatemono: scheduler-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:13.339095Z
+// Generated: 2026-05-13T10:04:51.111281Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\SchedulerTest;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\SchedulerTest\CommandRun;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;

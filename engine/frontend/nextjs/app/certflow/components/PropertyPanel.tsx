@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PropertyPanel
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-11T13:31:05.102Z
+// Generated: 2026-05-13T10:04:45.096Z
 // ============================================================
 
 export { PropertyPanel } from './_components'

@@ -29,12 +29,13 @@ class ControllerBuilder
     public static function build(array $module): void
     {
         $api            = $module['api'];
-        $name           = $module['name'];                          // tatemono slug e.g. inventory-management
-        $slugNs         = EventBuilder::toNamespace($name);        // e.g. InventoryManagement
+        $name           = $module['name'];
+        $slugNs         = EventBuilder::toNamespace($name);
         $controllerName = $api['controller'];
         $modelName      = $api['model'];
         $endpoints      = $api['endpoints'];
         $useResource    = $api['resource'] ?? false;
+        $usePolicy      = $api['policy'] ?? false;        // ← v6.0
 
         self::$validationTatSlug    = $name;
         self::$validationConnection = ModelBuilder::slugToConnection($name);
@@ -44,19 +45,20 @@ class ControllerBuilder
 
         File::ensureDirectoryExists(app_path("Http/Controllers/Arkzen/{$slugNs}"));
 
-        // v5.7: If any endpoint is notification_trigger, this is a native Laravel
-        // notifications controller — no custom model exists. Skip the model import
-        // and use native $user->notifications relation for index/destroy/readAll.
         $isNativeNotifications = collect($endpoints)->contains(
             fn($e) => ($e['type'] ?? '') === 'notification_trigger'
         );
 
         $methods = $isNativeNotifications
             ? self::generateNativeNotificationMethods($endpoints, $slugNs)
-            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource);
+            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource, $usePolicy);
 
         $resourceImport = $useResource 
             ? "use App\\Http\\Resources\\Arkzen\\{$slugNs}\\{$modelName}Resource;\n" 
+            : '';
+
+        $policyImport = $usePolicy 
+            ? "use Illuminate\\Foundation\\Auth\\Access\\AuthorizesRequests;\n" 
             : '';
 
         $modelImport = $isNativeNotifications
@@ -74,11 +76,11 @@ class ControllerBuilder
 
 namespace App\Http\Controllers\Arkzen\\{$slugNs};
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 {$modelImport}use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
-{$resourceImport}
+{$policyImport}{$resourceImport}
 class {$controllerName} extends Controller
 {
 {$methods}
@@ -93,16 +95,22 @@ class {$controllerName} extends Controller
     // GENERATE METHODS
     // ─────────────────────────────────────────────
 
-    private static function generateMethods(string $modelName, array $endpoints, string $slugNs, bool $useResource): string
+    private static function generateMethods(string $modelName, array $endpoints, string $slugNs, bool $useResource, bool $usePolicy): string
     {
         $methods = [];
+        
+        // Add trait use if policy is enabled
+        if ($usePolicy) {
+            $methods[] = "    use AuthorizesRequests;";
+        }
+        
         foreach ($endpoints as $name => $endpoint) {
-            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource);
+            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource, $usePolicy);
         }
         return implode("\n\n", $methods);
     }
 
-    private static function generateMethod(string $name, string $modelName, array $endpoint, string $slugNs, bool $useResource): string
+    private static function generateMethod(string $name, string $modelName, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy): string
     {
         return match ($name) {
             'index'   => match ($endpoint['type'] ?? '') {
@@ -110,7 +118,7 @@ class {$controllerName} extends Controller
                 default        => self::generateIndex($modelName, $endpoint, $slugNs, $useResource),
             },
             'show'    => self::generateShow($modelName, $endpoint, $slugNs, $useResource),
-            'update'  => self::generateUpdate($modelName, $endpoint, $slugNs, $useResource), 
+            'update'  => self::generateUpdate($modelName, $endpoint, $slugNs, $useResource, $usePolicy), 
             'store' => match ($endpoint['type'] ?? '') {
                 'upload'      => self::generateUploadStore($modelName, $endpoint),
                 'command_run' => self::generateCommandRun($modelName, $endpoint),
@@ -119,11 +127,11 @@ class {$controllerName} extends Controller
                 'broadcast' => self::generateBroadcast($modelName, $slugNs, $endpoint),
                  'mail_send'      => self::generateMailSend($modelName, $endpoint, $slugNs),
                  'notification_trigger' => self::generateNotificationTrigger($modelName, $endpoint, $slugNs),
-                default       => self::generateStore($modelName, $endpoint, $slugNs, $useResource),
+                default       => self::generateStore($modelName, $endpoint, $slugNs, $useResource, $usePolicy),
             },
             'destroy' => match ($endpoint['type'] ?? '') {
                 'upload_destroy' => self::generateUploadDestroy($modelName, $endpoint),
-                default          => self::generateDestroy($modelName, $endpoint),
+                default          => self::generateDestroy($modelName, $endpoint, $usePolicy),
             },
             'fileUrl'    => self::generateUploadUrl($modelName, $endpoint),
             'me'         => self::generateCustomMethod($name, $modelName, $endpoint),
@@ -220,17 +228,18 @@ class {$controllerName} extends Controller
     // STORE — FIXED to use Resource
     // ─────────────────────────────────────────────
 
-    private static function generateStore(string $model, array $endpoint, string $slugNs, bool $useResource): string
+    private static function generateStore(string $model, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy): string
     {
         $validation = self::generateValidation($endpoint['validation'] ?? []);
         $varName    = lcfirst($model);
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('create', {$model}::class);" : '';
 
         if ($useResource) {
             return "    /**
      * {$endpoint['description']}
      */
     public function store(Request \$request): JsonResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -245,7 +254,7 @@ class {$controllerName} extends Controller
      * {$endpoint['description']}
      */
     public function store(Request \$request): JsonResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -260,17 +269,18 @@ class {$controllerName} extends Controller
     // UPDATE — FIXED to use Resource
     // ─────────────────────────────────────────────
 
-    private static function generateUpdate(string $model, array $endpoint, string $slugNs, bool $useResource): string
+    private static function generateUpdate(string $model, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy): string
     {
         $validation = self::generateValidation($endpoint['validation'] ?? []);
         $varName    = lcfirst($model);
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('update', \${$varName});" : '';
 
         if ($useResource) {
             return "    /**
      * {$endpoint['description']}
      */
     public function update(Request \$request, {$model} \${$varName}): JsonResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -285,7 +295,7 @@ class {$controllerName} extends Controller
      * {$endpoint['description']}
      */
     public function update(Request \$request, {$model} \${$varName}): JsonResponse
-    {
+    {{$authCheck}
         \$validated = \$request->validate([
 {$validation}
         ]);
@@ -300,16 +310,17 @@ class {$controllerName} extends Controller
     // DESTROY — unchanged
     // ─────────────────────────────────────────────
 
-    private static function generateDestroy(string $model, array $endpoint): string
+    private static function generateDestroy(string $model, array $endpoint, bool $usePolicy): string
     {
         $varName = lcfirst($model);
         $message = $endpoint['response']['value'] ?? "{$model} deleted successfully";
+        $authCheck  = $usePolicy ? "\n        \$this->authorize('delete', \${$varName});" : '';
 
         return "    /**
      * {$endpoint['description']}
      */
     public function destroy({$model} \${$varName}): JsonResponse
-    {
+    {{$authCheck}
         \${$varName}->delete();
 
         return response()->json(['message' => '{$message}']);

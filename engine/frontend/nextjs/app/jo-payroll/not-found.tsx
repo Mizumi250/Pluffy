@@ -3,7 +3,7 @@
 // Next.js segment-scoped 404 handler.
 // Rendered when notFound() is called or no route matches under /jo-payroll.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-11T13:31:07.419Z
+// Generated: 2026-05-13T10:04:48.226Z
 // ============================================================
 
 import React from 'react'
