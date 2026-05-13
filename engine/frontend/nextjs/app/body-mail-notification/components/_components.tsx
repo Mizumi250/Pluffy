@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-mail-notification
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:04:44.260Z
+// Generated: 2026-05-13T10:27:05.185Z
 // ============================================================
 
 'use client'

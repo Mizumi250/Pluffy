@@ -1774,6 +1774,8 @@ endpoints:
 
 **Response types:** `collection`, `single`, `message`
 
+**`policy: true`** — enables Laravel policy authorization on `store`, `update`, and `destroy`. The engine generates a `{Model}Policy` class and wires `$this->authorize()` calls into the controller automatically. Pair with `@arkzen:policy:methodName` blocks to inject custom PHP logic (see Section 9C). Laravel autodiscovers the policy — no manual registration needed.
+
 ---
 
 ## SECTION 9 — @arkzen:routes
@@ -1845,6 +1847,61 @@ return response()->json(['queue' => $queue]);
 |----------|-----|
 | Custom logic inside a resource controller method (index, store, update, etc.) | `@arkzen:endpoint:name` |
 | Custom one-off route declared in `@arkzen:routes` | `@arkzen:handler:name` |
+
+---
+
+## SECTION 9C — @arkzen:policy:methodName
+
+Use `@arkzen:policy:methodName` to inject custom PHP into the generated `{Model}Policy` class. Requires `policy: true` in the `@arkzen:api` block.
+
+**Supported methods:** `update`, `delete` (custom PHP injected). `viewAny`, `view`, `create` always return `true` by default.
+
+**Format:**
+```tsx
+/* @arkzen:policy:update
+*/
+// Your PHP here — $user and $modelVar are available
+if ($item->status === 'archived') {
+    return false;
+}
+return true;
+/* @arkzen:policy:update:end */
+
+/* @arkzen:policy:delete
+*/
+if ($item->status === 'archived') {
+    return false;
+}
+return true;
+/* @arkzen:policy:delete:end */
+```
+
+**Available variables:**
+- `$user` — `?User`, nullable (route may be unauthenticated)
+- `$modelVar` — the model instance, named as `lcfirst($modelName)` e.g. `$item`, `$product`
+
+**Default stub (when no snippet provided):**
+```php
+return ($user?->id === $model->owner_column) || ($user?->role === 'admin');
+// Falls back to: return (false) || ($user?->role === 'admin')
+// if no owner column (user_id / owner_id / created_by / author_id) is detected
+// → 403 on every call if unauthenticated. Always provide snippets when using policy: true.
+```
+
+**Rules:**
+- `*/` must be on the line immediately after the opening tag (body separator format)
+- Method name must exactly match: `update` or `delete`
+- Do NOT write the full method signature — inject the body only
+- Policy is autodiscovered by Laravel — no `AuthServiceProvider` or manual `Gate::policy()` needed
+- The policy only blocks if `$this->authorize()` is called — which only happens when `policy: true` is set in `@arkzen:api`
+- If routes have no `auth:sanctum` middleware, `$user` will be `null` — write your logic accordingly
+
+**Which to use:**
+
+| Scenario | Use |
+|----------|-----|
+| Protect resource controller methods (store, update, destroy) | `@arkzen:policy:methodName` |
+| Custom one-off route protection | `@arkzen:middleware:name` |
 
 ---
 

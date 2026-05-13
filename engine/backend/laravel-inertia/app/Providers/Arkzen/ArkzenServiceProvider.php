@@ -18,7 +18,6 @@ class ArkzenServiceProvider extends ServiceProvider
         $this->registerSqliteConnections();
         $this->ensureReverbConfig();
         $this->bootActiveTatemonos();
-        $this->registerPolicies();
     }
 
     private function registerSqliteConnections(): void
@@ -116,53 +115,6 @@ class ArkzenServiceProvider extends ServiceProvider
         foreach ($activeModules as $module) {
             self::registerModuleRoutes($module['name']);
         }
-    }
-
-    private function registerPolicies(): void
-    {
-        $gate = $this->app['Illuminate\Contracts\Auth\Access\Gate'];
-        $policiesDir = app_path('Policies/Arkzen');
-
-        if (!File::isDirectory($policiesDir)) {
-            return;
-        }
-
-        $files = File::allFiles($policiesDir);
-
-        foreach ($files as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $relativePath = str_replace(
-                [app_path('Policies/Arkzen/'), '/'],
-                ['', '\\'],
-                $file->getPathname()
-            );
-            $relativePath = str_replace('.php', '', $relativePath);
-            
-            $policyClass = "App\Policies\Arkzen\\{$relativePath}";
-
-            if (class_exists($policyClass)) {
-                // Extract model name from policy class name
-                // E.g., ItemPolicy → Item
-                $modelBaseName = preg_replace('/Policy$/', '', class_basename($policyClass));
-                $modelClass = "App\Models\Arkzen\\{$this->extractNamespace($relativePath)}\\{$modelBaseName}";
-
-                if (class_exists($modelClass)) {
-                    $gate->policy($modelClass, $policyClass);
-                    \Log::debug("[Arkzen] ✓ Registered policy: {$policyClass} for {$modelClass}");
-                }
-            }
-        }
-    }
-
-    private function extractNamespace(string $path): string
-    {
-        // Convert 'CrudTest\ItemPolicy' to 'CrudTest'
-        $parts = explode('\\', $path);
-        array_pop($parts); // Remove the policy class name
-        return implode('\\', $parts);
     }
 
     public static function registerModuleRoutes(string $tatemonoName): void

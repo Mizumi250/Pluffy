@@ -5,7 +5,7 @@
 // Tatemono: crud-test
 // v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:04:46.534067Z
+// Generated: 2026-05-13T10:27:07.124902Z
 // ============================================================
 
 namespace App\Policies\Arkzen\CrudTest;
@@ -26,11 +26,22 @@ class ItemPolicy
 
     public function update(?User $user, Item $item): bool
     {
-        return (false) || ($user?->role === 'admin');
+        // Prevent updates to archived items
+        if ($item->status === 'archived') {
+            return false;
+        }
+        
+        // Only allow if user is authenticated (in a real app, check ownership)
+        return true;
     }
 
     public function delete(?User $user, Item $item): bool
     {
-        return (false) || ($user?->role === 'admin');
+        // Prevent deletion of archived items (must restore first)
+        if ($item->status === 'archived') {
+            return false;
+        }
+        
+        return true;
     }
 }
