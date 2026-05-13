@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:27:04.677Z
+// Generated: 2026-05-13T10:51:31.823Z
 // ============================================================
 
 'use client'

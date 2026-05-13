@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:27:09.516Z
+// Generated: 2026-05-13T10:51:36.811Z
 // ============================================================
 
 import styles from '../styles/FeatureCard.module.css'

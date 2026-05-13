@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — church-community
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T10:27:06.794Z
+// Generated: 2026-05-13T10:51:33.946Z
 // ============================================================
 
 'use client'
