@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — asset-hub
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T13:31:31.199Z
+// Generated: 2026-05-13T15:08:31.120Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -74,6 +74,14 @@ export const ASSET_REGISTRY: AssetItem[] = [
     ext: 'jpg',
     description: 'Hero section background image',
     tags: ['background', 'hero'],
+  },
+    {
+    name: 'sample',
+    path: '/tatemonos/asset-hub/assets/images/default-2.png',
+    category: 'images',
+    ext: 'png',
+    description: 'samples',
+    tags: ['samples', 'background'],
   },
   {
     name: 'avatar-placeholder.png',

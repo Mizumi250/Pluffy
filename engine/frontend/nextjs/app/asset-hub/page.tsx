@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — asset-hub/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T13:31:31.204Z
+// Generated: 2026-05-13T15:08:31.125Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -77,6 +77,14 @@ export const ASSET_REGISTRY: AssetItem[] = [
     ext: 'jpg',
     description: 'Hero section background image',
     tags: ['background', 'hero'],
+  },
+    {
+    name: 'sample',
+    path: '/tatemonos/asset-hub/assets/images/default-2.png',
+    category: 'images',
+    ext: 'png',
+    description: 'samples',
+    tags: ['samples', 'background'],
   },
   {
     name: 'avatar-placeholder.png',

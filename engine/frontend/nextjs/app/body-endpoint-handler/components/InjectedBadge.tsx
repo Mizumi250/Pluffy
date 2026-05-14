@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InjectedBadge
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T13:31:31.825Z
+// Generated: 2026-05-13T15:08:32.004Z
 // ============================================================
 
 export { InjectedBadge } from './_components'

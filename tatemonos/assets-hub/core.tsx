@@ -94,6 +94,14 @@ export const ASSET_REGISTRY: AssetItem[] = [
     description: 'Hero section background image',
     tags: ['background', 'hero'],
   },
+    {
+    name: 'sample',
+    path: '/tatemonos/asset-hub/assets/images/default-2.png',
+    category: 'images',
+    ext: 'png',
+    description: 'samples',
+    tags: ['samples', 'background'],
+  },
   {
     name: 'avatar-placeholder.png',
     path: '/tatemonos/asset-hub/assets/images/avatar-placeholder.png',

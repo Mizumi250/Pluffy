@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/mail-test/auth')->group
 // ============================================================
 // ARKZEN GENERATED ROUTES — mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T13:31:36.126473Z
+// Generated: 2026-05-13T15:08:36.727615Z
 // Resources: MailLog
 // Custom controllers: 
 // ============================================================
