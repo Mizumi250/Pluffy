@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — UploadedFile
 // Tatemono: upload-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T03:19:40.052450Z
+// Generated: 2026-05-15T03:46:24.482598Z
 // ============================================================
 
 namespace App\Models\Arkzen\UploadTest;

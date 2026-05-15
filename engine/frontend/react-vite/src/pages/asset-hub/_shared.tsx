@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — asset-hub [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:19:35.595Z
+// Generated: 2026-05-15T03:46:19.733Z
 // ============================================================
 
 import React, { useState, useRef, useEffect } from 'react'

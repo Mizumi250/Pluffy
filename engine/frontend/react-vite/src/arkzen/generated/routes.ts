@@ -3,6 +3,7 @@
 // Auto-updated when tatemonos are built/removed
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
+import React from 'react'
 import { lazy, ComponentType } from 'react'
 
 export interface ArkzenRoute {
@@ -73,8 +74,10 @@ const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 const ArkzenPage_DtrGeofencing_Index = lazy(() => import('@/pages/dtr-geofencing/index'))
 // ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:false
 const ArkzenPage_DtrGeofencing_Admin = lazy(() => import('@/pages/dtr-geofencing/admin'))
-// ROUTE:errors-test:index:/errors-test:false
+// ROUTE:errors-test:index:/errors-test:false:ArkzenErrorBoundary_ErrorsTest
 const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index'))
+// ROUTE:errors-test:not-found:/errors-test/*:false
+const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
@@ -93,6 +96,8 @@ const ArkzenPage_JoPayroll_Hdmf = lazy(() => import('@/pages/jo-payroll/hdmf'))
 const ArkzenPage_JoPayroll_Appointments = lazy(() => import('@/pages/jo-payroll/appointments'))
 // ROUTE:jo-payroll:payslip:/jo-payroll/payslip:false
 const ArkzenPage_JoPayroll_Payslip = lazy(() => import('@/pages/jo-payroll/payslip'))
+// ROUTE:jo-payroll:not-found:/jo-payroll/*:false
+const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-found'))
 // ROUTE:job-test:dashboard:/job-test/dashboard:false
 const ArkzenPage_JobTest_Dashboard = lazy(() => import('@/pages/job-test/dashboard'))
 // ROUTE:job-test:__root_redirect:/job-test:false
@@ -129,6 +134,8 @@ const ArkzenPage_QueueFlow_Index = lazy(() => import('@/pages/queue-flow/index')
 const ArkzenPage_QueueFlow_Join = lazy(() => import('@/pages/queue-flow/join'))
 // ROUTE:queue-flow:admin:/queue-flow/admin:false
 const ArkzenPage_QueueFlow_Admin = lazy(() => import('@/pages/queue-flow/admin'))
+// ROUTE:queue-flow:not-found:/queue-flow/*:false
+const ArkzenPage_QueueFlow_NotFound = lazy(() => import('@/pages/queue-flow/not-found'))
 // ROUTE:roles-test:login:/roles-test/login:true
 const ArkzenPage_RolesTest_Login = lazy(() => import('@/pages/roles-test/login'))
 // ROUTE:roles-test:register:/roles-test/register:true
@@ -145,6 +152,12 @@ const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/schedul
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
+
+import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
+
+export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ children: React.ReactNode }>> = {
+  'errors-test': ArkzenErrorBoundary_ErrorsTest,
+}
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
@@ -178,6 +191,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
+  { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
@@ -187,6 +201,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/jo-payroll/hdmf', name: 'hdmf', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Hdmf, auth: false },
   { path: '/jo-payroll/appointments', name: 'appointments', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Appointments, auth: false },
   { path: '/jo-payroll/payslip', name: 'payslip', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Payslip, auth: false },
+  { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
   { path: '/job-test/dashboard', name: 'dashboard', tatemono: 'job-test', component: ArkzenPage_JobTest_Dashboard, auth: false },
   { path: '/job-test', name: '__root_redirect', tatemono: 'job-test', component: ArkzenPage_JobTest_RootRedirect, auth: false },
   { path: '/mail-test/login', name: 'login', tatemono: 'mail-test', component: ArkzenPage_MailTest_Login, auth: true },
@@ -205,6 +220,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
   { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
   { path: '/queue-flow/admin', name: 'admin', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Admin, auth: false },
+  { path: '/queue-flow/*', name: 'not-found', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_NotFound, auth: false },
   { path: '/roles-test/login', name: 'login', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Login, auth: true },
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },

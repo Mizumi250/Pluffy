@@ -8,7 +8,7 @@ import {
   Layers, Play, Clock,
   CheckCircle, AlertCircle, Plus, Terminal,
 } from 'lucide-react'
-import { ARKZEN_ROUTES } from '@/arkzen/generated/routes'
+import { ARKZEN_ROUTES, ARKZEN_ERROR_BOUNDARIES } from '@/arkzen/generated/routes'
 
 function LoadingScreen() {
   return (
@@ -250,13 +250,13 @@ export default function App() {
   return (
     <Suspense fallback={<LoadingScreen />}>
       <Routes>
-        {ARKZEN_ROUTES.map(route => (
-          <Route
-            key={route.path}
-            path={route.path}
-            element={<route.component />}
-          />
-        ))}
+        {ARKZEN_ROUTES.map(route => {
+          const Boundary = ARKZEN_ERROR_BOUNDARIES[route.tatemono]
+          const element  = Boundary
+            ? <Boundary><route.component /></Boundary>
+            : <route.component />
+          return <Route key={route.path} path={route.path} element={element} />
+        })}
         <Route path="/" element={<ArkzenHub />} />
         <Route path="*" element={<NotFoundScreen />} />
       </Routes>

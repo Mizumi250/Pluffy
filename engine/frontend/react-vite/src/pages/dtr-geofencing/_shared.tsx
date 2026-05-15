@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — dtr-geofencing [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:19:37.652Z
+// Generated: 2026-05-15T03:46:22.514Z
 // ============================================================
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'

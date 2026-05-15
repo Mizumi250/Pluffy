@@ -1,9 +1,11 @@
 // ============================================================
-// ARKZEN ENGINE — VITE ROUTER v1.3
+// ARKZEN ENGINE — VITE ROUTER v1.4
 // React+Vite stack equivalent of router.ts
 // Reads same ParsedTatemono, generates Vite-compatible output:
-//   src/pages/{tatName}/{pageName}.tsx   ← page components
-//   src/arkzen/generated/routes.ts       ← React Router route registry
+//   src/pages/{tatName}/{pageName}.tsx        ← page components
+//   src/pages/{tatName}/not-found.tsx         ← 404 handler (if declared)
+//   src/pages/{tatName}/error-boundary.tsx    ← 500 boundary (if declared)
+//   src/arkzen/generated/routes.ts            ← React Router route registry
 //   src/arkzen/generated/{name}.animations.ts ← GSAP animations
 //
 // v1.2 fixes (uniform with Next.js router):
@@ -22,6 +24,16 @@
 //     engine-required ['motion'], emit ONE canonical import line.
 //     Prevents "Identifier 'motion' has already been declared" when
 //     tatemono page body already imports from framer-motion.
+//
+// v1.4 fixes:
+//   • @arkzen:error:404 → generates not-found.tsx + wildcard route /{tat}/*
+//     Mirrors Next.js segment not-found.tsx. Catches any unmatched sub-path
+//     under the tatemono prefix and renders the tatemono's NotFoundPage.
+//   • @arkzen:error:500 → generates error-boundary.tsx class component.
+//     Mirrors Next.js segment error.tsx. App.tsx wraps tatemono routes with
+//     the boundary via ARKZEN_ERROR_BOUNDARIES exported from routes.ts.
+//   • ViteRoute gains optional `errorBoundary` field; writeRouteRegistry
+//     emits ARKZEN_ERROR_BOUNDARIES map so App.tsx can wrap per-tatemono.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -335,21 +347,23 @@ ${clean}${pageVariantsBlock}
 // ─── Route registry ────────────────────────────────────────────────────────────
 
 interface ViteRoute {
-  tatName:  string
-  pageName: string
-  path:     string
-  auth:     boolean
+  tatName:        string
+  pageName:       string
+  path:           string
+  auth:           boolean
+  errorBoundary?: string   // PascalCase class name emitted in error-boundary.tsx
 }
 
 function readExistingRoutes(): ViteRoute[] {
   if (!fs.existsSync(ROUTES_FILE)) return []
   const content = fs.readFileSync(ROUTES_FILE, 'utf-8')
-  const matches = [...content.matchAll(/\/\/ ROUTE:([^:]+):([^:]+):([^:]+):(true|false)/g)]
+  const matches = [...content.matchAll(/\/\/ ROUTE:([^:]+):([^:]+):([^:]+):(true|false)(?::([A-Za-z0-9_]*))?/g)]
   return matches.map(m => ({
-    tatName:  m[1],
-    pageName: m[2],
-    path:     m[3],
-    auth:     m[4] === 'true',
+    tatName:        m[1],
+    pageName:       m[2],
+    path:           m[3],
+    auth:           m[4] === 'true',
+    errorBoundary:  m[5] || undefined,
   }))
 }
 
@@ -359,7 +373,8 @@ function writeRouteRegistry(routes: ViteRoute[]): void {
   const imports = routes.map(r => {
     const wrapperName = `ArkzenPage_${toPascalCase(r.tatName)}_${toPascalCase(r.pageName)}`
     const filePath    = `@/pages/${r.tatName}/${r.pageName}`
-    return `// ROUTE:${r.tatName}:${r.pageName}:${r.path}:${r.auth}\nconst ${wrapperName} = lazy(() => import('${filePath}'))`
+    const boundaryTag = r.errorBoundary ? `:${r.errorBoundary}` : ''
+    return `// ROUTE:${r.tatName}:${r.pageName}:${r.path}:${r.auth}${boundaryTag}\nconst ${wrapperName} = lazy(() => import('${filePath}'))`
   }).join('\n')
 
   const routeArray = routes.map(r => {
@@ -367,11 +382,30 @@ function writeRouteRegistry(routes: ViteRoute[]): void {
     return `  { path: '${r.path}', name: '${r.pageName}', tatemono: '${r.tatName}', component: ${wrapperName}, auth: ${r.auth} },`
   }).join('\n')
 
+  // Collect unique error boundaries across all routes for this registry snapshot
+  const boundaryEntries: string[] = []
+  const boundaryImports: string[] = []
+  const seen = new Set<string>()
+  for (const r of routes) {
+    if (r.errorBoundary && !seen.has(r.tatName)) {
+      seen.add(r.tatName)
+      boundaryImports.push(
+        `import { ${r.errorBoundary} } from '@/pages/${r.tatName}/error-boundary'`
+      )
+      boundaryEntries.push(`  '${r.tatName}': ${r.errorBoundary},`)
+    }
+  }
+
+  const boundarySection = boundaryImports.length > 0
+    ? `\n${boundaryImports.join('\n')}\n\nexport const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ children: React.ReactNode }>> = {\n${boundaryEntries.join('\n')}\n}\n`
+    : `\nexport const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ children: React.ReactNode }>> = {}\n`
+
   const content = `// ============================================================
 // ARKZEN GENERATED — Route Registry (React+Vite)
 // Auto-updated when tatemonos are built/removed
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
+import React from 'react'
 import { lazy, ComponentType } from 'react'
 
 export interface ArkzenRoute {
@@ -383,7 +417,7 @@ export interface ArkzenRoute {
 }
 
 ${imports}
-
+${boundarySection}
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
 ${routeArray}
 ]
@@ -426,6 +460,113 @@ ${normalizedSharedBody}
 `
   fs.writeFileSync(path.join(tatDir, '_shared.tsx'), content, 'utf-8')
   console.log(`[Arkzen Vite Router] ✓ Shared components: _shared.tsx`)
+}
+
+// ─── Error pages (v1.4) ────────────────────────────────────────────────────────
+//
+// @arkzen:error:404 → not-found.tsx  + wildcard route /{tat}/*
+//   React Router has no file-system 404 convention. We register a catch-all
+//   child route that renders the tatemono's NotFoundPage component. The wildcard
+//   is placed last in the route list so real pages always take priority.
+//
+// @arkzen:error:500 → error-boundary.tsx  (React class ErrorBoundary)
+//   React Router has no built-in error boundary. We generate a class component
+//   that wraps each tatemono's routes in App.tsx via ARKZEN_ERROR_BOUNDARIES.
+//   The class receives `reset` via its own internal state toggle, mirroring
+//   the Next.js error.tsx `{ reset }` prop pattern.
+
+function generateErrorPages(
+  tatemono: ParsedTatemono,
+  tatDir: string,
+): { has404: boolean; has500: boolean; boundaryClassName: string | null } {
+  let has404 = false
+  let has500 = false
+  let boundaryClassName: string | null = null
+
+  for (const handler of tatemono.errorHandlers) {
+    const cleanRaw = normalizeForVite(handler.raw)
+      // strip 'use client' directive (not needed in Vite)
+      .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      // strip any React import — engine owns it in error files too
+      .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .trim()
+
+    // ── 404 ──────────────────────────────────────────────────────────────────
+    if (handler.type === '404') {
+      has404 = true
+
+      const content = `// ============================================================
+// ARKZEN GENERATED — ${tatemono.meta.name}/not-found [React+Vite]
+// Rendered by the wildcard route /${tatemono.meta.name}/* for any
+// unmatched sub-path under this tatemono prefix.
+// DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React from 'react'
+import { ErrorScreen } from './_shared'
+
+${cleanRaw}
+
+export default NotFoundPage
+`
+      fs.writeFileSync(path.join(tatDir, 'not-found.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Vite Router] ✓ Not-found page: /${tatemono.meta.name}/* → not-found.tsx`)
+    }
+
+    // ── 500 ──────────────────────────────────────────────────────────────────
+    if (handler.type === '500') {
+      has500 = true
+      boundaryClassName = `ArkzenErrorBoundary_${toPascalCase(tatemono.meta.name)}`
+
+      const content = `// ============================================================
+// ARKZEN GENERATED — ${tatemono.meta.name}/error-boundary [React+Vite]
+// Class-based React ErrorBoundary wrapping all routes for this tatemono.
+// App.tsx imports it via ARKZEN_ERROR_BOUNDARIES from routes.ts.
+// DO NOT EDIT — edit @arkzen:error:500 in tatemono instead
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React, { Component, ReactNode } from 'react'
+import { ErrorScreen } from './_shared'
+
+${cleanRaw}
+
+interface ArkzenErrorBoundaryState { hasError: boolean }
+
+export class ${boundaryClassName} extends Component<
+  { children: ReactNode },
+  ArkzenErrorBoundaryState
+> {
+  state: ArkzenErrorBoundaryState = { hasError: false }
+
+  static getDerivedStateFromError(): ArkzenErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error('[Arkzen] ${tatemono.meta.name} error boundary caught:', error, info)
+  }
+
+  reset = (): void => {
+    this.setState({ hasError: false })
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return <ServerErrorPage reset={this.reset} />
+    }
+    return this.props.children
+  }
+}
+`
+      fs.writeFileSync(path.join(tatDir, 'error-boundary.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Vite Router] ✓ Error boundary: ${tatemono.meta.name}/error-boundary.tsx`)
+    }
+  }
+
+  return { has404, has500, boundaryClassName }
 }
 
 function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string; routePath: string } | null {
@@ -481,6 +622,7 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
 
   generateSharedComponents(tatemono, tatDir)
   generateCustomLayouts(tatemono)
+  const { has404, has500, boundaryClassName } = generateErrorPages(tatemono, tatDir)
   const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Vite Router' })
 
   const animContent = generateAnimationFile(tatemono)
@@ -503,8 +645,29 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
       ? `/${tatName}`
       : `/${tatName}/${page.name}`
 
-    newRoutes.push({ tatName, pageName: page.name, path: routePath, auth: tatemono.meta.auth })
+    newRoutes.push({
+      tatName,
+      pageName:      page.name,
+      path:          routePath,
+      auth:          tatemono.meta.auth,
+      // Attach boundaryClassName to every page route in this tatemono so
+      // writeRouteRegistry can deduplicate and build ARKZEN_ERROR_BOUNDARIES.
+      errorBoundary: boundaryClassName ?? undefined,
+    })
     console.log(`[Arkzen Vite Router] ✓ /${tatName}${page.name === 'index' ? '' : '/' + page.name} [vite]`)
+  }
+
+  // Wildcard 404 — must be registered AFTER all real pages so React Router
+  // matches specific routes first. Path /{tat}/* catches every unmatched
+  // sub-path and renders the tatemono's NotFoundPage.
+  if (has404) {
+    newRoutes.push({
+      tatName,
+      pageName: 'not-found',
+      path:     `/${tatName}/*`,
+      auth:     false,
+    })
+    console.log(`[Arkzen Vite Router] ✓ Wildcard 404 route: /${tatName}/* → not-found.tsx`)
   }
 
   const rootRedirect = generateRootRedirectPage(tatemono)
