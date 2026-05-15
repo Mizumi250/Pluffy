@@ -1,10 +1,10 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — dtr-geofencing [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:58.623Z
+// Generated: 2026-05-15T03:19:37.652Z
 // ============================================================
 
-import React, { useState, useCallback, useEffect, useRef as useMapRef } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { create } from 'zustand'
 import {
   MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw,
@@ -249,8 +249,8 @@ export const Skeleton = () => (
 
 export const GeofenceMap = () => {
   const { currentPosition, settings, selectedEmployee, distanceToOffice } = useDtrStore()
-  const mapRef = useMapRef<HTMLDivElement>(null)
-  const leafletMapRef = useMapRef<any>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const leafletMapRef = useRef<any>(null)
 
   useEffect(() => {
     if (!currentPosition || !settings || !mapRef.current) return

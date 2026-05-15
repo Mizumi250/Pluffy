@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — VITE ROUTER v1.2
+// ARKZEN ENGINE — VITE ROUTER v1.3
 // React+Vite stack equivalent of router.ts
 // Reads same ParsedTatemono, generates Vite-compatible output:
 //   src/pages/{tatName}/{pageName}.tsx   ← page components
@@ -15,18 +15,27 @@
 //   • Auto-detect memo/useCallback/useReducer/useContext/useMemo
 //     and add to React import
 //   • Replace process.env.NEXT_PUBLIC_* → import.meta.env.VITE_*
+//
+// v1.3 fixes:
+//   • ENGINE_OWNED_MODULES — framer-motion is now engine-owned:
+//     scrape all named exports from page + component raw, merge with
+//     engine-required ['motion'], emit ONE canonical import line.
+//     Prevents "Identifier 'motion' has already been declared" when
+//     tatemono page body already imports from framer-motion.
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
+import { copyAssetsToPublic, cleanOldAssets } from './assets'
 
 const SRC_DIR        = path.resolve(process.cwd(), 'src')
 const PAGES_DIR      = path.join(SRC_DIR, 'pages')
 const GENERATED_DIR  = path.join(SRC_DIR, 'arkzen', 'generated')
 const LAYOUTS_DIR    = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
 const ROUTES_FILE    = path.join(GENERATED_DIR, 'routes.ts')
+
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -122,6 +131,30 @@ function getLayoutComponent(layout: string): string {
   }
 }
 
+// ─── Framer-motion import resolver (ENGINE_OWNED) ─────────────────────────────
+//
+// framer-motion is engine-owned: the engine strips ALL framer-motion import
+// lines from page/component raw, then emits exactly one canonical import line
+// with the union of what the tatemono declared + what the engine always needs.
+// This mirrors the Next.js router's ENGINE_OWNED_MODULES pattern and prevents
+// Babel's "Identifier 'motion' has already been declared" duplicate-import error.
+
+const FRAMER_IMPORT_RE = /^[ \t]*import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"][ \t]*;?[ \t]*\r?\n?/gm
+
+function resolveFramerImports(sources: string[], engineNeeds: string[] = ['motion']): string {
+  const named = new Set<string>(engineNeeds)
+  for (const src of sources) {
+    for (const m of src.matchAll(FRAMER_IMPORT_RE)) {
+      m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => named.add(n))
+    }
+  }
+  return `import { ${[...named].sort().join(', ')} } from 'framer-motion'`
+}
+
+function stripFramerImports(raw: string): string {
+  return raw.replace(FRAMER_IMPORT_RE, '')
+}
+
 // ─── Generate a single page file ──────────────────────────────────────────────
 
 function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalStyle: boolean): string {
@@ -141,22 +174,35 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     : ''
   const styleImport = hasGlobalStyle ? `import './styles/global.css'` : ''
 
-  // Components raw — strip React/Next imports, they come from the page header
+  // Components raw — strip React/Next/framer-motion imports, engine owns them
   const componentCode = tatemono.components
-    .map(c => normalizeForVite(c.raw)
+    .map(c => stripFramerImports(normalizeForVite(c.raw)
       .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
       .replace(/^[ \t]*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, ''))
       .trim()
     )
     .join('\n\n')
 
-  // Clean page.raw — strip Next.js-specific code not valid in Vite
-  const cleanPageRaw = normalizeForVite(page.raw)
+  // Clean page.raw — strip Next.js-specific code and framer-motion imports (engine-owned)
+  const cleanPageRaw = stripFramerImports(normalizeForVite(page.raw))
     // FIX v1.2: strip any `export default XxxPage` already in the raw page body
     // so the Arkzen wrapper below is the only default export in the file
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    // FIX v1.3: isMounted cleanup-only useEffect breaks under React StrictMode —
+    // StrictMode remounts components in dev, firing the cleanup and permanently
+    // setting isMounted.current = false before load() runs, leaving the page
+    // stuck on "Loading...". Rewrite to reset isMounted.current = true on mount
+    // so the ref is always correct after a remount.
+    .replace(
+      /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
+      `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
+    )
     .trim()
+
+  // Resolve ONE canonical framer-motion import — scrapes tatemono's named exports
+  // (e.g. AnimatePresence, useMotionValue…) and merges with engine-required 'motion'
+  const framerImport = resolveFramerImports([page.raw, ...tatemono.components.map(c => c.raw)])
 
   // Detect which React hooks are actually used in the combined output
   const allCode       = componentCode + '\n' + cleanPageRaw
@@ -199,7 +245,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
 // ============================================================
 
 import React, { ${reactHooks} } from 'react'
-import { motion } from 'framer-motion'
+${framerImport}
 ${routerDomImport}
 ${layoutImport}
 ${animImport}
@@ -473,6 +519,20 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
 
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Vite Router] ✓ Route registry updated: ${newRoutes.length} page(s)`)
+
+  // ── Asset distribution ────────────────────────────────────────────────────────
+  try {
+    const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')
+    const assetsPath = path.join(tatemonosDir, tatName, 'assets')
+    const publicDir = path.resolve(process.cwd(), 'public')
+    cleanOldAssets(tatName, publicDir)
+    const hasAssets = copyAssetsToPublic(tatName, assetsPath, publicDir)
+    if (!hasAssets) {
+      console.log(`[Arkzen Assets] No assets folder for ${tatName}`)
+    }
+  } catch (e) {
+    console.log(`[Arkzen Assets] ⚠ Asset distribution skipped: ${e}`)
+  }
 }
 
 // ─── Remove tatemono pages ─────────────────────────────────────────────────────

@@ -13,6 +13,10 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
+// ROUTE:animation-lab:index:/animation-lab:false
+const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
+// ROUTE:asset-hub:index:/asset-hub:false
+const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:auth-test:login:/auth-test/login:true
 const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
 // ROUTE:auth-test:register:/auth-test/register:true
@@ -143,6 +147,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
+  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
+  { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
   { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
   { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },

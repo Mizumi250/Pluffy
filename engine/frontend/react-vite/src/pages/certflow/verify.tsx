@@ -2,11 +2,11 @@
 // ARKZEN GENERATED PAGE — certflow/verify [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:57.927Z
+// Generated: 2026-05-15T03:19:36.598Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { AppLayout } from '@/arkzen/core/layouts/custom/certflow-app'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
@@ -16,7 +16,6 @@ import './styles/global.css'
 import { create } from 'zustand'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { gsap } from 'gsap'
-import { AnimatePresence } from 'framer-motion'
 import {
   GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
   Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,

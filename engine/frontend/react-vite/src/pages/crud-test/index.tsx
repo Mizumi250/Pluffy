@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:58.526Z
+// Generated: 2026-05-15T03:19:37.229Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -45,6 +45,7 @@ const IndexPage = () => {
   const isMounted = useRef(true)
 
   useEffect(() => {
+    isMounted.current = true
     return () => { isMounted.current = false }
   }, [])
 
@@ -53,6 +54,7 @@ const IndexPage = () => {
     setLoading(true)
     try {
       const res = await arkzenFetch('/api/crud-test/items')
+      if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
       // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
@@ -109,9 +111,8 @@ const remove = async (id: number) => {
   try {
     const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
     console.log('[DELETE] Response status:', res.status)  // Debug
-    if (res.ok) {
-      await load()  // ← RELOAD from server instead of manual filter
-    }
+    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+    await load()  // ← RELOAD from server instead of manual filter
   } catch (err) {
     console.error('[DELETE] Error:', err)
   } finally { 

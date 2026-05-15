@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — job-test/dashboard [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:59.075Z
+// Generated: 2026-05-15T03:19:38.678Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -34,7 +34,9 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/job-test/results')
       const d   = await res.json()
-      setResults(d.data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(d) ? d : (d?.data ?? [])
+      setResults(items)
     } finally {
       setLoading(false)
     }

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T01:29:06.538Z
+// Generated: 2026-05-15T03:09:29.175Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

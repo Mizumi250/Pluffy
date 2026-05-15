@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:58.627Z
+// Generated: 2026-05-15T03:19:37.658Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -257,8 +257,8 @@ export const Skeleton = () => (
 
 export const GeofenceMap = () => {
   const { currentPosition, settings, selectedEmployee, distanceToOffice } = useDtrStore()
-  const mapRef = useMapRef<HTMLDivElement>(null)
-  const leafletMapRef = useMapRef<any>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const leafletMapRef = useRef<any>(null)
 
   useEffect(() => {
     if (!currentPosition || !settings || !mapRef.current) return

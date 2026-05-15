@@ -466,7 +466,16 @@ function generatePageFile(
 
   // strippedSources: [comp0, comp1, ..., pageRaw]
   const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
-  const strippedPageCode      = strippedSources[tatemono.components.length] ?? ''
+  const strippedPageCode      = (strippedSources[tatemono.components.length] ?? '')
+    // FIX: isMounted cleanup-only useEffect breaks under React StrictMode —
+    // StrictMode remounts components in dev, firing the cleanup and permanently
+    // setting isMounted.current = false before load() runs, leaving the page
+    // stuck on "Loading...". Rewrite to reset isMounted.current = true on mount
+    // so the ref is always correct after a remount.
+    .replace(
+      /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
+      `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
+    )
 
   return `'use client'
 // ============================================================

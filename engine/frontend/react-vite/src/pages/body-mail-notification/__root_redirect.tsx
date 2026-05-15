@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — body-mail-notification [React+Vite]
 // Visiting /body-mail-notification redirects to /body-mail-notification/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:57.320Z
+// Generated: 2026-05-15T03:19:36.040Z
 // ============================================================
 
 import React from 'react'

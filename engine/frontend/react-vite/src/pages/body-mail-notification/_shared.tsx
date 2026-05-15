@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-mail-notification [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-10T12:24:57.317Z
+// Generated: 2026-05-15T03:19:36.036Z
 // ============================================================
 
 import React, { useState, useEffect, useCallback } from 'react'
@@ -11,7 +11,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,
