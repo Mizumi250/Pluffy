@@ -2,10 +2,10 @@
 // ARKZEN GENERATED PAGE — events-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:46:22.709Z
+// Generated: 2026-05-15T04:19:45.971Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useRef, useEffect, useState, useCallback } from 'react'
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
@@ -17,13 +17,13 @@ import { Flame, Zap } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 interface EventLogEntry {
-  id:           number
-  event_name:   string
+  id:            number
+  event_name:    string
   listener_name: string
-  status:       string
-  payload:      string | null
-  duration_ms:  number | null
-  created_at:   string
+  status:        string
+  payload:       string | null
+  duration_ms:   number | null
+  created_at:    string
 }
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
@@ -57,17 +57,30 @@ const IndexPage = () => {
   const [clearing, setClearing] = useState(false)
   const pollingRef = React.useRef<NodeJS.Timeout | null>(null)
 
-  const loadLog = async () => {
+  // useCallback keeps loadLog stable across StrictMode remounts so the
+  // setInterval callback inside fire() never closes over a stale reference.
+  // per_page=100 + latest() ensures all recent entries always appear on page 1.
+  const loadLog = useCallback(async () => {
     try {
-      const res = await arkzenFetch('/api/events-test/log')
+      const res = await arkzenFetch('/api/events-test/log?per_page=100')
       const d   = await res.json()
       setLog(d.data ?? [])
     } catch (e) {
       console.error('Failed to load log:', e)
     }
-  }
+  }, [])
 
-  useEffect(() => { loadLog() }, [])
+  useEffect(() => {
+    loadLog()
+    // Clean up any running interval on unmount so StrictMode's forced
+    // unmount/remount cycle doesn't leave a ghost interval behind.
+    return () => {
+      if (pollingRef.current) {
+        clearInterval(pollingRef.current)
+        pollingRef.current = null
+      }
+    }
+  }, [loadLog])
 
   const fire = async (eventKey: string, payload: object) => {
     setFiring(eventKey)
@@ -76,14 +89,14 @@ const IndexPage = () => {
         method: 'POST',
         body:   JSON.stringify({ event: eventKey, payload }),
       })
-      // Start aggressive polling immediately
+
+      // Clear any existing poll then start aggressive polling immediately
       if (pollingRef.current) clearInterval(pollingRef.current)
-      
-      // Poll immediately and every 500ms
+
       loadLog()
       pollingRef.current = setInterval(loadLog, 500)
-      
-      // Stop after 15 seconds
+
+      // Stop polling after 15 seconds
       setTimeout(() => {
         if (pollingRef.current) {
           clearInterval(pollingRef.current)
@@ -92,8 +105,8 @@ const IndexPage = () => {
       }, 15000)
     } catch (e) {
       console.error('Fire failed:', e)
-    } finally { 
-      setFiring(null) 
+    } finally {
+      setFiring(null)
     }
   }
 
@@ -111,6 +124,7 @@ const IndexPage = () => {
     failed:    'bg-red-100 text-red-700',
   }[s] ?? 'bg-neutral-100 text-neutral-600')
 
+  // Group by event + second bucket — latest() order means newest groups appear first
   const grouped = log.reduce((acc: Record<string, EventLogEntry[]>, entry) => {
     const key = `${entry.event_name}:${entry.created_at?.slice(0, 19)}`
     if (!acc[key]) acc[key] = []

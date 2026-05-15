@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventLogController
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T03:46:22.763556Z
+// Generated: 2026-05-15T04:19:46.041535Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\EventsTest;
@@ -58,8 +58,7 @@ class EventLogController extends Controller
      */
     public function clearLog(Request $request): JsonResponse
     {
-        // Custom endpoint: clearLog
-        // Add @arkzen:endpoint:clearLog ... :end block to your tatemono to inject logic.
-        return response()->json(['message' => 'Not implemented']);
+        \DB::table('event_log')->truncate();
+            return response()->json(['message' => 'Log cleared']);
     }
 }

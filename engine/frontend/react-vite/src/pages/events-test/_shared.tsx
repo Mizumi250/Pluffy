@@ -1,19 +1,19 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — events-test [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:46:22.706Z
+// Generated: 2026-05-15T04:19:45.967Z
 // ============================================================
 
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Flame, Zap } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 interface EventLogEntry {
-  id:           number
-  event_name:   string
+  id:            number
+  event_name:    string
   listener_name: string
-  status:       string
-  payload:      string | null
-  duration_ms:  number | null
-  created_at:   string
+  status:        string
+  payload:       string | null
+  duration_ms:   number | null
+  created_at:    string
 }
