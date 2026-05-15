@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:52:07.275Z
+// Generated: 2026-05-15T04:46:29.338Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -186,6 +186,12 @@ const DashboardPage = () => {
         method: 'POST',
         body: JSON.stringify({ notification: key }),
       })
+      const notif = notifTypes.find(n => n.key === key)
+      const hasBroadcast = notif?.channels.includes('broadcast')
+      if (!hasBroadcast) {
+        setPopup(notif?.label ? `${notif.label} notification sent!` : 'Notification sent!')
+        setTimeout(() => setPopup(null), 4000)
+      }
       setTimeout(loadInbox, 800)
     } catch (err) {
       console.error('Failed to trigger notification:', err)

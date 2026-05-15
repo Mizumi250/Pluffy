@@ -78,6 +78,8 @@ const ArkzenPage_DtrGeofencing_Admin = lazy(() => import('@/pages/dtr-geofencing
 const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index'))
 // ROUTE:errors-test:not-found:/errors-test/*:false
 const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
+// ROUTE:events-test:index:/events-test:false
+const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
 const ArkzenPage_InventoryManagement_Index = lazy(() => import('@/pages/inventory-management/index'))
 // ROUTE:jo-payroll:index:/jo-payroll:false
@@ -116,14 +118,6 @@ const ArkzenPage_NewUpdatesStyles_Index = lazy(() => import('@/pages/new-updates
 const ArkzenPage_NewUpdatesStyles_About = lazy(() => import('@/pages/new-updates-styles/about'))
 // ROUTE:new-updates-styles:features:/new-updates-styles/features:false
 const ArkzenPage_NewUpdatesStyles_Features = lazy(() => import('@/pages/new-updates-styles/features'))
-// ROUTE:notification-test:login:/notification-test/login:true
-const ArkzenPage_NotificationTest_Login = lazy(() => import('@/pages/notification-test/login'))
-// ROUTE:notification-test:register:/notification-test/register:true
-const ArkzenPage_NotificationTest_Register = lazy(() => import('@/pages/notification-test/register'))
-// ROUTE:notification-test:dashboard:/notification-test/dashboard:true
-const ArkzenPage_NotificationTest_Dashboard = lazy(() => import('@/pages/notification-test/dashboard'))
-// ROUTE:notification-test:__root_redirect:/notification-test:true
-const ArkzenPage_NotificationTest_RootRedirect = lazy(() => import('@/pages/notification-test/__root_redirect'))
 // ROUTE:portfolio-test:index:/portfolio-test:false
 const ArkzenPage_PortfolioTest_Index = lazy(() => import('@/pages/portfolio-test/index'))
 // ROUTE:queue-flow:index:/queue-flow:false
@@ -150,8 +144,14 @@ const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/schedul
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
-// ROUTE:events-test:index:/events-test:false
-const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
+// ROUTE:notification-test:login:/notification-test/login:true
+const ArkzenPage_NotificationTest_Login = lazy(() => import('@/pages/notification-test/login'))
+// ROUTE:notification-test:register:/notification-test/register:true
+const ArkzenPage_NotificationTest_Register = lazy(() => import('@/pages/notification-test/register'))
+// ROUTE:notification-test:dashboard:/notification-test/dashboard:true
+const ArkzenPage_NotificationTest_Dashboard = lazy(() => import('@/pages/notification-test/dashboard'))
+// ROUTE:notification-test:__root_redirect:/notification-test:true
+const ArkzenPage_NotificationTest_RootRedirect = lazy(() => import('@/pages/notification-test/__root_redirect'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -192,6 +192,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
   { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
+  { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
   { path: '/jo-payroll/job-database', name: 'job-database', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_JobDatabase, auth: false },
@@ -211,10 +212,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/new-updates-styles', name: 'index', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_Index, auth: false },
   { path: '/new-updates-styles/about', name: 'about', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_About, auth: false },
   { path: '/new-updates-styles/features', name: 'features', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_Features, auth: false },
-  { path: '/notification-test/login', name: 'login', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Login, auth: true },
-  { path: '/notification-test/register', name: 'register', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Register, auth: true },
-  { path: '/notification-test/dashboard', name: 'dashboard', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Dashboard, auth: true },
-  { path: '/notification-test', name: '__root_redirect', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_RootRedirect, auth: true },
   { path: '/portfolio-test', name: 'index', tatemono: 'portfolio-test', component: ArkzenPage_PortfolioTest_Index, auth: false },
   { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
   { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
@@ -228,5 +225,8 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
-  { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
+  { path: '/notification-test/login', name: 'login', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Login, auth: true },
+  { path: '/notification-test/register', name: 'register', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Register, auth: true },
+  { path: '/notification-test/dashboard', name: 'dashboard', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Dashboard, auth: true },
+  { path: '/notification-test', name: '__root_redirect', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_RootRedirect, auth: true },
 ]

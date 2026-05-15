@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T03:52:07.108Z
+// Generated: 2026-05-15T04:43:34.841Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
