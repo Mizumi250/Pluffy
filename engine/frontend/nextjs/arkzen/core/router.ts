@@ -851,7 +851,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
   console.log(`[Arkzen Router] ✓ All pages registered for: ${tatemono.meta.name}`)
 
   try {
-    const tatemonosDir = path.resolve(process.cwd(), '..', '..', 'tatemonos')
+    const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')
     const assetsPath = path.join(tatemonosDir, tatemono.meta.name, 'assets')
     const publicDir = path.resolve(process.cwd(), 'public')
     cleanOldAssets(tatemono.meta.name, publicDir)

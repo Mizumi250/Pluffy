@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — errors-test
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T15:08:35.238Z
+// Generated: 2026-05-15T01:28:20.170Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

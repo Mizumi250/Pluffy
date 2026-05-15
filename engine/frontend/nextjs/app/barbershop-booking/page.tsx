@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-13T15:08:31.827Z
+// Generated: 2026-05-15T01:28:17.113Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
