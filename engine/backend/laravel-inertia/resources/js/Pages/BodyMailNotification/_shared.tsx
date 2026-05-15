@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — body-mail-notification [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:54.100Z
+// Generated: 2026-05-15T04:47:53.169Z
 // ============================================================
 
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
@@ -10,7 +10,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,

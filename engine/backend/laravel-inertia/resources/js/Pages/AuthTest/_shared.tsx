@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — auth-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:53.628Z
+// Generated: 2026-05-15T04:47:52.718Z
 // ============================================================
 
 import { Lock, ShieldCheck } from 'lucide-react'

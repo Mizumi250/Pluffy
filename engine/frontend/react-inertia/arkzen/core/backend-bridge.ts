@@ -1,5 +1,14 @@
 // ============================================================
-// ARKZEN ENGINE — BACKEND BRIDGE v5.4
+// ARKZEN ENGINE — BACKEND BRIDGE v5.5
+// v5.5: policySnippets forwarded in build payload.
+//       Same omission as the v5.4 middlewareSnippets fix — the parser
+//       correctly extracted @arkzen:policy:methodName DSL bodies into
+//       ParsedTatemono.policySnippets since v6.0 of the parser, but
+//       the bridge never included them in the payload sent to Laravel.
+//       PolicyBuilder therefore always fell through to the stub branch
+//       (return (false) || ($user?->role === 'admin')) even when real
+//       PHP was provided in the tatemono — causing 403 on every call.
+//       Fix: policySnippets added to hasBackend check and payload.
 // v5.4: middlewareSnippets forwarded in build payload.
 //       The parser correctly extracted @arkzen:middleware:name DSL
 //       bodies into ParsedTatemono.middlewareSnippets since v6.3 of
@@ -49,7 +58,8 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     tatemono.notifications.length                         > 0 ||
     tatemono.mails.length                                 > 0 ||
     tatemono.consoles.length                              > 0 ||
-    Object.keys(tatemono.middlewareSnippets ?? {}).length > 0   // ← v5.4
+    Object.keys(tatemono.middlewareSnippets ?? {}).length > 0 || // ← v5.4
+    Object.keys(tatemono.policySnippets    ?? {}).length > 0    // ← v5.5
 
   if (!hasBackend) {
     console.log(`[Arkzen Bridge] ✓ Static tatemono — skipping backend build: ${tatemono.meta.name}`)
@@ -69,6 +79,8 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
   if (tatemono.meta.authSeed?.users?.length) console.log(`[Arkzen Bridge]   Auth seed: ${tatemono.meta.authSeed.users.length} user(s)`)
   if (Object.keys(tatemono.middlewareSnippets ?? {}).length > 0)
     console.log(`[Arkzen Bridge]   Middleware snippets: ${Object.keys(tatemono.middlewareSnippets).join(', ')}`)
+  if (Object.keys(tatemono.policySnippets ?? {}).length > 0)
+    console.log(`[Arkzen Bridge]   Policy snippets: ${Object.keys(tatemono.policySnippets).join(', ')}`)
 
   const payload = {
     name:    tatemono.meta.name,
@@ -120,9 +132,11 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     // Without this, MiddlewareBuilder always fell through to the TODO stub.
     middlewareSnippets: tatemono.middlewareSnippets ?? {},
 
-    // ← v6.0: policy PHP bodies — map of methodName → base64-encoded policy method body
+    // ← v5.5: policy PHP bodies — map of methodName → base64-encoded policy method body
     // Parser extracts these from @arkzen:policy:methodName ... :end DSL blocks.
     // ModuleReader reads payload.policySnippets and passes to PolicyBuilder for injection.
+    // Without this, PolicyBuilder always fell through to the ownership/admin stub,
+    // returning false for every unauthenticated request → 403 on all write operations.
     policySnippets: tatemono.policySnippets ?? {},
   }
 

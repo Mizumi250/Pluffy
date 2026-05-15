@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:54.775Z
+// Generated: 2026-05-15T04:47:53.724Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, memo, useCallback } from 'react'

@@ -3,8 +3,9 @@
 // ============================================================
 // ARKZEN GENERATED POLICY — ItemPolicy
 // Tatemono: crud-test
+// v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T02:18:55.206725Z
+// Generated: 2026-05-15T04:47:54.655309Z
 // ============================================================
 
 namespace App\Policies\Arkzen\CrudTest;
@@ -17,19 +18,30 @@ class ItemPolicy
 {
     use HandlesAuthorization;
 
-    public function viewAny(User $user): bool { return true; }
+    public function viewAny(?User $user): bool { return true; }
 
-    public function view(User $user, Item $item): bool { return true; }
+    public function view(?User $user, Item $item): bool { return true; }
 
-    public function create(User $user): bool { return true; }
+    public function create(?User $user): bool { return true; }
 
-    public function update(User $user, Item $item): bool
+    public function update(?User $user, Item $item): bool
     {
-        return false || $user->role === 'admin';
+        // Prevent updates to archived items
+        if ($item->status === 'archived') {
+            return false;
+        }
+        
+        // Only allow if user is authenticated (in a real app, check ownership)
+        return true;
     }
 
-    public function delete(User $user, Item $item): bool
+    public function delete(?User $user, Item $item): bool
     {
-        return false || $user->role === 'admin';
+        // Prevent deletion of archived items (must restore first)
+        if ($item->status === 'archived') {
+            return false;
+        }
+        
+        return true;
     }
 }

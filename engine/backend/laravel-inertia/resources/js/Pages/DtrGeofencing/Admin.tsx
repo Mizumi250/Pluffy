@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:55.291Z
+// Generated: 2026-05-15T04:47:54.740Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -267,8 +267,8 @@ export const Skeleton = () => (
 
 export const GeofenceMap = () => {
   const { currentPosition, settings, selectedEmployee, distanceToOffice } = useDtrStore()
-  const mapRef = useMapRef<HTMLDivElement>(null)
-  const leafletMapRef = useMapRef<any>(null)
+  const mapRef = useRef<HTMLDivElement>(null)
+  const leafletMapRef = useRef<any>(null)
 
   useEffect(() => {
     if (!currentPosition || !settings || !mapRef.current) return

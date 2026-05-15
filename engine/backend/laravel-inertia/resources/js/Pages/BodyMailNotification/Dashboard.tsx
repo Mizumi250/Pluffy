@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:54.103Z
+// Generated: 2026-05-15T04:47:53.172Z
 // ============================================================
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
@@ -29,7 +29,7 @@ function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
   const show = useCallback((type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
+    setTimeout(() => setToast(null), 4000)
   }, [])
   return {
     toast,
@@ -103,7 +103,9 @@ const DashboardPage = () => {
     try {
       const res  = await arkzenFetch('/api/body-mail-notification/log')
       const data = await res.json()
-      setLog(data.data ?? data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(data) ? data : (data?.data ?? [])
+      setLog(items)
     } catch { toastError('Failed to load log') }
     setLoading(false)
   }

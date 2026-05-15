@@ -11,5 +11,6 @@ export const AUTH_TATEMONOS: string[] = [
   "church-community",
   "mail-test",
   "notification-test",
-  "roles-test"
+  "roles-test",
+  "certflow"
 ];

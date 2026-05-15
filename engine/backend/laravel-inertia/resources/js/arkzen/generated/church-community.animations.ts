@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — church-community [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:54.949Z
+// Generated: 2026-05-15T04:47:54.443Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -12,14 +12,9 @@ gsap.registerPlugin(ScrollTrigger)
 
 export const churchCommunityAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
   const ctx = gsap.context(() => {
-    gsap.fromTo('.animate-fadeIn',
-      { opacity: 0, y: 16 },
-      { opacity: 1, y: 0, duration: 0.45, ease: 'power3.out' }
-    )
-    gsap.fromTo('[data-zcard]',
-      { opacity: 0, y: 20, scale: 0.97 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.5, ease: 'power3.out', stagger: 0.06 }
-    )
+    gsap.fromTo('.gc-header',  { opacity: 0, y: -20 }, { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out' })
+    gsap.fromTo('.gc-stories', { opacity: 0, y: -10 }, { opacity: 1, y: 0, duration: 0.4, ease: 'power3.out', delay: 0.1 })
+    gsap.fromTo('.gc-card',    { opacity: 0, y: 24, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.45, ease: 'power2.out', stagger: 0.07, delay: 0.2 })
   }, pageRef)
   return () => ctx.revert()
 }
@@ -27,5 +22,5 @@ export const churchCommunityAnimations = (pageRef: React.RefObject<HTMLDivElemen
 export const pageVariants = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
-  exit: { opacity: 0, y: -10, transition: { duration: 0.2 } },
+  exit:    { opacity: 0, y: -10, transition: { duration: 0.2 } },
 }

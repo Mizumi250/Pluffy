@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — inventory-management [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T02:18:55.639258Z
+// Generated: 2026-05-15T04:47:55.102837Z
 // Resources: Inventory
 // Custom controllers: 
 // ============================================================

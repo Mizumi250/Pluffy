@@ -492,6 +492,67 @@ function parseAllMiddlewareSnippets(content: string): ArkzenMiddlewareSnippets {
 }
 
 // ─────────────────────────────────────────────
+// PARSE ALL POLICY SNIPPETS — v6.0
+// Extracts @arkzen:policy:methodName ... :end blocks.
+// YAML config in the opening comment (currently unused — reserved for
+// future options like `ability`, `conditions`).
+// PHP body between */ and :end is base64-encoded and stored by method name.
+// PolicyBuilder reads this map to inject into methods like update() instead of stub.
+//
+// Format:
+//   /* @arkzen:policy:update
+//   */
+//   return $user->id === $product->user_id && !$product->archived;
+//   /* @arkzen:policy:update:end */
+//
+//   /* @arkzen:policy:delete
+//   */
+//   return $user->id === $product->user_id && !$product->archived;
+//   /* @arkzen:policy:delete:end */
+// ─────────────────────────────────────────────
+
+function parseAllPolicySnippets(content: string): Record<string, string> {
+  const snippets: Record<string, string> = {}
+  const openPattern = `/* @arkzen:policy:`
+  let searchFrom = 0
+
+  while (true) {
+    const openIdx = content.indexOf(openPattern, searchFrom)
+    if (openIdx === -1) break
+
+    const afterOpen  = content.slice(openIdx + openPattern.length)
+    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
+    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
+
+    const identifier = identMatch[1]
+    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
+
+    const openCommentEnd = content.indexOf('*/', openIdx)
+    if (openCommentEnd === -1) break
+
+    const closeMarker = `/* @arkzen:policy:${identifier}:end */`
+    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
+
+    const body        = closeIdx !== -1
+      ? content.slice(openCommentEnd + 2, closeIdx).trim()
+      : ''
+
+    if (body) {
+      snippets[identifier] = Buffer.from(body).toString('base64')
+      console.log(`[Parser] ✓ Policy snippet extracted: ${identifier}`)
+    }
+
+    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
+  }
+
+  if (Object.keys(snippets).length > 0) {
+    console.log(`[Parser] Policy snippets found: ${Object.keys(snippets).join(', ')}`)
+  }
+
+  return snippets
+}
+
+// ─────────────────────────────────────────────
 // PARSE ALL HANDLER SNIPPETS — v6.3
 // Extracts @arkzen:handler:name ... :end blocks.
 // Used by parseAllCustomRoutes() to attach PHP bodies to route entries.
@@ -1308,7 +1369,7 @@ interface DslTagError {
 }
 
 const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'page', 'style', 'error']
-const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware']
+const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = ['meta', 'config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
 function validateDslTags(content: string, filePath: string): void {
@@ -1505,6 +1566,9 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v6.3: middleware snippets (name → base64 PHP body)
   const middlewareSnippets = parseAllMiddlewareSnippets(content)
 
+  // v6.0: policy snippets (methodName → base64 PHP body)
+  const policySnippets = parseAllPolicySnippets(content)
+
   // Repeatable sections
   const stores        = parseAllNamedCode(content, 'store')
   const realtimes     = parseAllRealtime(content)
@@ -1566,6 +1630,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     mails,
     consoles,
     middlewareSnippets,  // ← v6.3
+    policySnippets,      // ← v6.0
     animation,
   }
 
@@ -1585,6 +1650,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   if (styles.length)         console.log(`[Arkzen Parser]   Styles (${styles.length}): ${styles.filter(s => !s.name).length} global + ${styles.filter(s => s.name).length} module(s)`)
   if (Object.keys(middlewareSnippets).length > 0)
     console.log(`[Arkzen Parser]   Middleware snippets: ${Object.keys(middlewareSnippets).join(', ')}`)
+  if (Object.keys(policySnippets).length > 0)
+    console.log(`[Arkzen Parser]   Policy snippets: ${Object.keys(policySnippets).join(', ')}`)
 
   return parsed
 }

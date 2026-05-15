@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — roles-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:56.894Z
+// Generated: 2026-05-15T04:47:56.664Z
 // ============================================================
 
 import { Shield } from 'lucide-react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:55.988Z
+// Generated: 2026-05-15T04:47:55.821Z
 // ============================================================
 
 import React, { useRef, useEffect, useState } from 'react'
@@ -89,7 +89,9 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/mail-test/logs')
       const d   = await res.json()
-      setLogs(d.data ?? [])
+      // Laravel pagination returns { data: [...], meta: {...} }
+      const items = Array.isArray(d) ? d : (d?.data ?? [])
+      setLogs(items)
     } catch {}
     finally { setLoadingLogs(false) }
   }

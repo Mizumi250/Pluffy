@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED SHARED — broadcast-test [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-08T02:18:54.768Z
+// Generated: 2026-05-15T04:47:53.721Z
 // ============================================================
 
 import { Radio } from 'lucide-react'

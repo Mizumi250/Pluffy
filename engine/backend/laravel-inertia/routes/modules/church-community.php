@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 // ============================================================
 // ARKZEN GENERATED ROUTES — church-community [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-08T02:18:55.078782Z
+// Generated: 2026-05-15T04:47:54.552787Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================
@@ -96,10 +96,10 @@ Route::middleware(['web'])
         // Get a single event with its photos
         Route::get('/events/{event}', [EventController::class, 'show']);
 
-        // Update an existing event
+        // Update an existing church event
         Route::put('/events/{event}', [EventController::class, 'update']);
 
-        // Delete an event and its associated photos
+        // Delete a church event
         Route::delete('/events/{event}', [EventController::class, 'destroy']);
 
     });
@@ -109,19 +109,19 @@ Route::middleware(['web'])
     ->prefix('/api/church-community')
     ->group(function () {
 
-        // Get all active members optionally filtered by role
+        // Get all church members
         Route::get('/members', [MemberController::class, 'index']);
 
-        // Create a new member record
+        // Add a new church member
         Route::post('/members', [MemberController::class, 'store']);
 
-        // Get a single member record
+        // Get a single church member
         Route::get('/members/{member}', [MemberController::class, 'show']);
 
-        // Update a member record
+        // Update a church member
         Route::put('/members/{member}', [MemberController::class, 'update']);
 
-        // Remove a member from the directory
+        // Remove a church member
         Route::delete('/members/{member}', [MemberController::class, 'destroy']);
 
     });
@@ -131,19 +131,19 @@ Route::middleware(['web'])
     ->prefix('/api/church-community')
     ->group(function () {
 
-        // Get all photos with optional event_id or tag filter
+        // Get all photos
         Route::get('/photos', [PhotoController::class, 'index']);
 
-        // Upload a new photo and associate it with an event
+        // Upload a new photo
         Route::post('/photos', [PhotoController::class, 'store']);
 
-        // Get a single photo with comments
+        // Get a single photo
         Route::get('/photos/{photo}', [PhotoController::class, 'show']);
 
-        // Update photo caption or tags
+        // Update a photo caption or tags
         Route::put('/photos/{photo}', [PhotoController::class, 'update']);
 
-        // Delete a photo (admin only)
+        // Delete a photo
         Route::delete('/photos/{photo}', [PhotoController::class, 'destroy']);
 
     });
