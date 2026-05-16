@@ -2,16 +2,20 @@
 // ARKZEN GENERATED PAGE — certflow/fill [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:53.840Z
+// Generated: 2026-05-15T21:28:25.717Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { gsap } from 'gsap'
+import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, GraduationCap, LayoutTemplate, Link2, LogOut, Mail, Menu, PartyPopper, ScanLine, Trash2, Upload, UploadCloud, X, XCircle } from 'lucide-react'
+import { create } from 'zustand'
+import { AppLayout } from '@/arkzen/core/layouts/custom/certflow-app'
+import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/certflow-app'
-import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
 import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
@@ -22,18 +26,7 @@ export type CertflowFillProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-import { gsap } from 'gsap'
-import { AnimatePresence } from 'framer-motion'
-import {
-  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
-  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
-  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
-  Menu, X
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
 }

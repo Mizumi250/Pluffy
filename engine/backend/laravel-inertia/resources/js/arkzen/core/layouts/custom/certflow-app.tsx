@@ -1,4 +1,5 @@
 // ARKZEN CUSTOM LAYOUT — certflow/app [React+Inertia]
+// Generated from tatemono: certflow
 
 import React from 'react'
 

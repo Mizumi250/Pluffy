@@ -2,17 +2,19 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:57.523Z
+// Generated: 2026-05-15T21:28:35.027Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type SchedulerTestDashboardProps = {
@@ -22,12 +24,7 @@ export type SchedulerTestDashboardProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
-import { useMutation }              from '@/arkzen/core/hooks/useMutation'
-import { useQuery }                 from '@/arkzen/core/hooks/useQuery'
-import { useToast }                 from '@/arkzen/core/components/Toast'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 interface CommandRun {
   id:           number
   command_name: string

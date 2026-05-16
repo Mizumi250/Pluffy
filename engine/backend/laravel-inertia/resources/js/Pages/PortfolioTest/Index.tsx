@@ -2,17 +2,16 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:56.484Z
+// Generated: 2026-05-15T21:28:33.500Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type PortfolioTestIndexProps = {
@@ -22,9 +21,7 @@ export type PortfolioTestIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },
   { id: 2, title: 'Tasks', description: 'Real-time collaboration', image: '✓', url: 'https://example.com', tags: ['React', 'WebSocket'] },

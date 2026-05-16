@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — events-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:54.903Z
+// Generated: 2026-05-15T21:28:28.087Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Flame, Zap } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type EventsTestIndexProps = {
@@ -22,10 +22,7 @@ export type EventsTestIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Flame, Zap } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 interface EventLogEntry {
   id:            number
   event_name:    string

@@ -2,16 +2,16 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/features [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:56.341Z
+// Generated: 2026-05-15T21:28:32.812Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
 import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
@@ -22,9 +22,7 @@ export type NewUpdatesStylesFeaturesProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 
 const Navbar = ({ currentPath }: { currentPath: string }) => {

@@ -2,17 +2,18 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:52.742Z
+// Generated: 2026-05-15T21:28:20.764Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { gsap } from 'gsap'
+import { create } from 'zustand'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { barbershopBookingAnimations, pageVariants } from '@/arkzen/generated/barbershop-booking.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { barbershopBookingAnimations, pageVariants } from '@/arkzen/generated/barbershop-booking.animations'
-
 
 // Props passed from Laravel via Inertia::render()
 export type BarbershopBookingIndexProps = {
@@ -22,10 +23,7 @@ export type BarbershopBookingIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { gsap } from 'gsap'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 export interface Barber {
   id: number
   name: string

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:54.584Z
+// Generated: 2026-05-15T21:28:26.560Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Boxes } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type CrudTestIndexProps = {
@@ -22,10 +22,7 @@ export type CrudTestIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Boxes } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 type Item = {
   id:          number
   name:        string
@@ -55,6 +52,7 @@ const IndexPage = () => {
   const isMounted = useRef(true)
 
   useEffect(() => {
+    isMounted.current = true
     return () => { isMounted.current = false }
   }, [])
 

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — broadcast-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:53.722Z
+// Generated: 2026-05-15T21:28:23.398Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, memo } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Radio } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type BroadcastTestLoginProps = {
@@ -22,10 +22,7 @@ export type BroadcastTestLoginProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('broadcast-test')
 }

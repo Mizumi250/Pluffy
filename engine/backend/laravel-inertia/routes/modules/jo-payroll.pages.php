@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — jo-payroll [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T04:47:55.147Z
+// Generated: 2026-05-15T21:28:28.467Z
 // Pages: index, job-database, cash-atm, sss, hdmf, appointments, payslip
 // ============================================================
 
@@ -44,5 +44,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/jo-payroll/payslip', function () {
         return \Inertia\Inertia::render('JoPayroll/Payslip');
     });
+
+    // Catch-all 404 — mirrors Next.js [...catchAll] and Vite wildcard route
+    Route::get('/jo-payroll/{any}', function () {
+        return \Inertia\Inertia::render('JoPayroll/NotFound');
+    })->where('any', '.*');
 
 });

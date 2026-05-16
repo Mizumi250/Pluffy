@@ -1,10 +1,8 @@
 // ARKZEN CUSTOM LAYOUT — dtr-geofencing/app [React+Inertia]
-
-
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+// Generated from tatemono: dtr-geofencing
 
 import React, { useState } from 'react'
-import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
+import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },

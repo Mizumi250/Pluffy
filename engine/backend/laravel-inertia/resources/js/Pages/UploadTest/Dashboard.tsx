@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — upload-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:57.627Z
+// Generated: 2026-05-15T21:28:38.229Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type UploadTestDashboardProps = {
@@ -22,9 +22,8 @@ export type UploadTestDashboardProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+// ── Shared components from @arkzen:components ─────────────────────────────────
+
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {

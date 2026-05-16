@@ -2,17 +2,18 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:56.506Z
+// Generated: 2026-05-15T21:28:33.586Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
+import { create } from 'zustand'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type QueueFlowAdminProps = {
@@ -22,15 +23,7 @@ export type QueueFlowAdminProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  Users, Clock, CheckCircle,
-  SkipForward, Volume2,
-  Loader2, ArrowRight, Pause, Calendar
-} from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Queue {

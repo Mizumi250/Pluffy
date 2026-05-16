@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — auth-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:52.719Z
+// Generated: 2026-05-15T21:28:20.641Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Lock, ShieldCheck } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type AuthTestRegisterProps = {
@@ -22,10 +22,7 @@ export type AuthTestRegisterProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Lock, ShieldCheck } from 'lucide-react'
-import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // Activate the correct isolated auth context for this Tatemono
 if (typeof window !== 'undefined') {
   setActiveTatemono('auth-test')

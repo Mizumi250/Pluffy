@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:56.364Z
+// Generated: 2026-05-15T21:28:32.886Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
+import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type NotificationTestDashboardProps = {
@@ -22,10 +22,7 @@ export type NotificationTestDashboardProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('notification-test')
 }

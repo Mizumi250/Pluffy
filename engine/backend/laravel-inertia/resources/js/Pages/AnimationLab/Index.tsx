@@ -2,16 +2,20 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:52.685Z
+// Generated: 2026-05-15T21:28:20.305Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
-import { motion } from 'framer-motion'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
+import { create } from 'zustand'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
@@ -22,17 +26,7 @@ export type AnimationLabIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { gsap } from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { motion, AnimatePresence, useMotionValue, useTransform, useSpring, useScroll, useInView } from 'framer-motion'
-import {
-  Play, Pause, RotateCcw, Layers, Zap, Wind, MousePointer2,
-  ArrowDown, Cpu, Sparkles, Box, Move, Type, Eye, ChevronRight,
-  RefreshCw, Maximize2
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
 interface AnimLabState {
   activeSection: string

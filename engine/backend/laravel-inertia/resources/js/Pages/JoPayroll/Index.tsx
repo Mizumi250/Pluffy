@@ -2,17 +2,18 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:55.135Z
+// Generated: 2026-05-15T21:28:28.413Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
+import { create } from 'zustand'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
+import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
-import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
-
 
 // Props passed from Laravel via Inertia::render()
 export type JoPayrollIndexProps = {
@@ -22,17 +23,7 @@ export type JoPayrollIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
-  Users, Banknote, CreditCard, Building2, Landmark,
-  TrendingUp, TrendingDown, Wallet, AlertCircle,
-  Download, FileText, Filter, MoreHorizontal, Eye,
-  CalendarDays, ArrowUpRight, ArrowDownRight, Clock,
-  CheckCircle, XCircle, RefreshCw, Printer
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface JobOrder {
   id: number

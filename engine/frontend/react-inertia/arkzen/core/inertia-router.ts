@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — INERTIA ROUTER v2.0
+// ARKZEN ENGINE — INERTIA ROUTER v3.0
 // Equivalent of vite-router.ts / router.ts for the Inertia stack.
 //
 // KEY DIFFERENCES from vite-router:
@@ -11,36 +11,43 @@
 //   4. Page props come from Inertia::render() via usePage<Props>()
 //   5. No .arkzen-ready flag — Laravel Vite plugin manages HMR directly
 //
-// v2.0 — full parity with vite-router.ts + router.ts:
-//   • generateAnimationFile() — writes arkzen/generated/{tat}.animations.ts
-//     (was missing entirely — caused Vite import resolution crash)
-//   • generateRootRedirect() — PHP Route::redirect for tatemonos with no
-//     index page (was missing — Hub clicking /{tat} returned 404)
-//   • generateSharedComponents() — writes Pages/{Tat}/_shared.tsx
-//   • generateCustomLayouts() — writes arkzen/core/layouts/custom/{tat}-{layout}.tsx
-//   • softUnregisterInertiaPages() — removes animation file only, leaves
-//     Pages dir intact so Vite HMR doesn't cache a 404 mid-rebuild
-//   • normalizeRouterCalls() — fixes navigate.push() → useArkzenRouter()
-//   • Full React hook auto-detection (memo, useCallback, useReducer,
-//     useContext, useMemo) matching vite-router behaviour
-//   • styleImport path fixed — uses relative './styles/global.css' so
-//     it resolves from the page file's own directory, not a parent
-//   • animFn wrapper uses pageRef + useEffect (matches vite/next pattern)
-//     instead of the broken animFn() with no args
+// v3.0 — full parity with router.ts (Next.js v5.1):
+//   • resolveImports() + flattenMultilineImports() — unified import resolver.
+//     Engine owns all imports in generated files. Authors write imports freely
+//     in any block; engine scrapes, deduplicates, merges, and injects one
+//     canonical import block per generated file. Prevents "Identifier 'motion'
+//     has already been declared" and any other duplicate-import crash.
+//   • ENGINE_OWNED_MODULES — 'react' and 'framer-motion' are always seeded by
+//     the engine and stripped from raw author code before being re-emitted.
+//   • generateIndividualComponentFiles() — mirrors Next.js: per-component
+//     .tsx files + _components.tsx barrel. Replaces the old _shared.tsx.
+//   • generateComponentsIndex() — index.ts barrel for easy imports.
+//   • generateErrorHandlers() — full 404 / 500 support matching vite/next:
+//       - @arkzen:error:404 → Pages/{Tat}/NotFound.tsx + PHP catch-all route
+//       - @arkzen:error:500 → Pages/{Tat}/ErrorBoundary.tsx (class component)
+//   • ArkzenErrorHandler imported from types (was missing).
+//   • copyAssetsToPublic / cleanOldAssets — asset distribution to Laravel
+//     public/ folder, mirroring vite-router and Next.js router behaviour.
+//   • Asset path: 3 levels up from engine/frontend/react-inertia/ to reach
+//     project root, matching vite-router and Next.js router exactly.
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
+import { copyAssetsToPublic, cleanOldAssets } from './assets'
 
-// Pages + generated files land INSIDE the laravel-inertia backend
-const ROOT_DIR      = path.resolve(process.cwd(), '..', '..', '..')
-const BACKEND_DIR   = path.join(ROOT_DIR, 'engine', 'backend', 'laravel-inertia')
-const PAGES_DIR     = path.join(BACKEND_DIR, 'resources', 'js', 'Pages')
-const GENERATED_DIR = path.join(BACKEND_DIR, 'resources', 'js', 'arkzen', 'generated')
-const LAYOUTS_DIR   = path.join(BACKEND_DIR, 'resources', 'js', 'arkzen', 'core', 'layouts', 'custom')
-const ROUTES_DIR    = path.join(BACKEND_DIR, 'routes', 'modules')
+// Pages + generated files land INSIDE the laravel-inertia backend.
+// process.cwd() is engine/frontend/react-inertia/ at runtime.
+// Three levels up  →  project root (same depth as nextjs/ and react-vite/).
+const ROOT_DIR           = path.resolve(process.cwd(), '..', '..', '..')
+const BACKEND_DIR        = path.join(ROOT_DIR, 'engine', 'backend', 'laravel-inertia')
+const PAGES_DIR          = path.join(BACKEND_DIR, 'resources', 'js', 'Pages')
+const GENERATED_DIR      = path.join(BACKEND_DIR, 'resources', 'js', 'arkzen', 'generated')
+const LAYOUTS_DIR        = path.join(BACKEND_DIR, 'resources', 'js', 'arkzen', 'core', 'layouts', 'custom')
+const ROUTES_DIR         = path.join(BACKEND_DIR, 'routes', 'modules')
+const PAGES_REGISTRY     = path.join(GENERATED_DIR, 'pages.ts')
 
 // ─── String helpers ───────────────────────────────────────────────────────────
 
@@ -104,6 +111,241 @@ function normalizeForInertia(raw: string): string {
   )
 }
 
+// ─── Unified import resolver — v5.1 port ─────────────────────────────────────
+//
+// Scrapes ALL import statements from any raw code strings,
+// deduplicates named exports per module, normalises default
+// vs named gsap import, and returns:
+//   - canonicalBlock  : the final import block string
+//   - strippedSources : the raw code strings with all import
+//                       lines and 'use client' removed
+//
+// Engine-owned modules ('react', 'framer-motion') are always seeded
+// from engineRequired and stripped from author sources — one canonical
+// line is emitted regardless of what the author wrote.
+
+interface ResolvedImports {
+  canonicalBlock: string
+  strippedSources: string[]
+}
+
+const ENGINE_OWNED_MODULES = new Set([
+  'react',
+  'framer-motion',
+])
+
+function resolveImports(
+  sources: string[],
+  engineRequired: {
+    reactHooks?: string[]        // always-needed React hooks (useRef, useEffect)
+    framerNamed?: string[]       // always-needed framer-motion named exports (motion)
+    extra?: string               // any extra single-line imports to prepend verbatim
+  } = {}
+): ResolvedImports {
+
+  // module → { defaultImport?: string, named: Set<string> }
+  const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
+
+  const getEntry = (mod: string) => {
+    if (!importMap.has(mod)) importMap.set(mod, { named: new Set() })
+    return importMap.get(mod)!
+  }
+
+  // ── Seed engine-required entries ──────────────────────────
+  const reactEntry = getEntry('react')
+  ;(engineRequired.reactHooks ?? ['useRef', 'useEffect']).forEach(h => reactEntry.named.add(h))
+
+  const framerEntry = getEntry('framer-motion')
+  ;(engineRequired.framerNamed ?? ['motion']).forEach(n => framerEntry.named.add(n))
+
+  // ── Patterns ──────────────────────────────────────────────
+  const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const mixedImportRe     = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const namespaceImportRe = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const sideEffectRe      = /^import\s+['"]([^'"]+)['"]\s*;?/
+
+  const sideEffects: string[] = []
+
+  for (const source of sources) {
+    const flattened = flattenMultilineImports(source)
+    for (const rawLine of flattened.split('\n')) {
+      const line = rawLine.trim()
+      if (!line.startsWith('import ')) continue
+
+      let m: RegExpMatchArray | null
+
+      // mixed: import Default, { a, b } from 'mod'
+      m = line.match(mixedImportRe)
+      if (m) {
+        const [, def, namedStr, mod] = m
+        const entry = getEntry(mod)
+        if (mod !== 'react') entry.defaultImport = def
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
+        continue
+      }
+
+      // namespace: import * as Ns from 'mod'
+      m = line.match(namespaceImportRe)
+      if (m) {
+        const [, ns, mod] = m
+        getEntry(mod).defaultImport = `* as ${ns}`
+        continue
+      }
+
+      // named: import { a, b } from 'mod'
+      m = line.match(namedImportRe)
+      if (m) {
+        const [, namedStr, mod] = m
+        const entry = getEntry(mod)
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
+        continue
+      }
+
+      // default: import Default from 'mod'
+      m = line.match(defaultImportRe)
+      if (m) {
+        const [, def, mod] = m
+        if (mod === 'react') continue
+        getEntry(mod).defaultImport = def
+        continue
+      }
+
+      // side-effect: import 'mod'
+      m = line.match(sideEffectRe)
+      if (m) {
+        sideEffects.push(`import '${m[1]}'`)
+        continue
+      }
+    }
+  }
+
+  // ── Normalise gsap default → named ────────────────────────
+  if (importMap.has('gsap')) {
+    const gsapEntry = importMap.get('gsap')!
+    if (gsapEntry.defaultImport === 'gsap') {
+      gsapEntry.defaultImport = undefined
+      gsapEntry.named.add('gsap')
+    }
+  }
+
+  // ── Build canonical import block ──────────────────────────
+  const lines: string[] = []
+
+  // 1. React always first
+  const reactNamed = [...(importMap.get('react')?.named ?? [])]
+    .filter(h => h !== 'React')
+    .sort()
+  // Inertia pages also always need usePage from @inertiajs/react — handled in extra
+  lines.push(
+    reactNamed.length > 0
+      ? `import React, { ${reactNamed.join(', ')} } from 'react'`
+      : `import React from 'react'`
+  )
+
+  // 2. framer-motion always second
+  const framerNamed = [...(importMap.get('framer-motion')?.named ?? [])].sort()
+  if (framerNamed.length > 0) {
+    lines.push(`import { ${framerNamed.join(', ')} } from 'framer-motion'`)
+  }
+
+  // 3. All other modules — alphabetical
+  const otherModules = [...importMap.keys()]
+    .filter(m => m !== 'react' && m !== 'framer-motion')
+    .sort()
+
+  for (const mod of otherModules) {
+    const { defaultImport, named } = importMap.get(mod)!
+    const namedArr = [...named].sort()
+
+    if (defaultImport?.startsWith('* as ')) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (defaultImport && namedArr.length > 0) {
+      lines.push(`import ${defaultImport}, { ${namedArr.join(', ')} } from '${mod}'`)
+    } else if (defaultImport) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (namedArr.length > 0) {
+      lines.push(`import { ${namedArr.join(', ')} } from '${mod}'`)
+    }
+  }
+
+  // 4. Side-effects last
+  sideEffects.forEach(s => lines.push(s))
+
+  // 5. Verbatim extra (layout import, animation import, inertia import, etc.)
+  if (engineRequired.extra) {
+    lines.push(engineRequired.extra)
+  }
+
+  const canonicalBlock = lines.filter(Boolean).join('\n')
+
+  // ── Strip all imports + 'use client' from raw sources ─────
+  const stripRaw = (src: string) =>
+    src
+      .replace(/^\s*['"]use client['"]\s*;?\s*\n?/gm, '')
+      .replace(/^\s*import\s[\s\S]*?from\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '')
+      .replace(/^\s*import\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '') // side-effect imports
+      .trim()
+
+  const strippedSources = sources.map(stripRaw)
+
+  return { canonicalBlock, strippedSources }
+}
+
+function flattenMultilineImports(code: string): string {
+  const lines = code.split('\n')
+  const out: string[] = []
+  let inImport = false
+  let buffer = ''
+  let depth = 0
+
+  const isCompleteImport = (s: string): boolean =>
+    /^import\s+(?:(?:[\w*\s{},]+)\s+from\s+['"][^'"]+['"]|['"][^'"]+['"'])\s*;?\s*$/.test(s)
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!inImport && /^\s*import\s/.test(line)) {
+      inImport = true
+      buffer = trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+        depth = 0
+      }
+      continue
+    }
+
+    if (inImport) {
+      buffer += ' ' + trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+      }
+      continue
+    }
+
+    out.push(line)
+  }
+
+  if (inImport && buffer.trim()) {
+    out.push(buffer.replace(/\s+/g, ' '))
+  }
+
+  return out.join('\n')
+}
+
 // ─── Layout helpers ───────────────────────────────────────────────────────────
 
 function getLayoutImport(layout: string, tatName: string): string {
@@ -129,23 +371,26 @@ function getLayoutComponent(layout: string): string {
 
 // ─── Animation file generator ─────────────────────────────────────────────────
 // Writes resources/js/arkzen/generated/{tatName}.animations.ts
-// Mirrors vite-router.ts generateAnimationFile() and next router.ts exactly.
+// Mirrors vite-router.ts generateAnimationFile() and router.ts exactly.
 
 function generateAnimationFile(tatemono: ParsedTatemono): string | null {
   if (!tatemono.animation) return null
 
   const animFnName = toCamelCase(tatemono.meta.name) + 'Animations'
-  const clean = tatemono.animation.raw
-    .replace(/import.*from ['"]gsap['"]\s*;?\n?/g, '')
-    .replace(/import.*from ['"]gsap\/ScrollTrigger['"]\s*;?\n?/g, '')
-    .replace(/import React.*from ['"]react['"]\s*;?\n?/g, '')
-    .replace(/gsap\.registerPlugin\(.*\)\s*;?\n?/g, '')
+
+  // Use resolveImports to strip engine-owned modules from the animation block
+  const { strippedSources } = resolveImports([tatemono.animation.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+  })
+  let cleanAnimation = strippedSources[0]
+    .replace(/gsap\.registerPlugin\(.*\)[;]?\n?/g, '')
     .replace(new RegExp(`\\bexport\\s+const\\s+${animFnName}\\b`), `const ${animFnName}`)
     .replace(`const ${animFnName}`, `export const ${animFnName}`)
     .replace(/\*\/\s*$/, '')
     .trim()
 
-  const hasPageVariants = /export\s+const\s+pageVariants\b/.test(clean)
+  const hasPageVariants = /export\s+const\s+pageVariants\b/.test(cleanAnimation)
   const pageVariantsBlock = hasPageVariants ? '' : `
 export const pageVariants = {
   initial: { opacity: 0, y: 12 },
@@ -165,40 +410,123 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-${clean}${pageVariantsBlock}
+${cleanAnimation}${pageVariantsBlock}
 `
 }
 
-// ─── Shared components ────────────────────────────────────────────────────────
-// Mirrors vite-router.ts generateSharedComponents()
+// ─── Individual component files ───────────────────────────────────────────────
+// Mirrors Next.js generateIndividualComponentFiles() exactly.
+// Writes Pages/{Tat}/components/_components.tsx + one re-export per component.
 
-function generateSharedComponents(tatemono: ParsedTatemono, tatDir: string): void {
+function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: string): void {
   if (tatemono.components.length === 0) return
-  ensureDir(tatDir)
 
-  const sharedBody = tatemono.components
-    .map(c => normalizeForInertia(c.raw)
-      .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .replace(/^[ \t]*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .trim()
+  const componentsDir = path.join(tatDir, 'components')
+  fs.mkdirSync(componentsDir, { recursive: true })
+
+  // Resolve imports across ALL component blocks into one canonical block
+  const rawSources = tatemono.components.map(c => normalizeForInertia(c.raw.trim()))
+  const { canonicalBlock, strippedSources } = resolveImports(rawSources)
+
+  // Ensure every top-level const/function/class declaration is exported so
+  // per-component re-export files can safely do `export { X } from './_components'`
+  const ensureExports = (src: string): string =>
+    src.replace(
+      /^(const|function|class|type|interface|enum)\s+([A-Z])/gm,
+      'export $1 $2'
     )
-    .join('\n\n')
 
-  const content = `// ============================================================
-// ARKZEN GENERATED SHARED — ${tatemono.meta.name} [React+Inertia]
-// DO NOT EDIT — edit tatemono instead
+  const exportedSources = strippedSources.map(ensureExports)
+
+  const componentsFile = path.join(componentsDir, '_components.tsx')
+  const componentsContent = `// ============================================================
+// ARKZEN GENERATED SHARED UTILITIES — ${tatemono.meta.name} [React+Inertia]
+// All utilities, types, constants from @arkzen:components
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${sharedBody}
+${canonicalBlock}
+
+${exportedSources.join('\n\n')}
 `
-  fs.writeFileSync(path.join(tatDir, '_shared.tsx'), content, 'utf-8')
-  console.log(`[Arkzen Inertia Router] ✓ Shared components: _shared.tsx`)
+  fs.writeFileSync(componentsFile, componentsContent, 'utf-8')
+  console.log(`[Arkzen Inertia Router] ✓ Utilities: _components.tsx`)
+
+  // Build a map of component names that have CSS Modules (from named styles)
+  const stylesByComponent = new Map<string, string>()
+  for (const style of tatemono.styles.filter(s => s.name)) {
+    stylesByComponent.set(style.name, style.name)
+  }
+
+  // Extract PascalCase component names — skip types and ALL_CAPS constants
+  const extractedComponents = new Set<string>()
+  for (const component of tatemono.components) {
+    const componentMatches = component.raw.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of componentMatches) {
+      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^[A-Z_]+$/.test(name)) {
+        extractedComponents.add(name)
+      }
+    }
+  }
+
+  // Generate individual component files that re-export from _components
+  for (const compName of extractedComponents) {
+    const fileName = `${compName}.tsx`
+    const filePath = path.join(componentsDir, fileName)
+
+    const cssImport = stylesByComponent.has(compName)
+      ? `import styles from '../styles/${compName}.module.css'\n`
+      : ''
+
+    const content = `// ============================================================
+// ARKZEN GENERATED COMPONENT — ${compName} [React+Inertia]
+// Re-exported from _components.tsx
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${cssImport}export { ${compName} } from './_components'
+`
+    fs.writeFileSync(filePath, content, 'utf-8')
+    console.log(`[Arkzen Inertia Router] ✓ Component: ${fileName}`)
+  }
+
+  // Clean up old loose files
+  try {
+    const files = fs.readdirSync(componentsDir)
+    for (const file of files) {
+      if (file.endsWith('.tsx') && !file.startsWith('_') && !extractedComponents.has(file.replace('.tsx', ''))) {
+        fs.unlinkSync(path.join(componentsDir, file))
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+// ─── Components index file ────────────────────────────────────────────────────
+
+function generateComponentsIndex(tatemono: ParsedTatemono, tatDir: string): void {
+  if (tatemono.components.length === 0) return
+
+  const componentsDir = path.join(tatDir, 'components')
+  const indexPath = path.join(componentsDir, 'index.ts')
+
+  const content = `// ============================================================
+// ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name} [React+Inertia]
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+export * from './_components'
+`
+  fs.writeFileSync(indexPath, content, 'utf-8')
+  console.log(`[Arkzen Inertia Router] ✓ Components index: index.ts`)
 }
 
 // ─── Custom layouts ───────────────────────────────────────────────────────────
-// Mirrors vite-router.ts generateCustomLayouts()
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
   if (tatemono.layouts.length === 0) return
@@ -207,40 +535,176 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   for (const layout of tatemono.layouts) {
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(LAYOUTS_DIR, fileName)
-    let normalized = normalizeForInertia(layout.raw).trim()
 
-    // Auto-inject @/arkzen/core/adapters/router import if needed
-    const usesRouter = /\b(useArkzenRouter|useArkzenPathname)\s*\(/.test(normalized)
-    const hasRouterImport = /from\s+['"]@\/arkzen\/core\/adapters\/router['"]/.test(normalized)
+    // Resolve imports in the layout block itself
+    const { canonicalBlock, strippedSources } = resolveImports(
+      [normalizeForInertia(layout.raw)],
+      { reactHooks: [], framerNamed: [] }
+    )
 
-    if (usesRouter && !hasRouterImport) {
-      // Find the last import statement and inject after it
-      const lastImportMatch = normalized.match(/^([\s\S]*?)(\nimport\s+[^;\n]+;)(?![\s\S]*\nimport\s)/m)
-      const insertPos = lastImportMatch ? lastImportMatch[0].length : 0
-      const routerImport = `\nimport { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'`
+    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Inertia]
+// Generated from tatemono: ${tatemono.meta.name}
 
-      if (insertPos > 0) {
-        normalized = normalized.slice(0, insertPos) + routerImport + normalized.slice(insertPos)
-      } else {
-        // No imports found, add at top after 'use client' or at very beginning
-        normalized = routerImport + '\n\n' + normalized
-      }
-    }
+${canonicalBlock}
 
-    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Inertia]\n\n${normalized}\n`
+${strippedSources[0]}
+`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Inertia Router] ✓ Custom layout: ${fileName}`)
   }
 }
 
-// ─── Root redirect ────────────────────────────────────────────────────────────
-// Mirrors Next.js generateRootRedirect() and Vite generateRootRedirectPage().
-// Returns the destination path string, or null if an index page already exists.
-// The caller injects a PHP Route::redirect() into the route file.
+// ─── Error handler files — @arkzen:error:404 and @arkzen:error:500 ────────────
 //
-// Landing page priority (same as vite/next):
-//   auth tatemonos  → first guest page (login) → first auth page → first page
-//   public tatemonos → first auth page → first guest page → first page
+// Mirrors vite-router.ts generateErrorPages() and Next.js generateErrorHandlers().
+//   @arkzen:error:404 → Pages/{Tat}/NotFound.tsx + PHP catch-all route
+//   @arkzen:error:500 → Pages/{Tat}/ErrorBoundary.tsx (class component)
+//
+// PHP catch-all is appended to the tatemono's route file instead of a
+// separate file, consistent with how generatePageRouteFile() works.
+
+function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
+  const { strippedSources } = resolveImports(
+    [normalizeForInertia(handler.raw)],
+    { reactHooks: [], framerNamed: [] }
+  )
+  const cleanRaw = strippedSources[0]
+
+  return `// ============================================================
+// ARKZEN GENERATED — ${tatemono.meta.name}/NotFound.tsx [React+Inertia]
+// Inertia page rendered for unmatched sub-routes under this tatemono.
+// Registered as a catch-all route in routes/modules/${tatemono.meta.name}.pages.php
+// DO NOT EDIT — edit the @arkzen:error:404 block in the tatemono instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React from 'react'
+import { ErrorScreen } from './components'
+
+${cleanRaw}
+
+export default NotFoundPage
+`
+}
+
+function generateErrorBoundaryFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
+  const boundaryClassName = `ArkzenErrorBoundary_${toPascalCase(tatemono.meta.name)}`
+  const { strippedSources } = resolveImports(
+    [normalizeForInertia(handler.raw)],
+    { reactHooks: [], framerNamed: [] }
+  )
+  const cleanRaw = strippedSources[0]
+
+  return `// ============================================================
+// ARKZEN GENERATED — ${tatemono.meta.name}/ErrorBoundary.tsx [React+Inertia]
+// Class-based React ErrorBoundary wrapping all Inertia pages in this tatemono.
+// DO NOT EDIT — edit the @arkzen:error:500 block in the tatemono instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React, { Component, ReactNode } from 'react'
+import { ErrorScreen } from './components'
+
+${cleanRaw}
+
+interface ArkzenErrorBoundaryState { hasError: boolean }
+
+export class ${boundaryClassName} extends Component<
+  { children: ReactNode },
+  ArkzenErrorBoundaryState
+> {
+  state: ArkzenErrorBoundaryState = { hasError: false }
+
+  static getDerivedStateFromError(): ArkzenErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error('[Arkzen] ${tatemono.meta.name} error boundary caught:', error, info)
+  }
+
+  reset = (): void => {
+    this.setState({ hasError: false })
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return <ServerErrorPage reset={this.reset} />
+    }
+    return this.props.children
+  }
+}
+`
+}
+
+function generateErrorHandlers(tatemono: ParsedTatemono, tatDir: string): boolean {
+  if (!tatemono.errorHandlers || tatemono.errorHandlers.length === 0) return false
+
+  let has404 = false
+  for (const handler of tatemono.errorHandlers) {
+    if (handler.type === '404') {
+      has404 = true
+      const content = generateNotFoundFile(tatemono, handler)
+      fs.writeFileSync(path.join(tatDir, 'NotFound.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Inertia Router] ✓ Error handler: NotFound.tsx → /${tatemono.meta.name}/**`)
+    } else if (handler.type === '500') {
+      const content = generateErrorBoundaryFile(tatemono, handler)
+      fs.writeFileSync(path.join(tatDir, 'ErrorBoundary.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Inertia Router] ✓ Error handler: ErrorBoundary.tsx → /${tatemono.meta.name}/**`)
+    }
+  }
+  return has404
+}
+
+// ─── Inertia page registry (resources/js/arkzen/generated/pages.ts) ──────────
+//
+// app.tsx uses ARKZEN_INERTIA_PAGES to dynamically resolve page component names
+// sent by Laravel (e.g. 'InventoryManagement/Index') to lazy dynamic imports.
+// This is the Inertia equivalent of the Vite routes.ts registry.
+// Must be kept in sync every time pages are registered or unregistered.
+
+interface InertiaPageEntry {
+  key: string   // e.g. 'InventoryManagement/Index'
+  path: string  // e.g. '@/Pages/InventoryManagement/Index'
+}
+
+function readExistingPageEntries(): InertiaPageEntry[] {
+  if (!fs.existsSync(PAGES_REGISTRY)) return []
+  const content = fs.readFileSync(PAGES_REGISTRY, 'utf-8')
+  const matches = [...content.matchAll(/\/\/ PAGE:([^\n]+)\n/g)]
+  return matches.map(m => {
+    const [key, pagePath] = m[1].split('|')
+    return { key, path: pagePath }
+  })
+}
+
+function writePageRegistry(entries: InertiaPageEntry[]): void {
+  ensureDir(GENERATED_DIR)
+
+  const entryLines = entries
+    .map(e => `  // PAGE:${e.key}|${e.path}\n  '${e.key}': () => import('${e.path}'),`)
+    .join('\n')
+
+  const content = `// ============================================================
+// ARKZEN GENERATED — Inertia Page Registry
+// Auto-updated when tatemonos are built/removed
+// DO NOT EDIT — managed by Arkzen engine
+//
+// Used in resources/js/app.tsx to resolve Inertia page names.
+// Laravel sends: Inertia::render('TatName/PageName', $props)
+// This map resolves that string to the correct React component.
+// ============================================================
+
+export type InertiaPageResolver = Record<string, () => Promise<{ default: React.ComponentType }>>
+
+export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
+${entryLines}
+}
+`
+  fs.writeFileSync(PAGES_REGISTRY, content, 'utf-8')
+}
+
+// ─── Root redirect ────────────────────────────────────────────────────────────
 
 function generateRootRedirect(tatemono: ParsedTatemono): string | null {
   const hasIndex = tatemono.pages.some(p => p.name === 'index')
@@ -264,6 +728,7 @@ function generateInertiaPageFile(
   tatemono: ParsedTatemono,
   page: ArkzenPage,
   hasGlobalStyle: boolean,
+  componentsImportPath: string,
 ): string {
   const tatName       = tatemono.meta.name
   const layout        = page.layout ?? (tatemono.meta.auth ? 'auth' : 'none')
@@ -278,44 +743,78 @@ function generateInertiaPageFile(
   const layoutComp   = layout !== 'none' ? getLayoutComponent(layout) : 'React.Fragment'
 
   const animFnName = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
-  const animImport = animFnName
+
+  // Collect all sources: all component blocks + this page's raw code
+  const allSources = [
+    ...tatemono.components.map(c => normalizeForInertia(c.raw.trim())),
+    normalizeForInertia(page.raw.trim()),
+  ]
+
+  // Scrape framer-motion named exports from all sources
+  const framerNeeded = new Set(['motion'])
+  const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
+  for (const src of allSources) {
+    let m: RegExpMatchArray | null
+    while ((m = framerRe.exec(src)) !== null) {
+      m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
+    }
+  }
+
+  const animImportLine = animFnName
     ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
     : ''
 
-  // Page lives at Pages/{TatPascal}/{Page}.tsx
-  // styles live at Pages/{TatPascal}/styles/global.css → relative path is ./styles/global.css
-  const styleImport = hasGlobalStyle ? `import './styles/global.css'` : ''
+  // Inertia-specific imports always injected by engine
+  const inertiaImportLine = `import { usePage, router } from '@inertiajs/react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'`
 
-  const componentCode = tatemono.components
-    .map(c => normalizeForInertia(c.raw)
-      .replace(/^[ \t]*import\s+React[,\s]*\{[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .replace(/^[ \t]*import\s+\{[^}]*React[^}]*\}\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .replace(/^[ \t]*import\s+React\s+from\s+['"]react['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-      .trim()
-    )
-    .join('\n\n')
+  const styleImportLine = hasGlobalStyle ? `import './styles/global.css'` : ''
 
-  const cleanPageRaw = normalizeForInertia(page.raw)
-    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
-    .trim()
+  const extraLines = [layoutImport, animImportLine, inertiaImportLine, styleImportLine]
+    .filter(Boolean).join('\n')
 
-  const allCode      = componentCode + '\n' + cleanPageRaw
-  const needsMemo    = /\bmemo\s*\(/.test(allCode)
-  const needsCb      = /\buseCallback\s*\(/.test(allCode)
-  const needsReducer = /\buseReducer\s*\(/.test(allCode)
-  const needsCtx     = /\buseContext\s*\(/.test(allCode)
-  const needsUseMemo = /\buseMemo\s*\(/.test(allCode)
+  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
+    reactHooks:  ['useRef', 'useEffect', 'useState'],
+    framerNamed: [...framerNeeded],
+    extra:       extraLines,
+  })
 
-  const reactHooks = [
-    'useRef',
-    'useEffect',
-    'useState',
+  // Auto-detect extra React hooks in combined code
+  const combinedRaw = strippedSources.join('\n')
+  const needsMemo    = /\bmemo\s*\(/.test(combinedRaw)
+  const needsCb      = /\buseCallback\s*\(/.test(combinedRaw)
+  const needsReducer = /\buseReducer\s*\(/.test(combinedRaw)
+  const needsCtx     = /\buseContext\s*\(/.test(combinedRaw)
+  const needsUseMemo = /\buseMemo\s*\(/.test(combinedRaw)
+
+  // Re-resolve with full hook list if we detected extras
+  const extraHooks = [
     needsMemo    && 'memo',
     needsCb      && 'useCallback',
     needsReducer && 'useReducer',
     needsCtx     && 'useContext',
     needsUseMemo && 'useMemo',
-  ].filter(Boolean).join(', ')
+  ].filter(Boolean) as string[]
+
+  const { canonicalBlock: finalBlock, strippedSources: finalStripped } =
+    extraHooks.length > 0
+      ? resolveImports(allSources, {
+          reactHooks:  ['useRef', 'useEffect', 'useState', ...extraHooks],
+          framerNamed: [...framerNeeded],
+          extra:       extraLines,
+        })
+      : { canonicalBlock, strippedSources }
+
+  const strippedComponentCode = finalStripped.slice(0, tatemono.components.length).join('\n\n')
+  const strippedPageCode = (finalStripped[tatemono.components.length] ?? '')
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    // FIX: isMounted cleanup-only useEffect breaks under React StrictMode
+    .replace(
+      /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
+      `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
+    )
+    .trim()
 
   const match         = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
   const componentName = match ? match[1] : toSafeComponentName(page.name) + 'Page'
@@ -329,14 +828,7 @@ function generateInertiaPageFile(
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import React, { ${reactHooks} } from 'react'
-import { motion } from 'framer-motion'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-${layoutImport}
-${animImport}
-${styleImport}
+${finalBlock}
 
 // Props passed from Laravel via Inertia::render()
 export type ${propsTypeName} = {
@@ -346,11 +838,11 @@ export type ${propsTypeName} = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-${componentCode}
+// ── Shared components from @arkzen:components ─────────────────────────────────
+${strippedComponentCode}
 
 // ── Page component from @arkzen:page:${page.name} ─────────────────────────────
-${cleanPageRaw}
+${strippedPageCode}
 
 // ── Arkzen Inertia wrapper ─────────────────────────────────────────────────────
 function ${wrapperName}() {
@@ -385,11 +877,8 @@ export default ${wrapperName}
 }
 
 // ─── PHP route file ───────────────────────────────────────────────────────────
-// Writes routes/modules/{tatName}.pages.php
-// Injects Route::redirect when no index page exists — mirrors the root redirect
-// behaviour of Next.js (redirect() in page.tsx) and Vite (<Navigate replace />)
 
-function generatePageRouteFile(tatemono: ParsedTatemono): string {
+function generatePageRouteFile(tatemono: ParsedTatemono, has404: boolean): string {
   const tatName      = tatemono.meta.name
   const tatPascal    = toPascalCase(tatName)
   const redirectDest = generateRootRedirect(tatemono)
@@ -424,6 +913,15 @@ function generatePageRouteFile(tatemono: ParsedTatemono): string {
     lines.push(``)
   }
 
+  // Catch-all for 404 — mirrors vite-router wildcard route and Next.js [...catchAll]
+  if (has404) {
+    lines.push(`    // Catch-all 404 — mirrors Next.js [...catchAll] and Vite wildcard route`)
+    lines.push(`    Route::get('/${tatName}/{any}', function () {`)
+    lines.push(`        return \\Inertia\\Inertia::render('${tatPascal}/NotFound');`)
+    lines.push(`    })->where('any', '.*');`)
+    lines.push(``)
+  }
+
   lines.push(`});`)
   lines.push(``)
 
@@ -431,6 +929,55 @@ function generatePageRouteFile(tatemono: ParsedTatemono): string {
 }
 
 // ─── Hub route ────────────────────────────────────────────────────────────────
+
+// ─── Inertia page registry ────────────────────────────────────────────────────
+// Writes resources/js/arkzen/generated/pages.ts — the map app.tsx uses to
+// resolve Inertia page names to dynamic imports. Each entry looks like:
+//   'InventoryManagement/Index': () => import('../../Pages/InventoryManagement/Index')
+// The path is relative from generated/ to Pages/ — always two levels up.
+
+interface InertiaPageEntry {
+  tatName:  string   // e.g. 'InventoryManagement'
+  pageName: string   // e.g. 'Index'  (PascalCase)
+}
+
+function readExistingRegistry(): InertiaPageEntry[] {
+  if (!fs.existsSync(PAGES_REGISTRY)) return []
+  const content = fs.readFileSync(PAGES_REGISTRY, 'utf-8')
+  const matches = [...content.matchAll(/\/\/ PAGE:([^/]+)\/([^\s]+)/g)]
+  return matches.map(m => ({ tatName: m[1], pageName: m[2] }))
+}
+
+function writePageRegistry(entries: InertiaPageEntry[]): void {
+  ensureDir(GENERATED_DIR)
+
+  const lines = entries.map(e => {
+    const key  = `${e.tatName}/${e.pageName}`
+    // pages.ts lives at resources/js/arkzen/generated/
+    // Pages live at resources/js/Pages/
+    // So relative path is always ../../Pages/{Tat}/{Page}
+    const rel  = `../../Pages/${e.tatName}/${e.pageName}`
+    return `  // PAGE:${key}\n  '${key}': () => import('${rel}'),`
+  }).join('\n')
+
+  const content = `// ============================================================
+// ARKZEN GENERATED — Inertia Page Registry
+// Auto-updated when tatemonos are built/removed
+// DO NOT EDIT — managed by Arkzen engine
+//
+// Used in resources/js/app.tsx to resolve Inertia page names
+// Laravel sends: Inertia::render('TatName/PageName', $props)
+// This map resolves that string to the correct React component
+// ============================================================
+
+export type InertiaPageResolver = Record<string, () => Promise<{ default: React.ComponentType }>>
+
+export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
+${lines}
+}
+`
+  fs.writeFileSync(PAGES_REGISTRY, content, 'utf-8')
+}
 
 function ensureHubRoute(): void {
   const hubRouteFile = path.join(ROUTES_DIR, 'hub.pages.php')
@@ -466,6 +1013,12 @@ function ensureHubRoute(): void {
   }
 }
 
+// ─── CSS style files ──────────────────────────────────────────────────────────
+
+function generateStyleFiles(tatemono: ParsedTatemono, tatDir: string): { hasGlobalStyle: boolean } {
+  return emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Inertia Router' })
+}
+
 // ─── Public API ───────────────────────────────────────────────────────────────
 
 export function registerInertiaPages(tatemono: ParsedTatemono): void {
@@ -474,28 +1027,39 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
   ensureDir(tatDir)
   ensureDir(ROUTES_DIR)
 
+  console.log(`[Arkzen Inertia Router] Registering ${tatemono.pages.length} page(s) for: ${tatName}`)
+
   // Custom layouts — written before pages so imports resolve immediately
   generateCustomLayouts(tatemono)
 
-  // Shared components (_shared.tsx in the tatemono's Pages folder)
-  generateSharedComponents(tatemono, tatDir)
+  // Animation file — resources/js/arkzen/generated/{tat}.animations.ts
+  if (tatemono.animation) {
+    const animContent = generateAnimationFile(tatemono)
+    if (animContent) {
+      ensureDir(GENERATED_DIR)
+      const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
+      fs.writeFileSync(animPath, animContent, 'utf-8')
+      console.log(`[Arkzen Inertia Router] ✓ Animation file written: arkzen/generated/${tatName}.animations.ts`)
+    }
+  }
+
+  // Individual component files (mirrors Next.js — replaces old _shared.tsx)
+  generateIndividualComponentFiles(tatemono, tatDir)
+  generateComponentsIndex(tatemono, tatDir)
+
+  // Error handlers — 404 / 500 (mirrors vite-router and Next.js)
+  const has404 = generateErrorHandlers(tatemono, tatDir)
 
   // CSS styles — global.css + CSS Modules in Pages/{Tat}/styles/
-  const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen Inertia Router' })
-
-  // Animation file — resources/js/arkzen/generated/{tat}.animations.ts
-  const animContent = generateAnimationFile(tatemono)
-  if (animContent) {
-    ensureDir(GENERATED_DIR)
-    const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
-    fs.writeFileSync(animPath, animContent, 'utf-8')
-    console.log(`[Arkzen Inertia Router] ✓ Animation file written: arkzen/generated/${tatName}.animations.ts`)
-  }
+  const styleInfo = generateStyleFiles(tatemono, tatDir)
 
   // React page files — one per @arkzen:page:*
   for (const page of tatemono.pages) {
-    const pageContent = generateInertiaPageFile(tatemono, page, styleInfo.hasGlobalStyle)
     const pageName    = toPascalCase(page.name)
+    // index page lives directly in tatDir; other pages also live in tatDir
+    // but use a components import path that matches their position
+    const componentsImportPath = './components'
+    const pageContent = generateInertiaPageFile(tatemono, page, styleInfo.hasGlobalStyle, componentsImportPath)
     const pagePath    = path.join(tatDir, `${pageName}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 
@@ -505,18 +1069,46 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Inertia Router] ✓ ${routeHint} → Pages/${toPascalCase(tatName)}/${pageName}.tsx`)
   }
 
-  // Log root redirect (mirrors vite/next console output)
+  // Log root redirect
   const redirectDest = generateRootRedirect(tatemono)
   if (redirectDest) {
     console.log(`[Arkzen Inertia Router] ✓ /${tatName} → redirect to ${redirectDest}`)
   }
 
-  // PHP page route file (includes root redirect when needed)
+  // PHP page route file (includes root redirect + catch-all when needed)
   const pageRouteFile = path.join(ROUTES_DIR, `${tatName}.pages.php`)
-  fs.writeFileSync(pageRouteFile, generatePageRouteFile(tatemono), 'utf-8')
+  fs.writeFileSync(pageRouteFile, generatePageRouteFile(tatemono, has404), 'utf-8')
   console.log(`[Arkzen Inertia Router] ✓ Page routes written: routes/modules/${tatName}.pages.php`)
 
+  // ── Inertia page registry — resources/js/arkzen/generated/pages.ts ───────
+  // Keeps ARKZEN_INERTIA_PAGES in sync so app.tsx can resolve page names
+  // sent by Laravel (e.g. 'InventoryManagement/Index') to dynamic imports.
+  const tatPascal2        = toPascalCase(tatName)
+  const existingEntries   = readExistingRegistry().filter(e => e.tatName !== tatPascal2)
+  const newEntries: InertiaPageEntry[] = tatemono.pages.map(page => ({
+    tatName:  tatPascal2,
+    pageName: toPascalCase(page.name),
+  }))
+  writePageRegistry([...existingEntries, ...newEntries])
+  console.log(`[Arkzen Inertia Router] ✓ Page registry updated: ${newEntries.length} page(s) → arkzen/generated/pages.ts`)
+
   console.log(`[Arkzen Inertia Router] ✓ ${tatemono.pages.length} page(s) written to laravel-inertia`)
+
+  // ── Asset distribution (mirrors vite-router + Next.js router) ────────────
+  // process.cwd() = engine/frontend/react-inertia/
+  // Three levels up → project root → tatemonos/{tat}/assets
+  try {
+    const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')
+    const assetsPath   = path.join(tatemonosDir, tatName, 'assets')
+    const publicDir    = path.join(BACKEND_DIR, 'public')
+    cleanOldAssets(tatName, publicDir)
+    const hasAssets = copyAssetsToPublic(tatName, assetsPath, publicDir)
+    if (!hasAssets) {
+      console.log(`[Arkzen Assets] No assets folder for ${tatName}`)
+    }
+  } catch (e) {
+    console.log(`[Arkzen Assets] ⚠ Asset distribution skipped: ${e}`)
+  }
 
   // Hub route — idempotent, only writes if missing
   ensureHubRoute()
@@ -572,4 +1164,9 @@ export function unregisterInertiaPages(tatName: string): void {
         console.log(`[Arkzen Inertia Router] ✓ Removed custom layout: ${f}`)
       })
   }
+
+  // Inertia page registry
+  const remaining = readExistingRegistry().filter(e => e.tatName !== toPascalCase(tatName))
+  writePageRegistry(remaining)
+  console.log(`[Arkzen Inertia Router] ✓ Page registry cleaned: removed ${toPascalCase(tatName)}/* entries`)
 }

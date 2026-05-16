@@ -2,17 +2,19 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:54.740Z
+// Generated: 2026-05-15T21:28:26.837Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
+import { create } from 'zustand'
+import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
+import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
-import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
-
 
 // Props passed from Laravel via Inertia::render()
 export type DtrGeofencingAdminProps = {
@@ -22,15 +24,7 @@ export type DtrGeofencingAdminProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw,
-  User as UserIcon, Clock, Loader2, Navigation, TrendingUp,
-  ChevronDown, LogIn, LogOut
-} from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 export interface Employee {
   id: number
   name: string

@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — queue-flow [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T04:47:56.507Z
+// Generated: 2026-05-15T21:28:33.588Z
 // Pages: index, join, admin
 // ============================================================
 
@@ -24,5 +24,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/queue-flow/admin', function () {
         return \Inertia\Inertia::render('QueueFlow/Admin');
     });
+
+    // Catch-all 404 — mirrors Next.js [...catchAll] and Vite wildcard route
+    Route::get('/queue-flow/{any}', function () {
+        return \Inertia\Inertia::render('QueueFlow/NotFound');
+    })->where('any', '.*');
 
 });

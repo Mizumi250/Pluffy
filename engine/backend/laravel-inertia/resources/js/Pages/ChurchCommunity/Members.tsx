@@ -2,17 +2,18 @@
 // ARKZEN GENERATED PAGE — church-community/members [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:54.447Z
+// Generated: 2026-05-15T21:28:26.367Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Bookmark, Calendar, Heart, Image as ImageIcon, Loader2, MessageCircle, Moon, MoreHorizontal, Plus, Search, Send, Share2, Sun, Trash2, Upload, UserPlus, X } from 'lucide-react'
+import { create } from 'zustand'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
-
 
 // Props passed from Laravel via Inertia::render()
 export type ChurchCommunityMembersProps = {
@@ -22,10 +23,7 @@ export type ChurchCommunityMembersProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Image as ImageIcon, Plus, Trash2, Search, X, Upload, Calendar, Loader2, Send, Sun, Moon, UserPlus } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 
 export const LIGHT = {

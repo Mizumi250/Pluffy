@@ -2,16 +2,18 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:52.705Z
+// Generated: 2026-05-15T21:28:20.505Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
-import { motion } from 'framer-motion'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { Check, ChevronRight, Copy, Download, Eye, File, FileJson, FileVideo, FolderOpen, Grid, Hexagon, Image, List, Music, Package, Search, Type, Upload, X } from 'lucide-react'
+import { create } from 'zustand'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { assetHubAnimations, pageVariants } from '@/arkzen/generated/asset-hub.animations'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { assetHubAnimations, pageVariants } from '@/arkzen/generated/asset-hub.animations'
 import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
@@ -22,15 +24,7 @@ export type AssetHubIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Image, FileVideo, Music, FileJson, Type, Hexagon,
-  Upload, FolderOpen, Copy, Check, Eye, Download,
-  File, Grid, List, Search, X, ChevronRight, Package
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 export type AssetCategory = 'images' | 'fonts' | 'icons' | 'svg' | 'video' | 'audio' | 'data' | 'misc'
 

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — auth-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:52.720Z
+// Generated: 2026-05-15T21:28:20.644Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Lock, ShieldCheck } from 'lucide-react'
+import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type AuthTestDashboardProps = {
@@ -22,10 +22,7 @@ export type AuthTestDashboardProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Lock, ShieldCheck } from 'lucide-react'
-import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // Activate the correct isolated auth context for this Tatemono
 if (typeof window !== 'undefined') {
   setActiveTatemono('auth-test')

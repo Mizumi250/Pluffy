@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — errors-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:47:54.886Z
+// Generated: 2026-05-15T21:28:28.030Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
 
 // Props passed from Laravel via Inertia::render()
 export type ErrorsTestIndexProps = {
@@ -22,10 +22,7 @@ export type ErrorsTestIndexProps = {
   [key: string]: unknown
 }
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { useToast } from '@/arkzen/core/components/Toast'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 type ErrorDef = {
   code: number
   title: string
