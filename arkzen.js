@@ -23,6 +23,7 @@ const VALID_STACKS = {
   'react-vite':    path.join(ENGINE_DIR, 'frontend', 'react-vite'),
   'react-inertia': path.join(ENGINE_DIR, 'frontend', 'react-inertia'),
   'native':        path.join(ENGINE_DIR, 'frontend', 'react-native'),
+  'astro':         path.join(ENGINE_DIR, 'frontend', 'astro'),
 }
 
 function readConfig() {
@@ -101,6 +102,6 @@ switch (command) {
     console.log('  node arkzen.js switch <stack>   Switch active stack')
     console.log('  node arkzen.js stack             Show current stack')
     console.log('  node arkzen.js stacks            List all stacks\n')
-    console.log('Available stacks: nextjs, react-vite, react-inertia, native\n')
+    console.log('Available stacks: nextjs, react-vite, react-inertia, native, astro\n')
   }
 }

@@ -140,7 +140,7 @@ function startReverb() {
   return proc
 }
 
-// CHANGE 2: startFrontend() — Inertia needs TWO processes
+// CHANGE 2: startFrontend() — Inertia needs TWO processes, Astro needs both astro dev + arkzen watcher
 function startFrontend() {
   if (activeStack === 'react-inertia') {
     // Process 1: Vite runs FROM INSIDE laravel-inertia (serves React pages via Laravel Vite plugin)
@@ -190,8 +190,34 @@ function startFrontend() {
     return [vite, watcher]
   }
 
-  // All other stacks (nextjs, react-vite, native) — unchanged
-  log('frontend', `Starting ${activeStack} + Arkzen Watcher on http://localhost:3000`)
+  if (activeStack === 'astro') {
+    // Astro: Run astro dev + arkzen watcher
+    log('frontend', 'Starting Astro on http://localhost:3000')
+    const astro = spawn('npm', ['run', 'dev'], {
+      cwd: FRONTEND_DIR,
+      stdio: 'pipe',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
+
+    astro.stdout.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('frontend', `[Astro] ${line.trim()}`)
+      })
+    })
+    astro.stderr.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('frontend', `[Astro] ${line.trim()}`)
+      })
+    })
+    astro.on('exit', (code) => {
+      if (code !== 0) log('frontend', `[Astro] Exited with code ${code}`)
+    })
+
+    return astro
+  }
+
+  // All other stacks (nextjs, react-vite, native)
+  log('frontend', `Starting ${activeStack} on http://localhost:3000`)
 
   const proc = spawn('npm', ['run', 'dev'], {
     cwd: FRONTEND_DIR,

@@ -339,6 +339,7 @@
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",
     "react-inertia": "engine/frontend/react-inertia",
-    "native": "engine/frontend/react-native"
+    "native": "engine/frontend/react-native",
+    "astro": "engine/frontend/astro"
   }
 }
