@@ -2,24 +2,19 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:31.835Z
+// Generated: 2026-05-16T10:20:38.119Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Check, ChevronRight, Copy, Download, Eye, File, FileJson, FileVideo, FolderOpen, Grid, Hexagon, Image, List, Music, Package, Search, Type, Upload, X } from 'lucide-react'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { assetHubAnimations, pageVariants } from '@/arkzen/generated/asset-hub.animations'
+import { useNavigate } from 'react-router-dom'
 import './styles/global.css'
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  Image, FileVideo, Music, FileJson, Type, Hexagon,
-  Upload, FolderOpen, Copy, Check, Eye, Download,
-  File, Grid, List, Search, X, ChevronRight, Package
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── TYPES ─────────────────────────────────────────────────────────────────────
 export type AssetCategory = 'images' | 'fonts' | 'icons' | 'svg' | 'video' | 'audio' | 'data' | 'misc'
 

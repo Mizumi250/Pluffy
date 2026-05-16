@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — jo-payroll [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.965Z
+// Generated: 2026-05-16T10:20:40.130Z
 // ============================================================
 
 import { gsap } from 'gsap'

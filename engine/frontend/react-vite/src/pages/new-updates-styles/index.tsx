@@ -2,19 +2,17 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:35.150Z
+// Generated: 2026-05-16T10:20:40.539Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate, Link } from 'react-router-dom'
+import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
+import { useNavigate, Link } from 'react-router-dom'
 import './styles/global.css'
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Zap, Code, Palette, Layers, Menu, X } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 
 const Navbar = ({ currentPath }: { currentPath: string }) => {

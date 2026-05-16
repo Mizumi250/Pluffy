@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — dtr-geofencing [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:31.947Z
+// Generated: 2026-05-16T10:20:39.808Z
 // ============================================================
 
 export * from './_components'

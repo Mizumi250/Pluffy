@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — broadcast-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:30.337Z
+// Generated: 2026-05-16T10:20:38.986Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,18 +14,18 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('broadcast-test')
 }
 
-const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
+export const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST    ?? 'localhost'
+export const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
+export const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
+export const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
 // ── ChannelPanel — top-level memo so it never remounts on parent re-render.
 // Defined outside DashboardPage to preserve input focus on mobile (Android keyboard
 // dismisses when a component is unmounted/remounted, which happens if Panel is an
 // inline const inside a parent that re-renders on every keystroke).
-type WsStatus = 'connecting' | 'connected' | 'error'
+export type WsStatus = 'connecting' | 'connected' | 'error'
 
-interface Message {
+export interface Message {
   id:           number
   content:      string
   channel_type: string | null
@@ -38,7 +38,7 @@ const dot = (s: WsStatus) => ({
   error:      'bg-red-400',
 }[s])
 
-const ChannelPanel = memo(({
+export const ChannelPanel = memo(({
   title, badge, badgeColor, description, status, count, msgs, onSend, footer,
 }: {
   title: string; badge: string; badgeColor: string; description: string

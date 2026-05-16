@@ -1,13 +1,9 @@
 // ARKZEN CUSTOM LAYOUT — jo-payroll/app [React+Vite]
 
-import { useNavigate, useLocation } from 'react-router-dom'
-import React, { useState, useEffect } from 'react'
-import {
-  LayoutDashboard, Database, Banknote, Building2,
-  Landmark, CalendarDays, Menu, X, ChevronRight,
-  LogOut, Bell
-} from 'lucide-react'
+import React, { useEffect, useState } from 'react'
+import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 
+import { useNavigate, useLocation } from 'react-router-dom'
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/jo-payroll/job-database', label: 'JO Database',  icon: Database        },

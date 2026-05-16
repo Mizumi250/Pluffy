@@ -2,19 +2,18 @@
 // ARKZEN GENERATED PAGE — upload-test/dashboard [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:36.562Z
+// Generated: 2026-05-16T10:20:41.609Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router-dom'
+
+// ── Shared components from @arkzen:components ─────────────────────────────────
+
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {

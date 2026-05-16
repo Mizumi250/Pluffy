@@ -2,20 +2,17 @@
 // ARKZEN GENERATED PAGE — events-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.788Z
+// Generated: 2026-05-16T10:20:39.971Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Flame, Zap } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Flame, Zap } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router-dom'
 
+// ── Shared components from @arkzen:components ─────────────────────────────────
 interface EventLogEntry {
   id:            number
   event_name:    string

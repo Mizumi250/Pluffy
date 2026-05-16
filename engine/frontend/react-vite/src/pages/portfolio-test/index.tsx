@@ -2,19 +2,16 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:35.278Z
+// Generated: 2026-05-16T10:20:40.636Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router-dom'
 
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },
   { id: 2, title: 'Tasks', description: 'Real-time collaboration', image: '✓', url: 'https://example.com', tags: ['React', 'WebSocket'] },

@@ -2,25 +2,18 @@
 // ARKZEN GENERATED PAGE — queue-flow/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:35.301Z
+// Generated: 2026-05-16T10:20:40.653Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
-
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  Users, Clock, CheckCircle,
-  SkipForward, Volume2,
-  Loader2, ArrowRight, Pause, Calendar
-} from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
+import { create } from 'zustand'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
+import { useNavigate } from 'react-router-dom'
 
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Queue {

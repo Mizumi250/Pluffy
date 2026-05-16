@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:29.088Z
+// Generated: 2026-05-16T10:20:38.071Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,7 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
-interface AnimLabState {
+export interface AnimLabState {
   activeSection: string
   setActiveSection: (s: string) => void
   playingDemo: string | null
@@ -788,7 +788,7 @@ export const FramerGesturesSection = () => {
   )
 }
 
-const MagneticBtn = () => {
+export const MagneticBtn = () => {
   const x = useMotionValue(0)
   const y = useMotionValue(0)
   const springX = useSpring(x, { stiffness: 150, damping: 15 })
@@ -1118,7 +1118,7 @@ export const FramerScrollSection = () => {
   )
 }
 
-const ScrollTransformDemo = () => {
+export const ScrollTransformDemo = () => {
   const ref = useRef<HTMLDivElement>(null)
   const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'end start'] })
   const opacity = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0])
@@ -1130,7 +1130,7 @@ const ScrollTransformDemo = () => {
   )
 }
 
-const ParallaxDemo = () => {
+export const ParallaxDemo = () => {
   const { scrollY } = useScroll()
   const y1 = useTransform(scrollY, [0, 1000], [0, -80])
   const y2 = useTransform(scrollY, [0, 1000], [0, -160])

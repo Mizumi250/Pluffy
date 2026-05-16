@@ -656,53 +656,6 @@ function generateErrorHandlers(tatemono: ParsedTatemono, tatDir: string): boolea
   return has404
 }
 
-// ─── Inertia page registry (resources/js/arkzen/generated/pages.ts) ──────────
-//
-// app.tsx uses ARKZEN_INERTIA_PAGES to dynamically resolve page component names
-// sent by Laravel (e.g. 'InventoryManagement/Index') to lazy dynamic imports.
-// This is the Inertia equivalent of the Vite routes.ts registry.
-// Must be kept in sync every time pages are registered or unregistered.
-
-interface InertiaPageEntry {
-  key: string   // e.g. 'InventoryManagement/Index'
-  path: string  // e.g. '@/Pages/InventoryManagement/Index'
-}
-
-function readExistingPageEntries(): InertiaPageEntry[] {
-  if (!fs.existsSync(PAGES_REGISTRY)) return []
-  const content = fs.readFileSync(PAGES_REGISTRY, 'utf-8')
-  const matches = [...content.matchAll(/\/\/ PAGE:([^\n]+)\n/g)]
-  return matches.map(m => {
-    const [key, pagePath] = m[1].split('|')
-    return { key, path: pagePath }
-  })
-}
-
-function writePageRegistry(entries: InertiaPageEntry[]): void {
-  ensureDir(GENERATED_DIR)
-
-  const entryLines = entries
-    .map(e => `  // PAGE:${e.key}|${e.path}\n  '${e.key}': () => import('${e.path}'),`)
-    .join('\n')
-
-  const content = `// ============================================================
-// ARKZEN GENERATED — Inertia Page Registry
-// Auto-updated when tatemonos are built/removed
-// DO NOT EDIT — managed by Arkzen engine
-//
-// Used in resources/js/app.tsx to resolve Inertia page names.
-// Laravel sends: Inertia::render('TatName/PageName', $props)
-// This map resolves that string to the correct React component.
-// ============================================================
-
-export type InertiaPageResolver = Record<string, () => Promise<{ default: React.ComponentType }>>
-
-export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
-${entryLines}
-}
-`
-  fs.writeFileSync(PAGES_REGISTRY, content, 'utf-8')
-}
 
 // ─── Root redirect ────────────────────────────────────────────────────────────
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:33.925Z
+// Generated: 2026-05-16T10:20:41.532Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -12,7 +12,7 @@ import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 
-interface CommandRun {
+export interface CommandRun {
   id:           number
   command_name: string
   signature:    string

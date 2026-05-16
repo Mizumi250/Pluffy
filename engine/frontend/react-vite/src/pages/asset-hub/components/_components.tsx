@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — asset-hub [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:29.127Z
+// Generated: 2026-05-16T10:20:38.113Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -24,7 +24,7 @@ export interface AssetItem {
 }
 
 // ─── ZUSTAND STORE ─────────────────────────────────────────────────────────────
-interface AssetHubState {
+export interface AssetHubState {
   activeCategory: AssetCategory | 'all'
   setActiveCategory: (c: AssetCategory | 'all') => void
   viewMode: 'grid' | 'list'

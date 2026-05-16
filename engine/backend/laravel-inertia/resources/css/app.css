@@ -6,11 +6,9 @@
 @import 'tailwindcss';
 
 /* ─── Source scanning (Tailwind v4 explicit @source) ─────────── */
-@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
-@source '../views/**/*.blade.php';
-@source '../js/Pages/**/*.tsx';
-@source '../js/arkzen/**/*.{ts,tsx}';
+@source './resources/views/**/*.blade.php';
+@source './resources/js/Pages/**/*.tsx';
+@source './resources/js/arkzen/**/*.{ts,tsx}';
 
 /* ─── Theme tokens (Tailwind v4 @theme) ──────────────────────── */
 @theme {

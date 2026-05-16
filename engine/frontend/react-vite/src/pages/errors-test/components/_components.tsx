@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — errors-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:32.291Z
+// Generated: 2026-05-16T10:20:39.952Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { useToast } from '@/arkzen/core/components/Toast'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
-type ErrorDef = {
+export type ErrorDef = {
   code: number
   title: string
   message: string
@@ -21,7 +21,7 @@ type ErrorDef = {
   btnColor: string
 }
 
-const ERRORS: ErrorDef[] = [
+export const ERRORS: ErrorDef[] = [
   { code: 400, title: 'Bad Request',         message: 'The server could not understand your request. Check the data you sent and try again.',         color: 'text-yellow-700',  bg: 'bg-yellow-50',  border: 'border-yellow-100', btnColor: 'bg-yellow-700 hover:bg-yellow-800',  action: { label: 'Go back',      href: 'javascript:history.back()' } },
   { code: 401, title: 'Unauthorized',        message: 'You need to be signed in to access this. Please log in and try again.',                        color: 'text-blue-700',    bg: 'bg-blue-50',    border: 'border-blue-100',   btnColor: 'bg-blue-700 hover:bg-blue-800',      action: { label: 'Sign in',      href: '/auth-test/login' } },
   { code: 403, title: 'Forbidden',           message: 'You do not have permission to access this resource. Contact an admin if you think this is wrong.', color: 'text-orange-700', bg: 'bg-orange-50', border: 'border-orange-100', btnColor: 'bg-orange-700 hover:bg-orange-800', action: { label: 'Go home',      href: '/' } },

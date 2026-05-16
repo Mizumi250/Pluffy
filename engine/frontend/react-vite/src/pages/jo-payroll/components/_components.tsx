@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — jo-payroll [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:32.470Z
+// Generated: 2026-05-16T10:20:40.125Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -53,7 +53,7 @@ export interface PayrollSummary {
 }
 
 // ─── Store ──────────────────────────────────────────────────────────────────
-interface PayrollState {
+export interface PayrollState {
   jobOrders: JobOrder[]
   summary: PayrollSummary | null
   isLoading: boolean
@@ -86,7 +86,7 @@ export const usePayrollStore = create<PayrollState>((set) => ({
 }))
 
 // ─── Constants ──────────────────────────────────────────────────────────────
-const API_BASE = ''
+export const API_BASE = ''
 export const FUNDING_OPTIONS = ['PUBLIC SERVICES', 'ADMIN', 'MAINTENANCE', 'SANITATION', 'SUPPLIES', 'HUMAN RESOURCES']
 export const JOB_TITLES = ['LABORER', 'UTILITY WORKER', 'CLERK', 'DRIVER', 'SECURITY GUARD']
 export const PYRL_GROUPS = ['GROUP A', 'GROUP B', 'GROUP C']

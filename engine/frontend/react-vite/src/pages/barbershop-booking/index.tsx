@@ -2,20 +2,18 @@
 // ARKZEN GENERATED PAGE — barbershop-booking/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:31.880Z
+// Generated: 2026-05-16T10:20:38.168Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { gsap } from 'gsap'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { barbershopBookingAnimations, pageVariants } from '@/arkzen/generated/barbershop-booking.animations'
+import { useNavigate } from 'react-router-dom'
 
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { gsap } from 'gsap'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 export interface Barber {
   id: number
   name: string

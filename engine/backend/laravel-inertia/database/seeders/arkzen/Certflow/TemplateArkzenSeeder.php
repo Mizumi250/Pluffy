@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — TemplateArkzenSeeder
 // Tatemono: certflow  |  Connection: certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T21:28:26.234209Z
+// Generated: 2026-05-16T10:35:15.351536Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\Certflow;

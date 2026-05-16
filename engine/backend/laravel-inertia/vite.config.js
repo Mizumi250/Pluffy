@@ -7,7 +7,7 @@ import path from 'path'
 export default defineConfig({
     plugins: [
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'],
+            input: ['resources/js/app.tsx'],
             refresh: true,
         }),
         react(),
@@ -33,6 +33,12 @@ export default defineConfig({
         ],
     },
     server: {
+        host: '0.0.0.0',
+        port: 5173,
+        origin: 'http://127.0.0.1:5173',
+        cors: {
+            origin: 'http://localhost:8000',
+        },
         watch: {
             ignored: ['**/storage/framework/views/**', '**/vendor/**'],
         },

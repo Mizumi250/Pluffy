@@ -1,9 +1,9 @@
 // ARKZEN CUSTOM LAYOUT — dtr-geofencing/app [React+Vite]
 
-import { useNavigate, useLocation } from 'react-router-dom'
 import React, { useState } from 'react'
-import { CalendarClock, LayoutDashboard, Settings, Menu, X } from 'lucide-react'
+import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
 
+import { useNavigate, useLocation } from 'react-router-dom'
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },
   { href: '/dtr-geofencing/admin', label: 'Admin',        icon: Settings },

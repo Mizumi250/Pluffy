@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-mail-notification [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:29.838Z
+// Generated: 2026-05-16T10:20:38.507Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -26,7 +26,7 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('body-mail-notification')
 }
 
-type SendLogEntry = {
+export type SendLogEntry = {
   id:         number
   kind:       'mail' | 'notification'
   subject:    string | null
@@ -37,7 +37,7 @@ type SendLogEntry = {
   created_at: string
 }
 
-const KindBadge = ({ kind }: { kind: string }) => (
+export const KindBadge = ({ kind }: { kind: string }) => (
   <span style={{
     display: 'inline-block',
     padding: '2px 10px',
@@ -52,7 +52,7 @@ const KindBadge = ({ kind }: { kind: string }) => (
   </span>
 )
 
-const StatusDot = ({ status }: { status: string }) => (
+export const StatusDot = ({ status }: { status: string }) => (
   <span style={{
     display: 'inline-block',
     width: 8, height: 8,

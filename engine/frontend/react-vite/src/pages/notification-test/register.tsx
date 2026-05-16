@@ -2,20 +2,17 @@
 // ARKZEN GENERATED PAGE — notification-test/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:46:29.337Z
+// Generated: 2026-05-16T10:20:40.557Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router-dom'
 
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('notification-test')
 }

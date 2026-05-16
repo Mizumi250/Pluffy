@@ -3,11 +3,11 @@
 // Rendered by the wildcard route /queue-flow/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-05-15T04:43:35.299Z
+// Generated: 2026-05-16T10:20:40.651Z
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './_shared'
+import { ErrorScreen } from './components'
 
 const NotFoundPage = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>

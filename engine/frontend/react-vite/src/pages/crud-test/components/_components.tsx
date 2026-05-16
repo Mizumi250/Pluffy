@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — crud-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:31.584Z
+// Generated: 2026-05-16T10:20:39.685Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Boxes } from 'lucide-react'
 
-type Item = {
+export type Item = {
   id:          number
   name:        string
   description: string | null
@@ -21,5 +21,5 @@ type Item = {
   updated_at:  string
 }
 
-type FormData = { name: string; description: string; status: string; priority: number; tags: string }
+export type FormData = { name: string; description: string; status: string; priority: number; tags: string }
 const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }

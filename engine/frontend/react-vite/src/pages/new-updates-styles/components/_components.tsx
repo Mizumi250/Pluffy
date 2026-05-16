@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — new-updates-styles [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:32.931Z
+// Generated: 2026-05-16T10:20:40.536Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 
-const Navbar = ({ currentPath }: { currentPath: string }) => {
+export const Navbar = ({ currentPath }: { currentPath: string }) => {
   const [isOpen, setIsOpen] = useState(false)
   
   const links = [
@@ -69,14 +69,14 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
   )
 }
 
-interface FeatureCardProps {
+export interface FeatureCardProps {
   icon: React.ReactNode
   title: string
   description: string
   color: 'blue' | 'purple' | 'green' | 'orange'
 }
 
-const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, color }) => {
+export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, color }) => {
   const bgColors = {
     blue:   'bg-blue-50 border-blue-200 text-blue-700',
     purple: 'bg-purple-50 border-purple-200 text-purple-700',
@@ -93,14 +93,14 @@ const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, col
   )
 }
 
-interface HeroSectionProps {
+export interface HeroSectionProps {
   title: string
   subtitle: string
   ctaText: string
   onCta?: () => void
 }
 
-const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => {
   return (
     <div className="space-y-4 py-16 text-center">
       <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
@@ -119,7 +119,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onC
 
 // ─── UTILITIES & TYPES ───────────────────────────────
 
-type Feature = {
+export type Feature = {
   id: number
   icon: 'zap' | 'code' | 'palette' | 'layers'
   title: string
@@ -127,7 +127,7 @@ type Feature = {
   color: 'blue' | 'purple' | 'green' | 'orange'
 }
 
-const FEATURES: Feature[] = [
+export const FEATURES: Feature[] = [
   {
     id: 1,
     icon: 'zap',

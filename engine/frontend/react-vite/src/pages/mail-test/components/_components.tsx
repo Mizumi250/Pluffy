@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — mail-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:32.706Z
+// Generated: 2026-05-16T10:20:40.349Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,7 +14,7 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('mail-test')
 }
 
-interface MailLog {
+export interface MailLog {
   id:         number
   to_email:   string
   subject:    string
@@ -24,7 +24,7 @@ interface MailLog {
   created_at: string
 }
 
-interface MailType {
+export interface MailType {
   key:    string
   label:  string
   desc:   string

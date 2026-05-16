@@ -2,27 +2,18 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.973Z
+// Generated: 2026-05-16T10:20:40.138Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useMemo } from 'react'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
+import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+import { useNavigate } from 'react-router-dom'
 
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  Plus, Search, Edit2, Trash2, X, Check, ChevronDown,
-  Users, Banknote, CreditCard, Building2, Landmark,
-  TrendingUp, TrendingDown, Wallet, AlertCircle,
-  Download, FileText, Filter, MoreHorizontal, Eye,
-  CalendarDays, ArrowUpRight, ArrowDownRight, Clock,
-  CheckCircle, XCircle, RefreshCw, Printer
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Types ─────────────────────────────────────────────────────────────────
 export interface JobOrder {
   id: number

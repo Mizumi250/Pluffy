@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:30.430Z
+// Generated: 2026-05-16T10:20:39.073Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -71,7 +71,7 @@ export type Scan = {
 
 // ─── STORE ────────────────────────────────────────────────────────────────────
 
-type AdminStore = {
+export type AdminStore = {
   templates: Template[]
   submissions: Submission[]
   scans: Scan[]
@@ -126,9 +126,9 @@ export const useAdminStore = create<AdminStore>((set) => ({
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
 
-type Toast = { id: string; msg: string; type: 'ok' | 'err' }
+export type Toast = { id: string; msg: string; type: 'ok' | 'err' }
 
-type ToastStore = {
+export type ToastStore = {
   toasts: Toast[]
   push: (msg: string, type?: 'ok' | 'err') => void
   pop: (id: string) => void
@@ -215,7 +215,7 @@ export const copyToClipboard = (text: string) => {
 
 // ─── CANVAS BUILDER ───────────────────────────────────────────────────────────
 
-type CanvasBuilderProps = {
+export type CanvasBuilderProps = {
   template: import('./shared').Template
   fields: import('./shared').FieldDef[]
   selectedFieldId: number | null

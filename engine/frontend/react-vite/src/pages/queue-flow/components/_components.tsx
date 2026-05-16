@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:33.069Z
+// Generated: 2026-05-16T10:20:40.648Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -52,7 +52,7 @@ export interface MyTicketResponse {
 
 // ─── Store ────────────────────────────────────────────────────────────────────
 
-interface QueueStore {
+export interface QueueStore {
   queues:      Queue[]
   statuses:    Record<number, QueueStatus>
   myTicket:    MyTicketResponse | null
@@ -94,7 +94,7 @@ export const useAnnounce = () => {
 
 // ─── Circular Ring ────────────────────────────────────────────────────────────
 
-const CircularRing = ({ label, sublabel }: { label: string; sublabel: string }) => {
+export const CircularRing = ({ label, sublabel }: { label: string; sublabel: string }) => {
   const [angle, setAngle] = useState(45)
   useEffect(() => {
     const id = setInterval(() => setAngle(a => (a + 0.3) % 360), 50)

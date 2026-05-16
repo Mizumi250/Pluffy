@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:29.200Z
+// Generated: 2026-05-16T10:20:38.185Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -22,7 +22,7 @@ function useToast() {
   }
 }
 
-type ProbeResult = {
+export type ProbeResult = {
   id:         number
   source:     string
   probe:      string
@@ -32,7 +32,7 @@ type ProbeResult = {
   created_at: string
 }
 
-type Stats = {
+export type Stats = {
   injected: boolean
   builder:  string
   method:   string
@@ -42,7 +42,7 @@ type Stats = {
   sources:  string[]
 }
 
-const Tag = ({ label, color }: { label: string; color: string }) => (
+export const Tag = ({ label, color }: { label: string; color: string }) => (
   <span style={{
     display: 'inline-block', padding: '2px 9px', borderRadius: 20,
     fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
@@ -50,6 +50,6 @@ const Tag = ({ label, color }: { label: string; color: string }) => (
   }}>{label}</span>
 )
 
-const InjectedBadge = ({ injected }: { injected: boolean }) => (
+export const InjectedBadge = ({ injected }: { injected: boolean }) => (
   <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
 )

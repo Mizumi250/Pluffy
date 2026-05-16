@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:32.394Z
+// Generated: 2026-05-16T10:20:40.042Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,7 +15,7 @@ import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 
-interface InventoryItem {
+export interface InventoryItem {
   id:          number
   name:        string
   sku:         string
@@ -27,14 +27,14 @@ interface InventoryItem {
   updated_at:  string
 }
 
-interface FormState {
+export interface FormState {
   name: string; sku: string; quantity: string
   price: string; category: string; description: string
 }
 
 const emptyForm: FormState = { name: '', sku: '', quantity: '', price: '', category: '', description: '' }
 
-const StatCard = ({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) => (
+export const StatCard = ({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) => (
   <div className="arkzen-card p-5 flex items-center gap-4">
     <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${color}`}>{icon}</div>
     <div>
@@ -44,7 +44,7 @@ const StatCard = ({ label, value, icon, color }: { label: string; value: string 
   </div>
 )
 
-const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit: (i: InventoryItem) => void; onDelete: (i: InventoryItem) => void }) => {
+export const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit: (i: InventoryItem) => void; onDelete: (i: InventoryItem) => void }) => {
   const stockVariant = item.quantity === 0 ? 'error' : item.quantity < 20 ? 'warning' : 'success'
   const stockLabel   = item.quantity === 0 ? 'Out of stock' : item.quantity < 20 ? 'Low stock' : 'In stock'
   return (

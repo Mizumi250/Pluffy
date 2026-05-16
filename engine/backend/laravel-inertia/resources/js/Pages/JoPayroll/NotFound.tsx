@@ -3,7 +3,7 @@
 // Inertia page rendered for unmatched sub-routes under this tatemono.
 // Registered as a catch-all route in routes/modules/jo-payroll.pages.php
 // DO NOT EDIT — edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-15T21:28:28.399Z
+// Generated: 2026-05-16T10:35:16.036Z
 // ============================================================
 
 import React from 'react'

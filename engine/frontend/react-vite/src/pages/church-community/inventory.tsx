@@ -2,20 +2,18 @@
 // ARKZEN GENERATED PAGE — church-community/inventory [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.404Z
+// Generated: 2026-05-16T10:20:39.580Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Bookmark, Calendar, Heart, Image as ImageIcon, Loader2, MessageCircle, Moon, MoreHorizontal, Plus, Search, Send, Share2, Sun, Trash2, Upload, UserPlus, X } from 'lucide-react'
+import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
+import { useNavigate } from 'react-router-dom'
 
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, Image as ImageIcon, Plus, Trash2, Search, X, Upload, Calendar, Loader2, Send, Sun, Moon, UserPlus } from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Theme tokens ─────────────────────────────────────────────────────────────
 
 export const LIGHT = {

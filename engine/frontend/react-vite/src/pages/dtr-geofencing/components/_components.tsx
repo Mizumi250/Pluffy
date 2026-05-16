@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — dtr-geofencing [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T06:39:31.945Z
+// Generated: 2026-05-16T10:20:39.806Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -38,7 +38,7 @@ export interface DtrSettings {
   geofence_radius_meters: number
 }
 
-interface DtrStore {
+export interface DtrStore {
   employees: Employee[]
   selectedEmployee: Employee | null
   myRecords: TimeRecord[]

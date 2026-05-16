@@ -2,20 +2,17 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:32.784Z
+// Generated: 2026-05-16T10:20:38.991Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, memo, useCallback } from 'react'
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-
-
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
+import { useNavigate } from 'react-router-dom'
 
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('broadcast-test')
 }

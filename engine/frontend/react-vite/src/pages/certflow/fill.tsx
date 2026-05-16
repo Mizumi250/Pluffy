@@ -2,27 +2,21 @@
 // ARKZEN GENERATED PAGE — certflow/fill [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:32.873Z
+// Generated: 2026-05-16T10:20:39.089Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { gsap } from 'gsap'
+import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, GraduationCap, LayoutTemplate, Link2, LogOut, Mail, Menu, PartyPopper, ScanLine, Trash2, Upload, UploadCloud, X, XCircle } from 'lucide-react'
+import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/certflow-app'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
+import { useNavigate } from 'react-router-dom'
 import './styles/global.css'
 
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
-import { gsap } from 'gsap'
-import {
-  GraduationCap, LayoutTemplate, ClipboardList, ScanLine,
-  Link2, FolderOpen, CheckCircle2, XCircle, Frown, PartyPopper,
-  Mail, Clock, Trash2, Copy, LogOut, Upload, UploadCloud,
-  Menu, X
-} from 'lucide-react'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {
   setActiveTatemono('certflow')
 }

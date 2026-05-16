@@ -2,25 +2,23 @@
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.873Z
+// Generated: 2026-05-16T10:20:40.045Z
 // ============================================================
 
-import React, { useRef, useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { Dialog } from '@/arkzen/core/components/Dialog'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { Badge } from '@/arkzen/core/components/utils'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
+import { useNavigate } from 'react-router-dom'
 
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
-import { Modal }      from '@/arkzen/core/components/Modal'
-import { Dialog }     from '@/arkzen/core/components/Dialog'
-import { Badge }      from '@/arkzen/core/components/utils'
-import { useToast }   from '@/arkzen/core/components/Toast'
-import { useQuery }   from '@/arkzen/core/hooks/useQuery'
-import { useMutation } from '@/arkzen/core/hooks/useMutation'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 interface InventoryItem {
   id:          number
   name:        string

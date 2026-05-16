@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T21:28:28.233Z
+// Generated: 2026-05-16T10:35:15.947Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

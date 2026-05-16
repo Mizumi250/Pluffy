@@ -2,25 +2,19 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-15T04:43:33.641Z
+// Generated: 2026-05-16T10:20:39.822Z
 // ============================================================
 
-import React, { useRef, useEffect, useState, useCallback } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useNavigate } from 'react-router-dom'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
+import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { useNavigate } from 'react-router-dom'
 
-
-// ── Shared components from @arkzen:components:shared ──────────────────────────
-import { create } from 'zustand'
-import {
-  MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw,
-  User as UserIcon, Clock, Loader2, Navigation, TrendingUp,
-  ChevronDown, LogIn, LogOut
-} from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
+// ── Shared components from @arkzen:components ─────────────────────────────────
 export interface Employee {
   id: number
   name: string
