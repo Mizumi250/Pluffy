@@ -55,6 +55,31 @@ export async function buildAstroTatemono(corePath: string): Promise<AstroBuildRe
     console.error(`[Arkzen Astro Builder] ✗ Page registration failed:`, message)
   }
 
+  // Clean up old .tsx files from src/pages/ after registering new islands
+  try {
+    const tatemonoDir = path.join(process.cwd(), 'src', 'pages', tatName)
+    if (fs.existsSync(tatemonoDir)) {
+      // Remove old component files (now in arkzen/generated/components/)
+      const componentsDir = path.join(tatemonoDir, 'components')
+      if (fs.existsSync(componentsDir)) {
+        fs.rmSync(componentsDir, { recursive: true })
+        console.log(`[Arkzen Astro Builder] ✓ Cleaned old components directory`)
+      }
+      
+      // Remove any loose .tsx files in the tatemono dir
+      const files = fs.readdirSync(tatemonoDir)
+      for (const file of files) {
+        if (file.endsWith('.tsx')) {
+          fs.unlinkSync(path.join(tatemonoDir, file))
+          console.log(`[Arkzen Astro Builder] ✓ Cleaned old island file: ${file}`)
+        }
+      }
+    }
+  } catch (e) {
+    // Non-fatal cleanup
+    console.log(`[Arkzen Astro Builder] ⚠ Could not clean old island files (non-fatal)`)
+  }
+
   const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
   if (isStatic) {
     steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Static tatemono — no backend' })

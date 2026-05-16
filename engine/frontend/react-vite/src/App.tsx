@@ -37,24 +37,6 @@ interface RegistryData {
   modules: TatemonoEntry[]
 }
 
-function getFallbackRegistry(): RegistryData {
-  const modules = [...new Set(ARKZEN_ROUTES.map(r => r.tatemono))]
-    .sort((a, b) => a.localeCompare(b))
-    .map(name => ({
-      name,
-      version: '1.0.0',
-      status: 'active' as const,
-      registered: new Date().toISOString(),
-      lastUpdated: new Date().toISOString(),
-    }))
-
-  return {
-    engine: 'vite',
-    project: 'arkzen',
-    modules,
-  }
-}
-
 const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: number }) => {
   const statusColor = {
     active:   'bg-emerald-50 text-emerald-600 dark:bg-emerald-950 dark:text-emerald-400',
@@ -130,11 +112,9 @@ function ArkzenHub() {
       if (res.ok) {
         const data = await res.json()
         setRegistry(data)
-        return
       }
-      setRegistry(getFallbackRegistry())
     } catch {
-      setRegistry(getFallbackRegistry())
+      // Engine might still be starting
     } finally {
       setLoading(false)
     }

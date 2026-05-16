@@ -3,13 +3,14 @@
 // Astro stack equivalent of vite-router.ts / router.ts.
 // Reads same ParsedTatemono, generates Astro-compatible output:
 //
-//   src/pages/{tat}/{page}.astro                   ← Astro page shell
-//   src/pages/{tat}/components/_components.tsx      ← React island barrel
-//   src/pages/{tat}/components/{Name}.tsx           ← per-component re-exports
-//   src/pages/{tat}/components/index.ts             ← components index
-//   src/pages/{tat}/not-found.astro                 ← 404 handler
-//   src/arkzen/generated/routes.ts                  ← route registry
-//   src/arkzen/generated/{name}.animations.ts       ← GSAP animations
+//   src/pages/{tat}/{page}.astro                           ← Astro page shells (only .astro files here)
+//   src/arkzen/generated/islands/{tat}_{page}.tsx          ← React island components
+//   src/arkzen/generated/islands/{tat}_404.tsx             ← 404 handler island
+//   src/arkzen/generated/components/{tat}/                 ← Shared component utilities
+//   src/arkzen/generated/styles/{tat}/                     ← Component styles
+//   arkzen/core/layouts/custom/{tat}-{name}.tsx            ← Custom layout components
+//   src/arkzen/generated/{name}.animations.ts              ← GSAP animations
+//   src/arkzen/generated/routes.ts                         ← Route registry
 //
 // KEY DIFFERENCES from vite-router / router:
 //   • Page shells are .astro files (frontmatter + HTML template)
@@ -260,10 +261,10 @@ function resolveImports(
 
 // ─── Component files (identical to vite-router) ──────────────────────────────
 
-function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: string): void {
+function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
   if (tatemono.components.length === 0) return
 
-  const componentsDir = path.join(baseDir, 'components')
+  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
   ensureDir(componentsDir)
 
   const rawSources = tatemono.components.map(c => normalizeForAstro(c.raw.trim()))
@@ -301,7 +302,7 @@ ${strippedSources.join('\n\n')}
     const fileName = `${compName}.tsx`
     const filePath = path.join(componentsDir, fileName)
     const cssImport = stylesByComponent.has(compName)
-      ? `import styles from '../styles/${compName}.module.css'\n`
+      ? `import styles from '../../styles/${compName}.module.css'\n`
       : ''
     const fileContent = `// ============================================================
 // ARKZEN GENERATED COMPONENT — ${compName}
@@ -327,9 +328,10 @@ ${cssImport}export { ${compName} } from './_components'
   } catch (e) { /* ignore */ }
 }
 
-function generateComponentsIndex(tatemono: ParsedTatemono, baseDir: string): void {
+function generateComponentsIndex(tatemono: ParsedTatemono): void {
   if (tatemono.components.length === 0) return
 
+  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
   const content = `// ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
@@ -338,7 +340,7 @@ function generateComponentsIndex(tatemono: ParsedTatemono, baseDir: string): voi
 
 export * from './_components'
 `
-  fs.writeFileSync(path.join(baseDir, 'components', 'index.ts'), content, 'utf-8')
+  fs.writeFileSync(path.join(componentsDir, 'index.ts'), content, 'utf-8')
   console.log(`[Arkzen Astro Router] ✓ Components index: index.ts`)
 }
 
@@ -461,7 +463,7 @@ function generateAstroPageShell(
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import ${islandName} from '${islandImportPath}'
+import ${islandName} from '${islandImportPath}.tsx'
 ${globalCss}
 ---
 
@@ -558,26 +560,27 @@ function generateNotFoundPage(tatemono: ParsedTatemono, handler: ArkzenErrorHand
   const islandName = `ArkzenNotFound_${toPascalCase(tatemono.meta.name)}`
   const raw        = normalizeForAstro(handler.raw).replace(/'use client'[;]?\n?/, '').trim()
 
-  // Generate the React island tsx file
+  // Generate the React island tsx file → src/arkzen/generated/islands/{tat}_404.tsx
+  const islandFileName = `${tatemono.meta.name}_404.tsx`
+  const islandPath = path.join(SRC_DIR, 'arkzen', 'generated', 'islands', islandFileName)
   const islandContent = `// ARKZEN GENERATED 404 ISLAND — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY.
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}'
 
 ${raw}
 
 export default NotFoundPage
 `
-
-  const islandPath = path.join(PAGES_DIR, tatemono.meta.name, '_NotFound.tsx')
+  ensureDir(path.dirname(islandPath))
   fs.writeFileSync(islandPath, islandContent, 'utf-8')
 
   // Return the Astro shell
   return `---
 // ARKZEN GENERATED 404 PAGE — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-import NotFoundIsland from './_NotFound'
+import NotFoundIsland from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
 <!doctype html>
@@ -694,11 +697,12 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
   ensureDir(tatemonoDir)
 
   // Component files (same as Vite — .tsx React islands)
-  generateIndividualComponentFiles(tatemono, tatemonoDir)
-  generateComponentsIndex(tatemono, tatemonoDir)
+  generateIndividualComponentFiles(tatemono)
+  generateComponentsIndex(tatemono)
 
-  // Style files
-  emitTatemonoStyles(tatemono, tatemonoDir, { loggerLabel: 'Arkzen Astro Router' })
+  // Style files → src/arkzen/generated/styles/{tat}/
+  const stylesDir = path.join(SRC_DIR, 'arkzen', 'generated', 'styles', tatemono.meta.name)
+  emitTatemonoStyles(tatemono, stylesDir, { loggerLabel: 'Arkzen Astro Router' })
 
   // 404 handler
   if (tatemono.errorHandlers) {
@@ -718,27 +722,30 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
   }
 
   // Generate each page
+  const islandsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'islands')
+  ensureDir(islandsDir)
+
   for (const page of tatemono.pages) {
     const isIndex   = page.name === 'index'
     const routePath = isIndex
       ? `/${tatemono.meta.name}`
       : `/${tatemono.meta.name}/${page.name}`
 
-    // 1. React island .tsx file
-    const islandFileName = isIndex ? 'index.tsx' : `${page.name}.tsx`
-    const islandPath     = path.join(tatemonoDir, islandFileName)
+    // 1. React island .tsx file → src/arkzen/generated/islands/{tat}_{page}.tsx
+    const islandFileName = `${tatemono.meta.name}_${isIndex ? 'index' : page.name}.tsx`
+    const islandPath     = path.join(islandsDir, islandFileName)
     const islandContent  = generateIslandFile(tatemono, page, animFnName)
     fs.writeFileSync(islandPath, islandContent, 'utf-8')
 
-    // 2. Astro page shell .astro file
+    // 2. Astro page shell .astro file → src/pages/{tat}/{page}.astro
     const astroFileName  = isIndex ? 'index.astro' : `${page.name}.astro`
     const astroPath      = path.join(tatemonoDir, astroFileName)
-    const islandImport   = `./${isIndex ? 'index' : page.name}`
+    const islandImport   = `@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}`
     const islandName     = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
     const astroContent   = generateAstroPageShell(tatemono, page, islandImport)
     fs.writeFileSync(astroPath, astroContent, 'utf-8')
 
-    console.log(`[Arkzen Astro Router] ✓ ${routePath} [${page.layout}] → ${astroFileName} + ${islandFileName}`)
+    console.log(`[Arkzen Astro Router] ✓ ${routePath} [${page.layout}] → ${astroFileName} + island/${islandFileName}`)
 
     _allRoutes.push({ name: `${tatemono.meta.name}/${page.name}`, path: routePath, layout: page.layout })
   }
@@ -765,6 +772,31 @@ export function unregisterAstroPages(tatName: string): void {
   if (fs.existsSync(tatemonoDir)) {
     fs.rmSync(tatemonoDir, { recursive: true })
     console.log(`[Arkzen Astro Router] ✓ Removed: ${tatemonoDir}`)
+  }
+
+  // Clean up island .tsx files from src/arkzen/generated/islands/
+  const islandsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'islands')
+  if (fs.existsSync(islandsDir)) {
+    const files = fs.readdirSync(islandsDir)
+    for (const file of files) {
+      if (file.startsWith(tatName + '_') && file.endsWith('.tsx')) {
+        fs.unlinkSync(path.join(islandsDir, file))
+      }
+    }
+  }
+
+  // Clean up component directory
+  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatName)
+  if (fs.existsSync(componentsDir)) {
+    fs.rmSync(componentsDir, { recursive: true })
+    console.log(`[Arkzen Astro Router] ✓ Removed components: ${componentsDir}`)
+  }
+
+  // Clean up styles directory
+  const stylesDir = path.join(SRC_DIR, 'arkzen', 'generated', 'styles', tatName)
+  if (fs.existsSync(stylesDir)) {
+    fs.rmSync(stylesDir, { recursive: true })
+    console.log(`[Arkzen Astro Router] ✓ Removed styles: ${stylesDir}`)
   }
 
   const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)

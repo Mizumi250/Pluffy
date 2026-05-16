@@ -3,6 +3,8 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
+      "@/arkzen/core/*": ["./arkzen/core/*"],
+      "@/arkzen/generated/*": ["./src/arkzen/generated/*"],
       "@/*": ["./src/*"]
     },
     "jsx": "react-jsx",

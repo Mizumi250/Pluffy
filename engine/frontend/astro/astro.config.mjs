@@ -4,17 +4,19 @@
 
 import { defineConfig } from 'astro/config'
 import react            from '@astrojs/react'
-import tailwind         from '@astrojs/tailwind'
+import tailwindcss      from '@tailwindcss/vite'
 
 export default defineConfig({
   // React integration for island components
   integrations: [
     react(),
-    tailwind(),
   ],
 
   // Vite config (shared with the Arkzen dev proxy)
   vite: {
+    plugins: [
+      tailwindcss(),
+    ],
     server: {
       proxy: {
         '/api': {
@@ -34,8 +36,7 @@ export default defineConfig({
     },
   },
 
-  // Output: hybrid (pages can be static or SSR individually)
-  // Switch to 'static' for fully static output
-  // Switch to 'server' for full SSR (requires Node adapter)
-  output: 'hybrid',
+  // Output: static (default for Astro 6)
+  // For SSR, use 'server' with Node adapter
+  output: 'static',
 })
