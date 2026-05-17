@@ -1,0 +1,45 @@
+{
+  "name": "arkzen-tanstack-start-engine",
+  "version": "1.0.0",
+  "description": "Arkzen Engine — TanStack Start stack. Same tatemono DSL, TanStack Start SSR/SPA.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "sync:shared": "tsx arkzen/sync.ts",
+    "arkzen": "tsx watch arkzen.ts",
+    "dev": "npm run sync:shared && concurrently \"npm run arkzen\" \"vinxi dev\"",
+    "build": "npm run sync:shared && vinxi build",
+    "start": "vinxi start",
+    "preview": "vinxi start"
+  },
+  "dependencies": {
+    "@tanstack/react-router": "^1.85.0",
+    "@tanstack/start": "^1.85.0",
+    "chokidar": "^3.6.0",
+    "framer-motion": "^11.0.0",
+    "gsap": "^3.12.0",
+    "js-yaml": "^4.1.0",
+    "laravel-echo": "^2.3.4",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^0.400.0",
+    "pusher-js": "^8.5.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "shaders": "^2.5.124",
+    "vinxi": "^0.5.3",
+    "zustand": "^5.0.12"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.0.0",
+    "@types/js-yaml": "^4.0.0",
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^20.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "@vitejs/plugin-react": "^4.3.0",
+    "concurrently": "^8.2.2",
+    "tailwindcss": "^4.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.0.0"
+  }
+}

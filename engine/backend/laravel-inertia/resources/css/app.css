@@ -5,10 +5,8 @@
 
 @import 'tailwindcss';
 
-/* ─── Source scanning (Tailwind v4 explicit @source) ─────────── */
-@source './resources/views/**/*.blade.php';
-@source './resources/js/Pages/**/*.tsx';
-@source './resources/js/arkzen/**/*.{ts,tsx}';
+@source '../views/**/*.blade.php';
+@source '../js/**/*.{ts,tsx}';
 
 /* ─── Theme tokens (Tailwind v4 @theme) ──────────────────────── */
 @theme {

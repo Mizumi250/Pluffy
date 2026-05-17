@@ -1,0 +1,216 @@
+/* ============================================================
+   ARKZEN ENGINE — GLOBAL STYLES (TanStack Start stack)
+   Tailwind v4 syntax. @source paths relative to this file:
+   src/index.css → up two levels to project root.
+   ============================================================ */
+
+@import 'tailwindcss';
+
+/* ─── Source scanning (Tailwind v4 explicit @source) ─────────── */
+@source '../**/*.{ts,tsx}';
+@source '../../arkzen/**/*.{ts,tsx}';
+
+/* ─── Theme tokens (Tailwind v4 @theme) ──────────────────────── */
+@theme {
+  --font-sans:    'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Cal Sans', 'Inter Variable', ui-sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+}
+
+/* ─── CSS Custom Properties (Arkzen design tokens) ───────────── */
+:root {
+  /* Colors */
+  --color-primary:   #0a0a0a;
+  --color-secondary: #404040;
+  --color-accent:    #3b82f6;
+  --color-surface:   #ffffff;
+  --color-border:    #e5e7eb;
+  --color-muted:     #6b7280;
+
+  /* Spacing / Radius */
+  --radius-sm:  0.375rem;
+  --radius-md:  0.75rem;
+  --radius-lg:  1rem;
+  --radius-xl:  1.5rem;
+  --radius-2xl: 1rem;
+
+  /* Shadows */
+  --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl:  0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+}
+
+/* ─── Dark Mode ──────────────────────────────────────────────── */
+.dark {
+  --color-primary:   #fafafa;
+  --color-secondary: #a3a3a3;
+  --color-surface:   #0a0a0a;
+  --color-border:    #262626;
+  --color-muted:     #737373;
+}
+
+/* ─── Base resets ────────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+}
+
+/* ─── Scrollbar ──────────────────────────────────────────────── */
+::-webkit-scrollbar        { width: 6px; height: 6px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: #d1d5db; border-radius: 999px; }
+.dark ::-webkit-scrollbar-thumb { background: #374151; }
+
+/* ─── Selection ──────────────────────────────────────────────── */
+::selection      { background: #0a0a0a; color: #ffffff; }
+.dark ::selection { background: #ffffff; color: #0a0a0a; }
+
+/* ─── Focus ring ─────────────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* ─── Arkzen utility classes (Tailwind v4 @utility) ──────────── */
+@utility arkzen-page {
+  min-height: 100vh;
+}
+
+@utility arkzen-container {
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  padding-block: 2rem;
+}
+
+@utility arkzen-section {
+  margin-bottom: 2rem;
+}
+
+@utility arkzen-card {
+  background-color: #ffffff;
+  border-radius: 1rem;
+  border: 1px solid #f3f4f6;
+}
+
+@utility arkzen-input {
+  width: 100%;
+  padding: 0.625rem 0.875rem;
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: #ffffff;
+  color: #111827;
+  transition: box-shadow 0.15s ease;
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #111827;
+    border-color: transparent;
+  }
+}
+
+@utility arkzen-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  background-color: #111827;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  &:hover { background-color: #374151; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+@utility arkzen-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: transparent;
+  color: #374151;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  &:hover { background-color: #f9fafb; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+@utility arkzen-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  background-color: #dc2626;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+  &:hover { background-color: #b91c1c; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+
+/* ─── Dark mode overrides for arkzen utilities ───────────────── */
+.dark .arkzen-card {
+  background-color: #111827;
+  border-color: #1f2937;
+}
+
+.dark .arkzen-input {
+  background-color: #111827;
+  border-color: #374151;
+  color: #f9fafb;
+}
+
+.dark .arkzen-input:focus {
+  box-shadow: 0 0 0 2px #ffffff;
+}
+
+.dark .arkzen-btn-primary {
+  background-color: #ffffff;
+  color: #111827;
+}
+
+.dark .arkzen-btn-primary:hover {
+  background-color: #f3f4f6;
+}
+
+.dark .arkzen-btn-secondary {
+  border-color: #374151;
+  color: #d1d5db;
+}
+
+.dark .arkzen-btn-secondary:hover {
+  background-color: #1f2937;
+}

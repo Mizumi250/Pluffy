@@ -309,5 +309,5 @@ process.on('SIGUSR1', () => {
 
 console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
 console.log(`  Engine watches:   engine/frontend/${activeStack}/`)
-console.log(`  Active stack:     ${activeStack} (change in arkzen.json)`)
+console.log(`  Active stack:     ${activeStack} (change in arkzen.json or: node arkzen.js switch <stack>)`)
 console.log('  Export project:   node export.js project-name\n')
