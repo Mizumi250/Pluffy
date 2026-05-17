@@ -5,38 +5,41 @@
 import { defineConfig } from 'astro/config'
 import react            from '@astrojs/react'
 import tailwindcss      from '@tailwindcss/vite'
+import node             from '@astrojs/node'
 
 export default defineConfig({
-  // React integration for island components
   integrations: [
     react(),
   ],
 
-  // Vite config (shared with the Arkzen dev proxy)
+  adapter: node({ mode: 'standalone' }),
+  output: 'server',
+
   vite: {
     plugins: [
       tailwindcss(),
     ],
     server: {
-      proxy: {
-        '/api': {
-          target: 'http://localhost:8000',
-          changeOrigin: true,
-        },
-        '/broadcasting': {
-          target: 'http://localhost:8000',
-          changeOrigin: true,
-        },
+  proxy: {
+    '/api': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+      bypass: (req) => {
+        if (req.url?.startsWith('/api/arkzen')) return req.url
+        return null
       },
     },
+    '/broadcasting': {
+      target: 'http://localhost:8000',
+      changeOrigin: true,
+    },
+  },
+},
     resolve: {
       alias: {
         '@': new URL('./src', import.meta.url).pathname,
+        '@/arkzen/core': new URL('./arkzen/core', import.meta.url).pathname,
       },
     },
   },
-
-  // Output: static (default for Astro 6)
-  // For SSR, use 'server' with Node adapter
-  output: 'static',
 })

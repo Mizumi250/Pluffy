@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — UploadedFileController
 // Tatemono: upload-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T01:23:48.810903Z
+// Generated: 2026-05-17T02:28:58.135314Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\UploadTest;

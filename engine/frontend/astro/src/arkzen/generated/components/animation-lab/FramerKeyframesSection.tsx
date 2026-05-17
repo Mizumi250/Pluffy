@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerKeyframesSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T01:23:43.045Z
+// Generated: 2026-05-17T02:28:54.114Z
 // ============================================================
 
 export { FramerKeyframesSection } from './_components'
