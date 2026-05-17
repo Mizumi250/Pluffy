@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — portfolio-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T10:35:16.561Z
+// Generated: 2026-05-17T06:40:00.242Z
 // Pages: index
 // ============================================================
 

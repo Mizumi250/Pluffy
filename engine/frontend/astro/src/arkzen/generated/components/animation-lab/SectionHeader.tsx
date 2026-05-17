@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T03:10:00.712Z
+// Generated: 2026-05-17T06:39:13.985Z
 // ============================================================
 
 export { SectionHeader } from './_components'
