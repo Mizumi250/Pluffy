@@ -704,6 +704,27 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
   const islandsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'islands')
   ensureDir(islandsDir)
 
+  // Root redirect — if no page is named 'index', generate an index.astro
+  // that redirects /{tat} → /{tat}/{firstPage}, same as Next.js behaviour.
+  const hasIndexPage = tatemono.pages.some(p => p.name === 'index')
+  if (!hasIndexPage && tatemono.pages.length > 0) {
+    const firstPage    = tatemono.pages[0].name
+    const redirectDest = `/${tatemono.meta.name}/${firstPage}`
+    const redirectContent = `---
+// ============================================================
+// ARKZEN GENERATED ROOT REDIRECT — ${tatemono.meta.name}
+// Visiting /${tatemono.meta.name} redirects to ${redirectDest}
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+return Astro.redirect('${redirectDest}')
+---
+`
+    fs.writeFileSync(path.join(tatemonoDir, 'index.astro'), redirectContent, 'utf-8')
+    console.log(`[Arkzen Astro Router] ✓ Root redirect: /${tatemono.meta.name} → ${redirectDest}`)
+  }
+
   for (const page of tatemono.pages) {
     const isIndex   = page.name === 'index'
     const routePath = isIndex
