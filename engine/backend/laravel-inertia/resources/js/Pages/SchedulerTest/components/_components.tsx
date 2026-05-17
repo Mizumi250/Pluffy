@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T07:58:02.478Z
+// Generated: 2026-05-17T13:37:08.256Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

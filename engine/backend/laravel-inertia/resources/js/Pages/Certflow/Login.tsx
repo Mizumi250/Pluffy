@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-17T07:57:59.222Z
+// Generated: 2026-05-17T13:37:05.444Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

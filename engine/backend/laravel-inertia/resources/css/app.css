@@ -1,12 +1,14 @@
+@import 'tailwindcss';
+
+@source '../views';
+@source '../js';
+
 /* ============================================================
    ARKZEN ENGINE — GLOBAL STYLES (React+Inertia stack)
    Tailwind v4 syntax. Design system variables from arkzen.config.
    ============================================================ */
 
-@import 'tailwindcss';
 
-@source '../views/**/*.blade.php';
-@source '../js/**/*.{ts,tsx}';
 
 /* ─── Theme tokens (Tailwind v4 @theme) ──────────────────────── */
 @theme {

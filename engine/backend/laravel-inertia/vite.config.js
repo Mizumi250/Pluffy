@@ -6,12 +6,12 @@ import path from 'path'
 
 export default defineConfig({
     plugins: [
+        tailwindcss(),
         laravel({
-            input: ['resources/js/app.tsx'],
+            input: ['resources/css/app.css', 'resources/js/app.tsx'], // ← add app.css
             refresh: true,
         }),
         react(),
-        tailwindcss(),
     ],
     resolve: {
         alias: [
@@ -35,7 +35,7 @@ export default defineConfig({
     server: {
         host: '0.0.0.0',
         port: 5173,
-        origin: 'http://127.0.0.1:5173',
+        origin: 'http://localhost:5173',
         cors: {
             origin: 'http://localhost:8000',
         },
