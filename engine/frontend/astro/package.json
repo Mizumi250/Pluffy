@@ -11,7 +11,7 @@
     "preview": "astro preview"
   },
   "dependencies": {
-    "@astrojs/react": "^3.6.0",
+    "@astrojs/react": "^4.0.0",
     "@tailwindcss/vite": "^4.0.0",
     "astro": "^6.3.3",
     "axios": "^1.7.3",

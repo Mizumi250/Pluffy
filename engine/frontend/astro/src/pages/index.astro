@@ -5,21 +5,10 @@
 // DO NOT EDIT DIRECTLY. This is a built-in component.
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import HubIsland from '@/arkzen/generated/islands/hub'
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Arkzen Hub</title>
-    <style>
-      @import "tailwindcss";
-      @source "../pages/**/*.astro" "../arkzen/**/*.{tsx,ts}";
-    </style>
-  </head>
-  <body>
-    <HubIsland client:load />
-  </body>
-</html>
+<RootLayout title="Arkzen Hub">
+  <HubIsland client:load />
+</RootLayout>

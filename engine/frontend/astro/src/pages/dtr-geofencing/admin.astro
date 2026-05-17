@@ -3,26 +3,13 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T23:55:45.273Z
+// Generated: 2026-05-17T01:23:45.907Z
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import ArkzenIsland_DtrGeofencing_Admin from '@/arkzen/generated/islands/dtr-geofencing_admin.tsx'
-
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>DtrGeofencing — Admin</title>
-  </head>
-  <body>
-    <!--
-      client:load — React island hydrates immediately on page load.
-      Change to client:idle for non-critical pages (better performance).
-      Change to client:visible for below-the-fold sections.
-    -->
-    <ArkzenIsland_DtrGeofencing_Admin client:load />
-  </body>
-</html>
+<RootLayout title="DtrGeofencing — Admin">
+  <ArkzenIsland_DtrGeofencing_Admin client:load />
+</RootLayout>

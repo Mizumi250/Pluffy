@@ -1,0 +1,29 @@
+---
+// ============================================================
+// ARKZEN ROOT LAYOUT — Astro Stack
+// HTML document shell. Mirrors Next.js app/layout.tsx.
+// Imports globals.css once so every page gets Tailwind.
+// Lives in arkzen/core/layouts/ alongside other layouts.
+// DO NOT EDIT DIRECTLY.
+// ============================================================
+
+import '@/styles/globals.css'
+
+interface Props {
+  title?: string
+}
+
+const { title = 'Arkzen' } = Astro.props
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

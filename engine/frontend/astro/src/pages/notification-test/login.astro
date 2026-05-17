@@ -3,26 +3,13 @@
 // ARKZEN GENERATED PAGE — notification-test/login
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T23:55:46.518Z
+// Generated: 2026-05-17T01:23:47.095Z
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import ArkzenIsland_NotificationTest_Login from '@/arkzen/generated/islands/notification-test_login.tsx'
-
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>NotificationTest — Login</title>
-  </head>
-  <body>
-    <!--
-      client:load — React island hydrates immediately on page load.
-      Change to client:idle for non-critical pages (better performance).
-      Change to client:visible for below-the-fold sections.
-    -->
-    <ArkzenIsland_NotificationTest_Login client:load />
-  </body>
-</html>
+<RootLayout title="NotificationTest — Login">
+  <ArkzenIsland_NotificationTest_Login client:load />
+</RootLayout>

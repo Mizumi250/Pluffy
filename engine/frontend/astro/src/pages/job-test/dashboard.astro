@@ -3,26 +3,13 @@
 // ARKZEN GENERATED PAGE — job-test/dashboard
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T23:55:46.087Z
+// Generated: 2026-05-17T01:23:46.763Z
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import ArkzenIsland_JobTest_Dashboard from '@/arkzen/generated/islands/job-test_dashboard.tsx'
-
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JobTest — Dashboard</title>
-  </head>
-  <body>
-    <!--
-      client:load — React island hydrates immediately on page load.
-      Change to client:idle for non-critical pages (better performance).
-      Change to client:visible for below-the-fold sections.
-    -->
-    <ArkzenIsland_JobTest_Dashboard client:load />
-  </body>
-</html>
+<RootLayout title="JobTest — Dashboard">
+  <ArkzenIsland_JobTest_Dashboard client:load />
+</RootLayout>

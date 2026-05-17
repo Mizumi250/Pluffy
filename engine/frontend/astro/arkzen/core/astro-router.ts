@@ -452,8 +452,6 @@ function generateAstroPageShell(
 ): string {
   const islandName = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
   const title      = `${toPascalCase(tatemono.meta.name)} — ${toPascalCase(page.name)}`
-  const globalCss  = tatemono.styles.some(s => !s.name)
-    ? `import '../styles/global.css'` : ''
 
   return `---
 // ============================================================
@@ -463,26 +461,13 @@ function generateAstroPageShell(
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import ${islandName} from '${islandImportPath}.tsx'
-${globalCss}
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>${title}</title>
-  </head>
-  <body>
-    <!--
-      client:load — React island hydrates immediately on page load.
-      Change to client:idle for non-critical pages (better performance).
-      Change to client:visible for below-the-fold sections.
-    -->
-    <${islandName} client:load />
-  </body>
-</html>
+<RootLayout title="${title}">
+  <${islandName} client:load />
+</RootLayout>
 `
 }
 
@@ -580,19 +565,13 @@ export default NotFoundPage
   return `---
 // ARKZEN GENERATED 404 PAGE — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
+import RootLayout from '@/RootLayout.astro'
 import NotFoundIsland from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Not Found — ${toPascalCase(tatemono.meta.name)}</title>
-  </head>
-  <body>
-    <NotFoundIsland client:load />
-  </body>
-</html>
+<RootLayout title="Not Found — ${toPascalCase(tatemono.meta.name)}">
+  <NotFoundIsland client:load />
+</RootLayout>
 `
 }
 

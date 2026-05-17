@@ -3,26 +3,13 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T23:55:45.766Z
+// Generated: 2026-05-17T01:23:46.482Z
 // ============================================================
 
+import RootLayout from '@/RootLayout.astro'
 import ArkzenIsland_JoPayroll_CashAtm from '@/arkzen/generated/islands/jo-payroll_cash-atm.tsx'
-
 ---
 
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>JoPayroll — CashAtm</title>
-  </head>
-  <body>
-    <!--
-      client:load — React island hydrates immediately on page load.
-      Change to client:idle for non-critical pages (better performance).
-      Change to client:visible for below-the-fold sections.
-    -->
-    <ArkzenIsland_JoPayroll_CashAtm client:load />
-  </body>
-</html>
+<RootLayout title="JoPayroll — CashAtm">
+  <ArkzenIsland_JoPayroll_CashAtm client:load />
+</RootLayout>
