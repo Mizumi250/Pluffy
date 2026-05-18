@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.222Z
+// Generated: 2026-05-18T13:18:23.657Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -91,7 +91,7 @@ const RegisterPage = () => {
     try {
       await register(name, email, password, password)
       toastSuccess('Account created')
-      router('/body-mail-notification/dashboard')
+      router.push('/body-mail-notification/dashboard')
     } catch (err) {
       toastError(err instanceof Error ? err.message : 'Registration failed')
     }

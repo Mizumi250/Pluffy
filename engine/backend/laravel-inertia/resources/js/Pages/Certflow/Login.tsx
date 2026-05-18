@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.960Z
+// Generated: 2026-05-18T13:18:27.648Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -738,7 +738,7 @@ const LoginPage = () => {
     try {
       await login(email, password)
       toast('Welcome back!', 'ok')
-      router('/certflow/dashboard')
+      router.push('/certflow/dashboard')
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed')
     }

@@ -29,7 +29,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {NAV.map(({ href, label }) => (
               <button
                 key={href}
-                onClick={() => router(href)}
+                onClick={() => router.push(href)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                   pathname === href
                     ? 'bg-white/10 text-white'
@@ -52,7 +52,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             {NAV.map(({ href, label, icon: Icon }) => (
               <button
                 key={href}
-                onClick={() => { router(href); setOpen(false) }}
+                onClick={() => { router.push(href); setOpen(false) }}
                 className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm font-medium text-white/60 hover:text-white hover:bg-white/5 transition-all text-left"
               >
                 <Icon size={15} /> {label}

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — job-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:16.698Z
+// Generated: 2026-05-18T13:18:30.357Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

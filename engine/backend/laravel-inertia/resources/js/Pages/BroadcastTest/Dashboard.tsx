@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.820Z
+// Generated: 2026-05-18T13:18:24.154Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
@@ -312,7 +312,7 @@ const DashboardPage = () => {
     wsRef.current?.close()
     await logout()
     router.refresh()
-    router('/broadcast-test/login')
+    router.replace('/broadcast-test/login')
   }
 
   // ── useCallback send handlers — stable references, won't cause ChannelPanel to re-render

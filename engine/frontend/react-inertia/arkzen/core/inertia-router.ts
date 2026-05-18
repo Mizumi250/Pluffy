@@ -85,17 +85,10 @@ function stripReactRouterImports(raw: string): string {
     .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*\r?\n?/gm, '')
 }
 
-// Normalize useNavigate().push/replace → plain call — mirrors vite-router.ts
+// useArkzenRouter() returns { push, replace } object interface.
+// Do NOT normalize calls — keep .push() and .replace() as-is.
 function normalizeRouterCalls(raw: string): string {
-  let out = raw
-  const navigateVars = [...out.matchAll(/\bconst\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*useArkzenRouter\(\)/g)]
-    .map(m => m[1])
-  for (const varName of navigateVars) {
-    out = out
-      .replace(new RegExp(`\\b${varName}\\.push\\(`, 'g'), `${varName}(`)
-      .replace(new RegExp(`\\b${varName}\\.replace\\(`, 'g'), `${varName}(`)
-  }
-  return out
+  return raw
 }
 
 function normalizeForInertia(raw: string): string {

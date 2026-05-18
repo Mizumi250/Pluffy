@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.220Z
+// Generated: 2026-05-18T13:18:23.656Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -90,7 +90,7 @@ const LoginPage = () => {
     try {
       await login(email, password)
       toastSuccess('Logged in')
-      router('/body-mail-notification/dashboard')
+      router.push('/body-mail-notification/dashboard')
     } catch (err) {
       toastError(err instanceof Error ? err.message : 'Invalid credentials')
     }

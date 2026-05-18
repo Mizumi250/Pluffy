@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.224Z
+// Generated: 2026-05-18T13:18:23.659Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -144,7 +144,7 @@ const DashboardPage = () => {
     } catch { toastError('Clear failed') }
   }
 
-  const handleLogout = async () => { await logout(); router('/body-mail-notification') }
+  const handleLogout = async () => { await logout(); router.push('/body-mail-notification') }
 
   const card: React.CSSProperties = {
     background: '#fff', borderRadius: 14, padding: 28,

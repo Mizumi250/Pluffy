@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T13:03:13.421Z
+// Generated: 2026-05-18T13:18:23.054Z
 // ============================================================
 
 export { GSAPHover3DSection } from './_components'

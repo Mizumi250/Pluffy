@@ -60,7 +60,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
             return (
               <button
                 key={href}
-                onClick={() => router(href)}
+                onClick={() => router.push(href)}
                 className="flex flex-col items-center gap-1 px-4 py-2 rounded-xl transition-all"
               >
                 <div style={{

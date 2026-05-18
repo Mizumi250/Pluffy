@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:03:14.968Z
+// Generated: 2026-05-18T13:18:27.659Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -868,7 +868,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    router('/certflow/login')
+    router.push('/certflow/login')
   }
 
   const glassCard = {
