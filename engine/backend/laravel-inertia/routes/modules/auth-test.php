@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/auth-test/auth')->group
 // ============================================================
 // ARKZEN GENERATED ROUTES — auth-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:04:21.184003Z
+// Generated: 2026-05-18T12:31:44.970733Z
 // Resources: 
 // Custom controllers: 
 // ============================================================

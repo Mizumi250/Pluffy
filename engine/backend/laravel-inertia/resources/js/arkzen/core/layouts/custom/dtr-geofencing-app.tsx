@@ -4,6 +4,7 @@
 import React, { useState } from 'react'
 import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
 
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },
   { href: '/dtr-geofencing/admin', label: 'Admin',        icon: Settings },

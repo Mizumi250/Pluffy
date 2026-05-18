@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — roles-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:04:25.863Z
+// Generated: 2026-05-18T12:31:48.010Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

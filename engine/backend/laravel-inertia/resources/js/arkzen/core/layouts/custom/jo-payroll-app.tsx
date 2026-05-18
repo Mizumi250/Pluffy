@@ -4,6 +4,7 @@
 import React, { useEffect, useState } from 'react'
 import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/jo-payroll/job-database', label: 'JO Database',  icon: Database        },

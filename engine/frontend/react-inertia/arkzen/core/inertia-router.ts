@@ -526,6 +526,39 @@ export * from './_components'
   console.log(`[Arkzen Inertia Router] ✓ Components index: index.ts`)
 }
 
+// ─── Ensure Arkzen adapter imports ───────────────────────────────────────────
+// After resolveImports strips old imports and normalizeForInertia replaces
+// usePathname() → useArkzenPathname() and useRouter → useArkzenRouter,
+// we must re-inject the imports for the Arkzen adapter hooks. Mirrors Vite's
+// ensureRouterDomImports() pattern but for @/arkzen/core/adapters/router.
+
+function ensureArkzenAdapterImports(raw: string): string {
+  const needsPathname = /\buseArkzenPathname\s*\(/.test(raw)
+  const needsRouter   = /\buseArkzenRouter\s*[\({]/.test(raw)
+
+  if (!needsPathname && !needsRouter) return raw
+
+  const needed = [
+    needsPathname && 'useArkzenPathname',
+    needsRouter   && 'useArkzenRouter',
+  ].filter(Boolean) as string[]
+
+  const importRegex = /^import\s+\{([^}]*)\}\s+from\s+['"]@\/arkzen\/core\/adapters\/router['"][ \t]*;?[ \t]*$/m
+  const existing = raw.match(importRegex)
+
+  if (!existing) {
+    return `import { ${needed.join(', ')} } from '@/arkzen/core/adapters/router'\n${raw}`
+  }
+
+  const existingSpecifiers = existing[1]
+    .split(',')
+    .map(s => s.trim())
+    .filter(Boolean)
+
+  const merged = [...new Set([...existingSpecifiers, ...needed])].sort()
+  return raw.replace(importRegex, `import { ${merged.join(', ')} } from '@/arkzen/core/adapters/router'`)
+}
+
 // ─── Custom layouts ───────────────────────────────────────────────────────────
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
@@ -542,12 +575,15 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
       { reactHooks: [], framerNamed: [] }
     )
 
+    // Ensure Arkzen adapter imports are present in the stripped body
+    const bodyWithAdapterImports = ensureArkzenAdapterImports(strippedSources[0])
+
     const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Inertia]
 // Generated from tatemono: ${tatemono.meta.name}
 
 ${canonicalBlock}
 
-${strippedSources[0]}
+${bodyWithAdapterImports}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Inertia Router] ✓ Custom layout: ${fileName}`)
@@ -568,7 +604,7 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
     [normalizeForInertia(handler.raw)],
     { reactHooks: [], framerNamed: [] }
   )
-  const cleanRaw = strippedSources[0]
+  const cleanRaw = ensureArkzenAdapterImports(strippedSources[0])
 
   return `// ============================================================
 // ARKZEN GENERATED — ${tatemono.meta.name}/NotFound.tsx [React+Inertia]
@@ -593,7 +629,7 @@ function generateErrorBoundaryFile(tatemono: ParsedTatemono, handler: ArkzenErro
     [normalizeForInertia(handler.raw)],
     { reactHooks: [], framerNamed: [] }
   )
-  const cleanRaw = strippedSources[0]
+  const cleanRaw = ensureArkzenAdapterImports(strippedSources[0])
 
   return `// ============================================================
 // ARKZEN GENERATED — ${tatemono.meta.name}/ErrorBoundary.tsx [React+Inertia]

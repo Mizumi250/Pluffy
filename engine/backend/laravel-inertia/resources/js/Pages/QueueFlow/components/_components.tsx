@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:04:25.652Z
+// Generated: 2026-05-18T12:31:47.880Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
