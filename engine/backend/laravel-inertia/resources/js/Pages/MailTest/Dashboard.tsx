@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:18:30.439Z
+// Generated: 2026-05-18T20:54:25.533Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -116,7 +116,7 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    router.replace('/mail-test/login')
+    router.visit('/mail-test/login', { replace: true })
   }
 
   const formatTime = (ts: string) => {

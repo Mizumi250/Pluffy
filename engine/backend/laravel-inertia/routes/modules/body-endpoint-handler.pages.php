@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — body-endpoint-handler [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T13:18:23.317Z
+// Generated: 2026-05-18T20:54:22.423Z
 // Pages: index
 // ============================================================
 

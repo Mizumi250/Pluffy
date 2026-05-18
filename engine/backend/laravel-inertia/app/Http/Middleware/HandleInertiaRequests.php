@@ -41,6 +41,13 @@ class HandleInertiaRequests extends Middleware
             // Tatemono slug — needed to initialize Zustand auth store with correct localStorage key
             'arkzen' => [
                 'tatemono' => $tatemono,
+                // Reverb config — passed to frontend so broadcast-test works correctly
+                'reverb' => [
+                    'host'   => env('REVERB_HOST', 'localhost'),
+                    'port'   => env('REVERB_PORT', '8080'),
+                    'scheme' => env('REVERB_SCHEME', 'ws'),
+                    'appKey' => env('REVERB_APP_KEY', 'arkzen-key'),
+                ],
             ],
 
             // Auth: current user available on every page as props.auth.user

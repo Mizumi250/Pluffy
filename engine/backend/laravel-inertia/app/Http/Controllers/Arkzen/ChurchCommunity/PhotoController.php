@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — PhotoController
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T13:18:29.613487Z
+// Generated: 2026-05-18T20:54:24.528837Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;

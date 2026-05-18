@@ -85,10 +85,14 @@ function stripReactRouterImports(raw: string): string {
     .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*\r?\n?/gm, '')
 }
 
-// useArkzenRouter() returns { push, replace } object interface.
-// Do NOT normalize calls — keep .push() and .replace() as-is.
+// Convert Next.js router calls to Inertia calls
+// router.refresh() → window.location.reload() (full page reload)
+// router.replace(path) → router.visit(path, { replace: true })
+// Note: router.push(path) already gets converted to router(path) by the hook conversion
 function normalizeRouterCalls(raw: string): string {
   return raw
+    .replace(/\brouter\.refresh\(\)/g, 'window.location.reload()')
+    .replace(/\brouter\.replace\(([^)]+)\)/g, 'router.visit($1, { replace: true })')
 }
 
 function normalizeForInertia(raw: string): string {

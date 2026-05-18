@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — auth-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:18:23.146Z
+// Generated: 2026-05-18T20:54:22.094Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -35,8 +35,8 @@ const DashboardPage = () => {
 
   const handleLogout = async () => {
     await logout();
-    router.refresh();
-    router.replace('/auth-test/login');
+    window.location.reload();
+    router.visit('/auth-test/login', { replace: true });
   };
 
   return (

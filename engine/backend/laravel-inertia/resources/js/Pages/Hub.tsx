@@ -11,7 +11,6 @@
 
 import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { router } from '@inertiajs/react'
 import {
   Layers, Play, Clock,
   CheckCircle, AlertCircle, Plus, Terminal,
@@ -45,7 +44,7 @@ const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: num
     error:    AlertCircle,
   }[tatemono.status]
 
-  // Inertia uses server-side routes — navigate via router.visit
+  // Hub opens tatemono in new window (consistent with Vite & Next.js)
   const routePath = `/${tatemono.name}`
 
   return (
@@ -54,7 +53,7 @@ const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: num
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.08, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
       className="group relative bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-lg hover:shadow-black/5 hover:-translate-y-0.5 transition-all duration-300 cursor-pointer"
-      onClick={() => router.visit(routePath)}
+      onClick={() => window.open(routePath, '_blank')}
     >
       <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium mb-4 ${statusColor}`}>
         <StatusIcon size={11} />
@@ -73,7 +72,7 @@ const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: num
 
       <div className="flex gap-2">
         <button
-          onClick={(e) => { e.stopPropagation(); router.visit(routePath) }}
+          onClick={(e) => { e.stopPropagation(); window.open(routePath, '_blank') }}
           className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl bg-neutral-900 text-white hover:bg-neutral-700 transition-colors"
         >
           <Play size={11} />

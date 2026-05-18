@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T13:18:30.638Z
+// Generated: 2026-05-18T20:54:25.819Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -228,8 +228,8 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     wsRef.current?.close()
     await logout()
-    router.refresh()
-    router.replace('/notification-test/login')
+    window.location.reload()
+    router.visit('/notification-test/login', { replace: true })
   }
 
   const statusColor = {

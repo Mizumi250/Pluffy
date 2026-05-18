@@ -38,6 +38,22 @@ createInertiaApp({
         setActiveTatemono(tatemono)
         console.log('[Arkzen Inertia] Tatemono slug initialized:', tatemono)
 
+        // Populate process.env.NEXT_PUBLIC_* polyfill with Reverb config from server
+        // This allows tatemono code that reads process.env.NEXT_PUBLIC_REVERB_* to work
+        const reverb = arkzen.reverb || {}
+        if (typeof window !== 'undefined' && window.process?.env) {
+            window.process.env.NEXT_PUBLIC_REVERB_HOST = reverb.host || 'localhost'
+            window.process.env.NEXT_PUBLIC_REVERB_PORT = reverb.port || '8080'
+            window.process.env.NEXT_PUBLIC_REVERB_SCHEME = reverb.scheme || 'ws'
+            window.process.env.NEXT_PUBLIC_REVERB_APP_KEY = reverb.appKey || 'arkzen-key'
+            console.log('[Arkzen Inertia] Reverb config loaded:', {
+                host: window.process.env.NEXT_PUBLIC_REVERB_HOST,
+                port: window.process.env.NEXT_PUBLIC_REVERB_PORT,
+                scheme: window.process.env.NEXT_PUBLIC_REVERB_SCHEME,
+                appKey: window.process.env.NEXT_PUBLIC_REVERB_APP_KEY,
+            })
+        }
+
         createRoot(el).render(
             <ToastProvider position="top-right">
                 <App {...props} />

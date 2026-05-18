@@ -3,7 +3,7 @@
 // Inertia page rendered for unmatched sub-routes under this tatemono.
 // Registered as a catch-all route in routes/modules/queue-flow.pages.php
 // DO NOT EDIT — edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-18T13:18:30.750Z
+// Generated: 2026-05-18T20:54:26.074Z
 // ============================================================
 
 import React from 'react'

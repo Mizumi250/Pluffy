@@ -104,6 +104,7 @@ function normalizeRouterCalls(raw: string): string {
     out = out
       .replace(new RegExp(`\\b${varName}\\.push\\(`, 'g'), `${varName}(`)
       .replace(new RegExp(`\\b${varName}\\.replace\\(`, 'g'), `${varName}(`)
+      .replace(new RegExp(`\\b${varName}\\.refresh\\(\\)`, 'g'), `window.location.reload()`)
   }
 
   return out
