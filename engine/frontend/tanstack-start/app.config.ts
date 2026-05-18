@@ -2,17 +2,12 @@
 // ARKZEN — TanStack Start App Config (Vinxi)
 // TanStack Start uses Vinxi as its bundler. Vite plugins are
 // injected via vite.plugins inside defineConfig.
-// Tailwind v4 runs as a Vite plugin — no postcss.config needed.
 // ============================================================
 import { defineConfig } from '@tanstack/start/config'
-import tailwindcss from '@tailwindcss/vite'
 import path from 'path'
 
 export default defineConfig({
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
     resolve: {
       alias: [
         // @/arkzen/core/adapters → this stack's own adapters (most specific first)

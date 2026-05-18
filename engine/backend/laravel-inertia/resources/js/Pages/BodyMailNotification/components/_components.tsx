@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-mail-notification [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T13:37:04.826Z
+// Generated: 2026-05-18T09:39:38.847Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

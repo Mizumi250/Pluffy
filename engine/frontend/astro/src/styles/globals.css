@@ -1,5 +1,3 @@
-@import "tailwindcss";
-
-@source "../pages/**/*.astro";
-@source "../arkzen/**/*.{tsx,ts}";
-@source "../../arkzen/**/*.{tsx,ts}";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

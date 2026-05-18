@@ -1,22 +1,11 @@
-@import 'tailwindcss';
-
-@source '../views';
-@source '../js';
-
 /* ============================================================
    ARKZEN ENGINE — GLOBAL STYLES (React+Inertia stack)
-   Tailwind v4 syntax. Design system variables from arkzen.config.
+   Tailwind v3 syntax. Design system variables from arkzen.config.
    ============================================================ */
 
-
-
-/* ─── Theme tokens (Tailwind v4 @theme) ──────────────────────── */
-@theme {
-  /* Typography */
-  --font-sans:    'Inter Variable', 'Inter', ui-sans-serif, system-ui, sans-serif;
-  --font-display: 'Cal Sans', 'Inter Variable', ui-sans-serif;
-  --font-mono:    'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* ─── CSS Custom Properties (Arkzen design tokens) ───────────── */
 :root {
@@ -27,6 +16,11 @@
   --color-surface:   #ffffff;
   --color-border:    #e5e7eb;
   --color-muted:     #6b7280;
+
+  /* Typography */
+  --font-sans:    'Inter Variable', 'Inter', sans-serif;
+  --font-display: 'Cal Sans', 'Inter Variable', sans-serif;
+  --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
   /* Spacing / Radius */
   --radius-sm:  0.375rem;
@@ -59,7 +53,8 @@
 }
 
 html,
-body {
+body,
+#app {
   height: 100%;
 }
 
@@ -92,107 +87,60 @@ body {
 }
 
 /* ─── Arkzen utility classes ─────────────────────────────────── */
-/* Note: Tailwind v4 uses @utility instead of @layer utilities   */
-
-@utility arkzen-page {
-  min-height: 100vh;
-}
-
-@utility arkzen-container {
-  max-width: 80rem;
-  margin-inline: auto;
-  padding-inline: 1.5rem;
-  padding-block: 2rem;
-}
-
-@utility arkzen-section {
-  margin-bottom: 2rem;
-}
-
-@utility arkzen-card {
-  background-color: #ffffff;
-  border-radius: 1rem;
-  border: 1px solid #f3f4f6;
-}
-
-@utility arkzen-input {
-  width: 100%;
-  padding: 0.625rem 0.875rem;
-  font-size: 0.875rem;
-  line-height: 1.25rem;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background-color: #ffffff;
-  color: #111827;
-  transition: box-shadow 0.15s ease;
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #111827;
-    border-color: transparent;
+@layer utilities {
+  .arkzen-page {
+    @apply min-h-screen;
   }
-}
 
-@utility arkzen-btn-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 0.75rem;
-  background-color: #111827;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  &:hover { background-color: #374151; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
+  .arkzen-container {
+    @apply max-w-7xl mx-auto px-6 py-8;
+  }
 
-@utility arkzen-btn-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 0.75rem;
-  border: 1px solid #e5e7eb;
-  background-color: transparent;
-  color: #374151;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  &:hover { background-color: #f9fafb; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
-}
+  .arkzen-section {
+    @apply mb-8;
+  }
 
-@utility arkzen-btn-danger {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.625rem 1rem;
-  font-size: 0.875rem;
-  font-weight: 500;
-  border-radius: 0.75rem;
-  background-color: #dc2626;
-  color: #ffffff;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.15s ease;
-  &:hover { background-color: #b91c1c; }
-  &:disabled { opacity: 0.5; cursor: not-allowed; }
+  .arkzen-card {
+    @apply bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800;
+  }
+
+  .arkzen-input {
+    @apply w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700
+           bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100
+           placeholder:text-neutral-400 dark:placeholder:text-neutral-500
+           focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white
+           focus:border-transparent transition-shadow;
+  }
+
+  .arkzen-btn-primary {
+    @apply px-4 py-2.5 text-sm font-medium rounded-xl
+           bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
+           hover:bg-neutral-700 dark:hover:bg-neutral-100
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .arkzen-btn-secondary {
+    @apply px-4 py-2.5 text-sm font-medium rounded-xl
+           border border-neutral-200 dark:border-neutral-700
+           text-neutral-700 dark:text-neutral-300
+           hover:bg-neutral-50 dark:hover:bg-neutral-800
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+
+  .arkzen-btn-danger {
+    @apply px-4 py-2.5 text-sm font-medium rounded-xl
+           bg-red-600 hover:bg-red-700 text-white
+           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
+  }
 }
 
 /* ─── Dark mode overrides for arkzen utilities ───────────────── */
 .dark .arkzen-card {
-  background-color: #111827;
-  border-color: #1f2937;
+  @apply bg-neutral-900 border-neutral-800;
 }
 
 .dark .arkzen-input {
-  background-color: #111827;
-  border-color: #374151;
-  color: #f9fafb;
+  @apply bg-neutral-900 border-neutral-700 text-neutral-100;
 }
 
 .dark .arkzen-input:focus {
@@ -200,19 +148,17 @@ body {
 }
 
 .dark .arkzen-btn-primary {
-  background-color: #ffffff;
-  color: #111827;
+  @apply bg-white text-neutral-900;
 }
 
 .dark .arkzen-btn-primary:hover {
-  background-color: #f3f4f6;
+  @apply bg-neutral-100;
 }
 
 .dark .arkzen-btn-secondary {
-  border-color: #374151;
-  color: #d1d5db;
+  @apply border-neutral-700 text-neutral-300;
 }
 
 .dark .arkzen-btn-secondary:hover {
-  background-color: #1f2937;
+  @apply bg-neutral-800;
 }
