@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JORow [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T20:54:25.252Z
+// Generated: 2026-05-18T21:51:48.292Z
 // ============================================================
 
 export { JORow } from './_components'

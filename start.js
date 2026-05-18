@@ -250,18 +250,15 @@ console.log('╚═════════════════════�
 
 checkSetup()
 
-// Create storage symlink
-const publicStorageLink = path.join(BACKEND_DIR, 'public', 'storage')
-if (!fs.existsSync(publicStorageLink)) {
-  try {
-    require('child_process').execSync('php artisan storage:link --force', {
-      cwd: BACKEND_DIR,
-      stdio: 'pipe'
-    })
-    console.log('  ✓ Storage symlink created')
-  } catch (e) {
-    console.log('  ⚠ Storage symlink failed (run: php artisan storage:link)')
-  }
+// Create storage symlink (always use --force to ensure it points to the right location)
+try {
+  require('child_process').execSync('php artisan storage:link --force', {
+    cwd: BACKEND_DIR,
+    stdio: 'pipe'
+  })
+  console.log('  ✓ Storage symlink created/updated')
+} catch (e) {
+  console.log('  ⚠ Storage symlink failed (run: php artisan storage:link --force)')
 }
 
 const backend  = startBackend()

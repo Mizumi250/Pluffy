@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — barbershop-booking [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T20:54:22.331Z
+// Generated: 2026-05-18T21:51:46.216Z
 // Pages: index
 // ============================================================
 

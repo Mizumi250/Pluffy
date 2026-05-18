@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — PhotoResource
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T20:54:24.537373Z
+// Generated: 2026-05-18T21:51:47.741470Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\ChurchCommunity;

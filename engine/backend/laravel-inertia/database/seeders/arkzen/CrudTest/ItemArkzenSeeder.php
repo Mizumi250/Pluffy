@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ItemArkzenSeeder
 // Tatemono: crud-test  |  Connection: crud_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T20:54:24.679524Z
+// Generated: 2026-05-18T21:51:47.836272Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\CrudTest;

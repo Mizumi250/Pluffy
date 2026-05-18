@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-18T20:54:23.390Z
+// Generated: 2026-05-18T21:51:47.035Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

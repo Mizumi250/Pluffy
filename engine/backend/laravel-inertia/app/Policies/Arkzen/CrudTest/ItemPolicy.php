@@ -5,7 +5,7 @@
 // Tatemono: crud-test
 // v6.0: Methods may include injected logic from @arkzen:policy:methodName blocks
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T20:54:24.675897Z
+// Generated: 2026-05-18T21:51:47.832514Z
 // ============================================================
 
 namespace App\Policies\Arkzen\CrudTest;
