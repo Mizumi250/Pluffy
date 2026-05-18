@@ -64,18 +64,18 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — church-community [Inertia/Web]
+// ARKZEN GENERATED ROUTES — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:24.974831Z
+// Generated: 2026-05-18T12:04:22.788004Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\ChurchCommunity\ChurchController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\EventController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\MemberController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\PhotoController;
+use App\Http\Controllers\Arkzen\ChurchCommunity\ChurchController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\ChurchCommunity\PersonalAccessToken as ChurchCommunityToken;
@@ -83,7 +83,7 @@ use App\Models\Arkzen\ChurchCommunity\PersonalAccessToken as ChurchCommunityToke
 Sanctum::usePersonalAccessTokenModel(ChurchCommunityToken::class);
 
 // ── Event ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/church-community')
     ->group(function () {
 
@@ -105,7 +105,7 @@ Route::middleware(['web'])
     });
 
 // ── Member ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/church-community')
     ->group(function () {
 
@@ -127,7 +127,7 @@ Route::middleware(['web'])
     });
 
 // ── Photo ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/church-community')
     ->group(function () {
 
@@ -149,11 +149,11 @@ Route::middleware(['web'])
     });
 
 // ── Custom: ChurchController ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->group(function () {
-    Route::get('api/church-community/events/{event_id}/photos', [ChurchController::class, 'event_photos']);
-    Route::post('api/church-community/photos/{photo_id}/like', [ChurchController::class, 'toggle_like']);
-    Route::get('api/church-community/photos/{photo_id}/comments', [ChurchController::class, 'photo_comments']);
-    Route::post('api/church-community/photos/{photo_id}/comments', [ChurchController::class, 'add_comment']);
-    Route::get('api/church-community/inventory', [ChurchController::class, 'inventory_list']);
+        Route::get('api/church-community/events/{event_id}/photos', [ChurchController::class, 'event_photos']);
+        Route::post('api/church-community/photos/{photo_id}/like', [ChurchController::class, 'toggle_like']);
+        Route::get('api/church-community/photos/{photo_id}/comments', [ChurchController::class, 'photo_comments']);
+        Route::post('api/church-community/photos/{photo_id}/comments', [ChurchController::class, 'add_comment']);
+        Route::get('api/church-community/inventory', [ChurchController::class, 'inventory_list']);
     });

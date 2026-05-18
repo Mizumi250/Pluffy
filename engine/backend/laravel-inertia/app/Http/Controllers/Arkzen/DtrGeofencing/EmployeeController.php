@@ -1,40 +1,42 @@
 <?php
 
+// ============================================================
+// ARKZEN GENERATED CONTROLLER — EmployeeController
+// Tatemono: dtr-geofencing
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-18T12:04:23.007570Z
+// ============================================================
+
 namespace App\Http\Controllers\Arkzen\DtrGeofencing;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\DtrGeofencing\Employee;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\Arkzen\DtrGeofencing\EmployeeResource;
 
 class EmployeeController extends Controller
 {
     /**
      * Get all employees
      */
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $query = Employee::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $items   = $query->paginate($perPage);
+        $results = $query->paginate($perPage);
 
-        return Inertia::render('DtrGeofencing/Index', [
-            'items'   => $items,
-            'filters' => $request->only(['search', 'per_page']),
-        ]);
+        return response()->json(EmployeeResource::collection($results));
     }
 
     /**
      * Get single employee
      */
-    public function show(Employee $employee): Response
+    public function show(Employee $employee): JsonResponse
     {
-        return Inertia::render('DtrGeofencing/Show', [
-            'employee' => $employee,
-        ]);
+        return response()->json(new EmployeeResource($employee));
     }
 }

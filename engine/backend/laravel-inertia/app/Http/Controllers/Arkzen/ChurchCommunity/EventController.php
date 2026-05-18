@@ -1,84 +1,86 @@
 <?php
 
+// ============================================================
+// ARKZEN GENERATED CONTROLLER — EventController
+// Tatemono: church-community
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-18T12:04:22.781380Z
+// ============================================================
+
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\ChurchCommunity\Event;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\Arkzen\ChurchCommunity\EventResource;
 
 class EventController extends Controller
 {
     /**
      * Get all events ordered by event_date desc
      */
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $query = Event::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $items   = $query->paginate($perPage);
+        $results = $query->paginate($perPage);
 
-        return Inertia::render('ChurchCommunity/Index', [
-            'items'   => $items,
-            'filters' => $request->only(['search', 'per_page']),
-        ]);
+        return response()->json(EventResource::collection($results));
     }
 
     /**
      * Create a new church event
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'description' => 'sometimes|string',
             'event_date' => 'required|date',
-            'is_members_only' => 'sometimes|boolean',
+            'is_members_only' => 'sometimes|boolean'
         ]);
 
         $event = Event::create($validated);
 
-        return redirect()->back()->with('success', 'Event created successfully.');
+        return response()->json(new EventResource($event), 201);
     }
 
     /**
      * Get a single event with its photos
      */
-    public function show(Event $event): Response
+    public function show(Event $event): JsonResponse
     {
-        return Inertia::render('ChurchCommunity/Show', [
-            'event' => $event,
-        ]);
+        return response()->json(new EventResource($event));
     }
 
     /**
-     * Update an existing event
+     * Update an existing church event
      */
-    public function update(Request $request, Event $event): RedirectResponse
+    public function update(Request $request, Event $event): JsonResponse
     {
         $validated = $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'event_date' => 'sometimes|date',
-            'is_members_only' => 'sometimes|boolean',
+            'is_members_only' => 'sometimes|boolean'
         ]);
 
         $event->update($validated);
 
-        return redirect()->back()->with('success', 'Event updated successfully.');
+        return response()->json(new EventResource($event));
     }
 
     /**
-     * Delete an event and its associated photos
+     * Delete a church event
      */
-    public function destroy(Event $event): RedirectResponse
+    public function destroy(Event $event): JsonResponse
     {
         $event->delete();
 
-        return redirect()->back()->with('success', 'Event deleted successfully.');
+        return response()->json(['message' => 'Event deleted']);
     }
 }

@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — INERTIA BUILDER v1.2
+// ARKZEN ENGINE — INERTIA BUILDER v1.3
 // Orchestrates tatemono build for React+Inertia stack.
 //
 // KEY DIFFERENCE from vite-builder / nextjs builder:
@@ -10,7 +10,15 @@
 //   backend bridge to laravel-inertia's ArkzenEngineController —
 //   same HTTP bridge pattern, different port (8001).
 //
-// v1.2: registry + PWA wired in.
+// v1.3: Remove incomplete isStatic guard that bypassed backend builds
+//   for auth-only, event-only, job-only, and notification-only tatemonos.
+//   The old guard only checked databases+apis — missing the 10 other feature
+//   flags (auth, events, realtimes, jobs, notifications, mails, consoles,
+//   customRoutes, middlewareSnippets, policySnippets). triggerBackendBuild()
+//   already has the full hasBackend check inside — matching vite-builder and
+//   nextjs-builder which both call it unconditionally.
+//
+
 //   - updateRegistry() / removeFromRegistry() now called on every
 //     successful build and removal. Previously inertia-builder never
 //     wrote arkzen.json, so the Hub page's /api/arkzen/registry call
@@ -118,20 +126,22 @@ export async function buildInertiaTatemono(corePath: string): Promise<InertiaBui
   }
 
   // ── Step 3: Backend build (models, migrations, routes, auth) ──
-  const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
-  if (isStatic) {
-    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Static tatemono — no backend' })
-    console.log(`[Arkzen Inertia Bridge] ✓ Static tatemono — skipping backend build`)
-  } else {
-    try {
-      await triggerBackendBuild(parsed)
-      steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Laravel-Inertia backend updated' })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
-      errors.push(message)
-      console.error(`[Arkzen Inertia Builder] ✗ Backend build failed:`, message)
-    }
+  // NOTE: Do NOT add an isStatic guard here — triggerBackendBuild() already
+  // has the full 12-feature hasBackend check internally (databases, apis,
+  // customRoutes, auth, events, realtimes, jobs, notifications, mails,
+  // consoles, middlewareSnippets, policySnippets). A partial guard here
+  // (e.g. only checking databases+apis) silently skips backend builds for
+  // auth-only, event-only, job-only, and notification-only tatemonos.
+  // Vite and Next.js builders call triggerBackendBuild() unconditionally
+  // and rely on the internal guard — match that pattern exactly.
+  try {
+    await triggerBackendBuild(parsed)
+    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Laravel-Inertia backend updated' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
+    errors.push(message)
+    console.error(`[Arkzen Inertia Builder] ✗ Backend build failed:`, message)
   }
 
   // ── Step 4: PWA generation ─────────────────────────────────

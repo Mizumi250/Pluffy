@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — inventory-management [Inertia/Web]
+// ARKZEN GENERATED ROUTES — inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:25.444096Z
+// Generated: 2026-05-18T12:04:23.757108Z
 // Resources: Inventory
 // Custom controllers: 
 // ============================================================
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\InventoryManagement\InventoryController;
 
 // ── Inventory ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/inventories')
     ->group(function () {
 

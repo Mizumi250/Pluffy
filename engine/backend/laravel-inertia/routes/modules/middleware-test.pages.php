@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — middleware-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:25.814Z
+// Generated: 2026-05-18T12:04:25.144Z
 // Pages: index
 // ============================================================
 

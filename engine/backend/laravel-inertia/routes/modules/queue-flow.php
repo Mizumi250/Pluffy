@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — queue-flow [Inertia/Web]
+// ARKZEN GENERATED ROUTES — queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:26.190892Z
+// Generated: 2026-05-18T12:04:25.787790Z
 // Resources: Queue, Ticket
 // Custom controllers: QueueController
 // ============================================================
@@ -13,7 +13,7 @@ use App\Http\Controllers\Arkzen\QueueFlow\QueueController;
 use App\Http\Controllers\Arkzen\QueueFlow\TicketController;
 
 // ── Queue ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/queue-flow')
     ->group(function () {
 
@@ -35,7 +35,7 @@ Route::middleware(['web'])
     });
 
 // ── Ticket ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/queue-flow')
     ->group(function () {
 
@@ -51,10 +51,10 @@ Route::middleware(['web'])
     });
 
 // ── Custom: QueueController ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->group(function () {
-    Route::post('api/queue-flow/join', [QueueController::class, 'join_queue']);
-    Route::post('api/queue-flow/call-next', [QueueController::class, 'call_next']);
-    Route::get('api/queue-flow/status/{queue_id}', [QueueController::class, 'queue_status']);
-    Route::get('api/queue-flow/my-ticket/{queue_id}/{ticket_number}', [QueueController::class, 'my_ticket']);
+        Route::post('api/queue-flow/join', [QueueController::class, 'join_queue']);
+        Route::post('api/queue-flow/call-next', [QueueController::class, 'call_next']);
+        Route::get('api/queue-flow/status/{queue_id}', [QueueController::class, 'queue_status']);
+        Route::get('api/queue-flow/my-ticket/{queue_id}/{ticket_number}', [QueueController::class, 'my_ticket']);
     });

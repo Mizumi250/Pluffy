@@ -64,9 +64,9 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/broadcast-test/auth')->
 
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — broadcast-test [Inertia/Web]
+// ARKZEN GENERATED ROUTES — broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:24.227443Z
+// Generated: 2026-05-18T12:04:22.124649Z
 // Resources: Message
 // Custom controllers: 
 // ============================================================
@@ -80,7 +80,7 @@ use App\Models\Arkzen\BroadcastTest\PersonalAccessToken as BroadcastTestToken;
 Sanctum::usePersonalAccessTokenModel(BroadcastTestToken::class);
 
 // ── Message ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/broadcast-test/messages')
     ->group(function () {
 

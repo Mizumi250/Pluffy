@@ -64,19 +64,19 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/certflow/auth')->group(
 
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — certflow [Inertia/Web]
+// ARKZEN GENERATED ROUTES — certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:24.467496Z
+// Generated: 2026-05-18T12:04:22.282044Z
 // Resources: Template, Field, Submission, Scan
 // Custom controllers: CertflowController
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\Certflow\CertflowController;
-use App\Http\Controllers\Arkzen\Certflow\FieldController;
-use App\Http\Controllers\Arkzen\Certflow\ScanController;
-use App\Http\Controllers\Arkzen\Certflow\SubmissionController;
 use App\Http\Controllers\Arkzen\Certflow\TemplateController;
+use App\Http\Controllers\Arkzen\Certflow\FieldController;
+use App\Http\Controllers\Arkzen\Certflow\SubmissionController;
+use App\Http\Controllers\Arkzen\Certflow\ScanController;
+use App\Http\Controllers\Arkzen\Certflow\CertflowController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\Certflow\PersonalAccessToken as CertflowToken;
@@ -84,7 +84,7 @@ use App\Models\Arkzen\Certflow\PersonalAccessToken as CertflowToken;
 Sanctum::usePersonalAccessTokenModel(CertflowToken::class);
 
 // ── Template ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/certflow')
     ->group(function () {
 
@@ -106,7 +106,7 @@ Route::middleware(['web'])
     });
 
 // ── Field ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/certflow')
     ->group(function () {
 
@@ -122,7 +122,7 @@ Route::middleware(['web'])
     });
 
 // ── Submission ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/certflow')
     ->group(function () {
 
@@ -135,7 +135,7 @@ Route::middleware(['web'])
     });
 
 // ── Scan ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/certflow')
     ->group(function () {
 
@@ -145,11 +145,11 @@ Route::middleware(['web'])
     });
 
 // ── Custom: CertflowController ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->group(function () {
-    Route::post('api/certflow/templates/upload', [CertflowController::class, 'upload_template']);
-    Route::post('api/certflow/templates/{id}/generate-link', [CertflowController::class, 'generate_link']);
-    Route::get('api/certflow/fill/{token}', [CertflowController::class, 'get_fill_form']);
-    Route::post('api/certflow/fill/{token}/submit', [CertflowController::class, 'submit_form']);
-    Route::get('api/certflow/verify/{token}', [CertflowController::class, 'verify_submission']);
+        Route::post('api/certflow/templates/upload', [CertflowController::class, 'upload_template']);
+        Route::post('api/certflow/templates/{id}/generate-link', [CertflowController::class, 'generate_link']);
+        Route::get('api/certflow/fill/{token}', [CertflowController::class, 'get_fill_form']);
+        Route::post('api/certflow/fill/{token}/submit', [CertflowController::class, 'submit_form']);
+        Route::get('api/certflow/verify/{token}', [CertflowController::class, 'verify_submission']);
     });

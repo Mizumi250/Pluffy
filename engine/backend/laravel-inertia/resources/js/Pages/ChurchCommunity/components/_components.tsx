@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — church-community [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:24.880Z
+// Generated: 2026-05-18T12:04:22.688Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

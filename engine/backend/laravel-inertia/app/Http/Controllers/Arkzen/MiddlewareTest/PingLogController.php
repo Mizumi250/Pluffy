@@ -1,45 +1,48 @@
 <?php
 
+// ============================================================
+// ARKZEN GENERATED CONTROLLER — PingLogController
+// Tatemono: middleware-test
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-18T12:04:25.214522Z
+// ============================================================
+
 namespace App\Http\Controllers\Arkzen\MiddlewareTest;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\MiddlewareTest\PingLog;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class PingLogController extends Controller
 {
     /**
      * Returns all ping logs — passes through requireJson middleware
      */
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $query = PingLog::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $items   = $query->paginate($perPage);
+        $results = $query->paginate($perPage);
 
-        return Inertia::render('MiddlewareTest/Index', [
-            'items'   => $items,
-            'filters' => $request->only(['search', 'per_page']),
-        ]);
+        return response()->json($results);
     }
 
     /**
      * Create a ping log entry — blocked by requireJson if Content-Type is wrong
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'message' => 'required|string|max:255',
-            'headers_ok' => 'sometimes|boolean',
+            'headers_ok' => 'sometimes|boolean'
         ]);
 
         $pingLog = PingLog::create($validated);
 
-        return redirect()->back()->with('success', 'PingLog created successfully.');
+        return response()->json($pingLog, 201);
     }
 }

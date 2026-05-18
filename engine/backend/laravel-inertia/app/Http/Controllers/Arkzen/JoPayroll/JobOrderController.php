@@ -1,37 +1,41 @@
 <?php
 
+// ============================================================
+// ARKZEN GENERATED CONTROLLER — JobOrderController
+// Tatemono: jo-payroll
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-18T12:04:24.260135Z
+// ============================================================
+
 namespace App\Http\Controllers\Arkzen\JoPayroll;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\JoPayroll\JobOrder;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\Arkzen\JoPayroll\JobOrderResource;
 
 class JobOrderController extends Controller
 {
     /**
      * List all job orders
      */
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $query = JobOrder::query();
 
 
         $perPage = $request->get('per_page', 15);
-        $items   = $query->paginate($perPage);
+        $results = $query->paginate($perPage);
 
-        return Inertia::render('JoPayroll/Index', [
-            'items'   => $items,
-            'filters' => $request->only(['search', 'per_page']),
-        ]);
+        return response()->json(JobOrderResource::collection($results));
     }
 
     /**
      * Create a new job order
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'jor_number' => 'required|integer|min:0',
@@ -40,28 +44,26 @@ class JobOrderController extends Controller
             'funding' => 'required|string|max:255',
             'basic_pay' => 'required|numeric|min:0',
             'disbursement_type' => 'required|string|in:CASH,ATM',
-            'status' => 'string|in:active,inactive',
+            'status' => 'string|in:active,inactive'
         ]);
 
         $jobOrder = JobOrder::create($validated);
 
-        return redirect()->back()->with('success', 'JobOrder created successfully.');
+        return response()->json(new JobOrderResource($jobOrder), 201);
     }
 
     /**
      * Get single job order
      */
-    public function show(JobOrder $jobOrder): Response
+    public function show(JobOrder $jobOrder): JsonResponse
     {
-        return Inertia::render('JoPayroll/Show', [
-            'jobOrder' => $jobOrder,
-        ]);
+        return response()->json(new JobOrderResource($jobOrder));
     }
 
     /**
      * Update job order
      */
-    public function update(Request $request, JobOrder $jobOrder): RedirectResponse
+    public function update(Request $request, JobOrder $jobOrder): JsonResponse
     {
         $validated = $request->validate([
             'jor_number' => 'integer|min:0',
@@ -70,75 +72,75 @@ class JobOrderController extends Controller
             'funding' => 'string|max:255',
             'basic_pay' => 'numeric|min:0',
             'disbursement_type' => 'string|in:CASH,ATM',
-            'status' => 'string|in:active,inactive',
+            'status' => 'string|in:active,inactive'
         ]);
 
         $jobOrder->update($validated);
 
-        return redirect()->back()->with('success', 'JobOrder updated successfully.');
+        return response()->json(new JobOrderResource($jobOrder));
     }
 
     /**
      * Delete job order
      */
-    public function destroy(JobOrder $jobOrder): RedirectResponse
+    public function destroy(JobOrder $jobOrder): JsonResponse
     {
         $jobOrder->delete();
 
-        return redirect()->back()->with('success', 'JobOrder deleted successfully.');
+        return response()->json(['message' => 'Job order deleted successfully']);
     }
 
     /**
      * Get payroll summary statistics
      */
-    public function summary(Request $request): Response
+    public function summary(Request $request): JsonResponse
     {
-$activeJOs   = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'active')->get();
-$inactiveJOs = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'inactive')->count();
-$totalCash   = $activeJOs->where('disbursement_type', 'CASH')->count();
-$totalAtm    = $activeJOs->where('disbursement_type', 'ATM')->count();
-$totalBasicPay      = $activeJOs->sum('basic_pay');
-$totalSss           = $activeJOs->sum('sss_amount');
-$totalHdmfPremium   = $activeJOs->sum('hdmf_premium');
-$totalHdmfMpl       = $activeJOs->sum('hdmf_mpl');
-$totalCalamityLoan  = $activeJOs->sum('calamity_loan');
-$totalDeductions    = $totalSss + $totalHdmfPremium + $totalHdmfMpl + $totalCalamityLoan;
-$netPay             = $totalBasicPay - $totalDeductions;
-$fundingBreakdown   = $activeJOs->groupBy('funding')->map(fn($g) => ['count' => $g->count(), 'total_pay' => $g->sum('basic_pay')]);
-$groupBreakdown     = $activeJOs->groupBy('jor_pyrl_group')->map(fn($g) => $g->count());
-return response()->json([
-  'total_active'        => $activeJOs->count(),
-  'total_inactive'      => $inactiveJOs,
-  'total_atm'           => $totalAtm,
-  'total_cash'          => $totalCash,
-  'total_basic_pay'     => $totalBasicPay,
-  'total_sss'           => $totalSss,
-  'total_hdmf_premium'  => $totalHdmfPremium,
-  'total_hdmf_mpl'      => $totalHdmfMpl,
-  'total_calamity_loan' => $totalCalamityLoan,
-  'total_deductions'    => $totalDeductions,
-  'net_pay'             => $netPay,
-  'funding_breakdown'   => $fundingBreakdown,
-  'group_breakdown'     => $groupBreakdown,
-]);
+        $activeJOs   = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'active')->get();
+        $inactiveJOs = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'inactive')->count();
+        $totalCash   = $activeJOs->where('disbursement_type', 'CASH')->count();
+        $totalAtm    = $activeJOs->where('disbursement_type', 'ATM')->count();
+        $totalBasicPay      = $activeJOs->sum('basic_pay');
+        $totalSss           = $activeJOs->sum('sss_amount');
+        $totalHdmfPremium   = $activeJOs->sum('hdmf_premium');
+        $totalHdmfMpl       = $activeJOs->sum('hdmf_mpl');
+        $totalCalamityLoan  = $activeJOs->sum('calamity_loan');
+        $totalDeductions    = $totalSss + $totalHdmfPremium + $totalHdmfMpl + $totalCalamityLoan;
+        $netPay             = $totalBasicPay - $totalDeductions;
+        $fundingBreakdown   = $activeJOs->groupBy('funding')->map(fn($g) => ['count' => $g->count(), 'total_pay' => $g->sum('basic_pay')]);
+        $groupBreakdown     = $activeJOs->groupBy('jor_pyrl_group')->map(fn($g) => $g->count());
+        return response()->json([
+          'total_active'        => $activeJOs->count(),
+          'total_inactive'      => $inactiveJOs,
+          'total_atm'           => $totalAtm,
+          'total_cash'          => $totalCash,
+          'total_basic_pay'     => $totalBasicPay,
+          'total_sss'           => $totalSss,
+          'total_hdmf_premium'  => $totalHdmfPremium,
+          'total_hdmf_mpl'      => $totalHdmfMpl,
+          'total_calamity_loan' => $totalCalamityLoan,
+          'total_deductions'    => $totalDeductions,
+          'net_pay'             => $netPay,
+          'funding_breakdown'   => $fundingBreakdown,
+          'group_breakdown'     => $groupBreakdown,
+        ]);
     }
 
     /**
      * Get job orders by payroll group
      */
-    public function byGroup(Request $request): Response
+    public function byGroup(Request $request): JsonResponse
     {
-$group = request()->route('group');
-$orders = \App\Models\Arkzen\JoPayroll\JobOrder::where('jor_pyrl_group', $group)->where('status', 'active')->orderBy('jor_number')->get();
-return response()->json($orders);
+        $group = request()->route('group');
+        $orders = \App\Models\Arkzen\JoPayroll\JobOrder::where('jor_pyrl_group', $group)->where('status', 'active')->orderBy('jor_number')->get();
+        return response()->json($orders);
     }
 
     /**
      * Get appointment sequence list
      */
-    public function appointments(Request $request): Response
+    public function appointments(Request $request): JsonResponse
     {
-$orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order')->orderBy('appointment_order')->get();
-return response()->json($orders);
+        $orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order')->orderBy('appointment_order')->get();
+        return response()->json($orders);
     }
 }

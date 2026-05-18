@@ -64,9 +64,9 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — roles-test [Inertia/Web]
+// ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:26.365340Z
+// Generated: 2026-05-18T12:04:25.955900Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================
@@ -84,7 +84,7 @@ Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
 app('router')->aliasMiddleware('role', \App\Http\Middleware\Arkzen\RolesTest\CheckRole::class);
 
 // ── RoleAuditLog ─────────────────────────────
-Route::middleware(['web', 'auth:sanctum', 'role:admin'])
+Route::middleware(['api', 'auth:sanctum', 'role:admin'])
     ->prefix('/api/roles-test')
     ->group(function () {
 

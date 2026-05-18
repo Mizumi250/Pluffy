@@ -1,87 +1,94 @@
 <?php
 
+// ============================================================
+// ARKZEN GENERATED CONTROLLER — InventoryController
+// Tatemono: inventory-management
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-05-18T12:04:23.755399Z
+// ============================================================
+
 namespace App\Http\Controllers\Arkzen\InventoryManagement;
 
-use Illuminate\Routing\Controller;
+use App\Http\Controllers\Controller;
 use App\Models\Arkzen\InventoryManagement\Inventory;
 use Illuminate\Http\Request;
-use Illuminate\Http\RedirectResponse;
-use Inertia\Inertia;
-use Inertia\Response;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 
 class InventoryController extends Controller
 {
     /**
      * Get paginated list of inventories
      */
-    public function index(Request $request): Response
+    public function index(Request $request): JsonResponse
     {
         $query = Inventory::query();
 
+        if ($request->filled('search')) {
+            $query->where(function ($q) use ($request) {
+                $q->orWhere('name', 'like', '%' . $request->search . '%');
+                $q->orWhere('description', 'like', '%' . $request->search . '%');
+            });
+        }
 
         $perPage = $request->get('per_page', 15);
-        $items   = $query->paginate($perPage);
+        $results = $query->paginate($perPage);
 
-        return Inertia::render('InventoryManagement/Index', [
-            'items'   => $items,
-            'filters' => $request->only(['search', 'per_page']),
-        ]);
+        return response()->json($results);
     }
 
     /**
      * Get single inventory item
      */
-    public function show(Inventory $inventory): Response
+    public function show(Inventory $inventory): JsonResponse
     {
-        return Inertia::render('InventoryManagement/Show', [
-            'inventory' => $inventory,
-        ]);
+        return response()->json($inventory);
     }
 
     /**
      * Create new inventory item
      */
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'sku' => 'required|string|unique:inventories',
+            'sku' => 'required|string|unique:inventory_management.inventory_management_inventories',
             'quantity' => 'required|integer|min:0',
             'price' => 'required|numeric|min:0',
             'category' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string'
         ]);
 
         $inventory = Inventory::create($validated);
 
-        return redirect()->back()->with('success', 'Inventory created successfully.');
+        return response()->json($inventory, 201);
     }
 
     /**
      * Update inventory item
      */
-    public function update(Request $request, Inventory $inventory): RedirectResponse
+    public function update(Request $request, Inventory $inventory): JsonResponse
     {
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
             'quantity' => 'sometimes|integer|min:0',
             'price' => 'sometimes|numeric|min:0',
             'category' => 'nullable|string|max:100',
-            'description' => 'nullable|string',
+            'description' => 'nullable|string'
         ]);
 
         $inventory->update($validated);
 
-        return redirect()->back()->with('success', 'Inventory updated successfully.');
+        return response()->json($inventory);
     }
 
     /**
      * Delete inventory item
      */
-    public function destroy(Inventory $inventory): RedirectResponse
+    public function destroy(Inventory $inventory): JsonResponse
     {
         $inventory->delete();
 
-        return redirect()->back()->with('success', 'Inventory deleted successfully.');
+        return response()->json(['message' => 'Item deleted successfully']);
     }
 }

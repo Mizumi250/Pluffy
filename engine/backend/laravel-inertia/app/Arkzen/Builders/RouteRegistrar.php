@@ -1,19 +1,23 @@
 <?php
 
 // ============================================================
-// ARKZEN ENGINE — INERTIA ROUTE REGISTRAR v1.0
-// Forked from RouteRegistrar for the react-inertia stack.
+// ARKZEN ENGINE — ROUTE REGISTRAR v5.0
 //
-// KEY DIFFERENCE from decoupled RouteRegistrar:
-//   - Routes use 'web' middleware group (not 'api')
-//   - Inertia pages are served as GET routes (Laravel renders HTML)
-//   - Mutation routes (POST/PUT/PATCH/DELETE) redirect back
-//   - Custom routes default to 'web' middleware (not 'api')
-//   - ArkzenServiceProvider::registerModuleRoutes() registers
-//     under web middleware here instead of api
+// v5.0: Consumes new MiddlewareBuilder::build() return shape.
+//       MiddlewareBuilder now returns an array with three keys:
+//         - middleware: resolved middleware strings
+//         - aliases:    per-tatemono middleware alias map
+//                       e.g. ['role' => 'App\Http\Middleware\Arkzen\{slugNs}\CheckRole']
+//         - useLines:   use statements for scoped middleware classes
+//       Aliases are injected into the route file as a
+//       Route::aliasMiddleware() block — same pattern as the
+//       Sanctum::usePersonalAccessTokenModel() bootstrap.
+//       This keeps middleware fully scoped per-tatemono with no
+//       global app.php registration required.
 //
-// Everything else (sanctum bootstrap, alias bootstrap, custom
-// routes, file structure) is IDENTICAL to decoupled version.
+// v4.6 (kept): Custom routes support added.
+// v4.5 (kept): Sanctum token model bootstrap per route file.
+// v4.4 (kept): Route parameters rewritten {id} → {modelVar}.
 // ============================================================
 
 namespace App\Arkzen\Builders;
@@ -24,6 +28,10 @@ use App\Providers\Arkzen\ArkzenServiceProvider;
 
 class RouteRegistrar
 {
+    // ─────────────────────────────────────────────
+    // BUILD ALL — one file, all resources + custom routes
+    // ─────────────────────────────────────────────
+
     public static function buildAll(array $module): void
     {
         $name      = $module['name'];
@@ -34,42 +42,20 @@ class RouteRegistrar
 
         File::ensureDirectoryExists($routesDir);
 
-        $routeFile      = "{$routesDir}/{$name}.php";
-        $useStatements  = [];
-        $routeGroups    = [];
-        $allAliases     = [];
-        $middlewareUses = [];
-
-        // ── Inertia page routes ───────────────────
-        // One GET route per page — Laravel serves the Inertia SPA shell
-        $pageLines = [];
-        foreach (($module['pages'] ?? []) as $page) {
-            $pageName      = $page['name'];
-            $pageNamespace = self::tatNameToPageName($name);
-            $pagePascal    = self::tatNameToPageName($pageName);
-            $routePath     = $pageName === 'index' ? "/{$name}" : "/{$name}/{$pageName}";
-            $pageLines[]   = "    // Page: {$pageName}";
-            $pageLines[]   = "    Route::get('{$routePath}', function () {";
-            $pageLines[]   = "        return \\Inertia\\Inertia::render('{$pageNamespace}/{$pagePascal}');";
-            $pageLines[]   = "    });";
-            $pageLines[]   = '';
-        }
-        if (!empty($pageLines)) {
-            $routeGroups[] = "// ── Inertia Pages ─────────────────────────────\n"
-                . "Route::middleware(['web'])\n"
-                . "    ->group(function () {\n"
-                . implode("\n", $pageLines)
-                . "    });";
-        }
+        $routeFile       = "{$routesDir}/{$name}.php";
+        $useStatements   = [];
+        $routeGroups     = [];
+        $allAliases      = [];   // collected across all APIs: ['role' => FQCN, ...]
+        $middlewareUses  = [];   // collected use lines for scoped middleware classes
 
         // ── Resource API routes ───────────────────
         foreach ($apis as $api) {
             $controllerName = $api['controller'];
-            // Keep the /api/ prefix — frontend calls this path regardless of middleware
-            // Use 'web' middleware instead of 'api', but preserve the route path
             $prefix         = $api['prefix'];
+
             $useStatements[] = "use App\\Http\\Controllers\\Arkzen\\{$slugNs}\\{$controllerName};";
 
+            // v5.0: build() now returns ['middleware', 'aliases', 'useLines']
             $mwResult = MiddlewareBuilder::build([
                 'api'                => $api,
                 'name'               => $name,
@@ -78,15 +64,11 @@ class RouteRegistrar
                 'middlewareSnippets' => $module['middlewareSnippets'] ?? [],
             ]);
 
-            // Replace 'api' middleware with 'web' for Inertia
-            $resolvedMiddleware = array_map(
-                fn($mw) => $mw === 'api' ? 'web' : $mw,
-                $mwResult['middleware']
-            );
+            $resolvedMiddleware = $mwResult['middleware'];
+            $middlewareStr      = "['" . implode("', '", $resolvedMiddleware) . "']";
+            $routeLines         = self::generateRouteLines($controllerName, $api['endpoints'], $api['model']);
 
-            $middlewareStr  = "['" . implode("', '", $resolvedMiddleware) . "']";
-            $routeLines     = self::generateRouteLines($controllerName, $api['endpoints'], $api['model']);
-
+            // Collect aliases and use lines from this API
             if (!empty($mwResult['aliases'])) {
                 $allAliases = array_merge($allAliases, $mwResult['aliases']);
             }
@@ -102,14 +84,12 @@ class RouteRegistrar
                 . "    });";
         }
 
-        // ── Custom routes ─────────────────────────
+        // ── Custom routes — v4.6 ─────────────────
         foreach (($module['customRoutes'] ?? []) as $cr) {
             $controllerName  = $cr['controller'];
             $useStatements[] = "use App\\Http\\Controllers\\Arkzen\\{$slugNs}\\{$controllerName};";
 
-            // Default to web middleware for Inertia custom routes
-            $middleware    = !empty($cr['middleware']) ? $cr['middleware'] : ['web'];
-            $middleware    = array_map(fn($mw) => $mw === 'api' ? 'web' : $mw, $middleware);
+            $middleware    = !empty($cr['middleware']) ? $cr['middleware'] : ['api'];
             $middlewareStr = "['" . implode("', '", $middleware) . "']";
 
             $lines = [];
@@ -117,23 +97,26 @@ class RouteRegistrar
                 $httpMethod = strtolower($r['method']);
                 $route      = ltrim($r['route'], '/');
                 $handler    = $r['handler'];
-                $lines[]    = "    Route::{$httpMethod}('{$route}', [{$controllerName}::class, '{$handler}']);";
+                $lines[]    = "        Route::{$httpMethod}('{$route}', [{$controllerName}::class, '{$handler}']);";
             }
 
+            $linesBlock    = implode("\n", $lines);
             $routeGroups[] = "// ── Custom: {$controllerName} ─────────────────────────────\n"
                 . "Route::middleware({$middlewareStr})\n"
                 . "    ->group(function () {\n"
-                . implode("\n", $lines) . "\n"
+                . "{$linesBlock}\n"
                 . "    });";
         }
 
-        // ── Assemble file ─────────────────────────
-        $uniqueUseStatements = array_unique(array_merge($useStatements, $middlewareUses));
-        sort($uniqueUseStatements);
-        $useBlock    = implode("\n", $uniqueUseStatements);
-        $groupsBlock = implode("\n\n", $routeGroups);
+        // ── Assemble use block ────────────────────
+        // Controller use statements + scoped middleware use statements
+        $allUseStatements = array_unique(array_merge($useStatements, $middlewareUses));
+        $useBlock         = implode("\n", $allUseStatements);
+        $groupsBlock      = implode("\n\n", $routeGroups);
 
-        // Sanctum bootstrap — same as decoupled (Inertia still uses Sanctum sessions)
+        // ── Sanctum bootstrap (auth:true tatemonos) ───────────────
+        // Swaps the token model so auth:sanctum resolves against the
+        // tatemono's own isolated SQLite connection.
         $sanctumBootstrap = '';
         if ($hasAuth) {
             $sanctumBootstrap = "\nuse Laravel\\Sanctum\\Sanctum;\n"
@@ -141,11 +124,15 @@ class RouteRegistrar
                 . "Sanctum::usePersonalAccessTokenModel({$slugNs}Token::class);\n";
         }
 
-        // Scoped middleware alias bootstrap
+        // ── Scoped middleware alias bootstrap ─────────────────────
+        // Registers per-tatemono middleware aliases (e.g. 'role') directly
+        // in the route file so no global app.php registration is needed.
+        // This is the same localised-bootstrap pattern as Sanctum above.
         $aliasBootstrap = '';
         if (!empty($allAliases)) {
             $aliasLines = [];
             foreach ($allAliases as $aliasKey => $fqcn) {
+                // aliasMiddleware($name, $class) takes two separate args — not an array
                 $aliasLines[] = "app('router')->aliasMiddleware('{$aliasKey}', \\{$fqcn}::class);";
             }
             $aliasBootstrap = "\n// ── Scoped middleware aliases for this tatemono ────────────\n"
@@ -155,7 +142,7 @@ class RouteRegistrar
         $content = "<?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — {$name} [Inertia/Web]
+// ARKZEN GENERATED ROUTES — {$name}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: " . now()->toISOString() . "
 // Resources: " . implode(', ', array_column($apis, 'model')) . "
@@ -169,38 +156,20 @@ use Illuminate\\Support\\Facades\\Route;
 ";
 
         File::put($routeFile, $content);
-        Log::info("[Arkzen Inertia Routes] ✓ Route file created: routes/modules/{$name}.php");
+        Log::info("[Arkzen Routes] ✓ Route file created: routes/modules/{$name}.php");
 
         ArkzenServiceProvider::registerModuleRoutes($name);
-        Log::info("[Arkzen Inertia Routes] ✓ Routes registered for: {$name}");
+        Log::info("[Arkzen Routes] ✓ Routes registered for: {$name}");
     }
 
     // ─────────────────────────────────────────────
-    // REMOVE
+    // GENERATE ROUTE LINES FOR ONE RESOURCE
     // ─────────────────────────────────────────────
-
-    public static function remove(string $name): void
-    {
-        $routeFile = base_path("routes/modules/{$name}.php");
-        if (File::exists($routeFile)) {
-            File::delete($routeFile);
-            Log::info("[Arkzen Inertia Routes] ✓ Route file removed: {$name}");
-        }
-    }
-
-    // ─────────────────────────────────────────────
-    // GENERATE ROUTE LINES — identical to decoupled
-    // ─────────────────────────────────────────────
-
-    private static function tatNameToPageName(string $tatName): string
-    {
-        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $tatName)));
-    }
 
     private static function generateRouteLines(string $controller, array $endpoints, string $model): string
     {
         $lines    = [];
-        $modelVar = lcfirst($model);
+        $modelVar = lcfirst($model); // Item → item, EventLog → eventLog
 
         $methodMap = [
             'GET'    => 'get',
@@ -222,5 +191,19 @@ use Illuminate\\Support\\Facades\\Route;
         }
 
         return implode("\n", $lines);
+    }
+
+    // ─────────────────────────────────────────────
+    // REMOVE
+    // ─────────────────────────────────────────────
+
+    public static function remove(string $moduleName): void
+    {
+        $routeFile = base_path("routes/modules/{$moduleName}.php");
+
+        if (File::exists($routeFile)) {
+            File::delete($routeFile);
+            Log::info("[Arkzen Routes] ✓ Route file removed: {$moduleName}");
+        }
     }
 }

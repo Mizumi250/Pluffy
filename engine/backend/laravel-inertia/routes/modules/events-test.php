@@ -1,9 +1,9 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — events-test [Inertia/Web]
+// ARKZEN GENERATED ROUTES — events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:25.353029Z
+// Generated: 2026-05-18T12:04:23.648863Z
 // Resources: EventLog
 // Custom controllers: 
 // ============================================================
@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\EventsTest\EventLogController;
 
 // ── EventLog ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/events-test')
     ->group(function () {
 

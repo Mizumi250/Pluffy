@@ -1,20 +1,20 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED ROUTES — dtr-geofencing [Inertia/Web]
+// ARKZEN GENERATED ROUTES — dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T10:37:25.208786Z
+// Generated: 2026-05-18T12:04:23.012401Z
 // Resources: Employee, TimeRecord, DtrSetting
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\DtrGeofencing\DtrSettingController;
 use App\Http\Controllers\Arkzen\DtrGeofencing\EmployeeController;
 use App\Http\Controllers\Arkzen\DtrGeofencing\TimeRecordController;
+use App\Http\Controllers\Arkzen\DtrGeofencing\DtrSettingController;
 
 // ── Employee ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/dtr')
     ->group(function () {
 
@@ -27,7 +27,7 @@ Route::middleware(['web'])
     });
 
 // ── TimeRecord ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/dtr')
     ->group(function () {
 
@@ -46,7 +46,7 @@ Route::middleware(['web'])
     });
 
 // ── DtrSetting ─────────────────────────────
-Route::middleware(['web'])
+Route::middleware(['api'])
     ->prefix('/api/dtr')
     ->group(function () {
 
