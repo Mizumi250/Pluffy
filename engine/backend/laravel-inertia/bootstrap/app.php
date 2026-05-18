@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web:      __DIR__.'/../routes/web.php',
+        api:      __DIR__.'/../routes/api.php',
         commands: __DIR__.'/../routes/console.php',
         health:   '/up',
         then: function () {
@@ -25,6 +26,11 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // CRITICAL: Prepend ArkzenSanctumTokenResolver BEFORE auth:sanctum runs
+        // so that tatemono-specific PersonalAccessToken models are resolved first.
+        // Without this, all auth:sanctum routes return 401 Unauthorized.
+        $middleware->prepend(\App\Http\Middleware\ArkzenSanctumTokenResolver::class);
+
         // Inertia: share auth + flash props on every request
         $middleware->web(append: [
             \App\Http\Middleware\HandleInertiaRequests::class,
