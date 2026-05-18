@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — KindBadge [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:31:45.481Z
+// Generated: 2026-05-18T13:03:14.218Z
 // ============================================================
 
 export { KindBadge } from './_components'

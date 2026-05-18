@@ -13,6 +13,7 @@ import { createInertiaApp } from '@inertiajs/react'
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers'
 import { createRoot } from 'react-dom/client'
 import { ToastProvider } from '@/arkzen/core/components/Toast'
+import { setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 const appName = import.meta.env.VITE_APP_NAME || 'Arkzen'
 
@@ -29,6 +30,14 @@ createInertiaApp({
         ),
 
     setup({ el, App, props }) {
+        // Initialize tatemono slug from server-passed props
+        // This ensures Zustand auth store uses the correct localStorage key
+        // before any component mounts and tries to restore the auth token.
+        const arkzen = (props.initialPage?.props as any)?.arkzen || {}
+        const tatemono = arkzen.tatemono || 'default'
+        setActiveTatemono(tatemono)
+        console.log('[Arkzen Inertia] Tatemono slug initialized:', tatemono)
+
         createRoot(el).render(
             <ToastProvider position="top-right">
                 <App {...props} />

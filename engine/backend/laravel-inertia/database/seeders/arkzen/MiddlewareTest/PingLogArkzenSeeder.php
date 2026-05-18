@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — PingLogArkzenSeeder
 // Tatemono: middleware-test  |  Connection: middleware_test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:31:47.670309Z
+// Generated: 2026-05-18T13:03:16.993860Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\MiddlewareTest;

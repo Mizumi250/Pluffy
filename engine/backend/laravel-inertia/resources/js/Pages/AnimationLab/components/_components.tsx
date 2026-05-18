@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T12:31:44.832Z
+// Generated: 2026-05-18T13:03:13.416Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

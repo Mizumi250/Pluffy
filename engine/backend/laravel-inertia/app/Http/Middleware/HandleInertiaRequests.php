@@ -24,13 +24,25 @@ class HandleInertiaRequests extends Middleware
 
     /**
      * Defines the shared props that are available to ALL Inertia pages.
-     * Every page gets: auth.user, flash messages, and validation errors.
+     * Every page gets: auth.user, flash messages, validation errors, and tatemono slug.
      *
      * @return array<string, mixed>
      */
     public function share(Request $request): array
     {
+        // Extract tatemono slug from the URL path
+        // /auth-test/login → 'auth-test'
+        // / → 'default'
+        $path = trim($request->path(), '/');
+        $segments = explode('/', $path);
+        $tatemono = $segments[0] ?? 'default';
+
         return array_merge(parent::share($request), [
+            // Tatemono slug — needed to initialize Zustand auth store with correct localStorage key
+            'arkzen' => [
+                'tatemono' => $tatemono,
+            ],
+
             // Auth: current user available on every page as props.auth.user
             'auth' => [
                 'user' => $request->user()?->only('id', 'name', 'email', 'role'),
