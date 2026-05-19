@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — church-community
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-19T12:26:26.877Z
+// Generated: 2026-05-19T23:54:01.091Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED AUTH STORE v1.0
+// ARKZEN ENGINE — SHARED AUTH STORE v1.1
 // Framework-agnostic. No next/navigation or react-router imports.
 // Works identically in Next.js, React+Vite, React+Inertia,
 // React Native — any stack that has zustand + fetch.
@@ -13,6 +13,7 @@
 
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
+import { useEffect, useState } from 'react'
 
 // ─────────────────────────────────────────────
 // TATEMONO SLUG RESOLUTION
@@ -192,11 +193,57 @@ export const useAuthStore = create<AuthState>()(
     }),
 
     {
-      name:       `arkzen-auth-${typeof window !== 'undefined' ? (window.__ARKZEN_TATEMONO__ ?? 'default') : 'default'}`,
+      // IMPORTANT: name must use a lazy getter, not a template literal evaluated at
+      // module load time. On MPA stacks (Astro), ES module imports are hoisted and
+      // evaluated before any component code runs — so window.__ARKZEN_TATEMONO__ is
+      // always undefined when the store is first created, causing every tatemono to
+      // share the key 'arkzen-auth-default'. The lazy getter resolves the slug at the
+      // moment zustand/persist first reads or writes localStorage, by which point the
+      // island's setActiveTatemono() call has already executed.
+      // On SPA stacks (Next.js, Vite, Inertia) this is a no-op change — the store is
+      // created once and setActiveTatemono() is called before any auth action anyway.
+      get name() {
+        return `arkzen-auth-${typeof window !== 'undefined' ? (window.__ARKZEN_TATEMONO__ ?? 'default') : 'default'}`
+      },
       partialize: (state) => ({ token: state.token }),
     }
   )
 )
+
+// ─────────────────────────────────────────────
+// HYDRATION HOOK
+// ─────────────────────────────────────────────
+//
+// useAuthStoreHydrated() — returns true once zustand/persist has
+// finished rehydrating the token from localStorage.
+//
+// WHY THIS EXISTS:
+//   SPA stacks (Next.js, Vite, Inertia) never destroy the store
+//   between navigations, so hasHydrated() is already true by the
+//   time any layout mounts. This hook is a safe no-op for them.
+//
+//   Astro (and any MPA stack) does a full page reload on every
+//   navigation. The store is re-created cold and persist rehydrates
+//   asynchronously. Without this hook, AuthLayout's useEffect fires
+//   before the token is restored → sees null → redirects to /login.
+//
+// USAGE: call at the top of AuthLayout / GuestLayout:
+//   const hydrated = useAuthStoreHydrated()
+//   if (!hydrated) return <spinner>
+
+export function useAuthStoreHydrated(): boolean {
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated())
+
+  useEffect(() => {
+    if (hydrated) return
+    const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
+    // Catch the race: may have finished between useState initialiser and useEffect
+    if (useAuthStore.persist.hasHydrated()) setHydrated(true)
+    return unsub
+  }, [])
+
+  return hydrated
+}
 
 // ─────────────────────────────────────────────
 // FETCH HELPERS
