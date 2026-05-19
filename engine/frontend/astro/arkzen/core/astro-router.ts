@@ -61,16 +61,60 @@ function stripNextImports(raw: string): string {
     .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"][ \t]*;?[ \t]*\r?\n?/gm, '')
 }
 
-// Normalize raw tatemono code for Astro context (React islands)
-// Same transformations as Vite, since React island code is identical
+function stripReactRouterImports(raw: string): string {
+  return raw
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+}
+
+function normalizeRouterCalls(raw: string): string {
+  let out = raw
+  const routerVars = [...out.matchAll(/\bconst\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*useArkzenRouter\(\)/g)]
+    .map(m => m[1])
+
+  for (const varName of routerVars) {
+    out = out
+      .replace(new RegExp(`\\b${varName}\\.push\\(`, 'g'), `${varName}.push(`)
+      .replace(new RegExp(`\\b${varName}\\.replace\\(`, 'g'), `${varName}.replace(`)
+      .replace(new RegExp(`\\b${varName}\\.refresh\\(\\)`, 'g'), `window.location.reload()`)
+  }
+
+  return out
+}
+
+function getAstroAdapterImportLines(raw: string): string[] {
+  const needsPathname = /\buseArkzenPathname\s*\(/.test(raw)
+  const needsRouter   = /\buseArkzenRouter\s*[\({]/.test(raw)
+  const needsLink     = /<Link\b/.test(raw)
+
+  const lines: string[] = []
+  if (needsPathname || needsRouter) {
+    const hooks = [
+      needsPathname && 'useArkzenPathname',
+      needsRouter && 'useArkzenRouter',
+    ].filter(Boolean) as string[]
+    lines.push(`import { ${hooks.join(', ')} } from '@/arkzen/core/adapters/router'`)
+  }
+  if (needsLink) {
+    lines.push(`import { Link } from '@/arkzen/core/adapters/Link'`)
+  }
+
+  return lines
+}
+
+// Normalize raw tatemono code for Astro React islands.
+// Astro uses Arkzen router/link adapters instead of react-router-dom.
 function normalizeForAstro(raw: string): string {
-  return stripNextImports(raw)
-    .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    .replace(/\busePathname\(\)/g, 'useLocation().pathname')
-    .replace(/\buseRouter\b/g, 'useNavigate')
-    .replace(/(<Link\b[^>]*?)\bhref=/g, '$1to=')
-    .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.PUBLIC_$1')
-    // Astro uses PUBLIC_ prefix instead of Vite's VITE_
+  return normalizeRouterCalls(
+    stripReactRouterImports(
+      stripNextImports(raw)
+        .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+        .replace(/\busePathname\(\)/g, 'useArkzenPathname()')
+        .replace(/\buseRouter\b/g, 'useArkzenRouter')
+        .replace(/\buseNavigate\b/g, 'useArkzenRouter')
+        .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.PUBLIC_$1')
+      // Astro uses PUBLIC_ prefix instead of Vite's VITE_
+    )
+  )
 }
 
 // ─── Import Resolver (mirrors router.ts / vite-router.ts) ────────────────────
@@ -268,7 +312,10 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
   ensureDir(componentsDir)
 
   const rawSources = tatemono.components.map(c => normalizeForAstro(c.raw.trim()))
-  const { canonicalBlock, strippedSources } = resolveImports(rawSources)
+  const adapterImports = getAstroAdapterImportLines(rawSources.join('\n'))
+  const { canonicalBlock, strippedSources } = resolveImports(rawSources, {
+    extra: adapterImports.join('\n') || undefined,
+  })
 
   const content = `// ============================================================
 // ARKZEN GENERATED SHARED UTILITIES — ${tatemono.meta.name}
@@ -376,7 +423,8 @@ function generateIslandFile(
 
   const layoutImport = getLayoutImport(page.layout, tatemono.meta)
   const layoutComp   = getLayoutComponent(page.layout)
-  const extraLines   = [layoutImport, animImportLine].filter(Boolean).join('\n')
+  const adapterImportLines = getAstroAdapterImportLines(allSources.join('\n'))
+  const extraLines   = [layoutImport, animImportLine, ...adapterImportLines].filter(Boolean).join('\n')
 
   const { canonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:  ['useRef', 'useEffect'],
@@ -522,9 +570,11 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   ensureDir(LAYOUTS_DIR)
 
   for (const layout of tatemono.layouts) {
+    const normalizedLayout = normalizeForAstro(layout.raw)
+    const adapterImports = getAstroAdapterImportLines(normalizedLayout)
     const { canonicalBlock, strippedSources } = resolveImports(
-      [normalizeForAstro(layout.raw)],
-      { reactHooks: [], framerNamed: [] }
+      [normalizedLayout],
+      { reactHooks: [], framerNamed: [], extra: adapterImports.join('\n') || undefined }
     )
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const content  = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name}
@@ -544,6 +594,7 @@ ${strippedSources[0]}
 function generateNotFoundPage(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
   const islandName = `ArkzenNotFound_${toPascalCase(tatemono.meta.name)}`
   const raw        = normalizeForAstro(handler.raw).replace(/'use client'[;]?\n?/, '').trim()
+  const adapterImports = getAstroAdapterImportLines(raw)
 
   // Generate the React island tsx file → src/arkzen/generated/islands/{tat}_404.tsx
   const islandFileName = `${tatemono.meta.name}_404.tsx`
@@ -553,6 +604,7 @@ function generateNotFoundPage(tatemono: ParsedTatemono, handler: ArkzenErrorHand
 
 import React from 'react'
 import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}'
+${adapterImports.join('\n')}
 
 ${raw}
 

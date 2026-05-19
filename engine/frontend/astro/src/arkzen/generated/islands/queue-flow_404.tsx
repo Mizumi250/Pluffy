@@ -4,6 +4,7 @@
 import React from 'react'
 import { ErrorScreen } from '@/arkzen/generated/components/queue-flow'
 
+
 const NotFoundPage = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
     <div style={{ textAlign: 'center' }}>

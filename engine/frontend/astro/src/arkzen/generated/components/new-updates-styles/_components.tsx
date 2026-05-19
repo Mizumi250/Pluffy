@@ -2,12 +2,13 @@
 // ARKZEN GENERATED SHARED UTILITIES — new-updates-styles
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:17.298Z
+// Generated: 2026-05-19T12:26:28.351Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
+import { Link } from '@/arkzen/core/adapters/Link'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 
@@ -33,7 +34,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              to={link.path}
+              href={link.path}
               className={`navbar-link ${currentPath === link.path ? 'navbar-link-active' : ''}`}
             >
               {link.name}
@@ -56,7 +57,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              to={link.path}
+              href={link.path}
               onClick={() => setIsOpen(false)}
               className={`navbar-mobile-link ${currentPath === link.path ? 'navbar-mobile-link-active' : ''}`}
             >

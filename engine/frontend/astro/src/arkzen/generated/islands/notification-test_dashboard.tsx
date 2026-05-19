@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:17.321Z
+// Generated: 2026-05-19T12:26:28.391Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 if (typeof window !== 'undefined') {
@@ -27,7 +28,7 @@ const APP_KEY       = import.meta.env.PUBLIC_REVERB_APP_KEY ?? 'arkzen-key'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {
-  const router = useNavigate()
+  const router = useArkzenRouter()
   const { user, logout } = useAuthStore()
   const [inbox, setInbox] = useState<any[]>([])
   const [popup, setPopup] = useState<string | null>(null)
@@ -218,7 +219,7 @@ const DashboardPage = () => {
   const handleLogout = async () => {
     wsRef.current?.close()
     await logout()
-    router.refresh()
+    window.location.reload()
     router.replace('/notification-test/login')
   }
 

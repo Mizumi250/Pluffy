@@ -3,13 +3,14 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:14.505Z
+// Generated: 2026-05-19T12:26:25.255Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 function useToast() {
@@ -69,7 +70,7 @@ const StatusDot = ({ status }: { status: string }) => (
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {
   const { register } = useAuthStore()
-  const router       = useNavigate()
+  const router       = useArkzenRouter()
   const { toast, success: toastSuccess, error: toastError } = useToast()
   const [name, setName]         = useState('')
   const [email, setEmail]       = useState('')

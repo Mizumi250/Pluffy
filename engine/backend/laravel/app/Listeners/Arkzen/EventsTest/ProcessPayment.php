@@ -5,7 +5,7 @@
 // Tatemono: events-test
 // Listens to: App\Events\Arkzen\EventsTest\OrderPlaced
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T08:37:21.532304Z
+// Generated: 2026-05-19T12:26:27.596913Z
 // ============================================================
 
 namespace App\Listeners\Arkzen\EventsTest;

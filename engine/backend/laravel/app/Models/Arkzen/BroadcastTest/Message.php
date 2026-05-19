@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Message
 // Tatemono: broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T08:37:20.444809Z
+// Generated: 2026-05-19T12:26:26.103484Z
 // ============================================================
 
 namespace App\Models\Arkzen\BroadcastTest;

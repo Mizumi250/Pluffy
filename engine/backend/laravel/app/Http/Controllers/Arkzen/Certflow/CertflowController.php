@@ -5,7 +5,7 @@
 // Tatemono: certflow
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-05-17T08:37:20.549186Z
+// Generated: 2026-05-19T12:26:26.356906Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Certflow;

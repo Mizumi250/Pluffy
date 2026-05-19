@@ -1,4 +1,6 @@
 ---
+import '@/styles/globals.css'
+
 interface Props {
   title?: string
 }
@@ -11,11 +13,34 @@ const { title = 'Arkzen' } = Astro.props
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
-    <style>@import "/src/styles/globals.css"</style>
   </head>
   <body>
     <div id="arkzen-root">
       <slot />
     </div>
+
+    <!-- Initialize zustand with auth token from cookies BEFORE React hydrates -->
+    <script>
+      (function() {
+        // Extract all arkzen-auth-* cookies and populate localStorage so zustand can restore them
+        const cookies = document.cookie.split(';');
+        for (const cookie of cookies) {
+          const trimmed = cookie.trim();
+          if (trimmed.startsWith('arkzen-auth-')) {
+            const [key, value] = trimmed.split('=');
+            if (key && value) {
+              // Get the tatemono slug from the cookie key (e.g., arkzen-auth-auth-test → auth-test)
+              const slug = key.replace('arkzen-auth-', '');
+              // Store in localStorage so zustand persist middleware can restore it
+              try {
+                localStorage.setItem(`arkzen-auth-${slug}`, JSON.stringify({ token: value }));
+              } catch (e) {
+                // localStorage might not be available in some environments
+              }
+            }
+          }
+        }
+      })();
+    </script>
   </body>
 </html>

@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:14.049Z
+// Generated: 2026-05-19T12:26:24.606Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Lock, ShieldCheck } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 // Activate the correct isolated auth context for this Tatemono
@@ -20,12 +21,12 @@ if (typeof window !== 'undefined') {
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {
-  const router = useNavigate()
+  const router = useArkzenRouter()
   const { user, logout } = useAuthStore()
 
   const handleLogout = async () => {
     await logout();
-    router.refresh();
+    window.location.reload();
     router.replace('/auth-test/login');
   };
 

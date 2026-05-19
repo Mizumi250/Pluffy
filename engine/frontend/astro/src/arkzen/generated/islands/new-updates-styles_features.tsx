@@ -3,13 +3,14 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:17.307Z
+// Generated: 2026-05-19T12:26:28.365Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { Link } from '@/arkzen/core/adapters/Link'
 
 // Utilities, types, and helper functions from @arkzen:components
 // ─── CUSTOM COMPONENTS ───────────────────────────────
@@ -36,7 +37,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              to={link.path}
+              href={link.path}
               className={`navbar-link ${currentPath === link.path ? 'navbar-link-active' : ''}`}
             >
               {link.name}
@@ -59,7 +60,7 @@ const Navbar = ({ currentPath }: { currentPath: string }) => {
           {links.map(link => (
             <Link
               key={link.path}
-              to={link.path}
+              href={link.path}
               onClick={() => setIsOpen(false)}
               className={`navbar-mobile-link ${currentPath === link.path ? 'navbar-mobile-link-active' : ''}`}
             >

@@ -5,7 +5,7 @@
 // Tatemono: certflow
 // Subject: Your Certificate is Ready 🎓
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T08:37:20.957518Z
+// Generated: 2026-05-19T12:26:26.843525Z
 // ============================================================
 
 namespace App\Mail\Arkzen\Certflow;

@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:16.872Z
+// Generated: 2026-05-19T12:26:28.146Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 if (typeof window !== 'undefined') {
@@ -36,7 +37,7 @@ interface MailType {
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {
-  const router          = useNavigate()
+  const router          = useArkzenRouter()
   const { user, logout } = useAuthStore()
 
   const mailTypes: MailType[] = [

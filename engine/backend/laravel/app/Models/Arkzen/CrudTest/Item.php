@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Item
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T08:37:21.198290Z
+// Generated: 2026-05-19T12:26:27.120047Z
 // ============================================================
 
 namespace App\Models\Arkzen\CrudTest;

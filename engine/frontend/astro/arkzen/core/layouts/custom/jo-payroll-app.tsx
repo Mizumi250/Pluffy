@@ -3,6 +3,7 @@
 
 import React, { useEffect, useState } from 'react'
 import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },
@@ -15,8 +16,8 @@ const NAV_ITEMS = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const pathname  = useLocation().pathname
-  const router    = useNavigate()
+  const pathname  = useArkzenPathname()
+  const router    = useArkzenRouter()
   const [open, setOpen]       = useState(false)
   const [mounted, setMounted] = useState(false)
 

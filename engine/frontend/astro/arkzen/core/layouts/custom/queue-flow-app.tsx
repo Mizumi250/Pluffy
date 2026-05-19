@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react'
 import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 const NAV = [
   { href: '/queue-flow',        icon: LayoutGrid, label: 'Display'  },
@@ -11,8 +12,8 @@ const NAV = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const pathname = useLocation().pathname
-  const router   = useNavigate()
+  const pathname = useArkzenPathname()
+  const router   = useArkzenRouter()
   const [online, setOnline] = React.useState(true)
 
   React.useEffect(() => {

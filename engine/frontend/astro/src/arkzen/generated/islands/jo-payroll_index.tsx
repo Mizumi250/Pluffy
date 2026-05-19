@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:16.486Z
+// Generated: 2026-05-19T12:26:27.827Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, Calenda
 import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -476,7 +477,7 @@ export const FundingBar = ({ label, count, total, max }: { label: string; count:
 // Page component code (from @arkzen:page:index)
 const DashboardPage = () => {
   const { summary, setSummary, jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
-  const router = useNavigate()
+  const router = useArkzenRouter()
 
   useEffect(() => {
     const load = async () => {

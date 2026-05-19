@@ -3,6 +3,7 @@
 
 import React, { useState } from 'react'
 import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },
@@ -10,8 +11,8 @@ const NAV = [
 ]
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const pathname = useLocation().pathname
-  const router   = useNavigate()
+  const pathname = useArkzenPathname()
+  const router   = useArkzenRouter()
   const [open, setOpen] = useState(false)
 
   return (

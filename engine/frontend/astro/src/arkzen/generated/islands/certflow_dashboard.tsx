@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-17T06:39:15.229Z
+// Generated: 2026-05-19T12:26:26.233Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, Graduation
 import { create } from 'zustand'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 if (typeof window !== 'undefined') {
@@ -704,7 +705,7 @@ export const LayersPanel = ({
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {
   const { user, logout } = useAuthStore()
-  const router           = useNavigate()
+  const router           = useArkzenRouter()
   const { push: toast }  = useToastStore()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const {
