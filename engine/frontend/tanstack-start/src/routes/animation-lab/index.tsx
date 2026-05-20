@@ -6,7 +6,7 @@
 
 import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/animation-lab')({
+export const Route = createFileRoute('/animation-lab/')({
   component: lazyRouteComponent(() =>
     import('@/pages/animation-lab/index').then(m => ({ default: m.default }))
   ),

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — TicketController
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T11:20:19.336473Z
+// Generated: 2026-05-20T15:23:33.130918Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\QueueFlow;

@@ -6,7 +6,7 @@
 
 import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/body-endpoint-handler')({
+export const Route = createFileRoute('/body-endpoint-handler/')({
   component: lazyRouteComponent(() =>
     import('@/pages/body-endpoint-handler/index').then(m => ({ default: m.default }))
   ),

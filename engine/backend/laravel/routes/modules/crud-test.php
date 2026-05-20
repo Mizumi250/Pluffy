@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T12:41:18.707440Z
+// Generated: 2026-05-20T15:23:31.956329Z
 // Resources: Item
 // Custom controllers: 
 // ============================================================

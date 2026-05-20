@@ -6,7 +6,7 @@
 
 import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/asset-hub')({
+export const Route = createFileRoute('/asset-hub/')({
   component: lazyRouteComponent(() =>
     import('@/pages/asset-hub/index').then(m => ({ default: m.default }))
   ),

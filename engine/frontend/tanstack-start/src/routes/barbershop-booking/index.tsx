@@ -6,7 +6,7 @@
 
 import { createFileRoute, lazyRouteComponent } from '@tanstack/react-router'
 
-export const Route = createFileRoute('/barbershop-booking')({
+export const Route = createFileRoute('/barbershop-booking/')({
   component: lazyRouteComponent(() =>
     import('@/pages/barbershop-booking/index').then(m => ({ default: m.default }))
   ),
