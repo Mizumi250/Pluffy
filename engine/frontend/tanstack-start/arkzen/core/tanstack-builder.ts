@@ -73,12 +73,17 @@ export async function buildTanStackTatemono(corePath: string): Promise<TanStackB
     buildTanStackPages(parsed)
 
     // Build route entries for this tatemono
-    const entries: RouteEntry[] = parsed.pages.map(page => ({
-      tatName,
-      page,
-      routeVar: `Route_${tatName.replace(/-/g, '_')}_${page.name.replace(/-/g, '_')}`,
-      filePath: `${tatName}/${page.name}`,
-    }))
+    const entries: RouteEntry[] = parsed.pages.map(page => {
+      if (!page.name) {
+        throw new Error(`Page missing name in tatemono ${tatName}`)
+      }
+      return {
+        tatName,
+        page,
+        routeVar: `Route_${tatName.replace(/-/g, '_')}_${page.name.replace(/-/g, '_')}`,
+        filePath: `${tatName}/${page.name}`,
+      }
+    })
     _registeredRoutes.set(tatName, entries)
 
     // Track auth tatemonos

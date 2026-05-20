@@ -218,12 +218,20 @@ interface RouteEntry {
 }
 
 function writeRouteTree(entries: RouteEntry[], authTatemonos: string[]): void {
+  if (!fs.existsSync(ROUTE_TREE)) {
+    console.error(`[Arkzen TanStack] ✗ Route tree file not found: ${ROUTE_TREE}`)
+    throw new Error(`Route tree file not found: ${ROUTE_TREE}`)
+  }
+  
   let content = fs.readFileSync(ROUTE_TREE, 'utf-8')
 
   // Build import block
-  const importLines = entries.map(e =>
-    `import { Route as ${e.routeVar} } from '../../routes/${e.tatName}/${e.page.name}'`
-  ).join('\n')
+  const importLines = entries.map(e => {
+    if (!e.tatName || !e.routeVar || !e.page?.name) {
+      throw new Error(`Invalid route entry: tatName=${e.tatName}, routeVar=${e.routeVar}, page.name=${e.page?.name}`)
+    }
+    return `import { Route as ${e.routeVar} } from '../../routes/${e.tatName}/${e.page.name}'`
+  }).join('\n')
 
   // Build children block
   const childrenLines = entries.map(e => `  ${e.routeVar},`).join('\n')
@@ -308,7 +316,7 @@ function generateAnimationFile(tatName: string, tatemono: ParsedTatemono): void 
 // ─── Main exports ─────────────────────────────────────────────────────────────
 
 export function buildTanStackPages(tatemono: ParsedTatemono): void {
-  const tatName = tatemono.name
+  const tatName = tatemono.meta.name
   const tatDir  = path.join(PAGES_DIR, tatName)
   const routeDir = path.join(ROUTES_DIR, tatName)
   ensureDir(tatDir)
@@ -339,7 +347,7 @@ export function buildTanStackPages(tatemono: ParsedTatemono): void {
   generateAnimationFile(tatName, tatemono)
 
   // Styles
-  emitTatemonoStyles(tatName, tatemono)
+  emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen TanStack Router' })
 
   // Assets
   const TATEMONO_ROOT = path.resolve(process.cwd(), '..', '..', '..')
