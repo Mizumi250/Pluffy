@@ -1,21 +1,14 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED GUEST LAYOUT v1.3
+// ARKZEN ENGINE — SHARED GUEST LAYOUT v1.4
 // Framework-agnostic. Router calls injected via useArkzenRouter().
 //
-// TWO GUARD MODES:
-//   redirectIfAuth / guestOnly → bounce authed users to dashboard
-//   Neither                    → fully public, no redirect
+// v1.4 — Wraps children in ToastProvider so useToast() works
+//   inside any page using GuestLayout, on all stacks.
 //
-// v1.3 — Two-phase guard:
-//   Phase 1 (mount, one-shot): checks auth state after hydration.
-//     If already authenticated → redirect to dashboard immediately.
-//     If token but not authenticated → fetchMe once to verify.
-//     If no token → show the page (guest is welcome).
-//   Phase 2 (reactive): watches isAuthenticated in the store.
-//     Handles the case where login() succeeds while on this page —
-//     the page component calls login() but doesn't navigate itself,
-//     so GuestLayout detects the state change and redirects.
-//     Skipped until phase 1 is done to avoid acting on stale state.
+// v1.3 — Two-phase guard: one-shot mount check + reactive watch
+//   for post-login redirect.
+// v1.2 — One-shot ref to prevent fetchMe loop.
+// v1.1 — useAuthStoreHydrated() gate for MPA stacks.
 //
 // This file lives in engine/shared and is sync-copied into
 // each stack's arkzen/core/layouts/ by shared-sync.ts.
@@ -25,6 +18,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
 import { useAuthStore, useAuthStoreHydrated } from '../stores/authStore'
+import { ToastProvider } from '../components/Toast'
 
 export interface GuestLayoutProps {
   children:        React.ReactNode
@@ -46,9 +40,9 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
   const hydrated            = useAuthStoreHydrated()
   const { isAuthenticated } = useAuthStore()
   const shouldGuard         = redirectIfAuth || guestOnly
-  const [checking, setChecking]   = useState(shouldGuard)
-  const [ready, setReady]         = useState(false)   // phase 1 complete
-  const checked                   = useRef(false)
+  const [checking, setChecking] = useState(shouldGuard)
+  const [ready, setReady]       = useState(false)
+  const checked                 = useRef(false)
 
   const getDashboard = () => {
     const segments = pathname.split('/').filter(Boolean)
@@ -87,25 +81,27 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
     check()
   }, [hydrated])
 
-  // Phase 2 — reactive watch: redirect if login() succeeds while on this page
+  // Phase 2 — reactive: redirect when login() succeeds while on this page
   useEffect(() => {
-    if (!ready) return           // don't act until phase 1 has resolved
+    if (!ready) return
     if (!shouldGuard) return
     if (!isAuthenticated) return
     router.replace(getDashboard())
   }, [isAuthenticated, ready])
 
-  if (checking) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
-      </div>
-    )
-  }
-
-  return (
+  const content = checking ? (
+    <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+      <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
+    </div>
+  ) : (
     <div className={className}>
       {children}
     </div>
+  )
+
+  return (
+    <ToastProvider position="top-right">
+      {content}
+    </ToastProvider>
   )
 }
