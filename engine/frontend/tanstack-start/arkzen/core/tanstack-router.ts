@@ -176,11 +176,21 @@ function generateTanStackRouteFile(
   tatName:  string,
   page:     ArkzenPage,
 ): string {
+  if (!page.name) {
+    console.error(`[Arkzen TanStack] ✗ ERROR: Page has no name in tatemono ${tatName}`, page)
+    throw new Error(`Page missing name in ${tatName}`)
+  }
+  
   const pagePascal    = toPascalCase(page.name)
   const tatPascal     = toPascalCase(tatName)
   const routePath     = routePathForPage(tatName, page)
   const componentName = `${tatPascal}${pagePascal}Page`
   const importPath    = `@/pages/${tatName}/${page.name}`
+
+  if (!routePath) {
+    console.error(`[Arkzen TanStack] ✗ ERROR: routePath is null/undefined for ${tatName}/${page.name}`)
+    throw new Error(`Cannot generate route path for ${tatName}/${page.name}`)
+  }
 
   return `// ============================================================
 // ARKZEN GENERATED — TanStack Route: ${routePath}
