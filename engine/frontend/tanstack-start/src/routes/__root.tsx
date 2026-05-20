@@ -5,6 +5,8 @@ import {
   Scripts,
 } from '@tanstack/react-router'
 import { ToastProvider } from '@/arkzen/core/components/Toast'
+import appCss from '../index.css?url'
+
 
 export const Route = createRootRoute({
   head: () => ({
@@ -13,6 +15,7 @@ export const Route = createRootRoute({
       { name: 'viewport', content: 'width=device-width, initial-scale=1' },
     ],
     links: [
+      { rel: 'stylesheet', href: appCss },  // ← add this
       { rel: 'preconnect', href: 'https://fonts.bunny.net' },
       { rel: 'stylesheet', href: 'https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap' },
     ],

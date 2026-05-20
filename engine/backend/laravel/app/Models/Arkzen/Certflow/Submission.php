@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Submission
 // Tatemono: certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T10:39:31.290774Z
+// Generated: 2026-05-20T11:20:18.127692Z
 // ============================================================
 
 namespace App\Models\Arkzen\Certflow;
