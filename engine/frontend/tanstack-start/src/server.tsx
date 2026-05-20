@@ -1,17 +1,8 @@
-// ============================================================
-// ARKZEN — TanStack Start SERVER ENTRY (SSR)
-// src/server.tsx
-//
-// Handles SSR rendering. TanStack Start 1.x calls this on
-// every request via its Vite-native server handler.
-// ============================================================
+import './index.css'
+import handler, { createServerEntry } from '@tanstack/react-start/server-entry'
 
-import {
-  createStartHandler,
-  defaultStreamHandler,
-} from '@tanstack/react-start/server'
-import { createRouter } from './router'
-
-export default createStartHandler({
-  createRouter,
-})(defaultStreamHandler)
+export default createServerEntry({
+  fetch(request) {
+    return handler.fetch(request)
+  },
+})
