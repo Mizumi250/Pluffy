@@ -342,7 +342,9 @@ export function buildTanStackPages(tatemono: ParsedTatemono): void {
   emitTatemonoStyles(tatName, tatemono)
 
   // Assets
-  copyAssetsToPublic(tatName, tatemono)
+  const TATEMONO_ROOT = path.resolve(process.cwd(), '..', '..', '..')
+  const assetsPath = path.join(TATEMONO_ROOT, 'tatemonos', tatName, 'assets')
+  copyAssetsToPublic(tatName, assetsPath, PUBLIC_DIR)
 
   console.log(`[Arkzen TanStack] ✓ Built ${tatName} (${tatemono.pages.length} pages)`)
 }

@@ -17,11 +17,11 @@
     "outDir": "./dist"
   },
   "include": [
-    "app.config.ts",
+    "vite.config.ts",
     "arkzen.ts",
     "arkzen/**/*.ts",
     "src/**/*.tsx",
     "src/**/*.ts"
   ],
-  "exclude": ["node_modules", "dist", ".vinxi"]
+  "exclude": ["node_modules", "dist", ".tanstack"]
 }

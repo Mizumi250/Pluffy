@@ -6,13 +6,11 @@
 // into src/pages/{TatName}/{page}.tsx automatically.
 // ============================================================
 
-import { StartClient } from '@tanstack/start'
+import { hydrateRoot } from 'react-dom/client'
+import { StartClient } from '@tanstack/react-start/client'
 import { createRouter } from './router'
-import ReactDOM from 'react-dom/client'
 import './index.css'
 
 const router = createRouter()
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-  <StartClient router={router} />
-)
+hydrateRoot(document, <StartClient router={router} />)

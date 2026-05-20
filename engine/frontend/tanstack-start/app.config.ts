@@ -1,7 +1,7 @@
 // ============================================================
-// ARKZEN — TanStack Start App Config (Vinxi)
-// TanStack Start uses Vinxi as its bundler. Vite plugins are
-// injected via vite.plugins inside defineConfig.
+// ARKZEN — TanStack Start App Config (Vite-native, no Vinxi)
+// TanStack Start 1.x uses Vite directly. defineConfig is
+// imported from @tanstack/start/config which wraps Vite.
 // ============================================================
 import { defineConfig } from '@tanstack/start/config'
 import path from 'path'
@@ -46,16 +46,5 @@ export default defineConfig({
   // TanStack Start SSR — set to false if you want SPA-only mode
   server: {
     preset: 'node-server',
-  },
-
-  routers: {
-    // Client-side router entry
-    client: {
-      entry: './src/client.tsx',
-    },
-    // SSR router entry
-    ssr: {
-      entry: './src/server.tsx',
-    },
   },
 })
