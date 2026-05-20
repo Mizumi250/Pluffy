@@ -53,10 +53,7 @@ export default defineConfig({
   plugins: [
     arkzenReadyPlugin(),
     tanstackStart({
-      routers: {
-        // Ignore /api/ folder — not page routes, just HTTP endpoints
-        routeFileIgnorePattern: /^(api|_)/,
-      },
+      
     }),
     viteReact(), // must come AFTER tanstackStart
   ],

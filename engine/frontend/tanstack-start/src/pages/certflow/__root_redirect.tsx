@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — certflow [TanStack]
 // Visiting /certflow redirects to /certflow/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-20T15:23:31.214Z
+// Generated: 2026-05-20T15:47:17.536Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T15:23:33.075Z
+// Generated: 2026-05-20T15:47:19.092Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
