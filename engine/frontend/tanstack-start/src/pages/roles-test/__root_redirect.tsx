@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — roles-test [TanStack]
 // Visiting /roles-test redirects to /roles-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-20T15:47:19.218Z
+// Generated: 2026-05-21T22:34:31.668Z
 // ============================================================
 
 import React from 'react'

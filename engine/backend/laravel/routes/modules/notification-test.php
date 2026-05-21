@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/notification-test/auth'
 // ============================================================
 // ARKZEN GENERATED ROUTES — notification-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T15:47:19.048525Z
+// Generated: 2026-05-21T22:34:30.636093Z
 // Resources: Notification
 // Custom controllers: 
 // ============================================================

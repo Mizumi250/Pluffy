@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — EventResource
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T15:47:18.088351Z
+// Generated: 2026-05-21T22:34:25.189281Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\ChurchCommunity;

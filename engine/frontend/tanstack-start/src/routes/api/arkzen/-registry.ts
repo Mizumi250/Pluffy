@@ -4,7 +4,7 @@ import * as path from 'path'
 
 const REGISTRY_PATH = path.resolve(process.cwd(), '..', '..', '..', 'arkzen.json')
 
-export const ServerRoute = createServerFileRoute('/api/arkzen/registry')({
+export default createServerFileRoute('/api/arkzen/registry')({
   methods: {
     GET: async () => {
       try {
