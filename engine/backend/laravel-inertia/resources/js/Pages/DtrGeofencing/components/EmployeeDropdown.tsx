@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EmployeeDropdown [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T21:51:47.886Z
+// Generated: 2026-05-22T05:27:25.196Z
 // ============================================================
 
 export { EmployeeDropdown } from './_components'

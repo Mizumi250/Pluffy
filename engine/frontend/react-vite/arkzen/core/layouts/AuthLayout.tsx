@@ -1,19 +1,24 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED AUTH LAYOUT v1.0
+// ARKZEN ENGINE — SHARED AUTH LAYOUT v1.3
 // Framework-agnostic. Router calls injected via useArkzenRouter().
 //
-// Each stack ships adapters/router.ts that maps:
-//   useArkzenRouter() → useRouter/useNavigate
-//   useArkzenPathname() → usePathname/useLocation().pathname
+// v1.3 — Wraps children in ToastProvider so useToast() works
+//   inside any page using AuthLayout, on all stacks. On SPA
+//   stacks the app-level ToastProvider takes precedence (React
+//   context lookup walks up — inner provider is a no-op there).
+//
+// v1.2 — One-shot ref + smart fetchMe skip to prevent loops.
+// v1.1 — useAuthStoreHydrated() gate for MPA stacks.
 //
 // This file lives in engine/shared and is sync-copied into
 // each stack's arkzen/core/layouts/ by shared-sync.ts.
 // DO NOT import from next/navigation or react-router-dom here.
 // ============================================================
 
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
-import { useAuthStore, setActiveTatemono } from '../stores/authStore'
+import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '../stores/authStore'
+import { ToastProvider } from '../components/Toast'
 
 export interface AuthLayoutProps {
   children:     React.ReactNode
@@ -28,12 +33,17 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
   redirectTo,
   className = '',
 }) => {
-  const router                              = useArkzenRouter()
-  const pathname                            = useArkzenPathname()
-  const { fetchMe, token }                  = useAuthStore()
-  const [checking, setChecking]             = useState(requireAuth)
+  const router              = useArkzenRouter()
+  const pathname            = useArkzenPathname()
+  const hydrated            = useAuthStoreHydrated()
+  const [checking, setChecking] = useState(requireAuth)
+  const checked = useRef(false)
 
   useEffect(() => {
+    if (!hydrated) return
+    if (checked.current) return
+    checked.current = true
+
     const segments = pathname.split('/').filter(Boolean)
     const tatemono = segments[0] ?? ''
     if (tatemono) setActiveTatemono(tatemono)
@@ -41,13 +51,17 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     if (!requireAuth) { setChecking(false); return }
 
     const check = async () => {
+      const { token, isAuthenticated, fetchMe } = useAuthStore.getState()
+
       if (!token) {
         const loginPage = redirectTo ?? (tatemono ? `/${tatemono}/login` : '/login')
         router.replace(loginPage)
         return
       }
 
-      await fetchMe()
+      if (!isAuthenticated) {
+        await fetchMe()
+      }
 
       if (!useAuthStore.getState().isAuthenticated) {
         const loginPage = redirectTo ?? (tatemono ? `/${tatemono}/login` : '/login')
@@ -59,19 +73,23 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({
     }
 
     check()
-  }, [requireAuth, token])
+  }, [hydrated])
 
   if (checking) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-neutral-50">
-        <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
-      </div>
+      <ToastProvider position="top-right">
+        <div className="min-h-screen flex items-center justify-center bg-neutral-50">
+          <div className="w-5 h-5 border-2 border-neutral-300 border-t-neutral-700 rounded-full animate-spin" />
+        </div>
+      </ToastProvider>
     )
   }
 
   return (
-    <div className={className}>
-      {children}
-    </div>
+    <ToastProvider position="top-right">
+      <div className={className}>
+        {children}
+      </div>
+    </ToastProvider>
   )
 }

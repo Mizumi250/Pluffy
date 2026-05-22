@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — EventStoreRequest
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-18T21:51:47.733576Z
+// Generated: 2026-05-22T05:27:24.999704Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ChurchCommunity;

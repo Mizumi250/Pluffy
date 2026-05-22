@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — animation-lab [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-16T10:20:38.078Z
+// Generated: 2026-05-22T05:25:25.443Z
 // ============================================================
 
 export * from './_components'

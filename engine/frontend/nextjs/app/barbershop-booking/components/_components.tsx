@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — barbershop-booking
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T03:09:23.609Z
+// Generated: 2026-05-22T05:33:03.636Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

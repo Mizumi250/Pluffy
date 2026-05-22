@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/job-database [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-16T10:20:40.136Z
+// Generated: 2026-05-22T05:25:29.443Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

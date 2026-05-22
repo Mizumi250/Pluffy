@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — barbershop-booking [TanStack]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T04:16:31.855Z
+// Generated: 2026-05-22T04:45:57.119Z
 // ============================================================
 
 import { gsap } from 'gsap'

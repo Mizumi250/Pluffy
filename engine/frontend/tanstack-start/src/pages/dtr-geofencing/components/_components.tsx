@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — dtr-geofencing [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:16:34.140Z
+// Generated: 2026-05-22T04:45:59.790Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — barbershop-booking
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-20T00:57:10.510Z
+// Generated: 2026-05-22T05:32:10.386Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

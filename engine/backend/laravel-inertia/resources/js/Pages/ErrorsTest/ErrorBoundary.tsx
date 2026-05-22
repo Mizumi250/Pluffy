@@ -2,7 +2,7 @@
 // ARKZEN GENERATED — errors-test/ErrorBoundary.tsx [React+Inertia]
 // Class-based React ErrorBoundary wrapping all Inertia pages in this tatemono.
 // DO NOT EDIT — edit the @arkzen:error:500 block in the tatemono instead.
-// Generated: 2026-05-18T21:51:48.019Z
+// Generated: 2026-05-22T05:27:25.374Z
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'

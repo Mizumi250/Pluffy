@@ -3,7 +3,7 @@
 // Rendered by the wildcard route /queue-flow/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-05-16T10:20:40.651Z
+// Generated: 2026-05-22T05:25:29.973Z
 // ============================================================
 
 import React from 'react'

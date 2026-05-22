@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-15T03:09:28.686Z
+// Generated: 2026-05-22T05:33:08.908Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -184,6 +184,12 @@ const DashboardPage = () => {
         method: 'POST',
         body: JSON.stringify({ notification: key }),
       })
+      const notif = notifTypes.find(n => n.key === key)
+      const hasBroadcast = notif?.channels.includes('broadcast')
+      if (!hasBroadcast) {
+        setPopup(notif?.label ? `${notif.label} notification sent!` : 'Notification sent!')
+        setTimeout(() => setPopup(null), 4000)
+      }
       setTimeout(loadInbox, 800)
     } catch (err) {
       console.error('Failed to trigger notification:', err)
