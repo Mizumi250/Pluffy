@@ -1,10 +1,14 @@
 // ============================================================
-// ARKZEN — Vite Config (React+Vite stack) v1.1
+// ARKZEN — Vite Config (React+Vite stack) v1.2
 //
 // v1.1: arkzenReadyPlugin — polls for src/arkzen/generated/.arkzen-ready
 //   before allowing Vite's buildStart to proceed. This ensures the
 //   initial dep scan never reads stale generated pages from a
 //   previous session (race condition fix).
+// v1.2: arkzenApiPlugin — intercepts /api/arkzen/* in dev server
+//   before the proxy can forward it to Laravel. Mirrors the pattern
+//   used by Next.js (app/api/) and Astro (src/pages/api/) where the
+//   frontend framework owns its own internal API routes.
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
@@ -56,8 +60,29 @@ function arkzenReadyPlugin(): Plugin {
   }
 }
 
+function arkzenApiPlugin(): Plugin {
+  return {
+    name: 'arkzen-api',
+    configureServer(server) {
+      // Intercept /api/arkzen/* before the proxy forwards to Laravel.
+      // This stack owns these routes — same pattern as Next.js app/api/
+      // and Astro src/pages/api/. Laravel is never involved.
+      server.middlewares.use('/api/arkzen/registry', (req, res, next) => {
+        if (req.method !== 'GET') return next()
+        import('./src/api/arkzen/registry').then(({ GET }) => {
+          GET(req, res)
+        }).catch(() => {
+          res.writeHead(500)
+          res.end(JSON.stringify({ error: 'Registry handler failed' }))
+        })
+      })
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
+    arkzenApiPlugin(),
     arkzenReadyPlugin(),
     react(),
   ],

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — auth-test [TanStack]
 // Visiting /auth-test redirects to /auth-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-21T22:34:16.960Z
+// Generated: 2026-05-22T00:19:18.889Z
 // ============================================================
 
 import React from 'react'

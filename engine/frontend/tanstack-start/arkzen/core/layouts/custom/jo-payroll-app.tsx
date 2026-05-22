@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react'
 import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 
-import { useNavigate, useLocation } from 'react-router-dom'
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },
   { href: '/jo-payroll/job-database', label: 'JO Database',  icon: Database        },

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — middleware-test [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-21T22:34:29.742Z
+// Generated: 2026-05-22T03:24:49.548Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

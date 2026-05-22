@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — MailLogStoreRequest
 // Tatemono: mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-21T22:34:29.594355Z
+// Generated: 2026-05-22T03:24:49.522436Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\MailTest;

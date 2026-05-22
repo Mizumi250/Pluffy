@@ -5,7 +5,7 @@
 // Tatemono: queue-flow
 // Channel: queue-flow.{queueId} (public)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-21T22:34:31.615614Z
+// Generated: 2026-05-22T03:24:50.243311Z
 // ============================================================
 
 namespace App\Events\Arkzen\QueueFlow\Broadcast;

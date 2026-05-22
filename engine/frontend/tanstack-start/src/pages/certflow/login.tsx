@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-21T22:34:21.565Z
+// Generated: 2026-05-22T03:24:47.718Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, Graduation
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
+import { useNavigate } from '@/arkzen/core/adapters/router'
 
 // Utilities, types, and helper functions from @arkzen:components
 if (typeof window !== 'undefined') {

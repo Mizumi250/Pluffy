@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-21T22:34:23.167Z
+// Generated: 2026-05-22T03:24:48.421Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

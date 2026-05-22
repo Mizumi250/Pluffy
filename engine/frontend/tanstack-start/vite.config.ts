@@ -1,3 +1,13 @@
+// ============================================================
+// ARKZEN — Vite Config (TanStack Start stack) v1.3
+//
+// v1.1: arkzenReadyPlugin — polls for .arkzen-ready before Vite starts
+// v1.2: proxy bypass for /api/arkzen/* (didn't work with TanStack Start)
+// v1.3: arkzenApiPlugin — configureServer intercepts /api/arkzen/*
+//   before the proxy middleware runs. Guaranteed to work regardless
+//   of how TanStack Start wraps Vite internally. Same pattern as
+//   react-vite stack. Laravel is never involved.
+// ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
@@ -20,10 +30,9 @@ function arkzenReadyPlugin(): Plugin {
   return {
     name: 'arkzen-ready',
     async buildStart() {
-      // Only gate during dev server startup, not production builds
       if (process.env.NODE_ENV === 'production') return
 
-      const TIMEOUT_MS  = 60_000  // 60s max wait
+      const TIMEOUT_MS  = 60_000
       const POLL_MS     = 200
       const start       = Date.now()
 
@@ -41,20 +50,49 @@ function arkzenReadyPlugin(): Plugin {
         await new Promise(r => setTimeout(r, POLL_MS))
       }
 
-      if (Date.now() - start > 0) {
-        process.stdout.write('\n')
-      }
+      if (Date.now() - start > 0) process.stdout.write('\n')
       console.log(`[Arkzen TanStack] ✓ Pages ready — starting TanStack router generation`)
+    },
+  }
+}
+
+function arkzenApiPlugin(): Plugin {
+  return {
+    name: 'arkzen-api',
+    configureServer(server) {
+      // Intercept /api/arkzen/* before the proxy forwards to Laravel.
+      // configureServer runs before proxy middleware in Vite's pipeline,
+      // so this is guaranteed to fire regardless of proxy config.
+      // Mirrors Next.js app/api/ and Astro src/pages/api/ — frontend owns it.
+      server.middlewares.use('/api/arkzen/registry', (req, res, next) => {
+        if (req.method !== 'GET') return next()
+        try {
+          const registryPath = path.resolve(import.meta.dirname, '..', '..', '..', 'arkzen.json')
+          if (!fs.existsSync(registryPath)) {
+            res.setHeader('Content-Type', 'application/json')
+            res.writeHead(200)
+            res.end(JSON.stringify({ engine: '1.0.0', project: 'arkzen', modules: [] }))
+            return
+          }
+          const registry = JSON.parse(fs.readFileSync(registryPath, 'utf-8'))
+          res.setHeader('Content-Type', 'application/json')
+          res.writeHead(200)
+          res.end(JSON.stringify(registry))
+        } catch {
+          res.setHeader('Content-Type', 'application/json')
+          res.writeHead(500)
+          res.end(JSON.stringify({ error: 'Failed to read registry' }))
+        }
+      })
     },
   }
 }
 
 export default defineConfig({
   plugins: [
+    arkzenApiPlugin(),
     arkzenReadyPlugin(),
-    tanstackStart({
-      
-    }),
+    tanstackStart(),
     viteReact(), // must come AFTER tanstackStart
   ],
   resolve: {
@@ -67,15 +105,15 @@ export default defineConfig({
   server: {
     port: 3000,
     host: '0.0.0.0',
-     proxy: {
-        '/api': {
-          target: 'http://127.0.0.1:8000',
-          changeOrigin: true,
-        },
-        '/storage': {
-          target: 'http://127.0.0.1:8000',
-          changeOrigin: true,
-        },
+    proxy: {
+      '/api': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
       },
+      '/storage': {
+        target: 'http://127.0.0.1:8000',
+        changeOrigin: true,
+      },
+    },
   },
 })

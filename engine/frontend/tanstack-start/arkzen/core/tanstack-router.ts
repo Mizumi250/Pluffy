@@ -24,7 +24,7 @@
 //   • generateErrorPages() — 404 wildcard + 500 error boundary
 //   • generateCustomLayouts() — with full import resolution
 //   • normalizeForTanStack() — converts Next.js/Vite code to TanStack-compatible
-//   • ensureTanStackImports() — auto-adds createFileRoute imports
+//   • generateTanStackRouteFile() — generates complete route files with imports
 //   • softUnregisterTanStackPages() — preserve pages during rebuild HMR
 //
 // KEY DIFFERENCE from vite-router.ts:
@@ -101,33 +101,6 @@ function normalizeForTanStack(raw: string): string {
   }
 
   return out
-}
-
-function ensureTanStackImports(raw: string): string {
-  const needsNavigate = /\buseNavigate\s*\(/.test(raw)
-  const needsLocation = /\buseLocation\s*\(/.test(raw)
-  const needsLink = /<Link\b/.test(raw)
-  const needed = [
-    needsNavigate && 'useNavigate',
-    needsLocation && 'useLocation',
-    needsLink && 'Link',
-  ].filter(Boolean) as string[]
-
-  if (needed.length === 0) return raw
-
-  const importRegex = /^import\s+\{([^}]*)\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*$/m
-  const existing = raw.match(importRegex)
-  if (!existing) {
-    return `import { ${needed.join(', ')} } from 'react-router-dom'\n${raw}`
-  }
-
-  const existingSpecifiers = existing[1]
-    .split(',')
-    .map(s => s.trim())
-    .filter(Boolean)
-
-  const merged = [...new Set([...existingSpecifiers, ...needed])].sort()
-  return raw.replace(importRegex, `import { ${merged.join(', ')} } from 'react-router-dom'`)
 }
 
 // ─── Production-grade import resolver (based on Next.js) ──────────────────────
@@ -404,11 +377,32 @@ function generatePageFile(
     }
   }
 
+  // BEFORE resolveImports: detect what TanStack adapter imports are needed
+  // (Vite pattern: scan combined code and add to extraLines)
+  const combinedRaw = allSources.join('\n')
+  const needsNavigate = /\buseNavigate\s*\(/.test(combinedRaw)
+  const needsLocation = /\buseLocation\s*\(/.test(combinedRaw)
+  const needsLink = /<Link\b/.test(combinedRaw)
+
+  const tanstackAdapterSpecifiers = [
+    needsNavigate && 'useNavigate',
+    needsLocation && 'useLocation',
+  ].filter(Boolean).join(', ')
+
+  const tanstackAdapterImportLine = tanstackAdapterSpecifiers
+    ? `import { ${tanstackAdapterSpecifiers} } from '@/arkzen/core/adapters/router'`
+    : ''
+
+  const linkImportLine = needsLink
+    ? `import { Link } from '@/arkzen/core/adapters/Link'`
+    : ''
+
   const animImportLine = animationFnName
     ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine].filter(Boolean).join('\n')
+  const extraLines = [layoutImport, animImportLine, tanstackAdapterImportLine, linkImportLine]
+    .filter(Boolean).join('\n')
 
   const { canonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect'],
@@ -614,8 +608,7 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
       [normalizeForTanStack(layout.raw.trim())],
       { reactHooks: [], framerNamed: [] }
     )
-    const bodyWithRouterDom = ensureTanStackImports(strippedSources[0])
-    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [TanStack]\n\n${canonicalBlock}\n\n${bodyWithRouterDom}\n`
+    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [TanStack]\n\n${canonicalBlock}\n\n${strippedSources[0]}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen TanStack] ✓ Custom layout: ${fileName}`)
   }
@@ -631,37 +624,44 @@ function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string;
   const firstAuth  = tatemono.pages.find(p => p.layout === 'auth')
   const firstPage  = tatemono.pages[0]
 
+  // Auth tatemonos: redirect to login (guest) first
+  // Non-auth tatemonos: redirect to first available page
   const target = tatemono.meta.auth
     ? (firstGuest ?? firstAuth ?? firstPage)
-    : (firstAuth ?? firstGuest ?? firstPage)
+    : (firstGuest ?? firstAuth ?? firstPage)
 
   if (!target) return null
 
-  const destination  = `/${tatemono.meta.name}/${target.name}`
-  const fileName     = '__root_redirect'
-  const componentName = `ArkzenRootRedirect_${toPascalCase(tatemono.meta.name)}`
-  const content = `// ============================================================
-// ARKZEN GENERATED ROOT REDIRECT — ${tatemono.meta.name} [TanStack]
-// Visiting /${tatemono.meta.name} redirects to ${destination}
+  const tatName     = tatemono.meta.name
+  const destination = `/${tatName}/${target.name}`
+  const fileName    = '__root_redirect'
+
+  // Write the TanStack route file directly into ROUTES_DIR.
+  // Uses beforeLoad: () => redirect() — the correct TanStack pattern.
+  // No page component needed; react-router-dom's <Navigate> does nothing
+  // inside TanStack Router's render tree.
+  const routeContent = `// ============================================================
+// ARKZEN GENERATED ROOT REDIRECT — ${tatName} [TanStack]
+// Visiting /${tatName} redirects to ${destination}
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import React from 'react'
-import { Navigate } from 'react-router-dom'
+import { createFileRoute, redirect } from '@tanstack/react-router'
 
-const ${componentName} = () => {
-  return <Navigate to="${destination}" replace />
-}
-
-export default ${componentName}
+export const Route = createFileRoute('/${tatName}')({
+  beforeLoad: () => {
+    throw redirect({ to: '${destination}', replace: true })
+  },
+})
 `
 
-  const tatDir = path.join(PAGES_DIR, tatemono.meta.name)
-  fs.writeFileSync(path.join(tatDir, `${fileName}.tsx`), content, 'utf-8')
-  console.log(`[Arkzen TanStack] ✓ Root redirect: /${tatemono.meta.name} → ${destination}`)
+  const routeDir = path.join(ROUTES_DIR, tatName)
+  ensureDir(routeDir)
+  fs.writeFileSync(path.join(routeDir, `${fileName}.tsx`), routeContent, 'utf-8')
+  console.log(`[Arkzen TanStack] ✓ Root redirect: /${tatName} → ${destination}`)
 
-  return { fileName, routePath: `/${tatemono.meta.name}` }
+  return { fileName, routePath: `/${tatName}` }
 }
 
 // ─── Route tree writer ────────────────────────────────────────────────────────

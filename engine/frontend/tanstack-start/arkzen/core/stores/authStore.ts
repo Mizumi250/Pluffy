@@ -232,10 +232,19 @@ export const useAuthStore = create<AuthState>()(
 //   if (!hydrated) return <spinner>
 
 export function useAuthStoreHydrated(): boolean {
-  const [hydrated, setHydrated] = useState(() => useAuthStore.persist.hasHydrated())
+  // On the server (SSR), zustand/persist skips storage init because localStorage
+  // doesn't exist — useAuthStore.persist is undefined. Return true immediately so
+  // layouts don't block render. Hydration only matters client-side.
+  const isServer = typeof window === 'undefined'
+
+  const [hydrated, setHydrated] = useState(() => {
+    if (isServer) return true
+    return useAuthStore.persist?.hasHydrated() ?? true
+  })
 
   useEffect(() => {
     if (hydrated) return
+    if (!useAuthStore.persist) { setHydrated(true); return }
     const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
     // Catch the race: may have finished between useState initialiser and useEffect
     if (useAuthStore.persist.hasHydrated()) setHydrated(true)

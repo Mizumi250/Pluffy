@@ -9,6 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UploadTest_root_redirectRouteImport } from './routes/upload-test/__root_redirect'
+import { Route as SchedulerTest_root_redirectRouteImport } from './routes/scheduler-test/__root_redirect'
+import { Route as RolesTest_root_redirectRouteImport } from './routes/roles-test/__root_redirect'
+import { Route as NotificationTest_root_redirectRouteImport } from './routes/notification-test/__root_redirect'
+import { Route as MailTest_root_redirectRouteImport } from './routes/mail-test/__root_redirect'
+import { Route as JobTest_root_redirectRouteImport } from './routes/job-test/__root_redirect'
+import { Route as Certflow_root_redirectRouteImport } from './routes/certflow/__root_redirect'
+import { Route as BroadcastTest_root_redirectRouteImport } from './routes/broadcast-test/__root_redirect'
+import { Route as BodyMailNotification_root_redirectRouteImport } from './routes/body-mail-notification/__root_redirect'
+import { Route as AuthTest_root_redirectRouteImport } from './routes/auth-test/__root_redirect'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as QueueFlowIndexRouteImport } from './routes/queue-flow/index'
 import { Route as PortfolioTestIndexRouteImport } from './routes/portfolio-test/index'
@@ -67,6 +77,61 @@ import { Route as AuthTestRegisterRouteImport } from './routes/auth-test/registe
 import { Route as AuthTestLoginRouteImport } from './routes/auth-test/login'
 import { Route as AuthTestDashboardRouteImport } from './routes/auth-test/dashboard'
 
+const UploadTest_root_redirectRoute =
+  UploadTest_root_redirectRouteImport.update({
+    id: '/upload-test/__root_redirect',
+    path: '/upload-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const SchedulerTest_root_redirectRoute =
+  SchedulerTest_root_redirectRouteImport.update({
+    id: '/scheduler-test/__root_redirect',
+    path: '/scheduler-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const RolesTest_root_redirectRoute = RolesTest_root_redirectRouteImport.update({
+  id: '/roles-test/__root_redirect',
+  path: '/roles-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationTest_root_redirectRoute =
+  NotificationTest_root_redirectRouteImport.update({
+    id: '/notification-test/__root_redirect',
+    path: '/notification-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const MailTest_root_redirectRoute = MailTest_root_redirectRouteImport.update({
+  id: '/mail-test/__root_redirect',
+  path: '/mail-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobTest_root_redirectRoute = JobTest_root_redirectRouteImport.update({
+  id: '/job-test/__root_redirect',
+  path: '/job-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const Certflow_root_redirectRoute = Certflow_root_redirectRouteImport.update({
+  id: '/certflow/__root_redirect',
+  path: '/certflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BroadcastTest_root_redirectRoute =
+  BroadcastTest_root_redirectRouteImport.update({
+    id: '/broadcast-test/__root_redirect',
+    path: '/broadcast-test',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const BodyMailNotification_root_redirectRoute =
+  BodyMailNotification_root_redirectRouteImport.update({
+    id: '/body-mail-notification/__root_redirect',
+    path: '/body-mail-notification',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const AuthTest_root_redirectRoute = AuthTest_root_redirectRouteImport.update({
+  id: '/auth-test/__root_redirect',
+  path: '/auth-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
@@ -364,15 +429,19 @@ const AuthTestDashboardRoute = AuthTestDashboardRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth-test': typeof AuthTest_root_redirectRoute
   '/auth-test/dashboard': typeof AuthTestDashboardRoute
   '/auth-test/login': typeof AuthTestLoginRoute
   '/auth-test/register': typeof AuthTestRegisterRoute
+  '/body-mail-notification': typeof BodyMailNotification_root_redirectRoute
   '/body-mail-notification/dashboard': typeof BodyMailNotificationDashboardRoute
   '/body-mail-notification/login': typeof BodyMailNotificationLoginRoute
   '/body-mail-notification/register': typeof BodyMailNotificationRegisterRoute
+  '/broadcast-test': typeof BroadcastTest_root_redirectRoute
   '/broadcast-test/dashboard': typeof BroadcastTestDashboardRoute
   '/broadcast-test/login': typeof BroadcastTestLoginRoute
   '/broadcast-test/register': typeof BroadcastTestRegisterRoute
+  '/certflow': typeof Certflow_root_redirectRoute
   '/certflow/dashboard': typeof CertflowDashboardRoute
   '/certflow/fill': typeof CertflowFillRoute
   '/certflow/login': typeof CertflowLoginRoute
@@ -389,21 +458,27 @@ export interface FileRoutesByFullPath {
   '/jo-payroll/job-database': typeof JoPayrollJobDatabaseRoute
   '/jo-payroll/payslip': typeof JoPayrollPayslipRoute
   '/jo-payroll/sss': typeof JoPayrollSssRoute
+  '/job-test': typeof JobTest_root_redirectRoute
   '/job-test/dashboard': typeof JobTestDashboardRoute
+  '/mail-test': typeof MailTest_root_redirectRoute
   '/mail-test/dashboard': typeof MailTestDashboardRoute
   '/mail-test/login': typeof MailTestLoginRoute
   '/mail-test/register': typeof MailTestRegisterRoute
   '/new-updates-styles/about': typeof NewUpdatesStylesAboutRoute
   '/new-updates-styles/features': typeof NewUpdatesStylesFeaturesRoute
+  '/notification-test': typeof NotificationTest_root_redirectRoute
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
+  '/roles-test': typeof RolesTest_root_redirectRoute
   '/roles-test/dashboard': typeof RolesTestDashboardRoute
   '/roles-test/login': typeof RolesTestLoginRoute
   '/roles-test/register': typeof RolesTestRegisterRoute
+  '/scheduler-test': typeof SchedulerTest_root_redirectRoute
   '/scheduler-test/dashboard': typeof SchedulerTestDashboardRoute
+  '/upload-test': typeof UploadTest_root_redirectRoute
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab/': typeof AnimationLabIndexRoute
   '/asset-hub/': typeof AssetHubIndexRoute
@@ -423,15 +498,19 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth-test': typeof AuthTest_root_redirectRoute
   '/auth-test/dashboard': typeof AuthTestDashboardRoute
   '/auth-test/login': typeof AuthTestLoginRoute
   '/auth-test/register': typeof AuthTestRegisterRoute
+  '/body-mail-notification': typeof BodyMailNotification_root_redirectRoute
   '/body-mail-notification/dashboard': typeof BodyMailNotificationDashboardRoute
   '/body-mail-notification/login': typeof BodyMailNotificationLoginRoute
   '/body-mail-notification/register': typeof BodyMailNotificationRegisterRoute
+  '/broadcast-test': typeof BroadcastTest_root_redirectRoute
   '/broadcast-test/dashboard': typeof BroadcastTestDashboardRoute
   '/broadcast-test/login': typeof BroadcastTestLoginRoute
   '/broadcast-test/register': typeof BroadcastTestRegisterRoute
+  '/certflow': typeof Certflow_root_redirectRoute
   '/certflow/dashboard': typeof CertflowDashboardRoute
   '/certflow/fill': typeof CertflowFillRoute
   '/certflow/login': typeof CertflowLoginRoute
@@ -448,21 +527,27 @@ export interface FileRoutesByTo {
   '/jo-payroll/job-database': typeof JoPayrollJobDatabaseRoute
   '/jo-payroll/payslip': typeof JoPayrollPayslipRoute
   '/jo-payroll/sss': typeof JoPayrollSssRoute
+  '/job-test': typeof JobTest_root_redirectRoute
   '/job-test/dashboard': typeof JobTestDashboardRoute
+  '/mail-test': typeof MailTest_root_redirectRoute
   '/mail-test/dashboard': typeof MailTestDashboardRoute
   '/mail-test/login': typeof MailTestLoginRoute
   '/mail-test/register': typeof MailTestRegisterRoute
   '/new-updates-styles/about': typeof NewUpdatesStylesAboutRoute
   '/new-updates-styles/features': typeof NewUpdatesStylesFeaturesRoute
+  '/notification-test': typeof NotificationTest_root_redirectRoute
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
+  '/roles-test': typeof RolesTest_root_redirectRoute
   '/roles-test/dashboard': typeof RolesTestDashboardRoute
   '/roles-test/login': typeof RolesTestLoginRoute
   '/roles-test/register': typeof RolesTestRegisterRoute
+  '/scheduler-test': typeof SchedulerTest_root_redirectRoute
   '/scheduler-test/dashboard': typeof SchedulerTestDashboardRoute
+  '/upload-test': typeof UploadTest_root_redirectRoute
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab': typeof AnimationLabIndexRoute
   '/asset-hub': typeof AssetHubIndexRoute
@@ -483,15 +568,19 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth-test/__root_redirect': typeof AuthTest_root_redirectRoute
   '/auth-test/dashboard': typeof AuthTestDashboardRoute
   '/auth-test/login': typeof AuthTestLoginRoute
   '/auth-test/register': typeof AuthTestRegisterRoute
+  '/body-mail-notification/__root_redirect': typeof BodyMailNotification_root_redirectRoute
   '/body-mail-notification/dashboard': typeof BodyMailNotificationDashboardRoute
   '/body-mail-notification/login': typeof BodyMailNotificationLoginRoute
   '/body-mail-notification/register': typeof BodyMailNotificationRegisterRoute
+  '/broadcast-test/__root_redirect': typeof BroadcastTest_root_redirectRoute
   '/broadcast-test/dashboard': typeof BroadcastTestDashboardRoute
   '/broadcast-test/login': typeof BroadcastTestLoginRoute
   '/broadcast-test/register': typeof BroadcastTestRegisterRoute
+  '/certflow/__root_redirect': typeof Certflow_root_redirectRoute
   '/certflow/dashboard': typeof CertflowDashboardRoute
   '/certflow/fill': typeof CertflowFillRoute
   '/certflow/login': typeof CertflowLoginRoute
@@ -508,21 +597,27 @@ export interface FileRoutesById {
   '/jo-payroll/job-database': typeof JoPayrollJobDatabaseRoute
   '/jo-payroll/payslip': typeof JoPayrollPayslipRoute
   '/jo-payroll/sss': typeof JoPayrollSssRoute
+  '/job-test/__root_redirect': typeof JobTest_root_redirectRoute
   '/job-test/dashboard': typeof JobTestDashboardRoute
+  '/mail-test/__root_redirect': typeof MailTest_root_redirectRoute
   '/mail-test/dashboard': typeof MailTestDashboardRoute
   '/mail-test/login': typeof MailTestLoginRoute
   '/mail-test/register': typeof MailTestRegisterRoute
   '/new-updates-styles/about': typeof NewUpdatesStylesAboutRoute
   '/new-updates-styles/features': typeof NewUpdatesStylesFeaturesRoute
+  '/notification-test/__root_redirect': typeof NotificationTest_root_redirectRoute
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
+  '/roles-test/__root_redirect': typeof RolesTest_root_redirectRoute
   '/roles-test/dashboard': typeof RolesTestDashboardRoute
   '/roles-test/login': typeof RolesTestLoginRoute
   '/roles-test/register': typeof RolesTestRegisterRoute
+  '/scheduler-test/__root_redirect': typeof SchedulerTest_root_redirectRoute
   '/scheduler-test/dashboard': typeof SchedulerTestDashboardRoute
+  '/upload-test/__root_redirect': typeof UploadTest_root_redirectRoute
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab/': typeof AnimationLabIndexRoute
   '/asset-hub/': typeof AssetHubIndexRoute
@@ -544,15 +639,19 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/auth-test'
     | '/auth-test/dashboard'
     | '/auth-test/login'
     | '/auth-test/register'
+    | '/body-mail-notification'
     | '/body-mail-notification/dashboard'
     | '/body-mail-notification/login'
     | '/body-mail-notification/register'
+    | '/broadcast-test'
     | '/broadcast-test/dashboard'
     | '/broadcast-test/login'
     | '/broadcast-test/register'
+    | '/certflow'
     | '/certflow/dashboard'
     | '/certflow/fill'
     | '/certflow/login'
@@ -569,21 +668,27 @@ export interface FileRouteTypes {
     | '/jo-payroll/job-database'
     | '/jo-payroll/payslip'
     | '/jo-payroll/sss'
+    | '/job-test'
     | '/job-test/dashboard'
+    | '/mail-test'
     | '/mail-test/dashboard'
     | '/mail-test/login'
     | '/mail-test/register'
     | '/new-updates-styles/about'
     | '/new-updates-styles/features'
+    | '/notification-test'
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
     | '/queue-flow/admin'
     | '/queue-flow/join'
+    | '/roles-test'
     | '/roles-test/dashboard'
     | '/roles-test/login'
     | '/roles-test/register'
+    | '/scheduler-test'
     | '/scheduler-test/dashboard'
+    | '/upload-test'
     | '/upload-test/dashboard'
     | '/animation-lab/'
     | '/asset-hub/'
@@ -603,15 +708,19 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/auth-test'
     | '/auth-test/dashboard'
     | '/auth-test/login'
     | '/auth-test/register'
+    | '/body-mail-notification'
     | '/body-mail-notification/dashboard'
     | '/body-mail-notification/login'
     | '/body-mail-notification/register'
+    | '/broadcast-test'
     | '/broadcast-test/dashboard'
     | '/broadcast-test/login'
     | '/broadcast-test/register'
+    | '/certflow'
     | '/certflow/dashboard'
     | '/certflow/fill'
     | '/certflow/login'
@@ -628,21 +737,27 @@ export interface FileRouteTypes {
     | '/jo-payroll/job-database'
     | '/jo-payroll/payslip'
     | '/jo-payroll/sss'
+    | '/job-test'
     | '/job-test/dashboard'
+    | '/mail-test'
     | '/mail-test/dashboard'
     | '/mail-test/login'
     | '/mail-test/register'
     | '/new-updates-styles/about'
     | '/new-updates-styles/features'
+    | '/notification-test'
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
     | '/queue-flow/admin'
     | '/queue-flow/join'
+    | '/roles-test'
     | '/roles-test/dashboard'
     | '/roles-test/login'
     | '/roles-test/register'
+    | '/scheduler-test'
     | '/scheduler-test/dashboard'
+    | '/upload-test'
     | '/upload-test/dashboard'
     | '/animation-lab'
     | '/asset-hub'
@@ -662,15 +777,19 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/auth-test/__root_redirect'
     | '/auth-test/dashboard'
     | '/auth-test/login'
     | '/auth-test/register'
+    | '/body-mail-notification/__root_redirect'
     | '/body-mail-notification/dashboard'
     | '/body-mail-notification/login'
     | '/body-mail-notification/register'
+    | '/broadcast-test/__root_redirect'
     | '/broadcast-test/dashboard'
     | '/broadcast-test/login'
     | '/broadcast-test/register'
+    | '/certflow/__root_redirect'
     | '/certflow/dashboard'
     | '/certflow/fill'
     | '/certflow/login'
@@ -687,21 +806,27 @@ export interface FileRouteTypes {
     | '/jo-payroll/job-database'
     | '/jo-payroll/payslip'
     | '/jo-payroll/sss'
+    | '/job-test/__root_redirect'
     | '/job-test/dashboard'
+    | '/mail-test/__root_redirect'
     | '/mail-test/dashboard'
     | '/mail-test/login'
     | '/mail-test/register'
     | '/new-updates-styles/about'
     | '/new-updates-styles/features'
+    | '/notification-test/__root_redirect'
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
     | '/queue-flow/admin'
     | '/queue-flow/join'
+    | '/roles-test/__root_redirect'
     | '/roles-test/dashboard'
     | '/roles-test/login'
     | '/roles-test/register'
+    | '/scheduler-test/__root_redirect'
     | '/scheduler-test/dashboard'
+    | '/upload-test/__root_redirect'
     | '/upload-test/dashboard'
     | '/animation-lab/'
     | '/asset-hub/'
@@ -722,15 +847,19 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthTest_root_redirectRoute: typeof AuthTest_root_redirectRoute
   AuthTestDashboardRoute: typeof AuthTestDashboardRoute
   AuthTestLoginRoute: typeof AuthTestLoginRoute
   AuthTestRegisterRoute: typeof AuthTestRegisterRoute
+  BodyMailNotification_root_redirectRoute: typeof BodyMailNotification_root_redirectRoute
   BodyMailNotificationDashboardRoute: typeof BodyMailNotificationDashboardRoute
   BodyMailNotificationLoginRoute: typeof BodyMailNotificationLoginRoute
   BodyMailNotificationRegisterRoute: typeof BodyMailNotificationRegisterRoute
+  BroadcastTest_root_redirectRoute: typeof BroadcastTest_root_redirectRoute
   BroadcastTestDashboardRoute: typeof BroadcastTestDashboardRoute
   BroadcastTestLoginRoute: typeof BroadcastTestLoginRoute
   BroadcastTestRegisterRoute: typeof BroadcastTestRegisterRoute
+  Certflow_root_redirectRoute: typeof Certflow_root_redirectRoute
   CertflowDashboardRoute: typeof CertflowDashboardRoute
   CertflowFillRoute: typeof CertflowFillRoute
   CertflowLoginRoute: typeof CertflowLoginRoute
@@ -747,21 +876,27 @@ export interface RootRouteChildren {
   JoPayrollJobDatabaseRoute: typeof JoPayrollJobDatabaseRoute
   JoPayrollPayslipRoute: typeof JoPayrollPayslipRoute
   JoPayrollSssRoute: typeof JoPayrollSssRoute
+  JobTest_root_redirectRoute: typeof JobTest_root_redirectRoute
   JobTestDashboardRoute: typeof JobTestDashboardRoute
+  MailTest_root_redirectRoute: typeof MailTest_root_redirectRoute
   MailTestDashboardRoute: typeof MailTestDashboardRoute
   MailTestLoginRoute: typeof MailTestLoginRoute
   MailTestRegisterRoute: typeof MailTestRegisterRoute
   NewUpdatesStylesAboutRoute: typeof NewUpdatesStylesAboutRoute
   NewUpdatesStylesFeaturesRoute: typeof NewUpdatesStylesFeaturesRoute
+  NotificationTest_root_redirectRoute: typeof NotificationTest_root_redirectRoute
   NotificationTestDashboardRoute: typeof NotificationTestDashboardRoute
   NotificationTestLoginRoute: typeof NotificationTestLoginRoute
   NotificationTestRegisterRoute: typeof NotificationTestRegisterRoute
   QueueFlowAdminRoute: typeof QueueFlowAdminRoute
   QueueFlowJoinRoute: typeof QueueFlowJoinRoute
+  RolesTest_root_redirectRoute: typeof RolesTest_root_redirectRoute
   RolesTestDashboardRoute: typeof RolesTestDashboardRoute
   RolesTestLoginRoute: typeof RolesTestLoginRoute
   RolesTestRegisterRoute: typeof RolesTestRegisterRoute
+  SchedulerTest_root_redirectRoute: typeof SchedulerTest_root_redirectRoute
   SchedulerTestDashboardRoute: typeof SchedulerTestDashboardRoute
+  UploadTest_root_redirectRoute: typeof UploadTest_root_redirectRoute
   UploadTestDashboardRoute: typeof UploadTestDashboardRoute
   AnimationLabIndexRoute: typeof AnimationLabIndexRoute
   AssetHubIndexRoute: typeof AssetHubIndexRoute
@@ -782,6 +917,76 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/upload-test/__root_redirect': {
+      id: '/upload-test/__root_redirect'
+      path: '/upload-test'
+      fullPath: '/upload-test'
+      preLoaderRoute: typeof UploadTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scheduler-test/__root_redirect': {
+      id: '/scheduler-test/__root_redirect'
+      path: '/scheduler-test'
+      fullPath: '/scheduler-test'
+      preLoaderRoute: typeof SchedulerTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles-test/__root_redirect': {
+      id: '/roles-test/__root_redirect'
+      path: '/roles-test'
+      fullPath: '/roles-test'
+      preLoaderRoute: typeof RolesTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notification-test/__root_redirect': {
+      id: '/notification-test/__root_redirect'
+      path: '/notification-test'
+      fullPath: '/notification-test'
+      preLoaderRoute: typeof NotificationTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail-test/__root_redirect': {
+      id: '/mail-test/__root_redirect'
+      path: '/mail-test'
+      fullPath: '/mail-test'
+      preLoaderRoute: typeof MailTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/job-test/__root_redirect': {
+      id: '/job-test/__root_redirect'
+      path: '/job-test'
+      fullPath: '/job-test'
+      preLoaderRoute: typeof JobTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/__root_redirect': {
+      id: '/certflow/__root_redirect'
+      path: '/certflow'
+      fullPath: '/certflow'
+      preLoaderRoute: typeof Certflow_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broadcast-test/__root_redirect': {
+      id: '/broadcast-test/__root_redirect'
+      path: '/broadcast-test'
+      fullPath: '/broadcast-test'
+      preLoaderRoute: typeof BroadcastTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/body-mail-notification/__root_redirect': {
+      id: '/body-mail-notification/__root_redirect'
+      path: '/body-mail-notification'
+      fullPath: '/body-mail-notification'
+      preLoaderRoute: typeof BodyMailNotification_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth-test/__root_redirect': {
+      id: '/auth-test/__root_redirect'
+      path: '/auth-test'
+      fullPath: '/auth-test'
+      preLoaderRoute: typeof AuthTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -1186,15 +1391,20 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthTest_root_redirectRoute: AuthTest_root_redirectRoute,
   AuthTestDashboardRoute: AuthTestDashboardRoute,
   AuthTestLoginRoute: AuthTestLoginRoute,
   AuthTestRegisterRoute: AuthTestRegisterRoute,
+  BodyMailNotification_root_redirectRoute:
+    BodyMailNotification_root_redirectRoute,
   BodyMailNotificationDashboardRoute: BodyMailNotificationDashboardRoute,
   BodyMailNotificationLoginRoute: BodyMailNotificationLoginRoute,
   BodyMailNotificationRegisterRoute: BodyMailNotificationRegisterRoute,
+  BroadcastTest_root_redirectRoute: BroadcastTest_root_redirectRoute,
   BroadcastTestDashboardRoute: BroadcastTestDashboardRoute,
   BroadcastTestLoginRoute: BroadcastTestLoginRoute,
   BroadcastTestRegisterRoute: BroadcastTestRegisterRoute,
+  Certflow_root_redirectRoute: Certflow_root_redirectRoute,
   CertflowDashboardRoute: CertflowDashboardRoute,
   CertflowFillRoute: CertflowFillRoute,
   CertflowLoginRoute: CertflowLoginRoute,
@@ -1211,21 +1421,27 @@ const rootRouteChildren: RootRouteChildren = {
   JoPayrollJobDatabaseRoute: JoPayrollJobDatabaseRoute,
   JoPayrollPayslipRoute: JoPayrollPayslipRoute,
   JoPayrollSssRoute: JoPayrollSssRoute,
+  JobTest_root_redirectRoute: JobTest_root_redirectRoute,
   JobTestDashboardRoute: JobTestDashboardRoute,
+  MailTest_root_redirectRoute: MailTest_root_redirectRoute,
   MailTestDashboardRoute: MailTestDashboardRoute,
   MailTestLoginRoute: MailTestLoginRoute,
   MailTestRegisterRoute: MailTestRegisterRoute,
   NewUpdatesStylesAboutRoute: NewUpdatesStylesAboutRoute,
   NewUpdatesStylesFeaturesRoute: NewUpdatesStylesFeaturesRoute,
+  NotificationTest_root_redirectRoute: NotificationTest_root_redirectRoute,
   NotificationTestDashboardRoute: NotificationTestDashboardRoute,
   NotificationTestLoginRoute: NotificationTestLoginRoute,
   NotificationTestRegisterRoute: NotificationTestRegisterRoute,
   QueueFlowAdminRoute: QueueFlowAdminRoute,
   QueueFlowJoinRoute: QueueFlowJoinRoute,
+  RolesTest_root_redirectRoute: RolesTest_root_redirectRoute,
   RolesTestDashboardRoute: RolesTestDashboardRoute,
   RolesTestLoginRoute: RolesTestLoginRoute,
   RolesTestRegisterRoute: RolesTestRegisterRoute,
+  SchedulerTest_root_redirectRoute: SchedulerTest_root_redirectRoute,
   SchedulerTestDashboardRoute: SchedulerTestDashboardRoute,
+  UploadTest_root_redirectRoute: UploadTest_root_redirectRoute,
   UploadTestDashboardRoute: UploadTestDashboardRoute,
   AnimationLabIndexRoute: AnimationLabIndexRoute,
   AssetHubIndexRoute: AssetHubIndexRoute,
