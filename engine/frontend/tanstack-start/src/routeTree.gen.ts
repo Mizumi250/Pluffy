@@ -42,6 +42,7 @@ import { Route as RolesTestLoginRouteImport } from './routes/roles-test/login'
 import { Route as RolesTestDashboardRouteImport } from './routes/roles-test/dashboard'
 import { Route as QueueFlowJoinRouteImport } from './routes/queue-flow/join'
 import { Route as QueueFlowAdminRouteImport } from './routes/queue-flow/admin'
+import { Route as QueueFlowSplatRouteImport } from './routes/queue-flow/$'
 import { Route as NotificationTestRegisterRouteImport } from './routes/notification-test/register'
 import { Route as NotificationTestLoginRouteImport } from './routes/notification-test/login'
 import { Route as NotificationTestDashboardRouteImport } from './routes/notification-test/dashboard'
@@ -57,6 +58,8 @@ import { Route as JoPayrollJobDatabaseRouteImport } from './routes/jo-payroll/jo
 import { Route as JoPayrollHdmfRouteImport } from './routes/jo-payroll/hdmf'
 import { Route as JoPayrollCashAtmRouteImport } from './routes/jo-payroll/cash-atm'
 import { Route as JoPayrollAppointmentsRouteImport } from './routes/jo-payroll/appointments'
+import { Route as JoPayrollSplatRouteImport } from './routes/jo-payroll/$'
+import { Route as ErrorsTestSplatRouteImport } from './routes/errors-test/$'
 import { Route as DtrGeofencingAdminRouteImport } from './routes/dtr-geofencing/admin'
 import { Route as ChurchCommunityRegisterRouteImport } from './routes/church-community/register'
 import { Route as ChurchCommunityMembersRouteImport } from './routes/church-community/members'
@@ -249,6 +252,11 @@ const QueueFlowAdminRoute = QueueFlowAdminRouteImport.update({
   path: '/queue-flow/admin',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QueueFlowSplatRoute = QueueFlowSplatRouteImport.update({
+  id: '/queue-flow/$',
+  path: '/queue-flow/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const NotificationTestRegisterRoute =
   NotificationTestRegisterRouteImport.update({
     id: '/notification-test/register',
@@ -325,6 +333,16 @@ const JoPayrollCashAtmRoute = JoPayrollCashAtmRouteImport.update({
 const JoPayrollAppointmentsRoute = JoPayrollAppointmentsRouteImport.update({
   id: '/jo-payroll/appointments',
   path: '/jo-payroll/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollSplatRoute = JoPayrollSplatRouteImport.update({
+  id: '/jo-payroll/$',
+  path: '/jo-payroll/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorsTestSplatRoute = ErrorsTestSplatRouteImport.update({
+  id: '/errors-test/$',
+  path: '/errors-test/$',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DtrGeofencingAdminRoute = DtrGeofencingAdminRouteImport.update({
@@ -452,6 +470,8 @@ export interface FileRoutesByFullPath {
   '/church-community/members': typeof ChurchCommunityMembersRoute
   '/church-community/register': typeof ChurchCommunityRegisterRoute
   '/dtr-geofencing/admin': typeof DtrGeofencingAdminRoute
+  '/errors-test/$': typeof ErrorsTestSplatRoute
+  '/jo-payroll/$': typeof JoPayrollSplatRoute
   '/jo-payroll/appointments': typeof JoPayrollAppointmentsRoute
   '/jo-payroll/cash-atm': typeof JoPayrollCashAtmRoute
   '/jo-payroll/hdmf': typeof JoPayrollHdmfRoute
@@ -470,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
+  '/queue-flow/$': typeof QueueFlowSplatRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
   '/roles-test': typeof RolesTest_root_redirectRoute
@@ -521,6 +542,8 @@ export interface FileRoutesByTo {
   '/church-community/members': typeof ChurchCommunityMembersRoute
   '/church-community/register': typeof ChurchCommunityRegisterRoute
   '/dtr-geofencing/admin': typeof DtrGeofencingAdminRoute
+  '/errors-test/$': typeof ErrorsTestSplatRoute
+  '/jo-payroll/$': typeof JoPayrollSplatRoute
   '/jo-payroll/appointments': typeof JoPayrollAppointmentsRoute
   '/jo-payroll/cash-atm': typeof JoPayrollCashAtmRoute
   '/jo-payroll/hdmf': typeof JoPayrollHdmfRoute
@@ -539,6 +562,7 @@ export interface FileRoutesByTo {
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
+  '/queue-flow/$': typeof QueueFlowSplatRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
   '/roles-test': typeof RolesTest_root_redirectRoute
@@ -591,6 +615,8 @@ export interface FileRoutesById {
   '/church-community/members': typeof ChurchCommunityMembersRoute
   '/church-community/register': typeof ChurchCommunityRegisterRoute
   '/dtr-geofencing/admin': typeof DtrGeofencingAdminRoute
+  '/errors-test/$': typeof ErrorsTestSplatRoute
+  '/jo-payroll/$': typeof JoPayrollSplatRoute
   '/jo-payroll/appointments': typeof JoPayrollAppointmentsRoute
   '/jo-payroll/cash-atm': typeof JoPayrollCashAtmRoute
   '/jo-payroll/hdmf': typeof JoPayrollHdmfRoute
@@ -609,6 +635,7 @@ export interface FileRoutesById {
   '/notification-test/dashboard': typeof NotificationTestDashboardRoute
   '/notification-test/login': typeof NotificationTestLoginRoute
   '/notification-test/register': typeof NotificationTestRegisterRoute
+  '/queue-flow/$': typeof QueueFlowSplatRoute
   '/queue-flow/admin': typeof QueueFlowAdminRoute
   '/queue-flow/join': typeof QueueFlowJoinRoute
   '/roles-test/__root_redirect': typeof RolesTest_root_redirectRoute
@@ -662,6 +689,8 @@ export interface FileRouteTypes {
     | '/church-community/members'
     | '/church-community/register'
     | '/dtr-geofencing/admin'
+    | '/errors-test/$'
+    | '/jo-payroll/$'
     | '/jo-payroll/appointments'
     | '/jo-payroll/cash-atm'
     | '/jo-payroll/hdmf'
@@ -680,6 +709,7 @@ export interface FileRouteTypes {
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
+    | '/queue-flow/$'
     | '/queue-flow/admin'
     | '/queue-flow/join'
     | '/roles-test'
@@ -731,6 +761,8 @@ export interface FileRouteTypes {
     | '/church-community/members'
     | '/church-community/register'
     | '/dtr-geofencing/admin'
+    | '/errors-test/$'
+    | '/jo-payroll/$'
     | '/jo-payroll/appointments'
     | '/jo-payroll/cash-atm'
     | '/jo-payroll/hdmf'
@@ -749,6 +781,7 @@ export interface FileRouteTypes {
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
+    | '/queue-flow/$'
     | '/queue-flow/admin'
     | '/queue-flow/join'
     | '/roles-test'
@@ -800,6 +833,8 @@ export interface FileRouteTypes {
     | '/church-community/members'
     | '/church-community/register'
     | '/dtr-geofencing/admin'
+    | '/errors-test/$'
+    | '/jo-payroll/$'
     | '/jo-payroll/appointments'
     | '/jo-payroll/cash-atm'
     | '/jo-payroll/hdmf'
@@ -818,6 +853,7 @@ export interface FileRouteTypes {
     | '/notification-test/dashboard'
     | '/notification-test/login'
     | '/notification-test/register'
+    | '/queue-flow/$'
     | '/queue-flow/admin'
     | '/queue-flow/join'
     | '/roles-test/__root_redirect'
@@ -870,6 +906,8 @@ export interface RootRouteChildren {
   ChurchCommunityMembersRoute: typeof ChurchCommunityMembersRoute
   ChurchCommunityRegisterRoute: typeof ChurchCommunityRegisterRoute
   DtrGeofencingAdminRoute: typeof DtrGeofencingAdminRoute
+  ErrorsTestSplatRoute: typeof ErrorsTestSplatRoute
+  JoPayrollSplatRoute: typeof JoPayrollSplatRoute
   JoPayrollAppointmentsRoute: typeof JoPayrollAppointmentsRoute
   JoPayrollCashAtmRoute: typeof JoPayrollCashAtmRoute
   JoPayrollHdmfRoute: typeof JoPayrollHdmfRoute
@@ -888,6 +926,7 @@ export interface RootRouteChildren {
   NotificationTestDashboardRoute: typeof NotificationTestDashboardRoute
   NotificationTestLoginRoute: typeof NotificationTestLoginRoute
   NotificationTestRegisterRoute: typeof NotificationTestRegisterRoute
+  QueueFlowSplatRoute: typeof QueueFlowSplatRoute
   QueueFlowAdminRoute: typeof QueueFlowAdminRoute
   QueueFlowJoinRoute: typeof QueueFlowJoinRoute
   RolesTest_root_redirectRoute: typeof RolesTest_root_redirectRoute
@@ -1148,6 +1187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QueueFlowAdminRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/queue-flow/$': {
+      id: '/queue-flow/$'
+      path: '/queue-flow/$'
+      fullPath: '/queue-flow/$'
+      preLoaderRoute: typeof QueueFlowSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/notification-test/register': {
       id: '/notification-test/register'
       path: '/notification-test/register'
@@ -1251,6 +1297,20 @@ declare module '@tanstack/react-router' {
       path: '/jo-payroll/appointments'
       fullPath: '/jo-payroll/appointments'
       preLoaderRoute: typeof JoPayrollAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/$': {
+      id: '/jo-payroll/$'
+      path: '/jo-payroll/$'
+      fullPath: '/jo-payroll/$'
+      preLoaderRoute: typeof JoPayrollSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/errors-test/$': {
+      id: '/errors-test/$'
+      path: '/errors-test/$'
+      fullPath: '/errors-test/$'
+      preLoaderRoute: typeof ErrorsTestSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/dtr-geofencing/admin': {
@@ -1415,6 +1475,8 @@ const rootRouteChildren: RootRouteChildren = {
   ChurchCommunityMembersRoute: ChurchCommunityMembersRoute,
   ChurchCommunityRegisterRoute: ChurchCommunityRegisterRoute,
   DtrGeofencingAdminRoute: DtrGeofencingAdminRoute,
+  ErrorsTestSplatRoute: ErrorsTestSplatRoute,
+  JoPayrollSplatRoute: JoPayrollSplatRoute,
   JoPayrollAppointmentsRoute: JoPayrollAppointmentsRoute,
   JoPayrollCashAtmRoute: JoPayrollCashAtmRoute,
   JoPayrollHdmfRoute: JoPayrollHdmfRoute,
@@ -1433,6 +1495,7 @@ const rootRouteChildren: RootRouteChildren = {
   NotificationTestDashboardRoute: NotificationTestDashboardRoute,
   NotificationTestLoginRoute: NotificationTestLoginRoute,
   NotificationTestRegisterRoute: NotificationTestRegisterRoute,
+  QueueFlowSplatRoute: QueueFlowSplatRoute,
   QueueFlowAdminRoute: QueueFlowAdminRoute,
   QueueFlowJoinRoute: QueueFlowJoinRoute,
   RolesTest_root_redirectRoute: RolesTest_root_redirectRoute,

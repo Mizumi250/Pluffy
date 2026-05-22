@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { CalendarClock, LayoutDashboard, Menu, Settings, X } from 'lucide-react'
+import { useNavigate, useLocation } from '../../adapters/router'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },

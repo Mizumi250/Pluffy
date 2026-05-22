@@ -474,7 +474,11 @@ function routePathForPage(tatName: string, page: ArkzenPage): string {
   return `/${tatName}/${page.name}`
 }
 
-function generateTanStackRouteFile(tatName: string, page: ArkzenPage): string {
+function generateTanStackRouteFile(
+  tatName: string,
+  page: ArkzenPage,
+  errorBoundaryClass?: string,
+): string {
   if (!page.name) {
     throw new Error(`[TanStack] Page missing name in ${tatName}`)
   }
@@ -485,6 +489,10 @@ function generateTanStackRouteFile(tatName: string, page: ArkzenPage): string {
   if (!routePath) {
     throw new Error(`[TanStack] Cannot generate route path for ${tatName}/${page.name}`)
   }
+
+  const errorComponentBlock = errorBoundaryClass
+    ? `  errorComponent: lazyRouteComponent(() =>\n    import('@/pages/${tatName}/error-boundary').then(m => ({ default: m.${errorBoundaryClass} }))\n  ),\n`
+    : ''
 
   return `// ============================================================
 // ARKZEN GENERATED — TanStack Route: ${routePath}
@@ -498,7 +506,7 @@ export const Route = createFileRoute('${routePath}')({
   component: lazyRouteComponent(() =>
     import('${importPath}').then(m => ({ default: m.default }))
   ),
-})
+${errorComponentBlock}})
 `
 }
 
@@ -604,11 +612,25 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(LAYOUTS_DIR, fileName)
 
+    const normalizedRaw = normalizeForTanStack(layout.raw.trim())
+
     const { canonicalBlock, strippedSources } = resolveImports(
-      [normalizeForTanStack(layout.raw.trim())],
+      [normalizedRaw],
       { reactHooks: [], framerNamed: [] }
     )
-    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [TanStack]\n\n${canonicalBlock}\n\n${strippedSources[0]}\n`
+
+    // Inject adapter import for useNavigate / useLocation if the layout uses them
+    const needsNavigate = /\buseNavigate\s*\(/.test(normalizedRaw)
+    const needsLocation = /\buseLocation\s*\(/.test(normalizedRaw)
+    const adapterSpecifiers = [
+      needsNavigate && 'useNavigate',
+      needsLocation && 'useLocation',
+    ].filter(Boolean).join(', ')
+    const adapterImport = adapterSpecifiers
+      ? `import { ${adapterSpecifiers} } from '../../adapters/router'`
+      : ''
+
+    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [TanStack]\n\n${canonicalBlock}${adapterImport ? '\n' + adapterImport : ''}\n\n${strippedSources[0]}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen TanStack] ✓ Custom layout: ${fileName}`)
   }
@@ -953,16 +975,21 @@ ${clean}${pageVariantsBlock}
 
   const routeEntries: RouteEntry[] = []
 
+  // Derive error boundary class name once (null if no @arkzen:error:500)
+  const errorBoundaryClass = has500
+    ? `ArkzenErrorBoundary_${toPascalCase(tatName)}`
+    : undefined
+
   for (const page of tatemono.pages) {
     // Generate page component file
     const pageContent = generatePageFile(tatemono, page, animFnName)
     const pagePath    = path.join(tatDir, `${page.name}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 
-    // Generate TanStack route file
+    // Generate TanStack route file — wire errorComponent when a 500 boundary exists
     const routeFile = path.join(ROUTES_DIR, tatName, `${page.name}.tsx`)
     ensureDir(path.dirname(routeFile))
-    fs.writeFileSync(routeFile, generateTanStackRouteFile(tatName, page), 'utf-8')
+    fs.writeFileSync(routeFile, generateTanStackRouteFile(tatName, page, errorBoundaryClass), 'utf-8')
 
     // Track route entry
     const routeVar = `Route_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
@@ -977,15 +1004,19 @@ ${clean}${pageVariantsBlock}
     console.log(`[Arkzen TanStack] ✓ ${routePath} [tanstack]`)
   }
 
-  // Wildcard 404
+  // Wildcard 404 — route file MUST be named $.tsx (TanStack catch-all file convention)
   if (has404) {
+    const wildcardRouteFile = path.join(ROUTES_DIR, tatName, '$.tsx')
+    ensureDir(path.dirname(wildcardRouteFile))
+    const wildcardPage = { name: 'not-found', layout: 'none', raw: '' } as ArkzenPage
+    fs.writeFileSync(wildcardRouteFile, generateTanStackRouteFile(tatName, wildcardPage, errorBoundaryClass), 'utf-8')
     routeEntries.push({
       tatName,
-      page: { name: 'not-found', layout: 'none', raw: '' } as ArkzenPage,
+      page: wildcardPage,
       routeVar: `Route_${toPascalCase(tatName)}_NotFound`,
       filePath: `${tatName}/not-found`,
     })
-    console.log(`[Arkzen TanStack] ✓ Wildcard 404 route: /${tatName}/* → not-found.tsx`)
+    console.log(`[Arkzen TanStack] ✓ Wildcard 404 route: /${tatName}/* → $.tsx`)
   }
 
   // Root redirect
@@ -1035,6 +1066,50 @@ export function softUnregisterTanStackPages(tatName: string): void {
   if (fs.existsSync(routeDir)) {
     fs.rmSync(routeDir, { recursive: true, force: true })
   }
+
+  // Overwrite TanStack's auto-generated routeTree.gen.ts with a minimal valid stub.
+  // Deleting it causes router.tsx to crash at SSR import time ("Does the file exist?").
+  // Writing a stub with only the always-present root + index routes lets the server start,
+  // then TanStack's router plugin regenerates the full file at configResolved.
+  const routeTreeGen = path.join(SRC_DIR, 'routeTree.gen.ts')
+  const routeTreeStub = `/* eslint-disable */
+// @ts-nocheck
+// noinspection JSUnusedGlobalSymbols
+// ARKZEN STUB — regenerated by TanStack router plugin on next Vite start
+
+import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
+
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+
+interface FileRoutesByPath {}
+interface FileRouteTypes {
+  fileRoutesByFullPath: FileRoutesByPath
+  fullPaths: '/'
+  fileRoutesByTo: FileRoutesByPath
+  to: '/'
+  id: '__root__' | '/'
+  fileRoutesById: { '__root__': typeof rootRouteImport; '/': typeof IndexRoute }
+}
+
+interface RootRouteChildren { IndexRoute: typeof IndexRoute }
+const rootRouteChildren: RootRouteChildren = { IndexRoute }
+export const routeTree = rootRouteImport
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register { ssr: true; router: Awaited<ReturnType<typeof getRouter>> }
+}
+`
+  fs.writeFileSync(routeTreeGen, routeTreeStub, 'utf-8')
+  console.log(`[Arkzen TanStack] ✓ routeTree.gen.ts stubbed — will regenerate on next start`)
 
   cleanOldAssets(tatName, PUBLIC_DIR)
   console.log(`[Arkzen TanStack] ✓ Routes purged from tree`)

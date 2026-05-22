@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — upload-test [TanStack]
 // Visiting /upload-test redirects to /upload-test/dashboard
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T03:24:51.404Z
+// Generated: 2026-05-22T04:16:37.490Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

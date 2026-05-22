@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react'
 import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react'
+import { useNavigate, useLocation } from '../../adapters/router'
 
 const NAV = [
   { href: '/queue-flow',        icon: LayoutGrid, label: 'Display'  },

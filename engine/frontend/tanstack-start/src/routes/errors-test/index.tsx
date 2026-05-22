@@ -10,4 +10,7 @@ export const Route = createFileRoute('/errors-test/')({
   component: lazyRouteComponent(() =>
     import('@/pages/errors-test/index').then(m => ({ default: m.default }))
   ),
+  errorComponent: lazyRouteComponent(() =>
+    import('@/pages/errors-test/error-boundary').then(m => ({ default: m.ArkzenErrorBoundary_ErrorsTest }))
+  ),
 })
