@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — church-community [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:45:59.372Z
+// Generated: 2026-05-22T06:34:37.893Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

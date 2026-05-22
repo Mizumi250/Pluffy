@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:46:01.731Z
+// Generated: 2026-05-22T06:34:38.795Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { Link } from '@/arkzen/core/adapters/Link'
+import './styles/global.css'
 
 // Utilities, types, and helper functions from @arkzen:components
 // ─── CUSTOM COMPONENTS ───────────────────────────────

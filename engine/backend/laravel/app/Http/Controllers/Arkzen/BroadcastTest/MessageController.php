@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MessageController
 // Tatemono: broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T06:15:45.737650Z
+// Generated: 2026-05-22T06:34:37.168230Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BroadcastTest;

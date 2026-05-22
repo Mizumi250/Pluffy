@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — mail-test [TanStack]
 // Visiting /mail-test redirects to /mail-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T04:46:01.396Z
+// Generated: 2026-05-22T06:34:38.627Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

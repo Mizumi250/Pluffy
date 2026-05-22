@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:46:00.290Z
+// Generated: 2026-05-22T06:34:38.310Z
 // ============================================================
 
 export { InventoryRow } from './_components'

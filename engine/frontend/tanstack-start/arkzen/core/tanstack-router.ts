@@ -347,6 +347,7 @@ function generatePageFile(
   tatemono: ParsedTatemono,
   page: ArkzenPage,
   animationFnName: string | null,
+  hasGlobalStyle: boolean = false,
 ): string {
   const componentName = extractComponentName(page.name, page.raw)
   const layoutImport  = getLayoutImport(page.layout, tatemono.meta.name)
@@ -401,7 +402,9 @@ function generatePageFile(
     ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine, tanstackAdapterImportLine, linkImportLine]
+  const styleImport = hasGlobalStyle ? `import './styles/global.css'` : ''
+
+  const extraLines = [layoutImport, animImportLine, tanstackAdapterImportLine, linkImportLine, styleImport]
     .filter(Boolean).join('\n')
 
   const { canonicalBlock, strippedSources } = resolveImports(allSources, {
@@ -982,7 +985,7 @@ ${clean}${pageVariantsBlock}
 
   for (const page of tatemono.pages) {
     // Generate page component file
-    const pageContent = generatePageFile(tatemono, page, animFnName)
+    const pageContent = generatePageFile(tatemono, page, animFnName, styleInfo.hasGlobalStyle)
     const pagePath    = path.join(tatDir, `${page.name}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 

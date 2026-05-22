@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — asset-hub [TanStack]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:45:57.036Z
+// Generated: 2026-05-22T06:34:36.218Z
 // ============================================================
 
 export * from './_components'

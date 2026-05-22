@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T04:45:56.985Z
+// Generated: 2026-05-22T06:34:36.199Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
+import './styles/global.css'
 
 // Utilities, types, and helper functions from @arkzen:components
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
