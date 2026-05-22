@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — body-mail-notification [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T05:25:26.105Z
+// Generated: 2026-05-22T06:15:45.145Z
 // ============================================================
 
 export * from './_components'

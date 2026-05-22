@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — crud-test [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T05:25:28.869Z
+// Generated: 2026-05-22T06:15:46.480Z
 // ============================================================
 
 export * from './_components'

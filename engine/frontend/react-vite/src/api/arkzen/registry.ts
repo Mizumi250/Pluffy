@@ -4,7 +4,11 @@ import type { IncomingMessage, ServerResponse } from 'http'
 
 export const GET = async (req: IncomingMessage, res: ServerResponse) => {
   try {
-    const registryPath = path.resolve(__dirname, '../../../..', 'arkzen.json')
+    // process.cwd() = engine/frontend/react-vite/ when started via npm run dev
+    // Resolving 3 levels up lands at the monorepo root where arkzen.json lives.
+    // Previously used path.resolve(__dirname, '../../../..') which only reached
+    // engine/frontend/ — 2 levels short — so arkzen.json was never found.
+    const registryPath = path.resolve(process.cwd(), '..', '..', '..', 'arkzen.json')
 
     if (!fs.existsSync(registryPath)) {
       res.setHeader('Content-Type', 'application/json')
