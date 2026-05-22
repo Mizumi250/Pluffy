@@ -37,6 +37,8 @@ import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
+import { writeSitemap } from './sitemap'
+import { getRegistry } from './registry'
 
 // Pages + generated files land INSIDE the laravel-inertia backend.
 // process.cwd() is engine/frontend/react-inertia/ at runtime.
@@ -341,6 +343,18 @@ function flattenMultilineImports(code: string): string {
   }
 
   return out.join('\n')
+}
+
+// ─── Extract component name ───────────────────────────────────────────────────
+/**
+ * Extracts the React component name from raw page code.
+ * Looks for "const XxxPage = " or "const XxxPage: " patterns.
+ * Falls back to toSafeComponentName(pageName) + 'Page' if not found.
+ */
+function extractComponentName(pageName: string, raw: string): string {
+  const match = raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
+  if (match) return match[1]
+  return toSafeComponentName(pageName) + 'Page'
 }
 
 // ─── Layout helpers ───────────────────────────────────────────────────────────
@@ -802,8 +816,7 @@ import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/route
     )
     .trim()
 
-  const match         = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
-  const componentName = match ? match[1] : toSafeComponentName(page.name) + 'Page'
+  const componentName = extractComponentName(page.name, page.raw)
   const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
   const propsTypeName = `${toPascalCase(tatName)}${toPascalCase(page.name)}Props`
 
@@ -1098,6 +1111,32 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
 
   // Hub route — idempotent, only writes if missing
   ensureHubRoute()
+
+  // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
+  // Inertia/Laravel serves public/ from the backend directory.
+  try {
+    const registry  = getRegistry()
+    const publicDir = path.join(BACKEND_DIR, 'public')
+    writeSitemap(registry, publicDir)
+    writeRobotsTxt()
+  } catch (e) {
+    console.log(`[Arkzen Inertia Router] ⚠ Sitemap generation skipped`)
+  }
+}
+
+// ─── Write robots.txt ─────────────────────────────────────────────────────────
+
+function writeRobotsTxt(): void {
+  const publicDir = path.join(BACKEND_DIR, 'public')
+  fs.mkdirSync(publicDir, { recursive: true })
+  const robotsPath = path.join(publicDir, 'robots.txt')
+  const content = `User-agent: *
+Allow: /
+
+Sitemap: ${process.env.VITE_SITE_URL || 'http://localhost:8000'}/sitemap.xml
+`
+  fs.writeFileSync(robotsPath, content, 'utf-8')
+  console.log(`[Arkzen Inertia Router] ✓ robots.txt generated`)
 }
 
 // softUnregisterInertiaPages — used during REBUILD

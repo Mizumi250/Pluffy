@@ -40,6 +40,8 @@ import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
+import { writeSitemap } from './sitemap'
+import { getRegistry } from './registry'
 
 const SRC_DIR       = path.resolve(process.cwd(), 'src')
 const PUBLIC_DIR    = path.resolve(process.cwd(), 'public')
@@ -1047,7 +1049,32 @@ ${clean}${pageVariantsBlock}
   }
 
   console.log(`[Arkzen TanStack] ✓ Generated ${routeEntries.length} route(s)`)
+
+  // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
+  try {
+    const registry = getRegistry()
+    writeSitemap(registry)
+    writeRobotsTxt()
+  } catch (e) {
+    console.log(`[Arkzen TanStack] ⚠ Sitemap generation skipped`)
+  }
+
   return routeEntries
+}
+
+// ─── Write robots.txt ─────────────────────────────────────────────────────────
+
+function writeRobotsTxt(): void {
+  const publicDir = path.resolve(process.cwd(), 'public')
+  fs.mkdirSync(publicDir, { recursive: true })
+  const robotsPath = path.join(publicDir, 'robots.txt')
+  const content = `User-agent: *
+Allow: /
+
+Sitemap: ${process.env.VITE_SITE_URL || 'http://localhost:3000'}/sitemap.xml
+`
+  fs.writeFileSync(robotsPath, content, 'utf-8')
+  console.log(`[Arkzen TanStack] ✓ robots.txt generated`)
 }
 
 // ─── Soft unregister — used during REBUILD ────────────────────────────────────

@@ -29,6 +29,8 @@ import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles }            from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
+import { writeSitemap } from './sitemap'
+import { getRegistry } from './registry'
 
 const SRC_DIR       = path.resolve(process.cwd(), 'src')
 const PAGES_DIR     = path.join(SRC_DIR, 'pages')
@@ -496,10 +498,12 @@ export default ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(p
 function generateAstroPageShell(
   tatemono: ParsedTatemono,
   page: ArkzenPage,
-  islandImportPath: string
+  islandImportPath: string,
+  hasGlobalStyle: boolean
 ): string {
-  const islandName = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
-  const title      = `${toPascalCase(tatemono.meta.name)} — ${toPascalCase(page.name)}`
+  const islandName  = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
+  const title       = `${toPascalCase(tatemono.meta.name)} — ${toPascalCase(page.name)}`
+  const cssImport   = hasGlobalStyle ? `import './styles/global.css'` : ''
 
   return `---
 // ============================================================
@@ -511,6 +515,7 @@ function generateAstroPageShell(
 
 import RootLayout from '@/RootLayout.astro'
 import ${islandName} from '${islandImportPath}.tsx'
+${cssImport}
 ---
 
 <RootLayout title="${title}">
@@ -731,9 +736,8 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
   generateIndividualComponentFiles(tatemono)
   generateComponentsIndex(tatemono)
 
-  // Style files → src/arkzen/generated/styles/{tat}/
-  const stylesDir = path.join(SRC_DIR, 'arkzen', 'generated', 'styles', tatemono.meta.name)
-  emitTatemonoStyles(tatemono, stylesDir, { loggerLabel: 'Arkzen Astro Router' })
+  // Style files — emit co-located with the .astro shell so the relative import is simple
+  const styleInfo = emitTatemonoStyles(tatemono, tatemonoDir, { loggerLabel: 'Arkzen Astro Router' })
 
   // 404 handler
   if (tatemono.errorHandlers) {
@@ -794,7 +798,7 @@ return Astro.redirect('${redirectDest}')
     const astroPath      = path.join(tatemonoDir, astroFileName)
     const islandImport   = `@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}`
     const islandName     = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
-    const astroContent   = generateAstroPageShell(tatemono, page, islandImport)
+    const astroContent   = generateAstroPageShell(tatemono, page, islandImport, styleInfo.hasGlobalStyle)
     fs.writeFileSync(astroPath, astroContent, 'utf-8')
 
     console.log(`[Arkzen Astro Router] ✓ ${routePath} [${page.layout}] → ${astroFileName} + island/${islandFileName}`)
@@ -815,6 +819,30 @@ return Astro.redirect('${redirectDest}')
 
   writeRouteRegistry(_allRoutes)
   console.log(`[Arkzen Astro Router] ✓ All pages registered for: ${tatemono.meta.name}`)
+
+  // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
+  try {
+    const registry = getRegistry()
+    writeSitemap(registry)
+    writeRobotsTxt()
+  } catch (e) {
+    console.log(`[Arkzen Astro Router] ⚠ Sitemap generation skipped`)
+  }
+}
+
+// ─── Write robots.txt ─────────────────────────────────────────────────────────
+
+function writeRobotsTxt(): void {
+  const publicDir = path.resolve(process.cwd(), 'public')
+  fs.mkdirSync(publicDir, { recursive: true })
+  const robotsPath = path.join(publicDir, 'robots.txt')
+  const content = `User-agent: *
+Allow: /
+
+Sitemap: ${process.env.ARKZEN_SITE_URL || process.env.VITE_SITE_URL || 'http://localhost:4321'}/sitemap.xml
+`
+  fs.writeFileSync(robotsPath, content, 'utf-8')
+  console.log(`[Arkzen Astro Router] ✓ robots.txt generated`)
 }
 
 export function unregisterAstroPages(tatName: string): void {
@@ -844,12 +872,7 @@ export function unregisterAstroPages(tatName: string): void {
     console.log(`[Arkzen Astro Router] ✓ Removed components: ${componentsDir}`)
   }
 
-  // Clean up styles directory
-  const stylesDir = path.join(SRC_DIR, 'arkzen', 'generated', 'styles', tatName)
-  if (fs.existsSync(stylesDir)) {
-    fs.rmSync(stylesDir, { recursive: true })
-    console.log(`[Arkzen Astro Router] ✓ Removed styles: ${stylesDir}`)
-  }
+  // Styles are co-located in tatemonoDir/styles/ — already removed by tatemonoDir rmSync above
 
   const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
   if (fs.existsSync(animPath)) {

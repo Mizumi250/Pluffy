@@ -1,14 +1,24 @@
 // ============================================================
 // ARKZEN SITEMAP GENERATOR
 // Generates sitemap.xml for all registered tatemonos
-// Runs on every rebuild via router.ts
+// Runs on every rebuild via each stack's router.
+//
+// Env var priority (stack-agnostic):
+//   ARKZEN_SITE_URL          — preferred, works on all stacks
+//   NEXT_PUBLIC_SITE_URL     — Next.js fallback
+//   VITE_SITE_URL            — Vite / TanStack / Astro / Inertia fallback
+//   http://localhost:3000    — last resort
 // ============================================================
 
 import * as fs from 'fs'
 import * as path from 'path'
 import type { ArkzenRegistry } from '../types'
 
-const DOMAIN = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+const DOMAIN =
+  process.env.ARKZEN_SITE_URL ||
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  process.env.VITE_SITE_URL ||
+  'http://localhost:3000'
 
 export function generateSitemap(registry: ArkzenRegistry): string {
   const urls: string[] = []
@@ -51,12 +61,12 @@ ${urls
   return xml
 }
 
-export function writeSitemap(registry: ArkzenRegistry): void {
+export function writeSitemap(registry: ArkzenRegistry, publicDir?: string): void {
   const xml = generateSitemap(registry)
-  const publicDir = path.resolve(process.cwd(), 'public')
-  fs.mkdirSync(publicDir, { recursive: true })
+  const targetDir = publicDir ?? path.resolve(process.cwd(), 'public')
+  fs.mkdirSync(targetDir, { recursive: true })
 
-  const sitemapPath = path.join(publicDir, 'sitemap.xml')
+  const sitemapPath = path.join(targetDir, 'sitemap.xml')
   fs.writeFileSync(sitemapPath, xml, 'utf-8')
   console.log(`[Arkzen Router] ✓ Sitemap generated: ${sitemapPath}`)
 }

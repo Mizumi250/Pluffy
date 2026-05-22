@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — mail-test
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T05:32:13.341Z
+// Generated: 2026-05-22T23:30:52.964Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

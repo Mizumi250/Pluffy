@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — JobOrder
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T05:27:25.792011Z
+// Generated: 2026-05-22T23:31:55.582515Z
 // ============================================================
 
 namespace App\Models\Arkzen\JoPayroll;

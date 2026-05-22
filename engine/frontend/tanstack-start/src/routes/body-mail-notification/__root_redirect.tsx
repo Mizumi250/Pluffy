@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — body-mail-notification [TanStack]
 // Visiting /body-mail-notification redirects to /body-mail-notification/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T06:34:36.631Z
+// Generated: 2026-05-22T23:09:41.377Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

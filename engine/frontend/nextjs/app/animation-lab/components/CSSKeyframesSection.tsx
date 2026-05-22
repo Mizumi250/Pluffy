@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSKeyframesSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T05:33:02.938Z
+// Generated: 2026-05-22T23:38:05.172Z
 // ============================================================
 
 export { CSSKeyframesSection } from './_components'

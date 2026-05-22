@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T06:15:47.606Z
+// Generated: 2026-05-22T23:33:18.009Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

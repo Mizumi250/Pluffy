@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T06:15:45.786Z
+// Generated: 2026-05-22T23:33:16.604Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

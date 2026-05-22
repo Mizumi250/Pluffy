@@ -63,6 +63,8 @@ import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
+import { writeSitemap } from './sitemap'
+import { getRegistry } from './registry'
 
 const SRC_DIR       = path.resolve(process.cwd(), 'src')
 const PAGES_DIR     = path.join(SRC_DIR, 'pages')
@@ -390,6 +392,18 @@ function flattenMultilineImports(code: string): string {
   return out.join('\n')
 }
 
+// ─── Extract component name ───────────────────────────────────────────────────
+/**
+ * Extracts the React component name from raw page code.
+ * Looks for "const XxxPage = " or "const XxxPage: " patterns.
+ * Falls back to toPascalCase(pageName) + 'Page' if not found.
+ */
+function extractComponentName(pageName: string, raw: string): string {
+  const match = raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
+  if (match) return match[1]
+  return toPascalCase(pageName) + 'Page'
+}
+
 // ─── Layout helpers ────────────────────────────────────────────────────────────
 
 function getLayoutImport(layout: string, tatName: string): string {
@@ -608,8 +622,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     .trim()
 
   // Extract the page component name from raw
-  const match         = page.raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
-  const componentName = match ? match[1] : toPascalCase(page.name) + 'Page'
+  const componentName = extractComponentName(page.name, page.raw)
   const wrapperName   = `ArkzenPage_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
 
   return `// ============================================================
@@ -1012,6 +1025,15 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Vite Router] ✓ Route registry updated: ${newRoutes.length} page(s)`)
 
+  // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
+  try {
+    const registry = getRegistry()
+    writeSitemap(registry)
+    writeRobotsTxt()
+  } catch (e) {
+    console.log(`[Arkzen Vite Router] ⚠ Sitemap generation skipped`)
+  }
+
   // ── Asset distribution ────────────────────────────────────────────────────────
   // process.cwd() = engine/frontend/react-vite/
   // Three levels up → project root → tatemonos/{tat}/assets
@@ -1027,6 +1049,21 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   } catch (e) {
     console.log(`[Arkzen Assets] ⚠ Asset distribution skipped: ${e}`)
   }
+}
+
+// ─── Write robots.txt ─────────────────────────────────────────────────────────
+
+function writeRobotsTxt(): void {
+  const publicDir = path.resolve(process.cwd(), 'public')
+  fs.mkdirSync(publicDir, { recursive: true })
+  const robotsPath = path.join(publicDir, 'robots.txt')
+  const content = `User-agent: *
+Allow: /
+
+Sitemap: ${process.env.VITE_SITE_URL || 'http://localhost:5173'}/sitemap.xml
+`
+  fs.writeFileSync(robotsPath, content, 'utf-8')
+  console.log(`[Arkzen Vite Router] ✓ robots.txt generated`)
 }
 
 // ─── Soft unregister — used during REBUILD ────────────────────────────────────

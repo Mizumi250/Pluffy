@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — JobOrderUpdateRequest
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T06:34:38.473396Z
+// Generated: 2026-05-22T23:38:09.594650Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\JoPayroll;
