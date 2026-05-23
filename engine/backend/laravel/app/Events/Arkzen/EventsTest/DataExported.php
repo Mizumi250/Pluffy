@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — DataExported
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:49:13.081433Z
+// Generated: 2026-05-23T10:07:14.773355Z
 // ============================================================
 
 namespace App\Events\Arkzen\EventsTest;
