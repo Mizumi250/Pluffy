@@ -632,6 +632,87 @@ import NotFoundIsland from '@/arkzen/generated/islands/${islandFileName.replace(
 `
 }
 
+// ─── 500 error boundary (Astro) ──────────────────────────────────────────────
+//
+// Astro has no native error.tsx equivalent. Pattern mirrors Vite/Inertia:
+//   1. React island tsx  → src/arkzen/generated/islands/{tat}_error-boundary.tsx
+//      Contains the user's ServerErrorPage + a class ErrorBoundary wrapping it.
+//   2. Astro shell       → src/pages/{tat}/error-boundary.astro
+//      Thin shell that mounts the island with client:load.
+//
+// The ErrorBoundary class IS exported from the island for use in custom wrappers.
+
+function generateErrorBoundaryPage(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
+  const boundaryClassName = `ArkzenErrorBoundary_${toPascalCase(tatemono.meta.name)}`
+  const islandName        = `ArkzenErrorBoundary_${toPascalCase(tatemono.meta.name)}_Island`
+  const raw               = normalizeForAstro(handler.raw).replace(/'use client'[;]?\n?/, '').trim()
+  const adapterImports    = getAstroAdapterImportLines(raw)
+
+  const islandFileName = `${tatemono.meta.name}_error-boundary.tsx`
+  const islandPath     = path.join(SRC_DIR, 'arkzen', 'generated', 'islands', islandFileName)
+
+  const islandContent = `// ============================================================
+// ARKZEN GENERATED ERROR BOUNDARY ISLAND — ${tatemono.meta.name}
+// Class-based React ErrorBoundary. Export it from here to wrap custom layouts.
+// DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+import React, { Component, ReactNode } from 'react'
+import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}'
+${adapterImports.join('\n')}
+
+${raw}
+
+interface ArkzenErrorBoundaryState { hasError: boolean }
+
+export class ${boundaryClassName} extends Component<
+  { children: ReactNode },
+  ArkzenErrorBoundaryState
+> {
+  state: ArkzenErrorBoundaryState = { hasError: false }
+
+  static getDerivedStateFromError(): ArkzenErrorBoundaryState {
+    return { hasError: true }
+  }
+
+  componentDidCatch(error: Error, info: React.ErrorInfo): void {
+    console.error('[Arkzen] ${tatemono.meta.name} error boundary caught:', error, info)
+  }
+
+  reset = (): void => {
+    this.setState({ hasError: false })
+  }
+
+  render(): ReactNode {
+    if (this.state.hasError) {
+      return <ServerErrorPage reset={this.reset} />
+    }
+    return this.props.children
+  }
+}
+
+// Default export: standalone error page rendered in the .astro shell
+const ${islandName} = () => <ServerErrorPage reset={() => window.location.reload()} />
+export default ${islandName}
+`
+  ensureDir(path.dirname(islandPath))
+  fs.writeFileSync(islandPath, islandContent, 'utf-8')
+
+  // Astro shell
+  return `---
+// ARKZEN GENERATED ERROR PAGE — ${tatemono.meta.name}
+// DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
+import RootLayout from '@/RootLayout.astro'
+import ${islandName} from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
+---
+
+<RootLayout title="Error — ${toPascalCase(tatemono.meta.name)}">
+  <${islandName} client:load />
+</RootLayout>
+`
+}
+
 // ─── Route registry ───────────────────────────────────────────────────────────
 // Astro doesn't need a client-side route registry the same way Vite does —
 // Astro's file-system routing handles it. But we write one for the Hub UI
@@ -746,6 +827,10 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
         const content = generateNotFoundPage(tatemono, handler)
         fs.writeFileSync(path.join(tatemonoDir, '404.astro'), content, 'utf-8')
         console.log(`[Arkzen Astro Router] ✓ 404 handler: 404.astro → /${tatemono.meta.name}/**`)
+      } else if (handler.type === '500') {
+        const content = generateErrorBoundaryPage(tatemono, handler)
+        fs.writeFileSync(path.join(tatemonoDir, 'error-boundary.astro'), content, 'utf-8')
+        console.log(`[Arkzen Astro Router] ✓ 500 handler: error-boundary.astro + island → /${tatemono.meta.name}`)
       }
     }
   }
