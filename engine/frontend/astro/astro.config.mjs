@@ -5,6 +5,8 @@
 import { defineConfig } from 'astro/config'
 import react            from '@astrojs/react'
 import node             from '@astrojs/node'
+import wasm             from 'vite-plugin-wasm'
+import topLevelAwait    from 'vite-plugin-top-level-await'
 
 export default defineConfig({
   integrations: [
@@ -15,6 +17,10 @@ export default defineConfig({
   output: 'server',
 
   vite: {
+    plugins: [
+      wasm(),
+      topLevelAwait(),
+    ],
     server: {
   proxy: {
     '/api': {

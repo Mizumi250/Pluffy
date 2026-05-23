@@ -2,12 +2,12 @@
 // ARKZEN GENERATED PAGE — visual-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T08:43:19.698Z
+// Generated: 2026-05-23T13:57:42.170Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
@@ -73,6 +73,7 @@ export const NAV_SECTIONS = [
   { id: 'vanilla-tilt',    label: 'Vanilla Tilt',       icon: '⬡', group: 'UX' },
   { id: 'lenis',           label: 'Lenis Scroll',       icon: '🌊', group: 'UX' },
   { id: 'curtains',        label: 'CurtainsJS',         icon: '🪟', group: 'Shader' },
+  { id: 'shaders',         label: 'Shaders',            icon: '✨', group: 'Shader' },
   { id: 'script-dsl',      label: 'Script DSL',         icon: '📜', group: 'Arkzen' },
   { id: 'html-canvas',     label: 'HTML-in-Canvas',     icon: '🧪', group: 'Arkzen' },
 ]
@@ -216,11 +217,11 @@ export const BabylonSection = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Vector3, ArcRotateCamera }) => {
+    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Color4, Vector3, ArcRotateCamera }) => {
       const engine = new Engine(canvas, true, { preserveDrawingBuffer: true })
       engineRef.current = engine
       const scene = new Scene(engine)
-      scene.clearColor = new (window as any).BABYLON?.Color4?.(0,0,0,0) ?? { r: 0, g: 0, b: 0, a: 0 }
+      scene.clearColor = new Color4(0, 0, 0, 0)
 
       const camera = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3, 5, Vector3.Zero(), scene)
 
@@ -1512,6 +1513,265 @@ export function getEmitterConfig(origin: { x: number; y: number }) {
   )
 }
 
+// ─── SECTION: LOTTIE ─────────────────────────────────────────────────────────
+export const LottieLazySection = () => {
+  const [LottieComp, setLottieComp] = useState<React.ComponentType<any> | null>(null)
+  const [animData, setAnimData] = useState<any>(null)
+  const [playing, setPlaying] = useState(true)
+  const lottieRef = useRef<any>(null)
+
+  useEffect(() => {
+    import('lottie-react').then(mod => setLottieComp(() => mod.default))
+    // Built-in demo animation — a simple spinning arc (no external fetch needed)
+    setAnimData({
+      v: '5.5.7', fr: 60, ip: 0, op: 120, w: 200, h: 200, nm: 'Spinner', ddd: 0,
+      assets: [],
+      layers: [{
+        ddd: 0, ind: 1, ty: 4, nm: 'Arc', sr: 1, ks: {
+          o: { a: 0, k: 100 }, r: { a: 1, k: [{ i: { x: [0.83], y: [0.83] }, o: { x: [0.17], y: [0.17] }, t: 0, s: [0] }, { t: 120, s: [360] }] },
+          p: { a: 0, k: [100, 100, 0] }, a: { a: 0, k: [0, 0, 0] }, s: { a: 0, k: [100, 100, 100] },
+        },
+        ao: 0, shapes: [{
+          ty: 'gr', it: [
+            { ty: 'el', p: { a: 0, k: [0, 0] }, s: { a: 0, k: [120, 120] }, nm: 'Ellipse' },
+            { ty: 'st', c: { a: 1, k: [{ t: 0, s: [0.4, 0.6, 1, 1] }, { t: 60, s: [0.8, 0.4, 1, 1] }, { t: 120, s: [0.4, 0.6, 1, 1] }] }, o: { a: 0, k: 100 }, w: { a: 0, k: 10 }, lc: 2, lj: 2, nm: 'Stroke' },
+            { ty: 'tm', s: { a: 0, k: 10 }, e: { a: 1, k: [{ i: { x: [0.5], y: [1] }, o: { x: [0.5], y: [0] }, t: 0, s: [10] }, { t: 60, s: [90] }, { t: 120, s: [10] }] }, o: { a: 0, k: 0 }, nm: 'Trim' },
+            { ty: 'tr', p: { a: 0, k: [0, 0] }, a: { a: 0, k: [0, 0] }, s: { a: 0, k: [100, 100] }, r: { a: 0, k: 0 }, o: { a: 0, k: 100 } },
+          ], nm: 'Arc Group',
+        }],
+        ip: 0, op: 120, st: 0, bm: 0,
+      }],
+    })
+  }, [])
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <SectionHeader icon="🎞" title="Lottie" subtitle="lottie-react — JSON-driven vector animations" badge="lottie-react" />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem', marginTop: '2rem' }}>
+        {LottieComp && animData ? (
+          <>
+            <LottieComp
+              lottieRef={lottieRef}
+              animationData={animData}
+              loop={true}
+              autoplay={playing}
+              style={{ width: 200, height: 200 }}
+            />
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <button
+                onClick={() => { setPlaying(p => !p); playing ? lottieRef.current?.pause() : lottieRef.current?.play() }}
+                style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }}
+              >
+                {playing ? '⏸ Pause' : '▶ Play'}
+              </button>
+              <button
+                onClick={() => lottieRef.current?.stop()}
+                style={{ padding: '0.5rem 1.5rem', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: '#fff', cursor: 'pointer' }}
+              >
+                ⏹ Stop
+              </button>
+            </div>
+            <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem' }}>Built-in demo animation — drop any Lottie JSON via <code>animationData</code> prop</p>
+          </>
+        ) : (
+          <p style={{ color: 'rgba(255,255,255,0.4)' }}>Loading lottie-react…</p>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── SECTION: SHADERS (shaders.com) ──────────────────────────────────────────
+export const ShadersSection = () => {
+  const [ShaderMod, setShaderMod] = useState<any>(null)
+  const [activeDemo, setActiveDemo] = useState<'aurora' | 'plasma' | 'cursor' | 'glitch'>('aurora')
+  const [speed, setSpeed] = useState(5)
+  const [intensity, setIntensity] = useState(80)
+
+  useEffect(() => {
+    import('shaders/react').then(mod => setShaderMod(mod))
+  }, [])
+
+  const demos = [
+    { id: 'aurora',  label: '🌌 Aurora',         desc: 'Aurora borealis — layered curtains + vertical rays' },
+    { id: 'plasma',  label: '🔮 Plasma',          desc: 'Flowing plasma field — organic colour wave' },
+    { id: 'cursor',  label: '🖱 Cursor Trail',    desc: 'FlowingGradient + interactive CursorTrail overlay' },
+    { id: 'glitch',  label: '📺 Glitch',          desc: 'FractalNoise base + Glitch + CRTScreen stylize stack' },
+  ] as const
+
+  const renderDemo = () => {
+    if (!ShaderMod) return <p style={{ color: 'rgba(255,255,255,0.4)', textAlign: 'center', paddingTop: '6rem' }}>Loading WebGPU shaders…</p>
+    const { Shader, Aurora, Plasma, FlowingGradient, CursorTrail, FractalNoise, Glitch, CRTScreen, Vignette } = ShaderMod
+
+    const canvasStyle = { width: '100%', height: '100%', borderRadius: '12px' }
+
+    switch (activeDemo) {
+      case 'aurora':
+        return (
+          <Shader style={canvasStyle}>
+            <Aurora intensity={intensity} speed={speed} curtainCount={4} waviness={60} colorA="#a533f8" colorB="#22ee88" colorC="#1694e8" />
+            <Vignette />
+          </Shader>
+        )
+      case 'plasma':
+        return (
+          <Shader style={canvasStyle}>
+            <Plasma speed={speed} intensity={intensity} colorA="#7c3aed" colorB="#db2777" colorC="#0ea5e9" />
+            <Vignette />
+          </Shader>
+        )
+      case 'cursor':
+        return (
+          <Shader style={canvasStyle}>
+            <FlowingGradient speed={speed} colorA="#0f172a" colorB="#7c3aed" colorC="#06b6d4" />
+            <CursorTrail />
+          </Shader>
+        )
+      case 'glitch':
+        return (
+          <Shader style={canvasStyle}>
+            <FractalNoise colorA="#0f172a" colorB="#1e1b4b" />
+            <Glitch intensity={intensity * 0.5} speed={speed} />
+            <CRTScreen />
+            <Vignette />
+          </Shader>
+        )
+    }
+  }
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <SectionHeader icon="✨" title="Shaders" subtitle="shaders.com — declarative WebGPU effects for React" badge="shaders" />
+
+      {/* Demo picker */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', margin: '1.5rem 0 1rem' }}>
+        {demos.map(d => (
+          <button
+            key={d.id}
+            onClick={() => setActiveDemo(d.id)}
+            style={{
+              padding: '0.4rem 1rem', borderRadius: '999px', fontSize: '0.85rem', cursor: 'pointer',
+              background: activeDemo === d.id ? 'rgba(124,58,237,0.6)' : 'rgba(255,255,255,0.07)',
+              border: activeDemo === d.id ? '1px solid rgba(124,58,237,0.8)' : '1px solid rgba(255,255,255,0.15)',
+              color: '#fff', transition: 'all 0.2s',
+            }}
+          >
+            {d.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Canvas */}
+      <div style={{ width: '100%', height: '340px', borderRadius: '12px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: '#0a0a0f' }}>
+        {renderDemo()}
+      </div>
+
+      {/* Controls */}
+      <div style={{ display: 'flex', gap: '2rem', marginTop: '1.25rem', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+          Speed — {speed}
+          <input type="range" min={1} max={20} value={speed} onChange={e => setSpeed(Number(e.target.value))} style={{ accentColor: '#7c3aed' }} />
+        </label>
+        <label style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)' }}>
+          Intensity — {intensity}
+          <input type="range" min={10} max={100} value={intensity} onChange={e => setIntensity(Number(e.target.value))} style={{ accentColor: '#7c3aed' }} />
+        </label>
+      </div>
+
+      <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.8rem', marginTop: '1rem' }}>
+        {demos.find(d => d.id === activeDemo)?.desc} · Renders to a single {'<canvas>'} via WebGPU (falls back to WebGLv2)
+      </p>
+    </div>
+  )
+}
+
+// ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
+export const CurtainsSection = () => {
+  const mountRef = useRef<HTMLDivElement>(null)
+  const curtainsRef = useRef<any>(null)
+  const [loaded, setLoaded] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let destroyed = false
+    import('curtainsjs').then(({ Curtains, Plane }) => {
+      if (destroyed || !mountRef.current) return
+      try {
+        const curtains = new Curtains({ container: mountRef.current, watchScroll: false })
+        curtainsRef.current = curtains
+
+        const vs = `
+          precision mediump float;
+          attribute vec3 aVertexPosition;
+          attribute vec2 aTextureCoord;
+          uniform mat4 uMVMatrix, uPMatrix;
+          uniform mat4 planeTextureMatrix;
+          varying vec3 vVertexPosition;
+          varying vec2 vTextureCoord;
+          uniform float uTime;
+          void main() {
+            vec3 pos = aVertexPosition;
+            pos.z += sin(pos.x * 3.14159 + uTime * 0.05) * 0.1;
+            vTextureCoord = (planeTextureMatrix * vec4(aTextureCoord, 0.0, 1.0)).xy;
+            vVertexPosition = pos;
+            gl_Position = uPMatrix * uMVMatrix * vec4(pos, 1.0);
+          }`
+
+        const fs = `
+          precision mediump float;
+          varying vec3 vVertexPosition;
+          varying vec2 vTextureCoord;
+          uniform float uTime;
+          void main() {
+            vec2 uv = vTextureCoord;
+            vec3 col = 0.5 + 0.5 * cos(uTime * 0.03 + uv.xyx + vec3(0.0, 2.0, 4.0));
+            gl_FragColor = vec4(col, 1.0);
+          }`
+
+        const planeEl = mountRef.current.querySelector('.curtains-plane') as HTMLElement
+        if (planeEl) {
+          new Plane(curtains, planeEl, {
+            vertexShader: vs, fragmentShader: fs,
+            uniforms: { uTime: { name: 'uTime', type: '1f', value: 0 } },
+          })
+        }
+        curtains.onRender(() => {
+          curtains.planes?.forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
+        })
+        setLoaded(true)
+      } catch (e: any) {
+        setError(e.message)
+      }
+    }).catch(e => setError(e.message))
+    return () => { destroyed = true; curtainsRef.current?.dispose() }
+  }, [])
+
+  return (
+    <div style={{ padding: '2rem' }}>
+      <SectionHeader icon="🌊" title="CurtainsJS" subtitle="WebGL shader planes on HTML elements" badge="curtainsjs" />
+      <div ref={mountRef} style={{ position: 'relative', width: '100%', height: '400px', marginTop: '2rem', borderRadius: '12px', overflow: 'hidden' }}>
+        <div
+          className="curtains-plane"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%' }}
+        />
+        {!loaded && !error && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.4)' }}>
+            Initialising WebGL…
+          </div>
+        )}
+        {error && (
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#f87171', fontSize: '0.85rem', padding: '1rem', textAlign: 'center' }}>
+            ⚠ {error}
+          </div>
+        )}
+      </div>
+      <p style={{ color: 'rgba(255,255,255,0.4)', fontSize: '0.85rem', marginTop: '1rem', textAlign: 'center' }}>
+        GLSL vertex wave + fragment colour cycle — no textures needed
+      </p>
+    </div>
+  )
+}
+
 // ─── SECTION: HTML-IN-CANVAS (Google Chrome 148+) ────────────────────────────
 export const HTMLCanvasSection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -1815,6 +2075,7 @@ const IndexPage = () => {
       case 'vanilla-tilt': return <UXSection />
       case 'lenis':        return <UXSection />
       case 'curtains':     return <CurtainsSection />
+      case 'shaders':      return <ShadersSection />
       case 'script-dsl':   return <ScriptDSLSection />
       case 'html-canvas':  return <HTMLCanvasSection />
       default:             return <ThreeR3FSection />

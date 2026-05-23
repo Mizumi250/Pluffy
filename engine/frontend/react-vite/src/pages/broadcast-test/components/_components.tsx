@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — broadcast-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:40:27.576Z
+// Generated: 2026-05-23T13:41:09.673Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

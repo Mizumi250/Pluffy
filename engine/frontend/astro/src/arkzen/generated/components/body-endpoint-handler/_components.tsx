@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:58:23.374Z
+// Generated: 2026-05-23T14:10:22.638Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

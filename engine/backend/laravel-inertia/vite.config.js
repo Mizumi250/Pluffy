@@ -1,10 +1,14 @@
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
 import react from '@vitejs/plugin-react'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 import path from 'path'
 
 export default defineConfig({
     plugins: [
+        wasm(),
+        topLevelAwait(),
         laravel({
             input: ['resources/css/app.css', 'resources/js/app.tsx'], // ← add app.css
             refresh: true,

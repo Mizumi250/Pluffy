@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:43:18.624Z
+// Generated: 2026-05-23T13:57:32.135Z
 // ============================================================
 
 export { BigTicketDisplay } from './_components'

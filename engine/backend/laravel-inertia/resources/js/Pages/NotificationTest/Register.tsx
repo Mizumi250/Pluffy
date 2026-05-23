@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T08:43:18.522Z
+// Generated: 2026-05-23T13:57:31.949Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

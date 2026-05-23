@@ -4,8 +4,25 @@ const nextConfig = {
   allowedDevOrigins: ['192.168.43.1'], // your hotspot IP
   experimental: {
     forceSwcTransforms: false,
+    // Tree-shake heavy packages — reduces what Babel has to process per page
+    optimizePackageImports: [
+      'three',
+      '@react-three/fiber',
+      '@react-three/drei',
+      '@react-three/postprocessing',
+      'pixi.js',
+      '@babylonjs/core',
+      'playcanvas',
+      'phaser',
+      'matter-js',
+      'lottie-react',
+      'konva',
+      'fabric',
+      'gsap',
+      'lucide-react',
+    ],
   },
-  webpack(config) {
+  webpack(config, { dev }) {
     // Enable async WebAssembly for Rapier2D/3D and other WASM modules
     config.experiments = {
       ...config.experiments,
@@ -16,6 +33,53 @@ const nextConfig = {
       test: /\.wasm$/,
       type: 'webassembly/async',
     })
+
+    if (dev) {
+      // In dev: split heavy graphics libs into their own chunks so
+      // visual-lab compilation doesn't block other tatemonos
+      config.optimization.splitChunks = {
+        chunks: 'all',
+        cacheGroups: {
+          three: {
+            test: /[\\/]node_modules[\\/](three|@react-three)[\\/]/,
+            name: 'chunk-three',
+            priority: 40,
+            reuseExistingChunk: true,
+          },
+          babylon: {
+            test: /[\\/]node_modules[\\/]@babylonjs[\\/]/,
+            name: 'chunk-babylon',
+            priority: 40,
+            reuseExistingChunk: true,
+          },
+          phaser: {
+            test: /[\\/]node_modules[\\/]phaser[\\/]/,
+            name: 'chunk-phaser',
+            priority: 40,
+            reuseExistingChunk: true,
+          },
+          shaders: {
+            test: /[\\/]node_modules[\\/]shaders[\\/]/,
+            name: 'chunk-shaders',
+            priority: 40,
+            reuseExistingChunk: true,
+          },
+          graphics: {
+            test: /[\\/]node_modules[\\/](pixi\.js|playcanvas|matter-js|p5|ogl|regl|twgl\.js|konva|fabric|curtainsjs)[\\/]/,
+            name: 'chunk-graphics',
+            priority: 30,
+            reuseExistingChunk: true,
+          },
+          particles: {
+            test: /[\\/]node_modules[\\/](proton-engine|@tsparticles|lottie-react|canvas-confetti)[\\/]/,
+            name: 'chunk-particles',
+            priority: 30,
+            reuseExistingChunk: true,
+          },
+        },
+      }
+    }
+
     return config
   },
   async rewrites() {

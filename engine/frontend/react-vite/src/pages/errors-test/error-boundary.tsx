@@ -3,7 +3,7 @@
 // Class-based React ErrorBoundary wrapping all routes for this tatemono.
 // App.tsx imports it via ARKZEN_ERROR_BOUNDARIES from routes.ts.
 // DO NOT EDIT — edit @arkzen:error:500 in tatemono instead
-// Generated: 2026-05-23T08:40:28.466Z
+// Generated: 2026-05-23T13:41:10.688Z
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'

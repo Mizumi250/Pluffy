@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:43:18.501Z
+// Generated: 2026-05-23T13:57:31.889Z
 // ============================================================
 
 import styles from '../styles/FeatureCard.module.css'

@@ -14,22 +14,6 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
-// ROUTE:animation-lab:index:/animation-lab:false
-const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
-// ROUTE:asset-hub:index:/asset-hub:false
-const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
-// ROUTE:auth-test:login:/auth-test/login:true
-const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
-// ROUTE:auth-test:register:/auth-test/register:true
-const ArkzenPage_AuthTest_Register = lazy(() => import('@/pages/auth-test/register'))
-// ROUTE:auth-test:dashboard:/auth-test/dashboard:true
-const ArkzenPage_AuthTest_Dashboard = lazy(() => import('@/pages/auth-test/dashboard'))
-// ROUTE:auth-test:__root_redirect:/auth-test:true
-const ArkzenPage_AuthTest_RootRedirect = lazy(() => import('@/pages/auth-test/__root_redirect'))
-// ROUTE:barbershop-booking:index:/barbershop-booking:false
-const ArkzenPage_BarbershopBooking_Index = lazy(() => import('@/pages/barbershop-booking/index'))
-// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:false
-const ArkzenPage_BodyEndpointHandler_Index = lazy(() => import('@/pages/body-endpoint-handler/index'))
 // ROUTE:body-mail-notification:login:/body-mail-notification/login:true
 const ArkzenPage_BodyMailNotification_Login = lazy(() => import('@/pages/body-mail-notification/login'))
 // ROUTE:body-mail-notification:register:/body-mail-notification/register:true
@@ -154,6 +138,22 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:animation-lab:index:/animation-lab:false
+const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
+// ROUTE:asset-hub:index:/asset-hub:false
+const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
+// ROUTE:auth-test:login:/auth-test/login:true
+const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
+// ROUTE:auth-test:register:/auth-test/register:true
+const ArkzenPage_AuthTest_Register = lazy(() => import('@/pages/auth-test/register'))
+// ROUTE:auth-test:dashboard:/auth-test/dashboard:true
+const ArkzenPage_AuthTest_Dashboard = lazy(() => import('@/pages/auth-test/dashboard'))
+// ROUTE:auth-test:__root_redirect:/auth-test:true
+const ArkzenPage_AuthTest_RootRedirect = lazy(() => import('@/pages/auth-test/__root_redirect'))
+// ROUTE:barbershop-booking:index:/barbershop-booking:false
+const ArkzenPage_BarbershopBooking_Index = lazy(() => import('@/pages/barbershop-booking/index'))
+// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:false
+const ArkzenPage_BodyEndpointHandler_Index = lazy(() => import('@/pages/body-endpoint-handler/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -162,14 +162,6 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 }
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
-  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
-  { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
-  { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
-  { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
-  { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },
-  { path: '/auth-test', name: '__root_redirect', tatemono: 'auth-test', component: ArkzenPage_AuthTest_RootRedirect, auth: true },
-  { path: '/barbershop-booking', name: 'index', tatemono: 'barbershop-booking', component: ArkzenPage_BarbershopBooking_Index, auth: false },
-  { path: '/body-endpoint-handler', name: 'index', tatemono: 'body-endpoint-handler', component: ArkzenPage_BodyEndpointHandler_Index, auth: false },
   { path: '/body-mail-notification/login', name: 'login', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Login, auth: true },
   { path: '/body-mail-notification/register', name: 'register', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Register, auth: true },
   { path: '/body-mail-notification/dashboard', name: 'dashboard', tatemono: 'body-mail-notification', component: ArkzenPage_BodyMailNotification_Dashboard, auth: true },
@@ -232,4 +224,12 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
+  { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
+  { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
+  { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
+  { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },
+  { path: '/auth-test', name: '__root_redirect', tatemono: 'auth-test', component: ArkzenPage_AuthTest_RootRedirect, auth: true },
+  { path: '/barbershop-booking', name: 'index', tatemono: 'barbershop-booking', component: ArkzenPage_BarbershopBooking_Index, auth: false },
+  { path: '/body-endpoint-handler', name: 'index', tatemono: 'body-endpoint-handler', component: ArkzenPage_BodyEndpointHandler_Index, auth: false },
 ]

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TabPills
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T11:38:25.331Z
+// Generated: 2026-05-23T23:46:00.417Z
 // ============================================================
 
 export { TabPills } from './_components'

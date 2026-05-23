@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN — Vite Config (React+Vite stack) v1.2
+// ARKZEN — Vite Config (React+Vite stack) v1.3
 //
 // v1.1: arkzenReadyPlugin — polls for src/arkzen/generated/.arkzen-ready
 //   before allowing Vite's buildStart to proceed. This ensures the
@@ -9,9 +9,13 @@
 //   before the proxy can forward it to Laravel. Mirrors the pattern
 //   used by Next.js (app/api/) and Astro (src/pages/api/) where the
 //   frontend framework owns its own internal API routes.
+// v1.3: wasm + topLevelAwait — fixes rapier2d/rapier3d ESM WASM proposal
+//   error. Vite does not support bare .wasm ESM imports natively.
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 import path  from 'path'
 import fs    from 'fs'
 
@@ -82,6 +86,8 @@ function arkzenApiPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
+    wasm(),
+    topLevelAwait(),
     arkzenApiPlugin(),
     arkzenReadyPlugin(),
     react(),

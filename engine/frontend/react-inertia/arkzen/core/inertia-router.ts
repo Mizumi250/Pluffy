@@ -169,8 +169,14 @@ function resolveImports(
   for (const source of sources) {
     const flattened = flattenMultilineImports(source)
     for (const rawLine of flattened.split('\n')) {
-      const line = rawLine.trim()
+      let line = rawLine.trim()
       if (!line.startsWith('import ')) continue
+      // Rewrite relative script imports to @/arkzen/generated/ alias so
+      // _components.tsx (at Pages/{Tat}/components/) can resolve them correctly
+      line = line.replace(
+        /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/,
+        `from '@/arkzen/generated/$1'`
+      )
 
       let m: RegExpMatchArray | null
 

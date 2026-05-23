@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T08:43:18.087Z
+// Generated: 2026-05-23T13:57:30.971Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
