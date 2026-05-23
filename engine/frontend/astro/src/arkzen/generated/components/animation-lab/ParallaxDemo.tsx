@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ParallaxDemo
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:07:12.047Z
+// Generated: 2026-05-23T10:38:25.702Z
 // ============================================================
 
 export { ParallaxDemo } from './_components'

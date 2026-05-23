@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Queue
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:07:15.362804Z
+// Generated: 2026-05-23T10:38:28.113430Z
 // ============================================================
 
 namespace App\Models\Arkzen\QueueFlow;

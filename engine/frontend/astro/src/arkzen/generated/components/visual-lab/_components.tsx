@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — visual-lab
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:07:16.405Z
+// Generated: 2026-05-23T10:38:29.141Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -201,11 +201,11 @@ export const BabylonSection = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Vector3, ArcRotateCamera }) => {
+    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Color4, Vector3, ArcRotateCamera }) => {
       const engine = new Engine(canvas, true, { preserveDrawingBuffer: true })
       engineRef.current = engine
       const scene = new Scene(engine)
-      scene.clearColor = new (window as any).BABYLON?.Color4?.(0,0,0,0) ?? { r: 0, g: 0, b: 0, a: 0 }
+      scene.clearColor = new Color4(0, 0, 0, 0)
 
       const camera = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3, 5, Vector3.Zero(), scene)
 

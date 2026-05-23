@@ -428,11 +428,18 @@ function generateIslandFile(
   const adapterImportLines = getAstroAdapterImportLines(allSources.join('\n'))
   const extraLines   = [layoutImport, animImportLine, ...adapterImportLines].filter(Boolean).join('\n')
 
-  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:  ['useRef', 'useEffect'],
     framerNamed: [...framerNeeded],
     extra:       extraLines,
   })
+
+  // Islands live in generated/islands/ but .scripts and .script files are in generated/
+  // Rewrite any './xxx.scripts' or './xxx.*.script' relative imports to '../xxx...'
+  const canonicalBlock = rawCanonicalBlock.replace(
+    /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
+    `from '../$1'`
+  )
 
   const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
   const strippedPageCode      = (strippedSources[tatemono.components.length] ?? '')

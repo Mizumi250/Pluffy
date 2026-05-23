@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — ProbeResultStoreRequest
 // Tatemono: body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:07:12.229995Z
+// Generated: 2026-05-23T10:38:25.870105Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\BodyEndpointHandler;
