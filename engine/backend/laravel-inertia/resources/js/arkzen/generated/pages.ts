@@ -123,4 +123,6 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'SchedulerTest/Dashboard': () => import('../../Pages/SchedulerTest/Dashboard'),
   // PAGE:UploadTest/Dashboard
   'UploadTest/Dashboard': () => import('../../Pages/UploadTest/Dashboard'),
+  // PAGE:VisualLab/Index
+  'VisualLab/Index': () => import('../../Pages/VisualLab/Index'),
 }

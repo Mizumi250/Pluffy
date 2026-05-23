@@ -152,6 +152,8 @@ const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/schedul
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
+// ROUTE:visual-lab:index:/visual-lab:false
+const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -229,4 +231,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
+  { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
 ]

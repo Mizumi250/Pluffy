@@ -67,6 +67,7 @@ import { Route as Route_roles_test_register } from '../../routes/roles-test/regi
 import { Route as Route_roles_test_dashboard } from '../../routes/roles-test/dashboard'
 import { Route as Route_scheduler_test_dashboard } from '../../routes/scheduler-test/dashboard'
 import { Route as Route_upload_test_dashboard } from '../../routes/upload-test/dashboard'
+import { Route as Route_visual_lab_index } from '../../routes/visual-lab/index'
 // TANSTACK_ROUTE_IMPORTS_END
 
 // ─── Route tree assembly ──────────────────────────────────────
@@ -131,6 +132,7 @@ const routeTree = RootRoute.addChildren([
   Route_roles_test_dashboard,
   Route_scheduler_test_dashboard,
   Route_upload_test_dashboard,
+  Route_visual_lab_index,
   // TANSTACK_ROUTE_CHILDREN_END
 ])
 

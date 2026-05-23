@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T06:37:03.123Z
+// Generated: 2026-05-23T08:36:25.934Z
 // ============================================================
 
 import { gsap } from 'gsap'

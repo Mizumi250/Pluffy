@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — job-test [TanStack]
 // Visiting /job-test redirects to /job-test/dashboard
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T23:09:43.820Z
+// Generated: 2026-05-23T08:37:00.194Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

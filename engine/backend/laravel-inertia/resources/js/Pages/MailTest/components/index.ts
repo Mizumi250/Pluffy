@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — mail-test [React+Inertia]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T23:31:55.778Z
+// Generated: 2026-05-23T08:43:18.320Z
 // ============================================================
 
 export * from './_components'

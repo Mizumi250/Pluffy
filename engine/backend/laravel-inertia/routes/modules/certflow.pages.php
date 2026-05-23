@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — certflow [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T23:31:54.317Z
+// Generated: 2026-05-23T08:43:16.969Z
 // Pages: login, dashboard, fill, verify
 // ============================================================
 

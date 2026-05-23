@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T23:30:51.813Z
+// Generated: 2026-05-23T08:49:11.993Z
 // ============================================================
 
 import { gsap } from 'gsap'

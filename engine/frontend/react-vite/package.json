@@ -41,6 +41,7 @@
     "lottie-react-native": "^7.3.8",
     "lucide-react": "^0.400.0",
     "maath": "^0.10.8",
+    "matter-js": "^0.20.0",
     "ogl": "^1.0.11",
     "p5": "^2.2.3",
     "phaser": "^4.1.0",

@@ -36,6 +36,7 @@ import type {
   ArkzenPage,
   ArkzenLayout,
   ArkzenStyle,
+  ArkzenScript,
   ArkzenErrorHandler,
   ArkzenErrorHandlerType,
 } from '../types'
@@ -959,6 +960,48 @@ function parseAllStyles(content: string): ArkzenStyle[] {
 }
 
 // ─────────────────────────────────────────────
+// PARSE ALL SCRIPTS — v6.5
+// Mirrors @arkzen:animation pattern but for general-purpose JS/TS:
+//   - Three.js scenes, canvas setups, physics worlds, Rapier, Lenis instances
+//   - Shared utility functions, hooks, constants too heavy for @arkzen:components
+//   - Can include GSAP/Framer too (superset of @arkzen:animation)
+//
+// Two shapes:
+//   Global  — /* @arkzen:script */ ... /* @arkzen:script:end */
+//             → one per tatemono, exported as {name}.scripts.ts
+//   Named   — /* @arkzen:script:name */ ... /* @arkzen:script:name:end */
+//             → multiple allowed, each exported as {name}.{scriptName}.script.ts
+//
+// Opening tags must have */ on the same line (CODE_BLOCK_TAGS rule).
+// ─────────────────────────────────────────────
+
+function parseGlobalScript(content: string): ArkzenSection | undefined {
+  // Mirrors parseAllStyles() global pass exactly.
+  // Check first char after `/* @arkzen:script` — if it's NOT ':' it's the global block.
+  // ':' means named block (/* @arkzen:script:name */), space/* means global.
+  const globalMarker = `/* @arkzen:script`
+  const globalIdx = content.indexOf(globalMarker)
+  if (globalIdx === -1) return undefined
+
+  const afterMarker = content.slice(globalIdx + globalMarker.length)
+  if (!afterMarker[0] || !/[\s*]/.test(afterMarker[0])) return undefined
+
+  const openCommentEnd = content.indexOf('*/', globalIdx)
+  if (openCommentEnd === -1) return undefined
+
+  const endMarker = `/* @arkzen:script:end */`
+  const endIdx = content.indexOf(endMarker, openCommentEnd)
+  if (endIdx === -1) return undefined
+
+  const raw = content.slice(openCommentEnd + 2, endIdx).trim()
+  return { raw, start: globalIdx, end: endIdx + endMarker.length }
+}
+
+function parseAllNamedScripts(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'script')
+}
+
+// ─────────────────────────────────────────────
 // PARSE ALL NAMED CODE (generic fallback for sections without :name pattern)
 // ─────────────────────────────────────────────
 
@@ -1368,7 +1411,7 @@ interface DslTagError {
   fix:     string
 }
 
-const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'page', 'style', 'error']
+const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'script', 'page', 'style', 'error']
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = ['meta', 'config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
@@ -1580,6 +1623,10 @@ export function parseTatemono(filePath: string): ParsedTatemono {
 
   const animation = extractSectionWithPosition(content, 'animation') ?? undefined
 
+  // v6.5: global script block + named script blocks
+  const script  = parseGlobalScript(content)
+  const scripts = parseAllNamedScripts(content)
+
   validateDslTags(content, filePath)
 
   // Clear any existing DSL error file for this tatemono on successful parse
@@ -1632,6 +1679,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     middlewareSnippets,  // ← v6.3
     policySnippets,      // ← v6.0
     animation,
+    script,   // ← v6.5: global script block
+    scripts,  // ← v6.5: named script blocks
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -1652,6 +1701,10 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     console.log(`[Arkzen Parser]   Middleware snippets: ${Object.keys(middlewareSnippets).join(', ')}`)
   if (Object.keys(policySnippets).length > 0)
     console.log(`[Arkzen Parser]   Policy snippets: ${Object.keys(policySnippets).join(', ')}`)
+  if (script)
+    console.log(`[Arkzen Parser]   Script: global`)
+  if (scripts.length > 0)
+    console.log(`[Arkzen Parser]   Scripts (${scripts.length}): named blocks`)
 
   return parsed
 }
@@ -1668,6 +1721,7 @@ export function hasSections(filePath: string) {
     components:    content.includes('/* @arkzen:components:'),
     page:          content.includes('/* @arkzen:page:'),
     animation:     content.includes('/* @arkzen:animation'),
+    script:        content.includes('/* @arkzen:script'),
     errorHandler:  content.includes('/* @arkzen:error:'),
   }
 }

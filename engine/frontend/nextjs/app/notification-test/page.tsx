@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — notification-test
 // Visiting /notification-test redirects to /notification-test/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T06:37:06.799Z
+// Generated: 2026-05-23T08:36:28.961Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

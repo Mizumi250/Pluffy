@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-22T23:09:40.712Z
+// Generated: 2026-05-23T08:36:57.025Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

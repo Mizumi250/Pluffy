@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — errors-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-22T23:31:55.218Z
+// Generated: 2026-05-23T08:43:17.841Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -13,7 +13,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:40.930Z",
-      "lastUpdated": "2026-05-22T23:31:53.297Z",
+      "lastUpdated": "2026-05-23T08:43:15.924Z",
       "auth": true
     },
     {
@@ -25,7 +25,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:40.949Z",
-      "lastUpdated": "2026-05-22T23:31:53.342Z",
+      "lastUpdated": "2026-05-23T08:43:15.956Z",
       "auth": false
     },
     {
@@ -37,7 +37,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:41.076Z",
-      "lastUpdated": "2026-05-22T23:31:53.709Z",
+      "lastUpdated": "2026-05-23T08:43:16.343Z",
       "auth": false
     },
     {
@@ -51,7 +51,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:41.526Z",
-      "lastUpdated": "2026-05-22T23:31:54.176Z",
+      "lastUpdated": "2026-05-23T08:43:16.826Z",
       "auth": true
     },
     {
@@ -65,7 +65,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:41.600Z",
-      "lastUpdated": "2026-05-22T23:31:54.271Z",
+      "lastUpdated": "2026-05-23T08:43:16.924Z",
       "auth": true
     },
     {
@@ -82,7 +82,7 @@
         "register"
       ],
       "registered": "2026-05-07T23:54:41.708Z",
-      "lastUpdated": "2026-05-22T23:31:54.926Z",
+      "lastUpdated": "2026-05-23T08:43:17.573Z",
       "auth": true
     },
     {
@@ -94,7 +94,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:41.810Z",
-      "lastUpdated": "2026-05-22T23:31:55.043Z",
+      "lastUpdated": "2026-05-23T08:43:17.683Z",
       "auth": false
     },
     {
@@ -107,7 +107,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:54:41.943Z",
-      "lastUpdated": "2026-05-22T23:31:55.202Z",
+      "lastUpdated": "2026-05-23T08:43:17.827Z",
       "auth": false
     },
     {
@@ -119,7 +119,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:41.954Z",
-      "lastUpdated": "2026-05-22T23:31:55.278Z",
+      "lastUpdated": "2026-05-23T08:43:17.899Z",
       "auth": false
     },
     {
@@ -131,7 +131,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:42.028Z",
-      "lastUpdated": "2026-05-22T23:31:55.381Z",
+      "lastUpdated": "2026-05-23T08:43:17.981Z",
       "auth": false
     },
     {
@@ -143,7 +143,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:42.096Z",
-      "lastUpdated": "2026-05-22T23:31:55.466Z",
+      "lastUpdated": "2026-05-23T08:43:18.063Z",
       "auth": false
     },
     {
@@ -161,7 +161,7 @@
         "payslip"
       ],
       "registered": "2026-05-07T23:54:42.223Z",
-      "lastUpdated": "2026-05-22T23:31:55.680Z",
+      "lastUpdated": "2026-05-23T08:43:18.222Z",
       "auth": false
     },
     {
@@ -173,7 +173,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:42.293Z",
-      "lastUpdated": "2026-05-22T23:31:55.765Z",
+      "lastUpdated": "2026-05-23T08:43:18.309Z",
       "auth": false
     },
     {
@@ -187,7 +187,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:42.369Z",
-      "lastUpdated": "2026-05-22T23:31:55.854Z",
+      "lastUpdated": "2026-05-23T08:43:18.391Z",
       "auth": true
     },
     {
@@ -199,7 +199,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:42.457Z",
-      "lastUpdated": "2026-05-22T23:31:55.961Z",
+      "lastUpdated": "2026-05-23T08:43:18.489Z",
       "auth": false
     },
     {
@@ -213,7 +213,7 @@
         "features"
       ],
       "registered": "2026-05-07T23:54:42.475Z",
-      "lastUpdated": "2026-05-22T23:31:55.982Z",
+      "lastUpdated": "2026-05-23T08:43:18.508Z",
       "auth": false
     },
     {
@@ -227,7 +227,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:42.553Z",
-      "lastUpdated": "2026-05-22T23:31:56.088Z",
+      "lastUpdated": "2026-05-23T08:43:18.598Z",
       "auth": true
     },
     {
@@ -239,7 +239,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:54:42.563Z",
-      "lastUpdated": "2026-05-22T23:31:56.104Z",
+      "lastUpdated": "2026-05-23T08:43:18.610Z",
       "auth": false
     },
     {
@@ -253,7 +253,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:54:42.694Z",
-      "lastUpdated": "2026-05-22T23:31:56.238Z",
+      "lastUpdated": "2026-05-23T08:43:18.741Z",
       "auth": false
     },
     {
@@ -267,7 +267,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:43.467Z",
-      "lastUpdated": "2026-05-22T23:31:56.994Z",
+      "lastUpdated": "2026-05-23T08:43:19.499Z",
       "auth": true
     },
     {
@@ -279,7 +279,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:43.555Z",
-      "lastUpdated": "2026-05-22T23:31:57.081Z",
+      "lastUpdated": "2026-05-23T08:43:19.588Z",
       "auth": false
     },
     {
@@ -291,7 +291,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:54:43.622Z",
-      "lastUpdated": "2026-05-22T23:31:57.167Z",
+      "lastUpdated": "2026-05-23T08:43:19.661Z",
       "auth": false
     },
     {
@@ -303,7 +303,7 @@
         "index"
       ],
       "registered": "2026-05-15T04:47:52.689Z",
-      "lastUpdated": "2026-05-22T23:31:53.123Z",
+      "lastUpdated": "2026-05-23T08:43:15.754Z",
       "auth": false
     },
     {
@@ -315,7 +315,7 @@
         "index"
       ],
       "registered": "2026-05-15T04:47:52.706Z",
-      "lastUpdated": "2026-05-22T23:31:53.155Z",
+      "lastUpdated": "2026-05-23T08:43:15.785Z",
       "auth": false
     },
     {
@@ -330,8 +330,20 @@
         "verify"
       ],
       "registered": "2026-05-15T04:47:54.426Z",
-      "lastUpdated": "2026-05-22T23:31:54.791Z",
+      "lastUpdated": "2026-05-23T08:43:17.442Z",
       "auth": true
+    },
+    {
+      "name": "visual-lab",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/visual-lab/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-23T08:43:19.701Z",
+      "lastUpdated": "2026-05-23T08:43:19.701Z",
+      "auth": false
     }
   ]
 }
