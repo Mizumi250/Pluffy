@@ -7,7 +7,7 @@
 // ============================================================
 
 const { execSync } = require('child_process')
-const fs = require('fs')
+const fs   = require('fs')
 const path = require('path')
 
 // ─────────────────────────────────────────────
@@ -16,10 +16,27 @@ const path = require('path')
 
 const ROOT_DIR    = __dirname
 const ENGINE_DIR  = path.join(ROOT_DIR, 'engine')
-const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend', 'nextjs')
-const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend', 'laravel')
-const PROJECTS_DIR = path.join(ROOT_DIR, 'projects')
+const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend')
+const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
+
+// Read active stack from arkzen.json (default: nextjs)
+let activeStack = 'nextjs'
+const arkzenJsonPath = path.join(ROOT_DIR, 'arkzen.json')
+if (fs.existsSync(arkzenJsonPath)) {
+  try {
+    const json = JSON.parse(fs.readFileSync(arkzenJsonPath, 'utf-8'))
+    activeStack = json.activeStack ?? 'nextjs'
+  } catch {}
+}
+
+// Stack → backend mapping
+// react-inertia uses laravel-inertia (monolithic), all others use laravel
+const ACTIVE_BACKEND_DIR = activeStack === 'react-inertia'
+  ? path.join(BACKEND_DIR, 'laravel-inertia')
+  : path.join(BACKEND_DIR, 'laravel')
+
+const ACTIVE_FRONTEND_DIR = path.join(FRONTEND_DIR, activeStack)
 
 // ─────────────────────────────────────────────
 // HELPERS
@@ -35,7 +52,7 @@ function run(cmd, cwd = ROOT_DIR) {
   try {
     execSync(cmd, { cwd, stdio: 'inherit' })
     return true
-  } catch (e) {
+  } catch {
     return false
   }
 }
@@ -61,6 +78,7 @@ function commandExists(cmd) {
 function checkRequirements() {
   divider()
   console.log('\n  ARKZEN ENGINE — SETUP\n')
+  console.log(`  Active Stack: ${activeStack}`)
   divider()
 
   log('Checking requirements...')
@@ -97,179 +115,124 @@ function ensureStructure() {
   divider()
   log('Ensuring Arkzen folder structure...')
 
-  // Create required directories
   const dirs = [
     ENGINE_DIR,
-    path.join(ENGINE_DIR, 'frontend'),
-    path.join(ENGINE_DIR, 'backend'),
     FRONTEND_DIR,
     BACKEND_DIR,
-    PROJECTS_DIR,
     TATEMONOS_DIR,
-    path.join(ROOT_DIR, 'tatemonos', 'inventory-management'),
   ]
 
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true })
   }
 
-  // Move frontend/ to engine/frontend/ if not already moved
-  const oldFrontend = path.join(ROOT_DIR, 'frontend')
-  if (fs.existsSync(oldFrontend) && !fs.existsSync(path.join(FRONTEND_DIR, 'package.json'))) {
-    log('Moving frontend/ to engine/frontend/nextjs/...')
-    fs.cpSync(oldFrontend, FRONTEND_DIR, { recursive: true })
-    fs.rmSync(oldFrontend, { recursive: true, force: true })
-    success('frontend/ moved to engine/frontend/nextjs/')
-  }
-
-  // Move backend/ to engine/backend/ if not already moved
-  const oldBackend = path.join(ROOT_DIR, 'backend')
-  if (fs.existsSync(oldBackend) && !fs.existsSync(path.join(BACKEND_DIR, 'artisan'))) {
-    log('Moving backend/ to engine/backend/laravel/...')
-    fs.cpSync(oldBackend, BACKEND_DIR, { recursive: true })
-    fs.rmSync(oldBackend, { recursive: true, force: true })
-    success('backend/ moved to engine/backend/laravel/')
-  }
-
-  // Move flat tatemono files to folder/core.tsx structure
-  const oldTatemono = path.join(ROOT_DIR, 'tatemonos', 'inventory-management.tsx')
-  const newTatemono = path.join(ROOT_DIR, 'tatemonos', 'inventory-management', 'core.tsx')
-  if (fs.existsSync(oldTatemono) && !fs.existsSync(newTatemono)) {
-    fs.copyFileSync(oldTatemono, newTatemono)
-    fs.unlinkSync(oldTatemono)
-    success('tatemonos/inventory-management.tsx → tatemonos/inventory-management/core.tsx')
-  }
-
-  // Move engine tatemono folder to tatemonos/
-  const oldEngTatemono = path.join(FRONTEND_DIR, 'tatemono', 'inventory-management.tsx')
-  if (fs.existsSync(oldEngTatemono)) {
-    fs.unlinkSync(oldEngTatemono)
-    success('Removed old engine tatemono folder')
-  }
-
-  success('Folder structure correct')
+  success('Folder structure ready')
 }
 
 // ─────────────────────────────────────────────
-// FRONTEND SETUP
+// FRONTEND SETUP — active stack only
 // ─────────────────────────────────────────────
 
 function setupFrontend() {
   divider()
-  log('Setting up Arkzen Frontend Engine...')
+  log(`Setting up frontend stack: ${activeStack}...`)
 
-  // Ensure tatemono watch folder exists
-  const tatemonoWatchDir = path.join(FRONTEND_DIR, 'tatemono')
-  fs.mkdirSync(tatemonoWatchDir, { recursive: true })
+  if (!fs.existsSync(ACTIVE_FRONTEND_DIR)) {
+    error(`Frontend stack folder not found: engine/frontend/${activeStack}`)
+    error('Check your engine/frontend/ folder and arkzen.json activeStack value.')
+    process.exit(1)
+  }
 
-  // Clear partial installs
-  const nodeModulesPath = path.join(FRONTEND_DIR, 'node_modules')
+  const pkgPath = path.join(ACTIVE_FRONTEND_DIR, 'package.json')
+  if (!fs.existsSync(pkgPath)) {
+    warn(`No package.json found in engine/frontend/${activeStack} — skipping npm install`)
+    return
+  }
+
+  const nodeModulesPath = path.join(ACTIVE_FRONTEND_DIR, 'node_modules')
   if (fs.existsSync(nodeModulesPath)) {
     log('Cleaning old node_modules...')
     fs.rmSync(nodeModulesPath, { recursive: true, force: true })
   }
 
-  log('Installing npm packages (this takes a minute)...')
-  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', FRONTEND_DIR)
-  if (ok) {
-    success('Frontend packages installed')
-  } else {
-    const ok2 = run('npm install --force --no-fund --no-audit', FRONTEND_DIR)
-    if (ok2) {
-      success('Frontend packages installed')
-    } else {
-      error('npm install failed. Try manually: cd engine/frontend/nextjs && npm install --force')
+  log(`Installing npm packages for ${activeStack}...`)
+  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', ACTIVE_FRONTEND_DIR)
+  if (!ok) {
+    const ok2 = run('npm install --force --no-fund --no-audit', ACTIVE_FRONTEND_DIR)
+    if (!ok2) {
+      error(`npm install failed for ${activeStack}. Try manually: cd engine/frontend/${activeStack} && npm install --force`)
       process.exit(1)
     }
   }
 
-  // Ensure app directory exists
-  const appDir = path.join(FRONTEND_DIR, 'app')
-  fs.mkdirSync(appDir, { recursive: true })
+  success(`Frontend packages installed for ${activeStack}`)
 
-  // Create base page if not exists
-  const pagePath = path.join(appDir, 'page.tsx')
-  if (!fs.existsSync(pagePath)) {
-    fs.writeFileSync(pagePath, `export default function Home() {
-  return (
-    <div style={{padding: '2rem'}}>
-      <h1>Arkzen Engine Running</h1>
-      <p>Drop a tatemono into /tatemonos/project-name/ to get started.</p>
-    </div>
-  )
-}
-`)
+  // react-inertia frontend is builder only — also install laravel-inertia npm deps
+  if (activeStack === 'react-inertia') {
+    log('Installing laravel-inertia npm packages (Vite + Inertia monolith)...')
+    const inertiaBackendPkg = path.join(BACKEND_DIR, 'laravel-inertia', 'package.json')
+    if (fs.existsSync(inertiaBackendPkg)) {
+      const ok3 = run('npm install --no-fund --no-audit --legacy-peer-deps', path.join(BACKEND_DIR, 'laravel-inertia'))
+      if (ok3) {
+        success('laravel-inertia npm packages installed')
+      } else {
+        warn('laravel-inertia npm install failed — try manually: cd engine/backend/laravel-inertia && npm install')
+      }
+    } else {
+      warn('laravel-inertia/package.json not found — skipping')
+    }
   }
-
-  // Create layout if not exists
-  const layoutPath = path.join(appDir, 'layout.tsx')
-  if (!fs.existsSync(layoutPath)) {
-    fs.writeFileSync(layoutPath, `import '@/styles/globals.css'
-import { ToastProvider } from '@/arkzen/core/components/Toast'
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <ToastProvider position="top-right">
-          {children}
-        </ToastProvider>
-      </body>
-    </html>
-  )
-}
-`)
-  }
-
-  success('Frontend setup complete')
 }
 
 // ─────────────────────────────────────────────
 // BACKEND SETUP
+// react-inertia → laravel-inertia
+// all others    → laravel
 // ─────────────────────────────────────────────
 
 function setupBackend() {
   divider()
-  log('Setting up Arkzen Backend Engine...')
+  const backendName = activeStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
+  log(`Setting up backend: ${backendName}...`)
 
-  const artisanPath = path.join(BACKEND_DIR, 'artisan')
+  const artisanPath = path.join(ACTIVE_BACKEND_DIR, 'artisan')
 
   if (!fs.existsSync(artisanPath)) {
-    log('Installing Laravel into backend engine...')
-    run(`composer create-project laravel/laravel _laravel_tmp --prefer-dist --quiet`, ENGINE_DIR)
+    log(`Installing Laravel into engine/backend/${backendName}...`)
+    run(`composer create-project laravel/laravel _laravel_tmp --prefer-dist --quiet`, BACKEND_DIR)
 
-    const tmpDir = path.join(ENGINE_DIR, '_laravel_tmp')
+    const tmpDir = path.join(BACKEND_DIR, '_laravel_tmp')
     if (!fs.existsSync(tmpDir)) {
       error('Laravel installation failed.')
       process.exit(1)
     }
 
-    const laravelFiles = fs.readdirSync(tmpDir)
-    for (const file of laravelFiles) {
+    for (const file of fs.readdirSync(tmpDir)) {
       const src  = path.join(tmpDir, file)
-      const dest = path.join(BACKEND_DIR, file)
+      const dest = path.join(ACTIVE_BACKEND_DIR, file)
       if (!fs.existsSync(dest)) {
         fs.cpSync(src, dest, { recursive: true })
       }
     }
 
     fs.rmSync(tmpDir, { recursive: true, force: true })
-    success('Laravel installed into backend engine')
+    success(`Laravel installed into engine/backend/${backendName}`)
   } else {
-    success('Laravel already installed in backend engine')
+    success(`Laravel already installed in engine/backend/${backendName}`)
   }
 
   log('Installing composer packages...')
-  run('composer install --quiet', BACKEND_DIR)
+  run('composer install --quiet', ACTIVE_BACKEND_DIR)
   success('Composer packages installed')
 
   log('Generating Laravel app key...')
-  run('php artisan key:generate --force', BACKEND_DIR)
+  run('php artisan key:generate --force', ACTIVE_BACKEND_DIR)
   success('App key generated')
 
-  const envPath   = path.join(BACKEND_DIR, '.env')
-  const envExPath = path.join(BACKEND_DIR, '.env.example')
-  const dbPath    = path.join(BACKEND_DIR, 'database', 'database.sqlite')
+  // .env setup
+  const envPath   = path.join(ACTIVE_BACKEND_DIR, '.env')
+  const envExPath = path.join(ACTIVE_BACKEND_DIR, '.env.example')
+  const dbPath    = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
 
   if (!fs.existsSync(envPath) && fs.existsSync(envExPath)) {
     fs.copyFileSync(envExPath, envPath)
@@ -292,41 +255,38 @@ function setupBackend() {
   success('.env configured for SQLite')
 
   if (!fs.existsSync(dbPath)) {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true })
     fs.writeFileSync(dbPath, '')
     success('SQLite database file created')
   }
 
   registerServiceProvider()
-  registerMiddleware()
   fixAppPhp()
 
+  // Required backend directories
   const dirs = [
-    path.join(BACKEND_DIR, 'routes', 'modules'),
-    path.join(BACKEND_DIR, 'database', 'migrations', 'arkzen'),
-    path.join(BACKEND_DIR, 'database', 'seeders'),
-    path.join(BACKEND_DIR, 'app', 'Models', 'Arkzen'),
+    path.join(ACTIVE_BACKEND_DIR, 'routes', 'modules'),
+    path.join(ACTIVE_BACKEND_DIR, 'database', 'migrations', 'arkzen'),
+    path.join(ACTIVE_BACKEND_DIR, 'database', 'seeders'),
+    path.join(ACTIVE_BACKEND_DIR, 'app', 'Models', 'Arkzen'),
   ]
 
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true })
   }
-  success('Required directories created')
+  success('Required backend directories created')
 
   log('Running base migrations...')
-  run('php artisan migrate --force', BACKEND_DIR)
+  run('php artisan migrate --force', ACTIVE_BACKEND_DIR)
   success('Base migrations complete')
-
-  // NOTE: Auth (users table, personal_access_tokens, User model, AuthController)
-  // is no longer set up globally here. Each tatemono with auth:true gets its own
-  // fully isolated auth stack inside its own SQLite via AuthBuilder::buildForTatemono().
 }
 
 // ─────────────────────────────────────────────
-// FIX APP.PHP — Laravel 13 routing
+// FIX APP.PHP — Laravel routing + Arkzen module loader
 // ─────────────────────────────────────────────
 
 function fixAppPhp() {
-  const appPath = path.join(BACKEND_DIR, 'bootstrap', 'app.php')
+  const appPath = path.join(ACTIVE_BACKEND_DIR, 'bootstrap', 'app.php')
   const content = `<?php
 use Illuminate\\Foundation\\Application;
 use Illuminate\\Foundation\\Configuration\\Exceptions;
@@ -363,29 +323,7 @@ return Application::configure(basePath: dirname(__DIR__))
     })->create();
 `
   fs.writeFileSync(appPath, content)
-  success('app.php configured for Laravel 13')
-}
-
-// ─────────────────────────────────────────────
-// FIX CONTROLLER BASE CLASS
-// ─────────────────────────────────────────────
-
-function fixControllerBase() {
-  const controllerPath = path.join(BACKEND_DIR, 'app', 'Http', 'Controllers', 'Arkzen', 'ArkzenEngineController.php')
-  if (fs.existsSync(controllerPath)) {
-    let content = fs.readFileSync(controllerPath, 'utf-8')
-    content = content.replace('use App\\Http\\Controllers\\Controller;', 'use Illuminate\\Routing\\Controller;')
-    fs.writeFileSync(controllerPath, content)
-    success('ArkzenEngineController base class fixed')
-  }
-
-  const builderPath = path.join(BACKEND_DIR, 'app', 'Arkzen', 'Builders', 'ControllerBuilder.php')
-  if (fs.existsSync(builderPath)) {
-    let content = fs.readFileSync(builderPath, 'utf-8')
-    content = content.replace('use App\\Http\\Controllers\\Controller;', 'use Illuminate\\Routing\\Controller;')
-    fs.writeFileSync(builderPath, content)
-    success('ControllerBuilder base class fixed')
-  }
+  success('app.php configured')
 }
 
 // ─────────────────────────────────────────────
@@ -393,10 +331,10 @@ function fixControllerBase() {
 // ─────────────────────────────────────────────
 
 function registerServiceProvider() {
-  const providersPath = path.join(BACKEND_DIR, 'bootstrap', 'providers.php')
+  const providersPath = path.join(ACTIVE_BACKEND_DIR, 'bootstrap', 'providers.php')
 
   if (!fs.existsSync(providersPath)) {
-    warn('bootstrap/providers.php not found.')
+    warn('bootstrap/providers.php not found — skipping provider registration')
     return
   }
 
@@ -417,34 +355,26 @@ function registerServiceProvider() {
 }
 
 // ─────────────────────────────────────────────
-// REGISTER MIDDLEWARE
-// ─────────────────────────────────────────────
-
-function registerMiddleware() {
-  const appPath = path.join(BACKEND_DIR, 'bootstrap', 'app.php')
-  if (!fs.existsSync(appPath)) {
-    warn('bootstrap/app.php not found.')
-    return
-  }
-  // Will be handled by fixAppPhp()
-  success('Middleware will be registered via fixAppPhp')
-}
-
-// ─────────────────────────────────────────────
-// INIT REGISTRY
+// INIT arkzen.json
 // ─────────────────────────────────────────────
 
 function initRegistry() {
-  const registryPath = path.join(ROOT_DIR, 'arkzen.json')
-
-  if (!fs.existsSync(registryPath)) {
+  if (!fs.existsSync(arkzenJsonPath)) {
     const registry = {
-      engine:   '1.0.0',
-      projects: [],
-      tatemonos: [],
+      engine: '1.0.0',
+      modules: [],
+      activeStack: 'nextjs',
+      stacks: {
+        'nextjs':        'engine/frontend/nextjs',
+        'react-vite':    'engine/frontend/react-vite',
+        'react-inertia': 'engine/frontend/react-inertia',
+        'native':        'engine/frontend/react-native',
+        'astro':         'engine/frontend/astro',
+        'tanstack-start': 'engine/frontend/tanstack-start',
+      },
     }
-    fs.writeFileSync(registryPath, JSON.stringify(registry, null, 2))
-    success('arkzen.json registry initialized')
+    fs.writeFileSync(arkzenJsonPath, JSON.stringify(registry, null, 2))
+    success('arkzen.json initialized')
   } else {
     success('arkzen.json already exists')
   }
@@ -459,22 +389,27 @@ function printDone() {
   console.log(`
   ✓ ARKZEN ENGINE SETUP COMPLETE
 
+  Active Stack: ${activeStack}
+
   Structure:
-    engine/frontend/nextjs/   ← Next.js engine core
-    engine/frontend/react-vite/ ← React+Vite (v8)
-    engine/backend/laravel/    ← Laravel engine core
-    tatemonos/         ← your tatemono files
-    projects/          ← exported standalone projects
+    engine/frontend/nextjs/         ← Next.js stack
+    engine/frontend/react-vite/     ← React + Vite stack
+    engine/frontend/react-inertia/  ← Inertia builder/watcher
+    engine/frontend/astro/          ← Astro stack
+    engine/frontend/tanstack-start/ ← TanStack Start stack
+    engine/frontend/react-native/   ← React Native stack
+    engine/backend/laravel/         ← Laravel backend (all stacks except Inertia)
+    engine/backend/laravel-inertia/ ← Laravel + Inertia monolith
+    tatemonos/                      ← your tatemono files
 
   To start the engine:
     node start.js
 
-  To export a project for deployment:
-    node export.js project-name
+  To switch stack (edit arkzen.json → activeStack), then re-run:
+    node setup.js
 
   Drop tatemonos into:
     tatemonos/your-project/core.tsx
-
   `)
   divider()
 }
@@ -485,8 +420,7 @@ function printDone() {
 
 checkRequirements()
 ensureStructure()
+initRegistry()
 setupFrontend()
 setupBackend()
-fixControllerBase()
-initRegistry()
 printDone()

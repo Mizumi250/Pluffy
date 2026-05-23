@@ -1,32 +1,23 @@
 #!/usr/bin/env node
 
 // ============================================================
-// ARKZEN ENGINE — EXPORT SCRIPT v8
+// ARKZEN ENGINE — EXPORT SCRIPT v9
 //
 // Philosophy: COPY EVERYTHING. No cleverness. No rewriting.
 // The engine works. The exported project IS the engine output.
 // We just isolate one tatemono from the multi-tatemono engine.
 //
-// What this does:
-//   1. Trigger engine build for the tatemono (same as the watcher)
-//   2. Copy the ENTIRE backend as-is — same namespaces, same
-//      prefixes, same DB connections, same file structure
-//   3. Copy the ENTIRE frontend as-is — same imports, same paths
-//   4. Point the exported backend at the tatemono's specific
-//      .sqlite file (no rename, just correct path in .env)
-//   5. Strip ONLY engine-internal routes/middleware that exported
-//      projects don't need (ArkzenEngineController, arkzen.php)
-//   6. Write a tiny ModuleRouteServiceProvider that loads the
-//      module route file directly (avoids double /api prefix)
-//   7. Write start.js + run migrations
+// Stack is determined by activeStack in arkzen.json.
+// Switch stacks before exporting:
+//   node arkzen.js switch astro
+//   node export.js tatemono-1
 //
-// What this does NOT do:
-//   - Rewrite namespaces
-//   - Strip table prefixes
-//   - Rename sqlite files
-//   - Remove DB connections
-//   - Strip route prefixes
-//   - Any other "clever" transformation that breaks things
+// Stack → backend mapping (same as start.js):
+//   react-inertia → engine/backend/laravel-inertia  (monolithic, Vite inside Laravel)
+//   all others    → engine/backend/laravel
+//
+// Inertia exports land in a single folder (no frontend/ split).
+// Native exports skip the backend entirely.
 //
 // Usage:  node export.js <tatemono-name>
 // Output: projects/<tatemono-name>/
@@ -38,11 +29,20 @@ const path = require('path')
 
 const ROOT_DIR      = __dirname
 const ENGINE_DIR    = path.join(ROOT_DIR, 'engine')
-// Read active stack from arkzen.json
+
+// Read active stack from arkzen.json — same pattern as start.js
 const arkzenJson    = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
 const activeStack   = arkzenJson.activeStack ?? 'nextjs'
+
+// Stack flags
+const isInertia     = activeStack === 'react-inertia'
+const isNative      = activeStack === 'native'
+
+// Paths — backend is stack-aware (same logic as start.js)
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', activeStack)
-const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend', 'laravel')
+const BACKEND_DIR   = isInertia
+  ? path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
+  : path.join(ENGINE_DIR, 'backend', 'laravel')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 const PROJECTS_DIR  = path.join(ROOT_DIR, 'projects')
 
@@ -98,11 +98,14 @@ const tatSnake    = tatName.replace(/-/g, '_')   // ← ADDED
 divider()
 console.log(`\n  ARKZEN — Exporting tatemono: ${tatName}\n`)
 divider()
-console.log(`  Version:  v8 (copy-everything, engine‑style routing)`)
+console.log(`  Version:  v9`)
 console.log(`  Tatemono: ${tatName}`)
+console.log(`  Stack:    ${activeStack}`)
 console.log(`  Backend:  ${hasBackend}`)
 console.log(`  Realtime: ${hasRealtime}`)
 console.log(`  Jobs:     ${hasJobs}`)
+if (isInertia) console.log(`  Mode:     Inertia monolith (single folder export)`)
+if (isNative)  console.log(`  Mode:     React Native (frontend only)`)
 
 // ─────────────────────────────────────────────
 // CLEAN OUTPUT DIRECTORY
@@ -176,35 +179,48 @@ if (buildResult.status === 0 && buildOut.includes('[export-build] OK')) {
 //   - File structure   (keep exactly as generated)
 // ─────────────────────────────────────────────
 
-if (hasBackend) {
-  log('Copying backend...')
+// Native = no backend at all
+// Inertia = backend IS the full project (monolith), copy to PROJECT_DIR directly
+// Others  = copy to PROJ_BACK as usual
 
+if (isNative) {
+  skip('Backend (React Native — frontend only)')
+} else if (isInertia) {
+  log('Copying laravel-inertia monolith (single folder export)...')
+  fs.cpSync(BACKEND_DIR, PROJECT_DIR, {
+    recursive: true,
+    filter: (src) => {
+      const rel = path.relative(BACKEND_DIR, src).replace(/\\/g, '/')
+      if (rel.startsWith('vendor/') || rel === 'vendor') return false
+      if (rel.startsWith('node_modules') || rel === 'node_modules') return false
+      if (src.endsWith('.sqlite')) return false
+      if (rel.includes('Controllers/Arkzen/ArkzenEngineController.php')) return false
+      if (rel.includes('Middleware/ArkzenEngineMiddleware.php')) return false
+      if (rel === 'routes/arkzen.php') return false
+      if (rel === 'routes/api.php') return false
+      if (rel === 'bootstrap/app.php') return false
+      // Only copy this tatemono's Inertia pages
+      if (rel.startsWith('resources/js/Pages/') && rel !== 'resources/js/Pages/') {
+        if (rel.startsWith(`resources/js/Pages/${tatName}`)) return true
+        return false
+      }
+      return true
+    }
+  })
+  success('laravel-inertia monolith copied')
+} else if (hasBackend) {
+  log('Copying backend...')
   fs.cpSync(BACKEND_DIR, PROJ_BACK, {
     recursive: true,
     filter: (src) => {
       const rel = path.relative(BACKEND_DIR, src).replace(/\\/g, '/')
-
-      // Always skip vendor — will be installed fresh
       if (rel.startsWith('vendor/') || rel === 'vendor') return false
-
-      // Skip all sqlite files — we handle the specific one below
       if (src.endsWith('.sqlite')) return false
-
-      // Skip engine-internal controller (not needed in standalone)
       if (rel.includes('Controllers/Arkzen/ArkzenEngineController.php')) return false
-
-      // Skip engine-internal middleware (not needed in standalone)
       if (rel.includes('Middleware/ArkzenEngineMiddleware.php')) return false
-
-      // Skip engine-internal routes
       if (rel === 'routes/arkzen.php') return false
-
-      // Skip engine module route loader (we'll write a provider instead)
       if (rel === 'routes/api.php') return false
-
-      // Skip engine bootstrap/app.php (we write a standalone one below)
       if (rel === 'bootstrap/app.php') return false
-
       return true
     }
   })
@@ -228,7 +244,14 @@ if (hasBackend) {
 //   - app/ pages for OTHER tatemonos (we copy only this one below)
 // ─────────────────────────────────────────────
 
-log('Copying frontend base...')
+// Inertia: frontend lives inside the monolith already copied above — skip
+// Native:  copy builder output only (no node_modules copy, Expo handles deps)
+// Others:  copy full frontend stack
+
+if (isInertia) {
+  skip('Frontend copy (Inertia pages already inside monolith)')
+} else {
+  log('Copying frontend base...')
 
 const ENGINE_ONLY_FRONTEND = new Set([
   'arkzen/core/builder.ts',
@@ -274,36 +297,27 @@ fs.cpSync(FRONTEND_DIR, PROJ_FRONT, {
 success('Frontend base copied')
 
 log('Copying node_modules...')
-fs.cpSync(
-  path.join(FRONTEND_DIR, 'node_modules'),
-  path.join(PROJ_FRONT, 'node_modules'),
-  { recursive: true }
-)
-success('Frontend node_modules copied')
+// Native: skip node_modules — Expo/Metro manages deps independently
+if (!isNative) {
+  fs.cpSync(
+    path.join(FRONTEND_DIR, 'node_modules'),
+    path.join(PROJ_FRONT, 'node_modules'),
+    { recursive: true }
+  )
+  success('Frontend node_modules copied')
+} else {
+  skip('node_modules copy (Native — run: npm install inside the exported project)')
+}
 
 // ─────────────────────────────────────────────
 // STEP 3b — INLINE SHARED ARKZEN/CORE
-//
-// engine/shared/arkzen/core only exists inside the engine.
-// Exported projects must be self-contained, so we copy
-// shared/ into the frontend's arkzen/core/, then overlay
-// the stack's own adapters/ on top.
-//
-// After this step the exported project has:
-//   frontend/arkzen/core/components/  ← from shared
-//   frontend/arkzen/core/hooks/       ← from shared
-//   frontend/arkzen/core/lib/         ← from shared
-//   frontend/arkzen/core/adapters/    ← from this stack (Link.tsx etc.)
-//
-// The vite.config.ts alias is also patched to point locally
-// (during dev it pointed at ../../shared; in export it's local)
 // ─────────────────────────────────────────────
 
 log('Inlining shared arkzen/core...')
 
-const SHARED_CORE   = path.join(ENGINE_DIR, 'shared', 'arkzen', 'core')
+const SHARED_CORE    = path.join(ENGINE_DIR, 'shared', 'arkzen', 'core')
 const STACK_ADAPTERS = path.join(FRONTEND_DIR, 'arkzen', 'core', 'adapters')
-const PROJ_CORE     = path.join(PROJ_FRONT, 'arkzen', 'core')
+const PROJ_CORE      = path.join(PROJ_FRONT, 'arkzen', 'core')
 
 if (fs.existsSync(SHARED_CORE)) {
   fs.cpSync(SHARED_CORE, PROJ_CORE, { recursive: true })
@@ -318,9 +332,8 @@ if (fs.existsSync(STACK_ADAPTERS)) {
   success(`${activeStack}/adapters → frontend/arkzen/core/adapters`)
 }
 
-// Patch vite.config.ts alias: during dev it points at ../../shared,
-// but in the exported project shared was inlined so it must point locally.
-if (activeStack === 'react-vite') {
+// Patch vite.config.ts alias for stacks that use it
+if (activeStack === 'react-vite' || activeStack === 'tanstack-start') {
   const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
   if (fs.existsSync(vcPath)) {
     let vc = fs.readFileSync(vcPath, 'utf-8')
@@ -333,28 +346,34 @@ if (activeStack === 'react-vite') {
   }
 }
 
+} // end if (!isInertia) frontend block
+
 // ─────────────────────────────────────────────
 // STEP 4 — COPY TATEMONO'S SQLITE FILE
-//
-// Use the EXACT file the engine generated. Keep its name.
-// Just point .env at it correctly.
+// Skip for Native (no backend) — Inertia uses its own DB path
 // ─────────────────────────────────────────────
 
-log('Copying SQLite database...')
+// For Inertia, dest is PROJECT_DIR (monolith root), not PROJ_BACK
+const backendRoot = isInertia ? PROJECT_DIR : PROJ_BACK
 
-const engSqlite  = path.join(BACKEND_DIR, 'database', 'arkzen', `${tatName}.sqlite`)
-const destDbDir  = path.join(PROJ_BACK, 'database', 'arkzen')
-const destSqlite = path.join(destDbDir, `${tatName}.sqlite`)
+if (!isNative && hasBackend) {
+  log('Copying SQLite database...')
 
-fs.mkdirSync(destDbDir, { recursive: true })
+  const engSqlite  = path.join(BACKEND_DIR, 'database', 'arkzen', `${tatName}.sqlite`)
+  const destDbDir  = path.join(backendRoot, 'database', 'arkzen')
+  const destSqlite = path.join(destDbDir, `${tatName}.sqlite`)
 
-if (fs.existsSync(engSqlite) && fs.statSync(engSqlite).size > 0) {
-  fs.copyFileSync(engSqlite, destSqlite)
-  success(`database/arkzen/${tatName}.sqlite copied (pre-built, already migrated)`)
+  fs.mkdirSync(destDbDir, { recursive: true })
+
+  if (fs.existsSync(engSqlite) && fs.statSync(engSqlite).size > 0) {
+    fs.copyFileSync(engSqlite, destSqlite)
+    success(`database/arkzen/${tatName}.sqlite copied (pre-built, already migrated)`)
+  } else {
+    fs.writeFileSync(destSqlite, '')
+    warn(`database/arkzen/${tatName}.sqlite not found in engine — created empty, will migrate`)
+  }
 } else {
-  // Create an empty file — migrations will populate it
-  fs.writeFileSync(destSqlite, '')
-  warn(`database/arkzen/${tatName}.sqlite not found in engine — created empty, will migrate`)
+  skip('SQLite copy' + (isNative ? ' (Native)' : ' (frontend-only)'))
 }
 
 // ─────────────────────────────────────────────
@@ -366,10 +385,19 @@ if (fs.existsSync(engSqlite) && fs.statSync(engSqlite).size > 0) {
 
 log('Checking for tatemono assets...')
 
+// Assets always go to the frontend public folder
+// For Inertia: public/ is inside the monolith (PROJECT_DIR/public)
+// For Native: assets/ sits at project root (no public/)
+const assetsDestBase = isInertia
+  ? path.join(PROJECT_DIR, 'public', 'assets', tatName)
+  : isNative
+    ? path.join(PROJECT_DIR, 'assets', tatName)
+    : path.join(PROJ_FRONT, 'public', 'assets', tatName)
+
 const srcAssetsPath = path.join(TATEMONOS_DIR, tatName, 'assets')
 if (fs.existsSync(srcAssetsPath)) {
   try {
-    const destAssetsDir = path.join(PROJ_FRONT, 'public', 'assets', tatName)
+    const destAssetsDir = assetsDestBase
     fs.mkdirSync(destAssetsDir, { recursive: true })
 
     // Read source assets and categorize by file type
@@ -414,16 +442,14 @@ if (fs.existsSync(srcAssetsPath)) {
 
 // ─────────────────────────────────────────────
 // STEP 5 — WRITE STANDALONE BOOTSTRAP/APP.PHP
-//
-// Registers the isolated database connection inside a booted()
-// callback — the Config facade isn't available until the app
-// is fully bootstrapped.
+// Skip for Native (no backend) and Inertia (monolith has its own)
 // ─────────────────────────────────────────────
 
-log('Writing standalone bootstrap/app.php...')
+if (!isNative && !isInertia && hasBackend) {
+  log('Writing standalone bootstrap/app.php...')
 
-fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
-fs.writeFileSync(path.join(PROJ_BACK, 'bootstrap', 'app.php'), `<?php
+  fs.mkdirSync(path.join(backendRoot, 'bootstrap'), { recursive: true })
+  fs.writeFileSync(path.join(backendRoot, 'bootstrap', 'app.php'), `<?php
 
 use Illuminate\\Foundation\\Application;
 use Illuminate\\Foundation\\Configuration\\Exceptions;
@@ -454,29 +480,26 @@ use Illuminate\\Foundation\\Configuration\\Middleware;
 
 return \$app;
 `)
-success('bootstrap/app.php (connection registered via booted callback)')
+  success('bootstrap/app.php (connection registered via booted callback)')
+} else {
+  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isNative ? ' (Native)' : ''))
+}
 
 // ─────────────────────────────────────────────
-// STEP 6 — MODULE ROUTE PROVIDER (engine‑style routing)
-//
-// The engine loads module files directly via ArkzenServiceProvider,
-// bypassing api.php. This avoids the automatic /api prefix that
-// api.php adds, so the module's own prefix('/api/...') works fine.
-//
-// We replicate that here with a standalone provider scoped to
-// this one tatemono. No clever rewriting, no prefix stripping.
+// STEP 6 — MODULE ROUTE PROVIDER
+// Skip for Native (no backend) and Inertia (routes handled by Laravel-Inertia)
 // ─────────────────────────────────────────────
 
-log('Writing module route service provider...')
+if (!isNative && !isInertia && hasBackend) {
+  log('Writing module route service provider...')
 
-const routeFilePath = `routes/modules/${tatName}.php`
+  const routeFilePath = `routes/modules/${tatName}.php`
 
-// 6a – Create the provider
-const providerDir = path.join(PROJ_BACK, 'app', 'Providers')
-const providerPath = path.join(providerDir, 'ModuleRouteServiceProvider.php')
-fs.mkdirSync(providerDir, { recursive: true })
+  const providerDir  = path.join(backendRoot, 'app', 'Providers')
+  const providerPath = path.join(providerDir, 'ModuleRouteServiceProvider.php')
+  fs.mkdirSync(providerDir, { recursive: true })
 
-fs.writeFileSync(providerPath, `<?php
+  fs.writeFileSync(providerPath, `<?php
 
 namespace App\\Providers;
 
@@ -495,68 +518,72 @@ class ModuleRouteServiceProvider extends ServiceProvider
     }
 }
 `)
-success(`app/Providers/ModuleRouteServiceProvider.php → loads ${routeFilePath}`)
+  success(`app/Providers/ModuleRouteServiceProvider.php → loads ${routeFilePath}`)
 
-// 6b – Register the provider in bootstrap/providers.php
-const providersPath = path.join(PROJ_BACK, 'bootstrap', 'providers.php')
-if (fs.existsSync(providersPath)) {
+  const providersPath = path.join(backendRoot, 'bootstrap', 'providers.php')
+  if (fs.existsSync(providersPath)) {
     let provContent = fs.readFileSync(providersPath, 'utf-8')
-    // Insert the new provider before the closing bracket of the return array
     provContent = provContent.replace(
-        /(\s*\]\s*;?\s*)$/,
-        `    App\\Providers\\ModuleRouteServiceProvider::class,\n$1`
+      /(\s*\]\s*;?\s*)$/,
+      `    App\\Providers\\ModuleRouteServiceProvider::class,\n$1`
     )
     fs.writeFileSync(providersPath, provContent)
     success('bootstrap/providers.php → ModuleRouteServiceProvider registered')
+  }
+} else {
+  skip('Module route provider' + (isInertia ? ' (Inertia)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
 // STEP 7 — WRITE .ENV
-//
-// Based on .env.example — point DB at the EXACT sqlite file,
-// using a path RELATIVE to the backend root so it works anywhere.
+// Skip for Native. Inertia .env goes to PROJECT_DIR (monolith root).
 // ─────────────────────────────────────────────
 
-log('Writing .env...')
+if (!isNative && hasBackend) {
+  log('Writing .env...')
 
-const envExPath = path.join(PROJ_BACK, '.env.example')
-let env = fs.existsSync(envExPath)
-  ? fs.readFileSync(envExPath, 'utf-8')
-  : ''
+  const envExPath = path.join(backendRoot, '.env.example')
+  let env = fs.existsSync(envExPath)
+    ? fs.readFileSync(envExPath, 'utf-8')
+    : ''
 
-// Relative path from the backend root — works no matter where the project lives
-const relativeSqlitePath = `database/arkzen/${tatName}.sqlite`
+  const relativeSqlitePath = `database/arkzen/${tatName}.sqlite`
+  // Inertia serves on 8000 (Vite dev) + 8001 (Laravel), non-Inertia on 8001
+  const backendPort = isInertia ? '8000' : '8001'
 
-env = env
-  .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)
-  .replace(/APP_ENV=.*/,              'APP_ENV=local')
-  .replace(/APP_DEBUG=.*/,            'APP_DEBUG=true')
-  .replace(/APP_URL=.*/,              'APP_URL=http://localhost:8001')
-  .replace(/DB_CONNECTION=.*/,        'DB_CONNECTION=sqlite')
-  .replace(/#?\s*DB_HOST=.*/,         '# DB_HOST=127.0.0.1')
-  .replace(/#?\s*DB_PORT=.*/,         '# DB_PORT=3306')
-  .replace(/#?\s*DB_DATABASE=.*/,     `DB_DATABASE=${relativeSqlitePath}`)
-  .replace(/#?\s*DB_USERNAME=.*/,     '# DB_USERNAME=root')
-  .replace(/#?\s*DB_PASSWORD=.*/,     '# DB_PASSWORD=')
-  .replace(/QUEUE_CONNECTION=.*/,     'QUEUE_CONNECTION=database')
-  .replace(/SESSION_DRIVER=.*/,       'SESSION_DRIVER=file')
-  .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
-  .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
+  env = env
+    .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)
+    .replace(/APP_ENV=.*/,              'APP_ENV=local')
+    .replace(/APP_DEBUG=.*/,            'APP_DEBUG=true')
+    .replace(/APP_URL=.*/,              `APP_URL=http://localhost:${backendPort}`)
+    .replace(/DB_CONNECTION=.*/,        'DB_CONNECTION=sqlite')
+    .replace(/#?\s*DB_HOST=.*/,         '# DB_HOST=127.0.0.1')
+    .replace(/#?\s*DB_PORT=.*/,         '# DB_PORT=3306')
+    .replace(/#?\s*DB_DATABASE=.*/,     `DB_DATABASE=${relativeSqlitePath}`)
+    .replace(/#?\s*DB_USERNAME=.*/,     '# DB_USERNAME=root')
+    .replace(/#?\s*DB_PASSWORD=.*/,     '# DB_PASSWORD=')
+    .replace(/QUEUE_CONNECTION=.*/,     'QUEUE_CONNECTION=database')
+    .replace(/SESSION_DRIVER=.*/,       'SESSION_DRIVER=file')
+    .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
+    .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
-if (hasRealtime && !env.includes('REVERB_APP_ID=')) {
-  env += [
-    '',
-    'REVERB_APP_ID=arkzen',
-    'REVERB_APP_KEY=arkzen-key',
-    'REVERB_APP_SECRET=arkzen-secret',
-    'REVERB_HOST=localhost',
-    'REVERB_PORT=8081',
-    'REVERB_SCHEME=http',
-  ].join('\n')
+  if (hasRealtime && !env.includes('REVERB_APP_ID=')) {
+    env += [
+      '',
+      'REVERB_APP_ID=arkzen',
+      'REVERB_APP_KEY=arkzen-key',
+      'REVERB_APP_SECRET=arkzen-secret',
+      'REVERB_HOST=localhost',
+      'REVERB_PORT=8081',
+      'REVERB_SCHEME=http',
+    ].join('\n')
+  }
+
+  fs.writeFileSync(path.join(backendRoot, '.env'), env)
+  success(`.env (DB → ${relativeSqlitePath})`)
+} else {
+  skip('.env (Native)')
 }
-
-fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-success(`.env (DB → ${relativeSqlitePath})`)
 
 // ─────────────────────────────────────────────
 // STEP 8 — WRITE FRONTEND GLUE FILES
@@ -571,33 +598,39 @@ success(`.env (DB → ${relativeSqlitePath})`)
 
 log('Writing frontend glue files...')
 
-// ── auth-tatemonos.ts — same concept for all stacks, different path for inertia
-const genDir = path.join(PROJ_FRONT,
-  activeStack === 'react-inertia' ? 'resources/js/arkzen/generated' : 'arkzen/generated'
-)
+// ── auth-tatemonos.ts
+// Inertia: lives inside monolith resources/js/arkzen/generated
+// Native:  lives at project root (no arkzen/generated concept)
+// Others:  frontend/arkzen/generated
+const genDir = isInertia
+  ? path.join(PROJECT_DIR, 'resources', 'js', 'arkzen', 'generated')
+  : isNative
+    ? path.join(PROJECT_DIR, 'arkzen', 'generated')
+    : path.join(PROJ_FRONT, 'arkzen', 'generated')
+
 fs.mkdirSync(genDir, { recursive: true })
 
 const engAuthTatemonos = path.join(FRONTEND_DIR,
-  activeStack === 'react-inertia' ? 'resources/js/arkzen/generated' : 'arkzen/generated',
+  isInertia ? 'resources/js/arkzen/generated' : 'arkzen/generated',
   'auth-tatemonos.ts'
 )
 if (fs.existsSync(engAuthTatemonos)) {
   const hasAuth = content.includes('@arkzen:meta') &&
     fs.readFileSync(engAuthTatemonos, 'utf-8').includes(`'${tatName}'`)
   fs.writeFileSync(path.join(genDir, 'auth-tatemonos.ts'),
-    `// Auto-generated by export.js v8 for: ${tatName}\nexport const AUTH_TATEMONOS: string[] = ${hasAuth ? JSON.stringify([tatName]) : '[]'}\n`
+    `// Auto-generated by export.js v9 for: ${tatName}\nexport const AUTH_TATEMONOS: string[] = ${hasAuth ? JSON.stringify([tatName]) : '[]'}\n`
   )
 } else {
   const hasAuthMeta = /auth:\s*true/.test(content)
   fs.writeFileSync(path.join(genDir, 'auth-tatemonos.ts'),
-    `// Auto-generated by export.js v8 for: ${tatName}\nexport const AUTH_TATEMONOS: string[] = ${hasAuthMeta ? JSON.stringify([tatName]) : '[]'}\n`
+    `// Auto-generated by export.js v9 for: ${tatName}\nexport const AUTH_TATEMONOS: string[] = ${hasAuthMeta ? JSON.stringify([tatName]) : '[]'}\n`
   )
 }
 success('auth-tatemonos.ts')
 
-// ── Copy other generated files (animations, routes, etc.)
+// ── Copy other generated files
 const engGenDir = path.join(FRONTEND_DIR,
-  activeStack === 'react-inertia' ? 'resources/js/arkzen/generated' : 'arkzen/generated'
+  isInertia ? 'resources/js/arkzen/generated' : 'arkzen/generated'
 )
 if (fs.existsSync(engGenDir)) {
   fs.readdirSync(engGenDir).forEach(f => {
@@ -613,14 +646,12 @@ if (fs.existsSync(engGenDir)) {
 // ── Stack-specific glue
 if (activeStack === 'nextjs') {
 
-  // Root redirect
   fs.mkdirSync(path.join(PROJ_FRONT, 'app'), { recursive: true })
   fs.writeFileSync(path.join(PROJ_FRONT, 'app', 'page.tsx'),
     `'use client'\nimport { redirect } from 'next/navigation'\nexport default function ArkzenRoot() { redirect('/${tatName}') }\n`
   )
   success(`app/page.tsx → redirects to /${tatName}`)
 
-  // next.config.js
   fs.writeFileSync(path.join(PROJ_FRONT, 'next.config.js'), `/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: { forceSwcTransforms: false },
@@ -635,7 +666,6 @@ module.exports = nextConfig
 `)
   success('next.config.js')
 
-  // package.json scripts
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
@@ -661,7 +691,6 @@ module.exports = nextConfig
 
 } else if (activeStack === 'react-vite') {
 
-  // package.json scripts
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
@@ -675,7 +704,6 @@ module.exports = nextConfig
     success('package.json (vite scripts)')
   }
 
-  // Patch vite.config.ts proxy port: engine uses 8000, export uses 8001
   const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
   if (fs.existsSync(vcPath)) {
     let vc = fs.readFileSync(vcPath, 'utf-8')
@@ -694,10 +722,77 @@ module.exports = nextConfig
     success('.env (Reverb config for Vite)')
   }
 
-} else if (activeStack === 'react-inertia') {
+} else if (activeStack === 'astro') {
 
-  // package.json scripts
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    pkg.name    = tatName
+    pkg.scripts = {
+      dev:     'astro dev --port 3001',
+      build:   'astro build',
+      preview: 'astro preview --port 3001',
+    }
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
+    success('package.json (astro scripts)')
+  }
+
+  // Patch vite proxy inside astro.config if it exists
+  const astroConfig = path.join(PROJ_FRONT, 'astro.config.mjs')
+  if (fs.existsSync(astroConfig)) {
+    let ac = fs.readFileSync(astroConfig, 'utf-8')
+    ac = ac.replace(/target:\s*['"]http:\/\/127\.0\.0\.1:8000['"]/g, `target: 'http://127.0.0.1:8001'`)
+    fs.writeFileSync(astroConfig, ac)
+    success('astro.config.mjs proxy port patched (8000 → 8001)')
+  }
+
+  if (hasRealtime) {
+    fs.writeFileSync(path.join(PROJ_FRONT, '.env'), [
+      'PUBLIC_REVERB_HOST=localhost',
+      'PUBLIC_REVERB_PORT=8081',
+      'PUBLIC_REVERB_SCHEME=ws',
+      'PUBLIC_REVERB_APP_KEY=arkzen-key',
+    ].join('\n'))
+    success('.env (Reverb config for Astro)')
+  }
+
+} else if (activeStack === 'tanstack-start') {
+
+  const pkgPath = path.join(PROJ_FRONT, 'package.json')
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    pkg.name    = tatName
+    pkg.scripts = {
+      dev:     'vite dev --port 3001',
+      build:   'vite build',
+      start:   'vite preview --port 3001',
+    }
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
+    success('package.json (tanstack scripts)')
+  }
+
+  const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
+  if (fs.existsSync(vcPath)) {
+    let vc = fs.readFileSync(vcPath, 'utf-8')
+    vc = vc.replace(/target:\s*['"]http:\/\/127\.0\.0\.1:8000['"]/g, `target: 'http://127.0.0.1:8001'`)
+    fs.writeFileSync(vcPath, vc)
+    success('vite.config.ts proxy port patched (8000 → 8001)')
+  }
+
+  if (hasRealtime) {
+    fs.writeFileSync(path.join(PROJ_FRONT, '.env'), [
+      'VITE_REVERB_HOST=localhost',
+      'VITE_REVERB_PORT=8081',
+      'VITE_REVERB_SCHEME=ws',
+      'VITE_REVERB_APP_KEY=arkzen-key',
+    ].join('\n'))
+    success('.env (Reverb config for TanStack)')
+  }
+
+} else if (isInertia) {
+
+  // package.json scripts live inside the monolith (PROJECT_DIR)
+  const pkgPath = path.join(PROJECT_DIR, 'package.json')
   if (fs.existsSync(pkgPath)) {
     const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
     pkg.name    = tatName
@@ -706,8 +801,18 @@ module.exports = nextConfig
     success('package.json (inertia scripts)')
   }
 
+} else if (isNative) {
+
+  // React Native: Expo manages everything, just rename the package
+  const pkgPath = path.join(PROJECT_DIR, 'package.json')
+  if (fs.existsSync(pkgPath)) {
+    const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+    pkg.name = tatName
+    fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
+    success('package.json (native — run: npx expo start)')
+  }
+
 }
-// react-native: Expo/Metro handles everything, no extra glue needed
 
 // ─────────────────────────────────────────────
 // STEP 8b — STRIP TATEMONO PREFIX FROM FRONTEND PAGE URLS
