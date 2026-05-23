@@ -308,6 +308,10 @@ export interface ParsedTatemono {
   policySnippets:     Record<string, string>   // ← v6.0: base64-encoded PHP policy bodies
 
   animation?: ArkzenSection
+
+  // v6.5: @arkzen:script (global) + @arkzen:script:name (named, multiple)
+  script?:  ArkzenSection        // global script block — any JS utility, shared logic, canvas/3D setup
+  scripts:  ArkzenSection[]      // named script blocks — per-component JS, imported by name
 }
 
 export interface ArkzenRegistry {

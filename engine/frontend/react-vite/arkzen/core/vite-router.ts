@@ -796,6 +796,104 @@ ${routeArray}
   fs.writeFileSync(ROUTES_FILE, content, 'utf-8')
 }
 
+
+// ─── GENERATE GLOBAL SCRIPT FILE — v6.5 ─────────────────────────────────────
+// Mirrors generateAnimationFile but for @arkzen:script.
+// Exports whatever the author wrote — no forced pageVariants injection.
+
+function generateScriptFile(tatemono: ParsedTatemono): string | null {
+  if (!tatemono.script) return null
+
+  const { strippedSources } = resolveImports([tatemono.script.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+  })
+
+  const cleanScript = strippedSources[0]
+    .replace(/\*\/\s*$/, '')
+    .trim()
+
+  return `// ============================================================
+// ARKZEN GENERATED SCRIPT — ${tatemono.meta.name}
+// Source: @arkzen:script (global)
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${cleanScript}
+`
+}
+
+// ─── GENERATE NAMED SCRIPT FILES — v6.5 ─────────────────────────────────────
+// Each @arkzen:script:name block → {name}.{scriptName}.script.ts
+
+function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string): void {
+  for (const section of tatemono.scripts) {
+    const fileContent = fs.readFileSync(tatemono.filePath, 'utf-8')
+    const openPattern = `/* @arkzen:script:`
+    let searchFrom = 0
+    let scriptName: string | null = null
+
+    while (true) {
+      const openIdx = fileContent.indexOf(openPattern, searchFrom)
+      if (openIdx === -1) break
+      if (openIdx === section.start) {
+        const afterOpen = fileContent.slice(openIdx + openPattern.length)
+        const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
+        if (identMatch && identMatch[1] !== 'end') {
+          scriptName = identMatch[1]
+        }
+        break
+      }
+      searchFrom = openIdx + openPattern.length
+    }
+
+    if (!scriptName) continue
+
+    const { strippedSources } = resolveImports([section.raw], {
+      reactHooks:  [],
+      framerNamed: [],
+    })
+
+    const cleanScript = strippedSources[0]
+      .replace(/\*\/\s*$/, '')
+      .trim()
+
+    const fileName = `${tatemono.meta.name}.${scriptName}.script.ts`
+    const filePath = path.join(generatedDir, fileName)
+    const fileOut  = `// ============================================================
+// ARKZEN GENERATED SCRIPT — ${tatemono.meta.name}/${scriptName}
+// Source: @arkzen:script:${scriptName}
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${cleanScript}
+`
+    fs.writeFileSync(filePath, fileOut, 'utf-8')
+    console.log(`[Arkzen Vite Router] ✓ Named script: ${fileName}`)
+  }
+}
+
+// ─── CLEANUP SCRIPT FILES ─────────────────────────────────────────────────────
+
+function cleanScriptFiles(generatedDir: string, tatName: string): void {
+  const scriptPath = path.join(generatedDir, `${tatName}.scripts.ts`)
+  if (fs.existsSync(scriptPath)) {
+    fs.unlinkSync(scriptPath)
+    console.log(`[Arkzen Vite Router] ✓ Global script file removed`)
+  }
+  try {
+    const files = fs.readdirSync(generatedDir)
+    for (const file of files) {
+      if (file.startsWith(`${tatName}.`) && file.endsWith('.script.ts')) {
+        fs.unlinkSync(path.join(generatedDir, file))
+        console.log(`[Arkzen Vite Router] ✓ Named script removed: ${file}`)
+      }
+    }
+  } catch { /* ignore */ }
+}
+
 // ─── Custom layouts ────────────────────────────────────────────────────────────
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
@@ -979,6 +1077,22 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Vite Router] ✓ Animation file generated`)
   }
 
+  // v6.5: Global script file
+  if (tatemono.script) {
+    ensureDir(GENERATED_DIR)
+    const scriptContent = generateScriptFile(tatemono)
+    if (scriptContent) {
+      fs.writeFileSync(path.join(GENERATED_DIR, `${tatName}.scripts.ts`), scriptContent, 'utf-8')
+      console.log(`[Arkzen Vite Router] ✓ Global script file generated`)
+    }
+  }
+
+  // v6.5: Named script files
+  if (tatemono.scripts && tatemono.scripts.length > 0) {
+    ensureDir(GENERATED_DIR)
+    generateNamedScriptFiles(tatemono, GENERATED_DIR)
+  }
+
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ViteRoute[] = []
 
@@ -1080,6 +1194,9 @@ export function softUnregisterVitePages(tatName: string): void {
     console.log(`[Arkzen Vite Router] ✓ Animation file removed`)
   }
 
+  // v6.5: clean up script files
+  cleanScriptFiles(GENERATED_DIR, tatName)
+
   const routes = readExistingRoutes().filter(r => r.tatName !== tatName)
   writeRouteRegistry(routes)
   console.log(`[Arkzen Vite Router] ✓ Routes purged from registry`)
@@ -1101,6 +1218,9 @@ export function unregisterVitePages(tatName: string): void {
     fs.rmSync(animPath)
     console.log(`[Arkzen Vite Router] ✓ Animation file removed`)
   }
+
+  // v6.5: clean up script files
+  cleanScriptFiles(GENERATED_DIR, tatName)
 
   // Custom layout files belonging to this tatemono
   if (fs.existsSync(LAYOUTS_DIR)) {

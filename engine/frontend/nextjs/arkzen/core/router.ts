@@ -570,6 +570,99 @@ ${cleanAnimation}${pageVariantsBlock}
 }
 
 // ─────────────────────────────────────────────
+// GENERATE GLOBAL SCRIPT FILE — v6.5
+// Mirrors generateAnimationFile but for @arkzen:script.
+// Exports whatever the author wrote — no forced pageVariants injection.
+// The engine strips existing imports and re-emits a clean canonical block.
+// ─────────────────────────────────────────────
+
+function generateScriptFile(tatemono: ParsedTatemono): string | null {
+  if (!tatemono.script) return null
+
+  const { strippedSources } = resolveImports([tatemono.script.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+  })
+
+  const cleanScript = strippedSources[0]
+    // strip trailing */ leak (tatemono wraps in block comment)
+    .replace(/\*\/\s*$/, '')
+    .trim()
+
+  return `// ============================================================
+// ARKZEN GENERATED SCRIPT — ${tatemono.meta.name}
+// Source: @arkzen:script (global)
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${cleanScript}
+`
+}
+
+// ─────────────────────────────────────────────
+// GENERATE NAMED SCRIPT FILES — v6.5
+// Each @arkzen:script:name block → {name}.{scriptName}.script.ts
+// Named scripts are imported individually by components or pages that need them.
+// ─────────────────────────────────────────────
+
+function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string): string[] {
+  const written: string[] = []
+
+  for (const section of tatemono.scripts) {
+    // Re-extract the name from the raw content position in the full file
+    // extractAllNamedSections stores the raw between open comment and :end
+    // We need to recover the identifier by scanning the original file content
+    const fileContent = fs.readFileSync(tatemono.filePath, 'utf-8')
+    const openPattern = `/* @arkzen:script:`
+    let searchFrom = 0
+    let scriptName: string | null = null
+
+    while (true) {
+      const openIdx = fileContent.indexOf(openPattern, searchFrom)
+      if (openIdx === -1) break
+      if (openIdx === section.start) {
+        const afterOpen = fileContent.slice(openIdx + openPattern.length)
+        const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
+        if (identMatch && identMatch[1] !== 'end') {
+          scriptName = identMatch[1]
+        }
+        break
+      }
+      searchFrom = openIdx + openPattern.length
+    }
+
+    if (!scriptName) continue
+
+    const { strippedSources } = resolveImports([section.raw], {
+      reactHooks:  [],
+      framerNamed: [],
+    })
+
+    const cleanScript = strippedSources[0]
+      .replace(/\*\/\s*$/, '')
+      .trim()
+
+    const fileName = `${tatemono.meta.name}.${scriptName}.script.ts`
+    const filePath = path.join(generatedDir, fileName)
+    const fileOut = `// ============================================================
+// ARKZEN GENERATED SCRIPT — ${tatemono.meta.name}/${scriptName}
+// Source: @arkzen:script:${scriptName}
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${cleanScript}
+`
+    fs.writeFileSync(filePath, fileOut, 'utf-8')
+    console.log(`[Arkzen Router] ✓ Named script: ${fileName}`)
+    written.push(fileName)
+  }
+
+  return written
+}
+
+// ─────────────────────────────────────────────
 // GENERATE CUSTOM LAYOUTS
 // ─────────────────────────────────────────────
 
@@ -787,6 +880,25 @@ export function registerPage(tatemono: ParsedTatemono): void {
     }
   }
 
+  // v6.5: Generate global script file if present
+  if (tatemono.script) {
+    const generatedDir = path.resolve(process.cwd(), 'arkzen', 'generated')
+    fs.mkdirSync(generatedDir, { recursive: true })
+    const scriptContent = generateScriptFile(tatemono)
+    if (scriptContent) {
+      const scriptPath = path.join(generatedDir, `${tatemono.meta.name}.scripts.ts`)
+      fs.writeFileSync(scriptPath, scriptContent, 'utf-8')
+      console.log(`[Arkzen Router] ✓ Global script file generated`)
+    }
+  }
+
+  // v6.5: Generate named script files if present
+  if (tatemono.scripts && tatemono.scripts.length > 0) {
+    const generatedDir = path.resolve(process.cwd(), 'arkzen', 'generated')
+    fs.mkdirSync(generatedDir, { recursive: true })
+    generateNamedScriptFiles(tatemono, generatedDir)
+  }
+
   // Generate custom layouts
   generateCustomLayouts(tatemono, '')
 
@@ -905,13 +1017,31 @@ Sitemap: ${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/sitemap.
 
 export function softUnregisterPage(tatemononName: string): void {
   console.log(`[Arkzen Router] Soft-unregistering (rebuild): ${tatemononName}`)
-  const animationPath = path.resolve(
-    process.cwd(), 'arkzen', 'generated', `${tatemononName}.animations.ts`
-  )
+  const generatedDir = path.resolve(process.cwd(), 'arkzen', 'generated')
+
+  const animationPath = path.join(generatedDir, `${tatemononName}.animations.ts`)
   if (fs.existsSync(animationPath)) {
     fs.unlinkSync(animationPath)
     console.log(`[Arkzen Router] ✓ Animation file removed`)
   }
+
+  // v6.5: clean up global script file
+  const scriptPath = path.join(generatedDir, `${tatemononName}.scripts.ts`)
+  if (fs.existsSync(scriptPath)) {
+    fs.unlinkSync(scriptPath)
+    console.log(`[Arkzen Router] ✓ Global script file removed`)
+  }
+
+  // v6.5: clean up named script files
+  try {
+    const files = fs.readdirSync(generatedDir)
+    for (const file of files) {
+      if (file.startsWith(`${tatemononName}.`) && file.endsWith('.script.ts')) {
+        fs.unlinkSync(path.join(generatedDir, file))
+        console.log(`[Arkzen Router] ✓ Named script removed: ${file}`)
+      }
+    }
+  } catch { /* ignore */ }
 }
 
 export function unregisterPage(tatemononName: string): void {
@@ -939,6 +1069,23 @@ export function unregisterPage(tatemononName: string): void {
     fs.unlinkSync(animationPath)
     console.log(`[Arkzen Router] ✓ Animation file removed`)
   }
+
+  // v6.5: clean up global script + named script files
+  const generatedDir = path.resolve(process.cwd(), 'arkzen', 'generated')
+  const scriptPath = path.join(generatedDir, `${tatemononName}.scripts.ts`)
+  if (fs.existsSync(scriptPath)) {
+    fs.unlinkSync(scriptPath)
+    console.log(`[Arkzen Router] ✓ Global script file removed`)
+  }
+  try {
+    const files = fs.readdirSync(generatedDir)
+    for (const file of files) {
+      if (file.startsWith(`${tatemononName}.`) && file.endsWith('.script.ts')) {
+        fs.unlinkSync(path.join(generatedDir, file))
+        console.log(`[Arkzen Router] ✓ Named script removed: ${file}`)
+      }
+    }
+  } catch { /* ignore */ }
 }
 
 // ─────────────────────────────────────────────

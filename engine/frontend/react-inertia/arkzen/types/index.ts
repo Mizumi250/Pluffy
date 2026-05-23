@@ -281,6 +281,10 @@ export interface ParsedTatemono {
   policySnippets:     Record<string, string>
 
   animation?: ArkzenSection
+
+  // v6.5: @arkzen:script (global) + @arkzen:script:name (named, multiple)
+  script?:  ArkzenSection        // global script block
+  scripts:  ArkzenSection[]      // named script blocks
 }
 
 export interface ArkzenRegistry {
