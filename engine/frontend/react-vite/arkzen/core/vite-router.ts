@@ -604,11 +604,18 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     needsUseMemo && 'useMemo',
   ].filter(Boolean) as string[]
 
-  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks,
     framerNamed: [...framerNeeded],
     extra:       extraLines,
   })
+
+  // Pages live at src/pages/{tat}/{page}.tsx but .scripts/.script files are at src/arkzen/generated/
+  // Rewrite any './{name}.scripts' or './{name}.*.script' to '@/arkzen/generated/{name}...'
+  const canonicalBlock = rawCanonicalBlock.replace(
+    /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
+    `from '@/arkzen/generated/$1'`
+  )
 
   const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
   const strippedPageCode = (strippedSources[tatemono.components.length] ?? '')

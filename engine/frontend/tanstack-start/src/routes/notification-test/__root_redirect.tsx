@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — notification-test [TanStack]
 // Visiting /notification-test redirects to /notification-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T08:37:00.698Z
+// Generated: 2026-05-23T12:54:58.288Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

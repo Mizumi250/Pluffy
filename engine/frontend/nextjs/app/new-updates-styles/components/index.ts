@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — new-updates-styles
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:36:28.769Z
+// Generated: 2026-05-23T11:38:27.022Z
 // ============================================================
 
 export * from './_components'

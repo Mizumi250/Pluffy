@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ToastStack
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T10:38:26.647Z
+// Generated: 2026-05-23T10:58:24.321Z
 // ============================================================
 
 export { ToastStack } from './_components'

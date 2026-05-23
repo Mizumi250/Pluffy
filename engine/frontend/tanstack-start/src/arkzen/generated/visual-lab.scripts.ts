@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — visual-lab
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:37:02.575Z
+// Generated: 2026-05-23T12:54:59.693Z
 // ============================================================
 
 // Global scene constants — shared across all visual-lab pages

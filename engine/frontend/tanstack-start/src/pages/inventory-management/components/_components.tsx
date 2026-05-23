@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:36:59.515Z
+// Generated: 2026-05-23T12:54:57.729Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

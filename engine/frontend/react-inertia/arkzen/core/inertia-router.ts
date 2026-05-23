@@ -904,6 +904,13 @@ import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/route
         })
       : { canonicalBlock, strippedSources }
 
+  // Pages live at resources/js/Pages/{Tat}/{page}.tsx but .scripts/.script files
+  // are at resources/js/arkzen/generated/ — rewrite relative imports to @/ alias
+  const fixedFinalBlock = finalBlock.replace(
+    /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
+    `from '@/arkzen/generated/$1'`
+  )
+
   const strippedComponentCode = finalStripped.slice(0, tatemono.components.length).join('\n\n')
   const strippedPageCode = (finalStripped[tatemono.components.length] ?? '')
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
@@ -925,7 +932,7 @@ import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/route
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${finalBlock}
+${fixedFinalBlock}
 
 // Props passed from Laravel via Inertia::render()
 export type ${propsTypeName} = {

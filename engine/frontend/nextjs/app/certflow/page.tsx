@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — certflow
 // Visiting /certflow redirects to /certflow/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:36:25.072Z
+// Generated: 2026-05-23T11:38:22.259Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

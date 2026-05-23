@@ -2,12 +2,12 @@
 // ARKZEN GENERATED PAGE — visual-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:37:02.592Z
+// Generated: 2026-05-23T12:54:59.726Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
@@ -205,11 +205,11 @@ export const BabylonSection = () => {
     const canvas = canvasRef.current
     if (!canvas) return
 
-    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Vector3, ArcRotateCamera }) => {
+    import('@babylonjs/core').then(({ Engine, Scene, HemisphericLight, MeshBuilder, StandardMaterial, Color3, Color4, Vector3, ArcRotateCamera }) => {
       const engine = new Engine(canvas, true, { preserveDrawingBuffer: true })
       engineRef.current = engine
       const scene = new Scene(engine)
-      scene.clearColor = new (window as any).BABYLON?.Color4?.(0,0,0,0) ?? { r: 0, g: 0, b: 0, a: 0 }
+      scene.clearColor = new Color4(0, 0, 0, 0)
 
       const camera = new ArcRotateCamera('cam', -Math.PI / 2, Math.PI / 3, 5, Vector3.Zero(), scene)
 

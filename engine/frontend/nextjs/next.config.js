@@ -5,6 +5,19 @@ const nextConfig = {
   experimental: {
     forceSwcTransforms: false,
   },
+  webpack(config) {
+    // Enable async WebAssembly for Rapier2D/3D and other WASM modules
+    config.experiments = {
+      ...config.experiments,
+      asyncWebAssembly: true,
+    }
+    // Treat .wasm files as async webassembly
+    config.module.rules.push({
+      test: /\.wasm$/,
+      type: 'webassembly/async',
+    })
+    return config
+  },
   async rewrites() {
     return [
       {

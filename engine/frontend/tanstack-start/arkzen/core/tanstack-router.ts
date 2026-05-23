@@ -409,11 +409,18 @@ function generatePageFile(
   const extraLines = [layoutImport, animImportLine, tanstackAdapterImportLine, linkImportLine, styleImport]
     .filter(Boolean).join('\n')
 
-  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect'],
     framerNamed:  [...framerNeeded],
     extra:        extraLines,
   })
+
+  // Pages live at src/pages/{tat}/{page}.tsx but .scripts/.script files are at src/arkzen/generated/
+  // Rewrite any './{name}.scripts' or './{name}.*.script' to '@/arkzen/generated/{name}...'
+  const canonicalBlock = rawCanonicalBlock.replace(
+    /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
+    `from '@/arkzen/generated/$1'`
+  )
 
   // strippedSources: [comp0, comp1, ..., pageRaw]
   const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')

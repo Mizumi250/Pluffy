@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — portfolio-test [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:37:00.815Z
+// Generated: 2026-05-23T12:54:58.417Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

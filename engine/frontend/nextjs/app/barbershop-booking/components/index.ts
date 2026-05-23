@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — barbershop-booking
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T08:36:22.930Z
+// Generated: 2026-05-23T11:38:19.846Z
 // ============================================================
 
 export * from './_components'

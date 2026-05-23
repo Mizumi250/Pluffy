@@ -5,7 +5,7 @@
 // Tatemono: church-community
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-05-23T10:38:27.209629Z
+// Generated: 2026-05-23T12:54:57.420877Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;
