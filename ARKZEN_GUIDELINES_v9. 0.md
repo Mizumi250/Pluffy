@@ -3,14 +3,18 @@
 
 **VERSION:** 9.0
 **VERIFIED AGAINST:** 25 active tatemonos
-**PURPOSE:** This document is the complete reference for generating valid Arkzen tatemono files. Paste this into any AI to get perfect tatemono output aligned with Arkzen v9.
+**PURPOSE:** Complete reference for generating valid Arkzen tatemono files. Paste into any AI for perfect tatemono output.
 
-**NEW IN v9.0:**
-- Arkzen now supports 5 frontend stacks: Next.js, React+Vite, TanStack Start, Astro, React+Inertia+Laravel
-- Stack selection is per-project, not per-tatemono — tatemono syntax is identical across all stacks
-- 25 active tatemonos (up from 21)
-- Sitemap + robots.txt generated automatically on every build
-- Error handlers: `@arkzen:error:404` and `@arkzen:error:500` fully supported on all 5 stacks
+**WHAT'S IN v9.0:**
+- 5 frontend stacks: Next.js, React+Vite, TanStack Start, Astro, React+Inertia+Laravel
+- Stack selection is per-project — tatemono syntax is identical across all stacks
+- 25 active tatemonos
+- Sitemap + robots.txt auto-generated on every build
+- `useArkzenRouter()` / `useArkzenPathname()` — stack-agnostic router adapters
+- Error handlers: `@arkzen:error:404` and `@arkzen:error:500` fully supported on all stacks
+- Full UX pattern defaults (skeleton screens, optimistic UI, pre-loading, progress illusions)
+- Full animation defaults (scroll triggers, hover effects, 3D, entrance, parallax, background)
+- Full visual hierarchy and balance defaults
 
 ---
 
@@ -163,8 +167,51 @@ const addItem = async (itemData) => {
 ### Optimistic Pre-loading
 Load next step data in background while user is on current step. Fail silently. Cache in sessionStorage or Zustand. No spinners.
 
+```tsx
+// Multi-step: preload next step while user fills current
+const handleEmailSubmit = async (email) => {
+  const emailValid = await arkzenFetch('/api/auth/validate-email', { method: 'POST', body: { email } })
+  if (emailValid) {
+    // Preload password config silently
+    arkzenFetch(`/api/auth/password-config?email=${email}`)
+      .then(data => sessionStorage.setItem('passwordConfig', JSON.stringify(data)))
+      .catch(() => {})
+    setPasswordStep({ email })
+  }
+}
+
+// Pagination: preload next page while user reads current
+useEffect(() => {
+  arkzenFetch(`/api/feed?page=${page + 1}`)
+    .then(data => sessionStorage.setItem(`feed-page-${page + 1}`, JSON.stringify(data)))
+    .catch(() => {})
+}, [page])
+
+// Hover-based: preload on hover intent before click
+const handleProfileHover = (userId) => {
+  arkzenFetch(`/api/users/${userId}`)
+    .then(data => sessionStorage.setItem(`user-${userId}`, JSON.stringify(data)))
+    .catch(() => {})
+}
+```
+
+Rules: No side effects. Always fail silently. Only preload likely-next data. No spinners.
+
 ### Progress Illusions
 For long-running operations: fast ramp 0→30%, moderate 30→90%, slow crawl 90→99%, jump to 100% only when done.
+
+```tsx
+useEffect(() => {
+  const interval = setInterval(() => {
+    setProgress(prev => {
+      if (prev < 30) return prev + Math.random() * 20
+      if (prev < 90) return prev + Math.random() * 8
+      return Math.min(prev + 1, 99)
+    })
+  }, 200)
+  return () => clearInterval(interval)
+}, [])
+```
 
 ### Scroll Triggers (GSAP)
 ```tsx
@@ -177,6 +224,53 @@ gsap.to('.hero-text', {
 ### Hover Effects (Framer Motion)
 ```tsx
 <motion.button whileHover={{ scale: 1.05, boxShadow: '0 8px 24px rgba(58,111,216,0.3)' }} whileTap={{ scale: 0.98 }} transition={{ type: 'spring', stiffness: 300 }}>
+```
+
+### 3D Effects (GSAP)
+```tsx
+// Card tilt on hover
+onMouseEnter={() => gsap.to(cardRef.current, { rotationY: 180, duration: 0.6, ease: 'power2.inOut' })}
+onMouseLeave={() => gsap.to(cardRef.current, { rotationY: 0, duration: 0.6, ease: 'power2.inOut' })}
+// style: perspective: '1000px', transformStyle: 'preserve-3d'
+```
+
+### Entrance Animations (Framer Motion)
+```tsx
+const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { staggerChildren: 0.1 } } }
+const item = { hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0, transition: { duration: 0.5 } } }
+
+<motion.div variants={container} initial="hidden" animate="visible">
+  {items.map(i => <motion.div key={i.id} variants={item}>{i.name}</motion.div>)}
+</motion.div>
+```
+
+### Mouse Parallax
+```tsx
+const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+useEffect(() => {
+  const h = (e) => setMousePos({ x: e.clientX, y: e.clientY })
+  window.addEventListener('mousemove', h)
+  return () => window.removeEventListener('mousemove', h)
+}, [])
+// <motion.div style={{ x: mousePos.x * 0.05, y: mousePos.y * 0.05 }}>Parallax</motion.div>
+```
+
+### Background Animations
+```tsx
+// Animated gradient
+<div style={{
+  background: 'linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab)',
+  backgroundSize: '400% 400%',
+  animation: 'gradientShift 15s ease infinite',
+}} />
+// @keyframes gradientShift { 0%,100% { backgroundPosition: 0% 50%; } 50% { backgroundPosition: 100% 50%; } }
+
+// Blob morph (Framer Motion)
+<motion.div
+  animate={{ borderRadius: ['30% 70% 70% 30%', '70% 30% 30% 70%', '30% 70% 70% 30%'] }}
+  transition={{ duration: 8, repeat: Infinity }}
+  style={{ width: 200, height: 200, background: 'linear-gradient(135deg, #667eea, #764ba2)' }}
+/>
 ```
 
 All UX patterns are defaults when user doesn't specify. Always overrideable.
@@ -211,6 +305,9 @@ All UX patterns are defaults when user doesn't specify. Always overrideable.
 | 4 | Helper text, timestamps | 12–14px | 400 | Muted gray |
 
 Spacing: Level 1 = 32–48px margin, Level 2 = 24px, Level 3 = 16px, Level 4 = 8px.
+
+WCAG minimums: body text 4.5:1, helper text 3:1. Never below 14px on mobile, 16px desktop.
+
 Always overrideable.
 
 ---
@@ -220,6 +317,23 @@ Always overrideable.
 **8px grid system.** Spacing scale: 4 / 8 / 16 / 24 / 32 / 48px.
 
 Keep button/field padding consistent (12px vertical min, 16px horizontal min). Match spacing between similar elements. Test balance: squint at design — does visual weight feel even? Always overrideable.
+
+```tsx
+// ✅ Button pair — equal padding, consistent gap
+<div style={{ display: 'flex', gap: 16 }}>
+  <button style={{ flex: 1, padding: '12px 24px', fontSize: 16, fontWeight: 600, border: '2px solid #3a6fd8', background: 'transparent', color: '#3a6fd8', borderRadius: 8 }}>Cancel</button>
+  <button style={{ flex: 1, padding: '12px 24px', fontSize: 16, fontWeight: 600, background: '#3a6fd8', color: 'white', border: 'none', borderRadius: 8 }}>Confirm</button>
+</div>
+
+// ✅ Form fields — consistent 24px gap between fields, 8px label-to-input
+<div style={{ marginBottom: 24 }}>
+  <label style={{ display: 'block', marginBottom: 8, fontSize: 16, fontWeight: 500 }}>Email</label>
+  <input style={{ width: '100%', padding: '12px 16px', fontSize: 16 }} />
+</div>
+
+// ✅ Card grid — equal padding, balanced gap
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24, padding: 32 }}>
+```
 
 ---
 
@@ -738,6 +852,13 @@ return true;
 
 **Available variables:** `$user` (?User, nullable), `$modelVar` (model instance, named as `lcfirst($modelName)`)
 
+**Default stub (no snippet provided):**
+```php
+return ($user?->id === $model->owner_column) || ($user?->role === 'admin');
+// Falls back to: return (false) || ($user?->role === 'admin') if no owner column found
+// → Always provide snippets when using policy: true
+```
+
 ---
 
 ## SECTION 10 — @arkzen:middleware:name
@@ -1202,7 +1323,7 @@ import { gsap } from 'gsap'
 import { motion, AnimatePresence } from 'framer-motion'
 ```
 
-**Note on routing:** Use `useArkzenRouter()` and `useArkzenPathname()` from `@/arkzen/core/adapters/router` in all layouts and components. These are stack-agnostic adapters — they resolve to the correct router (Next.js / React Router / TanStack / Astro / Inertia) based on which stack the project uses.
+**Note on routing:** Use `useArkzenRouter()` and `useArkzenPathname()` from `@/arkzen/core/adapters/router` in all layouts and components. These are stack-agnostic adapters — they resolve to the correct router (Next.js / React Router / TanStack / Astro / Inertia) based on which stack the project uses. Never import `useRouter` from next/navigation or any stack-specific package directly.
 
 ---
 
@@ -1216,8 +1337,8 @@ barbershop-booking       v1.0.0  auth:false  pages: index
 body-endpoint-handler    v1.0.0  auth:false  pages: index
 body-mail-notification   v1.0.0  auth:true   pages: login, register, dashboard
 broadcast-test           v2.0.0  auth:true   pages: login, register, dashboard
-certflow                 v1.0.0  auth:false  pages: index
-church-community         v1.0.0  auth:false  pages: index  layout:app
+certflow                 v1.0.0  auth:true   pages: login, dashboard, fill, verify
+church-community         v3.0.0  auth:true   pages: index, members, inventory, admin, login, register
 crud-test                v1.0.0  auth:false  pages: index
 dtr-geofencing           v2.0.0  auth:false  pages: index, admin  layout:app
 errors-test              v1.0.0  auth:false  pages: index  error:404 error:500
@@ -1341,6 +1462,7 @@ Before finalizing any tatemono:
 - [ ] Multiple components blocks — no duplicate icon/hook imports across blocks
 - [ ] Each components block still has its own React import
 - [ ] Layouts use `useArkzenRouter()` / `useArkzenPathname()` from `@/arkzen/core/adapters/router`
+- [ ] NO stack-specific router imports (no `next/navigation`, no `react-router-dom`)
 
 **ERROR HANDLERS:**
 - [ ] error:404 component named `NotFoundPage` exactly
