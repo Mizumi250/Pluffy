@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerGesturesSection [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T12:54:55.427Z
+// Generated: 2026-05-23T13:04:06.095Z
 // ============================================================
 
 export { FramerGesturesSection } from './_components'

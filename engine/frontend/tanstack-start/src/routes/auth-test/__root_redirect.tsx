@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — auth-test [TanStack]
 // Visiting /auth-test redirects to /auth-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T12:54:55.487Z
+// Generated: 2026-05-23T13:04:06.176Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

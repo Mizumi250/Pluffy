@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — scheduler-test [TanStack]
 // Visiting /scheduler-test redirects to /scheduler-test/dashboard
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T12:54:59.453Z
+// Generated: 2026-05-23T13:04:10.911Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

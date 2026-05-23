@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN — Vite Config (TanStack Start stack) v1.3
+// ARKZEN — Vite Config (TanStack Start stack) v1.4
 //
 // v1.1: arkzenReadyPlugin — polls for .arkzen-ready before Vite starts
 // v1.2: proxy bypass for /api/arkzen/* (didn't work with TanStack Start)
@@ -7,10 +7,14 @@
 //   before the proxy middleware runs. Guaranteed to work regardless
 //   of how TanStack Start wraps Vite internally. Same pattern as
 //   react-vite stack. Laravel is never involved.
+// v1.4: wasm + topLevelAwait plugins — fixes rapier2d/rapier3d ESM WASM
+//   proposal error. Vite does not support bare .wasm ESM imports natively.
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
+import wasm from 'vite-plugin-wasm'
+import topLevelAwait from 'vite-plugin-top-level-await'
 import path from 'path'
 import fs from 'fs'
 
@@ -90,6 +94,8 @@ function arkzenApiPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
+    wasm(),
+    topLevelAwait(),
     arkzenApiPlugin(),
     arkzenReadyPlugin(),
     tanstackStart(),
