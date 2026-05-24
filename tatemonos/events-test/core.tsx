@@ -5,7 +5,7 @@ description: Tests Laravel Events + Listeners pipeline. Fire events manually, se
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 4000
@@ -266,7 +266,7 @@ public function clearLog(Request $request): JsonResponse
 }
 /* @arkzen:endpoint:clearLog:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -284,10 +284,10 @@ interface EventLogEntry {
   created_at:    string
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const events = [
     {
@@ -476,4 +476,4 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

@@ -5,7 +5,7 @@ description: "Tests ControllerBuilder v7.0 @arkzen:endpoint body injection and C
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3500
@@ -221,7 +221,7 @@ return response()->json([
 ]);
 /* @arkzen:handler:latest:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -273,10 +273,10 @@ const InjectedBadge = ({ injected }: { injected: boolean }) => (
   <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
 )
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const { toast, success: toastSuccess, error: toastError } = useToast()
 
@@ -544,4 +544,4 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

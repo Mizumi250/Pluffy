@@ -59,17 +59,17 @@ if (!$request->isJson()) {
 return $next($request);
 /* @arkzen:middleware:requireJson:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
 import React, { useState, useEffect } from 'react'
 import { ShieldCheck } from 'lucide-react'
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const [logs,    setLogs]    = useState<any[]>([])
   const [message, setMessage] = useState('')
@@ -215,4 +215,4 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

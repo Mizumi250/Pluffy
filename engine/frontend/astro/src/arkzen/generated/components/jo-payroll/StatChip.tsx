@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatChip
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T03:00:11.204Z
+// Generated: 2026-05-24T06:18:59.966Z
 // ============================================================
 
 export { StatChip } from './_components'

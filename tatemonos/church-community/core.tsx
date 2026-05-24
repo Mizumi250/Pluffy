@@ -6,7 +6,7 @@ auth: true
 description: Church community platform — Instagram/Zutto style with dark + light mode toggle. Feed, members, gallery, admin.
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -454,7 +454,7 @@ $allTags    = \App\Models\Arkzen\ChurchCommunity\Photo::whereNotNull('tags')->pl
 return response()->json(['photos' => $photos, 'total_count' => $totalCount, 'total_size' => $totalSize, 'event_count' => $eventCount, 'all_tags' => $allTags]);
 /* @arkzen:handler:inventory_list:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -886,9 +886,9 @@ export function PhotoLightbox({ T }: { T: typeof LIGHT }) {
   )
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 
 import { gsap } from 'gsap'
 
@@ -907,10 +907,10 @@ export const pageVariants = {
   exit:    { opacity: 0, y: -10, transition: { duration: 0.2 } },
 }
 
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 
 const IndexPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1062,10 +1062,10 @@ const IndexPage = () => {
   )
 }
 
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
 
-/* @arkzen:page:members */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:members */
+/* @arkzen:web:page:layout:guest */
 
 const MembersPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1200,10 +1200,10 @@ const MembersPage = () => {
   )
 }
 
-/* @arkzen:page:members:end */
+/* @arkzen:web:page:members:end */
 
-/* @arkzen:page:inventory */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:inventory */
+/* @arkzen:web:page:layout:guest */
 
 const InventoryPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1317,10 +1317,10 @@ const InventoryPage = () => {
   )
 }
 
-/* @arkzen:page:inventory:end */
+/* @arkzen:web:page:inventory:end */
 
-/* @arkzen:page:admin */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:admin */
+/* @arkzen:web:page:layout:guest */
 
 const AdminPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1521,10 +1521,10 @@ const AdminPage = () => {
   )
 }
 
-/* @arkzen:page:admin:end */
+/* @arkzen:web:page:admin:end */
 
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 
 const LoginPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1584,10 +1584,10 @@ const LoginPage = () => {
   )
 }
 
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:register */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:guest */
 
 const RegisterPage = () => {
   const { T, mode, toggle } = useTheme()
@@ -1644,4 +1644,4 @@ const RegisterPage = () => {
   )
 }
 
-/* @arkzen:page:register:end */
+/* @arkzen:web:page:register:end */

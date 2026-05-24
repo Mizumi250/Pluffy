@@ -116,7 +116,7 @@ public function handle(): void
 }
 /* @arkzen:jobs:always-fails:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -124,10 +124,10 @@ import React, { useState, useEffect } from 'react'
 import { Cpu } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:guest */
 const DashboardPage = () => {
   const [results, setResults]   = useState<any[]>([])
   const [loading, setLoading]   = useState(false)
@@ -251,4 +251,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

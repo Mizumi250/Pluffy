@@ -19,7 +19,7 @@ tables:
       - { name: photo, type: string, length: 500, nullable: true }
     seeds:
       - { name: "Marcus Lee", specialty: "Fade & Taper", rating: 4.9, reviews: 214, avatar_initials: "ML", available: true, photo: "https://i.pravatar.cc/150?img=11" }
-      - { name: "James Rivera", specialty: "Classic Cut", rating: 4.7, reviews: 189, avatar_initials: "JR", available: true, photo: "https://i.pravatar.cc/150?img=15" }
+      - { name: "James Rivera", specialty: "Classic Cut", rating: 4.7, reviews: 189, avatar_initials: "JR", available: true, photo: "https://i.pravatar.cc/150v?img=15" }
       - { name: "Carlo Santos", specialty: "Skin Fade", rating: 4.8, reviews: 156, avatar_initials: "CS", available: true, photo: "https://i.pravatar.cc/150?img=33" }
       - { name: "Nico Reyes", specialty: "Beard Trim", rating: 4.6, reviews: 98, avatar_initials: "NR", available: false, photo: "https://i.pravatar.cc/150?img=52" }
 

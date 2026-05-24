@@ -10,7 +10,7 @@ auth_seed:
       password: password123
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 4000
@@ -309,7 +309,7 @@ return (new \Illuminate\Notifications\Messages\MailMessage)
     ->salutation('Cheers, Arkzen Engine');
 /* @arkzen:notifications:summary:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -371,10 +371,10 @@ const StatusDot = ({ status }: { status: string }) => (
   }} />
 )
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 const LoginPage = () => {
   const { login }  = useAuthStore()
   const router     = useRouter()
@@ -412,10 +412,10 @@ const LoginPage = () => {
     </div>
   )
 }
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:register */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:guest */
 const RegisterPage = () => {
   const { register } = useAuthStore()
   const router       = useRouter()
@@ -455,10 +455,10 @@ const RegisterPage = () => {
     </div>
   )
 }
-/* @arkzen:page:register:end */
+/* @arkzen:web:page:register:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 const DashboardPage = () => {
   const { user, logout } = useAuthStore()
   const router           = useRouter()
@@ -643,4 +643,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

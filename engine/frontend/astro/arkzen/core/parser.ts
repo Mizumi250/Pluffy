@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v6.3
+// ARKZEN ENGINE — PARSER v7.0
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -14,6 +14,18 @@
 //       - parseAllCustomRoutes() updated to attach handler body from
 //         handler snippets map into each ArkzenCustomRouteEntry.
 //       - parseTatemono() wires all three + passes middlewareSnippets.
+//
+// v7.0: Multi-platform DSL prefix support.
+//       All web-frontend blocks now use @arkzen:web: prefix for unambiguous
+//       platform identification. Affected blocks:
+//         config, components, layout, style, page, error, animation
+//       Backend blocks (database, api, routes, middleware, handler, endpoint,
+//       policy, jobs, events, listeners, notifications, mail, console,
+//       realtime, store, script) remain unprefixed — shared across all platforms.
+//       @arkzen:meta:web signals the web section in multi-platform tatemonos.
+//       New helpers: parseConfig, parseAllPages, parseAllLayouts,
+//       parseAllComponents, parseAllStyles, parseAllErrorHandlers,
+//       parseGlobalAnimation now all look for web: prefixed tags.
 //
 // v6.2 (kept): parseMeta now reads auth_seed.users from @arkzen:meta block.
 // v6.1 (kept): Added parseAllNotifications() and parseAllMails().
@@ -262,7 +274,8 @@ function parseMeta(content: string): ArkzenMeta {
 }
 
 function parseConfig(content: string): ArkzenConfigOverride | undefined {
-  const raw = extractSection(content, 'config')
+  // v7.0: @arkzen:web:config — strict, no fallback
+  const raw = extractSection(content, 'web:config')
   if (!raw) return undefined
   return yaml.load(raw) as ArkzenConfigOverride
 }
@@ -664,8 +677,12 @@ function parseAllPages(content: string): ArkzenPage[] {
   const results: ArkzenPage[] = []
   let searchFrom = 0
 
+  // v7.0: @arkzen:web:page: — strict, no fallback
+  const openPattern   = `/* @arkzen:web:page:`
+  const closePrefix   = `web:page`
+  const layoutPattern = `@arkzen:web:page:layout:`
+
   while (true) {
-    const openPattern = `/* @arkzen:page:`
     const openIdx = content.indexOf(openPattern, searchFrom)
     if (openIdx === -1) break
 
@@ -675,40 +692,26 @@ function parseAllPages(content: string): ArkzenPage[] {
 
     const pageName = identMatch[1]
 
-    // Skip :end and :layout markers
     if (pageName === 'end' || pageName === 'layout') {
       searchFrom = openIdx + openPattern.length
       continue
     }
 
-    // Find end of opening comment */
     const openCommentEnd = content.indexOf('*/', openIdx)
     if (openCommentEnd === -1) break
 
-    // Find closing marker
-    const closeMarker = `/* @arkzen:page:${pageName}:end */`
+    const closeMarker = `/* @arkzen:${closePrefix}:${pageName}:end */`
     const closeIdx = content.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
-    // Raw content between opening comment and closing marker
     let raw = content.slice(openCommentEnd + 2, closeIdx).trim()
 
-    // Extract layout from @arkzen:page:layout:X declaration inside the block.
-    //
-    // BUG FIX: The outer while-loop matches /* @arkzen:page:layout:X */ as a new
-    // page pattern, sees pageName === 'layout', and skips it — advancing searchFrom
-    // PAST the layout line. By the time we read `raw`, the layout marker may have
-    // already been consumed by the loop and stripped from the slice.
-    //
-    // Fix: scan the full content slice (openCommentEnd → closeIdx) directly so we
-    // catch the layout declaration regardless of whether the outer loop skipped it.
-    let layout: string = 'guest'  // safe default (was 'auth' which forced /login redirects)
+    let layout: string = 'guest'
     const blockContent = content.slice(openCommentEnd + 2, closeIdx)
-    const layoutMatch  = blockContent.match(/\/\* @arkzen:page:layout:([a-zA-Z0-9_-]+) \*\//)
+    const layoutMatch  = blockContent.match(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([a-zA-Z0-9_-]+) \\*\\/`))
     if (layoutMatch) {
       layout = layoutMatch[1]
-      // Remove layout declaration line from raw code so it doesn't appear in generated page
-      raw = raw.replace(/\/\* @arkzen:page:layout:[a-zA-Z0-9_-]+ \*\/\n?/, '').trim()
+      raw = raw.replace(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[a-zA-Z0-9_-]+ \\*\\/\\n?`), '').trim()
     }
 
     results.push({
@@ -731,11 +734,11 @@ function parseAllPages(content: string): ArkzenPage[] {
 // ─────────────────────────────────────────────
 
 function parseAllLayouts(content: string): ArkzenLayout[] {
-  const sections = extractAllNamedSections(content, 'layout')
+  // v7.0: @arkzen:web:layout: — strict, no fallback
+  const sections = extractAllNamedSections(content, 'web:layout')
   return sections.map(s => {
-    // Extract name from the marker — re-parse from content
-    const marker = content.slice(s.start)
-    const nameMatch = marker.match(/\/\* @arkzen:layout:([a-zA-Z0-9_-]+)/)
+    const seg = content.slice(s.start)
+    const nameMatch = seg.match(/\/\* @arkzen:web:layout:([a-zA-Z0-9_-]+)/)
     const name = nameMatch ? nameMatch[1] : 'unknown'
     return { name, raw: s.raw, start: s.start, end: s.end }
   })
@@ -903,17 +906,18 @@ function parseAllMails(content: string): ArkzenSection[] {
 
 function parseAllStyles(content: string): ArkzenStyle[] {
   const results: ArkzenStyle[] = []
+  // v7.0: @arkzen:web:style — strict, no fallback
+  const baseTag = 'web:style'
 
-  // ── First pass: @arkzen:style (no name) ──────────────────────────────
-  const globalMarker = `/* @arkzen:style`
+  // ── First pass: global (no name) ─────────────────────────────────────
+  const globalMarker = `/* @arkzen:${baseTag}`
   const globalIdx = content.indexOf(globalMarker)
   if (globalIdx !== -1) {
     const afterMarker = content.slice(globalIdx + globalMarker.length)
-    // Check if next char is space/newline (not ':' which would be @arkzen:style:name)
     if (afterMarker[0] && /[\s*]/.test(afterMarker[0])) {
       const openCommentEnd = content.indexOf('*/', globalIdx)
       if (openCommentEnd !== -1) {
-        const endMarker = `/* @arkzen:style:end */`
+        const endMarker = `/* @arkzen:${baseTag}:end */`
         const endIdx = content.indexOf(endMarker, openCommentEnd)
         if (endIdx !== -1) {
           const raw = content.slice(openCommentEnd + 2, endIdx).trim()
@@ -923,8 +927,8 @@ function parseAllStyles(content: string): ArkzenStyle[] {
     }
   }
 
-  // ── Second pass: @arkzen:style:name ──────────────────────────────────
-  const namedPattern = `/* @arkzen:style:`
+  // ── Second pass: named (CSS Modules) ─────────────────────────────────
+  const namedPattern = `/* @arkzen:${baseTag}:`
   let searchFrom = 0
 
   while (true) {
@@ -941,7 +945,7 @@ function parseAllStyles(content: string): ArkzenStyle[] {
     const openCommentEnd = content.indexOf('*/', openIdx)
     if (openCommentEnd === -1) break
 
-    const closeMarker = `/* @arkzen:style:${identifier}:end */`
+    const closeMarker = `/* @arkzen:${baseTag}:${identifier}:end */`
     const closeIdx = content.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
@@ -1356,7 +1360,8 @@ function parseAllRealtime(content: string): ArkzenSection[] {
 
 
 function parseAllComponents(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'components')
+  // v7.0: @arkzen:web:components: — strict, no fallback
+  return extractAllNamedSections(content, 'web:components')
 }
 
 // ─────────────────────────────────────────────
@@ -1374,10 +1379,12 @@ function parseAllComponents(content: string): ArkzenSection[] {
 function parseAllErrorHandlers(content: string): ArkzenErrorHandler[] {
   const results: ArkzenErrorHandler[] = []
   const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
+  // v7.0: @arkzen:web:error: — strict, no fallback
+  const prefix = 'web:error'
 
   for (const type of validTypes) {
-    const openMarker  = `/* @arkzen:error:${type} */`
-    const closeMarker = `/* @arkzen:error:${type}:end */`
+    const openMarker  = `/* @arkzen:${prefix}:${type} */`
+    const closeMarker = `/* @arkzen:${prefix}:${type}:end */`
 
     const openIdx = content.indexOf(openMarker)
     if (openIdx === -1) continue
@@ -1411,9 +1418,11 @@ interface DslTagError {
   fix:     string
 }
 
-const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'script', 'page', 'style', 'error']
+// v7.0: updated for web: prefix. tagType now captures e.g. "web" from @arkzen:web:page:index
+// so CODE_BLOCK_TAGS etc. match on the full prefix:subtype string instead.
+const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'script', 'web:page', 'web:style', 'web:error']
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
-const YAML_ONLY_TAGS  = ['meta', 'config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
+const YAML_ONLY_TAGS  = ['meta', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
 function validateDslTags(content: string, filePath: string): void {
   const lines     = content.split('\n')
@@ -1427,11 +1436,13 @@ function validateDslTags(content: string, filePath: string): void {
 
     if (!trimmed.startsWith('/* @arkzen:')) continue
     if (trimmed.includes(':end */'))        continue
-    if (trimmed.match(/^\/\* @arkzen:page:layout:/)) continue
+    // v7.0: skip web:page:layout: inline declarations (no :end needed)
+    if (trimmed.match(/^\/\* @arkzen:web:page:layout:/)) continue
 
-    const tagMatch = trimmed.match(/^\/\* @arkzen:([a-zA-Z]+)/)
+    // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
+    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop):)?([a-zA-Z]+)/)
     if (!tagMatch) continue
-    const tagType = tagMatch[1]
+    const tagType = tagMatch[1] ? `${tagMatch[1]}${tagMatch[2]}` : tagMatch[2]
 
     const hasInlineClose = trimmed.endsWith('*/')
 
@@ -1554,7 +1565,7 @@ function validateNoDuplicateControllers(apis: ArkzenApi[]): void {
 function validatePages(pages: ArkzenPage[], errorHandlers: ArkzenErrorHandler[]): void {
   // A tatemono with only error handlers and no routed pages is valid
   if (pages.length === 0 && errorHandlers.length === 0) {
-    throw new Error('[Arkzen Parser] At least one @arkzen:page:name section is required')
+    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name section is required')
   }
   const seen = new Set<string>()
   for (const page of pages) {
@@ -1621,7 +1632,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const mails         = parseAllMails(content)          // ← v6.1: dedicated parser
   const consoles      = parseAllConsoles(content)
 
-  const animation = extractSectionWithPosition(content, 'animation') ?? undefined
+  // v7.0: @arkzen:web:animation — strict, no fallback
+  const animation = extractSectionWithPosition(content, 'web:animation') ?? undefined
 
   // v6.5: global script block + named script blocks
   const script  = parseGlobalScript(content)
@@ -1713,15 +1725,15 @@ export function hasSections(filePath: string) {
   const content = fs.readFileSync(filePath, 'utf-8')
   return {
     meta:          content.includes('/* @arkzen:meta'),
-    config:        content.includes('/* @arkzen:config'),
+    config:        content.includes('/* @arkzen:web:config'),
     database:      content.includes('/* @arkzen:database'),
     api:           content.includes('/* @arkzen:api'),
-    routes:        content.includes('/* @arkzen:routes'),   // ← v5.1
+    routes:        content.includes('/* @arkzen:routes'),
     store:         content.includes('/* @arkzen:store:'),
-    components:    content.includes('/* @arkzen:components:'),
-    page:          content.includes('/* @arkzen:page:'),
-    animation:     content.includes('/* @arkzen:animation'),
+    components:    content.includes('/* @arkzen:web:components:'),
+    page:          content.includes('/* @arkzen:web:page:'),
+    animation:     content.includes('/* @arkzen:web:animation'),
     script:        content.includes('/* @arkzen:script'),
-    errorHandler:  content.includes('/* @arkzen:error:'),
+    errorHandler:  content.includes('/* @arkzen:web:error:'),
   }
 }

@@ -5,7 +5,7 @@ description: Frontend-only portfolio showcase
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -14,7 +14,7 @@ layout:
     className: "min-h-screen bg-neutral-50"
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -34,10 +34,10 @@ const SKILLS = [
   { name: 'PostgreSQL', category: 'Database', proficiency: 85 }
 ]
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const PortfolioPage = () => {
   const [submitted, setSubmitted] = React.useState(false)
   const categories = Array.from(new Set(SKILLS.map(s => s.category)))
@@ -116,4 +116,4 @@ const PortfolioPage = () => {
   )
 }
 
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

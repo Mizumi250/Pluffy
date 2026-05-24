@@ -5,7 +5,7 @@ description: Tests all three Laravel Reverb channel types end-to-end. Public cha
 auth: true
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -99,7 +99,7 @@ type: presence
 */
 /* @arkzen:realtime:message-sent-presence:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -204,9 +204,9 @@ const ChannelPanel = memo(({
 })
 ChannelPanel.displayName = 'ChannelPanel'
 
-/* @arkzen:components:shared:end */
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:components:shared:end */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail]     = useState('')
@@ -244,10 +244,10 @@ const LoginPage = () => {
     </div>
   )
 }
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:register */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:guest */
 const RegisterPage = () => {
   const { register, isLoading } = useAuthStore()
   const [name, setName]       = useState('')
@@ -290,10 +290,10 @@ const RegisterPage = () => {
     </div>
   )
 }
-/* @arkzen:page:register:end */
+/* @arkzen:web:page:register:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 const DashboardPage = () => {
   const router = useRouter()
   const { user, logout } = useAuthStore()
@@ -571,4 +571,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

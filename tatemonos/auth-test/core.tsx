@@ -5,7 +5,7 @@ description: Tests core authentication — register, login, logout, and protecte
 auth: true
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -16,7 +16,7 @@ layout:
     className: "min-h-screen bg-neutral-50"
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -30,10 +30,10 @@ if (typeof window !== 'undefined') {
   setActiveTatemono('auth-test')
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail] = useState('test@arkzen.local')
@@ -100,10 +100,10 @@ const LoginPage = () => {
     </div>
   )
 }
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:register */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:guest */
 const RegisterPage = () => {
   const { register, isLoading } = useAuthStore()
   const [name, setName] = useState('Test User')
@@ -185,10 +185,10 @@ const RegisterPage = () => {
     </div>
   )
 }
-/* @arkzen:page:register:end */
+/* @arkzen:web:page:register:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 const DashboardPage = () => {
   const router = useRouter()
   const { user, logout } = useAuthStore()
@@ -246,4 +246,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

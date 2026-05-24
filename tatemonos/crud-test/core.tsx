@@ -5,7 +5,7 @@ description: Tests the full CRUD pipeline — Model, Migration, Controller, Requ
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -133,7 +133,7 @@ if ($item->status === 'archived') {
 return true;
 /* @arkzen:policy:delete:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -155,10 +155,10 @@ type Item = {
 type FormData = { name: string; description: string; status: string; priority: number; tags: string }
 const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const [items, setItems]         = useState<Item[]>([])
   const [loading, setLoading]     = useState(true)
@@ -354,4 +354,4 @@ const remove = async (id: number) => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

@@ -5,7 +5,7 @@ description: Tests real HTTP error handlers. Next.js segment-scoped not-found.ts
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 layout:
   guest:
     className: "min-h-screen"
@@ -20,7 +20,7 @@ routes:
     handler: simulate
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -104,10 +104,10 @@ export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void 
   )
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const [simulating, setSimulating] = useState<number | null>(null)
   const [result, setResult] = useState<{ code: number; body: string } | null>(null)
@@ -227,12 +227,12 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
 
-/* @arkzen:error:404 */
+/* @arkzen:web:error:404 */
 const NotFoundPage = () => <ErrorScreen code={404} />
-/* @arkzen:error:404:end */
+/* @arkzen:web:error:404:end */
 
-/* @arkzen:error:500 */
+/* @arkzen:web:error:500 */
 const ServerErrorPage = ({ reset }: { reset: () => void }) => <ErrorScreen code={500} reset={reset} />
-/* @arkzen:error:500:end */
+/* @arkzen:web:error:500:end */

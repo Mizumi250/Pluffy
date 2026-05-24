@@ -6,7 +6,7 @@ auth: false
 favicon: 📦
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -17,7 +17,7 @@ layout:
     className: "min-h-screen bg-neutral-950"
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -551,9 +551,9 @@ export const DropZoneGuide = () => (
   </div>
 )
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:style */
+/* @arkzen:web:style */
 /* Asset Hub Styles */
 
 .asset-hub-root {
@@ -1050,9 +1050,9 @@ export const DropZoneGuide = () => (
   .asset-grid { grid-template-columns: 1fr 1fr; }
   .asset-detail-panel { width: 100vw; }
 }
-/* @arkzen:style:end */
+/* @arkzen:web:style:end */
 
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 import { gsap } from 'gsap'
 import React from 'react'
 
@@ -1079,10 +1079,10 @@ export const pageVariants = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.3, ease: 'easeOut' } },
   exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 
 const IndexPage = () => {
   const {
@@ -1231,4 +1231,4 @@ const IndexPage = () => {
   )
 }
 
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */

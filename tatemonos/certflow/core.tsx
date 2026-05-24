@@ -12,7 +12,7 @@ auth_seed:
       role: admin
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3500
@@ -616,7 +616,7 @@ $template->delete();
 return response()->json(['message' => 'Template deleted']);
 /* @arkzen:endpoint:destroy:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -834,9 +834,9 @@ export const copyToClipboard = (text: string) => {
   }
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:components:builder */
+/* @arkzen:web:components:builder */
 
 'use client'
 
@@ -1076,9 +1076,9 @@ export const CanvasBuilder = ({
   )
 }
 
-/* @arkzen:components:builder:end */
+/* @arkzen:web:components:builder:end */
 
-/* @arkzen:components:panels */
+/* @arkzen:web:components:panels */
 
 'use client'
 
@@ -1334,9 +1334,9 @@ export const LayersPanel = ({
   )
 }
 
-/* @arkzen:components:panels:end */
+/* @arkzen:web:components:panels:end */
 
-/* @arkzen:layout:app */
+/* @arkzen:web:layout:app */
 
 'use client'
 
@@ -1354,10 +1354,10 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   )
 }
 
-/* @arkzen:layout:app:end */
+/* @arkzen:web:layout:app:end */
 
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
@@ -1512,10 +1512,10 @@ const LoginPage = () => {
   )
 }
 
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 
 const DashboardPage = () => {
   const { user, logout } = useAuthStore()
@@ -2099,10 +2099,10 @@ const DashboardPage = () => {
   )
 }
 
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */
 
-/* @arkzen:page:fill */
-/* @arkzen:page:layout:app */
+/* @arkzen:web:page:fill */
+/* @arkzen:web:page:layout:app */
 
 const FillPage = () => {
   const router = useRouter()
@@ -2372,10 +2372,10 @@ const FillPage = () => {
   )
 }
 
-/* @arkzen:page:fill:end */
+/* @arkzen:web:page:fill:end */
 
-/* @arkzen:page:verify */
-/* @arkzen:page:layout:app */
+/* @arkzen:web:page:verify */
+/* @arkzen:web:page:layout:app */
 
 const VerifyPage = () => {
   const [status, setStatus] = useState<'loading' | 'valid' | 'invalid'>('loading')
@@ -2446,9 +2446,9 @@ const VerifyPage = () => {
   )
 }
 
-/* @arkzen:page:verify:end */
+/* @arkzen:web:page:verify:end */
 
-/* @arkzen:style */
+/* @arkzen:web:style */
 * { box-sizing: border-box; }
 input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(0.5); opacity: 0.6; }
 input::placeholder { color: #cbd5e1; }
@@ -2456,9 +2456,9 @@ select option { background: #fff; color: #0f172a; }
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #f1f5f9; }
 ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-/* @arkzen:style:end */
+/* @arkzen:web:style:end */
 
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 
 import { gsap } from 'gsap'
 
@@ -2478,4 +2478,4 @@ export const pageVariants = {
   exit:     { opacity: 0, y: -10, transition: { duration: 0.22 } },
 }
 
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */

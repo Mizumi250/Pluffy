@@ -5,7 +5,7 @@ description: Tests Laravel Notifications across all three channels — database 
 auth: true
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 5000
@@ -91,7 +91,7 @@ subject: "All Channels Test"
 */
 /* @arkzen:notifications:all-channels:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -112,10 +112,10 @@ const REVERB_PORT   = process.env.NEXT_PUBLIC_REVERB_PORT    ?? '8080'
 const REVERB_SCHEME = process.env.NEXT_PUBLIC_REVERB_SCHEME  ?? 'ws'
 const APP_KEY       = process.env.NEXT_PUBLIC_REVERB_APP_KEY ?? 'arkzen-key'
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:login */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:guest */
 const LoginPage = () => {
   const { login, isLoading } = useAuthStore()
   const [email, setEmail] = useState('')
@@ -178,10 +178,10 @@ const LoginPage = () => {
     </div>
   )
 }
-/* @arkzen:page:login:end */
+/* @arkzen:web:page:login:end */
 
-/* @arkzen:page:register */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:guest */
 const RegisterPage = () => {
   const { register, isLoading } = useAuthStore()
   const [name, setName] = useState('')
@@ -260,10 +260,10 @@ const RegisterPage = () => {
     </div>
   )
 }
-/* @arkzen:page:register:end */
+/* @arkzen:web:page:register:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 const DashboardPage = () => {
   const router = useRouter()
   const { user, logout } = useAuthStore()
@@ -597,4 +597,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

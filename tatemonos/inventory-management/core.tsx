@@ -6,7 +6,7 @@ auth: false
 dependencies: []
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 modal:
   borderRadius: 2xl
   backdrop: blur
@@ -143,7 +143,7 @@ endpoints:
       value: Item deleted successfully
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -208,10 +208,10 @@ const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit:
   )
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const { toast }                                    = useToast()
   const [search, setSearch]                          = useState('')
@@ -375,9 +375,9 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
 
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -400,4 +400,4 @@ export const pageVariants = {
   exit:    { opacity: 0, y: -8, transition: { duration: 0.25 } },
 }
 
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */

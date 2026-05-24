@@ -5,7 +5,7 @@ description: Tests file uploads — single file, multiple files, image preview, 
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 4000
@@ -79,7 +79,7 @@ endpoints:
       type: single
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -87,12 +87,12 @@ import React, { useState, useEffect, useRef } from 'react'
 import { CloudUpload, FileArchive, FileText, FileVideo, Folder, ImageIcon, Upload } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
 
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:guest */
 const DashboardPage = () => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [files, setFiles]       = useState<any[]>([])
@@ -269,4 +269,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

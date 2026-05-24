@@ -6,7 +6,7 @@ auth: false
 favicon: https://cdn-icons-png.flaticon.com/512/1995/1995467.png
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -20,7 +20,7 @@ layout:
     className: "min-h-screen bg-neutral-50"
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -187,9 +187,9 @@ const getIconComponent = (iconName: string) => {
   return icons[iconName] || null
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:style */
+/* @arkzen:web:style */
 :root {
   --color-primary: #2563eb;
   --color-secondary: #7c3aed;
@@ -297,9 +297,9 @@ body {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
-/* @arkzen:style:end */
+/* @arkzen:web:style:end */
 
-/* @arkzen:style:FeatureCard */
+/* @arkzen:web:style:FeatureCard */
 .feature-card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
@@ -325,9 +325,9 @@ body {
   transform: translateY(-4px);
   box-shadow: var(--shadow-lg);
 }
-/* @arkzen:style:FeatureCard:end */
+/* @arkzen:web:style:FeatureCard:end */
 
-/* @arkzen:style:HeroSection */
+/* @arkzen:web:style:HeroSection */
 .hero-gradient {
   background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #059669 100%);
   -webkit-background-clip: text;
@@ -360,10 +360,10 @@ body {
 .hero-cta:hover::after {
   right: 100%;
 }
-/* @arkzen:style:HeroSection:end */
+/* @arkzen:web:style:HeroSection:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
   const [activeFeature, setActiveFeature] = useState<number | null>(null)
 
@@ -415,10 +415,10 @@ const IndexPage = () => {
     </div>
   )
 }
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
 
-/* @arkzen:page:about */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:about */
+/* @arkzen:web:page:layout:guest */
 const AboutPage = () => {
   const [expandedSection, setExpandedSection] = useState<string | null>(null)
 
@@ -471,10 +471,10 @@ const AboutPage = () => {
     </div>
   )
 }
-/* @arkzen:page:about:end */
+/* @arkzen:web:page:about:end */
 
-/* @arkzen:page:features */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:features */
+/* @arkzen:web:page:layout:guest */
 const FeaturesPage = () => {
   const [selectedColor, setSelectedColor] = useState<'blue' | 'purple' | 'green' | 'orange'>('blue')
 
@@ -515,4 +515,4 @@ const FeaturesPage = () => {
     </div>
   )
 }
-/* @arkzen:page:features:end */
+/* @arkzen:web:page:features:end */

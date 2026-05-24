@@ -6,7 +6,7 @@ auth: false
 description: Real-time queue management system with PWA support
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -337,7 +337,7 @@ type: public
 */
 /* @arkzen:realtime:queue-updated:end */
 
-/* @arkzen:layout:app */
+/* @arkzen:web:layout:app */
 
 'use client'
 
@@ -423,9 +423,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   )
 }
 
-/* @arkzen:layout:app:end */
+/* @arkzen:web:layout:app:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -650,9 +650,9 @@ export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
   )
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:components:admin */
+/* @arkzen:web:components:admin */
 
 'use client'
 
@@ -709,10 +709,10 @@ export const AnnounceBadge = ({ ticket }: { ticket: { ticket_number: string; cus
   )
 }
 
-/* @arkzen:components:admin:end */
+/* @arkzen:web:components:admin:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:app */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:app */
 
 const IndexPage = () => {
   const { statuses, setStatus } = useQueueStore()
@@ -822,10 +822,10 @@ const IndexPage = () => {
   )
 }
 
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
 
-/* @arkzen:page:join */
-/* @arkzen:page:layout:app */
+/* @arkzen:web:page:join */
+/* @arkzen:web:page:layout:app */
 
 const JoinPage = () => {
   const { myTicket, setMyTicket } = useQueueStore()
@@ -957,10 +957,10 @@ const JoinPage = () => {
   )
 }
 
-/* @arkzen:page:join:end */
+/* @arkzen:web:page:join:end */
 
-/* @arkzen:page:admin */
-/* @arkzen:page:layout:app */
+/* @arkzen:web:page:admin */
+/* @arkzen:web:page:layout:app */
 
 const AdminPage = () => {
   const { statuses, setStatus } = useQueueStore()
@@ -1036,9 +1036,9 @@ const AdminPage = () => {
   )
 }
 
-/* @arkzen:page:admin:end */
+/* @arkzen:web:page:admin:end */
 
-/* @arkzen:error:404 */
+/* @arkzen:web:error:404 */
 
 const NotFoundPage = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
@@ -1049,4 +1049,4 @@ const NotFoundPage = () => (
   </div>
 )
 
-/* @arkzen:error:404:end */
+/* @arkzen:web:error:404:end */

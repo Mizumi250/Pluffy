@@ -5,7 +5,7 @@ description: Tests Laravel Console Commands + Scheduler. Register Artisan comman
 auth: false
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 4000
@@ -182,7 +182,7 @@ public function handle(): int
 }
 /* @arkzen:console:sync-data:end */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -203,10 +203,10 @@ interface CommandRun {
   created_at:   string
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:guest */
 const DashboardPage = () => {
   const { toast } = useToast()
 
@@ -329,4 +329,4 @@ const DashboardPage = () => {
     </div>
   )
 }
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */

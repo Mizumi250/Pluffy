@@ -6,7 +6,7 @@ auth: false
 favicon: 🎬
 */
 
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -21,7 +21,7 @@ layout:
     className: "min-h-screen bg-neutral-950"
 */
 
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -1345,9 +1345,9 @@ export const CSSCustomPropsSection = () => {
   )
 }
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:style */
+/* @arkzen:web:style */
 /* Animation Lab Global Styles */
 
 /* ─── LAYOUT ─────────────────── */
@@ -1711,9 +1711,9 @@ export const CSSCustomPropsSection = () => {
     grid-template-columns: 1fr;
   }
 }
-/* @arkzen:style:end */
+/* @arkzen:web:style:end */
 
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 import { gsap } from 'gsap'
 import React from 'react'
 
@@ -1743,10 +1743,10 @@ export const pageVariants = {
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
   exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */
 
-/* @arkzen:page:index */
-/* @arkzen:page:layout:guest */
+/* @arkzen:web:page:index */
+/* @arkzen:web:page:layout:guest */
 
 const IndexPage = () => {
   const { activeSection, setActiveSection } = useAnimLabStore()
@@ -1816,4 +1816,4 @@ const IndexPage = () => {
   )
 }
 
-/* @arkzen:page:index:end */
+/* @arkzen:web:page:index:end */
