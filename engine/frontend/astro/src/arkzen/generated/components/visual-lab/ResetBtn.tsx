@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ResetBtn
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:00:05.304Z
+// Generated: 2026-05-24T07:09:02.533Z
 // ============================================================
 
 export { ResetBtn } from './_components'

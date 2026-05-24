@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:00:01.541Z
+// Generated: 2026-05-24T07:08:59.196Z
 // ============================================================
 
 export { ChannelPanel } from './_components'

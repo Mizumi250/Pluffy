@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MailLogController
 // Tatemono: mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:00:03.939815Z
+// Generated: 2026-05-24T07:09:01.176486Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\MailTest;
@@ -25,8 +25,7 @@ class MailLogController extends Controller
         $query = MailLog::query();
 
 
-        $perPage = $request->get('per_page', 15);
-        $results = $query->paginate($perPage);
+        $results = $query->orderBy('created_at', 'desc')->get();
 
         return response()->json($results);
     }

@@ -155,6 +155,8 @@ class {$controllerName} extends Controller
         $perPage      = self::extractDefault($query['per_page'] ?? 'integer|default:15');
         $resourceClass = $useResource ? "{$model}Resource::class" : 'null';
         $resourceCollection = $useResource ? "{$model}Resource::collection" : '';
+        $responseType = $endpoint['response']['type'] ?? 'collection';
+        $isArray      = $responseType === 'array';
 
         $searchLogic = '';
         if ($searchFields) {
@@ -165,6 +167,26 @@ class {$controllerName} extends Controller
         }
 
         $filterLogic = self::generateFilterLogic($query);
+
+        if ($isArray) {
+            $fetchLine  = "\$results = \$query->orderBy('created_at', 'desc')->get();";
+            $returnLine = $useResource
+                ? "return response()->json({$model}Resource::collection(\$results));"
+                : "return response()->json(\$results);";
+
+            return "    /**
+     * {$endpoint['description']}
+     */
+    public function index(Request \$request): JsonResponse
+    {
+        \$query = {$model}::query();
+{$searchLogic}
+{$filterLogic}
+        {$fetchLine}
+
+        {$returnLine}
+    }";
+        }
 
         if ($useResource) {
             return "    /**

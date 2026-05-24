@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — asset-hub
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:00:00.251Z
+// Generated: 2026-05-24T07:08:58.311Z
 // ============================================================
 
 import { gsap } from 'gsap'
