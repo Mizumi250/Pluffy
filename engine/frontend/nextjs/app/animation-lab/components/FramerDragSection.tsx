@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerDragSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T23:45:55.239Z
+// Generated: 2026-05-24T01:36:28.337Z
 // ============================================================
 
 export { FramerDragSection } from './_components'

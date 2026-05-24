@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — DropZoneGuide
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T23:45:55.444Z
+// Generated: 2026-05-24T01:36:28.611Z
 // ============================================================
 
 export { DropZoneGuide } from './_components'

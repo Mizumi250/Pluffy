@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — NowServingCard
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T23:46:02.267Z
+// Generated: 2026-05-24T01:36:36.573Z
 // ============================================================
 
 export { NowServingCard } from './_components'
