@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — dtr-geofencing [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:06.550Z
+// Generated: 2026-05-24T02:29:43.161Z
 // Pages: index, admin
 // ============================================================
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — visual-lab/particles-config
 // Source: @arkzen:script:particles-config
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:08.903Z
+// Generated: 2026-05-24T02:29:45.850Z
 // ============================================================
 
 // ─── PARTICLE SYSTEM CONFIG — named script for visual-lab ────────────────────

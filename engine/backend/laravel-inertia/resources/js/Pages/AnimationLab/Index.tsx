@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-24T01:58:04.217Z
+// Generated: 2026-05-24T02:29:33.109Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — portfolio-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:07.685Z
+// Generated: 2026-05-24T02:29:44.316Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

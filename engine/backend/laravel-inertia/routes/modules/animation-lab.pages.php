@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — animation-lab [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:04.219Z
+// Generated: 2026-05-24T02:29:33.113Z
 // Pages: index
 // ============================================================
 

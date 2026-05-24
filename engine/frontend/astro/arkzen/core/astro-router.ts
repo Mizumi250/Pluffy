@@ -307,6 +307,39 @@ function resolveImports(
 
 // ─── Component files (identical to vite-router) ──────────────────────────────
 
+// Strips template literal content from source so the component-name extractor
+// doesn't match declarations inside backtick strings (e.g. code-demo strings).
+function stripTemplateLiterals(src: string): string {
+  let result = ''
+  let i = 0
+  while (i < src.length) {
+    if (src[i] === '`') {
+      // Enter template literal — skip until matching unescaped backtick
+      i++ // skip opening backtick
+      while (i < src.length) {
+        if (src[i] === '\\') { i += 2; continue }  // escaped char
+        if (src[i] === '`') { i++; break }           // closing backtick
+        // Skip ${...} expressions (shallow — handles 1 level of nesting)
+        if (src[i] === '$' && src[i + 1] === '{') {
+          let depth = 1; i += 2
+          while (i < src.length && depth > 0) {
+            if (src[i] === '{') depth++
+            else if (src[i] === '}') depth--
+            i++
+          }
+          continue
+        }
+        i++
+      }
+      result += ' ' // replace entire literal with whitespace so line numbers stay roughly intact
+    } else {
+      result += src[i]
+      i++
+    }
+  }
+  return result
+}
+
 function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
   if (tatemono.components.length === 0) return
 
@@ -338,9 +371,12 @@ ${strippedSources.join('\n\n')}
     stylesByComponent.set(style.name, style.name)
   }
 
+  // Extract PascalCase component names — skip types, ALL_CAPS constants, and
+  // anything inside template literals (e.g. code-demo strings in the tatemono).
   const extractedComponents = new Set<string>()
   for (const component of tatemono.components) {
-    const componentMatches = component.raw.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    const stripped = stripTemplateLiterals(component.raw)
+    const componentMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
     for (const match of componentMatches) {
       const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
       if (name && !/^[A-Z_]+$/.test(name)) extractedComponents.add(name)

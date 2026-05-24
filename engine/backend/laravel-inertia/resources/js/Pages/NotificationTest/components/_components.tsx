@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — notification-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:07.595Z
+// Generated: 2026-05-24T02:29:44.222Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

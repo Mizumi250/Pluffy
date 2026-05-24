@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — events-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:58:06.855Z
+// Generated: 2026-05-24T02:29:43.437Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
