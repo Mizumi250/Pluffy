@@ -370,6 +370,8 @@ Keep button/field padding consistent (12px vertical min, 16px horizontal min). M
    @arkzen:error:404                (optional)
    @arkzen:error:500                (optional)
    @arkzen:animation                (optional, once)
+   @arkzen:script                   (optional, once) ← global JS/TS helper file
+   @arkzen:script:name              (optional, REPEAT) ← named JS/TS helper files
 ```
 
 ---
@@ -399,6 +401,8 @@ Keep button/field padding consistent (12px vertical min, 16px horizontal min). M
 /* @arkzen:components:shared */
 /* @arkzen:layout:app */
 /* @arkzen:animation */
+/* @arkzen:script */
+/* @arkzen:script:name */
 /* @arkzen:page:index */
 /* @arkzen:style */
 /* @arkzen:style:ComponentName */
@@ -433,6 +437,8 @@ return response()->json($result);
 /* @arkzen:layout:app:end */
 /* @arkzen:page:dashboard:end */
 /* @arkzen:animation:end */
+/* @arkzen:script:end */
+/* @arkzen:script:name:end */
 /* @arkzen:endpoint:name:end */
 /* @arkzen:handler:name:end */
 /* @arkzen:error:404:end */
@@ -1291,6 +1297,187 @@ export const pageVariants = {
 - NO `import React` in animation block
 - GSAP target class names (`.stat-pill`, `.header-section`) MUST exist on actual rendered elements
 
+## SECTION 24B — @arkzen:script (Global Script Block)
+
+One optional global script block per tatemono. Use it for **heavy JS/TS logic, canvas setup, Three.js factories, shared constants, or utilities** that are too large or unrelated to component lifecycle to live inside `@arkzen:components`.
+
+**Opening tag:** `/* @arkzen:script */` (with `*/` on the same line — Type B block)
+**Closing tag:** `/* @arkzen:script:end */`
+**Count per tatemono:** One (1)
+**Generated file:** `<tatemono-name>.scripts.ts` (e.g. `visual-lab.scripts.ts`)
+**Import path:** `@/arkzen/generated/<tatemono-name>.scripts`
+
+```tsx
+/* @arkzen:script */
+
+import * as THREE from 'three'
+import { gsap } from 'gsap'
+
+// Shared constants — available across all pages of this tatemono
+export const VisualLabColors = {
+  primary:   '#a78bfa',
+  secondary: '#60a5fa',
+  accent:    '#f472b6',
+  success:   '#34d399',
+  warning:   '#fb923c',
+}
+
+// Factory function — builds a reusable Three.js scene with standard lighting
+// Usage in a page: const { renderer, scene, camera } = visualLabSceneSetup(canvas)
+export function visualLabSceneSetup(canvas: HTMLCanvasElement) {
+  const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
+  renderer.setSize(canvas.clientWidth, canvas.clientHeight)
+  renderer.setPixelRatio(window.devicePixelRatio)
+
+  const scene  = new THREE.Scene()
+  const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight, 0.1, 100)
+  camera.position.z = 4
+
+  const ambient   = new THREE.AmbientLight(0xffffff, 0.4)
+  const keyLight  = new THREE.PointLight(VisualLabColors.primary, 3, 10)
+  keyLight.position.set(2, 3, 4)
+  const fillLight = new THREE.PointLight(VisualLabColors.secondary, 2, 10)
+  fillLight.position.set(-3, -2, 2)
+  scene.add(ambient, keyLight, fillLight)
+
+  return { renderer, scene, camera }
+}
+
+// Animation loop helper — returns cleanup function
+export function createRenderLoop(
+  renderer: THREE.WebGLRenderer,
+  scene: THREE.Scene,
+  camera: THREE.Camera,
+  onFrame?: (dt: number) => void
+): () => void {
+  let rafId: number
+  let last = performance.now()
+  const loop = () => {
+    rafId = requestAnimationFrame(loop)
+    const now = performance.now()
+    onFrame?.((now - last) / 1000)
+    last = now
+    renderer.render(scene, camera)
+  }
+  loop()
+  return () => cancelAnimationFrame(rafId)
+}
+
+/* @arkzen:script:end */
+```
+
+**Import in a page component (inside `@arkzen:components`):**
+```tsx
+import { visualLabSceneSetup, VisualLabColors, createRenderLoop } from '@/arkzen/generated/visual-lab.scripts'
+```
+
+**⚠️ Script STRICT RULES:**
+- Opening tag `/* @arkzen:script */` — `*/` on the SAME line (Type B)
+- All exports MUST use `export` keyword — unlike `@arkzen:animation`, nothing is auto-exported
+- Import any npm package freely — this block is a plain `.ts` file, no React restrictions
+- No JSX allowed — this is a pure TypeScript utility file
+- Parser: `parseGlobalScript()` → stored as `tatemono.script` → router emits via `generateScriptFile()`
+
+---
+
+## SECTION 24C — @arkzen:script:name (Named Script Blocks)
+
+Multiple named script blocks per tatemono. Each generates a **separate `.ts` file** — ideal for per-feature helpers, heavy per-component logic, or lazily imported utilities.
+
+**Opening tag:** `/* @arkzen:script:name */` (with `*/` on the same line — Type B block)
+**Closing tag:** `/* @arkzen:script:name:end */`
+**Count per tatemono:** Unlimited (one file generated per named block)
+**Generated files:** `<tatemono-name>.<block-name>.script.ts`
+**Import path:** `@/arkzen/generated/<tatemono-name>.<block-name>.script`
+
+```tsx
+/* @arkzen:script:three-scene */
+
+import * as THREE from 'three'
+
+// Named helper — generated as: visual-lab.three-scene.script.ts
+// Import: import { makeIcosahedron, makeTorusRing } from '@/arkzen/generated/visual-lab.three-scene.script'
+
+export function makeIcosahedron(scene: THREE.Scene, color = '#a78bfa') {
+  const geo  = new THREE.IcosahedronGeometry(1, 1)
+  const mat  = new THREE.MeshStandardMaterial({ color, roughness: 0.3, metalness: 0.6 })
+  const mesh = new THREE.Mesh(geo, mat)
+  scene.add(mesh)
+  return mesh
+}
+
+export function makeTorusRing(scene: THREE.Scene, color = '#60a5fa') {
+  const geo  = new THREE.TorusGeometry(1.6, 0.06, 16, 80)
+  const mat  = new THREE.MeshStandardMaterial({ color, emissive: color, emissiveIntensity: 0.4 })
+  const mesh = new THREE.Mesh(geo, mat)
+  scene.add(mesh)
+  return mesh
+}
+
+/* @arkzen:script:three-scene:end */
+
+
+/* @arkzen:script:particles-config */
+
+// Named helper — generated as: visual-lab.particles-config.script.ts
+// Import: import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
+
+export const defaultParticleConfig = {
+  count:    200,
+  size:     { min: 2, max: 6 },
+  speed:    { min: 0.5, max: 2 },
+  lifetime: { min: 1.5, max: 3.5 },
+  colors:   ['#a78bfa', '#60a5fa', '#f472b6', '#34d399'],
+}
+
+// tsParticles JSON config — pass to <Particles options={tsParticlesConfig} />
+export const tsParticlesConfig = {
+  particles: {
+    number:  { value: 80, density: { enable: true } },
+    color:   { value: ['#a78bfa', '#60a5fa', '#f472b6'] },
+    size:    { value: { min: 1, max: 4 } },
+    opacity: { value: { min: 0.2, max: 0.8 } },
+    move:    { enable: true, speed: 1.5, direction: 'none', random: true, outModes: 'out' },
+    links:   { enable: true, distance: 120, color: '#a78bfa', opacity: 0.2 },
+  },
+  interactivity: {
+    events: {
+      onHover: { enable: true, mode: 'repulse' },
+      onClick: { enable: true, mode: 'push' },
+    },
+  },
+}
+
+export function getEmitterConfig(origin: { x: number; y: number }) {
+  return { ...defaultParticleConfig, origin }
+}
+
+/* @arkzen:script:particles-config:end */
+```
+
+**Import in a page component (inside `@arkzen:components`):**
+```tsx
+import { makeIcosahedron, makeTorusRing } from '@/arkzen/generated/visual-lab.three-scene.script'
+import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
+```
+
+**⚠️ Named Script STRICT RULES:**
+- Opening tag `/* @arkzen:script:name */` — `*/` on the SAME line (Type B)
+- Closing tag MUST include the block name: `/* @arkzen:script:name:end */`
+- Multiple named blocks can appear back-to-back in the file — each generates its own `.ts` file
+- All exports MUST use `export` keyword
+- No JSX allowed — pure TypeScript utility files
+- Parser: `parseAllNamedScripts()` → stored as `tatemono.scripts[]` → router calls `generateNamedScriptFiles()` — one file per block
+
+**Global vs Named — when to use which:**
+
+| | `@arkzen:script` (global) | `@arkzen:script:name` (named) |
+|---|---|---|
+| Files generated | One: `<name>.scripts.ts` | One per block: `<name>.<block>.script.ts` |
+| Count | 1 max | Unlimited |
+| Best for | Shared constants, scene factories, app-wide utils | Per-feature logic, lazy imports, heavy per-component helpers |
+| Import | `from '@/arkzen/generated/<name>.scripts'` | `from '@/arkzen/generated/<name>.<block>.script'` |
+
 ---
 
 ## SECTION 25 — ASSETS FOLDER
@@ -1327,7 +1514,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 ---
 
-## SECTION 27 — ACTIVE TATEMONOS (25 Total)
+## SECTION 27 — ACTIVE TATEMONOS (26 Total)
 
 ```
 animation-lab            v1.0.0  auth:false  pages: index  layout:app  animation:true
@@ -1355,6 +1542,7 @@ queue-flow               v1.0.0  auth:false  pages: index, join, admin  layout:a
 roles-test               v2.1.0  auth:true   pages: login, register, dashboard
 scheduler-test           v2.0.0  auth:false  pages: dashboard
 upload-test              v1.0.0  auth:false  pages: dashboard
+visual-lab               v1.0.0  auth:false  pages: index  script:global  script:three-scene  script:particles-config
 ```
 
 ---
@@ -1476,6 +1664,14 @@ Before finalizing any tatemono:
 - [ ] `pageVariants` HAS `export const`
 - [ ] GSAP target classes exist on actual rendered elements
 
+**SCRIPT BLOCKS:**
+- [ ] `@arkzen:script` — opening tag has `*/` on same line (Type B)
+- [ ] `@arkzen:script` — all exports use `export` keyword (no auto-export unlike animation)
+- [ ] `@arkzen:script` — no JSX, no React lifecycle — pure TypeScript only
+- [ ] `@arkzen:script:name` — closing tag includes block name: `/* @arkzen:script:name:end */`
+- [ ] `@arkzen:script:name` — each named block gets its own generated `.ts` file
+- [ ] Imports of generated scripts are inside `@arkzen:components` blocks only
+
 **NULL SAFETY:**
 - [ ] Double optional chain on nested API objects: `status?.queue?.name`
 - [ ] Components with async data have null/loading guard at top
@@ -1488,4 +1684,4 @@ Before finalizing any tatemono:
 - [ ] Component name: `<PageName>Page` PascalCase
 
 **SECTION ORDER:**
-- [ ] meta → config → database → api → routes → endpoint → handler → middleware → realtime → events → listeners → jobs → notifications → mail → console → layout → components → style → page → error → animation
+- [ ] meta → config → database → api → routes → endpoint → handler → middleware → realtime → events → listeners → jobs → notifications → mail → console → layout → components → style → page → error → animation → script → script:name

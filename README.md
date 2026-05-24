@@ -77,7 +77,7 @@ arkzen/
 ├── arkzen.json                      # Engine registry + active stack
 ├── setup.js                         # One-time engine setup
 ├── start.js                         # Start frontend + backend + queue + reverb
-├── new.js                           # Scaffold a fresh project
+├── mizumi.js                        # Interactive CLI — setup / start / export / switch / list
 └── export.js                        # Export one tatemono as standalone project
 ```
 
@@ -98,6 +98,8 @@ Readers: `ModuleReader` · `RegistryReader`
 ```bash
 node setup.js          # one-time setup
 node start.js          # start everything
+# or use the interactive CLI:
+node mizumi.js         # interactive picker — setup / start / export / switch
 ```
 
 ---
@@ -110,7 +112,14 @@ node start.js                  # start Laravel + queue worker + Reverb + fronten
 node arkzen.js switch <stack>  # switch active frontend stack
 node arkzen.js stacks          # list stacks + install status
 node export.js <tatemono>      # export one tatemono as standalone deployable project
-node new.js <project-name>     # scaffold a fresh client project
+node mizumi.js                 # interactive CLI picker (setup / start / export / switch / list)
+node mizumi.js start           # start engine directly
+node mizumi.js setup           # setup directly
+node mizumi.js export <name>   # export tatemono directly
+node mizumi.js switch <stack>  # switch stack directly
+node mizumi.js stack           # show current active stack
+node mizumi.js stacks          # list all stacks + install status
+node mizumi.js modules         # list all registered tatemonos
 ```
 
 ---
@@ -129,7 +138,7 @@ node export.js <name>
 
 ---
 
-## Active Tatemonos (25)
+## Active Tatemonos (26)
 
 | Tatemono | Version | Auth | Pages |
 |----------|---------|------|-------|
@@ -158,6 +167,7 @@ node export.js <name>
 | roles-test | v2.1.0 | ✓ | login, register, dashboard |
 | scheduler-test | v2.0.0 | — | dashboard |
 | upload-test | v1.0.0 | — | dashboard |
+| visual-lab | v1.0.0 | — | index |
 
 ---
 
