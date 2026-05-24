@@ -14,10 +14,10 @@ const path = require('path')
 // PATHS
 // ─────────────────────────────────────────────
 
-const ROOT_DIR    = __dirname
-const ENGINE_DIR  = path.join(ROOT_DIR, 'engine')
-const FRONTEND_DIR = path.join(ENGINE_DIR, 'frontend')
-const BACKEND_DIR  = path.join(ENGINE_DIR, 'backend')
+const ROOT_DIR      = __dirname
+const ENGINE_DIR    = path.join(ROOT_DIR, 'engine')
+const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend')
+const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 // Read active stack from arkzen.json (default: nextjs)
@@ -30,8 +30,11 @@ if (fs.existsSync(arkzenJsonPath)) {
   } catch {}
 }
 
+// Mobile stacks — no backend needed
+const MOBILE_STACKS = ['expo', 'react-native']
+const isMobile = MOBILE_STACKS.includes(activeStack)
+
 // Stack → backend mapping
-// react-inertia uses laravel-inertia (monolithic), all others use laravel
 const ACTIVE_BACKEND_DIR = activeStack === 'react-inertia'
   ? path.join(BACKEND_DIR, 'laravel-inertia')
   : path.join(BACKEND_DIR, 'laravel')
@@ -84,14 +87,17 @@ function checkRequirements() {
   log('Checking requirements...')
 
   const checks = [
-    { cmd: 'node',     name: 'Node.js' },
-    { cmd: 'npm',      name: 'npm' },
-    { cmd: 'php',      name: 'PHP' },
-    { cmd: 'composer', name: 'Composer' },
+    { cmd: 'node', name: 'Node.js' },
+    { cmd: 'npm',  name: 'npm' },
   ]
 
-  let allGood = true
+  // Backend requirements only for web stacks
+  if (!isMobile) {
+    checks.push({ cmd: 'php',      name: 'PHP' })
+    checks.push({ cmd: 'composer', name: 'Composer' })
+  }
 
+  let allGood = true
   for (const check of checks) {
     if (commandExists(check.cmd)) {
       success(`${check.name} found`)
@@ -115,13 +121,7 @@ function ensureStructure() {
   divider()
   log('Ensuring Arkzen folder structure...')
 
-  const dirs = [
-    ENGINE_DIR,
-    FRONTEND_DIR,
-    BACKEND_DIR,
-    TATEMONOS_DIR,
-  ]
-
+  const dirs = [ENGINE_DIR, FRONTEND_DIR, BACKEND_DIR, TATEMONOS_DIR]
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true })
   }
@@ -155,19 +155,37 @@ function setupFrontend() {
     fs.rmSync(nodeModulesPath, { recursive: true, force: true })
   }
 
+  // Expo: ensure placeholder assets exist before install
+  if (activeStack === 'expo') {
+    const assetsDir = path.join(ACTIVE_FRONTEND_DIR, 'assets')
+    fs.mkdirSync(assetsDir, { recursive: true })
+    // minimal 1x1 transparent PNG
+    const png = Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+      'base64'
+    )
+    for (const file of ['icon.png', 'splash-icon.png', 'adaptive-icon.png']) {
+      const filePath = path.join(assetsDir, file)
+      if (!fs.existsSync(filePath)) {
+        fs.writeFileSync(filePath, png)
+        success(`Created placeholder: assets/${file}`)
+      }
+    }
+  }
+
   log(`Installing npm packages for ${activeStack}...`)
   const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', ACTIVE_FRONTEND_DIR)
   if (!ok) {
-    const ok2 = run('npm install --force --no-fund --no-audit', ACTIVE_FRONTEND_DIR)
+    const ok2 = run('npm install --force --no-fund --no-audit --legacy-peer-deps', ACTIVE_FRONTEND_DIR)
     if (!ok2) {
-      error(`npm install failed for ${activeStack}. Try manually: cd engine/frontend/${activeStack} && npm install --force`)
+      error(`npm install failed for ${activeStack}. Try manually: cd engine/frontend/${activeStack} && npm install --legacy-peer-deps`)
       process.exit(1)
     }
   }
 
   success(`Frontend packages installed for ${activeStack}`)
 
-  // react-inertia frontend is builder only — also install laravel-inertia npm deps
+  // react-inertia: also install laravel-inertia npm deps
   if (activeStack === 'react-inertia') {
     log('Installing laravel-inertia npm packages (Vite + Inertia monolith)...')
     const inertiaBackendPkg = path.join(BACKEND_DIR, 'laravel-inertia', 'package.json')
@@ -176,7 +194,7 @@ function setupFrontend() {
       if (ok3) {
         success('laravel-inertia npm packages installed')
       } else {
-        warn('laravel-inertia npm install failed — try manually: cd engine/backend/laravel-inertia && npm install')
+        warn('laravel-inertia npm install failed — try manually: cd engine/backend/laravel-inertia && npm install --legacy-peer-deps')
       }
     } else {
       warn('laravel-inertia/package.json not found — skipping')
@@ -185,9 +203,7 @@ function setupFrontend() {
 }
 
 // ─────────────────────────────────────────────
-// BACKEND SETUP
-// react-inertia → laravel-inertia
-// all others    → laravel
+// BACKEND SETUP (web stacks only)
 // ─────────────────────────────────────────────
 
 function setupBackend() {
@@ -229,7 +245,6 @@ function setupBackend() {
   run('php artisan key:generate --force', ACTIVE_BACKEND_DIR)
   success('App key generated')
 
-  // .env setup
   const envPath   = path.join(ACTIVE_BACKEND_DIR, '.env')
   const envExPath = path.join(ACTIVE_BACKEND_DIR, '.env.example')
   const dbPath    = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
@@ -263,14 +278,12 @@ function setupBackend() {
   registerServiceProvider()
   fixAppPhp()
 
-  // Required backend directories
   const dirs = [
     path.join(ACTIVE_BACKEND_DIR, 'routes', 'modules'),
     path.join(ACTIVE_BACKEND_DIR, 'database', 'migrations', 'arkzen'),
     path.join(ACTIVE_BACKEND_DIR, 'database', 'seeders'),
     path.join(ACTIVE_BACKEND_DIR, 'app', 'Models', 'Arkzen'),
   ]
-
   for (const dir of dirs) {
     fs.mkdirSync(dir, { recursive: true })
   }
@@ -282,7 +295,7 @@ function setupBackend() {
 }
 
 // ─────────────────────────────────────────────
-// FIX APP.PHP — Laravel routing + Arkzen module loader
+// FIX APP.PHP
 // ─────────────────────────────────────────────
 
 function fixAppPhp() {
@@ -365,12 +378,13 @@ function initRegistry() {
       modules: [],
       activeStack: 'nextjs',
       stacks: {
-        'nextjs':        'engine/frontend/nextjs',
-        'react-vite':    'engine/frontend/react-vite',
-        'react-inertia': 'engine/frontend/react-inertia',
-        'native':        'engine/frontend/react-native',
-        'astro':         'engine/frontend/astro',
+        'nextjs':         'engine/frontend/nextjs',
+        'react-vite':     'engine/frontend/react-vite',
+        'react-inertia':  'engine/frontend/react-inertia',
+        'astro':          'engine/frontend/astro',
         'tanstack-start': 'engine/frontend/tanstack-start',
+        'expo':           'engine/frontend/expo',
+        'react-native':   'engine/frontend/react-native',
       },
     }
     fs.writeFileSync(arkzenJsonPath, JSON.stringify(registry, null, 2))
@@ -391,25 +405,29 @@ function printDone() {
 
   Active Stack: ${activeStack}
 
-  Structure:
-    engine/frontend/nextjs/         ← Next.js stack
-    engine/frontend/react-vite/     ← React + Vite stack
+  Web Stacks:
+    engine/frontend/nextjs/         ← Next.js
+    engine/frontend/react-vite/     ← React + Vite
     engine/frontend/react-inertia/  ← Inertia builder/watcher
-    engine/frontend/astro/          ← Astro stack
-    engine/frontend/tanstack-start/ ← TanStack Start stack
-    engine/frontend/react-native/   ← React Native stack
-    engine/backend/laravel/         ← Laravel backend (all stacks except Inertia)
-    engine/backend/laravel-inertia/ ← Laravel + Inertia monolith
-    tatemonos/                      ← your tatemono files
+    engine/frontend/astro/          ← Astro
+    engine/frontend/tanstack-start/ ← TanStack Start
 
-  To start the engine:
+  Mobile Stacks:
+    engine/frontend/expo/           ← Expo (SDK 53, Expo Go)
+    engine/frontend/react-native/   ← React Native (bare)
+
+  Backend:
+    engine/backend/laravel/         ← Laravel (all web stacks)
+    engine/backend/laravel-inertia/ ← Laravel + Inertia monolith
+
+  Tatemonos:
+    tatemonos/                      ← your tatemono DSL files
+
+  To start:
     node start.js
 
-  To switch stack (edit arkzen.json → activeStack), then re-run:
+  To switch stack (edit arkzen.json → activeStack), then:
     node setup.js
-
-  Drop tatemonos into:
-    tatemonos/your-project/core.tsx
   `)
   divider()
 }
@@ -422,5 +440,5 @@ checkRequirements()
 ensureStructure()
 initRegistry()
 setupFrontend()
-setupBackend()
+if (!isMobile) setupBackend()
 printDone()

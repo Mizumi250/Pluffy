@@ -18,7 +18,11 @@ const STACKS_DIR = path.join(ENGINE_DIR, 'frontend')
 const arkzenJson  = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
 const activeStack = arkzenJson.activeStack ?? 'nextjs'
 
-// CHANGE 1: BACKEND_DIR is stack-aware — Inertia uses its own Laravel instance
+// Mobile stacks — no backend needed
+const MOBILE_STACKS = ['expo', 'react-native']
+const isMobile = MOBILE_STACKS.includes(activeStack)
+
+// Backend dir — Inertia uses its own Laravel instance
 const INERTIA_BACKEND_DIR = path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
 const BACKEND_DIR = activeStack === 'react-inertia'
   ? INERTIA_BACKEND_DIR
@@ -28,20 +32,23 @@ const FRONTEND_DIR = path.join(STACKS_DIR, activeStack)
 
 function log(src, msg) {
   let prefix = ''
-  if (src === 'frontend') prefix = '\x1b[36m[Frontend]  \x1b[0m'
-  else if (src === 'backend') prefix = '\x1b[35m[Backend]  \x1b[0m'
-  else if (src === 'queue') prefix = '\x1b[33m[Queue]    \x1b[0m'
-  else if (src === 'reverb') prefix = '\x1b[35m[Reverb]   \x1b[0m'
+  if      (src === 'frontend') prefix = '\x1b[36m[Frontend]  \x1b[0m'
+  else if (src === 'backend')  prefix = '\x1b[35m[Backend]   \x1b[0m'
+  else if (src === 'queue')    prefix = '\x1b[33m[Queue]     \x1b[0m'
+  else if (src === 'reverb')   prefix = '\x1b[35m[Reverb]    \x1b[0m'
+  else if (src === 'expo')     prefix = '\x1b[32m[Expo]      \x1b[0m'
   console.log(`${prefix} ${msg}`)
 }
 
 function checkSetup() {
-  const artisan    = path.join(BACKEND_DIR, 'artisan')
   const nodeModules = path.join(FRONTEND_DIR, 'node_modules')
 
-  if (!fs.existsSync(artisan)) {
-    console.log('\n  ✗ Engine not set up yet. Run: node setup.js\n')
-    process.exit(1)
+  if (!isMobile) {
+    const artisan = path.join(BACKEND_DIR, 'artisan')
+    if (!fs.existsSync(artisan)) {
+      console.log('\n  ✗ Engine not set up yet. Run: node setup.js\n')
+      process.exit(1)
+    }
   }
 
   if (!fs.existsSync(nodeModules)) {
@@ -63,13 +70,11 @@ function startBackend() {
       if (line.trim()) log('backend', line.trim())
     })
   })
-
   proc.stderr.on('data', (data) => {
     String(data).trim().split('\n').forEach(line => {
       if (line.trim()) log('backend', line.trim())
     })
   })
-
   proc.on('exit', (code) => {
     if (code !== 0) log('backend', `Exited with code ${code}`)
   })
@@ -92,13 +97,11 @@ function startQueueWorker() {
         if (line.trim()) log('queue', line.trim())
       })
     })
-
     proc.stderr.on('data', (data) => {
       String(data).trim().split('\n').forEach(line => {
         if (line.trim()) log('queue', line.trim())
       })
     })
-
     proc.on('exit', (code) => {
       if (code !== 0) {
         log('queue', `Exited with code ${code}, restarting in 3 seconds...`)
@@ -126,13 +129,11 @@ function startReverb() {
       if (line.trim()) log('reverb', line.trim())
     })
   })
-
   proc.stderr.on('data', (data) => {
     String(data).trim().split('\n').forEach(line => {
       if (line.trim()) log('reverb', line.trim())
     })
   })
-
   proc.on('exit', (code) => {
     if (code !== 0) log('reverb', `Exited with code ${code}`)
   })
@@ -140,17 +141,62 @@ function startReverb() {
   return proc
 }
 
-// CHANGE 2: startFrontend() — Inertia needs TWO processes, Astro needs both astro dev + arkzen watcher
 function startFrontend() {
-  if (activeStack === 'react-inertia') {
-    // Process 1: Vite runs FROM INSIDE laravel-inertia (serves React pages via Laravel Vite plugin)
-    log('frontend', 'Starting Inertia Vite (laravel-inertia) on http://localhost:5173')
-    const vite = spawn('npm', ['run', 'dev'], {
-      cwd: BACKEND_DIR,  // laravel-inertia
+  // ── EXPO ──────────────────────────────────────────────────
+  if (activeStack === 'expo') {
+    // Process 1: arkzen watcher (generates screens from tatemonos)
+    log('expo', 'Starting Arkzen tatemono watcher')
+    const watcher = spawn('npm', ['run', 'arkzen'], {
+      cwd: FRONTEND_DIR,
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
     })
+    watcher.stdout.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('expo', `[Watcher] ${line.trim()}`)
+      })
+    })
+    watcher.stderr.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('expo', `[Watcher] ${line.trim()}`)
+      })
+    })
+    watcher.on('exit', (code) => {
+      if (code !== 0) log('expo', `[Watcher] Exited with code ${code}`)
+    })
 
+    // Process 2: expo start (Metro bundler)
+    log('expo', 'Starting Expo (Metro bundler) — scan QR with Expo Go')
+    const expo = spawn('npx', ['expo', 'start', '--clear'], {
+      cwd: FRONTEND_DIR,
+      stdio: 'pipe',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
+    expo.stdout.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('expo', `[Metro] ${line.trim()}`)
+      })
+    })
+    expo.stderr.on('data', (data) => {
+      String(data).trim().split('\n').forEach(line => {
+        if (line.trim()) log('expo', `[Metro] ${line.trim()}`)
+      })
+    })
+    expo.on('exit', (code) => {
+      if (code !== 0) log('expo', `[Metro] Exited with code ${code}`)
+    })
+
+    return [watcher, expo]
+  }
+
+  // ── REACT-INERTIA ─────────────────────────────────────────
+  if (activeStack === 'react-inertia') {
+    log('frontend', 'Starting Inertia Vite (laravel-inertia) on http://localhost:5173')
+    const vite = spawn('npm', ['run', 'dev'], {
+      cwd: BACKEND_DIR,
+      stdio: 'pipe',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
     vite.stdout.on('data', (data) => {
       String(data).trim().split('\n').forEach(line => {
         if (line.trim()) log('frontend', `[Vite] ${line.trim()}`)
@@ -165,14 +211,12 @@ function startFrontend() {
       if (code !== 0) log('frontend', `[Vite] Exited with code ${code}`)
     })
 
-    // Process 2: Builder watcher writes pages into laravel-inertia/resources/js/Pages/
     log('frontend', 'Starting Inertia builder watcher')
     const watcher = spawn('npm', ['run', 'watch'], {
       cwd: path.join(STACKS_DIR, 'react-inertia'),
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
     })
-
     watcher.stdout.on('data', (data) => {
       String(data).trim().split('\n').forEach(line => {
         if (line.trim()) log('frontend', `[Watcher] ${line.trim()}`)
@@ -190,15 +234,14 @@ function startFrontend() {
     return [vite, watcher]
   }
 
+  // ── ASTRO ─────────────────────────────────────────────────
   if (activeStack === 'astro') {
-    // Astro: Run astro dev + arkzen watcher
     log('frontend', 'Starting Astro on http://localhost:3000')
     const astro = spawn('npm', ['run', 'dev'], {
       cwd: FRONTEND_DIR,
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
     })
-
     astro.stdout.on('data', (data) => {
       String(data).trim().split('\n').forEach(line => {
         if (line.trim()) log('frontend', `[Astro] ${line.trim()}`)
@@ -212,31 +255,26 @@ function startFrontend() {
     astro.on('exit', (code) => {
       if (code !== 0) log('frontend', `[Astro] Exited with code ${code}`)
     })
-
     return astro
   }
 
-  // All other stacks (nextjs, react-vite, native)
+  // ── ALL OTHER WEB STACKS (nextjs, react-vite, tanstack-start) ─
   log('frontend', `Starting ${activeStack} on http://localhost:3000`)
-
   const proc = spawn('npm', ['run', 'dev'], {
     cwd: FRONTEND_DIR,
     stdio: 'pipe',
     env: { ...process.env, FORCE_COLOR: '1' },
   })
-
   proc.stdout.on('data', (data) => {
     String(data).trim().split('\n').forEach(line => {
       if (line.trim()) log('frontend', line.trim())
     })
   })
-
   proc.stderr.on('data', (data) => {
     String(data).trim().split('\n').forEach(line => {
       if (line.trim()) log('frontend', line.trim())
     })
   })
-
   proc.on('exit', (code) => {
     if (code !== 0) log('frontend', `Exited with code ${code}`)
   })
@@ -244,36 +282,47 @@ function startFrontend() {
   return proc
 }
 
+// ── BOOT ──────────────────────────────────────────────────────
+
 console.log('\n╔════════════════════════════════════════╗')
 console.log('║         ARKZEN ENGINE STARTING         ║')
 console.log('╚════════════════════════════════════════╝\n')
 
 checkSetup()
 
-// Create storage symlink (always use --force to ensure it points to the right location)
-try {
-  require('child_process').execSync('php artisan storage:link --force', {
-    cwd: BACKEND_DIR,
-    stdio: 'pipe'
-  })
-  console.log('  ✓ Storage symlink created/updated')
-} catch (e) {
-  console.log('  ⚠ Storage symlink failed (run: php artisan storage:link --force)')
+let backend  = null
+let queue    = null
+let reverb   = null
+
+if (!isMobile) {
+  // Storage symlink
+  try {
+    require('child_process').execSync('php artisan storage:link --force', {
+      cwd: BACKEND_DIR,
+      stdio: 'pipe'
+    })
+    console.log('  ✓ Storage symlink created/updated')
+  } catch (e) {
+    console.log('  ⚠ Storage symlink failed (run: php artisan storage:link --force)')
+  }
+
+  backend = startBackend()
+  queue   = startQueueWorker()
+  reverb  = startReverb()
+} else {
+  console.log('  ✓ Mobile stack — skipping Laravel/Reverb/Queue')
 }
 
-const backend  = startBackend()
-const queue    = startQueueWorker()
-const reverb   = startReverb()
 const frontend = startFrontend()
 
-// CHANGE 3: .flat() handles both single process and [vite, watcher] array from Inertia
+// ── SHUTDOWN ──────────────────────────────────────────────────
 process.on('SIGINT', () => {
   console.log('\n\n  Shutting down Arkzen Engine...')
-  ;[backend, queue, reverb, frontend].flat().forEach(p => p?.kill())
+  ;[backend, queue, reverb, frontend].flat().filter(Boolean).forEach(p => p?.kill())
   process.exit(0)
 })
 
-// ── Stack switcher — triggered by: node arkzen.js switch <stack>
+// ── STACK SWITCHER — node arkzen.js switch <stack> ────────────
 process.on('SIGUSR1', () => {
   const json     = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
   const newStack = json.activeStack ?? 'nextjs'
@@ -282,7 +331,7 @@ process.on('SIGUSR1', () => {
     return
   }
   log('frontend', `Switching stack: ${activeStack} → ${newStack}...`)
-  ;[frontend].flat().forEach(p => p?.kill())
+  ;[frontend].flat().filter(Boolean).forEach(p => p?.kill())
   setTimeout(() => {
     const newFrontendDir = path.join(ENGINE_DIR, 'frontend', newStack)
     const newProc = spawn('npm', ['run', 'dev'], {
@@ -304,7 +353,15 @@ process.on('SIGUSR1', () => {
   }, 1000)
 })
 
-console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
-console.log(`  Engine watches:   engine/frontend/${activeStack}/`)
-console.log(`  Active stack:     ${activeStack} (change in arkzen.json or: node arkzen.js switch <stack>)`)
-console.log('  Export project:   node export.js project-name\n')
+// ── FOOTER ────────────────────────────────────────────────────
+if (isMobile) {
+  console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
+  console.log(`  Engine watches:   engine/frontend/${activeStack}/`)
+  console.log(`  Active stack:     ${activeStack} (change in arkzen.json)`)
+  console.log('  Scan QR code with Expo Go to open on your device\n')
+} else {
+  console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
+  console.log(`  Engine watches:   engine/frontend/${activeStack}/`)
+  console.log(`  Active stack:     ${activeStack} (change in arkzen.json or: node arkzen.js switch <stack>)`)
+  console.log('  Export project:   node export.js project-name\n')
+}
