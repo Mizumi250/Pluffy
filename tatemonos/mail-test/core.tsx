@@ -52,7 +52,7 @@ endpoints:
     route: /logs
     description: Get all mail logs
     response:
-      type: collection
+      type: array
   store:
     method: POST
     route: /send
@@ -344,7 +344,6 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/mail-test/logs')
       const d   = await res.json()
-      // Laravel pagination returns { data: [...], meta: {...} }
       const items = Array.isArray(d) ? d : (d?.data ?? [])
       setLogs(items)
     } catch {}
@@ -364,7 +363,7 @@ const DashboardPage = () => {
       const d = await res.json()
       if (!res.ok) throw new Error(d.message ?? 'Failed to send')
       showToast('success', 'Mail queued — check your inbox')
-      setTimeout(loadLogs, 1200)
+      setTimeout(loadLogs, 2500)
     } catch (e) {
       showToast('error', e instanceof Error ? e.message : 'Send failed')
     } finally {

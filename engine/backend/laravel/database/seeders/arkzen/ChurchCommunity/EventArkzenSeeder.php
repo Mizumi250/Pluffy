@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — EventArkzenSeeder
 // Tatemono: church-community  |  Connection: church_community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T06:18:59.347172Z
+// Generated: 2026-05-24T07:00:02.745042Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\ChurchCommunity;

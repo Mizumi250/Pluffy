@@ -176,6 +176,46 @@ function extractAllSections(content: string, marker: string): string[] {
 }
 
 // ─────────────────────────────────────────────
+// TEMPLATE LITERAL STRIPPER
+// Replaces backtick template literal content with whitespace so DSL marker
+// searches (indexOf) don't match markers that appear inside demo strings,
+// <code> blocks, or other string literals in the tatemono source.
+// Positions in the stripped string correspond 1:1 with the original so
+// start/end indices can be used directly on the original content.
+// ─────────────────────────────────────────────
+
+function stripTemplateLiterals(src: string): string {
+  let result = ''
+  let i = 0
+  while (i < src.length) {
+    if (src[i] === '`') {
+      result += ' '     // replace opening backtick
+      i++
+      while (i < src.length) {
+        if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char
+        if (src[i] === '`')  { result += ' '; i++; break }          // closing backtick
+        // Skip ${...} expressions — shallow (1 level)
+        if (src[i] === '$' && src[i + 1] === '{') {
+          let depth = 1
+          result += '  '; i += 2
+          while (i < src.length && depth > 0) {
+            if (src[i] === '{') depth++
+            else if (src[i] === '}') depth--
+            result += ' '; i++
+          }
+          continue
+        }
+        result += ' '; i++  // replace literal content with space (preserves length)
+      }
+    } else {
+      result += src[i]
+      i++
+    }
+  }
+  return result
+}
+
+// ─────────────────────────────────────────────
 // NAMED SECTION EXTRACTOR — v5
 // For @arkzen:marker:name ... @arkzen:marker:name:end
 // Returns array of { name, raw, start, end }
@@ -184,11 +224,12 @@ function extractAllSections(content: string, marker: string): string[] {
 function extractAllNamedSections(content: string, marker: string): ArkzenSection[] {
   const results: ArkzenSection[] = []
   let searchFrom = 0
+  const safe = stripTemplateLiterals(content)  // use for indexOf only; raw extracted from original
 
   while (true) {
     // Find next opening: /* @arkzen:marker:
     const openPattern = `/* @arkzen:${marker}:`
-    const openIdx = content.indexOf(openPattern, searchFrom)
+    const openIdx = safe.indexOf(openPattern, searchFrom)
     if (openIdx === -1) break
 
     // Extract the identifier (everything until whitespace or */)
@@ -203,12 +244,12 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Find end of opening comment.
     // Guard against inline cron fragments like "*/5 * * * *" in YAML.
-    const openCommentEnd = findOpeningCommentEnd(content, openIdx, openIdx + openPattern.length)
+    const openCommentEnd = findOpeningCommentEnd(safe, openIdx, openIdx + openPattern.length)
     if (openCommentEnd === -1) break
 
     // Find closing marker: /* @arkzen:marker:identifier:end */
     const closeMarker = `/* @arkzen:${marker}:${identifier}:end */`
-    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
+    const closeIdx = safe.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
     // Extract raw content between opening comment close and closing marker
@@ -983,18 +1024,20 @@ function parseGlobalScript(content: string): ArkzenSection | undefined {
   // Mirrors parseAllStyles() global pass exactly.
   // Check first char after `/* @arkzen:script` — if it's NOT ':' it's the global block.
   // ':' means named block (/* @arkzen:script:name */), space/* means global.
+  // Use stripTemplateLiterals so markers inside demo strings/JSX <code> blocks are ignored.
   const globalMarker = `/* @arkzen:script`
-  const globalIdx = content.indexOf(globalMarker)
+  const safe = stripTemplateLiterals(content)
+  const globalIdx = safe.indexOf(globalMarker)
   if (globalIdx === -1) return undefined
 
   const afterMarker = content.slice(globalIdx + globalMarker.length)
   if (!afterMarker[0] || !/[\s*]/.test(afterMarker[0])) return undefined
 
-  const openCommentEnd = content.indexOf('*/', globalIdx)
+  const openCommentEnd = safe.indexOf('*/', globalIdx)
   if (openCommentEnd === -1) return undefined
 
   const endMarker = `/* @arkzen:script:end */`
-  const endIdx = content.indexOf(endMarker, openCommentEnd)
+  const endIdx = safe.indexOf(endMarker, openCommentEnd)
   if (endIdx === -1) return undefined
 
   const raw = content.slice(openCommentEnd + 2, endIdx).trim()
