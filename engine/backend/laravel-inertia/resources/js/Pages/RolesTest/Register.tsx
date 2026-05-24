@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — roles-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T13:57:37.802Z
+// Generated: 2026-05-24T01:58:07.928Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

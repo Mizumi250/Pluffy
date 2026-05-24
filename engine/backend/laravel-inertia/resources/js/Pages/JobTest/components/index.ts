@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — job-test [React+Inertia]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:57:31.264Z
+// Generated: 2026-05-24T01:58:07.280Z
 // ============================================================
 
 export * from './_components'

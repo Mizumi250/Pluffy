@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — jo-payroll [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:57:31.001Z
+// Generated: 2026-05-24T01:58:07.074Z
 // Pages: index, job-database, cash-atm, sss, hdmf, appointments, payslip
 // ============================================================
 

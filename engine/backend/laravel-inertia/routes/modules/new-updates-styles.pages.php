@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — new-updates-styles [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:57:31.905Z
+// Generated: 2026-05-24T01:58:07.578Z
 // Pages: index, about, features
 // ============================================================
 

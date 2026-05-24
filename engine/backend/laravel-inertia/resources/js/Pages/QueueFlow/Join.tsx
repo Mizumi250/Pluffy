@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/join [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T13:57:32.147Z
+// Generated: 2026-05-24T01:58:07.716Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

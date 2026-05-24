@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — visual-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-23T13:57:42.170Z
+// Generated: 2026-05-24T01:58:08.926Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

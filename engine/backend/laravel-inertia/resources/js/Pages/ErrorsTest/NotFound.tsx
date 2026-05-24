@@ -3,7 +3,7 @@
 // Inertia page rendered for unmatched sub-routes under this tatemono.
 // Registered as a catch-all route in routes/modules/errors-test.pages.php
 // DO NOT EDIT — edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-23T13:57:30.601Z
+// Generated: 2026-05-24T01:58:06.759Z
 // ============================================================
 
 import React from 'react'

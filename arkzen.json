@@ -346,7 +346,7 @@
       "auth": false
     }
   ],
-  "activeStack": "nextjs",
+  "activeStack": "react-inertia",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",

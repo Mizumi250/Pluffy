@@ -479,11 +479,13 @@ ${exportedSources.join('\n\n')}
   // Extract PascalCase component names — skip types and ALL_CAPS constants
   const extractedComponents = new Set<string>()
   for (const component of tatemono.components) {
-    const componentMatches = component.raw.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of componentMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) {
-        extractedComponents.add(name)
+    const lines = component.raw.split('\n')
+    for (const line of lines) {
+      if (/^(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/.test(line)) {
+        const name = line.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+        if (name && !/^[A-Z_]+$/.test(name)) {
+          extractedComponents.add(name)
+        }
       }
     }
   }
