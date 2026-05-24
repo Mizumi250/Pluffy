@@ -1,0 +1,12 @@
+/* ============================================================
+   ARKZEN — Global CSS (NativeWind v4 entry point)
+   global.css
+
+   NativeWind v4 requires a CSS file as the Tailwind input.
+   Metro processes this via the withNativeWind wrapper in metro.config.js.
+   Import this in app/_layout.tsx.
+   ============================================================ */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
