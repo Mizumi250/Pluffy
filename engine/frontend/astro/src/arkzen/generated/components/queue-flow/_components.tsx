@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T14:10:25.239Z
+// Generated: 2026-05-24T03:00:11.699Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T14:10:22.640Z
+// Generated: 2026-05-24T03:00:08.939Z
 // ============================================================
 
 export * from './_components'

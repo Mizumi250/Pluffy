@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T14:10:24.647Z
+// Generated: 2026-05-24T03:00:11.130Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

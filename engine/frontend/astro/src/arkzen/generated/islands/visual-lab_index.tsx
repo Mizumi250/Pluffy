@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T14:10:26.404Z
+// Generated: 2026-05-24T03:00:12.742Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -1375,7 +1375,7 @@ export const ScriptDSLSection = () => {
 
   const globalCode = `/* @arkzen:script */
 // Global scene constants — shared across all visual-lab pages
-export const VisualLabColors = {
+const VisualLabColors = {
   primary:   '#a78bfa',
   secondary: '#60a5fa',
   accent:    '#f472b6',
@@ -1383,7 +1383,7 @@ export const VisualLabColors = {
 }
 
 // Factory: build a reusable Three.js scene with standard lighting
-export function visualLabSceneSetup(canvas: HTMLCanvasElement) {
+function visualLabSceneSetup(canvas: HTMLCanvasElement) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight)

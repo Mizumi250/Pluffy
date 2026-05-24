@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CSSTransitionsSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T14:10:22.522Z
+// Generated: 2026-05-24T03:00:08.587Z
 // ============================================================
 
 export { CSSTransitionsSection } from './_components'
