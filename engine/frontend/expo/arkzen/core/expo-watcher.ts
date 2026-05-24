@@ -20,8 +20,8 @@ import {
   rebuildExpoTatemono,
   removeExpoTatemono,
 } from './expo-builder'
-import { checkBackendHealth }           from '../../../nextjs/arkzen/core/backend-bridge'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { checkBackendHealth }           from './backend-bridge'
+import { syncSharedCoreToCurrentStack } from './shared-sync'
 import { getExpoRegistry, listExpoModules } from './expo-registry'
 
 // Root is 3 levels up from engine/frontend/expo/arkzen/core/

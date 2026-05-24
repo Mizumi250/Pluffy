@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ERROR BOUNDARY ISLAND — errors-test
 // Class-based React ErrorBoundary. Export it from here to wrap custom layouts.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
-// Generated: 2026-05-24T07:09:00.503Z
+// Generated: 2026-05-24T15:02:00.925Z
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'

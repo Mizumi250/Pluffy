@@ -1,17 +1,21 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED CORE SYNC v2.1
+// ARKZEN ENGINE — SHARED CORE SYNC v3.0
 //
-// Copies engine/shared/arkzen/core/* into the current stack's
-// arkzen/core/ so every stack gets identical shared logic.
+// Copies cross-platform and platform-specific shared files into
+// each stack's arkzen/core/ so every stack gets identical shared
+// logic.
 //
-// v2.1 — pwa-builder.ts now syncs as pwa-builder.shared.ts
-//   so each stack's thin pwa-builder.ts wrapper is never
-//   overwritten by the shared copy.
+// Source layout (engine/shared/arkzen/):
+//   engine-core/   — cross-platform: parser, backend-bridge, validator, shared-sync
+//   web-core/      — web stacks: components, hooks, lib, layouts, stores, assets, sitemap
+//   native-core/   — native stacks: components, hooks, layouts
 //
-// Folders:  components/, hooks/, lib/, layouts/, stores/
-// Files:    parser.ts, backend-bridge.ts, assets.ts,
-//           validator.ts, sitemap.ts
-// Special:  pwa-builder.ts → pwa-builder.shared.ts
+// Destination (always): <stack>/arkzen/core/
+//   Web stacks    get: engine-core files + web-core folders/files
+//   Mobile stacks get: engine-core files + native-core folders/files
+//
+// v3.0: Renamed core/ → web-core/. Split engine files into engine-core/.
+//       Added platform detection (mobile vs web) for native-core sync.
 //
 // NEVER synced (each stack owns these):
 //   adapters/router.ts   — framework-specific (next/navigation vs react-router-dom)
@@ -26,45 +30,79 @@
 import * as fs from 'fs'
 import * as path from 'path'
 
-const SHARED_FOLDERS = ['components', 'hooks', 'lib', 'layouts', 'stores'] as const
-const SHARED_FILES   = ['parser.ts', 'backend-bridge.ts', 'assets.ts', 'validator.ts', 'sitemap.ts'] as const
+// Engine-core files (cross-platform — synced to ALL stacks)
+const ENGINE_FILES = ['parser.ts', 'backend-bridge.ts', 'validator.ts', 'shared-sync.ts'] as const
+
+// Web-core folders and files (web-only — synced to web stacks)
+const WEB_FOLDERS = ['components', 'hooks', 'lib', 'layouts', 'stores'] as const
+const WEB_FILES   = ['assets.ts', 'sitemap.ts'] as const
 
 // Files inside shared folders that must NOT be overwritten per-stack
 const ADAPTER_PROTECTED = new Set(['router.ts', 'Link.tsx', 'Link.ts'])
 
+// Mobile stack names (folder names under engine/frontend/)
+const MOBILE_STACKS = new Set(['expo', 'bare-rn', 'lynx'])
+
 export function syncSharedCoreToCurrentStack(label: string): void {
   const rootDir       = path.resolve(process.cwd(), '..', '..', '..')
-  const sharedCoreDir = path.join(rootDir, 'engine', 'shared', 'arkzen', 'core')
+  const sharedDir     = path.join(rootDir, 'engine', 'shared', 'arkzen')
+  const engineCoreDir = path.join(sharedDir, 'engine-core')
+  const webCoreDir    = path.join(sharedDir, 'web-core')
+  const nativeCoreDir = path.join(sharedDir, 'native-core')
   const stackCoreDir  = path.join(process.cwd(), 'arkzen', 'core')
 
-  if (!fs.existsSync(sharedCoreDir)) {
-    console.warn(`[${label}] ⚠ Shared core not found at ${sharedCoreDir}`)
-    return
-  }
+  // Determine if current stack is mobile
+  const stackName = path.basename(process.cwd())
+  const isMobile  = MOBILE_STACKS.has(stackName)
 
   fs.mkdirSync(stackCoreDir, { recursive: true })
 
-  for (const folder of SHARED_FOLDERS) {
-    const src  = path.join(sharedCoreDir, folder)
-    const dest = path.join(stackCoreDir, folder)
-    if (!fs.existsSync(src)) continue
-    syncDirectoryIfChanged(src, dest, folder === 'adapters' ? ADAPTER_PROTECTED : new Set())
+  // 1. Sync engine-core files (always — all platforms)
+  if (fs.existsSync(engineCoreDir)) {
+    for (const file of ENGINE_FILES) {
+      const src  = path.join(engineCoreDir, file)
+      const dest = path.join(stackCoreDir, file)
+      if (!fs.existsSync(src)) continue
+      copyFileIfChanged(src, dest)
+    }
   }
 
-  for (const file of SHARED_FILES) {
-    const src  = path.join(sharedCoreDir, file)
-    const dest = path.join(stackCoreDir, file)
-    if (!fs.existsSync(src)) continue
-    copyFileIfChanged(src, dest)
+  // 2. Sync platform-specific shared files
+  if (isMobile && fs.existsSync(nativeCoreDir)) {
+    // Native stacks: sync native-core/ contents
+    for (const entry of fs.readdirSync(nativeCoreDir, { withFileTypes: true })) {
+      const src  = path.join(nativeCoreDir, entry.name)
+      const dest = path.join(stackCoreDir, entry.name)
+      if (entry.isDirectory()) {
+        syncDirectoryIfChanged(src, dest, new Set())
+      } else if (entry.isFile()) {
+        copyFileIfChanged(src, dest)
+      }
+    }
+    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, 'native-core/*'].join(', ')})`)
+  } else if (!isMobile && fs.existsSync(webCoreDir)) {
+    // Web stacks: sync web-core/ contents
+    for (const folder of WEB_FOLDERS) {
+      const src  = path.join(webCoreDir, folder)
+      const dest = path.join(stackCoreDir, folder)
+      if (!fs.existsSync(src)) continue
+      syncDirectoryIfChanged(src, dest, folder === 'adapters' ? ADAPTER_PROTECTED : new Set())
+    }
+
+    for (const file of WEB_FILES) {
+      const src  = path.join(webCoreDir, file)
+      const dest = path.join(stackCoreDir, file)
+      if (!fs.existsSync(src)) continue
+      copyFileIfChanged(src, dest)
+    }
+
+    // Special: pwa-builder.ts syncs as pwa-builder.shared.ts
+    const pwaSrc  = path.join(webCoreDir, 'pwa-builder.ts')
+    const pwaDest = path.join(stackCoreDir,  'pwa-builder.shared.ts')
+    if (fs.existsSync(pwaSrc)) copyFileIfChanged(pwaSrc, pwaDest)
+
+    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...WEB_FOLDERS, ...WEB_FILES, 'pwa-builder.shared.ts'].join(', ')})`)
   }
-
-  // Special: pwa-builder.ts syncs as pwa-builder.shared.ts
-  // so each stack's thin pwa-builder.ts wrapper is never overwritten
-  const pwaSrc  = path.join(sharedCoreDir, 'pwa-builder.ts')
-  const pwaDest = path.join(stackCoreDir,  'pwa-builder.shared.ts')
-  if (fs.existsSync(pwaSrc)) copyFileIfChanged(pwaSrc, pwaDest)
-
-  console.log(`[${label}] ✓ Synced shared core (${[...SHARED_FOLDERS, ...SHARED_FILES, 'pwa-builder.shared.ts'].join(', ')})`)
 }
 
 function copyFileIfChanged(src: string, dest: string): void {

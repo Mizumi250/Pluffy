@@ -20,11 +20,11 @@
 
 import * as path from 'path'
 import * as fs   from 'fs'
-import { parseTatemono }               from '../../../nextjs/arkzen/core/parser'
+import { parseTatemono }               from './parser'
 import { registerExpoScreens, unregisterExpoScreens } from './expo-router'
 import { updateExpoRegistry, removeFromExpoRegistry } from './expo-registry'
-import { triggerBackendBuild, triggerBackendRemove }  from '../../../nextjs/arkzen/core/backend-bridge'
-import { syncSharedCoreToCurrentStack }               from '../../../nextjs/arkzen/core/shared-sync'
+import { triggerBackendBuild, triggerBackendRemove }  from './backend-bridge'
+import { syncSharedCoreToCurrentStack }               from './shared-sync'
 import type { ExpoBuildResult }                       from '../types'
 
 // ─── Build ────────────────────────────────────────────────────────────────────

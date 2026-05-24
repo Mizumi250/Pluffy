@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — events-test
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:09:00.535Z
+// Generated: 2026-05-24T15:02:00.954Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MagneticBtn
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T07:08:58.275Z
+// Generated: 2026-05-24T15:01:58.527Z
 // ============================================================
 
 export { MagneticBtn } from './_components'
