@@ -37,8 +37,6 @@
     "@types/js-yaml": "^4.0.0",
     "@types/node": "^20.0.0",
     "@types/react": "~18.3.0",
-    "@types/react-native": "~0.76.0",
-    "babel-plugin-nativewind": "^4.1.23",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"

@@ -7,12 +7,13 @@
 //
 // Source layout (engine/shared/arkzen/):
 //   engine-core/   — cross-platform: parser, backend-bridge, validator, shared-sync
-//   web-core/      — web stacks: components, hooks, lib, layouts, stores, assets, sitemap
-//   native-core/   — native stacks: components, hooks, layouts
+//   web-core/      — web components/layouts + cross-platform hooks/lib/stores + assets/sitemap
+//   native-core/   — native components/layouts (NativeWind)
 //
 // Destination (always): <stack>/arkzen/core/
-//   Web stacks    get: engine-core files + web-core folders/files
-//   Mobile stacks get: engine-core files + native-core folders/files
+//   ALL stacks get: engine-core files + hooks/ + lib/ + stores/ (cross-platform)
+//   Web stacks  add: web-core components/ + layouts/ + assets.ts + sitemap.ts
+//   Mobile stacks add: native-core components/ + layouts/
 //
 // v3.0: Renamed core/ → web-core/. Split engine files into engine-core/.
 //       Added platform detection (mobile vs web) for native-core sync.
@@ -33,9 +34,13 @@ import * as path from 'path'
 // Engine-core files (cross-platform — synced to ALL stacks)
 const ENGINE_FILES = ['parser.ts', 'backend-bridge.ts', 'validator.ts', 'shared-sync.ts'] as const
 
-// Web-core folders and files (web-only — synced to web stacks)
-const WEB_FOLDERS = ['components', 'hooks', 'lib', 'layouts', 'stores'] as const
-const WEB_FILES   = ['assets.ts', 'sitemap.ts'] as const
+// Cross-platform folders from web-core (hooks, lib, stores use fetch/zustand — no DOM)
+// Synced to ALL stacks (web + mobile)
+const CROSS_PLATFORM_FOLDERS = ['hooks', 'lib', 'stores'] as const
+
+// Web-only folders and files (components, layouts use DOM/Tailwind)
+const WEB_ONLY_FOLDERS = ['components', 'layouts'] as const
+const WEB_FILES        = ['assets.ts', 'sitemap.ts'] as const
 
 // Files inside shared folders that must NOT be overwritten per-stack
 const ADAPTER_PROTECTED = new Set(['router.ts', 'Link.tsx', 'Link.ts'])
@@ -67,9 +72,19 @@ export function syncSharedCoreToCurrentStack(label: string): void {
     }
   }
 
-  // 2. Sync platform-specific shared files
+  // 2. Sync cross-platform folders (hooks, lib, stores) to ALL stacks
+  if (fs.existsSync(webCoreDir)) {
+    for (const folder of CROSS_PLATFORM_FOLDERS) {
+      const src  = path.join(webCoreDir, folder)
+      const dest = path.join(stackCoreDir, folder)
+      if (!fs.existsSync(src)) continue
+      syncDirectoryIfChanged(src, dest, new Set())
+    }
+  }
+
+  // 3. Sync platform-specific shared files
   if (isMobile && fs.existsSync(nativeCoreDir)) {
-    // Native stacks: sync native-core/ contents
+    // Native stacks: sync native-core/ contents (components, layouts)
     for (const entry of fs.readdirSync(nativeCoreDir, { withFileTypes: true })) {
       const src  = path.join(nativeCoreDir, entry.name)
       const dest = path.join(stackCoreDir, entry.name)
@@ -79,10 +94,10 @@ export function syncSharedCoreToCurrentStack(label: string): void {
         copyFileIfChanged(src, dest)
       }
     }
-    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, 'native-core/*'].join(', ')})`)
+    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...CROSS_PLATFORM_FOLDERS, 'native-core/*'].join(', ')})`)
   } else if (!isMobile && fs.existsSync(webCoreDir)) {
-    // Web stacks: sync web-core/ contents
-    for (const folder of WEB_FOLDERS) {
+    // Web stacks: sync web-only folders (components, layouts)
+    for (const folder of WEB_ONLY_FOLDERS) {
       const src  = path.join(webCoreDir, folder)
       const dest = path.join(stackCoreDir, folder)
       if (!fs.existsSync(src)) continue
@@ -101,7 +116,7 @@ export function syncSharedCoreToCurrentStack(label: string): void {
     const pwaDest = path.join(stackCoreDir,  'pwa-builder.shared.ts')
     if (fs.existsSync(pwaSrc)) copyFileIfChanged(pwaSrc, pwaDest)
 
-    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...WEB_FOLDERS, ...WEB_FILES, 'pwa-builder.shared.ts'].join(', ')})`)
+    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...CROSS_PLATFORM_FOLDERS, ...WEB_ONLY_FOLDERS, ...WEB_FILES, 'pwa-builder.shared.ts'].join(', ')})`)
   }
 }
 
