@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LottieLazySection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:36:38.337Z
+// Generated: 2026-05-25T02:06:19.641Z
 // ============================================================
 
 export { LottieLazySection } from './_components'

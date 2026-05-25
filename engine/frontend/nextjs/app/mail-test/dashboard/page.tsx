@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:36:35.335Z
+// Generated: 2026-05-25T02:06:16.103Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -77,7 +77,6 @@ const DashboardPage = () => {
     try {
       const res = await arkzenFetch('/api/mail-test/logs')
       const d   = await res.json()
-      // Laravel pagination returns { data: [...], meta: {...} }
       const items = Array.isArray(d) ? d : (d?.data ?? [])
       setLogs(items)
     } catch {}
@@ -97,7 +96,7 @@ const DashboardPage = () => {
       const d = await res.json()
       if (!res.ok) throw new Error(d.message ?? 'Failed to send')
       showToast('success', 'Mail queued — check your inbox')
-      setTimeout(loadLogs, 1200)
+      setTimeout(loadLogs, 2500)
     } catch (e) {
       showToast('error', e instanceof Error ? e.message : 'Send failed')
     } finally {

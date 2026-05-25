@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — QueueResource
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T15:02:02.591567Z
+// Generated: 2026-05-25T02:23:02.043019Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\QueueFlow;

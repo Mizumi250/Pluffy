@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPTimelineSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T01:36:28.307Z
+// Generated: 2026-05-25T02:06:09.608Z
 // ============================================================
 
 export { GSAPTimelineSection } from './_components'

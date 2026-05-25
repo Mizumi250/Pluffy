@@ -347,12 +347,14 @@
     }
   ],
   "activeStack": "astro",
+  "activeAppStack": "expo",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",
     "react-inertia": "engine/frontend/react-inertia",
-    "native": "engine/frontend/react-native",
     "astro": "engine/frontend/astro",
-    "tanstack-start": "engine/frontend/tanstack-start"
+    "tanstack-start": "engine/frontend/tanstack-start",
+    "expo": "engine/frontend/expo",
+    "react-native": "engine/frontend/react-native"
   }
 }

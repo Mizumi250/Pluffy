@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — middleware-test
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T15:02:01.901Z
+// Generated: 2026-05-25T02:23:01.078Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
