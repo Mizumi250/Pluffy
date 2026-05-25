@@ -127,12 +127,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'roles-test', screenName: 'dashboard', routePath: '/roles-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:guest:false
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'guest', auth: false },
+// ROUTE:shan-shan:index:/shan-shan/index:guest:false
+  { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan/index', layout: 'guest', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:guest:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'guest', auth: false },
 // ROUTE:visual-lab:index:/visual-lab/index:guest:false
   { tatName: 'visual-lab', screenName: 'index', routePath: '/visual-lab/index', layout: 'guest', auth: false },
-// ROUTE:shan-shan:index:/shan-shan/index:guest:false
-  { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan/index', layout: 'guest', auth: false },
 ]
 
 /** Find the login route for a given tatemono */

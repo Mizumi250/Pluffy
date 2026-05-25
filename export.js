@@ -139,9 +139,21 @@ fs.mkdirSync(PROJECT_DIR, { recursive: true })
 
 log(`Triggering engine build for ${tatName}...`)
 
+// Stack → builder file + function name mapping
+// nextjs has no prefix (builder.ts / buildTatemono)
+// all other stacks use a prefixed file (vite-builder.ts / buildViteTatemono, etc.)
+const BUILDER_MAP = {
+  'nextjs':        { file: './arkzen/core/builder',        fn: 'buildTatemono'        },
+  'react-vite':    { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
+  'react-inertia': { file: './arkzen/core/inertia-builder',fn: 'buildInertiaTatemono' },
+  'astro':         { file: './arkzen/core/astro-builder',  fn: 'buildAstroTatemono'   },
+  'tanstack-start':{ file: './arkzen/core/tanstack-builder',fn:'buildTanstackTatemono'},
+}
+const builderEntry = BUILDER_MAP[activeStack] ?? BUILDER_MAP['nextjs']
+
 const buildScript = `
-import { buildTatemono } from './arkzen/core/builder'
-buildTatemono(${JSON.stringify(tatPath)})
+import { ${builderEntry.fn} } from '${builderEntry.file}'
+${builderEntry.fn}(${JSON.stringify(tatPath)})
   .then(result => {
     if (result.success) { console.log('[export-build] OK'); process.exit(0) }
     else { console.error('[export-build] FAIL:', result.errors.join(', ')); process.exit(1) }
@@ -263,9 +275,28 @@ if (isNative) {
 // ─────────────────────────────────────────────
 
 const ENGINE_ONLY_FRONTEND = new Set([
+  // nextjs (no prefix)
   'arkzen/core/builder.ts',
   'arkzen/core/watcher.ts',
+  // react-vite
+  'arkzen/core/vite-builder.ts',
+  'arkzen/core/vite-watcher.ts',
+  'arkzen/core/vite-router.ts',
+  // react-inertia
+  'arkzen/core/inertia-builder.ts',
+  'arkzen/core/inertia-watcher.ts',
+  // astro
+  'arkzen/core/astro-builder.ts',
+  'arkzen/core/astro-watcher.ts',
+  // tanstack-start
+  'arkzen/core/tanstack-builder.ts',
+  'arkzen/core/tanstack-watcher.ts',
+  // shared engine-only
   'arkzen/core/backend-bridge.ts',
+  'arkzen/core/parser.ts',
+  'arkzen/core/registry.ts',
+  'arkzen/core/shared-sync.ts',
+  'arkzen/core/validator.ts',
   'arkzen/types/index.ts',
   'validate.js',
   'arkzen.ts',
@@ -286,16 +317,133 @@ if (isInertia) {
       if (ENGINE_ONLY_FRONTEND.has(rel))                             return false
       if (rel.startsWith('tatemono/'))                               return false
       if (rel.startsWith('arkzen/generated/'))                       return false
-      // app/ pages — root layout.tsx kept, only this tatemono's pages kept
+      // Next.js: app/ pages — root layout.tsx kept, only this tatemono's pages kept
       if (rel.startsWith('app/') && rel !== 'app/') {
         if (rel === 'app/layout.tsx')               return true
         if (rel.startsWith(`app/${tatName}`))       return true
+        return false
+      }
+      // React-Vite / others: src/pages/ — only this tatemono's pages kept
+      if (rel.startsWith('src/pages/') && rel !== 'src/pages/') {
+        if (rel.startsWith(`src/pages/${tatName}`)) return true
         return false
       }
       return true
     }
   })
   success('Frontend base copied')
+
+  // ── Regenerate src/arkzen/generated/routes.ts for this tatemono only
+  // Parse the engine's routes.ts to extract only this tatemono's ROUTE entries,
+  // then regenerate the file from scratch — no other tatemono imports, no
+  // ARKZEN_ERROR_BOUNDARIES for tatemonos that don't exist in this export.
+  const projRoutesTs = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated', 'routes.ts')
+  if (fs.existsSync(projRoutesTs)) {
+    const routeSrc   = fs.readFileSync(projRoutesTs, 'utf-8')
+
+    // Extract only ROUTE lines for this tatemono
+    // Format: // ROUTE:<tat>:<page>:<path>:<auth>[:<ErrorBoundaryClass>]
+    const routeRegex = new RegExp(`^// ROUTE:${tatName}:(.+)$`, 'gm')
+    const lazyRegex  = new RegExp(`^(const ArkzenPage_[A-Za-z0-9_]+ = lazy\(\(\) => import\('@/pages/${tatName}/[^']+'\)\))$`, 'gm')
+
+    // Collect lazy imports for this tatemono
+    const lazyLines = []
+    const routeEntries = []
+    let errorBoundaryClass = null
+
+    // Walk line by line to preserve ROUTE+lazy pairing
+    const allLines = routeSrc.split('\n')
+    let i = 0
+    while (i < allLines.length) {
+      const line = allLines[i]
+      if (line.startsWith(`// ROUTE:${tatName}:`)) {
+        // Parse: // ROUTE:<tat>:<page>:<path>:<auth>[:<BoundaryClass>]
+        // Paths can contain '/' so we match auth/boundary from the END
+        const withoutPrefix    = line.slice('// ROUTE:'.length) // tat:page:path:auth[:boundary]
+        const abMatch          = withoutPrefix.match(/:(true|false)(?::([A-Za-z0-9_]+))?$/)
+        const auth             = abMatch ? abMatch[1] === 'true' : false
+        const boundary         = abMatch ? (abMatch[2] || null) : null
+        const beforeAuth       = withoutPrefix.slice(0, withoutPrefix.length - (abMatch ? abMatch[0].length : 0))
+        const fc               = beforeAuth.indexOf(':')
+        const afterTat         = beforeAuth.slice(fc + 1)  // page:path
+        const sc               = afterTat.indexOf(':')
+        const page             = afterTat.slice(0, sc)
+        const rpath            = afterTat.slice(sc + 1)
+
+        // Next line should be the lazy import
+        const nextLine = allLines[i + 1] || ''
+        if (nextLine.includes('lazy(')) {
+          // Rewrite path: remove tatemono prefix
+          const rewritten = nextLine
+            .replace(new RegExp(`@/pages/${tatName}/`), '@/pages/')
+          lazyLines.push(rewritten)
+
+          // Extract component name
+          const compMatch = nextLine.match(/^const (ArkzenPage_\S+) =/)
+          if (compMatch) {
+            // Rewrite route path: strip /<tatName> prefix
+            const cleanPath = rpath === `/${tatName}`
+              ? '/'
+              : rpath.replace(new RegExp(`^/${tatName}`), '')
+            routeEntries.push(
+              `  { path: '${cleanPath}', name: '${page}', tatemono: '${tatName}', component: ${compMatch[1]}, auth: ${auth} },`
+            )
+          }
+          i += 2
+          continue
+        }
+      }
+      i++
+    }
+
+    // Check if this tatemono has an error-boundary.tsx
+    const hasBoundary = errorBoundaryClass &&
+      fs.existsSync(path.join(PROJ_FRONT, 'src', 'pages', 'error-boundary.tsx'))
+
+    const boundaryBlock = hasBoundary
+      ? `\nimport { ${errorBoundaryClass} } from '@/pages/error-boundary'\n\nexport const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ children: React.ReactNode }>> = {\n  '${tatName}': ${errorBoundaryClass},\n}\n`
+      : `\nexport const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ children: React.ReactNode }>> = {}\n`
+
+    const newRoutes = [
+      `// ============================================================`,
+      `// ARKZEN GENERATED — Route Registry (React+Vite)`,
+      `// Scoped to: ${tatName} (exported standalone)`,
+      `// ============================================================`,
+      `import React from 'react'`,
+      `import { lazy, ComponentType } from 'react'`,
+      ``,
+      `export interface ArkzenRoute {`,
+      `  path:      string`,
+      `  name:      string`,
+      `  tatemono:  string`,
+      `  component: ComponentType`,
+      `  auth:      boolean`,
+      `}`,
+      ``,
+      ...lazyLines,
+      boundaryBlock,
+      `export const ARKZEN_ROUTES: ArkzenRoute[] = [`,
+      ...routeEntries,
+      `]`,
+      ``,
+    ].join('\n')
+
+    fs.writeFileSync(projRoutesTs, newRoutes)
+    success(`routes.ts regenerated for ${tatName} (${routeEntries.length} route(s))`)
+  }
+
+  // Remove other tatemonos' generated files (animations, scripts, etc.)
+  const projGenDir = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated')
+  if (fs.existsSync(projGenDir)) {
+    fs.readdirSync(projGenDir).forEach(f => {
+      if (f === 'routes.ts' || f === '.arkzen-ready' || f === 'auth-tatemonos.ts') return
+      if (!f.startsWith(`${tatName}.`)) {
+        fs.unlinkSync(path.join(projGenDir, f))
+      }
+    })
+    success(`generated/ cleaned (kept only ${tatName}.* files)`)
+  }
+
 
   // node_modules — copy as-is (Native: skip, Expo manages its own deps)
   if (!isNative) {
@@ -396,45 +544,18 @@ if (!isNative && hasBackend) {
 
 log('Checking for tatemono assets...')
 
-const assetsDestBase = isInertia
-  ? path.join(PROJECT_DIR, 'public', 'assets', tatName)
-  : isNative
-    ? path.join(PROJECT_DIR, 'assets', tatName)
-    : path.join(PROJ_FRONT, 'public', 'assets', tatName)
-
+// Mirror the exact engine path: tatemonos/<name>/assets/ → public/tatemonos/<name>/assets/
+// This keeps all paths in code (e.g. /tatemonos/shan-shan/assets/images/photo.jpg) working as-is.
 const srcAssetsPath = path.join(TATEMONOS_DIR, tatName, 'assets')
 if (fs.existsSync(srcAssetsPath)) {
   try {
-    fs.mkdirSync(assetsDestBase, { recursive: true })
-
-    const FILE_TYPE_MAP = {
-      images:    ['.png', '.jpg', '.jpeg', '.gif', '.webp', '.svg', '.ico', '.bmp', '.tiff'],
-      videos:    ['.mp4', '.webm', '.mov', '.avi', '.mkv', '.flv', '.m4v', '.mpg', '.mpeg'],
-      audio:     ['.mp3', '.wav', '.ogg', '.aac', '.flac', '.m4a', '.wma'],
-      documents: ['.pdf', '.doc', '.docx', '.txt', '.xlsx', '.xls', '.csv', '.ppt', '.pptx'],
-      fonts:     ['.woff', '.woff2', '.ttf', '.otf', '.eot', '.fnt'],
-      archives:  ['.zip', '.rar', '.7z', '.tar', '.gz', '.bz2'],
-      data:      ['.json', '.xml', '.yaml', '.yml', '.toml'],
-      code:      ['.js', '.ts', '.jsx', '.tsx', '.py', '.java', '.go', '.rs', '.cpp', '.c', '.h'],
-    }
-
-    const getFileType = (filename) => {
-      const ext = path.extname(filename).toLowerCase()
-      for (const [type, exts] of Object.entries(FILE_TYPE_MAP)) {
-        if (exts.includes(ext)) return type
-      }
-      return 'other'
-    }
-
-    for (const file of fs.readdirSync(srcAssetsPath)) {
-      const srcFile = path.join(srcAssetsPath, file)
-      if (!fs.statSync(srcFile).isDirectory() && !file.startsWith('.')) {
-        const typeDir = path.join(assetsDestBase, getFileType(file))
-        fs.mkdirSync(typeDir, { recursive: true })
-        fs.copyFileSync(srcFile, path.join(typeDir, file))
-      }
-    }
-    success(`Assets copied → public/assets/${tatName}/`)
+    const assetsDestBase = isInertia
+      ? path.join(PROJECT_DIR, 'public', 'tatemonos', tatName, 'assets')
+      : isNative
+        ? path.join(PROJECT_DIR, 'assets', tatName)
+        : path.join(PROJ_FRONT, 'public', 'tatemonos', tatName, 'assets')
+    fs.cpSync(srcAssetsPath, assetsDestBase, { recursive: true })
+    success(`Assets copied → public/tatemonos/${tatName}/assets/`)
   } catch (err) {
     warn(`Could not copy assets: ${err.message}`)
   }
@@ -765,13 +886,26 @@ module.exports = nextConfig
     success('package.json (name + scripts updated)')
   }
 
-  // Patch vite proxy port from engine's 8000 to standalone 8001
+  // Patch vite.config.ts for standalone export:
+  //   1. proxy port 8000 → 8001
+  //   2. remove arkzenReadyPlugin entirely (engine-only, polls for watcher flag)
+  //   3. remove arkzenApiPlugin entirely (engine-only, handles /api/arkzen/* internally)
   const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
   if (fs.existsSync(vcPath)) {
     let vc = fs.readFileSync(vcPath, 'utf-8')
-    vc = vc.replace(/target:\s*['"]http:\/\/127\.0\.0\.1:8000['"]/g, `target: 'http://127.0.0.1:8001'`)
+    // Patch proxy port
+    vc = vc.replace(/target:\s*['"]http:\/\/127\.0\.0\.1:8000['"]/, `target: 'http://127.0.0.1:8001'`)
+    // Remove arkzenReadyPlugin and arkzenApiPlugin function definitions + usages
+    vc = vc.replace(/\/\/ PROCESS_START_TS[\s\S]*?(?=\nexport default)/m, '')
+    vc = vc.replace(/const PROCESS_START_TS[^\n]*\n/, '')
+    vc = vc.replace(/const READY_FLAG[^\n]*\n/, '')
+    vc = vc.replace(/function isFreshReadyFlag[\s\S]*?^}\n/m, '')
+    vc = vc.replace(/function arkzenReadyPlugin[\s\S]*?^}\n/m, '')
+    vc = vc.replace(/function arkzenApiPlugin[\s\S]*?^}\n/m, '')
+    vc = vc.replace(/\s*arkzenReadyPlugin\(\),/g, '')
+    vc = vc.replace(/\s*arkzenApiPlugin\(\),/g, '')
     fs.writeFileSync(vcPath, vc)
-    success('vite.config.ts proxy port patched (8000 → 8001)')
+    success('vite.config.ts patched (port + engine plugins removed)')
   }
 
   if (hasRealtime) {
@@ -893,28 +1027,41 @@ module.exports = nextConfig
 if (!isInertia && !isNative) {
   log(`Stripping page URL prefix /${tatName} from frontend...`)
 
-  const tatAppDir  = path.join(PROJ_FRONT, 'app', tatName)
-  const rootAppDir = path.join(PROJ_FRONT, 'app')
-
-  if (fs.existsSync(tatAppDir)) {
-    for (const entry of fs.readdirSync(tatAppDir)) {
-      fs.renameSync(path.join(tatAppDir, entry), path.join(rootAppDir, entry))
-    }
-    fs.rmdirSync(tatAppDir)
-    success(`app/${tatName}/ → app/ (folder hoisted)`)
-  } else {
-    warn(`app/${tatName}/ not found — skipping folder hoist`)
-  }
-
-  // Root page.tsx is now hoisted — remove the redirect we wrote in step 9
-  // (Next.js only: we wrote a redirect in step 9 but hoisting makes it redundant)
+  // Next.js: hoist app/<tatName>/* → app/*
   if (activeStack === 'nextjs') {
+    const tatAppDir  = path.join(PROJ_FRONT, 'app', tatName)
+    const rootAppDir = path.join(PROJ_FRONT, 'app')
+    if (fs.existsSync(tatAppDir)) {
+      for (const entry of fs.readdirSync(tatAppDir)) {
+        fs.renameSync(path.join(tatAppDir, entry), path.join(rootAppDir, entry))
+      }
+      fs.rmdirSync(tatAppDir)
+      success(`app/${tatName}/ → app/ (folder hoisted)`)
+    } else {
+      warn(`app/${tatName}/ not found — skipping folder hoist`)
+    }
+    // Remove the root redirect we wrote in step 9 (hoisting makes it redundant)
     const rootPage = path.join(PROJ_FRONT, 'app', 'page.tsx')
-    // Only remove redirect if hoisting succeeded (tatAppDir had a page.tsx)
-    if (!fs.existsSync(tatAppDir) && fs.existsSync(rootPage)) {
+    if (!fs.existsSync(path.join(PROJ_FRONT, 'app', tatName)) && fs.existsSync(rootPage)) {
       success('app/page.tsx → hoisted from app/${tatName}/page.tsx (redirect removed)')
     }
   }
+
+  // React-Vite / others: hoist src/pages/<tatName>/* → src/pages/*
+  if (activeStack !== 'nextjs' && activeStack !== 'react-inertia') {
+    const tatPagesDir  = path.join(PROJ_FRONT, 'src', 'pages', tatName)
+    const rootPagesDir = path.join(PROJ_FRONT, 'src', 'pages')
+    if (fs.existsSync(tatPagesDir)) {
+      for (const entry of fs.readdirSync(tatPagesDir)) {
+        fs.renameSync(path.join(tatPagesDir, entry), path.join(rootPagesDir, entry))
+      }
+      fs.rmdirSync(tatPagesDir)
+      success(`src/pages/${tatName}/ → src/pages/ (folder hoisted)`)
+    } else {
+      warn(`src/pages/${tatName}/ not found — skipping folder hoist`)
+    }
+  }
+
 
   // Rewrite /<tatName>/ references in all .tsx/.ts/.js/.jsx files
   // but leave /api/<tatName>/... untouched

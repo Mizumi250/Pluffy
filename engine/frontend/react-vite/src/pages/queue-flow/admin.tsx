@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-25T07:54:12.144Z
+// Generated: 2026-05-25T08:28:13.636Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

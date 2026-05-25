@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — queue-flow/join [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:join instead
-// Generated: 2026-05-25T07:54:11.937Z
+// Generated: 2026-05-25T08:28:12.364Z
 // ============================================================
 
 import React from 'react'

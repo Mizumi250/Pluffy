@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T07:54:13.898Z
+// Generated: 2026-05-25T08:28:15.209Z
 // ============================================================
 
 export { PlayCanvasSection } from './_components'

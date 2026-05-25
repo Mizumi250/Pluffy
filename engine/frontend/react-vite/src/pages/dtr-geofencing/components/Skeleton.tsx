@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Skeleton [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T07:54:11.110Z
+// Generated: 2026-05-25T08:28:11.897Z
 // ============================================================
 
 export { Skeleton } from './_components'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T07:54:12.137Z
+// Generated: 2026-05-25T08:28:13.628Z
 // ============================================================
 
 export { StatPill } from './_components'

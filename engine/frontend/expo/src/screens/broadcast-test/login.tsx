@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — broadcast-test/login [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:login instead
-// Generated: 2026-05-25T07:54:09.176Z
+// Generated: 2026-05-25T08:28:09.535Z
 // ============================================================
 
 import React from 'react'

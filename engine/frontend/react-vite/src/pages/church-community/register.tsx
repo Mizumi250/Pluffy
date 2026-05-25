@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-25T07:54:10.830Z
+// Generated: 2026-05-25T08:28:11.638Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

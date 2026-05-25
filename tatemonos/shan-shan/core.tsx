@@ -142,7 +142,15 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const countRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const tl = gsap.timeline()
+    // Safety fallback — if GSAP stalls for any reason, force-complete after 3s
+    const fallback = setTimeout(() => onComplete(), 3000)
+
+    const tl = gsap.timeline({
+      onComplete: () => {
+        clearTimeout(fallback)
+        onComplete()
+      },
+    })
 
     // Count up 0–100
     let count = { val: 0 }
@@ -174,8 +182,12 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
       opacity: 0,
       duration: 0.5,
       ease: 'power2.out',
-      onComplete,
     })
+
+    return () => {
+      clearTimeout(fallback)
+      tl.kill()
+    }
   }, [onComplete])
 
   return (
