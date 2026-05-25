@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-25T06:56:25.499Z
+// Generated: 2026-05-25T07:15:02.008Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

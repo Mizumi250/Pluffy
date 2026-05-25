@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RapierSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T06:56:30.805Z
+// Generated: 2026-05-25T07:15:09.387Z
 // ============================================================
 
 export { RapierSection } from './_components'

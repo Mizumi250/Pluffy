@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T06:56:27.870762Z
+// Generated: 2026-05-25T07:15:05.817386Z
 // Resources: Employee, TimeRecord, DtrSetting
 // Custom controllers: 
 // ============================================================

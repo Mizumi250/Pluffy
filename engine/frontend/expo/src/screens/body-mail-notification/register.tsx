@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — body-mail-notification/register [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:register instead
-// Generated: 2026-05-25T06:56:24.693Z
+// Generated: 2026-05-25T07:15:01.731Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — visual-lab/three-scene
 // Source: @arkzen:script:three-scene
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T06:56:30.810Z
+// Generated: 2026-05-25T07:15:09.394Z
 // ============================================================
 
 // ─── THREE SCENE HELPERS — named script for visual-lab ───────────────────────

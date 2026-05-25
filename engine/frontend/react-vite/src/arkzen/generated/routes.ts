@@ -110,8 +110,6 @@ const ArkzenPage_MailTest_Dashboard = lazy(() => import('@/pages/mail-test/dashb
 const ArkzenPage_MailTest_RootRedirect = lazy(() => import('@/pages/mail-test/__root_redirect'))
 // ROUTE:middleware-test:index:/middleware-test:false
 const ArkzenPage_MiddlewareTest_Index = lazy(() => import('@/pages/middleware-test/index'))
-// ROUTE:mij-tribute:index:/mij-tribute:false
-const ArkzenPage_MijTribute_Index = lazy(() => import('@/pages/mij-tribute/index'))
 // ROUTE:new-updates-styles:index:/new-updates-styles:false
 const ArkzenPage_NewUpdatesStyles_Index = lazy(() => import('@/pages/new-updates-styles/index'))
 // ROUTE:new-updates-styles:about:/new-updates-styles/about:false
@@ -148,14 +146,14 @@ const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/
 const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
 // ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
 const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
-// ROUTE:shan-portfolio:index:/shan-portfolio:false
-const ArkzenPage_ShanPortfolio_Index = lazy(() => import('@/pages/shan-portfolio/index'))
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:false
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:shan-shan:index:/shan-shan:false
+const ArkzenPage_ShanShan_Index = lazy(() => import('@/pages/shan-shan/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -212,7 +210,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/mail-test/dashboard', name: 'dashboard', tatemono: 'mail-test', component: ArkzenPage_MailTest_Dashboard, auth: true },
   { path: '/mail-test', name: '__root_redirect', tatemono: 'mail-test', component: ArkzenPage_MailTest_RootRedirect, auth: true },
   { path: '/middleware-test', name: 'index', tatemono: 'middleware-test', component: ArkzenPage_MiddlewareTest_Index, auth: false },
-  { path: '/mij-tribute', name: 'index', tatemono: 'mij-tribute', component: ArkzenPage_MijTribute_Index, auth: false },
   { path: '/new-updates-styles', name: 'index', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_Index, auth: false },
   { path: '/new-updates-styles/about', name: 'about', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_About, auth: false },
   { path: '/new-updates-styles/features', name: 'features', tatemono: 'new-updates-styles', component: ArkzenPage_NewUpdatesStyles_Features, auth: false },
@@ -231,8 +228,8 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
   { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
-  { path: '/shan-portfolio', name: 'index', tatemono: 'shan-portfolio', component: ArkzenPage_ShanPortfolio_Index, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/shan-shan', name: 'index', tatemono: 'shan-shan', component: ArkzenPage_ShanShan_Index, auth: false },
 ]
