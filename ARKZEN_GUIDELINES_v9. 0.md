@@ -1,17 +1,18 @@
-# ARKZEN GUIDELINES v9.0
+# ARKZEN GUIDELINES v10.0
 ## For AI — Generating Tatemono Files
 
-**VERSION:** 9.0
-**VERIFIED AGAINST:** 25 active tatemonos
+**VERSION:** 10.0
+**VERIFIED AGAINST:** 27 active tatemonos
 **PURPOSE:** Complete reference for generating valid Arkzen tatemono files. Paste into any AI for perfect tatemono output.
 
-**WHAT'S IN v9.0:**
+**WHAT'S IN v10.0:**
 - 5 frontend stacks: Next.js, React+Vite, TanStack Start, Astro, React+Inertia+Laravel
 - Stack selection is per-project — tatemono syntax is identical across all stacks
-- 25 active tatemonos
+- 27 active tatemonos
+- **`@arkzen:web:` prefix** — all frontend blocks now use the `web:` namespace prefix
 - Sitemap + robots.txt auto-generated on every build
 - `useArkzenRouter()` / `useArkzenPathname()` — stack-agnostic router adapters
-- Error handlers: `@arkzen:error:404` and `@arkzen:error:500` fully supported on all stacks
+- Error handlers: `@arkzen:web:error:404` and `@arkzen:web:error:500` fully supported on all stacks
 - Full UX pattern defaults (skeleton screens, optimistic UI, pre-loading, progress illusions)
 - Full animation defaults (scroll triggers, hover effects, 3D, entrance, parallax, background)
 - Full visual hierarchy and balance defaults
@@ -68,7 +69,7 @@ Rules:
 - Never import icons you don't use
 - Icon size: `size` prop on Lucide (`<Plus size={16} />`)
 - In layouts: import lucide in the layout block itself
-- In components: import lucide in @arkzen:components block
+- In components: import lucide in @arkzen:web:components block
 - Multiple components blocks: only import in the FIRST block — subsequent blocks share the same file scope
 
 ---
@@ -145,7 +146,7 @@ const SkeletonCard = () => (
     height: 120,
   }} />
 )
-// In @arkzen:style: @keyframes shimmer { 0% { backgroundPosition: 200% 0; } 100% { backgroundPosition: -200% 0; } }
+// In @arkzen:web:style: @keyframes shimmer { 0% { backgroundPosition: 200% 0; } 100% { backgroundPosition: -200% 0; } }
 ```
 
 ### Optimistic UI
@@ -343,35 +344,35 @@ Keep button/field padding consistent (12px vertical min, 16px horizontal min). M
 1. Single .tsx file per tatemono
 2. File location: tatemonos/<name>/core.tsx
 3. TypeScript throughout
-4. All imports inside @arkzen:components or @arkzen:layout blocks ONLY
-5. NO imports inside @arkzen:page blocks
+4. All imports inside @arkzen:web:components or @arkzen:web:layout blocks ONLY
+5. NO imports inside @arkzen:web:page blocks
 6. Sections appear in this EXACT order:
 
-   @arkzen:meta                     (once)
-   @arkzen:config                   (optional, once)
-   @arkzen:database[:identifier]    (REPEAT)
-   @arkzen:api[:identifier]         (REPEAT)
-   @arkzen:routes                   (optional)
-   @arkzen:endpoint:name            (optional, REPEAT) ← ONLY for @arkzen:api resource methods
-   @arkzen:handler:name             (optional, REPEAT) ← ONLY for @arkzen:routes custom routes
-   @arkzen:middleware:name          (optional, REPEAT)
-   @arkzen:realtime:identifier      (optional, REPEAT)
-   @arkzen:events:identifier        (optional, REPEAT)
-   @arkzen:listeners:name           (optional, REPEAT)
-   @arkzen:jobs:identifier          (optional, REPEAT)
-   @arkzen:notifications:identifier (optional, REPEAT)
-   @arkzen:mail:identifier          (optional, REPEAT)
-   @arkzen:console:identifier       (optional, REPEAT)
-   @arkzen:layout:name              (optional, REPEAT)
-   @arkzen:components:identifier    (REPEAT)
-   @arkzen:style                    (optional, once)
-   @arkzen:style:name               (optional, REPEAT)
-   @arkzen:page:name                (REPEAT)
-   @arkzen:error:404                (optional)
-   @arkzen:error:500                (optional)
-   @arkzen:animation                (optional, once)
-   @arkzen:script                   (optional, once) ← global JS/TS helper file
-   @arkzen:script:name              (optional, REPEAT) ← named JS/TS helper files
+   @arkzen:meta                        (once)
+   @arkzen:web:config                  (optional, once)    ← WEB PREFIX
+   @arkzen:database[:identifier]       (REPEAT)
+   @arkzen:api[:identifier]            (REPEAT)
+   @arkzen:routes                      (optional)
+   @arkzen:endpoint:name               (optional, REPEAT) ← ONLY for @arkzen:api resource methods
+   @arkzen:handler:name                (optional, REPEAT) ← ONLY for @arkzen:routes custom routes
+   @arkzen:middleware:name             (optional, REPEAT)
+   @arkzen:realtime:identifier         (optional, REPEAT)
+   @arkzen:events:identifier           (optional, REPEAT)
+   @arkzen:listeners:name              (optional, REPEAT)
+   @arkzen:jobs:identifier             (optional, REPEAT)
+   @arkzen:notifications:identifier    (optional, REPEAT)
+   @arkzen:mail:identifier             (optional, REPEAT)
+   @arkzen:console:identifier          (optional, REPEAT)
+   @arkzen:web:layout:name             (optional, REPEAT)  ← WEB PREFIX
+   @arkzen:web:components:identifier   (REPEAT)            ← WEB PREFIX
+   @arkzen:web:style                   (optional, once)    ← WEB PREFIX
+   @arkzen:web:style:name              (optional, REPEAT)  ← WEB PREFIX
+   @arkzen:web:page:name               (REPEAT)            ← WEB PREFIX
+   @arkzen:web:error:404               (optional)          ← WEB PREFIX
+   @arkzen:web:error:500               (optional)          ← WEB PREFIX
+   @arkzen:web:animation               (optional, once)    ← WEB PREFIX
+   @arkzen:web:script                  (optional, once)    ← WEB PREFIX
+   @arkzen:web:script:name             (optional, REPEAT)  ← WEB PREFIX
 ```
 
 ---
@@ -383,7 +384,7 @@ Keep button/field padding consistent (12px vertical min, 16px horizontal min). M
 **TYPE A — YAML content blocks** (NO `*/` on opening line)
 ```
 /* @arkzen:meta
-/* @arkzen:config
+/* @arkzen:web:config
 /* @arkzen:database[:identifier]
 /* @arkzen:api[:identifier]
 /* @arkzen:routes
@@ -398,16 +399,16 @@ Keep button/field padding consistent (12px vertical min, 16px horizontal min). M
 
 **TYPE B — Code blocks** (MUST have `*/` on the SAME opening line)
 ```
-/* @arkzen:components:shared */
-/* @arkzen:layout:app */
-/* @arkzen:animation */
-/* @arkzen:script */
-/* @arkzen:script:name */
-/* @arkzen:page:index */
-/* @arkzen:style */
-/* @arkzen:style:ComponentName */
-/* @arkzen:error:404 */
-/* @arkzen:error:500 */
+/* @arkzen:web:components:shared */
+/* @arkzen:web:layout:app */
+/* @arkzen:web:animation */
+/* @arkzen:web:script */
+/* @arkzen:web:script:name */
+/* @arkzen:web:page:index */
+/* @arkzen:web:style */
+/* @arkzen:web:style:ComponentName */
+/* @arkzen:web:error:404 */
+/* @arkzen:web:error:500 */
 ```
 
 **Endpoint/handler blocks** — open WITHOUT `*/`, then `*/` on NEXT line as body separator:
@@ -427,22 +428,22 @@ return response()->json($result);
 
 **Page layout declaration** — always inline `*/`:
 ```tsx
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 ```
 
 **ALL closing tags:**
 ```
-/* @arkzen:components:shared:end */
-/* @arkzen:layout:app:end */
-/* @arkzen:page:dashboard:end */
-/* @arkzen:animation:end */
-/* @arkzen:script:end */
-/* @arkzen:script:name:end */
+/* @arkzen:web:components:shared:end */
+/* @arkzen:web:layout:app:end */
+/* @arkzen:web:page:dashboard:end */
+/* @arkzen:web:animation:end */
+/* @arkzen:web:script:end */
+/* @arkzen:web:script:name:end */
 /* @arkzen:endpoint:name:end */
 /* @arkzen:handler:name:end */
-/* @arkzen:error:404:end */
-/* @arkzen:error:500:end */
+/* @arkzen:web:error:404:end */
+/* @arkzen:web:error:500:end */
 ```
 
 ---
@@ -451,31 +452,31 @@ return response()->json($result);
 
 | Block | Can have imports? |
 |-------|------------------|
-| `@arkzen:components:*` | ✅ YES |
-| `@arkzen:layout:*` | ✅ YES |
-| `@arkzen:animation` | ✅ YES (gsap/framer only) |
-| `@arkzen:page:*` | ❌ NO |
+| `@arkzen:web:components:*` | ✅ YES |
+| `@arkzen:web:layout:*` | ✅ YES |
+| `@arkzen:web:animation` | ✅ YES (gsap/framer only) |
+| `@arkzen:web:page:*` | ❌ NO |
 | `@arkzen:endpoint:*` | ❌ NO — PHP only |
 | `@arkzen:handler:*` | ❌ NO — PHP only |
-| `@arkzen:error:404` | ❌ NO — engine injects React |
-| `@arkzen:error:500` | ✅ YES — needs 'use client' |
+| `@arkzen:web:error:404` | ❌ NO — engine injects React |
+| `@arkzen:web:error:500` | ✅ YES — needs 'use client' |
 
 ---
 
 ## SECTION 3B — `'use client'` RULES
 
-- Write `'use client'` at top of `@arkzen:components` blocks
-- Write `'use client'` at top of `@arkzen:layout` blocks
-- Write `'use client'` at top of `@arkzen:error:500` blocks
-- NEVER write `'use client'` inside `@arkzen:page` blocks
-- NEVER write `'use client'` inside `@arkzen:animation` blocks
-- NEVER write `'use client'` inside `@arkzen:error:404` blocks
+- Write `'use client'` at top of `@arkzen:web:components` blocks
+- Write `'use client'` at top of `@arkzen:web:layout` blocks
+- Write `'use client'` at top of `@arkzen:web:error:500` blocks
+- NEVER write `'use client'` inside `@arkzen:web:page` blocks
+- NEVER write `'use client'` inside `@arkzen:web:animation` blocks
+- NEVER write `'use client'` inside `@arkzen:web:error:404` blocks
 
 ---
 
 ## SECTION 3C — ZUSTAND STORE RULES
 
-Define stores directly inside `@arkzen:components` blocks. Always export them.
+Define stores directly inside `@arkzen:web:components` blocks. Always export them.
 
 ```tsx
 export const useAppStore = create<AppState>((set) => ({
@@ -542,9 +543,9 @@ auth: true
 
 - `auth: true` — generates isolated users table, login/register/dashboard, Sanctum tokens
 - `auth: false` — no auth, all pages public
-- Auth layout: `/* @arkzen:page:layout:auth */`
-- Guest layout: `/* @arkzen:page:layout:guest */`
-- Custom layout: `/* @arkzen:page:layout:app */`
+- Auth layout: `/* @arkzen:web:page:layout:auth */`
+- Guest layout: `/* @arkzen:web:page:layout:guest */`
+- Custom layout: `/* @arkzen:web:page:layout:app */`
 
 ---
 
@@ -566,7 +567,7 @@ favicon: https://example.com/icon.png
 ## SECTION 6 — @arkzen:config
 
 ```tsx
-/* @arkzen:config
+/* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
@@ -1040,7 +1041,7 @@ return response()->json($query->paginate($request->get('per_page', 15)));
 ## SECTION 19 — @arkzen:layout:name
 
 ```tsx
-/* @arkzen:layout:app */
+/* @arkzen:web:layout:app */
 
 'use client'
 
@@ -1084,16 +1085,16 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   )
 }
 
-/* @arkzen:layout:app:end */
+/* @arkzen:web:layout:app:end */
 ```
 
 **Layout Rules:**
-- Opening tag: `/* @arkzen:layout:name */` (with `*/` on same line)
+- Opening tag: `/* @arkzen:web:layout:name */` (with `*/` on same line)
 - Must export component named `<Name>Layout` (e.g. `AppLayout`, `DashboardLayout`)
 - Must include ALL imports the layout needs
 - `'use client'` required at top
 - Use `useArkzenRouter()` and `useArkzenPathname()` — NOT `useRouter`/`useNavigate` directly — these are stack-agnostic adapters
-- CANNOT import from @arkzen:components
+- CANNOT import from @arkzen:web:components
 
 ---
 
@@ -1115,15 +1116,15 @@ Glassmorphism nav bar example (inline styles preferred for these):
 ## SECTION 20 — @arkzen:style & @arkzen:style:name
 
 ```tsx
-/* @arkzen:style */
+/* @arkzen:web:style */
 .arkzen-btn {
   @apply px-4 py-2 rounded-lg font-medium;
 }
-/* @arkzen:style:end */
+/* @arkzen:web:style:end */
 
-/* @arkzen:style:ProductCard */
+/* @arkzen:web:style:ProductCard */
 .card { border-radius: 12px; transition: transform 0.2s; }
-/* @arkzen:style:ProductCard:end */
+/* @arkzen:web:style:ProductCard:end */
 ```
 
 ---
@@ -1131,25 +1132,25 @@ Glassmorphism nav bar example (inline styles preferred for these):
 ## SECTION 21 — @arkzen:page:name
 
 ```tsx
-/* @arkzen:page:dashboard */
-/* @arkzen:page:layout:auth */
+/* @arkzen:web:page:dashboard */
+/* @arkzen:web:page:layout:auth */
 
 const DashboardPage = () => {
   const [data, setData] = useState(null)
   return <div>...</div>
 }
 
-/* @arkzen:page:dashboard:end */
+/* @arkzen:web:page:dashboard:end */
 ```
 
 **Page Rules:**
-- Opening tag: `/* @arkzen:page:name */` (with `*/` on same line)
-- NO imports — engine provides everything from @arkzen:components
+- Opening tag: `/* @arkzen:web:page:name */` (with `*/` on same line)
+- NO imports — engine provides everything from @arkzen:web:components
 - NO `'use client'` — engine adds it
 - NO `export default` — NOT required
 - Component name: `<PageName>Page` (PascalCase) — `IndexPage`, `DashboardPage`
 - All hooks available automatically
-- All exports from ALL @arkzen:components blocks available automatically
+- All exports from ALL @arkzen:web:components blocks available automatically
 
 ---
 
@@ -1157,7 +1158,7 @@ const DashboardPage = () => {
 
 ### error:404 — CORRECT FORMAT:
 ```tsx
-/* @arkzen:error:404 */
+/* @arkzen:web:error:404 */
 
 const NotFoundPage = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1168,7 +1169,7 @@ const NotFoundPage = () => (
   </div>
 )
 
-/* @arkzen:error:404:end */
+/* @arkzen:web:error:404:end */
 ```
 
 **error:404 STRICT RULES:**
@@ -1179,7 +1180,7 @@ const NotFoundPage = () => (
 
 ### error:500 — CORRECT FORMAT:
 ```tsx
-/* @arkzen:error:500 */
+/* @arkzen:web:error:500 */
 
 'use client'
 
@@ -1196,7 +1197,7 @@ function ServerErrorPage({ reset }: { reset: () => void }) {
   )
 }
 
-/* @arkzen:error:500:end */
+/* @arkzen:web:error:500:end */
 ```
 
 **error:500 STRICT RULES:**
@@ -1210,7 +1211,7 @@ function ServerErrorPage({ reset }: { reset: () => void }) {
 ## SECTION 23 — @arkzen:components:identifier
 
 ```tsx
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 
 'use client'
 
@@ -1221,11 +1222,11 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Types, Stores, Utilities, Components all here
 
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 ```
 
 **Rules:**
-- Opening tag: `/* @arkzen:components:shared */` (with `*/` on same line)
+- Opening tag: `/* @arkzen:web:components:shared */` (with `*/` on same line)
 - `'use client'` at top
 - ALL types, stores, utilities, hooks, components exported
 - All imports for all components in this block go here
@@ -1234,23 +1235,23 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 ## ⚠️ SECTION 23B — MULTIPLE COMPONENTS BLOCKS IMPORT RULES (CRITICAL)
 
-When using multiple `@arkzen:components` blocks:
+When using multiple `@arkzen:web:components` blocks:
 
 ```tsx
-/* @arkzen:components:shared */
+/* @arkzen:web:components:shared */
 'use client'
 import React, { useState } from 'react'
 import { Users, Clock, Loader2 } from 'lucide-react'
 // ... shared components
-/* @arkzen:components:shared:end */
+/* @arkzen:web:components:shared:end */
 
-/* @arkzen:components:admin */
+/* @arkzen:web:components:admin */
 'use client'
 import React from 'react'
 // ← DO NOT re-import icons/hooks that already exist in 'shared'
 // ← Engine inlines all blocks into one file — duplicates cause "Duplicate declaration" errors
 // ← Only import what is UNIQUE to this block
-/* @arkzen:components:admin:end */
+/* @arkzen:web:components:admin:end */
 ```
 
 Rules:
@@ -1263,7 +1264,7 @@ Rules:
 ## SECTION 24 — @arkzen:animation
 
 ```tsx
-/* @arkzen:animation */
+/* @arkzen:web:animation */
 
 import { gsap } from 'gsap'
 
@@ -1283,11 +1284,11 @@ export const pageVariants = {
   exit:     { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
 
-/* @arkzen:animation:end */
+/* @arkzen:web:animation:end */
 ```
 
 **⚠️ Animation STRICT RULES:**
-- Opening tag: `/* @arkzen:animation */` (with `*/` on same line)
+- Opening tag: `/* @arkzen:web:animation */` (with `*/` on same line)
 - Main animation function: **NO `export` keyword** — router adds its own export
 - Main animation function name: **MUST be `camelCase(tatemono-name) + Animations`**
   - `queue-flow` → `queueFlowAnimations`
@@ -1299,16 +1300,16 @@ export const pageVariants = {
 
 ## SECTION 24B — @arkzen:script (Global Script Block)
 
-One optional global script block per tatemono. Use it for **heavy JS/TS logic, canvas setup, Three.js factories, shared constants, or utilities** that are too large or unrelated to component lifecycle to live inside `@arkzen:components`.
+One optional global script block per tatemono. Use it for **heavy JS/TS logic, canvas setup, Three.js factories, shared constants, or utilities** that are too large or unrelated to component lifecycle to live inside `@arkzen:web:components`.
 
-**Opening tag:** `/* @arkzen:script */` (with `*/` on the same line — Type B block)
-**Closing tag:** `/* @arkzen:script:end */`
+**Opening tag:** `/* @arkzen:web:script */` (with `*/` on the same line — Type B block)
+**Closing tag:** `/* @arkzen:web:script:end */`
 **Count per tatemono:** One (1)
 **Generated file:** `<tatemono-name>.scripts.ts` (e.g. `visual-lab.scripts.ts`)
 **Import path:** `@/arkzen/generated/<tatemono-name>.scripts`
 
 ```tsx
-/* @arkzen:script */
+/* @arkzen:web:script */
 
 import * as THREE from 'three'
 import { gsap } from 'gsap'
@@ -1363,17 +1364,17 @@ export function createRenderLoop(
   return () => cancelAnimationFrame(rafId)
 }
 
-/* @arkzen:script:end */
+/* @arkzen:web:script:end */
 ```
 
-**Import in a page component (inside `@arkzen:components`):**
+**Import in a page component (inside `@arkzen:web:components`):**
 ```tsx
 import { visualLabSceneSetup, VisualLabColors, createRenderLoop } from '@/arkzen/generated/visual-lab.scripts'
 ```
 
 **⚠️ Script STRICT RULES:**
-- Opening tag `/* @arkzen:script */` — `*/` on the SAME line (Type B)
-- All exports MUST use `export` keyword — unlike `@arkzen:animation`, nothing is auto-exported
+- Opening tag `/* @arkzen:web:script */` — `*/` on the SAME line (Type B)
+- All exports MUST use `export` keyword — unlike `@arkzen:web:animation`, nothing is auto-exported
 - Import any npm package freely — this block is a plain `.ts` file, no React restrictions
 - No JSX allowed — this is a pure TypeScript utility file
 - Parser: `parseGlobalScript()` → stored as `tatemono.script` → router emits via `generateScriptFile()`
@@ -1384,14 +1385,14 @@ import { visualLabSceneSetup, VisualLabColors, createRenderLoop } from '@/arkzen
 
 Multiple named script blocks per tatemono. Each generates a **separate `.ts` file** — ideal for per-feature helpers, heavy per-component logic, or lazily imported utilities.
 
-**Opening tag:** `/* @arkzen:script:name */` (with `*/` on the same line — Type B block)
-**Closing tag:** `/* @arkzen:script:name:end */`
+**Opening tag:** `/* @arkzen:web:script:name */` (with `*/` on the same line — Type B block)
+**Closing tag:** `/* @arkzen:web:script:name:end */`
 **Count per tatemono:** Unlimited (one file generated per named block)
 **Generated files:** `<tatemono-name>.<block-name>.script.ts`
 **Import path:** `@/arkzen/generated/<tatemono-name>.<block-name>.script`
 
 ```tsx
-/* @arkzen:script:three-scene */
+/* @arkzen:web:script:three-scene */
 
 import * as THREE from 'three'
 
@@ -1414,10 +1415,10 @@ export function makeTorusRing(scene: THREE.Scene, color = '#60a5fa') {
   return mesh
 }
 
-/* @arkzen:script:three-scene:end */
+/* @arkzen:web:script:three-scene:end */
 
 
-/* @arkzen:script:particles-config */
+/* @arkzen:web:script:particles-config */
 
 // Named helper — generated as: visual-lab.particles-config.script.ts
 // Import: import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
@@ -1452,18 +1453,18 @@ export function getEmitterConfig(origin: { x: number; y: number }) {
   return { ...defaultParticleConfig, origin }
 }
 
-/* @arkzen:script:particles-config:end */
+/* @arkzen:web:script:particles-config:end */
 ```
 
-**Import in a page component (inside `@arkzen:components`):**
+**Import in a page component (inside `@arkzen:web:components`):**
 ```tsx
 import { makeIcosahedron, makeTorusRing } from '@/arkzen/generated/visual-lab.three-scene.script'
 import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
 ```
 
 **⚠️ Named Script STRICT RULES:**
-- Opening tag `/* @arkzen:script:name */` — `*/` on the SAME line (Type B)
-- Closing tag MUST include the block name: `/* @arkzen:script:name:end */`
+- Opening tag `/* @arkzen:web:script:name */` — `*/` on the SAME line (Type B)
+- Closing tag MUST include the block name: `/* @arkzen:web:script:name:end */`
 - Multiple named blocks can appear back-to-back in the file — each generates its own `.ts` file
 - All exports MUST use `export` keyword
 - No JSX allowed — pure TypeScript utility files
@@ -1471,7 +1472,7 @@ import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/vis
 
 **Global vs Named — when to use which:**
 
-| | `@arkzen:script` (global) | `@arkzen:script:name` (named) |
+| | `@arkzen:web:script` (global) | `@arkzen:script:name` (named) |
 |---|---|---|
 | Files generated | One: `<name>.scripts.ts` | One per block: `<name>.<block>.script.ts` |
 | Count | 1 max | Unlimited |
@@ -1489,7 +1490,7 @@ Reference in code: `/tatemonos/<name>/assets/images/photo.jpg`
 
 ## SECTION 26 — AVAILABLE IMPORTS
 
-**Always available in @arkzen:components:**
+**Always available in @arkzen:web:components:**
 ```tsx
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { create } from 'zustand'
@@ -1622,8 +1623,8 @@ type: public
 Before finalizing any tatemono:
 
 **DSL TAG FORMAT:**
-- [ ] YAML blocks (meta, config, database, api, etc.) — NO `*/` on opening line
-- [ ] Code blocks (components, layout, animation, page, style, error) — HAS `*/` on same line
+- [ ] YAML blocks (meta, web:config, database, api, etc.) — NO `*/` on opening line
+- [ ] Code blocks (web:components, web:layout, web:animation, web:page, web:style, web:error) — HAS `*/` on same line
 - [ ] Endpoint/handler blocks — NO `*/` on opening, `*/` on NEXT line as body separator
 - [ ] ALL closing tags use `:end */` format
 
@@ -1644,19 +1645,19 @@ Before finalizing any tatemono:
 - [ ] Plain `@arkzen:events` blocks are for listener-based events only
 
 **IMPORTS:**
-- [ ] ALL imports inside `@arkzen:components` or `@arkzen:layout` blocks
-- [ ] NO imports inside `@arkzen:page` blocks
-- [ ] NO `import React` in `@arkzen:animation`
-- [ ] Multiple components blocks — no duplicate icon/hook imports across blocks
-- [ ] Each components block still has its own React import
+- [ ] ALL imports inside `@arkzen:web:components` or `@arkzen:web:layout` blocks
+- [ ] NO imports inside `@arkzen:web:page` blocks
+- [ ] NO `import React` in `@arkzen:web:animation`
+- [ ] Multiple web:components blocks — no duplicate icon/hook imports across blocks
+- [ ] Each web:components block still has its own React import
 - [ ] Layouts use `useArkzenRouter()` / `useArkzenPathname()` from `@/arkzen/core/adapters/router`
 - [ ] NO stack-specific router imports (no `next/navigation`, no `react-router-dom`)
 
 **ERROR HANDLERS:**
 - [ ] error:404 component named `NotFoundPage` exactly
-- [ ] error:404: NO `export default`, NO `import React`, NO `'use client'`
+- [ ] `@arkzen:web:error:404`: NO `export default`, NO `import React`, NO `'use client'`
 - [ ] error:500 component named `ServerErrorPage` exactly
-- [ ] error:500: HAS `'use client'`, accepts `{ reset: () => void }`, NO `export default`
+- [ ] `@arkzen:web:error:500`: HAS `'use client'`, accepts `{ reset: () => void }`, NO `export default`
 
 **ANIMATION:**
 - [ ] Main animation function: NO `export` keyword
@@ -1665,12 +1666,12 @@ Before finalizing any tatemono:
 - [ ] GSAP target classes exist on actual rendered elements
 
 **SCRIPT BLOCKS:**
-- [ ] `@arkzen:script` — opening tag has `*/` on same line (Type B)
-- [ ] `@arkzen:script` — all exports use `export` keyword (no auto-export unlike animation)
-- [ ] `@arkzen:script` — no JSX, no React lifecycle — pure TypeScript only
-- [ ] `@arkzen:script:name` — closing tag includes block name: `/* @arkzen:script:name:end */`
-- [ ] `@arkzen:script:name` — each named block gets its own generated `.ts` file
-- [ ] Imports of generated scripts are inside `@arkzen:components` blocks only
+- [ ] `@arkzen:web:script` — opening tag has `*/` on same line (Type B)
+- [ ] `@arkzen:web:script` — all exports use `export` keyword (no auto-export unlike animation)
+- [ ] `@arkzen:web:script` — no JSX, no React lifecycle — pure TypeScript only
+- [ ] `@arkzen:web:script:name` — closing tag includes block name: `/* @arkzen:web:script:name:end */`
+- [ ] `@arkzen:web:script:name` — each named block gets its own generated `.ts` file
+- [ ] Imports of generated scripts are inside `@arkzen:web:components` blocks only
 
 **NULL SAFETY:**
 - [ ] Double optional chain on nested API objects: `status?.queue?.name`
@@ -1678,10 +1679,10 @@ Before finalizing any tatemono:
 - [ ] localStorage data validated before use
 
 **PAGES:**
-- [ ] NO imports in page blocks
-- [ ] NO `'use client'` in page blocks
+- [ ] NO imports in `@arkzen:web:page` blocks
+- [ ] NO `'use client'` in `@arkzen:web:page` blocks
 - [ ] NO `export default`
 - [ ] Component name: `<PageName>Page` PascalCase
 
 **SECTION ORDER:**
-- [ ] meta → config → database → api → routes → endpoint → handler → middleware → realtime → events → listeners → jobs → notifications → mail → console → layout → components → style → page → error → animation → script → script:name
+- [ ] meta → web:config → database → api → routes → endpoint → handler → middleware → realtime → events → listeners → jobs → notifications → mail → console → web:layout → web:components → web:style → web:page → web:error → web:animation → web:script → web:script:name
