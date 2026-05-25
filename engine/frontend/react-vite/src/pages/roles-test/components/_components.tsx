@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — roles-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T07:15:08.322Z
+// Generated: 2026-05-25T07:54:12.928Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

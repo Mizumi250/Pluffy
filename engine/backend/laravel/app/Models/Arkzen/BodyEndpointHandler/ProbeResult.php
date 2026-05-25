@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — ProbeResult
 // Tatemono: body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T07:15:02.596549Z
+// Generated: 2026-05-25T07:54:09.188173Z
 // ============================================================
 
 namespace App\Models\Arkzen\BodyEndpointHandler;

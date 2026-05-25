@@ -1,7 +1,7 @@
 /* @arkzen:meta
 name: shan-shan
-version: 1.0.0
-description: Portfolio for Shan Sabal Cezar — designer, document specialist, researcher. Accurate MIJ-clone layout with diagonal polygon masks, loading bar, 5-bar burger, vision carousel, accordion brands, joinus buttons, about table, profile, and footer.
+version: 2.0.0
+description: "Portfolio for Shan Sabal Cezar — Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers, ScrollTrigger-driven entrances across 9 sections: Hero, Intro, 5 Tale-style service chapters, Skills marquee, About, Contact, Footer."
 auth: false
 favicon: 🌸
 */
@@ -12,7 +12,7 @@ toast:
   duration: 3000
 layout:
   guest:
-    className: "mij-root"
+    className: "shan-root"
 */
 
 /* @arkzen:web:components:shared */
@@ -26,86 +26,150 @@ import { motion, AnimatePresence } from 'framer-motion'
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────
 
-const SERVICES = [
+const CHAPTERS = [
   {
     id: 'design',
-    logo: '/tatemonos/shan-shan/assets/images/shan1.jpg',
-    title: 'Graphic Design',
-    headline: 'Visual clarity, bold impressions',
+    num: '01',
+    slug: 'visual',
+    coverLabel: 'Visual',
+    tagline: 'GRAPHIC DESIGN',
+    headline: 'Visual clarity,\nbold impressions.',
     desc: 'Visual design for print and digital — posters, flyers, social media graphics, brand materials. Clean layouts with bold typography that communicate clearly and leave an impression.',
-    link: null,
+    craft: 'Every layout starts from a single question: what should the eye land on first? From there, hierarchy, contrast, and rhythm carry the rest.',
+    sound: 'FORM FOLLOWS FEELING',
+    tags: ['Print Design', 'Social Graphics', 'Brand Identity', 'Typography'],
+    img: '/tatemonos/shan-shan/assets/images/shan1.jpg',
+    gallery: [
+      '/tatemonos/shan-shan/assets/images/shan1.jpg',
+      '/tatemonos/shan-shan/assets/images/shan2.jpg',
+      '/tatemonos/shan-shan/assets/images/shan3.jpg',
+    ],
+    color: '#CC0000',
+    coverImg: '/tatemonos/shan-shan/assets/images/shan1.jpg',
   },
   {
     id: 'docs',
-    logo: '/tatemonos/shan-shan/assets/images/shan2.jpg',
-    title: 'Document Preparation',
-    headline: 'Every page structured, every detail polished',
+    num: '02',
+    slug: 'document',
+    coverLabel: 'Document',
+    tagline: 'DOCUMENT PREPARATION',
+    headline: 'Every page structured,\nevery detail polished.',
     desc: 'Professional document preparation — reports, proposals, templates, formatted deliverables. Every page structured, every section purposeful, every detail polished.',
-    link: null,
+    craft: 'A document is architecture in two dimensions. The margins, the headers, the flow from section to section — all of it is intentional.',
+    sound: 'STRUCTURE IS THE STORY',
+    tags: ['Reports', 'Proposals', 'Templates', 'Formatting'],
+    img: '/tatemonos/shan-shan/assets/images/shan2.jpg',
+    gallery: [
+      '/tatemonos/shan-shan/assets/images/shan2.jpg',
+      '/tatemonos/shan-shan/assets/images/shan3.jpg',
+      '/tatemonos/shan-shan/assets/images/shan4.jpg',
+    ],
+    color: '#111111',
+    coverImg: '/tatemonos/shan-shan/assets/images/shan2.jpg',
   },
   {
     id: 'research',
-    logo: '/tatemonos/shan-shan/assets/images/shan3.jpg',
-    title: 'Research & Analysis',
-    headline: 'Deep dives. Actionable insights.',
+    num: '03',
+    slug: 'research',
+    coverLabel: 'Research',
+    tagline: 'RESEARCH & ANALYSIS',
+    headline: 'Deep dives.\nActionable insights.',
     desc: 'Thorough research and analysis — academic papers, market studies, data gathering and synthesis. Deep dives that turn complex information into clear, actionable insights.',
-    link: null,
+    craft: 'Good research isn\'t just gathering data — it\'s knowing which question to ask next, and having the patience to follow it all the way down.',
+    sound: 'DEPTH BEFORE DELIVERY',
+    tags: ['Academic Research', 'Market Studies', 'Data Synthesis', 'Analysis'],
+    img: '/tatemonos/shan-shan/assets/images/shan3.jpg',
+    gallery: [
+      '/tatemonos/shan-shan/assets/images/shan3.jpg',
+      '/tatemonos/shan-shan/assets/images/shan4.jpg',
+      '/tatemonos/shan-shan/assets/images/shan5.jpg',
+    ],
+    color: '#8B0000',
+    coverImg: '/tatemonos/shan-shan/assets/images/shan3.jpg',
   },
   {
     id: 'present',
-    logo: '/tatemonos/shan-shan/assets/images/shan4.jpg',
-    title: 'Presentation Design',
-    headline: 'Stories told one slide at a time',
+    num: '04',
+    slug: 'present',
+    coverLabel: 'Present',
+    tagline: 'PRESENTATION DESIGN',
+    headline: 'Stories told\none slide at a time.',
     desc: 'Clean, impactful slide decks — pitch presentations, school projects, business proposals. Every slide designed to support the story, not distract from it.',
-    link: null,
+    craft: 'A great presentation is a rhythm. Breath in: information. Breath out: space. Every slide knows exactly when to speak and when to let silence work.',
+    sound: 'ONE SLIDE, ONE TRUTH',
+    tags: ['Pitch Decks', 'School Projects', 'Business Proposals', 'Slide Design'],
+    img: '/tatemonos/shan-shan/assets/images/shan4.jpg',
+    gallery: [
+      '/tatemonos/shan-shan/assets/images/shan4.jpg',
+      '/tatemonos/shan-shan/assets/images/shan5.jpg',
+      '/tatemonos/shan-shan/assets/images/shan1.jpg',
+    ],
+    color: '#1a1a2e',
+    coverImg: '/tatemonos/shan-shan/assets/images/shan4.jpg',
   },
 ]
 
-const NAV_LINKS = [
-  { label: "SHAN'S WAY", href: '#vision' },
-  { label: 'SERVICES', href: '#brand' },
-  { label: 'SKILLS', href: '#joinus' },
-  { label: 'ABOUT ME', href: '#about' },
-  { label: 'CONTACT', href: '#profile' },
+const SKILLS_MARQUEE = [
+  'Canva', '·', 'Adobe Illustrator', '·', 'Photoshop', '·',
+  'Microsoft Word', '·', 'PowerPoint', '·', 'Google Slides', '·',
+  'Google Docs', '·', 'Excel', '·', 'Research Writing', '·',
+  'Layout Design', '·', 'Typography', '·', 'Brand Identity', '·',
+  'Canva', '·', 'Adobe Illustrator', '·', 'Photoshop', '·',
+  'Microsoft Word', '·', 'PowerPoint', '·', 'Google Slides', '·',
 ]
 
 const PERSONAL_INFO = [
-  { label: '氏名', value: 'Shan Sabal Cezar' },
-  { label: '職種', value: 'Designer · Document Specialist · Researcher' },
-  { label: '拠点', value: 'Philippines' },
-  { label: '専門', value: 'Graphic design, document preparation, research & analysis, presentation design' },
-  { label: 'ツール', value: 'Canva, Microsoft Office, Google Workspace, Adobe Creative Suite' },
-  { label: 'ステータス', value: 'Open for freelance projects and collaborations' },
-  { label: 'SNS', value: 'Facebook · @shan.cezar.71' },
+  { label: 'NAME', value: 'Shan Sabal Cezar' },
+  { label: 'ROLE', value: 'Designer · Document Specialist · Researcher' },
+  { label: 'BASE', value: 'Philippines' },
+  { label: 'TOOLS', value: 'Canva, Microsoft Office, Google Workspace, Adobe Creative Suite' },
+  { label: 'STATUS', value: 'Open for freelance projects and collaborations' },
+  { label: 'CONTACT', value: 'Facebook · @shan.cezar.71' },
+]
+
+const NAV_LINKS = [
+  { label: "SHAN'S WORK", href: '#ch-design' },
+  { label: 'SERVICES', href: '#ch-docs' },
+  { label: 'ABOUT', href: '#about' },
+  { label: 'CONTACT', href: '#contact' },
 ]
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
-// Phase 1: black screen, red bar sweeps left → right at top
-// Phase 2: bar expands to fill entire screen (red flood)
-// Phase 3: red screen fades out → website revealed
 
 const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const barRef    = useRef<HTMLDivElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
+  const countRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const tl = gsap.timeline()
 
-    // Phase 1 — bar sweeps across top (0 → 100% width)
+    // Count up 0–100
+    let count = { val: 0 }
+    tl.to(count, {
+      val: 100,
+      duration: 1.4,
+      ease: 'power2.inOut',
+      onUpdate: () => {
+        if (countRef.current) countRef.current.textContent = Math.floor(count.val) + ''
+      },
+    }, 0)
+
+    // Bar sweeps across top
     tl.to(barRef.current, {
       width: '100%',
-      duration: 1.3,
+      duration: 1.4,
       ease: 'power2.inOut',
-    })
+    }, 0)
 
-    // Phase 2 — bar expands downward to flood the whole screen
+    // Bar expands downward
     .to(barRef.current, {
       height: '100vh',
-      duration: 0.45,
+      duration: 0.4,
       ease: 'power3.in',
     })
 
-    // Phase 3 — full red screen fades out, revealing the site
+    // Red flood fades out
     .to(screenRef.current, {
       opacity: 0,
       duration: 0.5,
@@ -117,6 +181,8 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
   return (
     <div ref={screenRef} id="shan-loader">
       <div ref={barRef} id="shan-loader-bar" />
+      <div id="shan-loader-count" ref={countRef}>0</div>
+      <div id="shan-loader-label">SHAN SABAL CEZAR</div>
     </div>
   )
 }
@@ -142,8 +208,8 @@ const BurgerMenu = () => {
       setTimeout(() => {
         gsap.fromTo(
           '.shan-nav ul li',
-          { opacity: 0, x: -20 },
-          { opacity: 1, x: 0, stagger: 0.07, duration: 0.35, ease: 'power2.out' }
+          { opacity: 0, x: -30 },
+          { opacity: 1, x: 0, stagger: 0.08, duration: 0.4, ease: 'power3.out' }
         )
       }, 10)
     }
@@ -151,7 +217,6 @@ const BurgerMenu = () => {
 
   return (
     <>
-      {/* Exact MIJ structure: div#burger with 5 <i> */}
       <div
         id="shan-burger"
         className={open ? 'open' : ''}
@@ -169,7 +234,7 @@ const BurgerMenu = () => {
             initial={{ opacity: 0, x: '100%' }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: '100%' }}
-            transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
+            transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
           >
             <ul>
               {NAV_LINKS.map((link) => (
@@ -187,43 +252,26 @@ const BurgerMenu = () => {
   )
 }
 
-// ─── DIAGONAL MASK (exact MIJ SVG polygon approach) ──────────────────────────
+// ─── SVG DIAGONAL MASKS ───────────────────────────────────────────────────────
 
 const MaskBottom = ({ fill = '#CC0000' }: { fill?: string }) => (
   <div className="mask-bottom">
-    <svg
-      version="1.1"
-      xmlns="http://www.w3.org/2000/svg"
-      x="0px"
-      y="0px"
-      width="100%"
-      viewBox="0 0 1440 100"
-      preserveAspectRatio="none"
-    >
-      <polygon className="polygon" fill={fill} points="0,100 1440,100 1440,0" />
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <polygon fill={fill} points="0,100 1440,100 1440,0" />
     </svg>
   </div>
 )
 
 const MaskTop = ({ fill = '#CC0000' }: { fill?: string }) => (
   <div className="mask-top">
-    <svg
-      version="1.1"
-      xmlns="http://www.w3.org/2000/svg"
-      x="0px"
-      y="0px"
-      width="100%"
-      viewBox="0 0 1440 100"
-      preserveAspectRatio="none"
-    >
-      <polygon className="polygon" fill={fill} points="0,0 0,100 1440,0" />
+    <svg version="1.1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+      <polygon fill={fill} points="0,0 0,100 1440,0" />
     </svg>
   </div>
 )
 
-// ─── HERO LOGO — stroke-draw "SHAN" ──────────────────────────────────────────
-// Each letter is a single stroke path. GSAP animates strokeDashoffset → draw-on effect.
-// Styled to match MIJ's hero SVG weight and white-on-red treatment.
+// ─── ANIMATED SHAN LOGO ───────────────────────────────────────────────────────
+// Full stroke-draw animation on mount. Letters are meaty, editorial weight.
 
 const ShanHeroLogo = () => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -232,15 +280,28 @@ const ShanHeroLogo = () => {
     if (!svgRef.current) return
     const paths = Array.from(svgRef.current.querySelectorAll('.kv-path'))
     paths.forEach((el) => {
-      const len = (el as SVGGeometryElement).getTotalLength?.() ?? 300
+      const len = (el as SVGGeometryElement).getTotalLength?.() ?? 400
       gsap.set(el, { strokeDasharray: len, strokeDashoffset: len, opacity: 1 })
     })
+    // Staggered draw-on per letter
     gsap.to(paths, {
       strokeDashoffset: 0,
-      duration: 1.1,
-      stagger: 0.2,
+      duration: 1.2,
+      stagger: 0.22,
       ease: 'power2.inOut',
-      delay: 1.6,
+      delay: 1.7,
+    })
+    // Parent fades in first
+    gsap.to('#kv-svg', { opacity: 1, duration: 0.01, delay: 1.65 })
+
+    // After draw: subtle shimmer pulse
+    gsap.to(paths, {
+      filter: 'drop-shadow(0 0 18px rgba(255,255,255,0.7))',
+      duration: 0.6,
+      delay: 3.2,
+      ease: 'power2.out',
+      yoyo: true,
+      repeat: 1,
     })
   }, [])
 
@@ -248,265 +309,368 @@ const ShanHeroLogo = () => {
     <span id="kv-svg">
       <svg
         ref={svgRef}
-        version="1.1"
         xmlns="http://www.w3.org/2000/svg"
-        viewBox="0 0 380 110"
-        width="380"
-        height="110"
+        viewBox="0 0 440 120"
+        width="440"
+        height="120"
+        aria-label="SHAN"
       >
-        {/* ── S ── top arc, middle reverse, bottom arc */}
+        {/* ── S ── */}
         <path className="kv-path"
-          d="M72,18 C56,18 38,24 38,40 C38,54 52,60 66,64 C82,68 96,74 96,90 C96,106 76,112 58,112 C44,112 30,108 22,102"
-          fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"
+          d="M 78 22 C 60 22 40 30 40 48 C 40 64 56 70 72 76 C 90 82 104 90 104 108 C 104 124 82 130 62 130 C 46 130 30 124 20 116"
+          fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
         {/* ── H ── */}
         <path className="kv-path"
-          d="M116,18 L116,112 M116,65 L166,65 M166,18 L166,112"
-          fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"
+          d="M 128 22 L 128 130 M 128 76 L 184 76 M 184 22 L 184 130"
+          fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
         {/* ── A ── */}
         <path className="kv-path"
-          d="M196,112 L224,18 L252,112 M206,82 L242,82"
-          fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"
+          d="M 216 130 L 248 22 L 280 130 M 226 96 L 270 96"
+          fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
         {/* ── N ── */}
         <path className="kv-path"
-          d="M272,112 L272,18 L332,112 L332,18"
-          fill="none" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"
+          d="M 304 130 L 304 22 L 372 130 L 372 22"
+          fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
-        {/* ── dot ── */}
+        {/* ── · ── */}
         <circle className="kv-path"
-          cx="358" cy="106" r="6"
-          fill="none" stroke="#fff" strokeWidth="8"
+          cx="404" cy="122" r="7"
+          fill="none" stroke="#fff" strokeWidth="9"
         />
       </svg>
     </span>
   )
 }
 
-// ─── BRAND ITEM ───────────────────────────────────────────────────────────────
-// Collapsed: full-width image with centered white title + chevron overlaid
-// Expanded:  same image, text slides down beneath
+// ─── TALE COVER (sticky scroll layer) ────────────────────────────────────────
 
-const BrandItem = ({
-  service,
-  isOpen,
-  onToggle,
-}: {
-  service: (typeof SERVICES)[0]
-  isOpen: boolean
-  onToggle: () => void
-}) => (
-  <div className={`brand-item${isOpen ? ' open' : ''}`} onClick={onToggle}>
-    <div className="brand-item-inner">
+const ChapterCover = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-cover" id={`cover-${chapter.id}`}>
+    <div className="chapter-cover-bg" style={{ backgroundImage: `url(${chapter.coverImg})` }} />
+    <div className="chapter-cover-overlay" />
+    <div className="chapter-cover-label-l">[{chapter.coverLabel}]</div>
+    <div className="chapter-cover-label-r">[{chapter.coverLabel}]</div>
+    <div className="chapter-cover-num">{chapter.num}</div>
+  </div>
+)
 
-      {/* Full-width image with title overlay — always visible */}
-      <div className="brand-item-img-wrap">
-        <img src={service.logo} alt={service.title} className="brand-item-bg-img" />
-        <div className="brand-item-overlay" />
-        <div className="brand-item-title-wrap">
-          <h2 className="brand-item-title">{service.title}</h2>
-          <span className="brand-chevron">{isOpen ? '−' : '+'}</span>
+// ─── CHAPTER HEAD ─────────────────────────────────────────────────────────────
+
+const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-head" id={`ch-${chapter.id}`}>
+    <div className="chapter-head-inner">
+      <div className="chapter-head-pre">
+        <span>[{chapter.num}]</span>
+        <span>[CHAPTER]</span>
+      </div>
+      <h2 className="chapter-head-title">{chapter.coverLabel.toUpperCase()}</h2>
+      <p className="chapter-head-tagline">{chapter.tagline}</p>
+      <p className="chapter-head-abstract">
+        {chapter.headline.split('\n').map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
+      </p>
+      <div className="chapter-head-content">
+        {/* Side col 1 */}
+        <div className="chapter-side-col">
+          <img src={chapter.gallery[1]} alt={chapter.coverLabel} className="chapter-side-img" />
+        </div>
+        {/* Main image */}
+        <div className="chapter-main-img-wrap">
+          <img src={chapter.img} alt={chapter.coverLabel} className="chapter-main-img" />
+        </div>
+        {/* Side col 2 */}
+        <div className="chapter-side-col">
+          <img src={chapter.gallery[2] || chapter.gallery[0]} alt="" className="chapter-side-img chapter-side-img--offset" />
         </div>
       </div>
-
-      {/* Expanded text drawer */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className="brand-item-box"
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.38, ease: [0.4, 0, 0.2, 1] }}
-          >
-            <div className="brand-item-box-inner">
-              <div className="brand-item-txt">
-                <h2>{service.title}</h2>
-                <p>{service.desc}</p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
     </div>
   </div>
+)
+
+// ─── CHAPTER LOOKBOOK ─────────────────────────────────────────────────────────
+
+const ChapterLookbook = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-lookbook">
+    <div className="chapter-lookbook-inner">
+      <div className="chapter-lookbook-side">
+        <img src={chapter.gallery[0]} alt={`${chapter.coverLabel} secondary`} className="chapter-lookbook-secondary" />
+        <p className="chapter-lookbook-quote">{chapter.desc}</p>
+      </div>
+      <div className="chapter-lookbook-main">
+        <img src={chapter.gallery[1] || chapter.img} alt={`${chapter.coverLabel} main`} className="chapter-lookbook-main-img" />
+      </div>
+    </div>
+  </div>
+)
+
+// ─── CHAPTER STORY ────────────────────────────────────────────────────────────
+
+const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-story">
+    <div className="chapter-story-inner">
+      <div className="chapter-story-content">
+        <div className="chapter-story-col">
+          <h3>[ABOUT THIS]</h3>
+          <p>{chapter.desc}</p>
+        </div>
+        <div className="chapter-story-col">
+          <h3>[MY APPROACH]</h3>
+          <p>{chapter.craft}</p>
+        </div>
+      </div>
+      {/* Sound-within strip */}
+      <div className="chapter-sound-strip">
+        <span className="chapter-sound-label">THE SOUND WITHIN</span>
+        <span className="chapter-sound-title">{chapter.sound}</span>
+        <div className="chapter-sound-bars">
+          {Array.from({ length: 9 }).map((_, i) => (
+            <span key={i} className="chapter-sound-bar" style={{ animationDelay: `${i * 0.11}s` }} />
+          ))}
+        </div>
+      </div>
+    </div>
+  </div>
+)
+
+// ─── CHAPTER TAGS / OVERVIEW ──────────────────────────────────────────────────
+
+const ChapterOverview = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-overview" style={{ '--chapter-color': chapter.color } as React.CSSProperties}>
+    <div className="chapter-overview-title-wr">
+      <h2 className="chapter-overview-title">{chapter.tagline}</h2>
+    </div>
+    <div className="chapter-overview-img-wrap">
+      <img src={chapter.img} alt={chapter.tagline} className="chapter-overview-img" />
+    </div>
+    <ul className="chapter-overview-tags">
+      {chapter.tags.map(t => <li key={t}>{t}</li>)}
+    </ul>
+    <a href="#contact" className="chapter-overview-cta">Request info</a>
+  </div>
+)
+
+// ─── CHAPTER OUTRO ────────────────────────────────────────────────────────────
+
+const ChapterOutro = ({ chapter, nextChapter }: { chapter: (typeof CHAPTERS)[0], nextChapter?: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-outro">
+    <div className="chapter-outro-inner">
+      <div className="chapter-outro-head">
+        <p>{chapter.desc.slice(0, 80)}…</p>
+        <a href="#contact" className="btn-outline">LET'S WORK</a>
+      </div>
+      {nextChapter && (
+        <div className="chapter-outro-next">
+          <span className="chapter-outro-next-label">NEXT</span>
+          <a href={`#ch-${nextChapter.id}`} className="chapter-outro-next-link">
+            {nextChapter.coverLabel.toUpperCase()} →
+          </a>
+        </div>
+      )}
+      <div className="chapter-outro-img-wrap">
+        <img src="/tatemonos/shan-shan/assets/images/shan5.jpg" alt="Shan" className="chapter-outro-img" />
+        <p>Shan Sabal Cezar</p>
+      </div>
+    </div>
+  </div>
+)
+
+// ─── FULL CHAPTER ─────────────────────────────────────────────────────────────
+
+const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; index: number }) => (
+  <section className="homepage-tale" id={`tale-${chapter.id}`}>
+    <ChapterCover chapter={chapter} />
+    <ChapterHead chapter={chapter} />
+    <ChapterLookbook chapter={chapter} />
+    <ChapterOverview chapter={chapter} />
+    <ChapterStory chapter={chapter} />
+    <ChapterOutro chapter={chapter} nextChapter={CHAPTERS[index + 1]} />
+  </section>
 )
 
 /* @arkzen:web:components:shared:end */
 
 /* @arkzen:web:style */
-/* shan-shan — accurate MIJ clone stylesheet */
+/* shan-shan v2 — Indigo-lab × MIJ merged stylesheet */
 
-/* ─── RESET ──────────────────────── */
-.mij-root {
-  margin: 0;
-  padding: 0;
-  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+/* ─── FONTS + RESET ───────────────── */
+@import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;700;900&display=swap');
+
+.shan-root {
+  margin: 0; padding: 0;
+  font-family: 'Space Mono', monospace;
   font-weight: 400;
-  color: #333;
-  background: #fff;
+  color: #1a1a1a;
+  background: #f5f0eb;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  cursor: none;
 }
 
 * { box-sizing: border-box; }
-
 a { text-decoration: none; color: inherit; }
+
+/* ─── CUSTOM CURSOR ───────────────── */
+.shan-cursor {
+  position: fixed;
+  width: 12px; height: 12px;
+  background: #CC0000;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99999;
+  transform: translate(-50%, -50%);
+  transition: transform 0.08s ease, width 0.2s ease, height 0.2s ease, background 0.2s ease;
+  mix-blend-mode: multiply;
+}
+
+.shan-cursor-ring {
+  position: fixed;
+  width: 40px; height: 40px;
+  border: 1px solid rgba(204,0,0,0.45);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 99998;
+  transform: translate(-50%, -50%);
+  transition: transform 0.18s ease, width 0.25s ease, height 0.25s ease;
+}
+
+a:hover ~ .shan-cursor,
+button:hover ~ .shan-cursor { width: 32px; height: 32px; }
 
 /* ─── LOADER ─────────────────────── */
 #shan-loader {
-  position: fixed;
-  inset: 0;
-  background: #000;
+  position: fixed; inset: 0;
+  background: #0a0a0a;
   z-index: 9999;
   pointer-events: all;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  padding: 40px;
+  overflow: hidden;
 }
 
 #shan-loader-bar {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 0%;
-  height: 4px;
+  top: 0; left: 0;
+  width: 0%; height: 3px;
   background: #CC0000;
-  /* GSAP expands width first, then height to 100vh */
   transform-origin: top left;
+}
+
+#shan-loader-count {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(80px, 14vw, 180px);
+  font-weight: 900;
+  color: #CC0000;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  z-index: 1;
+}
+
+#shan-loader-label {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.3);
+  margin-top: 8px;
+  z-index: 1;
 }
 
 /* ─── BURGER ─────────────────────── */
 #shan-burger {
-  position: fixed;
-  top: 20px;
-  right: 20px;
+  position: fixed; top: 24px; right: 24px;
   z-index: 1001;
-  width: 40px;
-  height: 32px;
+  width: 44px; height: 36px;
   cursor: pointer;
-  display: flex;
-  flex-direction: column;
+  display: flex; flex-direction: column;
   justify-content: space-between;
   align-items: flex-end;
   padding: 4px 0;
 }
 
 #shan-burger i {
-  display: block;
-  height: 2px;
-  background: #333;
+  display: block; height: 2px;
+  background: #fff;
   border-radius: 1px;
   transition: all 0.3s ease;
 }
 
-/* MIJ uses 5 bars of alternating widths */
-#shan-burger i:nth-child(1) { width: 28px; }
+#shan-burger i:nth-child(1) { width: 30px; }
 #shan-burger i:nth-child(2) { width: 22px; }
-#shan-burger i:nth-child(3) { width: 28px; }
+#shan-burger i:nth-child(3) { width: 30px; }
 #shan-burger i:nth-child(4) { width: 22px; }
-#shan-burger i:nth-child(5) { width: 28px; }
+#shan-burger i:nth-child(5) { width: 30px; }
 
-/* White always on dark backgrounds — burger is fixed so we target body state */
-body.kv-active #shan-burger i,
-body.brand-active #shan-burger i { background: #fff; }
-
-/* Simpler: always white since hero is first and burger overlays red */
-#shan-burger i { background: #fff; }
-
-/* Go dark once past the hero — toggled via JS class on scroll */
-body.scrolled #shan-burger i { background: #333; }
+body.scrolled #shan-burger i { background: #1a1a1a; }
 body.nav-open #shan-burger i { background: #fff; }
 
-/* Open state → X */
-#shan-burger.open i:nth-child(1) { transform: translateY(9px) rotate(45deg); width: 28px; }
+#shan-burger.open i:nth-child(1) { transform: translateY(10px) rotate(45deg); width: 30px; }
 #shan-burger.open i:nth-child(2) { opacity: 0; }
-#shan-burger.open i:nth-child(3) { transform: translateY(-1px) rotate(-45deg); width: 28px; }
+#shan-burger.open i:nth-child(3) { transform: translateY(-2px) rotate(-45deg); width: 30px; }
 #shan-burger.open i:nth-child(4) { opacity: 0; }
 #shan-burger.open i:nth-child(5) { opacity: 0; }
 
 /* ─── NAV ────────────────────────── */
 .shan-nav {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.92);
+  position: fixed; inset: 0;
+  background: rgba(10,10,10,0.96);
   z-index: 1000;
   display: flex;
-  align-items: center;
-  justify-content: center;
+  align-items: center; justify-content: center;
 }
 
 .shan-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 4px;
 }
 
-.shan-nav ul li {
-  opacity: 0;
-}
+.shan-nav ul li { opacity: 0; }
 
 .shan-nav ul li a {
   color: #fff;
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  padding: 12px 28px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(24px, 4vw, 48px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  padding: 12px 40px;
   display: block;
-  transition: color 0.2s;
+  transition: color 0.2s, letter-spacing 0.3s;
 }
 
-.shan-nav ul li a:hover {
-  color: #CC0000;
+.shan-nav ul li a:hover { color: #CC0000; letter-spacing: 0.02em; }
+
+/* ─── SCROLL INDICATOR ────────────── */
+.shan-scrollbar {
+  position: fixed;
+  right: 6px; top: 0;
+  width: 3px; height: 100vh;
+  z-index: 500;
+  mix-blend-mode: multiply;
 }
 
-/* ─── WRAPPER ────────────────────── */
-#shan-wrapper {
-  width: 100%;
-}
-
-/* ─── SECTIONS generic ───────────── */
-.sec {
-  position: relative;
-}
-
-.sec-inner {
-  max-width: 1040px;
-  margin: 0 auto;
-  padding: 0 24px;
-}
-
-.sec-inner-inner {
-  display: flex;
-  align-items: flex-start;
-  gap: 60px;
-}
-
-.sec-box {
-  flex: 1;
+.shan-scrollbar-thumb {
+  width: 3px;
+  background: #CC0000;
+  position: absolute;
+  top: 0;
+  border-radius: 2px;
+  transition: opacity 0.3s;
 }
 
 /* ─── MASKS ──────────────────────── */
-.mask-top,
-.mask-bottom {
-  position: absolute;
-  left: 0;
-  right: 0;
-  z-index: 2;
-  line-height: 0;
+.mask-top, .mask-bottom {
+  position: absolute; left: 0; right: 0;
+  z-index: 2; line-height: 0;
   pointer-events: none;
 }
-
 .mask-top  { top: 0; }
 .mask-bottom { bottom: 0; }
-
-.mask-top svg,
-.mask-bottom svg {
-  display: block;
-  width: 100%;
+.mask-top svg, .mask-bottom svg {
+  display: block; width: 100%;
   height: 80px;
 }
 
@@ -520,46 +684,30 @@ body.nav-open #shan-burger i { background: #fff; }
   align-items: stretch;
 }
 
-/* Split: left = photo half, right = red half with logo */
-#kv .sec-inner {
-  max-width: 100%;
-  width: 100%;
-  padding: 0;
+#kv .kv-inner {
+  display: flex; width: 100%;
+  align-items: stretch; min-height: 100vh;
 }
 
-#kv .sec-inner-inner {
-  display: flex;
-  align-items: stretch;
-  min-height: 100vh;
-  gap: 0;
-}
-
-/* Left half — photo */
 .kv-photo-half {
-  flex: 1;
-  position: relative;
-  overflow: hidden;
+  flex: 1; position: relative; overflow: hidden;
 }
 
 .kv-photo-half img {
-  width: 100%;
-  height: 100%;
+  width: 100%; height: 100%;
   object-fit: cover;
   object-position: center top;
   display: block;
-  filter: brightness(0.9);
+  filter: brightness(0.85) saturate(0.9);
 }
 
-/* Right half — red with logo */
 .kv-text-half {
-  flex: 1;
-  background: #CC0000;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 60px 48px 120px;
-  gap: 20px;
+  flex: 1; background: #CC0000;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 80px 56px 140px;
+  gap: 24px;
+  position: relative;
 }
 
 #kv-svg {
@@ -567,491 +715,870 @@ body.nav-open #shan-burger i { background: #fff; }
   opacity: 0;
 }
 
-#kv-svg svg {
-  max-width: 100%;
-  height: auto;
-}
+#kv-svg svg { max-width: 100%; height: auto; }
 
-#kv-svg-alt {
-  display: block;
-  font-size: 14px;
-  font-weight: 300;
-  color: rgba(255,255,255,0.72);
-  font-style: italic;
-  letter-spacing: 0.14em;
+.kv-subtitle {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
   text-align: center;
 }
 
-@media (max-width: 768px) {
-  #kv .sec-inner-inner {
-    flex-direction: column;
-  }
-
-  .kv-photo-half {
-    flex: 0 0 45vh;
-  }
-
-  .kv-text-half {
-    flex: 1;
-    padding: 40px 24px 100px;
-  }
+.kv-scroll-hint {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
 }
 
-/* ─── VISION ─────────────────────── */
-#vision {
-  padding: 100px 0 80px;
+.kv-scroll-line {
+  width: 1px; height: 48px;
+  background: rgba(255,255,255,0.3);
+  overflow: hidden; position: relative;
+}
+
+.kv-scroll-line::after {
+  content: '';
+  position: absolute; inset: 0;
   background: #fff;
+  animation: scroll-drop 1.4s ease-in-out infinite;
 }
 
-#vision .sec-inner-inner {
-  align-items: flex-start;
-  gap: 60px;
+@keyframes scroll-drop {
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
 }
 
-.sec-box img {
-  max-width: 100%;
-  border-radius: 6px;
-  opacity: 0.85;
+.kv-scroll-text {
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: rgba(255,255,255,0.5);
+  writing-mode: horizontal-tb;
 }
 
-.vision-item {
-  min-height: 260px;
+/* ─── INTRO SECTION ──────────────── */
+#shan-intro {
+  background: #f5f0eb;
+  padding: 160px 0 100px;
+  position: relative;
+  overflow: hidden;
 }
 
-.vision-item h2 {
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 0.12em;
-  margin: 0 0 16px;
-  color: #111;
+.intro-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 28px;
+  text-align: center;
 }
 
-.vision-item p {
-  font-size: 14px;
-  line-height: 1.9;
-  color: #555;
-  margin: 0 0 14px;
+.intro-pre {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  color: #CC0000;
+  text-transform: uppercase;
 }
 
-.vision-item ol.list,
-.vision-item ul.list {
-  padding-left: 20px;
+.intro-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(48px, 8vw, 96px);
+  font-weight: 400;
+  font-style: italic;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #1a1a1a;
   margin: 0;
 }
 
-.vision-item ol.list li,
-.vision-item ul.list li {
-  font-size: 14px;
-  line-height: 1.9;
+.intro-abstract {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(18px, 2.5vw, 26px);
+  font-style: italic;
   color: #555;
+  line-height: 1.55;
+  max-width: 480px;
 }
 
-.vision-nav {
-  display: flex;
-  gap: 10px;
-  margin: 28px 0 0;
+.intro-caption {
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: #888;
+  margin: 0;
 }
 
-.vision-nav i {
+.intro-side-imgs {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 100%;
+  pointer-events: none;
+}
+
+.intro-side-img {
+  position: absolute;
+  top: 20px;
+  width: 200px;
+  height: auto;
+  opacity: 0.15;
+}
+
+.intro-side-img--l { left: 24px; }
+.intro-side-img--r { right: 24px; transform: scaleX(-1); }
+
+/* ─── CHAPTER — HOMEPAGE TALE ────── */
+.homepage-tale { position: relative; }
+
+.homepage-tale::after {
+  content: '';
   display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: #ddd;
-  cursor: pointer;
+  height: 100vh;
+  background: #f5f0eb;
+  position: absolute;
+  bottom: -100vh; left: 0; right: 0;
+}
+
+/* ─── CHAPTER COVER (sticky) ─────── */
+.chapter-cover {
+  height: 100svh; min-height: 500px;
+  overflow: hidden;
+  position: sticky; top: 0;
+  width: 100%;
+}
+
+.chapter-cover-bg {
+  position: absolute; inset: 0;
+  background-size: cover;
+  background-position: center;
+  transform-origin: center;
+}
+
+.chapter-cover-overlay {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.38);
+}
+
+.chapter-cover-label-l,
+.chapter-cover-label-r {
+  position: absolute;
+  bottom: 50%;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.6);
+  text-transform: uppercase;
+  z-index: 1;
+}
+
+.chapter-cover-label-l { left: 80px; }
+.chapter-cover-label-r { right: 80px; }
+
+.chapter-cover-num {
+  position: absolute;
+  bottom: 32px; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(80px, 20vw, 220px);
+  font-weight: 900;
+  color: rgba(255,255,255,0.06);
+  line-height: 1;
+  letter-spacing: -0.05em;
+  z-index: 0;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ─── CHAPTER HEAD ───────────────── */
+.chapter-head {
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-head-inner {
+  background: #fff;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 64px 48px 120px;
+}
+
+.chapter-head-pre {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  color: #aaa;
+  text-transform: uppercase;
+  margin-bottom: 20px;
+}
+
+.chapter-head-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(64px, 14vw, 200px);
+  font-weight: 900;
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  text-align: center;
+  text-transform: uppercase;
+  color: #1a1a1a;
+  margin: 0 0 20px;
+  overflow: hidden;
+  text-wrap: nowrap;
+}
+
+.chapter-head-tagline {
+  font-size: 10px;
+  letter-spacing: 0.35em;
+  color: #CC0000;
+  text-align: center;
+  margin: 0 0 24px;
+  text-transform: uppercase;
+}
+
+.chapter-head-abstract {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(20px, 2.8vw, 32px);
+  font-style: italic;
+  color: #555;
+  text-align: center;
+  max-width: 540px;
+  margin: 0 auto 56px;
+  line-height: 1.45;
+}
+
+.chapter-head-content {
+  display: flex;
+  gap: 0;
+  align-items: flex-start;
+  position: relative;
+}
+
+.chapter-main-img-wrap {
+  flex: 0 0 52%;
+  order: 2;
+}
+
+.chapter-main-img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.chapter-side-col {
+  flex: 0 0 24%;
+  order: 1;
+  padding-top: 80px;
+  overflow: hidden;
+}
+
+.chapter-side-col:last-child {
+  order: 3;
+  padding-top: 200px;
+}
+
+.chapter-side-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  opacity: 0;
+}
+
+.chapter-side-img--offset { margin-top: 48px; }
+
+/* ─── CHAPTER LOOKBOOK ───────────── */
+.chapter-lookbook {
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-lookbook-inner {
+  background: #fff;
+  display: flex;
+  max-width: 1560px;
+  margin: 0 auto;
+  overflow: hidden;
+  padding-bottom: 120px;
+}
+
+.chapter-lookbook-side {
+  flex: 0 0 40%;
+  display: flex; flex-direction: column;
+  padding: 80px 40px 0;
+  overflow: hidden;
+}
+
+.chapter-lookbook-secondary {
+  width: 80%; height: auto;
+  display: block;
+  opacity: 0;
+}
+
+.chapter-lookbook-quote {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(14px, 1.6vw, 19px);
+  font-style: italic;
+  line-height: 1.75;
+  color: #555;
+  margin: 40px 0 0 20px;
+  max-width: 320px;
+  opacity: 0;
+}
+
+.chapter-lookbook-main { flex: 0 0 60%; }
+
+.chapter-lookbook-main-img {
+  width: 100%;
+  height: 100%; min-height: 560px;
+  object-fit: cover;
+  display: block;
+  opacity: 0;
+}
+
+/* ─── CHAPTER OVERVIEW ───────────── */
+.chapter-overview {
+  position: relative;
+  overflow: hidden;
+}
+
+.chapter-overview-title-wr {
+  position: sticky;
+  top: 0; z-index: 2;
+  margin-top: -320px;
+  margin-bottom: -320px;
+}
+
+.chapter-overview-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 900;
+  background: #1a1a1a;
+  color: #fff;
+  text-align: center;
+  width: 100%;
+  padding: 20px 24px;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.chapter-overview-img-wrap {
+  position: relative;
+}
+
+.chapter-overview-img {
+  width: 100%;
+  min-height: 100svh;
+  object-fit: cover;
+  display: block;
+}
+
+.chapter-overview-tags {
+  position: absolute;
+  bottom: 80px;
+  left: 50%; transform: translateX(-50%);
+  list-style: none; margin: 0; padding: 0;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 16px;
+  z-index: 2;
+}
+
+.chapter-overview-tags li {
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  background: #fff;
+  color: #1a1a1a;
+  padding: 6px 20px;
+  opacity: 0;
+}
+
+.chapter-overview-cta {
+  position: absolute;
+  bottom: 0; left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  background: #CC0000;
+  color: #fff;
+  padding: 18px 48px;
+  display: inline-block;
+  z-index: 2;
   transition: background 0.25s, transform 0.25s;
 }
 
-.vision-nav i.active {
-  background: #CC0000;
-  transform: scale(1.3);
+.chapter-overview-cta:hover {
+  background: #1a1a1a;
+  transform: translateX(-50%) translateY(-4px);
 }
 
-/* ─── BRAND ──────────────────────── */
-#brand {
-  background: #CC0000;
-  padding: 80px 0;
-  position: relative;
-}
+/* ─── CHAPTER STORY ──────────────── */
+.chapter-story { position: relative; overflow: hidden; }
 
-#brand .sec-inner {
-  max-width: 100%;
-  padding: 0;
-}
-
-.brand-close {
-  position: absolute;
-  top: 28px;
-  right: 28px;
-  z-index: 10;
-  width: 40px;
-  height: 40px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.brand-close i {
-  display: block;
-  width: 24px;
-  height: 2px;
-  background: rgba(255,255,255,0.65);
-  position: absolute;
-  transition: background 0.2s;
-}
-
-.brand-close i:first-child { transform: rotate(45deg); }
-.brand-close i:last-child  { transform: rotate(-45deg); }
-.brand-close:hover i { background: #fff; }
-
-.brand-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-  width: 100%;
-}
-
-/* Each item: full-width image card */
-.brand-item {
-  position: relative;
-  opacity: 0;
-  cursor: pointer;
-  overflow: hidden;
-}
-
-.brand-item-inner {
-  position: relative;
-}
-
-/* Image section — full width, fixed height */
-.brand-item-img-wrap {
-  position: relative;
-  width: 100%;
-  height: 260px;
-  overflow: hidden;
-}
-
-.brand-item-bg-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-  transition: transform 0.5s ease;
-}
-
-.brand-item:hover .brand-item-bg-img {
-  transform: scale(1.04);
-}
-
-/* Dark overlay so white text reads */
-.brand-item-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.42);
-  transition: background 0.3s;
-}
-
-.brand-item.open .brand-item-overlay {
-  background: rgba(0,0,0,0.55);
-}
-
-/* Centered title + chevron over the image */
-.brand-item-title-wrap {
-  position: absolute;
-  inset: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  padding: 20px;
-}
-
-.brand-item-title {
-  font-size: 22px;
-  font-weight: 900;
-  color: #fff;
-  letter-spacing: 0.08em;
-  text-align: center;
-  margin: 0;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.4);
-}
-
-.brand-chevron {
-  font-size: 28px;
-  font-weight: 300;
-  color: rgba(255,255,255,0.75);
-  line-height: 1;
-  transition: transform 0.3s ease, color 0.2s;
-}
-
-.brand-item.open .brand-chevron {
-  color: #fff;
-  transform: rotate(0deg);
-}
-
-/* Expanded text drawer — slides below the image */
-.brand-item-box {
-  overflow: hidden;
-  background: rgba(0,0,0,0.25);
-}
-
-.brand-item-box-inner {
-  padding: 28px 40px 36px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.brand-item-txt h2 {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  margin: 0 0 14px;
-  line-height: 1.5;
-}
-
-.brand-item-txt p {
-  font-size: 15px;
-  line-height: 1.9;
-  color: rgba(255,255,255,0.85);
-  margin: 0;
-}
-
-.brand-item-txt a {
-  font-size: 13px;
-  color: rgba(255,255,255,0.55);
-  text-decoration: underline;
-  transition: color 0.2s;
-}
-
-.brand-item-txt a:hover { color: #fff; }
-
-/* ─── JOIN US ────────────────────── */
-#joinus {
+.chapter-story-inner {
   background: #fff;
-  padding: 100px 0 120px;
+  max-width: 1560px;
+  margin: 0 auto;
+  padding: 80px 80px 100px;
 }
 
-#joinus .sec-inner {
+.chapter-story-content {
   display: flex;
-  gap: 20px;
+  gap: 120px;
+  margin-bottom: 60px;
+}
+
+.chapter-story-col { flex: 1; opacity: 0; }
+
+.chapter-story-col h3 {
+  font-size: 10px;
+  letter-spacing: 0.3em;
+  color: #aaa;
+  text-transform: uppercase;
+  margin: 0 0 20px;
+}
+
+.chapter-story-col p {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(15px, 1.5vw, 18px);
+  font-style: italic;
+  line-height: 1.8;
+  color: #444;
+  margin: 0;
+}
+
+/* Sound strip */
+.chapter-sound-strip {
+  display: flex;
+  align-items: center;
   justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn-recruit {
-  display: inline-block;
-  padding: 18px 52px;
-  font-size: 14px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  color: #fff;
-  background: #333;
-  border: 2px solid transparent;
-  text-decoration: none;
+  gap: 24px;
+  padding: 32px 0;
+  border-top: 1px solid rgba(0,0,0,0.08);
   opacity: 0;
-  transition: all 0.3s ease;
 }
 
-.btn-recruit:hover {
-  background: transparent;
+.chapter-sound-label {
+  font-size: 9px;
+  letter-spacing: 0.35em;
+  color: #bbb;
+  text-transform: uppercase;
+}
+
+.chapter-sound-title {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(12px, 1.5vw, 16px);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #1a1a1a;
+}
+
+.chapter-sound-bars {
+  display: flex; align-items: center;
+  gap: 3px; height: 20px;
+}
+
+.chapter-sound-bar {
+  display: block;
+  width: 2px; background: #CC0000;
+  border-radius: 1px;
+  animation: sound-bar 1.2s ease-in-out infinite alternate;
+}
+
+@keyframes sound-bar {
+  from { height: 4px; opacity: 0.4; }
+  to   { height: 20px; opacity: 1; }
+}
+
+.chapter-sound-bar:nth-child(1)  { animation-delay: 0s; }
+.chapter-sound-bar:nth-child(2)  { animation-delay: 0.11s; }
+.chapter-sound-bar:nth-child(3)  { animation-delay: 0.22s; }
+.chapter-sound-bar:nth-child(4)  { animation-delay: 0.33s; }
+.chapter-sound-bar:nth-child(5)  { animation-delay: 0.44s; }
+.chapter-sound-bar:nth-child(6)  { animation-delay: 0.33s; }
+.chapter-sound-bar:nth-child(7)  { animation-delay: 0.22s; }
+.chapter-sound-bar:nth-child(8)  { animation-delay: 0.11s; }
+.chapter-sound-bar:nth-child(9)  { animation-delay: 0s; }
+
+/* ─── CHAPTER OUTRO ──────────────── */
+.chapter-outro { position: relative; padding-top: max(100svh, 500px); }
+
+.chapter-outro-inner {
+  background: #f5f0eb;
+  display: flex;
+  gap: 40px;
+  max-width: 1560px;
+  margin: 0 auto;
+  overflow: hidden;
+  min-height: 480px;
+  padding: 48px 48px 0;
+}
+
+.chapter-outro-head {
+  flex: 0 0 33%;
+  display: flex; flex-direction: column;
+  gap: 24px;
+  padding-top: 40px;
+}
+
+.chapter-outro-head p {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(16px, 2vw, 22px);
+  font-style: italic;
+  line-height: 1.6;
+  color: #555;
+  margin: 0;
+}
+
+.btn-outline {
+  display: inline-block;
+  padding: 14px 36px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  border: 2px solid #1a1a1a;
+  color: #1a1a1a;
+  width: fit-content;
+  transition: all 0.25s ease;
+}
+
+.btn-outline:hover {
+  background: #CC0000;
   border-color: #CC0000;
-  color: #CC0000;
+  color: #fff;
   transform: translateY(-2px);
+}
+
+.chapter-outro-next {
+  flex: 0 0 33%;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  gap: 12px;
+}
+
+.chapter-outro-next-label {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: #bbb;
+  text-transform: uppercase;
+}
+
+.chapter-outro-next-link {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(20px, 3vw, 36px);
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  transition: color 0.2s, letter-spacing 0.3s;
+}
+
+.chapter-outro-next-link:hover {
+  color: #CC0000;
+  letter-spacing: 0.02em;
+}
+
+.chapter-outro-img-wrap {
+  flex: 0 0 33%;
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+
+.chapter-outro-img {
+  width: 100%; height: calc(100% - 24px);
+  object-fit: cover; display: block;
+}
+
+.chapter-outro-img-wrap p {
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: #aaa;
+  text-align: center;
+  padding: 8px 0;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+/* ─── SKILLS MARQUEE ─────────────── */
+#skills-marquee {
+  background: #CC0000;
+  padding: 24px 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee-track {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+  animation: marquee-scroll 28s linear infinite;
+}
+
+.marquee-track span {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(14px, 2vw, 20px);
+  font-weight: 700;
+  color: #fff;
+  padding: 0 24px;
+  letter-spacing: 0.04em;
+  flex-shrink: 0;
+}
+
+@keyframes marquee-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
 }
 
 /* ─── ABOUT ──────────────────────── */
 #about {
-  background: #333;
-  padding: 100px 0;
+  background: #1a1a1a;
+  padding: 120px 0 100px;
+  position: relative;
+  overflow: hidden;
 }
 
-#about .sec-inner-inner {
+.about-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 48px;
+  display: flex;
+  gap: 80px;
   align-items: flex-start;
-  gap: 60px;
 }
 
-#about .sec-box:first-child {
-  flex: 0 0 auto;
-  width: 220px;
+.about-photo-col {
+  flex: 0 0 280px;
+  opacity: 0;
 }
 
-#about .sec-box img {
+.about-photo-col img {
   width: 100%;
-  border-radius: 8px;
-  opacity: 0.8;
+  height: auto;
+  display: block;
+  filter: brightness(0.85) contrast(1.1);
 }
 
-#about .sec-box:last-child {
-  flex: 1;
+.about-info-col { flex: 1; opacity: 0; }
+
+.about-section-label {
+  font-size: 9px;
+  letter-spacing: 0.4em;
+  color: #CC0000;
+  text-transform: uppercase;
+  margin: 0 0 32px;
 }
 
-table.info-table {
+.about-name {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(28px, 4vw, 52px);
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.03em;
+  margin: 0 0 40px;
+  line-height: 1;
+}
+
+.info-table {
   width: 100%;
   border-collapse: collapse;
 }
 
-table.info-table th,
-table.info-table td {
-  padding: 12px 16px;
-  font-size: 14px;
+.info-table th, .info-table td {
+  padding: 14px 0;
+  font-size: 13px;
   text-align: left;
   vertical-align: top;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid rgba(255,255,255,0.07);
 }
 
-table.info-table th {
-  color: rgba(255,255,255,0.45);
-  font-weight: 600;
+.info-table th {
+  color: rgba(255,255,255,0.3);
+  font-weight: 400;
   white-space: nowrap;
   width: 100px;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
 }
 
-table.info-table td {
-  color: rgba(255,255,255,0.88);
-  line-height: 1.6;
+.info-table td {
+  color: rgba(255,255,255,0.82);
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.55;
+  padding-left: 24px;
 }
 
-/* ─── PROFILE ────────────────────── */
-#profile {
-  background: #fff;
-  padding: 0 0 80px;
+/* ─── CONTACT ────────────────────── */
+#contact {
+  background: #f5f0eb;
+  padding: 120px 0 80px;
+  position: relative;
+  overflow: hidden;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
 }
 
-#profile .sec-inner {
-  padding-top: 0;
+.contact-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 0 48px;
+  text-align: center;
 }
 
-#profile .sec-inner-inner {
-  padding-top: 100px;
-  align-items: flex-start;
-  gap: 60px;
-}
-
-.profile-box {
-  flex: 1;
-  opacity: 0;
-}
-
-.profile-box h2 {
-  font-size: 18px;
-  font-weight: 900;
-  letter-spacing: 0.1em;
-  margin: 0 0 20px;
-  color: #111;
-}
-
-.profile-box strong {
-  font-size: 20px;
-  display: block;
-  margin-bottom: 8px;
-  color: #111;
-}
-
-.profile-box p {
-  font-size: 14px;
-  line-height: 1.85;
-  color: #555;
-  margin: 0 0 14px;
-}
-
-.profile-box ul.list {
-  list-style: disc;
-  padding-left: 20px;
-  margin: 0 0 14px;
-}
-
-.profile-box ul.list li {
-  font-size: 14px;
-  line-height: 1.85;
-  color: #555;
-}
-
-.profile-box a {
+.contact-label {
+  font-size: 9px;
+  letter-spacing: 0.4em;
   color: #CC0000;
-  text-decoration: underline;
+  text-transform: uppercase;
+  margin: 0 0 24px;
+}
+
+.contact-headline {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(40px, 8vw, 100px);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  color: #1a1a1a;
+  margin: 0 0 48px;
+}
+
+.contact-links {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.contact-link {
+  font-family: 'Space Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  padding: 16px 44px;
+  background: #1a1a1a;
+  color: #fff;
+  transition: all 0.25s ease;
+  display: inline-block;
+}
+
+.contact-link:hover {
+  background: #CC0000;
+  transform: translateY(-3px);
+}
+
+.contact-deco {
+  position: absolute;
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(80px, 20vw, 300px);
+  font-weight: 900;
+  color: rgba(204,0,0,0.04);
+  line-height: 1;
+  bottom: -20px; left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* ─── FOOTER ─────────────────────── */
 #shan-footer {
-  background: #111;
-  padding: 40px 20px;
+  background: #0a0a0a;
+  padding: 60px 48px 32px;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 32px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 24px;
+}
+
+.footer-logo {
+  font-family: 'Unbounded', sans-serif;
+  font-size: clamp(28px, 6vw, 72px);
+  font-weight: 900;
+  color: #CC0000;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.footer-socials a {
+  font-family: 'Space Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 10px 20px;
+  border: 1px solid rgba(255,255,255,0.1);
+  transition: all 0.2s;
+}
+
+.footer-socials a:hover {
+  color: #fff;
+  border-color: rgba(255,255,255,0.4);
+}
+
+.footer-copy {
   text-align: center;
-}
-
-#shan-footer img,
-#shan-footer svg {
-  display: inline-block;
-  margin-bottom: 12px;
-}
-
-#shan-footer p {
-  font-size: 12px;
-  color: rgba(255,255,255,0.28);
-  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: rgba(255,255,255,0.2);
+  text-transform: uppercase;
 }
 
 /* ─── RESPONSIVE ─────────────────── */
-@media (max-width: 768px) {
-  .sec-inner-inner {
-    flex-direction: column;
-    gap: 32px;
-  }
+@media (max-width: 900px) {
+  #kv .kv-inner { flex-direction: column; }
+  .kv-photo-half { flex: 0 0 45vh; }
+  .kv-text-half  { flex: 1; padding: 40px 24px 100px; }
+  #kv-svg svg    { width: 260px !important; }
 
-  #about .sec-box:first-child {
-    width: 100%;
-  }
+  .chapter-head-inner  { padding: 48px 24px 80px; }
+  .chapter-head-content { flex-wrap: wrap; gap: 16px; }
+  .chapter-side-col    { display: none; }
+  .chapter-main-img-wrap { flex: 0 0 100%; }
 
-  #about .sec-box img {
-    max-width: 200px;
-  }
+  .chapter-lookbook-inner { flex-direction: column; }
+  .chapter-lookbook-side  { flex: none; padding: 40px 24px 0; }
+  .chapter-lookbook-secondary { width: 70%; margin: 0 auto; }
+  .chapter-lookbook-main  { flex: none; min-height: 320px; }
 
-  .brand-item-box-inner {
-    grid-template-columns: 1fr;
-    gap: 16px;
-  }
+  .chapter-story-inner { padding: 48px 24px 60px; }
+  .chapter-story-content { flex-direction: column; gap: 40px; }
 
-  .brand-logo-thumb {
-    width: 44px;
-    height: 44px;
-  }
+  .chapter-outro-inner { flex-direction: column; padding: 40px 24px 0; min-height: auto; }
+  .chapter-outro-next  { flex: none; padding: 32px 0; }
+  .chapter-outro-img-wrap { flex: 0 0 260px; }
 
-  #joinus .sec-inner {
-    flex-direction: column;
-    align-items: center;
-  }
+  .about-inner { flex-direction: column; gap: 40px; padding: 0 24px; }
+  .about-photo-col { flex: none; max-width: 240px; }
 
-  .btn-recruit {
-    width: 100%;
-    max-width: 300px;
-    text-align: center;
-  }
+  .footer-inner { justify-content: center; text-align: center; }
+  .footer-socials { justify-content: center; }
 
-  #profile .sec-inner-inner {
-    flex-direction: column;
-    padding-top: 80px;
-  }
+  .intro-side-img { display: none; }
 
-  .mask-top svg,
-  .mask-bottom svg {
-    height: 56px;
-  }
-}
-
-@media (max-width: 480px) {
-  #kv-svg svg {
-    width: 200px !important;
-    height: 170px !important;
-  }
-
-  .vision-item {
-    min-height: 200px;
-  }
-
-  #brand {
-    padding: 80px 0;
-  }
+  .chapter-cover-label-l,
+  .chapter-cover-label-r { display: none; }
 }
 /* @arkzen:web:style:end */
 
@@ -1063,16 +1590,13 @@ import React from 'react'
 const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
   gsap.registerPlugin(ScrollTrigger)
   const ctx = gsap.context(() => {
-    // Subtle parallax on polygon masks (same as MIJ)
+    // Mask parallax (all sections)
     gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
       gsap.to(el.querySelector('svg'), {
-        yPercent: 12,
-        ease: 'none',
+        yPercent: 14, ease: 'none',
         scrollTrigger: {
-          trigger: el,
-          start: 'top bottom',
-          end: 'bottom top',
-          scrub: true,
+          trigger: el, start: 'top bottom',
+          end: 'bottom top', scrub: true,
         },
       })
     })
@@ -1090,81 +1614,241 @@ export const pageVariants = {
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */
 const IndexPage = () => {
-  const [loaded, setLoaded]           = useState(false)
-  const [visionPanel, setVisionPanel] = useState(0)
-  const [openService, setOpenService] = useState<number | null>(null)
+  const [loaded, setLoaded] = useState(false)
   const pageRef = useRef<HTMLDivElement>(null)
+  const cursorRef     = useRef<HTMLDivElement>(null)
+  const cursorRingRef = useRef<HTMLDivElement>(null)
+  const scrollThumbRef = useRef<HTMLDivElement>(null)
 
-  // ── scroll animations (after loader) ──────────────────────────────────────
+  // ── custom cursor ───────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onMove = (e: MouseEvent) => {
+      if (cursorRef.current) {
+        cursorRef.current.style.left = e.clientX + 'px'
+        cursorRef.current.style.top  = e.clientY + 'px'
+      }
+      if (cursorRingRef.current) {
+        // ring lags slightly
+        setTimeout(() => {
+          if (cursorRingRef.current) {
+            cursorRingRef.current.style.left = e.clientX + 'px'
+            cursorRingRef.current.style.top  = e.clientY + 'px'
+          }
+        }, 60)
+      }
+    }
+    window.addEventListener('mousemove', onMove)
+    return () => window.removeEventListener('mousemove', onMove)
+  }, [])
+
+  // ── scrollbar thumb ─────────────────────────────────────────────────────────
+  useEffect(() => {
+    const onScroll = () => {
+      const ratio = window.scrollY / (document.body.scrollHeight - window.innerHeight)
+      if (scrollThumbRef.current) {
+        scrollThumbRef.current.style.height = (ratio * 100) + 'vh'
+        scrollThumbRef.current.style.opacity = '1'
+      }
+      // burger color
+      const kvH = (document.getElementById('kv')?.offsetHeight ?? 0) - 80
+      document.body.classList.toggle('scrolled', window.scrollY > kvH)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
+  // ── scroll animations (after loader) ───────────────────────────────────────
   useEffect(() => {
     if (!loaded) return
-
     gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
 
-      // KV logo fade-in
-      gsap.to('#kv-svg', {
-        opacity: 1,
-        duration: 0.8,
-        ease: 'power2.out',
-        delay: 1.5,
+      // ── KV: logo already handled inside ShanHeroLogo on mount
+      // ── KV photo parallax
+      gsap.to('.kv-photo-half img', {
+        yPercent: 18, ease: 'none',
+        scrollTrigger: {
+          trigger: '#kv', start: 'top top',
+          end: 'bottom top', scrub: true,
+        },
       })
 
-      // Vision section slide-in
-      gsap.fromTo('.vision-item',
+      // ── Intro text stagger
+      gsap.fromTo('.intro-pre, .intro-title, .intro-abstract, .intro-caption',
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1, y: 0,
+          duration: 0.8, stagger: 0.12, ease: 'power3.out',
+          scrollTrigger: { trigger: '#shan-intro', start: 'top 80%' },
+        }
+      )
+
+      // ── Per-chapter animations
+      CHAPTERS.forEach((ch) => {
+        const tale = document.getElementById(`tale-${ch.id}`)
+        if (!tale) return
+
+        // Cover bg parallax (zoom-in on scroll-to)
+        gsap.fromTo(tale.querySelector('.chapter-cover-bg') as HTMLElement,
+          { scale: 1.0 },
+          {
+            scale: 1.12, ease: 'none',
+            scrollTrigger: {
+              trigger: `.chapter-cover`,
+              containerAnimation: undefined,
+              start: 'top top',
+              end: 'bottom top',
+              scrub: true,
+            },
+          }
+        )
+
+        // Chapter title — clip reveal (lines slide up)
+        const titleEl = tale.querySelector('.chapter-head-title') as HTMLElement
+        if (titleEl) {
+          gsap.fromTo(titleEl,
+            { y: '110%', opacity: 0 },
+            {
+              y: 0, opacity: 1, duration: 1.1, ease: 'power4.out',
+              scrollTrigger: { trigger: titleEl, start: 'top 90%' },
+            }
+          )
+        }
+
+        // Head pre + tagline + abstract
+        gsap.fromTo(tale.querySelectorAll('.chapter-head-pre, .chapter-head-tagline, .chapter-head-abstract'),
+          { opacity: 0, y: 28 },
+          {
+            opacity: 1, y: 0, duration: 0.7, stagger: 0.1, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-head-inner'), start: 'top 82%' },
+          }
+        )
+
+        // Side images — stagger from sides
+        const sides = tale.querySelectorAll('.chapter-side-img')
+        sides.forEach((el, idx) => {
+          gsap.fromTo(el,
+            { opacity: 0, x: idx === 0 ? -48 : 48, scale: 0.94 },
+            {
+              opacity: 1, x: 0, scale: 1,
+              duration: 1.0, ease: 'power3.out',
+              scrollTrigger: { trigger: tale.querySelector('.chapter-head-content'), start: 'top 78%' },
+            }
+          )
+        })
+
+        // Lookbook images slide-in
+        gsap.fromTo(tale.querySelector('.chapter-lookbook-secondary'),
+          { opacity: 0, x: -56 },
+          {
+            opacity: 1, x: 0, duration: 1.0, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-lookbook-inner'), start: 'top 80%' },
+          }
+        )
+
+        gsap.fromTo(tale.querySelector('.chapter-lookbook-main-img'),
+          { opacity: 0, scale: 0.96 },
+          {
+            opacity: 1, scale: 1, duration: 1.0, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-lookbook-inner'), start: 'top 80%' },
+          }
+        )
+
+        gsap.fromTo(tale.querySelector('.chapter-lookbook-quote'),
+          { opacity: 0, y: 24 },
+          {
+            opacity: 1, y: 0, duration: 0.9, delay: 0.2, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-lookbook-inner'), start: 'top 75%' },
+          }
+        )
+
+        // Overview tags stagger
+        gsap.fromTo(tale.querySelectorAll('.chapter-overview-tags li'),
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1, y: 0,
+            duration: 0.55, stagger: 0.08, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-overview-img-wrap'), start: 'top 60%' },
+          }
+        )
+
+        // Story columns
+        gsap.fromTo(tale.querySelectorAll('.chapter-story-col'),
+          { opacity: 0, x: -32 },
+          {
+            opacity: 1, x: 0, duration: 0.8, stagger: 0.15, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-story-inner'), start: 'top 82%' },
+          }
+        )
+
+        // Sound strip
+        gsap.fromTo(tale.querySelector('.chapter-sound-strip'),
+          { opacity: 0, y: 20 },
+          {
+            opacity: 1, y: 0, duration: 0.7, ease: 'power3.out',
+            scrollTrigger: { trigger: tale.querySelector('.chapter-sound-strip'), start: 'top 88%' },
+          }
+        )
+      })
+
+      // ── Skills marquee reveal
+      gsap.fromTo('#skills-marquee',
         { opacity: 0, y: 30 },
         {
-          opacity: 1, y: 0, duration: 0.7, ease: 'power3.out',
-          scrollTrigger: { trigger: '#vision', start: 'top 82%', toggleActions: 'play none none reset' },
-        }
-      )
-
-      // Brand items stagger
-      gsap.fromTo('.brand-item',
-        { opacity: 0, y: 24 },
-        {
-          opacity: 1, y: 0, duration: 0.6, stagger: 0.1, ease: 'power3.out',
-          scrollTrigger: { trigger: '#brand', start: 'top 80%', toggleActions: 'play none none reset' },
-        }
-      )
-
-      // Skills buttons
-      gsap.fromTo('.btn-recruit',
-        { opacity: 0, scale: 0.85 },
-        {
-          opacity: 1, scale: 1, duration: 0.5, stagger: 0.1, ease: 'back.out(1.7)',
-          scrollTrigger: { trigger: '#joinus', start: 'top 85%', toggleActions: 'play none none reset' },
-        }
-      )
-
-      // About boxes
-      gsap.fromTo('#about .sec-box',
-        { opacity: 0, x: -28 },
-        {
-          opacity: 1, x: 0, duration: 0.7, stagger: 0.2, ease: 'power3.out',
-          scrollTrigger: { trigger: '#about', start: 'top 80%', toggleActions: 'play none none reset' },
-        }
-      )
-
-      // Profile
-      gsap.fromTo('.profile-box',
-        { opacity: 0, y: 28 },
-        {
           opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
-          scrollTrigger: { trigger: '#profile', start: 'top 80%', toggleActions: 'play none none reset' },
+          scrollTrigger: { trigger: '#skills-marquee', start: 'top 90%' },
         }
       )
 
-      // Subtle mask parallax
+      // ── About — photo + table
+      gsap.fromTo('.about-photo-col',
+        { opacity: 0, x: -60 },
+        {
+          opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: '#about', start: 'top 78%' },
+        }
+      )
+      gsap.fromTo('.about-info-col',
+        { opacity: 0, x: 60 },
+        {
+          opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: '#about', start: 'top 78%' },
+        }
+      )
+      // Table rows stagger
+      gsap.fromTo('.info-table tr',
+        { opacity: 0, y: 12 },
+        {
+          opacity: 1, y: 0, duration: 0.45, stagger: 0.07, ease: 'power3.out',
+          scrollTrigger: { trigger: '.info-table', start: 'top 85%' },
+        }
+      )
+
+      // ── Contact
+      gsap.fromTo('.contact-label, .contact-headline, .contact-links',
+        { opacity: 0, y: 40 },
+        {
+          opacity: 1, y: 0, duration: 0.8, stagger: 0.14, ease: 'power3.out',
+          scrollTrigger: { trigger: '#contact', start: 'top 80%' },
+        }
+      )
+
+      // ── Footer logo
+      gsap.fromTo('.footer-logo',
+        { opacity: 0, scale: 0.9 },
+        {
+          opacity: 1, scale: 1, duration: 0.8, ease: 'back.out(1.4)',
+          scrollTrigger: { trigger: '#shan-footer', start: 'top 90%' },
+        }
+      )
+
+      // ── Mask parallax
       gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
         gsap.to(el.querySelector('svg'), {
-          yPercent: 12,
-          ease: 'none',
+          yPercent: 14, ease: 'none',
           scrollTrigger: {
-            trigger: el,
-            start: 'top bottom',
-            end: 'bottom top',
-            scrub: true,
+            trigger: el, start: 'top bottom',
+            end: 'bottom top', scrub: true,
           },
         })
       })
@@ -1174,8 +1858,20 @@ const IndexPage = () => {
     return () => ctx.revert()
   }, [loaded])
 
+  // ── duplicate marquee items so it scrolls seamlessly ───────────────────────
+  const marqueeItems = [...SKILLS_MARQUEE, ...SKILLS_MARQUEE]
+
   return (
     <div ref={pageRef}>
+      {/* Custom cursor */}
+      <div className="shan-cursor" ref={cursorRef} />
+      <div className="shan-cursor-ring" ref={cursorRingRef} />
+
+      {/* Scrollbar */}
+      <div className="shan-scrollbar">
+        <div className="shan-scrollbar-thumb" ref={scrollThumbRef} />
+      </div>
+
       {/* LOADER */}
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
@@ -1185,234 +1881,117 @@ const IndexPage = () => {
       <div id="shan-wrapper">
 
         {/* ── HERO / KV ── */}
-        <div className="sec" id="kv">
-          <MaskBottom fill="#fff" />
-          <div className="sec-inner">
-            <div className="sec-inner-inner">
-
-              {/* Left: photo */}
-              <div className="kv-photo-half">
-                <img
-                  src="/tatemonos/shan-shan/assets/images/shan5.jpg"
-                  alt="Shan"
-                />
+        <div id="kv">
+          <MaskBottom fill="#f5f0eb" />
+          <div className="kv-inner">
+            <div className="kv-photo-half">
+              <img src="/tatemonos/shan-shan/assets/images/shan5.jpg" alt="Shan Sabal Cezar" />
+            </div>
+            <div className="kv-text-half">
+              <ShanHeroLogo />
+              <p className="kv-subtitle">designer · document specialist · researcher</p>
+              <div className="kv-scroll-hint">
+                <div className="kv-scroll-line" />
+                <span className="kv-scroll-text">SCROLL</span>
               </div>
-
-              {/* Right: red panel with SHAN logo */}
-              <div className="kv-text-half">
-                <ShanHeroLogo />
-                <span id="kv-svg-alt">
-                  designer · document specialist · researcher
-                </span>
-              </div>
-
             </div>
           </div>
         </div>
 
-        {/* ── VISION ── */}
-        <div className="sec" id="vision">
-          <div className="sec-inner">
-            <div className="sec-inner-inner">
-
-              {/* Left: carousel */}
-              <div className="sec-box">
-                <div className="vision-carousel">
-                  <AnimatePresence mode="wait">
-                    {visionPanel === 0 && (
-                      <motion.div
-                        key="v0"
-                        className="vision-item"
-                        initial={{ opacity: 0, x: 36 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -36 }}
-                        transition={{ duration: 0.32, ease: 'easeInOut' }}
-                      >
-                        <h2>ABOUT ME</h2>
-                        <p>
-                          "Clarity is the foundation of good design."
-                        </p>
-                        <p>
-                          I create clean, purposeful designs and craft thorough,
-                          well-structured documents and research. Whether it's visual
-                          design or deep-dive analysis, I bring clarity and craft to
-                          every project.
-                        </p>
-                        <p>
-                          Good design isn't just about aesthetics — it's about
-                          communication. Whether I'm crafting a visual identity,
-                          preparing a formal document, or diving deep into research,
-                          my goal is the same: make it clear, make it purposeful,
-                          make it count.
-                        </p>
-                      </motion.div>
-                    )}
-                    {visionPanel === 1 && (
-                      <motion.div
-                        key="v1"
-                        className="vision-item"
-                        initial={{ opacity: 0, x: 36 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -36 }}
-                        transition={{ duration: 0.32, ease: 'easeInOut' }}
-                      >
-                        <h2>PHILOSOPHY</h2>
-                        <p>Design with purpose, deliver with precision</p>
-                        <br />
-                        <h2>VALUES</h2>
-                        <ol className="list">
-                          <li>① Clarity over complexity</li>
-                          <li>② Every detail serves a purpose</li>
-                          <li>③ Research before execution</li>
-                          <li>④ Clean, professional deliverables</li>
-                          <li>⑤ Client communication is everything</li>
-                        </ol>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-
-                <div className="vision-nav">
-                  {[0, 1].map((i) => (
-                    <i
-                      key={i}
-                      className={visionPanel === i ? 'active' : ''}
-                      onClick={() => setVisionPanel(i)}
-                    />
-                  ))}
-                </div>
-              </div>
-
-              {/* Right: photo */}
-              <div className="sec-box">
-                <img
-                  src="/tatemonos/shan-shan/assets/images/shan5.jpg"
-                  alt="Shan"
-                />
-              </div>
-
-            </div>
+        {/* ── INTRO ── */}
+        <div id="shan-intro">
+          <div className="intro-side-imgs" aria-hidden="true">
+            <img src="/tatemonos/shan-shan/assets/images/shan2.jpg" className="intro-side-img intro-side-img--l" alt="" />
+            <img src="/tatemonos/shan-shan/assets/images/shan4.jpg" className="intro-side-img intro-side-img--r" alt="" />
+          </div>
+          <div className="intro-inner">
+            <p className="intro-pre">[Intro]</p>
+            <h1 className="intro-title">The Invisible Echo</h1>
+            <p className="intro-abstract">
+              Before the gesture, there is an idea. Before the design, a purpose.
+              Shan gathers these invisible intentions and transforms them into work
+              that speaks clearly, lingers beautifully.
+            </p>
+            <p className="intro-caption">An invitation to build something worth remembering.</p>
           </div>
         </div>
 
-        {/* ── BRAND / SERVICES ── */}
-        <div className="sec" id="brand">
-          <MaskTop fill="#fff" />
-          <MaskBottom fill="#fff" />
+        {/* ── 4 CHAPTERS ── */}
+        {CHAPTERS.map((chapter, index) => (
+          <Chapter key={chapter.id} chapter={chapter} index={index} />
+        ))}
 
-          {openService !== null && (
-            <div
-              className="brand-close"
-              onClick={() => setOpenService(null)}
-              role="button"
-              aria-label="Close"
-            >
-              <i /><i />
-            </div>
-          )}
-
-          <div className="sec-inner">
-            <div className="brand-inner">
-              {SERVICES.map((svc, i) => (
-                <BrandItem
-                  key={svc.id}
-                  service={svc}
-                  isOpen={openService === i}
-                  onToggle={() => setOpenService(openService === i ? null : i)}
-                />
-              ))}
-            </div>
+        {/* ── SKILLS MARQUEE ── */}
+        <div id="skills-marquee">
+          <div className="marquee-track">
+            {marqueeItems.map((s, i) => (
+              <span key={i}>{s}</span>
+            ))}
           </div>
-        </div>
-
-        {/* ── JOIN US / SKILLS ── */}
-        <div className="sec" id="joinus">
-          <div className="sec-inner">
-            <a href="#brand" className="btn-recruit">Graphic Design</a>
-            <a href="#brand" className="btn-recruit">Document Preparation</a>
-            <a href="#brand" className="btn-recruit">Research &amp; Analysis</a>
-            <a href="#brand" className="btn-recruit">Presentation Design</a>
-          </div>
-          <MaskBottom fill="#333" />
         </div>
 
         {/* ── ABOUT ── */}
-        <div className="sec" id="about">
-          <div className="sec-inner">
-            <div className="sec-inner-inner">
-              <div className="sec-box">
-                <img
-                  src="/tatemonos/shan-shan/assets/images/shan5.jpg"
-                  alt="Shan Sabal Cezar"
-                />
-              </div>
-              <div className="sec-box">
-                <table className="info-table">
-                  <tbody>
-                    {PERSONAL_INFO.map((row) => (
-                      <tr key={row.label}>
-                        <th>{row.label}</th>
-                        <td>{row.value}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        <div id="about">
+          <MaskTop fill="#f5f0eb" />
+          <div className="about-inner">
+            <div className="about-photo-col">
+              <img src="/tatemonos/shan-shan/assets/images/shan5.jpg" alt="Shan Sabal Cezar" />
+            </div>
+            <div className="about-info-col">
+              <p className="about-section-label">[About Me]</p>
+              <h2 className="about-name">Shan<br />Sabal<br />Cezar</h2>
+              <table className="info-table">
+                <tbody>
+                  {PERSONAL_INFO.map((row) => (
+                    <tr key={row.label}>
+                      <th>{row.label}</th>
+                      <td>{row.value}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
           </div>
+          <MaskBottom fill="#f5f0eb" />
         </div>
 
-        {/* ── PROFILE / CONTACT ── */}
-        <div className="sec" id="profile">
-          <MaskTop fill="#333" />
-          <div className="sec-inner">
-            <div className="sec-inner-inner">
-              <div className="profile-box">
-                <h2>代表者プロフィール</h2>
-                <p><strong>Shan Sabal Cezar</strong></p>
-                <p>Philippines · Designer · Document Specialist · Researcher</p>
-                <ul className="list">
-                  <li>Graphic design for print and digital media</li>
-                  <li>Professional document preparation and formatting</li>
-                  <li>Academic and market research with analysis</li>
-                  <li>Presentation design and slide deck creation</li>
-                </ul>
-                <p>
-                  Whether you need a clean report, a polished presentation,
-                  a striking poster, or thorough research — I deliver work
-                  that's clear, professional, and purposeful.
-                </p>
-                <p>
-                  <a
-                    href="https://www.facebook.com/shan.cezar.71"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    Facebook · @shan.cezar.71
-                  </a>
-                </p>
-              </div>
+        {/* ── CONTACT ── */}
+        <div id="contact">
+          <div className="contact-inner">
+            <p className="contact-label">[Contact]</p>
+            <h2 className="contact-headline">
+              From Five,<br />Everything Begins.
+            </h2>
+            <div className="contact-links">
+              <a
+                href="https://www.facebook.com/shan.cezar.71"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="contact-link"
+              >
+                Facebook
+              </a>
+              <a href="mailto:shan@example.com" className="contact-link">Email</a>
             </div>
           </div>
+          <div className="contact-deco" aria-hidden="true">SHAN</div>
         </div>
 
         {/* ── FOOTER ── */}
         <div id="shan-footer">
-          <svg viewBox="0 0 220 40" width="180">
-            <text
-              x="110"
-              y="28"
-              textAnchor="middle"
-              fill="rgba(255,255,255,0.28)"
-              fontSize="16"
-              fontWeight="900"
-              fontFamily="'Roboto', sans-serif"
-              letterSpacing="3"
-            >
-              SHAN CEZAR
-            </text>
-          </svg>
-          <p>&copy; 2026 Shan Sabal Cezar &middot; All Rights Reserved</p>
+          <div className="footer-inner">
+            <div className="footer-logo">SHAN.</div>
+            <div className="footer-socials">
+              <a
+                href="https://www.facebook.com/shan.cezar.71"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Facebook
+              </a>
+            </div>
+          </div>
+          <p className="footer-copy">© 2026 Shan Sabal Cezar · All Rights Reserved</p>
         </div>
 
       </div>

@@ -12,7 +12,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:56.961Z",
-      "lastUpdated": "2026-05-25T07:15:00.652Z"
+      "lastUpdated": "2026-05-25T07:54:07.637Z"
     },
     {
       "name": "asset-hub",
@@ -24,7 +24,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:56.977Z",
-      "lastUpdated": "2026-05-25T07:15:00.680Z"
+      "lastUpdated": "2026-05-25T07:54:07.677Z"
     },
     {
       "name": "auth-test",
@@ -38,7 +38,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:56.994Z",
-      "lastUpdated": "2026-05-25T07:15:00.711Z"
+      "lastUpdated": "2026-05-25T07:54:07.694Z"
     },
     {
       "name": "body-endpoint-handler",
@@ -50,7 +50,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:57.438Z",
-      "lastUpdated": "2026-05-25T07:15:01.706Z"
+      "lastUpdated": "2026-05-25T07:54:08.512Z"
     },
     {
       "name": "body-mail-notification",
@@ -64,7 +64,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:57.987Z",
-      "lastUpdated": "2026-05-25T07:15:02.537Z"
+      "lastUpdated": "2026-05-25T07:54:09.158Z"
     },
     {
       "name": "broadcast-test",
@@ -78,7 +78,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.105Z",
-      "lastUpdated": "2026-05-25T07:15:02.791Z"
+      "lastUpdated": "2026-05-25T07:54:09.303Z"
     },
     {
       "name": "certflow",
@@ -93,7 +93,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.714Z",
-      "lastUpdated": "2026-05-25T07:15:03.958Z"
+      "lastUpdated": "2026-05-25T07:54:10.165Z"
     },
     {
       "name": "church-community",
@@ -110,7 +110,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.881Z",
-      "lastUpdated": "2026-05-25T07:15:04.185Z"
+      "lastUpdated": "2026-05-25T07:54:10.324Z"
     },
     {
       "name": "crud-test",
@@ -122,7 +122,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.357Z",
-      "lastUpdated": "2026-05-25T07:15:05.079Z"
+      "lastUpdated": "2026-05-25T07:54:10.855Z"
     },
     {
       "name": "dtr-geofencing",
@@ -135,7 +135,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.513Z",
-      "lastUpdated": "2026-05-25T07:15:05.528Z"
+      "lastUpdated": "2026-05-25T07:54:11.012Z"
     },
     {
       "name": "errors-test",
@@ -147,7 +147,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.522Z",
-      "lastUpdated": "2026-05-25T07:15:05.554Z"
+      "lastUpdated": "2026-05-25T07:54:11.022Z"
     },
     {
       "name": "events-test",
@@ -159,7 +159,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.013Z",
-      "lastUpdated": "2026-05-25T07:15:05.772Z"
+      "lastUpdated": "2026-05-25T07:54:11.147Z"
     },
     {
       "name": "inventory-management",
@@ -171,7 +171,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.131Z",
-      "lastUpdated": "2026-05-25T07:15:06.231Z"
+      "lastUpdated": "2026-05-25T07:54:11.299Z"
     },
     {
       "name": "jo-payroll",
@@ -189,7 +189,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.317Z",
-      "lastUpdated": "2026-05-25T07:15:06.607Z"
+      "lastUpdated": "2026-05-25T07:54:11.445Z"
     },
     {
       "name": "job-test",
@@ -201,7 +201,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.458Z",
-      "lastUpdated": "2026-05-25T07:15:06.763Z"
+      "lastUpdated": "2026-05-25T07:54:11.553Z"
     },
     {
       "name": "mail-test",
@@ -215,7 +215,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:00.559Z",
-      "lastUpdated": "2026-05-25T07:15:07.022Z"
+      "lastUpdated": "2026-05-25T07:54:11.686Z"
     },
     {
       "name": "middleware-test",
@@ -227,7 +227,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.682Z",
-      "lastUpdated": "2026-05-25T07:15:07.154Z"
+      "lastUpdated": "2026-05-25T07:54:11.797Z"
     },
     {
       "name": "new-updates-styles",
@@ -241,7 +241,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.690Z",
-      "lastUpdated": "2026-05-25T07:15:07.175Z"
+      "lastUpdated": "2026-05-25T07:54:11.808Z"
     },
     {
       "name": "notification-test",
@@ -255,7 +255,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:00.860Z",
-      "lastUpdated": "2026-05-25T07:15:07.257Z"
+      "lastUpdated": "2026-05-25T07:54:11.892Z"
     },
     {
       "name": "portfolio-test",
@@ -267,7 +267,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.867Z",
-      "lastUpdated": "2026-05-25T07:15:07.266Z"
+      "lastUpdated": "2026-05-25T07:54:11.901Z"
     },
     {
       "name": "queue-flow",
@@ -281,7 +281,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.010Z",
-      "lastUpdated": "2026-05-25T07:15:07.439Z"
+      "lastUpdated": "2026-05-25T07:54:12.049Z"
     },
     {
       "name": "roles-test",
@@ -295,7 +295,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:01.784Z",
-      "lastUpdated": "2026-05-25T07:15:08.231Z"
+      "lastUpdated": "2026-05-25T07:54:12.836Z"
     },
     {
       "name": "scheduler-test",
@@ -307,7 +307,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.900Z",
-      "lastUpdated": "2026-05-25T07:15:08.363Z"
+      "lastUpdated": "2026-05-25T07:54:12.965Z"
     },
     {
       "name": "upload-test",
@@ -319,7 +319,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.995Z",
-      "lastUpdated": "2026-05-25T07:15:09.138Z"
+      "lastUpdated": "2026-05-25T07:54:13.736Z"
     },
     {
       "name": "visual-lab",
@@ -331,11 +331,11 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:02.028Z",
-      "lastUpdated": "2026-05-25T07:15:09.169Z"
+      "lastUpdated": "2026-05-25T07:54:13.784Z"
     },
     {
       "name": "shan-shan",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/shan-shan/core.tsx",
       "screens": [
@@ -343,7 +343,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T07:15:08.401Z",
-      "lastUpdated": "2026-05-25T07:32:33.610Z"
+      "lastUpdated": "2026-05-25T07:57:20.072Z"
     }
   ]
 }

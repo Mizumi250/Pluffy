@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/appointments [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:appointments instead
-// Generated: 2026-05-25T07:15:06.263Z
+// Generated: 2026-05-25T07:54:11.328Z
 // ============================================================
 
 import React from 'react'
