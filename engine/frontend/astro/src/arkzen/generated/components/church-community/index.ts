@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:22:59.984Z
+// Generated: 2026-05-25T04:25:07.670Z
 // ============================================================
 
 export * from './_components'

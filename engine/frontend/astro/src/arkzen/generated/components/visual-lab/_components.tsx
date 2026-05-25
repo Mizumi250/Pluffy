@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — visual-lab
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:23:03.428Z
+// Generated: 2026-05-25T04:25:10.659Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

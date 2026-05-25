@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — upload-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:41:12.553Z
+// Generated: 2026-05-25T06:56:30.714Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

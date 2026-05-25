@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — inventory-management/index [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-25T02:23:00.021Z
+// Generated: 2026-05-25T06:56:27.361Z
 // ============================================================
 
 import React from 'react'

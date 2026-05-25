@@ -181,6 +181,16 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>http://localhost:3000/shan-portfolio</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/mij-tribute</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://localhost:3000/new-updates-styles</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -287,6 +297,11 @@
   </url>
   <url>
     <loc>http://localhost:3000/visual-lab</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/shan-portfolio</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

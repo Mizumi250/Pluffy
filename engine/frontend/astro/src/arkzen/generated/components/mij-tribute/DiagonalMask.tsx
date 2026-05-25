@@ -1,8 +1,8 @@
 // ============================================================
-// ARKZEN GENERATED COMPONENT — VisualLabColors [React+Vite]
+// ARKZEN GENERATED COMPONENT — DiagonalMask
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:41:12.682Z
+// Generated: 2026-05-25T04:25:09.460Z
 // ============================================================
 
-export { VisualLabColors } from './_components'
+export { DiagonalMask } from './_components'

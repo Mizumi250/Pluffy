@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — dtr-geofencing/index [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-25T02:22:59.381Z
+// Generated: 2026-05-25T06:56:26.556Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — OGLSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:41:12.680Z
+// Generated: 2026-05-25T06:56:30.804Z
 // ============================================================
 
 export { OGLSection } from './_components'

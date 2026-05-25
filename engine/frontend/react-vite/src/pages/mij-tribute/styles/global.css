@@ -1,0 +1,640 @@
+/* Shan Portfolio — MIJ-Inspired Stylesheet */
+
+/* ─── RESET / ROOT ───────────── */
+.mij-root {
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  color: #333;
+  background: #fff;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+* { box-sizing: border-box; }
+
+/* ─── LOADER ─────────────────── */
+.mij-loader {
+  position: fixed;
+  inset: 0;
+  background: #fff;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+}
+
+.mij-loader-bar {
+  height: 4px;
+  width: 0%;
+  background: #E63946;
+}
+
+/* ─── BURGER ─────────────────── */
+.mij-burger {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 1000;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+}
+
+.mij-burger i {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: #333;
+  transition: all 0.3s ease;
+}
+
+.mij-kv .mij-burger i,
+.mij-brands .mij-burger i {
+  background: #fff;
+}
+
+.mij-burger.open i:nth-child(1) { transform: rotate(45deg) translate(4px, 4px); }
+.mij-burger.open i:nth-child(2) { opacity: 0; }
+.mij-burger.open i:nth-child(3) { transform: rotate(-45deg) translate(4px, -4px); }
+.mij-burger.open i:nth-child(4) { opacity: 0; }
+.mij-burger.open i:nth-child(5) { opacity: 0; }
+
+/* ─── NAV OVERLAY ────────────── */
+.mij-nav {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  z-index: 999;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+}
+
+.mij-nav-link {
+  color: #fff;
+  font-size: 24px;
+  font-weight: 700;
+  text-decoration: none;
+  letter-spacing: 0.08em;
+  padding: 8px 20px;
+  transition: color 0.2s;
+}
+
+.mij-nav-link:hover {
+  color: #E63946;
+}
+
+/* ─── HERO / KV ──────────────── */
+.mij-kv {
+  position: relative;
+  min-height: 100vh;
+  background: linear-gradient(135deg, #E63946 0%, #b50000 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.mij-kv-inner {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.mij-hero-inner {
+  opacity: 0;
+}
+
+.mij-hero-logo {
+  max-width: 90vw;
+}
+
+/* ─── DIAGONAL MASKS ─────────── */
+.mij-mask {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 2;
+  line-height: 0;
+}
+
+.mij-mask svg {
+  width: 100%;
+  height: 80px;
+  display: block;
+}
+
+.mij-mask-top {
+  top: 0;
+}
+
+.mij-mask-bottom {
+  bottom: 0;
+}
+
+/* ─── SECTIONS ───────────────── */
+.mij-section {
+  position: relative;
+  padding: 80px 0;
+}
+
+.mij-section-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.mij-section-title {
+  font-size: 32px;
+  font-weight: 900;
+  text-align: center;
+  margin-bottom: 48px;
+  letter-spacing: 0.06em;
+  color: #fff;
+}
+
+/* ─── ABOUT (VISION) ─────────── */
+.mij-vision {
+  background: #fff;
+  padding: 100px 0;
+}
+
+.mij-vision-grid {
+  margin-bottom: 60px;
+}
+
+.mij-vision-item {
+}
+
+.mij-heading {
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  margin-bottom: 16px;
+  color: #111;
+}
+
+.mij-vision-quote {
+  font-size: 18px;
+  font-weight: 600;
+  color: #E63946;
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.mij-text {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #555;
+  margin-bottom: 12px;
+}
+
+.mij-values-list {
+  list-style: none;
+  padding: 0;
+  counter-reset: none;
+}
+
+.mij-values-list li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #555;
+  padding: 4px 0;
+}
+
+.mij-values-list li::before {
+  content: '';
+}
+
+.mij-vision-carousel {
+  min-height: 260px;
+  position: relative;
+  overflow: hidden;
+}
+
+.mij-vision-nav {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 32px 0 40px;
+}
+
+.mij-vision-nav i {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #ddd;
+  cursor: pointer;
+  transition: background 0.3s ease, transform 0.3s ease;
+}
+
+.mij-vision-nav i.active {
+  background: #E63946;
+  transform: scale(1.3);
+}
+
+.mij-vision-logo {
+  text-align: center;
+}
+
+.mij-vision-logo-img {
+  width: 200px;
+  height: auto;
+  opacity: 0.7;
+  border-radius: 8px;
+}
+
+/* ─── SERVICES (BRANDS) ──────── */
+.mij-brands {
+  background: linear-gradient(135deg, #E63946 0%, #b50000 100%);
+  padding: 120px 0;
+  position: relative;
+}
+
+.mij-brand-close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  z-index: 10;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mij-brand-close i {
+  display: block;
+  width: 24px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.7);
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.mij-brand-close i:first-child {
+  transform: rotate(45deg);
+}
+
+.mij-brand-close i:last-child {
+  transform: rotate(-45deg);
+}
+
+.mij-brand-close:hover i {
+  background: #fff;
+}
+
+.mij-brands-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.mij-brand-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  opacity: 0;
+}
+
+.mij-brand-item:last-child {
+  border-bottom: none;
+}
+
+.mij-brand-inner {
+  position: relative;
+}
+
+.mij-brand-inner-inner {
+  padding: 0;
+}
+
+.mij-brand-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 0;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.mij-brand-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mij-brand-logo-box {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.mij-brand-logo-img-small {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.mij-brand-logo-text {
+  color: #fff;
+  font-size: 16px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.mij-brand-title {
+  flex: 1;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.mij-brand-chevron {
+  font-size: 24px;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 300;
+  width: 32px;
+  text-align: center;
+}
+
+.mij-brand-box {
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 100px 1fr;
+  gap: 24px;
+  padding: 16px 0 28px;
+}
+
+.mij-brand-logo-img {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.mij-brand-logo-img-large {
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
+  object-fit: cover;
+}
+
+.mij-brand-txt h2 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 12px;
+  line-height: 1.5;
+}
+
+.mij-brand-txt p {
+  font-size: 14px;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.mij-brand-link {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: underline;
+  transition: color 0.2s;
+}
+
+.mij-brand-link:hover {
+  color: #fff;
+}
+
+/* ─── SKILLS (JOIN US) ──────── */
+.mij-joinus {
+  background: #fff;
+  padding: 100px 0 120px;
+  text-align: center;
+}
+
+.mij-joinus-inner {
+  display: flex;
+  gap: 20px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.mij-join-btn {
+  display: inline-block;
+  padding: 16px 48px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  background: #333;
+  text-decoration: none;
+  border-radius: 0;
+  transition: all 0.3s ease;
+  opacity: 0;
+  border: 2px solid transparent;
+}
+
+.mij-join-btn:hover {
+  background: transparent;
+  border-color: #E63946;
+  color: #E63946;
+  transform: translateY(-2px);
+}
+
+/* ─── EXPERIENCE (ABOUT) ────── */
+.mij-about {
+  background: #333;
+  padding: 100px 0;
+}
+
+.mij-about-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.5fr;
+  gap: 60px;
+  align-items: start;
+}
+
+.mij-about-box {
+  opacity: 0;
+}
+
+.mij-about-visual {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0;
+}
+
+.mij-about-img {
+  width: 200px;
+  height: auto;
+  border-radius: 8px;
+  opacity: 0.8;
+}
+
+.mij-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.mij-table th,
+.mij-table td {
+  padding: 12px 16px;
+  font-size: 14px;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mij-table th {
+  color: rgba(255, 255, 255, 0.5);
+  font-weight: 600;
+  width: 140px;
+  white-space: nowrap;
+}
+
+.mij-table td {
+  color: rgba(255, 255, 255, 0.9);
+  line-height: 1.6;
+}
+
+/* ─── CONTACT (PROFILE) ─────── */
+.mij-profile {
+  background: #fff;
+  padding: 0 0 80px;
+}
+
+.mij-profile-content {
+  max-width: 700px;
+  opacity: 0;
+  position: relative;
+  z-index: 3;
+  padding-top: 100px;
+}
+
+.mij-profile-name {
+  font-size: 22px;
+  margin-bottom: 8px;
+  color: #111;
+}
+
+.mij-profile-list {
+  list-style: disc;
+  padding-left: 20px;
+  margin: 16px 0;
+}
+
+.mij-profile-list li {
+  font-size: 14px;
+  line-height: 1.8;
+  color: #555;
+}
+
+/* ─── FOOTER ─────────────────── */
+.mij-footer {
+  background: #111;
+  padding: 40px 20px;
+  text-align: center;
+}
+
+.mij-footer-logo {
+  margin-bottom: 12px;
+}
+
+.mij-footer-copy {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.3);
+  margin: 0;
+}
+
+/* ─── MOBILE ─────────────────── */
+@media (max-width: 768px) {
+  .mij-vision-carousel {
+    min-height: 200px;
+  }
+
+  .mij-about-grid {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .mij-about-visual {
+    order: -1;
+  }
+
+  .mij-brand-box {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding-left: 0;
+  }
+
+  .mij-brand-logo-img {
+    justify-content: flex-start;
+  }
+
+  .mij-brand-header {
+    gap: 12px;
+  }
+
+  .mij-brand-logo-box {
+    width: 48px;
+    height: 48px;
+  }
+
+  .mij-hero-logo {
+    width: 280px;
+    height: auto;
+  }
+
+  .mij-section {
+    padding: 60px 0;
+  }
+
+  .mij-brands {
+    padding: 80px 0;
+  }
+
+  .mij-joinus {
+    padding: 60px 0 80px;
+  }
+
+  .mij-table th {
+    width: 100px;
+    font-size: 13px;
+  }
+
+  .mij-table td {
+    font-size: 13px;
+  }
+
+  .mij-nav-link {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .mij-joinus-inner {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .mij-join-btn {
+    width: 100%;
+    max-width: 280px;
+  }
+}

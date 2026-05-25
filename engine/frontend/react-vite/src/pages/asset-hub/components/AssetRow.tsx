@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AssetRow [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:45:43.034Z
+// Generated: 2026-05-25T06:56:25.542Z
 // ============================================================
 
 export { AssetRow } from './_components'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:22:58.100Z
+// Generated: 2026-05-25T04:25:05.878Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

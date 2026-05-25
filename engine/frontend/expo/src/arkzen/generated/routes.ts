@@ -99,6 +99,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:middleware-test:index:/middleware-test/index:guest:false
   { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test/index', layout: 'guest', auth: false },
+// ROUTE:mij-tribute:index:/mij-tribute/index:guest:false
+  { tatName: 'mij-tribute', screenName: 'index', routePath: '/mij-tribute/index', layout: 'guest', auth: false },
 // ROUTE:new-updates-styles:index:/new-updates-styles/index:guest:false
   { tatName: 'new-updates-styles', screenName: 'index', routePath: '/new-updates-styles/index', layout: 'guest', auth: false },
 // ROUTE:new-updates-styles:about:/new-updates-styles/about:guest:false
@@ -127,6 +129,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'roles-test', screenName: 'dashboard', routePath: '/roles-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:guest:false
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'guest', auth: false },
+// ROUTE:shan-portfolio:index:/shan-portfolio/index:guest:false
+  { tatName: 'shan-portfolio', screenName: 'index', routePath: '/shan-portfolio/index', layout: 'guest', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:guest:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'guest', auth: false },
 // ROUTE:visual-lab:index:/visual-lab/index:guest:false

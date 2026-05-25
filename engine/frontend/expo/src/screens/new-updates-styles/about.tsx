@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — new-updates-styles/about [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:about instead
-// Generated: 2026-05-25T02:23:00.689Z
+// Generated: 2026-05-25T06:56:28.336Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:41:11.574Z
+// Generated: 2026-05-25T06:56:29.718Z
 // ============================================================
 
 export { BigTicketDisplay } from './_components'

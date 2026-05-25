@@ -13,7 +13,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:15.619Z",
-      "lastUpdated": "2026-05-23T13:45:43.066Z",
+      "lastUpdated": "2026-05-25T06:56:25.570Z",
       "auth": true
     },
     {
@@ -37,7 +37,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:15.964Z",
-      "lastUpdated": "2026-05-23T13:41:09.144Z",
+      "lastUpdated": "2026-05-25T06:56:25.941Z",
       "auth": false
     },
     {
@@ -51,7 +51,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.454Z",
-      "lastUpdated": "2026-05-23T13:41:09.654Z",
+      "lastUpdated": "2026-05-25T06:56:26.432Z",
       "auth": true
     },
     {
@@ -65,7 +65,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.532Z",
-      "lastUpdated": "2026-05-23T13:41:09.746Z",
+      "lastUpdated": "2026-05-25T06:56:26.572Z",
       "auth": true
     },
     {
@@ -82,7 +82,7 @@
         "register"
       ],
       "registered": "2026-05-07T23:46:16.645Z",
-      "lastUpdated": "2026-05-23T13:41:10.433Z",
+      "lastUpdated": "2026-05-25T06:56:27.485Z",
       "auth": true
     },
     {
@@ -94,7 +94,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.748Z",
-      "lastUpdated": "2026-05-23T13:41:10.536Z",
+      "lastUpdated": "2026-05-25T06:56:27.688Z",
       "auth": false
     },
     {
@@ -107,7 +107,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:16.876Z",
-      "lastUpdated": "2026-05-23T13:41:10.675Z",
+      "lastUpdated": "2026-05-25T06:56:27.910Z",
       "auth": false
     },
     {
@@ -119,7 +119,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.889Z",
-      "lastUpdated": "2026-05-23T13:41:10.695Z",
+      "lastUpdated": "2026-05-25T06:56:27.951Z",
       "auth": false
     },
     {
@@ -131,7 +131,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.961Z",
-      "lastUpdated": "2026-05-23T13:41:10.775Z",
+      "lastUpdated": "2026-05-25T06:56:28.045Z",
       "auth": false
     },
     {
@@ -143,7 +143,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.040Z",
-      "lastUpdated": "2026-05-23T13:41:10.854Z",
+      "lastUpdated": "2026-05-25T06:56:28.186Z",
       "auth": false
     },
     {
@@ -161,7 +161,7 @@
         "payslip"
       ],
       "registered": "2026-05-07T23:46:17.164Z",
-      "lastUpdated": "2026-05-23T13:41:11.032Z",
+      "lastUpdated": "2026-05-25T06:56:28.425Z",
       "auth": false
     },
     {
@@ -173,7 +173,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.234Z",
-      "lastUpdated": "2026-05-23T13:41:11.125Z",
+      "lastUpdated": "2026-05-25T06:56:28.545Z",
       "auth": false
     },
     {
@@ -187,7 +187,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.302Z",
-      "lastUpdated": "2026-05-23T13:41:11.231Z",
+      "lastUpdated": "2026-05-25T06:56:28.722Z",
       "auth": true
     },
     {
@@ -199,7 +199,31 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.397Z",
-      "lastUpdated": "2026-05-23T13:41:11.365Z",
+      "lastUpdated": "2026-05-25T06:56:29.520Z",
+      "auth": false
+    },
+    {
+      "name": "shan-portfolio",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/shan-portfolio/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-25T00:00:00.000Z",
+      "lastUpdated": "2026-05-25T06:56:30.703Z",
+      "auth": false
+    },
+    {
+      "name": "mij-tribute",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/mij-tribute/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-25T00:00:00.000Z",
+      "lastUpdated": "2026-05-25T06:56:29.565Z",
       "auth": false
     },
     {
@@ -213,7 +237,7 @@
         "features"
       ],
       "registered": "2026-05-07T23:46:17.412Z",
-      "lastUpdated": "2026-05-23T13:41:11.394Z",
+      "lastUpdated": "2026-05-25T06:56:29.587Z",
       "auth": false
     },
     {
@@ -227,7 +251,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.482Z",
-      "lastUpdated": "2026-05-23T13:41:11.522Z",
+      "lastUpdated": "2026-05-25T06:56:29.684Z",
       "auth": true
     },
     {
@@ -239,7 +263,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.494Z",
-      "lastUpdated": "2026-05-23T13:41:11.552Z",
+      "lastUpdated": "2026-05-25T06:56:29.700Z",
       "auth": false
     },
     {
@@ -253,7 +277,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:17.613Z",
-      "lastUpdated": "2026-05-23T13:41:11.703Z",
+      "lastUpdated": "2026-05-25T06:56:29.869Z",
       "auth": false
     },
     {
@@ -267,7 +291,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.362Z",
-      "lastUpdated": "2026-05-23T13:41:12.460Z",
+      "lastUpdated": "2026-05-25T06:56:30.621Z",
       "auth": true
     },
     {
@@ -279,7 +303,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.447Z",
-      "lastUpdated": "2026-05-23T13:41:12.537Z",
+      "lastUpdated": "2026-05-25T06:56:30.685Z",
       "auth": false
     },
     {
@@ -291,7 +315,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.508Z",
-      "lastUpdated": "2026-05-23T13:41:12.636Z",
+      "lastUpdated": "2026-05-25T06:56:30.765Z",
       "auth": false
     },
     {
@@ -306,7 +330,7 @@
         "verify"
       ],
       "registered": "2026-05-10T12:24:58.406Z",
-      "lastUpdated": "2026-05-23T13:41:10.288Z",
+      "lastUpdated": "2026-05-25T06:56:27.216Z",
       "auth": true
     },
     {
@@ -318,7 +342,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.134Z",
-      "lastUpdated": "2026-05-23T13:45:43.013Z",
+      "lastUpdated": "2026-05-25T06:56:25.505Z",
       "auth": false
     },
     {
@@ -330,7 +354,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.152Z",
-      "lastUpdated": "2026-05-23T13:45:43.045Z",
+      "lastUpdated": "2026-05-25T06:56:25.552Z",
       "auth": false
     },
     {
@@ -342,11 +366,23 @@
         "index"
       ],
       "registered": "2026-05-23T08:37:02.596Z",
-      "lastUpdated": "2026-05-23T13:41:12.703Z",
+      "lastUpdated": "2026-05-25T06:56:30.820Z",
+      "auth": false
+    },
+    {
+      "name": "shan-portfolio",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/shan-portfolio/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-05-25T04:42:39.217Z",
+      "lastUpdated": "2026-05-25T04:42:39.217Z",
       "auth": false
     }
   ],
-  "activeStack": "astro",
+  "activeStack": "react-vite",
   "activeAppStack": "expo",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",

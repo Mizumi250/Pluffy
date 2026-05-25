@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — VanillaTilt
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:23:03.448Z
+// Generated: 2026-05-25T04:25:10.664Z
 // ============================================================
 
 export { VanillaTilt } from './_components'

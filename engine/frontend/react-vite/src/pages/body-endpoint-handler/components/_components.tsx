@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:45:43.150Z
+// Generated: 2026-05-25T06:56:25.624Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
