@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — scheduler-test/dashboard [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:dashboard instead
-// Generated: 2026-05-25T08:28:13.348Z
+// Generated: 2026-05-26T09:29:50.878Z
 // ============================================================
 
 import React from 'react'

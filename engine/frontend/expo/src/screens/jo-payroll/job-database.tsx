@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/job-database [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:job-database instead
-// Generated: 2026-05-25T08:28:11.790Z
+// Generated: 2026-05-26T09:29:49.266Z
 // ============================================================
 
 import React from 'react'

@@ -2438,7 +2438,7 @@ export const pageVariants = {
 }
 /* @arkzen:web:animation:end */
 
-/* @arkzen:script */
+/* @arkzen:web:script */
 import * as THREE from 'three'
 
 // ─── VISUAL LAB GLOBAL CONSTANTS ─────────────────────────────────────────────
@@ -2496,9 +2496,9 @@ export function createRenderLoop(
 
   return () => cancelAnimationFrame(rafId)
 }
-/* @arkzen:script:end */
+/* @arkzen:web:script:end */
 
-/* @arkzen:script:three-scene */
+/* @arkzen:web:script:three-scene */
 import * as THREE from 'three'
 
 // ─── THREE SCENE HELPERS — named script for visual-lab ───────────────────────
@@ -2535,9 +2535,9 @@ export function makePointCloud(scene: THREE.Scene, count = 200) {
   scene.add(points)
   return points
 }
-/* @arkzen:script:three-scene:end */
+/* @arkzen:web:script:three-scene:end */
 
-/* @arkzen:script:particles-config */
+/* @arkzen:web:script:particles-config */
 // ─── PARTICLE SYSTEM CONFIG — named script for visual-lab ────────────────────
 // Generated as: visual-lab.particles-config.script.ts
 // Import: import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
@@ -2571,7 +2571,7 @@ export const tsParticlesConfig = {
 export function getEmitterConfig(origin: { x: number; y: number }) {
   return { ...defaultParticleConfig, origin }
 }
-/* @arkzen:script:particles-config:end */
+/* @arkzen:web:script:particles-config:end */
 
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */

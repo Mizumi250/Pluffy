@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — queue-flow/admin [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:admin instead
-// Generated: 2026-05-25T08:28:12.364Z
+// Generated: 2026-05-26T09:29:49.924Z
 // ============================================================
 
 import React from 'react'

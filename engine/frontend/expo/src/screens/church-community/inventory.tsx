@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — church-community/inventory [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:inventory instead
-// Generated: 2026-05-25T08:28:10.223Z
+// Generated: 2026-05-26T09:29:47.929Z
 // ============================================================
 
 import React from 'react'

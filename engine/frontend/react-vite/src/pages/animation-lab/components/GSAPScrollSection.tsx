@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPScrollSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T08:28:09.658Z
+// Generated: 2026-05-26T09:29:44.429Z
 // ============================================================
 
 export { GSAPScrollSection } from './_components'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/payslip [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:payslip instead
-// Generated: 2026-05-25T08:28:11.791Z
+// Generated: 2026-05-26T09:29:49.271Z
 // ============================================================
 
 import React from 'react'

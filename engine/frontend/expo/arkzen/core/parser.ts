@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v7.0
+// ARKZEN ENGINE — PARSER v8.0
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -27,7 +27,15 @@
 //       parseAllComponents, parseAllStyles, parseAllErrorHandlers,
 //       parseGlobalAnimation now all look for web: prefixed tags.
 //
-// v6.2 (kept): parseMeta now reads auth_seed.users from @arkzen:meta block.
+// v8.0: @arkzen:script / @arkzen:script:name moved to web: prefix.
+//       @arkzen:web:script and @arkzen:web:script:name are now the
+//       canonical DSL tags — script blocks are web-frontend utilities
+//       (Three.js, GSAP factories, canvas helpers) that have no meaning
+//       on native or desktop platforms.
+//       parseGlobalScript() and parseAllNamedScripts() updated.
+//       CODE_BLOCK_TAGS updated: 'script' → 'web:script'.
+//       hasSections() updated: script check uses 'web:script'.
+//
 // v6.1 (kept): Added parseAllNotifications() and parseAllMails().
 // v5.1 (kept): Added parseAllCustomRoutes() for @arkzen:routes blocks.
 // ============================================================
@@ -1005,27 +1013,26 @@ function parseAllStyles(content: string): ArkzenStyle[] {
 }
 
 // ─────────────────────────────────────────────
-// PARSE ALL SCRIPTS — v6.5
-// Mirrors @arkzen:animation pattern but for general-purpose JS/TS:
-//   - Three.js scenes, canvas setups, physics worlds, Rapier, Lenis instances
-//   - Shared utility functions, hooks, constants too heavy for @arkzen:components
-//   - Can include GSAP/Framer too (superset of @arkzen:animation)
+// PARSE ALL SCRIPTS — v8.0
+// v8.0: moved to @arkzen:web:script / @arkzen:web:script:name prefix.
+// Script blocks are web-frontend utilities — Three.js scenes, canvas
+// setups, GSAP factories, shared constants — that only make sense on web.
+// Native and desktop will have their own @arkzen:native:script etc.
 //
 // Two shapes:
-//   Global  — /* @arkzen:script */ ... /* @arkzen:script:end */
+//   Global  — /* @arkzen:web:script */ ... /* @arkzen:web:script:end */
 //             → one per tatemono, exported as {name}.scripts.ts
-//   Named   — /* @arkzen:script:name */ ... /* @arkzen:script:name:end */
+//   Named   — /* @arkzen:web:script:name */ ... /* @arkzen:web:script:name:end */
 //             → multiple allowed, each exported as {name}.{scriptName}.script.ts
 //
 // Opening tags must have */ on the same line (CODE_BLOCK_TAGS rule).
 // ─────────────────────────────────────────────
 
 function parseGlobalScript(content: string): ArkzenSection | undefined {
-  // Mirrors parseAllStyles() global pass exactly.
-  // Check first char after `/* @arkzen:script` — if it's NOT ':' it's the global block.
-  // ':' means named block (/* @arkzen:script:name */), space/* means global.
-  // Use stripTemplateLiterals so markers inside demo strings/JSX <code> blocks are ignored.
-  const globalMarker = `/* @arkzen:script`
+  // v8.0: @arkzen:web:script — strict, no fallback
+  // Check first char after `/* @arkzen:web:script` — if it's NOT ':' it's the global block.
+  // ':' means named block (/* @arkzen:web:script:name */), space/* means global.
+  const globalMarker = `/* @arkzen:web:script`
   const safe = stripTemplateLiterals(content)
   const globalIdx = safe.indexOf(globalMarker)
   if (globalIdx === -1) return undefined
@@ -1036,7 +1043,7 @@ function parseGlobalScript(content: string): ArkzenSection | undefined {
   const openCommentEnd = safe.indexOf('*/', globalIdx)
   if (openCommentEnd === -1) return undefined
 
-  const endMarker = `/* @arkzen:script:end */`
+  const endMarker = `/* @arkzen:web:script:end */`
   const endIdx = safe.indexOf(endMarker, openCommentEnd)
   if (endIdx === -1) return undefined
 
@@ -1045,7 +1052,8 @@ function parseGlobalScript(content: string): ArkzenSection | undefined {
 }
 
 function parseAllNamedScripts(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'script')
+  // v8.0: @arkzen:web:script:name — strict, no fallback
+  return extractAllNamedSections(content, 'web:script')
 }
 
 // ─────────────────────────────────────────────
@@ -1463,7 +1471,7 @@ interface DslTagError {
 
 // v7.0: updated for web: prefix. tagType now captures e.g. "web" from @arkzen:web:page:index
 // so CODE_BLOCK_TAGS etc. match on the full prefix:subtype string instead.
-const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'script', 'web:page', 'web:style', 'web:error']
+const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error']
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = ['meta', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
@@ -1776,7 +1784,7 @@ export function hasSections(filePath: string) {
     components:    content.includes('/* @arkzen:web:components:'),
     page:          content.includes('/* @arkzen:web:page:'),
     animation:     content.includes('/* @arkzen:web:animation'),
-    script:        content.includes('/* @arkzen:script'),
+    script:        content.includes('/* @arkzen:web:script'),
     errorHandler:  content.includes('/* @arkzen:web:error:'),
   }
 }
