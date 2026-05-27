@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — notification-test/dashboard [Expo]
 // Layout: auth | Auth required: true
 // DO NOT EDIT — edit tatemono @arkzen:native:page:dashboard instead
-// Generated: 2026-05-27T12:27:35.882Z
+// Generated: 2026-05-27T13:42:17.358Z
 // ============================================================
 
 import React from 'react'

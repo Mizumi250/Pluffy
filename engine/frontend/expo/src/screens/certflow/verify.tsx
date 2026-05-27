@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — certflow/verify [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:verify instead
-// Generated: 2026-05-27T12:27:33.174Z
+// Generated: 2026-05-27T13:42:14.533Z
 // ============================================================
 
 import React from 'react'

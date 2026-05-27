@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/hdmf [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:hdmf instead
-// Generated: 2026-05-27T12:27:34.630Z
+// Generated: 2026-05-27T13:42:16.796Z
 // ============================================================
 
 import React from 'react'

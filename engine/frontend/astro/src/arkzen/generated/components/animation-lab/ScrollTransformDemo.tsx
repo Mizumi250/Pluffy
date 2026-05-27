@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ScrollTransformDemo
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:27:34.186Z
+// Generated: 2026-05-27T13:42:14.742Z
 // ============================================================
 
 export { ScrollTransformDemo } from './_components'

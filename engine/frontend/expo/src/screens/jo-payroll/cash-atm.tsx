@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/cash-atm [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:cash-atm instead
-// Generated: 2026-05-27T12:27:34.626Z
+// Generated: 2026-05-27T13:42:16.793Z
 // ============================================================
 
 import React from 'react'

@@ -12,7 +12,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:56.961Z",
-      "lastUpdated": "2026-05-27T12:27:31.940Z"
+      "lastUpdated": "2026-05-27T13:42:13.249Z"
     },
     {
       "name": "asset-hub",
@@ -24,7 +24,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:56.977Z",
-      "lastUpdated": "2026-05-27T12:27:31.960Z"
+      "lastUpdated": "2026-05-27T13:42:13.271Z"
     },
     {
       "name": "auth-test",
@@ -38,7 +38,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:56.994Z",
-      "lastUpdated": "2026-05-27T12:27:31.974Z"
+      "lastUpdated": "2026-05-27T13:42:13.284Z"
     },
     {
       "name": "body-endpoint-handler",
@@ -50,7 +50,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:57.438Z",
-      "lastUpdated": "2026-05-27T12:27:32.414Z"
+      "lastUpdated": "2026-05-27T13:42:13.809Z"
     },
     {
       "name": "body-mail-notification",
@@ -64,7 +64,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:57.987Z",
-      "lastUpdated": "2026-05-27T12:27:32.993Z"
+      "lastUpdated": "2026-05-27T13:42:14.366Z"
     },
     {
       "name": "broadcast-test",
@@ -78,7 +78,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.105Z",
-      "lastUpdated": "2026-05-27T12:27:33.113Z"
+      "lastUpdated": "2026-05-27T13:42:14.487Z"
     },
     {
       "name": "certflow",
@@ -93,7 +93,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.714Z",
-      "lastUpdated": "2026-05-27T12:27:33.784Z"
+      "lastUpdated": "2026-05-27T13:42:15.249Z"
     },
     {
       "name": "church-community",
@@ -110,7 +110,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:22:58.881Z",
-      "lastUpdated": "2026-05-27T12:27:33.995Z"
+      "lastUpdated": "2026-05-27T13:42:15.444Z"
     },
     {
       "name": "crud-test",
@@ -122,7 +122,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.357Z",
-      "lastUpdated": "2026-05-27T12:27:34.201Z"
+      "lastUpdated": "2026-05-27T13:42:15.933Z"
     },
     {
       "name": "dtr-geofencing",
@@ -135,7 +135,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.513Z",
-      "lastUpdated": "2026-05-27T12:27:34.394Z"
+      "lastUpdated": "2026-05-27T13:42:16.108Z"
     },
     {
       "name": "errors-test",
@@ -147,7 +147,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:22:59.522Z",
-      "lastUpdated": "2026-05-27T12:27:34.402Z"
+      "lastUpdated": "2026-05-27T13:42:16.130Z"
     },
     {
       "name": "events-test",
@@ -159,7 +159,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.013Z",
-      "lastUpdated": "2026-05-27T12:27:34.473Z"
+      "lastUpdated": "2026-05-27T13:42:16.616Z"
     },
     {
       "name": "inventory-management",
@@ -171,7 +171,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.131Z",
-      "lastUpdated": "2026-05-27T12:27:34.600Z"
+      "lastUpdated": "2026-05-27T13:42:16.747Z"
     },
     {
       "name": "jo-payroll",
@@ -189,7 +189,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.317Z",
-      "lastUpdated": "2026-05-27T12:27:35.107Z"
+      "lastUpdated": "2026-05-27T13:42:16.946Z"
     },
     {
       "name": "job-test",
@@ -201,7 +201,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.458Z",
-      "lastUpdated": "2026-05-27T12:27:35.212Z"
+      "lastUpdated": "2026-05-27T13:42:17.123Z"
     },
     {
       "name": "mail-test",
@@ -215,7 +215,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:00.559Z",
-      "lastUpdated": "2026-05-27T12:27:35.752Z"
+      "lastUpdated": "2026-05-27T13:42:17.219Z"
     },
     {
       "name": "middleware-test",
@@ -227,7 +227,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.682Z",
-      "lastUpdated": "2026-05-27T12:27:35.845Z"
+      "lastUpdated": "2026-05-27T13:42:17.330Z"
     },
     {
       "name": "new-updates-styles",
@@ -241,7 +241,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.690Z",
-      "lastUpdated": "2026-05-27T12:27:35.870Z"
+      "lastUpdated": "2026-05-27T13:42:17.342Z"
     },
     {
       "name": "notification-test",
@@ -255,7 +255,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:00.860Z",
-      "lastUpdated": "2026-05-27T12:27:35.960Z"
+      "lastUpdated": "2026-05-27T13:42:17.660Z"
     },
     {
       "name": "portfolio-test",
@@ -267,7 +267,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:00.867Z",
-      "lastUpdated": "2026-05-27T12:27:35.967Z"
+      "lastUpdated": "2026-05-27T13:42:17.666Z"
     },
     {
       "name": "queue-flow",
@@ -281,7 +281,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.010Z",
-      "lastUpdated": "2026-05-27T12:27:36.139Z"
+      "lastUpdated": "2026-05-27T13:42:17.799Z"
     },
     {
       "name": "roles-test",
@@ -295,7 +295,7 @@
       ],
       "auth": true,
       "registered": "2026-05-25T02:23:01.784Z",
-      "lastUpdated": "2026-05-27T12:27:36.960Z"
+      "lastUpdated": "2026-05-27T13:42:18.577Z"
     },
     {
       "name": "scheduler-test",
@@ -307,7 +307,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.900Z",
-      "lastUpdated": "2026-05-27T12:27:37.064Z"
+      "lastUpdated": "2026-05-27T13:42:18.709Z"
     },
     {
       "name": "upload-test",
@@ -319,7 +319,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:01.995Z",
-      "lastUpdated": "2026-05-27T12:27:37.170Z"
+      "lastUpdated": "2026-05-27T13:42:18.829Z"
     },
     {
       "name": "visual-lab",
@@ -331,7 +331,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T02:23:02.028Z",
-      "lastUpdated": "2026-05-27T12:27:37.214Z"
+      "lastUpdated": "2026-05-27T13:42:18.891Z"
     },
     {
       "name": "shan-shan",
@@ -343,7 +343,7 @@
       ],
       "auth": false,
       "registered": "2026-05-25T07:15:08.401Z",
-      "lastUpdated": "2026-05-27T12:27:37.085Z"
+      "lastUpdated": "2026-05-27T13:42:18.746Z"
     }
   ]
 }

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/index [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-27T12:27:34.623Z
+// Generated: 2026-05-27T13:42:16.790Z
 // ============================================================
 
 import React from 'react'

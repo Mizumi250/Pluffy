@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — dtr-geofencing/admin [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:admin instead
-// Generated: 2026-05-27T12:27:34.226Z
+// Generated: 2026-05-27T13:42:15.963Z
 // ============================================================
 
 import React from 'react'
