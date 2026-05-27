@@ -1,13 +1,14 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v5.3
-// v5.3: Body injection support for custom endpoints, custom routes,
-//       and middleware snippets.
-//       - ArkzenEndpoint: added optional `body` (base64 PHP snippet)
-//       - ArkzenCustomRouteEntry: added optional `body` (base64 PHP snippet)
-//       - ArkzenMiddlewareSnippets: new interface (name → base64 PHP)
-//       - ParsedTatemono: added `middlewareSnippets`
-// v5.2 (kept): Added ArkzenAuthSeedUser + authSeed to ArkzenMeta.
-// v5.1 (kept): Added ArkzenCustomRoute + customRoutes to ParsedTatemono.
+// ARKZEN ENGINE — TYPE DEFINITIONS v6.0
+// v6.0: @arkzen:meta:web separation.
+//       - ArkzenWebMeta: new interface for web-only meta (favicon, title,
+//         label, og, pwa). Replaces favicon + pwa in ArkzenMeta.
+//       - ArkzenMeta: removed favicon, pwa. Kept: name, version,
+//         description, auth, dependencies, authSeed.
+//       - ParsedTatemono: added webMeta?: ArkzenWebMeta
+// v5.3 (kept): Body injection for endpoints, routes, middleware.
+// v5.2 (kept): authSeed in ArkzenMeta.
+// v5.1 (kept): ArkzenCustomRoute + customRoutes.
 // ============================================================
 
 export interface ArkzenAuthSeedUser {
@@ -30,17 +31,44 @@ export interface ArkzenPWAMeta {
   icons?: { src: string; sizes: string; type: string; purpose?: string }[]
 }
 
+// v6.0: Web-only meta — declared via @arkzen:meta:web block
+// Covers everything the browser/SEO layer needs that has no meaning on native/desktop.
+export interface ArkzenWebMeta {
+  title?:       string                    // <title> tag — defaults to label ?? name
+  label?:       string                    // Human-readable app name (used in nav, PWA name fallback)
+  description?: string                    // <meta name="description"> — overrides meta.description for web
+  favicon?:     string                    // <link rel="icon"> — emoji, URL, or path
+  og?: {
+    title?:       string
+    description?: string
+    image?:       string
+    url?:         string
+    type?:        string                  // defaults to 'website'
+  }
+  twitter?: {
+    card?:        string                  // 'summary' | 'summary_large_image'
+    title?:       string
+    description?: string
+    image?:       string
+  }
+  pwa?:         ArkzenPWAMeta
+}
+
 export interface ArkzenMeta {
-  name: string
-  version: string
-  description: string
-  auth: boolean
+  name:         string
+  version:      string
+  description:  string                    // general description — shared across platforms
+  auth:         boolean
   dependencies: string[]
-  favicon?: string
-  pwa?: ArkzenPWAMeta
   authSeed?: {
     users: ArkzenAuthSeedUser[]
   }
+  // v6.0: favicon + pwa moved to ArkzenWebMeta. Kept here as deprecated
+  // optional fields so old tatemonos don't hard-crash before migration.
+  /** @deprecated — move to @arkzen:meta:web */
+  favicon?:     string
+  /** @deprecated — move to @arkzen:meta:web */
+  pwa?:         ArkzenPWAMeta
 }
 
 export interface ArkzenConfigOverride {
@@ -284,8 +312,9 @@ export interface ArkzenStyle {
 export interface ParsedTatemono {
   filePath: string
   fileName: string
-  meta: ArkzenMeta
-  config?: ArkzenConfigOverride
+  meta:     ArkzenMeta
+  webMeta?: ArkzenWebMeta    // v6.0: from @arkzen:meta:web block
+  config?:  ArkzenConfigOverride
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
@@ -309,9 +338,9 @@ export interface ParsedTatemono {
 
   animation?: ArkzenSection
 
-  // v6.5: @arkzen:script (global) + @arkzen:script:name (named, multiple)
-  script?:  ArkzenSection        // global script block — any JS utility, shared logic, canvas/3D setup
-  scripts:  ArkzenSection[]      // named script blocks — per-component JS, imported by name
+  // v8.0: @arkzen:web:script (global) + @arkzen:web:script:name (named, multiple)
+  script?:  ArkzenSection        // global web script block
+  scripts:  ArkzenSection[]      // named web script blocks
 }
 
 export interface ArkzenRegistry {

@@ -21,8 +21,6 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'AuthTest/Register': () => import('../../Pages/AuthTest/Register'),
   // PAGE:AuthTest/Dashboard
   'AuthTest/Dashboard': () => import('../../Pages/AuthTest/Dashboard'),
-  // PAGE:BarbershopBooking/Index
-  'BarbershopBooking/Index': () => import('../../Pages/BarbershopBooking/Index'),
   // PAGE:BodyEndpointHandler/Index
   'BodyEndpointHandler/Index': () => import('../../Pages/BodyEndpointHandler/Index'),
   // PAGE:BodyMailNotification/Login
@@ -121,6 +119,8 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'RolesTest/Dashboard': () => import('../../Pages/RolesTest/Dashboard'),
   // PAGE:SchedulerTest/Dashboard
   'SchedulerTest/Dashboard': () => import('../../Pages/SchedulerTest/Dashboard'),
+  // PAGE:ShanShan/Index
+  'ShanShan/Index': () => import('../../Pages/ShanShan/Index'),
   // PAGE:UploadTest/Dashboard
   'UploadTest/Dashboard': () => import('../../Pages/UploadTest/Dashboard'),
   // PAGE:VisualLab/Index

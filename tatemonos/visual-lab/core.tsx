@@ -3,6 +3,9 @@ name: visual-lab
 version: 1.0.0
 description: Visual Lab — tests every new frontend package installed across all 5 stacks (Three.js/R3F, BabylonJS, PlayCanvas, PixiJS, OGL, Phaser, Matter.js, Rapier, p5.js, Konva, Fabric.js, REGL, TWGL, Lottie, tsParticles, Proton, Typed.js, Rough Notation, Splitting.js, Vanilla Tilt, Lenis, Canvas Confetti, CurtainsJS, Maath, TroikaText). Also demos both @arkzen:script DSL blocks (global + named) and the experimental HTML-in-Canvas API (Chrome 148+). The definitive Arkzen visual/graphics/canvas reference.
 auth: false
+*/
+
+/* @arkzen:meta:web
 favicon: 🔬
 */
 
@@ -2438,7 +2441,7 @@ export const pageVariants = {
 }
 /* @arkzen:web:animation:end */
 
-/* @arkzen:web:script */
+/* @arkzen:script */
 import * as THREE from 'three'
 
 // ─── VISUAL LAB GLOBAL CONSTANTS ─────────────────────────────────────────────
@@ -2496,9 +2499,9 @@ export function createRenderLoop(
 
   return () => cancelAnimationFrame(rafId)
 }
-/* @arkzen:web:script:end */
+/* @arkzen:script:end */
 
-/* @arkzen:web:script:three-scene */
+/* @arkzen:script:three-scene */
 import * as THREE from 'three'
 
 // ─── THREE SCENE HELPERS — named script for visual-lab ───────────────────────
@@ -2535,9 +2538,9 @@ export function makePointCloud(scene: THREE.Scene, count = 200) {
   scene.add(points)
   return points
 }
-/* @arkzen:web:script:three-scene:end */
+/* @arkzen:script:three-scene:end */
 
-/* @arkzen:web:script:particles-config */
+/* @arkzen:script:particles-config */
 // ─── PARTICLE SYSTEM CONFIG — named script for visual-lab ────────────────────
 // Generated as: visual-lab.particles-config.script.ts
 // Import: import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
@@ -2571,7 +2574,7 @@ export const tsParticlesConfig = {
 export function getEmitterConfig(origin: { x: number; y: number }) {
   return { ...defaultParticleConfig, origin }
 }
-/* @arkzen:web:script:particles-config:end */
+/* @arkzen:script:particles-config:end */
 
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — church-community/register [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:register instead
-// Generated: 2026-05-26T09:29:47.933Z
+// Generated: 2026-05-27T12:27:33.840Z
 // ============================================================
 
 import React from 'react'

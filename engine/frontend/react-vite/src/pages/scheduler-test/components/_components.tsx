@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-26T09:29:51.594Z
+// Generated: 2026-05-27T12:13:27.624Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

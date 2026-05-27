@@ -1,15 +1,14 @@
 /* @arkzen:meta
 name: queue-flow
 version: 1.0.0
-label: QueueFlow
 auth: false
 description: Real-time queue management system with PWA support
 */
 
-/* @arkzen:web:config
-toast:
-  position: top-right
-  duration: 3000
+/* @arkzen:meta:web
+label: QueueFlow
+title: QueueFlow
+favicon: ⏳
 pwa:
   name: QueueFlow
   short_name: Queue
@@ -20,6 +19,12 @@ pwa:
     - { src: /tatemonos/queue-flow/assets/images/icon-192.png, sizes: 192x192, type: image/png }
     - { src: /tatemonos/queue-flow/assets/images/icon-512.png, sizes: 512x512, type: image/png }
     - { src: /tatemonos/queue-flow/assets/images/icon-mask.png, sizes: 512x512, type: image/png, purpose: maskable }
+*/
+
+/* @arkzen:web:config
+toast:
+  position: top-right
+  duration: 3000
 */
 
 /* @arkzen:database:queues

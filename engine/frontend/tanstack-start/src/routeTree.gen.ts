@@ -21,6 +21,7 @@ import { Route as BodyMailNotification_root_redirectRouteImport } from './routes
 import { Route as AuthTest_root_redirectRouteImport } from './routes/auth-test/__root_redirect'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as VisualLabIndexRouteImport } from './routes/visual-lab/index'
+import { Route as ShanShanIndexRouteImport } from './routes/shan-shan/index'
 import { Route as QueueFlowIndexRouteImport } from './routes/queue-flow/index'
 import { Route as PortfolioTestIndexRouteImport } from './routes/portfolio-test/index'
 import { Route as NewUpdatesStylesIndexRouteImport } from './routes/new-updates-styles/index'
@@ -33,7 +34,6 @@ import { Route as DtrGeofencingIndexRouteImport } from './routes/dtr-geofencing/
 import { Route as CrudTestIndexRouteImport } from './routes/crud-test/index'
 import { Route as ChurchCommunityIndexRouteImport } from './routes/church-community/index'
 import { Route as BodyEndpointHandlerIndexRouteImport } from './routes/body-endpoint-handler/index'
-import { Route as BarbershopBookingIndexRouteImport } from './routes/barbershop-booking/index'
 import { Route as AssetHubIndexRouteImport } from './routes/asset-hub/index'
 import { Route as AnimationLabIndexRouteImport } from './routes/animation-lab/index'
 import { Route as UploadTestDashboardRouteImport } from './routes/upload-test/dashboard'
@@ -146,6 +146,11 @@ const VisualLabIndexRoute = VisualLabIndexRouteImport.update({
   path: '/visual-lab/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ShanShanIndexRoute = ShanShanIndexRouteImport.update({
+  id: '/shan-shan/',
+  path: '/shan-shan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QueueFlowIndexRoute = QueueFlowIndexRouteImport.update({
   id: '/queue-flow/',
   path: '/queue-flow/',
@@ -208,11 +213,6 @@ const BodyEndpointHandlerIndexRoute =
     path: '/body-endpoint-handler/',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BarbershopBookingIndexRoute = BarbershopBookingIndexRouteImport.update({
-  id: '/barbershop-booking/',
-  path: '/barbershop-booking/',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const AssetHubIndexRoute = AssetHubIndexRouteImport.update({
   id: '/asset-hub/',
   path: '/asset-hub/',
@@ -509,7 +509,6 @@ export interface FileRoutesByFullPath {
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab/': typeof AnimationLabIndexRoute
   '/asset-hub/': typeof AssetHubIndexRoute
-  '/barbershop-booking/': typeof BarbershopBookingIndexRoute
   '/body-endpoint-handler/': typeof BodyEndpointHandlerIndexRoute
   '/church-community/': typeof ChurchCommunityIndexRoute
   '/crud-test/': typeof CrudTestIndexRoute
@@ -522,6 +521,7 @@ export interface FileRoutesByFullPath {
   '/new-updates-styles/': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test/': typeof PortfolioTestIndexRoute
   '/queue-flow/': typeof QueueFlowIndexRoute
+  '/shan-shan/': typeof ShanShanIndexRoute
   '/visual-lab/': typeof VisualLabIndexRoute
 }
 export interface FileRoutesByTo {
@@ -582,7 +582,6 @@ export interface FileRoutesByTo {
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab': typeof AnimationLabIndexRoute
   '/asset-hub': typeof AssetHubIndexRoute
-  '/barbershop-booking': typeof BarbershopBookingIndexRoute
   '/body-endpoint-handler': typeof BodyEndpointHandlerIndexRoute
   '/church-community': typeof ChurchCommunityIndexRoute
   '/crud-test': typeof CrudTestIndexRoute
@@ -595,6 +594,7 @@ export interface FileRoutesByTo {
   '/new-updates-styles': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test': typeof PortfolioTestIndexRoute
   '/queue-flow': typeof QueueFlowIndexRoute
+  '/shan-shan': typeof ShanShanIndexRoute
   '/visual-lab': typeof VisualLabIndexRoute
 }
 export interface FileRoutesById {
@@ -656,7 +656,6 @@ export interface FileRoutesById {
   '/upload-test/dashboard': typeof UploadTestDashboardRoute
   '/animation-lab/': typeof AnimationLabIndexRoute
   '/asset-hub/': typeof AssetHubIndexRoute
-  '/barbershop-booking/': typeof BarbershopBookingIndexRoute
   '/body-endpoint-handler/': typeof BodyEndpointHandlerIndexRoute
   '/church-community/': typeof ChurchCommunityIndexRoute
   '/crud-test/': typeof CrudTestIndexRoute
@@ -669,6 +668,7 @@ export interface FileRoutesById {
   '/new-updates-styles/': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test/': typeof PortfolioTestIndexRoute
   '/queue-flow/': typeof QueueFlowIndexRoute
+  '/shan-shan/': typeof ShanShanIndexRoute
   '/visual-lab/': typeof VisualLabIndexRoute
 }
 export interface FileRouteTypes {
@@ -731,7 +731,6 @@ export interface FileRouteTypes {
     | '/upload-test/dashboard'
     | '/animation-lab/'
     | '/asset-hub/'
-    | '/barbershop-booking/'
     | '/body-endpoint-handler/'
     | '/church-community/'
     | '/crud-test/'
@@ -744,6 +743,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles/'
     | '/portfolio-test/'
     | '/queue-flow/'
+    | '/shan-shan/'
     | '/visual-lab/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -804,7 +804,6 @@ export interface FileRouteTypes {
     | '/upload-test/dashboard'
     | '/animation-lab'
     | '/asset-hub'
-    | '/barbershop-booking'
     | '/body-endpoint-handler'
     | '/church-community'
     | '/crud-test'
@@ -817,6 +816,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles'
     | '/portfolio-test'
     | '/queue-flow'
+    | '/shan-shan'
     | '/visual-lab'
   id:
     | '__root__'
@@ -877,7 +877,6 @@ export interface FileRouteTypes {
     | '/upload-test/dashboard'
     | '/animation-lab/'
     | '/asset-hub/'
-    | '/barbershop-booking/'
     | '/body-endpoint-handler/'
     | '/church-community/'
     | '/crud-test/'
@@ -890,6 +889,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles/'
     | '/portfolio-test/'
     | '/queue-flow/'
+    | '/shan-shan/'
     | '/visual-lab/'
   fileRoutesById: FileRoutesById
 }
@@ -951,7 +951,6 @@ export interface RootRouteChildren {
   UploadTestDashboardRoute: typeof UploadTestDashboardRoute
   AnimationLabIndexRoute: typeof AnimationLabIndexRoute
   AssetHubIndexRoute: typeof AssetHubIndexRoute
-  BarbershopBookingIndexRoute: typeof BarbershopBookingIndexRoute
   BodyEndpointHandlerIndexRoute: typeof BodyEndpointHandlerIndexRoute
   ChurchCommunityIndexRoute: typeof ChurchCommunityIndexRoute
   CrudTestIndexRoute: typeof CrudTestIndexRoute
@@ -964,6 +963,7 @@ export interface RootRouteChildren {
   NewUpdatesStylesIndexRoute: typeof NewUpdatesStylesIndexRoute
   PortfolioTestIndexRoute: typeof PortfolioTestIndexRoute
   QueueFlowIndexRoute: typeof QueueFlowIndexRoute
+  ShanShanIndexRoute: typeof ShanShanIndexRoute
   VisualLabIndexRoute: typeof VisualLabIndexRoute
 }
 
@@ -1053,6 +1053,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VisualLabIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/shan-shan/': {
+      id: '/shan-shan/'
+      path: '/shan-shan'
+      fullPath: '/shan-shan/'
+      preLoaderRoute: typeof ShanShanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/queue-flow/': {
       id: '/queue-flow/'
       path: '/queue-flow'
@@ -1135,13 +1142,6 @@ declare module '@tanstack/react-router' {
       path: '/body-endpoint-handler'
       fullPath: '/body-endpoint-handler/'
       preLoaderRoute: typeof BodyEndpointHandlerIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/barbershop-booking/': {
-      id: '/barbershop-booking/'
-      path: '/barbershop-booking'
-      fullPath: '/barbershop-booking/'
-      preLoaderRoute: typeof BarbershopBookingIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/asset-hub/': {
@@ -1528,7 +1528,6 @@ const rootRouteChildren: RootRouteChildren = {
   UploadTestDashboardRoute: UploadTestDashboardRoute,
   AnimationLabIndexRoute: AnimationLabIndexRoute,
   AssetHubIndexRoute: AssetHubIndexRoute,
-  BarbershopBookingIndexRoute: BarbershopBookingIndexRoute,
   BodyEndpointHandlerIndexRoute: BodyEndpointHandlerIndexRoute,
   ChurchCommunityIndexRoute: ChurchCommunityIndexRoute,
   CrudTestIndexRoute: CrudTestIndexRoute,
@@ -1541,6 +1540,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewUpdatesStylesIndexRoute: NewUpdatesStylesIndexRoute,
   PortfolioTestIndexRoute: PortfolioTestIndexRoute,
   QueueFlowIndexRoute: QueueFlowIndexRoute,
+  ShanShanIndexRoute: ShanShanIndexRoute,
   VisualLabIndexRoute: VisualLabIndexRoute,
 }
 export const routeTree = rootRouteImport

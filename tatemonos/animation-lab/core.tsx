@@ -3,6 +3,9 @@ name: animation-lab
 version: 1.0.0
 description: Full animation testing lab — GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures, layout, AnimatePresence, keyframes, drag), and CSS animations (keyframes, transitions, transforms, custom properties). The definitive Arkzen animation reference.
 auth: false
+*/
+
+/* @arkzen:meta:web
 favicon: 🎬
 */
 

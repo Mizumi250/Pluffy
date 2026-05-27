@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — visual-lab/index [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-26T09:29:51.803Z
+// Generated: 2026-05-27T12:27:37.212Z
 // ============================================================
 
 import React from 'react'

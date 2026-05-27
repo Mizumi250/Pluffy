@@ -545,12 +545,29 @@ function generateAstroPageShell(
   hasGlobalStyle: boolean
 ): string {
   const islandName  = `ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)}`
-  const title       = `${toPascalCase(tatemono.meta.name)} — ${toPascalCase(page.name)}`
   const cssImport   = hasGlobalStyle ? `import './styles/global.css'` : ''
+
+  const webMeta     = tatemono.webMeta
+  const meta        = tatemono.meta
+  const baseTitle   = webMeta?.title ?? webMeta?.label ?? toPascalCase(meta.name)
+  const pageLabel   = toPascalCase(page.name)
+  const title       = page.name === 'index' ? baseTitle : `${baseTitle} — ${pageLabel}`
+  const description = webMeta?.description ?? meta.description ?? ''
+  const favicon     = webMeta?.favicon ?? meta.favicon
+  const og          = webMeta?.og
+  const twitter     = webMeta?.twitter
+
+  // Build RootLayout props string
+  const props: string[] = [`title="${title}"`]
+  if (description)         props.push(`description="${description.replace(/"/g, '&quot;')}"`)
+  if (favicon)             props.push(`favicon="${favicon}"`)
+  if (og?.title)           props.push(`og={{ title: "${og.title.replace(/"/g, '&quot;')}"${og.description ? `, description: "${og.description.replace(/"/g, '&quot;')}"` : ''}${og.image ? `, image: "${og.image}"` : ''}${og.url ? `, url: "${og.url}"` : ''}${og.type ? `, type: "${og.type}"` : ''} }}`)
+  else if (og)             props.push(`og={{ ${og.description ? `description: "${(og.description ?? '').replace(/"/g, '&quot;')}"` : ''}${og.image ? `, image: "${og.image}"` : ''}${og.url ? `, url: "${og.url}"` : ''} }}`)
+  if (twitter)             props.push(`twitter={{ card: "${twitter.card ?? 'summary_large_image'}"${twitter.title ? `, title: "${twitter.title.replace(/"/g, '&quot;')}"` : ''}${twitter.description ? `, description: "${twitter.description.replace(/"/g, '&quot;')}"` : ''}${twitter.image ? `, image: "${twitter.image}"` : ''} }}`)
 
   return `---
 // ============================================================
-// ARKZEN GENERATED PAGE — ${tatemono.meta.name}/${page.name}
+// ARKZEN GENERATED PAGE — ${meta.name}/${page.name}
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
@@ -561,7 +578,7 @@ import ${islandName} from '${islandImportPath}.tsx'
 ${cssImport}
 ---
 
-<RootLayout title="${title}">
+<RootLayout ${props.join('\n  ')}>
   <${islandName} client:load />
 </RootLayout>
 `
@@ -767,7 +784,7 @@ import RootLayout from '@/RootLayout.astro'
 import NotFoundIsland from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
-<RootLayout title="Not Found — ${toPascalCase(tatemono.meta.name)}">
+<RootLayout title="Not Found — ${webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
   <NotFoundIsland client:load />
 </RootLayout>
 `
@@ -848,7 +865,7 @@ import RootLayout from '@/RootLayout.astro'
 import ${islandName} from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
-<RootLayout title="Error — ${toPascalCase(tatemono.meta.name)}">
+<RootLayout title="Error — ${webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
   <${islandName} client:load />
 </RootLayout>
 `

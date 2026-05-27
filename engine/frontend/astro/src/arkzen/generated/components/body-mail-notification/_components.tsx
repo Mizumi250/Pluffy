@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-mail-notification
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T04:25:06.460Z
+// Generated: 2026-05-27T12:27:34.567Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

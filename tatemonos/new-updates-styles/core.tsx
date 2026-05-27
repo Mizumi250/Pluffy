@@ -3,6 +3,9 @@ name: new-updates-styles
 version: 2.0.0
 description: Showcase tatemono demonstrating component separation, CSS/Style DSL, multiple pages, and custom components
 auth: false
+*/
+
+/* @arkzen:meta:web
 favicon: https://cdn-icons-png.flaticon.com/512/1995/1995467.png
 */
 

@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v6.3
+// ARKZEN ENGINE — PARSER v9.0
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -15,7 +15,36 @@
 //         handler snippets map into each ArkzenCustomRouteEntry.
 //       - parseTatemono() wires all three + passes middlewareSnippets.
 //
-// v6.2 (kept): parseMeta now reads auth_seed.users from @arkzen:meta block.
+// v7.0: Multi-platform DSL prefix support.
+//       All web-frontend blocks now use @arkzen:web: prefix for unambiguous
+//       platform identification. Affected blocks:
+//         config, components, layout, style, page, error, animation
+//       Backend blocks (database, api, routes, middleware, handler, endpoint,
+//       policy, jobs, events, listeners, notifications, mail, console,
+//       realtime, store, script) remain unprefixed — shared across all platforms.
+//       @arkzen:meta:web signals the web section in multi-platform tatemonos.
+//       New helpers: parseConfig, parseAllPages, parseAllLayouts,
+//       parseAllComponents, parseAllStyles, parseAllErrorHandlers,
+//       parseGlobalAnimation now all look for web: prefixed tags.
+//
+// v9.0: @arkzen:meta:web separation.
+//       New block: @arkzen:meta:web (YAML_ONLY, Type A).
+//       parseWebMeta() extracts title, label, description, favicon,
+//       og, twitter, pwa from the new block.
+//       parseMeta() no longer reads favicon or pwa — those are web concerns.
+//       ParsedTatemono gains webMeta?: ArkzenWebMeta.
+//       pwa-builder reads tatemono.webMeta?.pwa with fallback to
+//       tatemono.meta.pwa (deprecated) for backward compatibility.
+//       YAML_ONLY_TAGS updated: added 'meta:web'.
+//
+//       @arkzen:web:script and @arkzen:web:script:name are now the
+//       canonical DSL tags — script blocks are web-frontend utilities
+//       (Three.js, GSAP factories, canvas helpers) that have no meaning
+//       on native or desktop platforms.
+//       parseGlobalScript() and parseAllNamedScripts() updated.
+//       CODE_BLOCK_TAGS updated: 'script' → 'web:script'.
+//       hasSections() updated: script check uses 'web:script'.
+//
 // v6.1 (kept): Added parseAllNotifications() and parseAllMails().
 // v5.1 (kept): Added parseAllCustomRoutes() for @arkzen:routes blocks.
 // ============================================================
@@ -26,6 +55,7 @@ import * as yaml from 'js-yaml'
 import type {
   ParsedTatemono,
   ArkzenMeta,
+  ArkzenWebMeta,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -164,6 +194,46 @@ function extractAllSections(content: string, marker: string): string[] {
 }
 
 // ─────────────────────────────────────────────
+// TEMPLATE LITERAL STRIPPER
+// Replaces backtick template literal content with whitespace so DSL marker
+// searches (indexOf) don't match markers that appear inside demo strings,
+// <code> blocks, or other string literals in the tatemono source.
+// Positions in the stripped string correspond 1:1 with the original so
+// start/end indices can be used directly on the original content.
+// ─────────────────────────────────────────────
+
+function stripTemplateLiterals(src: string): string {
+  let result = ''
+  let i = 0
+  while (i < src.length) {
+    if (src[i] === '`') {
+      result += ' '     // replace opening backtick
+      i++
+      while (i < src.length) {
+        if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char
+        if (src[i] === '`')  { result += ' '; i++; break }          // closing backtick
+        // Skip ${...} expressions — shallow (1 level)
+        if (src[i] === '$' && src[i + 1] === '{') {
+          let depth = 1
+          result += '  '; i += 2
+          while (i < src.length && depth > 0) {
+            if (src[i] === '{') depth++
+            else if (src[i] === '}') depth--
+            result += ' '; i++
+          }
+          continue
+        }
+        result += ' '; i++  // replace literal content with space (preserves length)
+      }
+    } else {
+      result += src[i]
+      i++
+    }
+  }
+  return result
+}
+
+// ─────────────────────────────────────────────
 // NAMED SECTION EXTRACTOR — v5
 // For @arkzen:marker:name ... @arkzen:marker:name:end
 // Returns array of { name, raw, start, end }
@@ -172,11 +242,12 @@ function extractAllSections(content: string, marker: string): string[] {
 function extractAllNamedSections(content: string, marker: string): ArkzenSection[] {
   const results: ArkzenSection[] = []
   let searchFrom = 0
+  const safe = stripTemplateLiterals(content)  // use for indexOf only; raw extracted from original
 
   while (true) {
     // Find next opening: /* @arkzen:marker:
     const openPattern = `/* @arkzen:${marker}:`
-    const openIdx = content.indexOf(openPattern, searchFrom)
+    const openIdx = safe.indexOf(openPattern, searchFrom)
     if (openIdx === -1) break
 
     // Extract the identifier (everything until whitespace or */)
@@ -191,12 +262,12 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Find end of opening comment.
     // Guard against inline cron fragments like "*/5 * * * *" in YAML.
-    const openCommentEnd = findOpeningCommentEnd(content, openIdx, openIdx + openPattern.length)
+    const openCommentEnd = findOpeningCommentEnd(safe, openIdx, openIdx + openPattern.length)
     if (openCommentEnd === -1) break
 
     // Find closing marker: /* @arkzen:marker:identifier:end */
     const closeMarker = `/* @arkzen:${marker}:${identifier}:end */`
-    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
+    const closeIdx = safe.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
     // Extract raw content between opening comment close and closing marker
@@ -227,7 +298,16 @@ function parseMeta(content: string): ArkzenMeta {
 
   if (!parsed.name) throw new Error('[Arkzen Parser] meta.name is required')
 
+  // v9.0: favicon and pwa have moved to @arkzen:meta:web.
+  // Keep reading them here as deprecated fallbacks so old tatemonos
+  // don't hard-crash before migration. Emit a warning if found.
   const pwaRaw = parsed.pwa as Record<string, any> | undefined
+  if (parsed.favicon) {
+    console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": favicon in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
+  }
+  if (pwaRaw) {
+    console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": pwa in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
+  }
 
   return {
     name:         String(parsed.name),
@@ -235,6 +315,7 @@ function parseMeta(content: string): ArkzenMeta {
     description:  String(parsed.description ?? ''),
     auth:         Boolean(parsed.auth ?? false),
     dependencies: (parsed.dependencies as string[]) ?? [],
+    // deprecated fallbacks
     favicon:      parsed.favicon ? String(parsed.favicon) : undefined,
     pwa:          pwaRaw ? {
       name:             String(pwaRaw.name             ?? parsed.name),
@@ -261,8 +342,72 @@ function parseMeta(content: string): ArkzenMeta {
   }
 }
 
+// ─────────────────────────────────────────────
+// PARSE WEB META — v9.0
+// Extracts @arkzen:meta:web block — web-only metadata.
+// Contains: title, label, description, favicon, og, twitter, pwa.
+// All fields optional. If block is absent returns undefined.
+// ─────────────────────────────────────────────
+
+function parseWebMeta(content: string): ArkzenWebMeta | undefined {
+  // @arkzen:meta:web is a YAML_ONLY block — extractSection handles it
+  // by stripping everything after `/* @arkzen:meta:web` up to the closing `*/`
+  const raw = extractSection(content, 'meta:web')
+  if (!raw) return undefined
+
+  const parsed = yaml.load(raw) as Record<string, unknown>
+  if (!parsed) return undefined
+
+  const ogRaw      = parsed.og      as Record<string, any> | undefined
+  const twitterRaw = parsed.twitter as Record<string, any> | undefined
+  const pwaRaw     = parsed.pwa     as Record<string, any> | undefined
+
+  const webMeta: ArkzenWebMeta = {}
+
+  if (parsed.title)       webMeta.title       = String(parsed.title)
+  if (parsed.label)       webMeta.label       = String(parsed.label)
+  if (parsed.description) webMeta.description = String(parsed.description)
+  if (parsed.favicon)     webMeta.favicon     = String(parsed.favicon)
+
+  if (ogRaw) {
+    webMeta.og = {}
+    if (ogRaw.title)       webMeta.og.title       = String(ogRaw.title)
+    if (ogRaw.description) webMeta.og.description = String(ogRaw.description)
+    if (ogRaw.image)       webMeta.og.image       = String(ogRaw.image)
+    if (ogRaw.url)         webMeta.og.url         = String(ogRaw.url)
+    if (ogRaw.type)        webMeta.og.type        = String(ogRaw.type)
+  }
+
+  if (twitterRaw) {
+    webMeta.twitter = {}
+    if (twitterRaw.card)        webMeta.twitter.card        = String(twitterRaw.card)
+    if (twitterRaw.title)       webMeta.twitter.title       = String(twitterRaw.title)
+    if (twitterRaw.description) webMeta.twitter.description = String(twitterRaw.description)
+    if (twitterRaw.image)       webMeta.twitter.image       = String(twitterRaw.image)
+  }
+
+  if (pwaRaw) {
+    const tatName = String((yaml.load(extractSection(content, 'meta') ?? '') as any)?.name ?? '')
+    webMeta.pwa = {
+      name:             String(pwaRaw.name             ?? webMeta.label ?? tatName),
+      short_name:       String(pwaRaw.short_name       ?? tatName),
+      description:      String(pwaRaw.description      ?? webMeta.description ?? ''),
+      theme_color:      String(pwaRaw.theme_color      ?? '#0a0a0a'),
+      background_color: String(pwaRaw.background_color ?? '#ffffff'),
+      display:         (pwaRaw.display                 ?? 'standalone') as any,
+      orientation:     (pwaRaw.orientation             ?? 'any') as any,
+      start_url:        String(pwaRaw.start_url        ?? `/${tatName}`),
+      offline:          Boolean(pwaRaw.offline         ?? true),
+      icons:            pwaRaw.icons ?? undefined,
+    }
+  }
+
+  return webMeta
+}
+
 function parseConfig(content: string): ArkzenConfigOverride | undefined {
-  const raw = extractSection(content, 'config')
+  // v7.0: @arkzen:web:config — strict, no fallback
+  const raw = extractSection(content, 'web:config')
   if (!raw) return undefined
   return yaml.load(raw) as ArkzenConfigOverride
 }
@@ -664,8 +809,12 @@ function parseAllPages(content: string): ArkzenPage[] {
   const results: ArkzenPage[] = []
   let searchFrom = 0
 
+  // v7.0: @arkzen:web:page: — strict, no fallback
+  const openPattern   = `/* @arkzen:web:page:`
+  const closePrefix   = `web:page`
+  const layoutPattern = `@arkzen:web:page:layout:`
+
   while (true) {
-    const openPattern = `/* @arkzen:page:`
     const openIdx = content.indexOf(openPattern, searchFrom)
     if (openIdx === -1) break
 
@@ -675,40 +824,26 @@ function parseAllPages(content: string): ArkzenPage[] {
 
     const pageName = identMatch[1]
 
-    // Skip :end and :layout markers
     if (pageName === 'end' || pageName === 'layout') {
       searchFrom = openIdx + openPattern.length
       continue
     }
 
-    // Find end of opening comment */
     const openCommentEnd = content.indexOf('*/', openIdx)
     if (openCommentEnd === -1) break
 
-    // Find closing marker
-    const closeMarker = `/* @arkzen:page:${pageName}:end */`
+    const closeMarker = `/* @arkzen:${closePrefix}:${pageName}:end */`
     const closeIdx = content.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
-    // Raw content between opening comment and closing marker
     let raw = content.slice(openCommentEnd + 2, closeIdx).trim()
 
-    // Extract layout from @arkzen:page:layout:X declaration inside the block.
-    //
-    // BUG FIX: The outer while-loop matches /* @arkzen:page:layout:X */ as a new
-    // page pattern, sees pageName === 'layout', and skips it — advancing searchFrom
-    // PAST the layout line. By the time we read `raw`, the layout marker may have
-    // already been consumed by the loop and stripped from the slice.
-    //
-    // Fix: scan the full content slice (openCommentEnd → closeIdx) directly so we
-    // catch the layout declaration regardless of whether the outer loop skipped it.
-    let layout: string = 'guest'  // safe default (was 'auth' which forced /login redirects)
+    let layout: string = 'guest'
     const blockContent = content.slice(openCommentEnd + 2, closeIdx)
-    const layoutMatch  = blockContent.match(/\/\* @arkzen:page:layout:([a-zA-Z0-9_-]+) \*\//)
+    const layoutMatch  = blockContent.match(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([a-zA-Z0-9_-]+) \\*\\/`))
     if (layoutMatch) {
       layout = layoutMatch[1]
-      // Remove layout declaration line from raw code so it doesn't appear in generated page
-      raw = raw.replace(/\/\* @arkzen:page:layout:[a-zA-Z0-9_-]+ \*\/\n?/, '').trim()
+      raw = raw.replace(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[a-zA-Z0-9_-]+ \\*\\/\\n?`), '').trim()
     }
 
     results.push({
@@ -731,11 +866,11 @@ function parseAllPages(content: string): ArkzenPage[] {
 // ─────────────────────────────────────────────
 
 function parseAllLayouts(content: string): ArkzenLayout[] {
-  const sections = extractAllNamedSections(content, 'layout')
+  // v7.0: @arkzen:web:layout: — strict, no fallback
+  const sections = extractAllNamedSections(content, 'web:layout')
   return sections.map(s => {
-    // Extract name from the marker — re-parse from content
-    const marker = content.slice(s.start)
-    const nameMatch = marker.match(/\/\* @arkzen:layout:([a-zA-Z0-9_-]+)/)
+    const seg = content.slice(s.start)
+    const nameMatch = seg.match(/\/\* @arkzen:web:layout:([a-zA-Z0-9_-]+)/)
     const name = nameMatch ? nameMatch[1] : 'unknown'
     return { name, raw: s.raw, start: s.start, end: s.end }
   })
@@ -903,17 +1038,18 @@ function parseAllMails(content: string): ArkzenSection[] {
 
 function parseAllStyles(content: string): ArkzenStyle[] {
   const results: ArkzenStyle[] = []
+  // v7.0: @arkzen:web:style — strict, no fallback
+  const baseTag = 'web:style'
 
-  // ── First pass: @arkzen:style (no name) ──────────────────────────────
-  const globalMarker = `/* @arkzen:style`
+  // ── First pass: global (no name) ─────────────────────────────────────
+  const globalMarker = `/* @arkzen:${baseTag}`
   const globalIdx = content.indexOf(globalMarker)
   if (globalIdx !== -1) {
     const afterMarker = content.slice(globalIdx + globalMarker.length)
-    // Check if next char is space/newline (not ':' which would be @arkzen:style:name)
     if (afterMarker[0] && /[\s*]/.test(afterMarker[0])) {
       const openCommentEnd = content.indexOf('*/', globalIdx)
       if (openCommentEnd !== -1) {
-        const endMarker = `/* @arkzen:style:end */`
+        const endMarker = `/* @arkzen:${baseTag}:end */`
         const endIdx = content.indexOf(endMarker, openCommentEnd)
         if (endIdx !== -1) {
           const raw = content.slice(openCommentEnd + 2, endIdx).trim()
@@ -923,8 +1059,8 @@ function parseAllStyles(content: string): ArkzenStyle[] {
     }
   }
 
-  // ── Second pass: @arkzen:style:name ──────────────────────────────────
-  const namedPattern = `/* @arkzen:style:`
+  // ── Second pass: named (CSS Modules) ─────────────────────────────────
+  const namedPattern = `/* @arkzen:${baseTag}:`
   let searchFrom = 0
 
   while (true) {
@@ -941,7 +1077,7 @@ function parseAllStyles(content: string): ArkzenStyle[] {
     const openCommentEnd = content.indexOf('*/', openIdx)
     if (openCommentEnd === -1) break
 
-    const closeMarker = `/* @arkzen:style:${identifier}:end */`
+    const closeMarker = `/* @arkzen:${baseTag}:${identifier}:end */`
     const closeIdx = content.indexOf(closeMarker, openCommentEnd)
     if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
 
@@ -960,37 +1096,38 @@ function parseAllStyles(content: string): ArkzenStyle[] {
 }
 
 // ─────────────────────────────────────────────
-// PARSE ALL SCRIPTS — v6.5
-// Mirrors @arkzen:animation pattern but for general-purpose JS/TS:
-//   - Three.js scenes, canvas setups, physics worlds, Rapier, Lenis instances
-//   - Shared utility functions, hooks, constants too heavy for @arkzen:components
-//   - Can include GSAP/Framer too (superset of @arkzen:animation)
+// PARSE ALL SCRIPTS — v8.0
+// v8.0: moved to @arkzen:web:script / @arkzen:web:script:name prefix.
+// Script blocks are web-frontend utilities — Three.js scenes, canvas
+// setups, GSAP factories, shared constants — that only make sense on web.
+// Native and desktop will have their own @arkzen:native:script etc.
 //
 // Two shapes:
-//   Global  — /* @arkzen:script */ ... /* @arkzen:script:end */
+//   Global  — /* @arkzen:web:script */ ... /* @arkzen:web:script:end */
 //             → one per tatemono, exported as {name}.scripts.ts
-//   Named   — /* @arkzen:script:name */ ... /* @arkzen:script:name:end */
+//   Named   — /* @arkzen:web:script:name */ ... /* @arkzen:web:script:name:end */
 //             → multiple allowed, each exported as {name}.{scriptName}.script.ts
 //
 // Opening tags must have */ on the same line (CODE_BLOCK_TAGS rule).
 // ─────────────────────────────────────────────
 
 function parseGlobalScript(content: string): ArkzenSection | undefined {
-  // Mirrors parseAllStyles() global pass exactly.
-  // Check first char after `/* @arkzen:script` — if it's NOT ':' it's the global block.
-  // ':' means named block (/* @arkzen:script:name */), space/* means global.
-  const globalMarker = `/* @arkzen:script`
-  const globalIdx = content.indexOf(globalMarker)
+  // v8.0: @arkzen:web:script — strict, no fallback
+  // Check first char after `/* @arkzen:web:script` — if it's NOT ':' it's the global block.
+  // ':' means named block (/* @arkzen:web:script:name */), space/* means global.
+  const globalMarker = `/* @arkzen:web:script`
+  const safe = stripTemplateLiterals(content)
+  const globalIdx = safe.indexOf(globalMarker)
   if (globalIdx === -1) return undefined
 
   const afterMarker = content.slice(globalIdx + globalMarker.length)
   if (!afterMarker[0] || !/[\s*]/.test(afterMarker[0])) return undefined
 
-  const openCommentEnd = content.indexOf('*/', globalIdx)
+  const openCommentEnd = safe.indexOf('*/', globalIdx)
   if (openCommentEnd === -1) return undefined
 
-  const endMarker = `/* @arkzen:script:end */`
-  const endIdx = content.indexOf(endMarker, openCommentEnd)
+  const endMarker = `/* @arkzen:web:script:end */`
+  const endIdx = safe.indexOf(endMarker, openCommentEnd)
   if (endIdx === -1) return undefined
 
   const raw = content.slice(openCommentEnd + 2, endIdx).trim()
@@ -998,7 +1135,8 @@ function parseGlobalScript(content: string): ArkzenSection | undefined {
 }
 
 function parseAllNamedScripts(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'script')
+  // v8.0: @arkzen:web:script:name — strict, no fallback
+  return extractAllNamedSections(content, 'web:script')
 }
 
 // ─────────────────────────────────────────────
@@ -1356,7 +1494,8 @@ function parseAllRealtime(content: string): ArkzenSection[] {
 
 
 function parseAllComponents(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'components')
+  // v7.0: @arkzen:web:components: — strict, no fallback
+  return extractAllNamedSections(content, 'web:components')
 }
 
 // ─────────────────────────────────────────────
@@ -1374,10 +1513,12 @@ function parseAllComponents(content: string): ArkzenSection[] {
 function parseAllErrorHandlers(content: string): ArkzenErrorHandler[] {
   const results: ArkzenErrorHandler[] = []
   const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
+  // v7.0: @arkzen:web:error: — strict, no fallback
+  const prefix = 'web:error'
 
   for (const type of validTypes) {
-    const openMarker  = `/* @arkzen:error:${type} */`
-    const closeMarker = `/* @arkzen:error:${type}:end */`
+    const openMarker  = `/* @arkzen:${prefix}:${type} */`
+    const closeMarker = `/* @arkzen:${prefix}:${type}:end */`
 
     const openIdx = content.indexOf(openMarker)
     if (openIdx === -1) continue
@@ -1411,9 +1552,11 @@ interface DslTagError {
   fix:     string
 }
 
-const CODE_BLOCK_TAGS = ['components', 'layout', 'animation', 'script', 'page', 'style', 'error']
+// v7.0: updated for web: prefix. tagType now captures e.g. "web" from @arkzen:web:page:index
+// so CODE_BLOCK_TAGS etc. match on the full prefix:subtype string instead.
+const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error']
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
-const YAML_ONLY_TAGS  = ['meta', 'config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
+const YAML_ONLY_TAGS  = ['meta', 'meta:web', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
 function validateDslTags(content: string, filePath: string): void {
   const lines     = content.split('\n')
@@ -1427,11 +1570,13 @@ function validateDslTags(content: string, filePath: string): void {
 
     if (!trimmed.startsWith('/* @arkzen:')) continue
     if (trimmed.includes(':end */'))        continue
-    if (trimmed.match(/^\/\* @arkzen:page:layout:/)) continue
+    // v7.0: skip web:page:layout: inline declarations (no :end needed)
+    if (trimmed.match(/^\/\* @arkzen:web:page:layout:/)) continue
 
-    const tagMatch = trimmed.match(/^\/\* @arkzen:([a-zA-Z]+)/)
+    // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
+    const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop):)?([a-zA-Z]+)/)
     if (!tagMatch) continue
-    const tagType = tagMatch[1]
+    const tagType = tagMatch[1] ? `${tagMatch[1]}${tagMatch[2]}` : tagMatch[2]
 
     const hasInlineClose = trimmed.endsWith('*/')
 
@@ -1554,7 +1699,7 @@ function validateNoDuplicateControllers(apis: ArkzenApi[]): void {
 function validatePages(pages: ArkzenPage[], errorHandlers: ArkzenErrorHandler[]): void {
   // A tatemono with only error handlers and no routed pages is valid
   if (pages.length === 0 && errorHandlers.length === 0) {
-    throw new Error('[Arkzen Parser] At least one @arkzen:page:name section is required')
+    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name section is required')
   }
   const seen = new Set<string>()
   for (const page of pages) {
@@ -1584,6 +1729,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const fileName = path.basename(filePath, '.tsx')
 
   const meta         = parseMeta(content)
+  const webMeta      = parseWebMeta(content)   // v9.0: @arkzen:meta:web
   const config       = parseConfig(content)
   const databases    = parseAllDatabases(content)
   const customRoutes = parseAllCustomRoutes(content)  // internally calls parseAllHandlerSnippets
@@ -1621,7 +1767,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const mails         = parseAllMails(content)          // ← v6.1: dedicated parser
   const consoles      = parseAllConsoles(content)
 
-  const animation = extractSectionWithPosition(content, 'animation') ?? undefined
+  // v7.0: @arkzen:web:animation — strict, no fallback
+  const animation = extractSectionWithPosition(content, 'web:animation') ?? undefined
 
   // v6.5: global script block + named script blocks
   const script  = parseGlobalScript(content)
@@ -1660,6 +1807,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     filePath,
     fileName,
     meta,
+    webMeta,     // v9.0
     config,
     databases,
     apis,
@@ -1685,6 +1833,17 @@ export function parseTatemono(filePath: string): ParsedTatemono {
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
   console.log(`[Arkzen Parser]   Auth: ${meta.auth} | Static: ${isStatic}`)
+  if (webMeta) {
+    const webMetaParts = [
+      webMeta.title       && `title`,
+      webMeta.favicon     && `favicon`,
+      webMeta.label       && `label`,
+      webMeta.og          && `og`,
+      webMeta.twitter     && `twitter`,
+      webMeta.pwa         && `pwa`,
+    ].filter(Boolean)
+    console.log(`[Arkzen Parser]   Web meta: ${webMetaParts.join(', ') || 'present'}`)
+  }
   console.log(`[Arkzen Parser]   Pages (${pages.length}): ${pages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
   if (errorHandlers.length)  console.log(`[Arkzen Parser]   Error handlers (${errorHandlers.length}): ${errorHandlers.map(e => e.type).join(', ')}`)
   if (databases.length)      console.log(`[Arkzen Parser]   Tables (${databases.length}): ${databases.map(d => d.table).join(', ')}`)
@@ -1713,15 +1872,16 @@ export function hasSections(filePath: string) {
   const content = fs.readFileSync(filePath, 'utf-8')
   return {
     meta:          content.includes('/* @arkzen:meta'),
-    config:        content.includes('/* @arkzen:config'),
+    metaWeb:       content.includes('/* @arkzen:meta:web'),
+    config:        content.includes('/* @arkzen:web:config'),
     database:      content.includes('/* @arkzen:database'),
     api:           content.includes('/* @arkzen:api'),
-    routes:        content.includes('/* @arkzen:routes'),   // ← v5.1
+    routes:        content.includes('/* @arkzen:routes'),
     store:         content.includes('/* @arkzen:store:'),
-    components:    content.includes('/* @arkzen:components:'),
-    page:          content.includes('/* @arkzen:page:'),
-    animation:     content.includes('/* @arkzen:animation'),
-    script:        content.includes('/* @arkzen:script'),
-    errorHandler:  content.includes('/* @arkzen:error:'),
+    components:    content.includes('/* @arkzen:web:components:'),
+    page:          content.includes('/* @arkzen:web:page:'),
+    animation:     content.includes('/* @arkzen:web:animation'),
+    script:        content.includes('/* @arkzen:web:script'),
+    errorHandler:  content.includes('/* @arkzen:web:error:'),
   }
 }

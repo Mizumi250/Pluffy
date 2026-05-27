@@ -16,7 +16,6 @@ import { Route as Route_asset_hub_index } from '../../routes/asset-hub/index'
 import { Route as Route_auth_test_login } from '../../routes/auth-test/login'
 import { Route as Route_auth_test_register } from '../../routes/auth-test/register'
 import { Route as Route_auth_test_dashboard } from '../../routes/auth-test/dashboard'
-import { Route as Route_barbershop_booking_index } from '../../routes/barbershop-booking/index'
 import { Route as Route_body_endpoint_handler_index } from '../../routes/body-endpoint-handler/index'
 import { Route as Route_body_mail_notification_login } from '../../routes/body-mail-notification/login'
 import { Route as Route_body_mail_notification_register } from '../../routes/body-mail-notification/register'
@@ -66,6 +65,7 @@ import { Route as Route_roles_test_login } from '../../routes/roles-test/login'
 import { Route as Route_roles_test_register } from '../../routes/roles-test/register'
 import { Route as Route_roles_test_dashboard } from '../../routes/roles-test/dashboard'
 import { Route as Route_scheduler_test_dashboard } from '../../routes/scheduler-test/dashboard'
+import { Route as Route_shan_shan_index } from '../../routes/shan-shan/index'
 import { Route as Route_upload_test_dashboard } from '../../routes/upload-test/dashboard'
 import { Route as Route_visual_lab_index } from '../../routes/visual-lab/index'
 // TANSTACK_ROUTE_IMPORTS_END
@@ -81,7 +81,6 @@ const routeTree = RootRoute.addChildren([
   Route_auth_test_login,
   Route_auth_test_register,
   Route_auth_test_dashboard,
-  Route_barbershop_booking_index,
   Route_body_endpoint_handler_index,
   Route_body_mail_notification_login,
   Route_body_mail_notification_register,
@@ -131,6 +130,7 @@ const routeTree = RootRoute.addChildren([
   Route_roles_test_register,
   Route_roles_test_dashboard,
   Route_scheduler_test_dashboard,
+  Route_shan_shan_index,
   Route_upload_test_dashboard,
   Route_visual_lab_index,
   // TANSTACK_ROUTE_CHILDREN_END

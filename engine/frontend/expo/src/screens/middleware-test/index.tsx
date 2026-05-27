@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — middleware-test/index [Expo]
 // Layout: guest | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-26T09:29:49.652Z
+// Generated: 2026-05-27T12:27:35.759Z
 // ============================================================
 
 import React from 'react'

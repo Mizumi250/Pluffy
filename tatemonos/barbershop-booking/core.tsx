@@ -1,8 +1,12 @@
 /* @arkzen:meta
 name: barbershop-booking
 version: 1.0.0
-label: Barbershop Booking
 auth: false
+*/
+
+/* @arkzen:meta:web
+label: Barbershop Booking
+title: Barbershop Booking
 */
 
 /* @arkzen:database

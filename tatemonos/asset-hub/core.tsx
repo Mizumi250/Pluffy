@@ -3,6 +3,9 @@ name: asset-hub
 version: 1.0.0
 description: The canonical Arkzen asset management hub. Drop any file into tatemonos/asset-hub/assets/ and the engine auto-copies it to the public folder. This tatemono documents every asset category (images, fonts, icons, SVG, video, audio, JSON data), shows how to reference them in code, provides a live asset browser UI, and acts as the shared asset repository for the entire Arkzen project.
 auth: false
+*/
+
+/* @arkzen:meta:web
 favicon: 📦
 */
 

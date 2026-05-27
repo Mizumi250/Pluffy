@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-24T02:29:44.205Z
+// Generated: 2026-05-27T12:14:48.313Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

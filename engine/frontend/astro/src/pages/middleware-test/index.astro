@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — middleware-test/index
 // Astro page shell. All UI lives in the React island below.
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T04:25:08.667Z
+// Generated: 2026-05-27T12:27:37.463Z
 // ============================================================
 
 import RootLayout from '@/RootLayout.astro'
@@ -11,6 +11,7 @@ import ArkzenIsland_MiddlewareTest_Index from '@/arkzen/generated/islands/middle
 
 ---
 
-<RootLayout title="MiddlewareTest — Index">
+<RootLayout title="MiddlewareTest"
+  description="Tests MiddlewareBuilder v7.0 body injection. Declares [requireJson] with real logic injected via @arkzen:middleware:requireJson DSL block. Also tests alias registration fix — previously requireJson was never registered as an alias so Laravel 500'd at runtime.">
   <ArkzenIsland_MiddlewareTest_Index client:load />
 </RootLayout>

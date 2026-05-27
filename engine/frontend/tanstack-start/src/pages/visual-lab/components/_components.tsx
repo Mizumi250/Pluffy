@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — visual-lab [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:24:27.848Z
+// Generated: 2026-05-27T12:25:39.214Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -1379,7 +1379,7 @@ export const VisualLabColors = {
 }
 
 // Factory: build a reusable Three.js scene with standard lighting
-export function visualLabSceneSetup(canvas: HTMLCanvasElement) {
+function visualLabSceneSetup(canvas: HTMLCanvasElement) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true })
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(60, canvas.clientWidth / canvas.clientHeight)

@@ -1,7 +1,6 @@
 /* @arkzen:meta
 name: certflow
 version: 1.0.0
-label: CertFlow
 description: Certificate automation system — admin uploads templates, places draggable fields, generates links; clients fill and receive QR-stamped certificates via email.
 auth: true
 auth_seed:
@@ -10,6 +9,11 @@ auth_seed:
       email: admin@certflow.com
       password: certflow123
       role: admin
+*/
+
+/* @arkzen:meta:web
+label: CertFlow
+title: CertFlow
 */
 
 /* @arkzen:web:config

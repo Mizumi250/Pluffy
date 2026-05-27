@@ -2,17 +2,68 @@
 import '@/styles/globals.css'
 
 interface Props {
-  title?: string
+  title?:       string
+  description?: string
+  favicon?:     string
+  og?: {
+    title?:       string
+    description?: string
+    image?:       string
+    url?:         string
+    type?:        string
+  }
+  twitter?: {
+    card?:        string
+    title?:       string
+    description?: string
+    image?:       string
+  }
 }
-const { title = 'Arkzen' } = Astro.props
+
+const {
+  title       = 'Arkzen',
+  description,
+  favicon,
+  og,
+  twitter,
+} = Astro.props
+
+// Resolve favicon href — emoji support
+function faviconHref(f: string): string {
+  const isEmoji = [...f].length <= 2
+  if (isEmoji) {
+    return `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${f}</text></svg>`
+  }
+  return f
+}
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
     <title>{title}</title>
+
+    {favicon && <link rel="icon" href={faviconHref(favicon)} />}
+    {description && <meta name="description" content={description} />}
+
+    <!-- Open Graph -->
+    <meta property="og:title" content={og?.title ?? title} />
+    {(og?.description ?? description) && <meta property="og:description" content={og?.description ?? description} />}
+    {og?.image && <meta property="og:image" content={og.image} />}
+    {og?.url && <meta property="og:url" content={og.url} />}
+    <meta property="og:type" content={og?.type ?? 'website'} />
+
+    <!-- Twitter -->
+    {twitter && (
+      <>
+        <meta name="twitter:card" content={twitter.card ?? 'summary_large_image'} />
+        <meta name="twitter:title" content={twitter.title ?? title} />
+        {(twitter.description ?? description) && <meta name="twitter:description" content={twitter.description ?? description} />}
+        {twitter.image && <meta name="twitter:image" content={twitter.image} />}
+      </>
+    )}
   </head>
   <body>
     <div id="arkzen-root">
@@ -22,21 +73,16 @@ const { title = 'Arkzen' } = Astro.props
     <!-- Initialize zustand with auth token from cookies BEFORE React hydrates -->
     <script>
       (function() {
-        // Extract all arkzen-auth-* cookies and populate localStorage so zustand can restore them
         const cookies = document.cookie.split(';');
         for (const cookie of cookies) {
           const trimmed = cookie.trim();
           if (trimmed.startsWith('arkzen-auth-')) {
             const [key, value] = trimmed.split('=');
             if (key && value) {
-              // Get the tatemono slug from the cookie key (e.g., arkzen-auth-auth-test → auth-test)
               const slug = key.replace('arkzen-auth-', '');
-              // Store in localStorage so zustand persist middleware can restore it
               try {
                 localStorage.setItem(`arkzen-auth-${slug}`, JSON.stringify({ token: value }));
-              } catch (e) {
-                // localStorage might not be available in some environments
-              }
+              } catch (e) {}
             }
           }
         }

@@ -1206,6 +1206,9 @@ ${clean}${pageVariantsBlock}
 
   console.log(`[Arkzen TanStack] ✓ Generated ${routeEntries.length} route(s)`)
 
+  // v9.0: inject meta:web into __root.tsx head()
+  generateTanStackRoot(tatemono)
+
   // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
   try {
     const registry = getRegistry()
@@ -1216,6 +1219,113 @@ ${clean}${pageVariantsBlock}
   }
 
   return routeEntries
+}
+
+// ─────────────────────────────────────────────
+// GENERATE TANSTACK __root.tsx — v9.0
+// Rewrites src/routes/__root.tsx to inject head() meta from @arkzen:meta:web
+// ─────────────────────────────────────────────
+
+function generateTanStackRoot(tatemono: ParsedTatemono): void {
+  const rootPath  = path.resolve(process.cwd(), 'src', 'routes', '__root.tsx')
+  const webMeta   = tatemono.webMeta
+  const meta      = tatemono.meta
+
+  const title       = webMeta?.title ?? webMeta?.label ?? meta.name
+  const description = webMeta?.description ?? meta.description ?? ''
+  const favicon     = webMeta?.favicon ?? meta.favicon
+  const og          = webMeta?.og
+  const twitter     = webMeta?.twitter
+
+  // Build meta array entries
+  const metaEntries: string[] = [
+    `      { charSet: 'utf-8' }`,
+    `      { name: 'viewport', content: 'width=device-width, initial-scale=1' }`,
+    `      { title: '${title.replace(/'/g, "\\'")}' }`,
+  ]
+  if (description) {
+    metaEntries.push(`      { name: 'description', content: '${description.replace(/'/g, "\\'")}' }`)
+  }
+  // OG
+  metaEntries.push(`      { property: 'og:title', content: '${(og?.title ?? title).replace(/'/g, "\\'")}' }`)
+  if (description || og?.description) {
+    metaEntries.push(`      { property: 'og:description', content: '${((og?.description ?? description) ?? '').replace(/'/g, "\\'")}' }`)
+  }
+  if (og?.image) metaEntries.push(`      { property: 'og:image', content: '${og.image}' }`)
+  if (og?.url)   metaEntries.push(`      { property: 'og:url', content: '${og.url}' }`)
+  metaEntries.push(`      { property: 'og:type', content: '${og?.type ?? 'website'}' }`)
+  // Twitter
+  if (twitter) {
+    metaEntries.push(`      { name: 'twitter:card', content: '${twitter.card ?? 'summary_large_image'}' }`)
+    metaEntries.push(`      { name: 'twitter:title', content: '${(twitter.title ?? title).replace(/'/g, "\\'")}' }`)
+    if (twitter.description || description) {
+      metaEntries.push(`      { name: 'twitter:description', content: '${((twitter.description ?? description) ?? '').replace(/'/g, "\\'")}' }`)
+    }
+    if (twitter.image) metaEntries.push(`      { name: 'twitter:image', content: '${twitter.image}' }`)
+  }
+
+  // Build links array entries
+  const linkEntries: string[] = [
+    `      { rel: 'stylesheet', href: appCss }`,
+    `      { rel: 'preconnect', href: 'https://fonts.bunny.net' }`,
+    `      { rel: 'stylesheet', href: 'https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap' }`,
+  ]
+  if (favicon) {
+    const isEmoji = [...favicon].length <= 2
+    const href = isEmoji
+      ? `data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${favicon}</text></svg>`
+      : favicon
+    linkEntries.push(`      { rel: 'icon', href: "${href}" }`)
+  }
+
+  const content = `// ============================================================
+// ARKZEN GENERATED ROOT ROUTE — [TanStack Start]
+// Auto-generated from @arkzen:meta:web — do not edit directly.
+// ============================================================
+import {
+  createRootRoute,
+  Outlet,
+  HeadContent,
+  Scripts,
+} from '@tanstack/react-router'
+import { ToastProvider } from '@/arkzen/core/components/Toast'
+import appCss from '../index.css?url'
+
+export const Route = createRootRoute({
+  head: () => ({
+    meta: [
+${metaEntries.join(',\n')},
+    ],
+    links: [
+${linkEntries.join(',\n')},
+    ],
+  }),
+  notFoundComponent: () => (
+    <div style={{ padding: '2rem', textAlign: 'center' }}>
+      <h2>404 — Page not found</h2>
+    </div>
+  ),
+  component: RootComponent,
+})
+
+function RootComponent() {
+  return (
+    <html lang="en">
+      <head>
+        <HeadContent />
+      </head>
+      <body>
+        <ToastProvider position="top-right">
+          <Outlet />
+        </ToastProvider>
+        <Scripts />
+      </body>
+    </html>
+  )
+}
+`
+  fs.writeFileSync(rootPath, content, 'utf-8')
+  console.log(`[Arkzen TanStack] ✓ __root.tsx updated — title: "${title}"`)
 }
 
 // ─── Write robots.txt ─────────────────────────────────────────────────────────

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/sss [Expo]
 // Layout: app | Auth required: false
 // DO NOT EDIT — edit tatemono @arkzen:native:page:sss instead
-// Generated: 2026-05-26T09:29:49.268Z
+// Generated: 2026-05-27T12:27:34.628Z
 // ============================================================
 
 import React from 'react'

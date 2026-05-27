@@ -3,7 +3,12 @@ name: shan-shan
 version: 2.0.0
 description: "Portfolio for Shan Sabal Cezar — Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers, ScrollTrigger-driven entrances across 9 sections: Hero, Intro, 5 Tale-style service chapters, Skills marquee, About, Contact, Footer."
 auth: false
+*/
+
+/* @arkzen:meta:web
 favicon: 🌸
+title: Shan Sabal Cezar
+description: Portfolio of Shan Sabal Cezar — Indigo-lab-inspired scroll experience.
 */
 
 /* @arkzen:web:config

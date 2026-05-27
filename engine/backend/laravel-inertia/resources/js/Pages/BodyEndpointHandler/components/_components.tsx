@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — body-endpoint-handler [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T02:29:33.481Z
+// Generated: 2026-05-27T12:14:45.020Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

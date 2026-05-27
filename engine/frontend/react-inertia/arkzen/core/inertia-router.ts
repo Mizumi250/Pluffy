@@ -1286,6 +1286,88 @@ export function registerInertiaPages(tatemono: ParsedTatemono): void {
   } catch (e) {
     console.log(`[Arkzen Inertia Router] ⚠ Sitemap generation skipped`)
   }
+
+  // v9.0: inject meta:web into app.blade.php
+  generateInertiaBlade(tatemono)
+}
+
+// ─────────────────────────────────────────────
+// GENERATE INERTIA app.blade.php — v9.0
+// Injects full head metadata from @arkzen:meta:web into app.blade.php.
+// Static global tags (description, OG, Twitter, favicon) go here.
+// Per-page title is handled by Inertia's <Head> component in each page file.
+// ─────────────────────────────────────────────
+
+function generateInertiaBlade(tatemono: ParsedTatemono): void {
+  const bladePath  = path.join(BACKEND_DIR, 'resources', 'views', 'app.blade.php')
+  const webMeta    = tatemono.webMeta
+  const meta       = tatemono.meta
+
+  const title       = webMeta?.title ?? webMeta?.label ?? meta.name
+  const description = webMeta?.description ?? meta.description ?? ''
+  const favicon     = webMeta?.favicon ?? meta.favicon
+  const og          = webMeta?.og
+  const twitter     = webMeta?.twitter
+
+  let faviconTag = ''
+  if (favicon) {
+    const isEmoji = [...favicon].length <= 2
+    faviconTag = isEmoji
+      ? `    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${favicon}</text></svg>" />`
+      : `    <link rel="icon" href="${favicon}" />`
+  }
+
+  const metaTags: string[] = []
+  if (description)    metaTags.push(`    <meta name="description" content="${description}" />`)
+  // OG
+  metaTags.push(`    <meta property="og:title" content="${og?.title ?? title}" />`)
+  if (og?.description || description) {
+    metaTags.push(`    <meta property="og:description" content="${og?.description ?? description}" />`)
+  }
+  if (og?.image) metaTags.push(`    <meta property="og:image" content="${og.image}" />`)
+  if (og?.url)   metaTags.push(`    <meta property="og:url" content="${og.url}" />`)
+  metaTags.push(`    <meta property="og:type" content="${og?.type ?? 'website'}" />`)
+  // Twitter
+  if (twitter) {
+    metaTags.push(`    <meta name="twitter:card" content="${twitter.card ?? 'summary_large_image'}" />`)
+    metaTags.push(`    <meta name="twitter:title" content="${twitter.title ?? title}" />`)
+    if (twitter.description || description) {
+      metaTags.push(`    <meta name="twitter:description" content="${twitter.description ?? description}" />`)
+    }
+    if (twitter.image) metaTags.push(`    <meta name="twitter:image" content="${twitter.image}" />`)
+  }
+
+  const content = `{{-- ============================================================ --}}
+{{-- ARKZEN GENERATED BLADE — [Laravel Inertia]                   --}}
+{{-- Auto-generated from @arkzen:meta:web — do not edit directly. --}}
+{{-- ============================================================ --}}
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <title inertia>{{ config('app.name', '${title}') }}</title>
+
+${faviconTag ? faviconTag + '\n' : ''}${metaTags.length ? metaTags.join('\n') + '\n' : ''}
+        <!-- Fonts -->
+        <link rel="preconnect" href="https://fonts.bunny.net">
+        <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+
+        <!-- Scripts + Styles via Laravel Vite plugin -->
+        @viteReactRefresh
+        @vite(['resources/css/app.css', 'resources/js/app.tsx'])
+
+        <!-- Inertia head (title, meta tags from InertiaHead component) -->
+        @inertiaHead
+    </head>
+    <body class="font-sans antialiased">
+        @inertia
+    </body>
+</html>
+`
+  fs.writeFileSync(bladePath, content, 'utf-8')
+  console.log(`[Arkzen Inertia Router] ✓ app.blade.php updated — title: "${title}"`)
 }
 
 // ─── Write robots.txt ─────────────────────────────────────────────────────────

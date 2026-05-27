@@ -38,9 +38,15 @@ export interface ArkzenPWAConfig {
 
 // ─── Parse PWA config from @arkzen:meta pwa block ────────────────────────────
 
-export function parsePWAConfig(tatName: string, meta: any): ArkzenPWAConfig | null {
-  if (!meta.pwa) return null
-  const p = meta.pwa as Record<string, any>
+// v9.0: accepts full ParsedTatemono. Reads webMeta.pwa first, falls back
+// to meta.pwa (deprecated) for tatemonos not yet migrated to @arkzen:meta:web.
+export function parsePWAConfig(tatemono: { meta: any; webMeta?: any }): ArkzenPWAConfig | null {
+  const tatName = String(tatemono.meta.name)
+  // v9.0: prefer webMeta.pwa, fall back to meta.pwa (deprecated)
+  const pwaSource = tatemono.webMeta?.pwa ?? tatemono.meta.pwa
+  if (!pwaSource) return null
+  const meta = tatemono.webMeta ?? tatemono.meta
+  const p = pwaSource as Record<string, any>
   return {
     name:             String(p.name             ?? meta.label ?? tatName),
     short_name:       String(p.short_name       ?? tatName),

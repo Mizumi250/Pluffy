@@ -1,7 +1,7 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v5.3 [React+Vite]
-// Canonical copy — no longer a cross-stack re-export from nextjs.
-// Vite-specific type (ViteBuildResult) appended at the bottom.
+// ARKZEN ENGINE — TYPE DEFINITIONS v6.0 [React+Vite]
+// v6.0: ArkzenWebMeta added. ParsedTatemono.webMeta? added. ArkzenMeta.favicon+pwa deprecated.
+// v6.0: ArkzenWebMeta added. ParsedTatemono.webMeta? added. ArkzenMeta.favicon+pwa deprecated.
 // ============================================================
 
 export interface ArkzenAuthSeedUser {
@@ -21,7 +21,29 @@ export interface ArkzenPWAMeta {
   orientation?: 'portrait' | 'landscape' | 'any'
   start_url: string
   offline: boolean
-  icons?: { src: string; sizes: string; type: string; purpose?: string }[]
+  icons?: { src: string; sizes: string; type: string; purpose?: string }
+// v6.0: Web-only meta — declared via @arkzen:meta:web block
+export interface ArkzenWebMeta {
+  title?:       string
+  label?:       string
+  description?: string
+  favicon?:     string
+  og?: {
+    title?:       string
+    description?: string
+    image?:       string
+    url?:         string
+    type?:        string
+  }
+  twitter?: {
+    card?:        string
+    title?:       string
+    description?: string
+    image?:       string
+  }
+  pwa?:         ArkzenPWAMeta
+}
+[]
 }
 
 export interface ArkzenMeta {
@@ -30,8 +52,11 @@ export interface ArkzenMeta {
   description: string
   auth: boolean
   dependencies: string[]
-  favicon?: string
-  pwa?: ArkzenPWAMeta
+  // v6.0: favicon + pwa moved to ArkzenWebMeta. Kept as deprecated fallbacks.
+  /** @deprecated move to @arkzen:meta:web */
+  favicon?:     string
+  /** @deprecated move to @arkzen:meta:web */
+  pwa?:         ArkzenPWAMeta
   authSeed?: { users: ArkzenAuthSeedUser[] }
 }
 

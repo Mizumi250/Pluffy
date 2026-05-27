@@ -824,38 +824,95 @@ function generateErrorHandlers(tatemono: ParsedTatemono, tatemonoDir: string): v
 }
 
 // ─────────────────────────────────────────────
-// GENERATE TATEMONO LAYOUT WITH FAVICON
+// GENERATE TATEMONO LAYOUT — v9.0
+// Injects full head metadata from @arkzen:meta:web into Next.js layout.tsx
+// Covers: title, description, favicon, OG tags, Twitter cards.
+// Falls back to meta.favicon (deprecated) for old tatemonos.
 // ─────────────────────────────────────────────
 
 function generateTatemonoLayout(tatemono: ParsedTatemono, tatemonoDir: string): void {
   const hasGlobalStyle = tatemono.styles.some(s => !s.name)
-  const hasFavicon = !!tatemono.meta.favicon
+  const webMeta        = tatemono.webMeta
+  const meta           = tatemono.meta
 
-  if (!hasFavicon && !hasGlobalStyle) {
+  // Resolve values — webMeta takes priority, meta is fallback
+  const favicon     = webMeta?.favicon ?? meta.favicon
+  const title       = webMeta?.title ?? webMeta?.label ?? meta.name
+  const description = webMeta?.description ?? meta.description
+  const og          = webMeta?.og
+  const twitter     = webMeta?.twitter
+
+  const hasAnyMeta = !!(favicon || title || description || og || twitter || webMeta)
+
+  if (!hasAnyMeta && !hasGlobalStyle) {
     const stale = path.join(tatemonoDir, 'layout.tsx')
     if (fs.existsSync(stale)) {
       fs.unlinkSync(stale)
-      console.log(`[Arkzen Router] 🧹 Removed stale layout.tsx (no favicon or global style)`)
+      console.log(`[Arkzen Router] 🧹 Removed stale layout.tsx (no meta:web or global style)`)
     }
     return
   }
 
-  const globalImport = hasGlobalStyle ? `import './styles/global.css'\n` : ''
-  const metadataImport = hasFavicon ? `import type { Metadata } from 'next'\n` : ''
-  const metadataCode = hasFavicon ? `export const metadata: Metadata = {
-  icons: {
-    icon: '${tatemono.meta.favicon}',
-  },
-}` : ''
+  const globalImport   = hasGlobalStyle ? `import './styles/global.css'\n` : ''
+  const metadataImport = hasAnyMeta ? `import type { Metadata } from 'next'\n` : ''
 
-  const content = `${metadataImport}${globalImport}
-${hasFavicon ? metadataCode + '\n\n' : ''}export default function ${toPascalCase(tatemono.meta.name)}Layout({ children }: { children: React.ReactNode }) {
+  // Build icons block
+  const iconsBlock = favicon
+    ? (() => {
+        const isEmoji = [...favicon].length <= 2
+        if (isEmoji) {
+          return `  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${favicon}</text></svg>" },\n`
+        }
+        return `  icons: { icon: '${favicon}' },\n`
+      })()
+    : ''
+
+  // Build openGraph block
+  const ogBlock = (og || title || description)
+    ? `  openGraph: {\n` +
+      (og?.type        ? `    type: '${og.type}',\n` : `    type: 'website',\n`) +
+      `    title: '${(og?.title ?? title).replace(/'/g, "\\'")}',\n` +
+      (og?.description || description ? `    description: '${((og?.description ?? description) ?? '').replace(/'/g, "\\'")}',\n` : '') +
+      (og?.image ? `    images: ['${og.image}'],\n` : '') +
+      (og?.url   ? `    url: '${og.url}',\n` : '') +
+      `  },\n`
+    : ''
+
+  // Build twitter block
+  const twitterBlock = twitter
+    ? `  twitter: {\n` +
+      `    card: '${twitter.card ?? 'summary_large_image'}',\n` +
+      (twitter.title       || title       ? `    title: '${((twitter.title ?? title) ?? '').replace(/'/g, "\\'")}',\n` : '') +
+      (twitter.description || description ? `    description: '${((twitter.description ?? description) ?? '').replace(/'/g, "\\'")}',\n` : '') +
+      (twitter.image ? `    images: ['${twitter.image}'],\n` : '') +
+      `  },\n`
+    : ''
+
+  const metadataCode = hasAnyMeta
+    ? `export const metadata: Metadata = {\n` +
+      `  title: '${title.replace(/'/g, "\\'")}',\n` +
+      (description ? `  description: '${description.replace(/'/g, "\\'")}',\n` : '') +
+      iconsBlock +
+      ogBlock +
+      twitterBlock +
+      `}\n`
+    : ''
+
+  const content = `// ============================================================
+// ARKZEN GENERATED LAYOUT — ${meta.name} [Next.js]
+// Auto-generated from @arkzen:meta:web — do not edit directly.
+// ============================================================
+${metadataImport}${globalImport}
+${hasAnyMeta ? metadataCode + '\n' : ''}export default function ${toPascalCase(meta.name)}Layout({ children }: { children: React.ReactNode }) {
   return <>{children}</>
 }
 `
   fs.writeFileSync(path.join(tatemonoDir, 'layout.tsx'), content, 'utf-8')
-  if (hasGlobalStyle) console.log(`[Arkzen Router] ✓ Global style imported in layout`)
-  if (hasFavicon) console.log(`[Arkzen Router] ✓ Favicon configured: ${tatemono.meta.favicon}`)
+  if (hasGlobalStyle)  console.log(`[Arkzen Router] ✓ Global style imported in layout`)
+  if (favicon)         console.log(`[Arkzen Router] ✓ Favicon: ${favicon}`)
+  if (description)     console.log(`[Arkzen Router] ✓ Description meta injected`)
+  if (og)              console.log(`[Arkzen Router] ✓ Open Graph meta injected`)
+  if (twitter)         console.log(`[Arkzen Router] ✓ Twitter card meta injected`)
 }
 
 // ─────────────────────────────────────────────

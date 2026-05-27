@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — body-mail-notification [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T02:29:33.944Z
+// Generated: 2026-05-27T12:14:45.177Z
 // Pages: login, register, dashboard
 // ============================================================
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JOFormModal [React+Inertia]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T02:29:43.616Z
+// Generated: 2026-05-27T12:14:47.694Z
 // ============================================================
 
 export { JOFormModal } from './_components'

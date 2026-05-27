@@ -1,9 +1,13 @@
 /* @arkzen:meta
 name: church-community
 version: 3.0.0
-label: Grace Community Church
 auth: true
 description: Church community platform — Instagram/Zutto style with dark + light mode toggle. Feed, members, gallery, admin.
+*/
+
+/* @arkzen:meta:web
+label: Grace Community Church
+title: Grace Community Church
 */
 
 /* @arkzen:web:config

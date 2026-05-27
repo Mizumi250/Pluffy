@@ -1181,6 +1181,9 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Vite Router] ✓ Route registry updated: ${newRoutes.length} page(s)`)
 
+  // v9.0: inject meta:web into index.html
+  generateViteIndexHtml(tatemono)
+
   // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
   try {
     const registry = getRegistry()
@@ -1207,7 +1210,79 @@ export function registerVitePages(tatemono: ParsedTatemono): void {
   }
 }
 
-// ─── Write robots.txt ─────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// GENERATE VITE INDEX.HTML — v9.0
+// Injects title, description, favicon, OG, Twitter from @arkzen:meta:web
+// into the root index.html. Multi-tatemono: uses the LAST registered
+// tatemono's webMeta (or falls back to "Arkzen" title).
+// Called from registerVitePages() on every save.
+// ─────────────────────────────────────────────
+
+function generateViteIndexHtml(tatemono: ParsedTatemono): void {
+  const indexPath  = path.resolve(process.cwd(), 'index.html')
+  const webMeta    = tatemono.webMeta
+  const meta       = tatemono.meta
+
+  const title       = webMeta?.title ?? webMeta?.label ?? meta.name
+  const description = webMeta?.description ?? meta.description ?? ''
+  const favicon     = webMeta?.favicon ?? meta.favicon
+  const og          = webMeta?.og
+  const twitter     = webMeta?.twitter
+
+  // Build favicon tag
+  let faviconTag = ''
+  if (favicon) {
+    const isEmoji = [...favicon].length <= 2
+    faviconTag = isEmoji
+      ? `  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>${favicon}</text></svg>" />`
+      : `  <link rel="icon" href="${favicon}" />`
+  }
+
+  // Build meta tags
+  const metaTags: string[] = []
+  if (description) {
+    metaTags.push(`  <meta name="description" content="${description}" />`)
+  }
+  // OG
+  metaTags.push(`  <meta property="og:title" content="${og?.title ?? title}" />`)
+  if (description || og?.description) {
+    metaTags.push(`  <meta property="og:description" content="${og?.description ?? description}" />`)
+  }
+  if (og?.image) metaTags.push(`  <meta property="og:image" content="${og.image}" />`)
+  if (og?.url)   metaTags.push(`  <meta property="og:url" content="${og.url}" />`)
+  metaTags.push(`  <meta property="og:type" content="${og?.type ?? 'website'}" />`)
+  // Twitter
+  if (twitter) {
+    metaTags.push(`  <meta name="twitter:card" content="${twitter.card ?? 'summary_large_image'}" />`)
+    metaTags.push(`  <meta name="twitter:title" content="${twitter.title ?? title}" />`)
+    if (twitter.description || description) {
+      metaTags.push(`  <meta name="twitter:description" content="${twitter.description ?? description}" />`)
+    }
+    if (twitter.image) metaTags.push(`  <meta name="twitter:image" content="${twitter.image}" />`)
+  }
+
+  const headContent = [
+    `  <meta charset="UTF-8" />`,
+    `  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />`,
+    `  <title>${title}</title>`,
+    faviconTag,
+    ...metaTags,
+  ].filter(Boolean).join('\n')
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+  <head>
+${headContent}
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+`
+  fs.writeFileSync(indexPath, html, 'utf-8')
+  console.log(`[Arkzen Vite Router] ✓ index.html updated — title: "${title}"`)
+}
 
 function writeRobotsTxt(): void {
   const publicDir = path.resolve(process.cwd(), 'public')

@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — broadcast-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-24T02:29:34.697Z
+// Generated: 2026-05-27T12:14:45.649Z
 // Pages: login, register, dashboard
 // ============================================================
 

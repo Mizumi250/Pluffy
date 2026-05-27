@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-23T13:04:06.097Z
+// Generated: 2026-05-27T12:25:33.376Z
 // ============================================================
 
 export { FramerScrollSection } from './_components'

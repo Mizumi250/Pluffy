@@ -1,8 +1,12 @@
 /* @arkzen:meta
 name: dtr-geofencing
 version: 2.0.0
-label: DTR Geofencing
 auth: false
+*/
+
+/* @arkzen:meta:web
+label: DTR Geofencing
+title: DTR Geofencing
 */
 
 /* @arkzen:web:config

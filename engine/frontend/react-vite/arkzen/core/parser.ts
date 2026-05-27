@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v8.0
+// ARKZEN ENGINE — PARSER v9.0
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -27,7 +27,16 @@
 //       parseAllComponents, parseAllStyles, parseAllErrorHandlers,
 //       parseGlobalAnimation now all look for web: prefixed tags.
 //
-// v8.0: @arkzen:script / @arkzen:script:name moved to web: prefix.
+// v9.0: @arkzen:meta:web separation.
+//       New block: @arkzen:meta:web (YAML_ONLY, Type A).
+//       parseWebMeta() extracts title, label, description, favicon,
+//       og, twitter, pwa from the new block.
+//       parseMeta() no longer reads favicon or pwa — those are web concerns.
+//       ParsedTatemono gains webMeta?: ArkzenWebMeta.
+//       pwa-builder reads tatemono.webMeta?.pwa with fallback to
+//       tatemono.meta.pwa (deprecated) for backward compatibility.
+//       YAML_ONLY_TAGS updated: added 'meta:web'.
+//
 //       @arkzen:web:script and @arkzen:web:script:name are now the
 //       canonical DSL tags — script blocks are web-frontend utilities
 //       (Three.js, GSAP factories, canvas helpers) that have no meaning
@@ -46,6 +55,7 @@ import * as yaml from 'js-yaml'
 import type {
   ParsedTatemono,
   ArkzenMeta,
+  ArkzenWebMeta,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -288,7 +298,16 @@ function parseMeta(content: string): ArkzenMeta {
 
   if (!parsed.name) throw new Error('[Arkzen Parser] meta.name is required')
 
+  // v9.0: favicon and pwa have moved to @arkzen:meta:web.
+  // Keep reading them here as deprecated fallbacks so old tatemonos
+  // don't hard-crash before migration. Emit a warning if found.
   const pwaRaw = parsed.pwa as Record<string, any> | undefined
+  if (parsed.favicon) {
+    console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": favicon in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
+  }
+  if (pwaRaw) {
+    console.warn(`[Arkzen Parser] ⚠ "${parsed.name}": pwa in @arkzen:meta is deprecated — move to @arkzen:meta:web`)
+  }
 
   return {
     name:         String(parsed.name),
@@ -296,6 +315,7 @@ function parseMeta(content: string): ArkzenMeta {
     description:  String(parsed.description ?? ''),
     auth:         Boolean(parsed.auth ?? false),
     dependencies: (parsed.dependencies as string[]) ?? [],
+    // deprecated fallbacks
     favicon:      parsed.favicon ? String(parsed.favicon) : undefined,
     pwa:          pwaRaw ? {
       name:             String(pwaRaw.name             ?? parsed.name),
@@ -320,6 +340,69 @@ function parseMeta(content: string): ArkzenMeta {
         }
       : undefined,
   }
+}
+
+// ─────────────────────────────────────────────
+// PARSE WEB META — v9.0
+// Extracts @arkzen:meta:web block — web-only metadata.
+// Contains: title, label, description, favicon, og, twitter, pwa.
+// All fields optional. If block is absent returns undefined.
+// ─────────────────────────────────────────────
+
+function parseWebMeta(content: string): ArkzenWebMeta | undefined {
+  // @arkzen:meta:web is a YAML_ONLY block — extractSection handles it
+  // by stripping everything after `/* @arkzen:meta:web` up to the closing `*/`
+  const raw = extractSection(content, 'meta:web')
+  if (!raw) return undefined
+
+  const parsed = yaml.load(raw) as Record<string, unknown>
+  if (!parsed) return undefined
+
+  const ogRaw      = parsed.og      as Record<string, any> | undefined
+  const twitterRaw = parsed.twitter as Record<string, any> | undefined
+  const pwaRaw     = parsed.pwa     as Record<string, any> | undefined
+
+  const webMeta: ArkzenWebMeta = {}
+
+  if (parsed.title)       webMeta.title       = String(parsed.title)
+  if (parsed.label)       webMeta.label       = String(parsed.label)
+  if (parsed.description) webMeta.description = String(parsed.description)
+  if (parsed.favicon)     webMeta.favicon     = String(parsed.favicon)
+
+  if (ogRaw) {
+    webMeta.og = {}
+    if (ogRaw.title)       webMeta.og.title       = String(ogRaw.title)
+    if (ogRaw.description) webMeta.og.description = String(ogRaw.description)
+    if (ogRaw.image)       webMeta.og.image       = String(ogRaw.image)
+    if (ogRaw.url)         webMeta.og.url         = String(ogRaw.url)
+    if (ogRaw.type)        webMeta.og.type        = String(ogRaw.type)
+  }
+
+  if (twitterRaw) {
+    webMeta.twitter = {}
+    if (twitterRaw.card)        webMeta.twitter.card        = String(twitterRaw.card)
+    if (twitterRaw.title)       webMeta.twitter.title       = String(twitterRaw.title)
+    if (twitterRaw.description) webMeta.twitter.description = String(twitterRaw.description)
+    if (twitterRaw.image)       webMeta.twitter.image       = String(twitterRaw.image)
+  }
+
+  if (pwaRaw) {
+    const tatName = String((yaml.load(extractSection(content, 'meta') ?? '') as any)?.name ?? '')
+    webMeta.pwa = {
+      name:             String(pwaRaw.name             ?? webMeta.label ?? tatName),
+      short_name:       String(pwaRaw.short_name       ?? tatName),
+      description:      String(pwaRaw.description      ?? webMeta.description ?? ''),
+      theme_color:      String(pwaRaw.theme_color      ?? '#0a0a0a'),
+      background_color: String(pwaRaw.background_color ?? '#ffffff'),
+      display:         (pwaRaw.display                 ?? 'standalone') as any,
+      orientation:     (pwaRaw.orientation             ?? 'any') as any,
+      start_url:        String(pwaRaw.start_url        ?? `/${tatName}`),
+      offline:          Boolean(pwaRaw.offline         ?? true),
+      icons:            pwaRaw.icons ?? undefined,
+    }
+  }
+
+  return webMeta
 }
 
 function parseConfig(content: string): ArkzenConfigOverride | undefined {
@@ -1473,7 +1556,7 @@ interface DslTagError {
 // so CODE_BLOCK_TAGS etc. match on the full prefix:subtype string instead.
 const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error']
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
-const YAML_ONLY_TAGS  = ['meta', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
+const YAML_ONLY_TAGS  = ['meta', 'meta:web', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
 
 function validateDslTags(content: string, filePath: string): void {
   const lines     = content.split('\n')
@@ -1646,6 +1729,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const fileName = path.basename(filePath, '.tsx')
 
   const meta         = parseMeta(content)
+  const webMeta      = parseWebMeta(content)   // v9.0: @arkzen:meta:web
   const config       = parseConfig(content)
   const databases    = parseAllDatabases(content)
   const customRoutes = parseAllCustomRoutes(content)  // internally calls parseAllHandlerSnippets
@@ -1723,6 +1807,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     filePath,
     fileName,
     meta,
+    webMeta,     // v9.0
     config,
     databases,
     apis,
@@ -1748,6 +1833,17 @@ export function parseTatemono(filePath: string): ParsedTatemono {
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
   console.log(`[Arkzen Parser]   Auth: ${meta.auth} | Static: ${isStatic}`)
+  if (webMeta) {
+    const webMetaParts = [
+      webMeta.title       && `title`,
+      webMeta.favicon     && `favicon`,
+      webMeta.label       && `label`,
+      webMeta.og          && `og`,
+      webMeta.twitter     && `twitter`,
+      webMeta.pwa         && `pwa`,
+    ].filter(Boolean)
+    console.log(`[Arkzen Parser]   Web meta: ${webMetaParts.join(', ') || 'present'}`)
+  }
   console.log(`[Arkzen Parser]   Pages (${pages.length}): ${pages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
   if (errorHandlers.length)  console.log(`[Arkzen Parser]   Error handlers (${errorHandlers.length}): ${errorHandlers.map(e => e.type).join(', ')}`)
   if (databases.length)      console.log(`[Arkzen Parser]   Tables (${databases.length}): ${databases.map(d => d.table).join(', ')}`)
@@ -1776,6 +1872,7 @@ export function hasSections(filePath: string) {
   const content = fs.readFileSync(filePath, 'utf-8')
   return {
     meta:          content.includes('/* @arkzen:meta'),
+    metaWeb:       content.includes('/* @arkzen:meta:web'),
     config:        content.includes('/* @arkzen:web:config'),
     database:      content.includes('/* @arkzen:database'),
     api:           content.includes('/* @arkzen:api'),
