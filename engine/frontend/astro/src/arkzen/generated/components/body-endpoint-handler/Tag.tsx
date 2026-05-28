@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Tag
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T13:11:54.750Z
+// Generated: 2026-05-28T14:52:59.543Z
 // ============================================================
 
 export { Tag } from './_components'

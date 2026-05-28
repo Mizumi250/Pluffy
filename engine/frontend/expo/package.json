@@ -1,7 +1,7 @@
 {
   "name": "arkzen-expo-engine",
   "version": "1.0.0",
-  "description": "Arkzen Engine — Expo stack (v53). Same tatemono DSL, Expo Go native output.",
+  "description": "Arkzen Engine — Expo stack (v56). Same tatemono DSL, Expo Go native output.",
   "private": true,
   "main": "expo-router/entry",
   "scripts": {
