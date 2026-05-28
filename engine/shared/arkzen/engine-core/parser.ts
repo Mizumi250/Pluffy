@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v9.0
+// ARKZEN ENGINE — PARSER v10.1
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -16,34 +16,38 @@
 //       - parseTatemono() wires all three + passes middlewareSnippets.
 //
 // v7.0: Multi-platform DSL prefix support.
-//       All web-frontend blocks now use @arkzen:web: prefix for unambiguous
-//       platform identification. Affected blocks:
-//         config, components, layout, style, page, error, animation
-//       Backend blocks (database, api, routes, middleware, handler, endpoint,
-//       policy, jobs, events, listeners, notifications, mail, console,
-//       realtime, store, script) remain unprefixed — shared across all platforms.
-//       @arkzen:meta:web signals the web section in multi-platform tatemonos.
-//       New helpers: parseConfig, parseAllPages, parseAllLayouts,
-//       parseAllComponents, parseAllStyles, parseAllErrorHandlers,
-//       parseGlobalAnimation now all look for web: prefixed tags.
+//       All web-frontend blocks now use @arkzen:web: prefix.
 //
-// v9.0: @arkzen:meta:web separation.
-//       New block: @arkzen:meta:web (YAML_ONLY, Type A).
-//       parseWebMeta() extracts title, label, description, favicon,
-//       og, twitter, pwa from the new block.
-//       parseMeta() no longer reads favicon or pwa — those are web concerns.
-//       ParsedTatemono gains webMeta?: ArkzenWebMeta.
-//       pwa-builder reads tatemono.webMeta?.pwa with fallback to
-//       tatemono.meta.pwa (deprecated) for backward compatibility.
-//       YAML_ONLY_TAGS updated: added 'meta:web'.
+// v9.0: @arkzen:meta:web separation. parseWebMeta() added.
+//       pwa moved to @arkzen:meta:web. favicon + pwa deprecated in meta.
+//       YAML_ONLY_TAGS: added 'meta:web'.
+//       script blocks moved to web: prefix.
 //
-//       @arkzen:web:script and @arkzen:web:script:name are now the
-//       canonical DSL tags — script blocks are web-frontend utilities
-//       (Three.js, GSAP factories, canvas helpers) that have no meaning
-//       on native or desktop platforms.
-//       parseGlobalScript() and parseAllNamedScripts() updated.
-//       CODE_BLOCK_TAGS updated: 'script' → 'web:script'.
-//       hasSections() updated: script check uses 'web:script'.
+// v10.0: Native DSL support — @arkzen:native:* blocks.
+//        New block: @arkzen:meta:native (YAML_ONLY, Type A).
+//        parseNativeMeta() added — reads expo config, bundle_id, etc.
+//        New parsers (all mirror web equivalents):
+//          parseNativeConfig()           — @arkzen:native:config
+//          parseAllNativeComponents()    — @arkzen:native:components:name
+//          parseAllNativeLayouts()       — @arkzen:native:layout:name
+//          parseAllNativeStyles()        — @arkzen:native:style:name
+//          parseAllNativePages()         — @arkzen:native:page:name
+//          parseGlobalNativeAnimation()  — @arkzen:native:animation
+//          parseGlobalNativeScript()     — @arkzen:native:script
+//          parseAllNamedNativeScripts()  — @arkzen:native:script:name
+//        CODE_BLOCK_TAGS updated: native equivalents added.
+//        YAML_ONLY_TAGS updated: 'meta:native', 'native:config' added.
+//        ParsedTatemono: nativeMeta, nativeConfig, nativePages,
+//          nativeLayouts, nativeComponents, nativeStyles,
+//          nativeAnimation, nativeScript, nativeScripts.
+//        validatePages() updated: native-only tatemonos are valid.
+//        hasSections() updated: native checks added.
+//        parseTatemono() logs native blocks.
+//
+// v10.1: Removed hasNative boolean — builders detect platform from array lengths.
+//        parsed.pages.length === 0 → skip in web builders.
+//        parsed.nativePages.length === 0 → skip in expo builder.
+//        No boolean flags, no cross-platform pollution.
 //
 // v6.1 (kept): Added parseAllNotifications() and parseAllMails().
 // v5.1 (kept): Added parseAllCustomRoutes() for @arkzen:routes blocks.
@@ -56,6 +60,8 @@ import type {
   ParsedTatemono,
   ArkzenMeta,
   ArkzenWebMeta,
+  ArkzenNativeMeta,
+  ArkzenNativeConfig,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -410,6 +416,118 @@ function parseConfig(content: string): ArkzenConfigOverride | undefined {
   const raw = extractSection(content, 'web:config')
   if (!raw) return undefined
   return yaml.load(raw) as ArkzenConfigOverride
+}
+
+// ─────────────────────────────────────────────
+// NATIVE PARSERS — v10.0
+// All mirror their web equivalents exactly.
+// @arkzen:meta:native  — YAML_ONLY, Type A — expo app config
+// @arkzen:native:config  — YAML_ONLY, Type A — NativeWind, fonts, theme
+// @arkzen:native:components:name  — CODE_BLOCK, Type B
+// @arkzen:native:layout:name      — CODE_BLOCK, Type B
+// @arkzen:native:style:name       — CODE_BLOCK, Type B
+// @arkzen:native:page:name        — CODE_BLOCK, Type B
+// @arkzen:native:animation        — CODE_BLOCK, Type B (global, one per tatemono)
+// @arkzen:native:script           — CODE_BLOCK, Type B (global)
+// @arkzen:native:script:name      — CODE_BLOCK, Type B (named, multiple)
+// ─────────────────────────────────────────────
+
+function parseNativeMeta(content: string): ArkzenNativeMeta | undefined {
+  const raw = extractSection(content, 'meta:native')
+  if (!raw) return undefined
+
+  const parsed = yaml.load(raw) as Record<string, unknown>
+  if (!parsed) return undefined
+
+  const expoRaw = parsed.expo as Record<string, any> | undefined
+  const nativeMeta: ArkzenNativeMeta = {}
+
+  if (parsed.label)       nativeMeta.label       = String(parsed.label)
+  if (parsed.description) nativeMeta.description = String(parsed.description)
+
+  if (expoRaw) {
+    nativeMeta.expo = {}
+    if (expoRaw.bundle_id)  nativeMeta.expo.bundle_id  = String(expoRaw.bundle_id)
+    if (expoRaw.icon)       nativeMeta.expo.icon        = String(expoRaw.icon)
+    if (expoRaw.scheme)     nativeMeta.expo.scheme      = String(expoRaw.scheme)
+    if (expoRaw.version)    nativeMeta.expo.version     = String(expoRaw.version)
+    if (expoRaw.splash) {
+      const s = expoRaw.splash as Record<string, any>
+      nativeMeta.expo.splash = {
+        image:            s.image            ? String(s.image)            : undefined,
+        background_color: s.background_color ? String(s.background_color) : '#ffffff',
+        resize_mode:      s.resize_mode      ? String(s.resize_mode)      : 'contain',
+      }
+    }
+    if (expoRaw.orientation)       nativeMeta.expo.orientation       = String(expoRaw.orientation) as any
+    if (expoRaw.status_bar_style)  nativeMeta.expo.status_bar_style  = String(expoRaw.status_bar_style) as any
+    if (Array.isArray(expoRaw.permissions)) {
+      nativeMeta.expo.permissions = expoRaw.permissions.map(String)
+    }
+  }
+
+  return nativeMeta
+}
+
+function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
+  const raw = extractSection(content, 'native:config')
+  if (!raw) return undefined
+  return yaml.load(raw) as ArkzenNativeConfig
+}
+
+function parseAllNativeComponents(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:components')
+}
+
+function parseAllNativeLayouts(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:layout')
+}
+
+function parseAllNativeStyles(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:style')
+}
+
+function parseAllNativePages(content: string): ArkzenPage[] {
+  const sections = extractAllNamedSections(content, 'native:page')
+  return sections.map(section => {
+    // Check for layout declaration: /* @arkzen:native:page:layout:name */
+    const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:layout:([a-zA-Z0-9_-]+) \*\//)
+    return {
+      name:   section.name!,
+      raw:    section.raw,
+      layout: layoutMatch?.[1] ?? 'default',
+      start:  section.start,
+      end:    section.end,
+    }
+  })
+}
+
+function parseGlobalNativeAnimation(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation') ?? undefined
+}
+
+function parseGlobalNativeScript(content: string): ArkzenSection | undefined {
+  const globalMarker  = `/* @arkzen:native:script`
+  const safe          = stripTemplateLiterals(content)
+  const globalIdx     = safe.indexOf(globalMarker)
+  if (globalIdx === -1) return undefined
+
+  const afterMarker = content.slice(globalIdx + globalMarker.length)
+  if (!afterMarker[0] || !/[\s*]/.test(afterMarker[0])) return undefined
+
+  const openCommentEnd = safe.indexOf('*/', globalIdx)
+  if (openCommentEnd === -1) return undefined
+
+  const endMarker = `/* @arkzen:native:script:end */`
+  const endIdx = safe.indexOf(endMarker, openCommentEnd)
+  if (endIdx === -1) return undefined
+
+  const raw = content.slice(openCommentEnd + 2, endIdx).trim()
+  return { raw, start: globalIdx, end: endIdx + endMarker.length }
+}
+
+function parseAllNamedNativeScripts(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:script')
 }
 
 // ─────────────────────────────────────────────
@@ -1554,9 +1672,18 @@ interface DslTagError {
 
 // v7.0: updated for web: prefix. tagType now captures e.g. "web" from @arkzen:web:page:index
 // so CODE_BLOCK_TAGS etc. match on the full prefix:subtype string instead.
-const CODE_BLOCK_TAGS = ['web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error']
+const CODE_BLOCK_TAGS = [
+  // web
+  'web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error',
+  // native — v10.0
+  'native:components', 'native:layout', 'native:animation', 'native:script', 'native:page', 'native:style',
+]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
-const YAML_ONLY_TAGS  = ['meta', 'meta:web', 'web:config', 'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail']
+const YAML_ONLY_TAGS  = [
+  'meta', 'meta:web', 'meta:native',
+  'web:config', 'native:config',
+  'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail',
+]
 
 function validateDslTags(content: string, filePath: string): void {
   const lines     = content.split('\n')
@@ -1696,17 +1823,29 @@ function validateNoDuplicateControllers(apis: ArkzenApi[]): void {
   }
 }
 
-function validatePages(pages: ArkzenPage[], errorHandlers: ArkzenErrorHandler[]): void {
-  // A tatemono with only error handlers and no routed pages is valid
-  if (pages.length === 0 && errorHandlers.length === 0) {
-    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name section is required')
+function validatePages(
+  pages:         ArkzenPage[],
+  errorHandlers: ArkzenErrorHandler[],
+  nativePages:   ArkzenPage[]
+): void {
+  // v10.0: valid if has web pages, native pages, or error handlers
+  // A native-only tatemono has zero web pages — that's fine
+  if (pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0) {
+    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name or @arkzen:native:page:name section is required')
   }
   const seen = new Set<string>()
   for (const page of pages) {
     if (seen.has(page.name)) {
-      throw new Error(`[Arkzen Parser] Duplicate page declared: "${page.name}"`)
+      throw new Error(`[Arkzen Parser] Duplicate web page declared: "${page.name}"`)
     }
     seen.add(page.name)
+  }
+  const nativeSeen = new Set<string>()
+  for (const page of nativePages) {
+    if (nativeSeen.has(page.name)) {
+      throw new Error(`[Arkzen Parser] Duplicate native page declared: "${page.name}"`)
+    }
+    nativeSeen.add(page.name)
   }
 }
 
@@ -1729,8 +1868,10 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const fileName = path.basename(filePath, '.tsx')
 
   const meta         = parseMeta(content)
-  const webMeta      = parseWebMeta(content)   // v9.0: @arkzen:meta:web
+  const webMeta      = parseWebMeta(content)      // v9.0: @arkzen:meta:web
+  const nativeMeta   = parseNativeMeta(content)   // v10.0: @arkzen:meta:native
   const config       = parseConfig(content)
+  const nativeConfig = parseNativeConfig(content) // v10.0: @arkzen:native:config
   const databases    = parseAllDatabases(content)
   const customRoutes = parseAllCustomRoutes(content)  // internally calls parseAllHandlerSnippets
   const pages        = parseAllPages(content)
@@ -1770,9 +1911,20 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v7.0: @arkzen:web:animation — strict, no fallback
   const animation = extractSectionWithPosition(content, 'web:animation') ?? undefined
 
-  // v6.5: global script block + named script blocks
+  // v8.0: @arkzen:web:script (global) + @arkzen:web:script:name (named)
   const script  = parseGlobalScript(content)
   const scripts = parseAllNamedScripts(content)
+
+  // v10.0: native blocks
+  const nativeComponents = parseAllNativeComponents(content)
+  const nativeLayouts    = parseAllNativeLayouts(content)
+  const nativeStyles     = parseAllNativeStyles(content)
+  const nativePages      = parseAllNativePages(content)
+  const nativeAnimation  = parseGlobalNativeAnimation(content)
+  const nativeScript     = parseGlobalNativeScript(content)
+  const nativeScripts    = parseAllNamedNativeScripts(content)
+
+
 
   validateDslTags(content, filePath)
 
@@ -1787,7 +1939,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers)
+  validatePages(pages, errorHandlers, nativePages)
 
   const hasBackend =
     databases.length     > 0 ||
@@ -1807,15 +1959,17 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     filePath,
     fileName,
     meta,
-    webMeta,     // v9.0
+    webMeta,       // v9.0
+    nativeMeta,    // v10.0
     config,
+    nativeConfig,  // v10.0
     databases,
     apis,
     customRoutes,
     pages,
     layouts,
     components,
-    styles,  // ← v6.4
+    styles,
     errorHandlers,
     stores,
     realtimes,
@@ -1824,11 +1978,19 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     notifications,
     mails,
     consoles,
-    middlewareSnippets,  // ← v6.3
-    policySnippets,      // ← v6.0
+    middlewareSnippets,
+    policySnippets,
     animation,
-    script,   // ← v6.5: global script block
-    scripts,  // ← v6.5: named script blocks
+    script,
+    scripts,
+    // v10.0: native platform blocks
+    nativePages,
+    nativeLayouts,
+    nativeComponents,
+    nativeStyles,
+    nativeAnimation,
+    nativeScript,
+    nativeScripts,
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -1860,10 +2022,19 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     console.log(`[Arkzen Parser]   Middleware snippets: ${Object.keys(middlewareSnippets).join(', ')}`)
   if (Object.keys(policySnippets).length > 0)
     console.log(`[Arkzen Parser]   Policy snippets: ${Object.keys(policySnippets).join(', ')}`)
-  if (script)
-    console.log(`[Arkzen Parser]   Script: global`)
-  if (scripts.length > 0)
-    console.log(`[Arkzen Parser]   Scripts (${scripts.length}): named blocks`)
+  if (script)                console.log(`[Arkzen Parser]   Script: global web`)
+  if (scripts.length > 0)   console.log(`[Arkzen Parser]   Scripts (${scripts.length}): named web blocks`)
+  if (nativePages.length > 0 || nativeComponents.length > 0 || nativeMeta) {
+    console.log(`[Arkzen Parser]   ── Native (Expo) ──`)
+    if (nativeMeta)                      console.log(`[Arkzen Parser]   Native meta: ${nativeMeta.expo?.bundle_id ?? 'present'}`)
+    if (nativePages.length)              console.log(`[Arkzen Parser]   Native pages (${nativePages.length}): ${nativePages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
+    if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
+    if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
+    if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
+    if (nativeAnimation)                 console.log(`[Arkzen Parser]   Native animation: global`)
+    if (nativeScript)                    console.log(`[Arkzen Parser]   Native script: global`)
+    if (nativeScripts.length)            console.log(`[Arkzen Parser]   Native scripts (${nativeScripts.length}): named blocks`)
+  }
 
   return parsed
 }
@@ -1871,17 +2042,28 @@ export function parseTatemono(filePath: string): ParsedTatemono {
 export function hasSections(filePath: string) {
   const content = fs.readFileSync(filePath, 'utf-8')
   return {
-    meta:          content.includes('/* @arkzen:meta'),
-    metaWeb:       content.includes('/* @arkzen:meta:web'),
-    config:        content.includes('/* @arkzen:web:config'),
-    database:      content.includes('/* @arkzen:database'),
-    api:           content.includes('/* @arkzen:api'),
-    routes:        content.includes('/* @arkzen:routes'),
-    store:         content.includes('/* @arkzen:store:'),
-    components:    content.includes('/* @arkzen:web:components:'),
-    page:          content.includes('/* @arkzen:web:page:'),
-    animation:     content.includes('/* @arkzen:web:animation'),
-    script:        content.includes('/* @arkzen:web:script'),
-    errorHandler:  content.includes('/* @arkzen:web:error:'),
+    // shared
+    meta:               content.includes('/* @arkzen:meta'),
+    database:           content.includes('/* @arkzen:database'),
+    api:                content.includes('/* @arkzen:api'),
+    routes:             content.includes('/* @arkzen:routes'),
+    store:              content.includes('/* @arkzen:store:'),
+    // web
+    metaWeb:            content.includes('/* @arkzen:meta:web'),
+    config:             content.includes('/* @arkzen:web:config'),
+    components:         content.includes('/* @arkzen:web:components:'),
+    page:               content.includes('/* @arkzen:web:page:'),
+    animation:          content.includes('/* @arkzen:web:animation'),
+    script:             content.includes('/* @arkzen:web:script'),
+    errorHandler:       content.includes('/* @arkzen:web:error:'),
+    // native — v10.0
+    metaNative:         content.includes('/* @arkzen:meta:native'),
+    nativeConfig:       content.includes('/* @arkzen:native:config'),
+    nativeComponents:   content.includes('/* @arkzen:native:components:'),
+    nativePage:         content.includes('/* @arkzen:native:page:'),
+    nativeAnimation:    content.includes('/* @arkzen:native:animation'),
+    nativeScript:       content.includes('/* @arkzen:native:script'),
+    nativeLayout:       content.includes('/* @arkzen:native:layout:'),
+    nativeStyle:        content.includes('/* @arkzen:native:style:'),
   }
 }
