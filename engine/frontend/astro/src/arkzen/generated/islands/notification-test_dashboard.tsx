@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T13:42:18.707Z
+// Generated: 2026-05-28T13:11:57.349Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

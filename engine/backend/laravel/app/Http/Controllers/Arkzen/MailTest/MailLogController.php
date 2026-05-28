@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — MailLogController
 // Tatemono: mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T13:42:17.837272Z
+// Generated: 2026-05-28T13:11:57.149567Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\MailTest;

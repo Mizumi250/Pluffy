@@ -1,29 +1,28 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v1.0
+// ARKZEN ENGINE — EXPO ROUTER v2.0
 //
-// Expo equivalent of nextjs/arkzen/core/router.ts.
-// Generates two outputs per tatemono screen:
+// Generates Expo screen files from @arkzen:native:page blocks ONLY.
+// Never touches web DSL (@arkzen:web:page). If a tatemono has no
+// nativePages the builder already skips it before reaching here.
+//
+// Outputs per tatemono screen:
 //
 //   1. src/screens/{tat}/{screen}.tsx
-//      The actual screen component with NativeWind className styling.
-//      This is where the tatemono's @arkzen:native:page content lives.
-//      The screen reads its own JSX from the tatemono DSL block.
+//      Screen component built from @arkzen:native:page JSX.
+//      Uses React Native primitives + NativeWind className.
 //
 //   2. app/{tat}/{screen}.tsx
-//      Thin Expo Router file-based route entry.
-//      Just re-exports the screen from src/screens/.
-//      Expo Router auto-discovers these as routes.
+//      Thin Expo Router file-based route entry — re-exports
+//      the screen. Expo Router auto-discovers these as routes.
 //
 //   3. src/arkzen/generated/routes.ts
-//      Route registry consumed by src/layouts/ and navigation helpers.
+//      Route registry consumed by layouts and navigation helpers.
 //
-// KEY DIFFERENCES from web router:
-//   - No HTML elements — React Native View/Text/etc
-//   - No CSS — NativeWind className (same Tailwind syntax)
-//   - No <div> — <View>, <Text>, <ScrollView>, <FlatList>
-//   - No href routing — expo-router useRouter().push()
-//   - Layouts are NOT file-based segments — they're React components
-//     wrapping screen content (AuthLayout / GuestLayout)
+// Layout values for native pages (set via @arkzen:native:page:layout:name):
+//   auth    → wrapped in AuthLayout  (requires login)
+//   guest   → wrapped in GuestLayout (redirects if logged in)
+//   app     → wrapped in AppLayout   (no auth redirect, general shell)
+//   default → bare SafeAreaView, no layout wrapper
 // ============================================================
 
 import * as fs   from 'fs'
@@ -48,48 +47,47 @@ function ensureDir(dir: string): void {
 
 // ─── Screen component generator ───────────────────────────────────────────────
 //
-// Generates src/screens/{tat}/{screen}.tsx
-//
-// v1.0: Scaffold screen — uses NativeWind className prop.
-// The tatemono author writes native JSX inside @arkzen:native:page:name blocks.
-// The engine places that JSX directly into the screen component.
-//
-// For tatemonos without a native section (@arkzen:meta:native),
-// a well-structured placeholder screen is generated instead.
-// This placeholder shows the web JSX as a comment reference.
+// Generates src/screens/{tat}/{screen}.tsx from @arkzen:native:page JSX.
+// No web JSX fallback — if there's no native content a clean placeholder
+// is generated so the screen still compiles.
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const tatName    = tatemono.meta.name
   const screenName = toPascalCase(page.name) + 'Screen'
-  const isAuth     = page.layout === 'auth'
-  const isGuest    = page.layout === 'guest'
+  const layout     = page.layout ?? 'default'
+  const isAuth     = layout === 'auth'
+  const isGuest    = layout === 'guest'
+  const isApp      = layout === 'app'
 
   const layoutImport = isAuth
     ? `import { AuthLayout }  from '@/layouts/AuthLayout'`
     : isGuest
     ? `import { GuestLayout } from '@/layouts/GuestLayout'`
-    : `// No layout wrapper — blank screen`
+    : isApp
+    ? `import { AppLayout }   from '@/layouts/AppLayout'`
+    : `// No layout wrapper — default bare screen`
 
   const layoutOpen = isAuth
     ? `<AuthLayout tatSlug="${tatName}" loginRoute="/${tatName}/login">`
     : isGuest
     ? `<GuestLayout tatSlug="${tatName}" dashboardRoute="/${tatName}/dashboard">`
+    : isApp
+    ? `<AppLayout tatSlug="${tatName}">`
     : ''
 
   const layoutClose = isAuth
     ? `</AuthLayout>`
     : isGuest
     ? `</GuestLayout>`
+    : isApp
+    ? `</AppLayout>`
     : ''
 
-  // The raw content from the tatemono page block
-  // In v1.0 this is the web JSX preserved as comment + a native placeholder
-  // When authors write @arkzen:native:page blocks, raw IS native JSX
   const hasNativeContent = page.raw && page.raw.trim().length > 0
 
   const screenBody = hasNativeContent
     ? page.raw.trim()
-    : `{/* ── PLACEHOLDER — Replace with your native UI ────────────── */}
+    : `{/* ── PLACEHOLDER — write JSX inside @arkzen:native:page:${page.name} ── */}
         <View className="flex-1 items-center justify-center p-6">
           <Text className="text-xs text-gray-400 uppercase tracking-widest mb-2">
             ${tatName}
@@ -98,14 +96,14 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
             ${page.name}
           </Text>
           <Text className="text-sm text-gray-500 text-center max-w-xs leading-5">
-            Build this screen with React Native + NativeWind.
-            Write JSX inside @arkzen:native:page:${page.name} in your tatemono.
+            Add your native UI inside @arkzen:native:page:${page.name} in your tatemono.
           </Text>
         </View>`
 
   return `// ============================================================
 // ARKZEN GENERATED SCREEN — ${tatName}/${page.name} [Expo]
-// Layout: ${page.layout} | Auth required: ${isAuth}
+// Source: @arkzen:native:page:${page.name}
+// Layout: ${layout} | Auth required: ${isAuth}
 // DO NOT EDIT — edit tatemono @arkzen:native:page:${page.name} instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
@@ -136,7 +134,7 @@ export function ${screenName}() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
-      ${layoutOpen ? layoutOpen : ''}
+      ${layoutOpen}
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
@@ -145,7 +143,7 @@ export function ${screenName}() {
       >
         ${screenBody}
       </ScrollView>
-      ${layoutClose ? layoutClose : ''}
+      ${layoutClose}
     </SafeAreaView>
   )
 }
@@ -156,11 +154,9 @@ export default ${screenName}
 
 // ─── Expo Router file-based route entry ───────────────────────────────────────
 //
-// Generates app/{tat}/{screen}.tsx
-// This is a thin re-export so Expo Router discovers the route.
-// All logic lives in src/screens/.
+// app/{tat}/{screen}.tsx — thin re-export, no logic here.
 
-function generateExpoRouteFile(tatName: string, screenName: string, pascalName: string): string {
+function generateExpoRouteFile(tatName: string, screenName: string): string {
   return `// ============================================================
 // ARKZEN EXPO ROUTE — ${tatName}/${screenName}
 // DO NOT EDIT — managed by Arkzen engine
@@ -175,7 +171,7 @@ export { default } from '@/screens/${tatName}/${screenName}'
 interface ExpoRoute {
   tatName:    string
   screenName: string
-  routePath:  string   // e.g. '/barbershop-booking/index'
+  routePath:  string
   layout:     string
   auth:       boolean
 }
@@ -206,13 +202,17 @@ function writeRouteRegistry(routes: ExpoRoute[]): void {
   ).join('\n')
 
   const content = `// ============================================================
-// ARKZEN GENERATED — Expo Route Registry v1.0
+// ARKZEN GENERATED — Expo Route Registry v2.0
 // Auto-updated when tatemonos are built / removed
 // DO NOT EDIT — managed by Arkzen engine
 //
+// Only tatemonos with @arkzen:native:page blocks appear here.
+// Web-only tatemonos are never registered.
+//
 // Consumed by:
-//   src/layouts/AuthLayout.tsx   — to know login route per tatemono
-//   src/layouts/GuestLayout.tsx  — to know dashboard route per tatemono
+//   src/layouts/AuthLayout.tsx   — login route per tatemono
+//   src/layouts/GuestLayout.tsx  — dashboard route per tatemono
+//   src/layouts/AppLayout.tsx    — app shell per tatemono
 // ============================================================
 
 export interface ArkzenExpoRoute {
@@ -220,7 +220,7 @@ export interface ArkzenExpoRoute {
   screenName: string
   /** Expo Router path e.g. '/barbershop-booking/index' */
   routePath:  string
-  /** 'guest' | 'auth' | 'blank' | custom */
+  /** 'guest' | 'auth' | 'app' | 'default' */
   layout:     string
   auth:       boolean
 }
@@ -249,7 +249,10 @@ export function getDashboardRoute(tatName: string): string {
   fs.writeFileSync(ROUTES_FILE, content, 'utf-8')
 }
 
-// ─── Main: register tatemono screens ─────────────────────────────────────────
+// ─── Main: register native screens only ──────────────────────────────────────
+//
+// Called by expo-builder AFTER the native guard passes, so parsed.nativePages
+// is guaranteed non-empty here. Uses parsed.nativePages exclusively.
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
@@ -262,28 +265,28 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ExpoRoute[] = []
 
-  for (const page of tatemono.pages) {
-    const screenName  = page.name
-    const pascalName  = toPascalCase(screenName) + 'Screen'
-    const routePath   = `/${tatName}/${screenName}`
+  for (const page of tatemono.nativePages) {
+    const screenName = page.name
+    const routePath  = `/${tatName}/${screenName}`
+    const layout     = page.layout ?? 'default'
 
-    // Write src/screens/{tat}/{screen}.tsx
+    // src/screens/{tat}/{screen}.tsx
     const screenContent = generateScreenFile(tatemono, page)
     fs.writeFileSync(path.join(screenDir, `${screenName}.tsx`), screenContent, 'utf-8')
 
-    // Write app/{tat}/{screen}.tsx — thin Expo Router file-based entry
-    const routeContent = generateExpoRouteFile(tatName, screenName, pascalName)
+    // app/{tat}/{screen}.tsx
+    const routeContent = generateExpoRouteFile(tatName, screenName)
     fs.writeFileSync(path.join(appDir, `${screenName}.tsx`), routeContent, 'utf-8')
 
     newRoutes.push({
       tatName,
       screenName,
       routePath,
-      layout: page.layout,
-      auth:   tatemono.meta.auth && page.layout === 'auth',
+      layout,
+      auth: tatemono.meta.auth && layout === 'auth',
     })
 
-    console.log(`[Arkzen Expo Router] ✓ ${routePath} [${page.layout}]`)
+    console.log(`[Arkzen Expo Router] ✓ ${routePath} [${layout}]`)
   }
 
   writeRouteRegistry([...existingRoutes, ...newRoutes])
@@ -293,21 +296,18 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
 // ─── Remove tatemono screens ──────────────────────────────────────────────────
 
 export function unregisterExpoScreens(tatName: string): void {
-  // Remove src/screens/{tat}/
   const screenDir = path.join(SRC_SCREENS_DIR, tatName)
   if (fs.existsSync(screenDir)) {
     fs.rmSync(screenDir, { recursive: true, force: true })
     console.log(`[Arkzen Expo Router] ✓ Removed screens: ${tatName}`)
   }
 
-  // Remove app/{tat}/
   const appDir = path.join(APP_DIR, tatName)
   if (fs.existsSync(appDir)) {
     fs.rmSync(appDir, { recursive: true, force: true })
     console.log(`[Arkzen Expo Router] ✓ Removed app routes: ${tatName}`)
   }
 
-  // Update route registry
   const routes = readExistingRoutes().filter(r => r.tatName !== tatName)
   writeRouteRegistry(routes)
   console.log(`[Arkzen Expo Router] ✓ Route registry updated`)
