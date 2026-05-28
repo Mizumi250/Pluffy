@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — certflow [TanStack]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:25:34.828Z
+// Generated: 2026-05-28T23:23:09.614Z
 // ============================================================
 
 import { gsap } from 'gsap'

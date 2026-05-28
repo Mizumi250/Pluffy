@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JORow [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:25:36.654Z
+// Generated: 2026-05-28T23:23:13.602Z
 // ============================================================
 
 export { JORow } from './_components'

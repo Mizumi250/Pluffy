@@ -1,18 +1,12 @@
 // ============================================================
-// ARKZEN — Vite Config (TanStack Start stack) v1.4
+// ARKZEN — Vite Config (TanStack Start stack) v1.5
 //
-// v1.1: arkzenReadyPlugin — polls for .arkzen-ready before Vite starts
-// v1.2: proxy bypass for /api/arkzen/* (didn't work with TanStack Start)
-// v1.3: arkzenApiPlugin — configureServer intercepts /api/arkzen/*
-//   before the proxy middleware runs. Guaranteed to work regardless
-//   of how TanStack Start wraps Vite internally. Same pattern as
-//   react-vite stack. Laravel is never involved.
-// v1.4: wasm + topLevelAwait plugins — fixes rapier2d/rapier3d ESM WASM
-//   proposal error. Vite does not support bare .wasm ESM imports natively.
+// v1.5: Tailwind v4 via @tailwindcss/vite added.
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
 import topLevelAwait from 'vite-plugin-top-level-await'
 import path from 'path'
@@ -65,9 +59,8 @@ function arkzenApiPlugin(): Plugin {
     name: 'arkzen-api',
     configureServer(server) {
       // Intercept /api/arkzen/* before the proxy forwards to Laravel.
-      // configureServer runs before proxy middleware in Vite's pipeline,
-      // so this is guaranteed to fire regardless of proxy config.
-      // Mirrors Next.js app/api/ and Astro src/pages/api/ — frontend owns it.
+      // configureServer runs before proxy middleware — guaranteed to fire
+      // regardless of how TanStack Start wraps Vite internally.
       server.middlewares.use('/api/arkzen/registry', (req, res, next) => {
         if (req.method !== 'GET') return next()
         try {
@@ -94,18 +87,19 @@ function arkzenApiPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),      // Tailwind v4 — must be before tanstackStart
     wasm(),
     topLevelAwait(),
     arkzenApiPlugin(),
     arkzenReadyPlugin(),
     tanstackStart(),
-    viteReact(), // must come AFTER tanstackStart
+    viteReact(),        // must come AFTER tanstackStart
   ],
   resolve: {
     alias: [
       { find: '@/arkzen/core/adapters', replacement: path.resolve(import.meta.dirname, './arkzen/core/adapters') },
-      { find: '@/arkzen/core', replacement: path.resolve(import.meta.dirname, './arkzen/core') },
-      { find: '@', replacement: path.resolve(import.meta.dirname, './src') },
+      { find: '@/arkzen/core',          replacement: path.resolve(import.meta.dirname, './arkzen/core') },
+      { find: '@',                      replacement: path.resolve(import.meta.dirname, './src') },
     ],
   },
   server: {

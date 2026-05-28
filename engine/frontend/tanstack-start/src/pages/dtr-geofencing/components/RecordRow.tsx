@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:25:36.069Z
+// Generated: 2026-05-28T23:23:12.511Z
 // ============================================================
 
 export { RecordRow } from './_components'

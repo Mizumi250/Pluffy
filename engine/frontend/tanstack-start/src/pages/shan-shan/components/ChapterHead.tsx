@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterHead [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:25:39.090Z
+// Generated: 2026-05-28T23:23:17.844Z
 // ============================================================
 
 export { ChapterHead } from './_components'

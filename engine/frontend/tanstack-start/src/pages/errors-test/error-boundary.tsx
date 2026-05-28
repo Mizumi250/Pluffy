@@ -2,7 +2,7 @@
 // ARKZEN GENERATED — errors-test/error-boundary [TanStack]
 // Class-based React ErrorBoundary wrapping all routes for this tatemono.
 // DO NOT EDIT — edit @arkzen:error:500 in tatemono instead
-// Generated: 2026-05-27T12:25:36.382Z
+// Generated: 2026-05-28T23:23:12.987Z
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'

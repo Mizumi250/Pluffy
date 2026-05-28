@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatusDot [TanStack]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:25:33.764Z
+// Generated: 2026-05-28T23:23:08.388Z
 // ============================================================
 
 export { StatusDot } from './_components'
