@@ -1,10 +1,10 @@
 // ============================================================
 // ARKZEN ADAPTER — Link (React+Vite stack)
-// react-router-dom uses `to` prop instead of `href`.
+// react-router uses `to` prop instead of `href`.
 // This wrapper accepts both so shared layouts and utils.tsx
 // work without changes — it passes href, we map it to `to`.
 // ============================================================
-import { Link as RRLink } from 'react-router-dom'
+import { Link as RRLink } from 'react-router'
 import React from 'react'
 
 type LinkProps = {

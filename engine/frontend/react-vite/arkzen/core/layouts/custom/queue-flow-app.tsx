@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react'
 
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router'
 const NAV = [
   { href: '/queue-flow',        icon: LayoutGrid, label: 'Display'  },
   { href: '/queue-flow/join',   icon: Ticket,     label: 'Join'     },

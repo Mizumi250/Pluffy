@@ -2,14 +2,14 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:22.316Z
+// Generated: 2026-05-29T01:01:05.413Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 function useToast() {

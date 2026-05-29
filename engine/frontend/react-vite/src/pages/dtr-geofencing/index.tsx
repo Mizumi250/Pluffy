@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:24.420Z
+// Generated: 2026-05-29T01:01:07.493Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,7 @@ import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, M
 import { create } from 'zustand'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 export interface Employee {

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:25.723Z
+// Generated: 2026-05-29T01:01:08.910Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 if (typeof window !== 'undefined') {

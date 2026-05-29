@@ -2,14 +2,14 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:25.698Z
+// Generated: 2026-05-29T01:01:08.851Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate, Link } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

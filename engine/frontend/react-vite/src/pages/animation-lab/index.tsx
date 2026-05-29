@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:21.735Z
+// Generated: 2026-05-29T01:01:04.403Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,7 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

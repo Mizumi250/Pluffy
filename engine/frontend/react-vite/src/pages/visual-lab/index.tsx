@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — visual-lab/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:28.334Z
+// Generated: 2026-05-29T01:01:10.560Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,7 +14,7 @@ import * as THREE from 'three'
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { visualLabAnimations, pageVariants } from '@/arkzen/generated/visual-lab.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:21.799Z
+// Generated: 2026-05-29T01:01:04.507Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { Check, ChevronRight, Copy, Download, Eye, File, FileJson, FileVideo, Fo
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { assetHubAnimations, pageVariants } from '@/arkzen/generated/asset-hub.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

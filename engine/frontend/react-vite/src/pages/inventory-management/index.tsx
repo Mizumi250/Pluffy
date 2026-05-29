@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:24.867Z
+// Generated: 2026-05-29T01:01:07.850Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -16,7 +16,7 @@ import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 interface InventoryItem {

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:27.626Z
+// Generated: 2026-05-29T01:01:10.119Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,7 +12,7 @@ import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 interface CommandRun {

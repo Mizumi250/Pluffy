@@ -3,7 +3,7 @@
 // ============================================================
 import { useEffect, useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
-import { Routes, Route } from 'react-router-dom'
+import { Routes, Route } from 'react-router'
 import {
   Layers, Play, Clock,
   CheckCircle, AlertCircle, Plus, Terminal,

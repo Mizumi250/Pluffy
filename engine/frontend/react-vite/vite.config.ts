@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN — Vite Config (React+Vite stack) v1.3
+// ARKZEN — Vite Config (React+Vite stack) v1.4
 //
 // v1.1: arkzenReadyPlugin — polls for src/arkzen/generated/.arkzen-ready
 //   before allowing Vite's buildStart to proceed. This ensures the
@@ -9,17 +9,20 @@
 //   before the proxy can forward it to Laravel. Mirrors the pattern
 //   used by Next.js (app/api/) and Astro (src/pages/api/) where the
 //   frontend framework owns its own internal API routes.
-// v1.3: wasm + topLevelAwait — fixes rapier2d/rapier3d ESM WASM proposal
-//   error. Vite does not support bare .wasm ESM imports natively.
+// v1.3: wasm — fixes rapier2d/rapier3d ESM WASM proposal error.
+//   Vite does not support bare .wasm ESM imports natively.
+// v1.4: Vite 8 — ESM-only, __dirname removed, import.meta.dirname used
+//   throughout. tailwindcss() plugin added (Tailwind v4 via @tailwindcss/vite).
+//   vite-plugin-top-level-await removed — Vite 8/Rolldown handles it natively.
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
-import path  from 'path'
-import fs    from 'fs'
+import path from 'path'
+import fs from 'fs'
 
-const READY_FLAG = path.resolve(__dirname, 'src/arkzen/generated/.arkzen-ready')
+const READY_FLAG = path.resolve(import.meta.dirname, 'src/arkzen/generated/.arkzen-ready')
 const PROCESS_START_TS = Date.now()
 
 function isFreshReadyFlag(minTimestamp: number): boolean {
@@ -86,30 +89,25 @@ function arkzenApiPlugin(): Plugin {
 
 export default defineConfig({
   plugins: [
+    tailwindcss(),
     wasm(),
-    topLevelAwait(),
     arkzenApiPlugin(),
     arkzenReadyPlugin(),
     react(),
   ],
   resolve: {
     alias: [
-      // @/arkzen/core/adapters → this stack's own adapters (MUST be first — more specific)
-      // Each stack owns only its adapters/ folder (Link.tsx etc.)
       {
         find: '@/arkzen/core/adapters',
-        replacement: path.resolve(__dirname, './arkzen/core/adapters'),
+        replacement: path.resolve(import.meta.dirname, './arkzen/core/adapters'),
       },
-      // @/arkzen/core → local stack copy
-      // synced from engine/shared on Arkzen build/start
       {
         find: '@/arkzen/core',
-        replacement: path.resolve(__dirname, './arkzen/core'),
+        replacement: path.resolve(import.meta.dirname, './arkzen/core'),
       },
-      // @/ → src/  (everything else: pages, layouts, arkzen/generated, etc.)
       {
         find: '@',
-        replacement: path.resolve(__dirname, './src'),
+        replacement: path.resolve(import.meta.dirname, './src'),
       },
     ],
   },

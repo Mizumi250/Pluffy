@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — shan-shan/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:27.874Z
+// Generated: 2026-05-29T01:01:10.299Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { shanShanAnimations, pageVariants } from '@/arkzen/generated/shan-shan.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

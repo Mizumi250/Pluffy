@@ -135,10 +135,10 @@ function ensureRouterDomImports(raw: string): string {
 
   if (needed.length === 0) return raw
 
-  const importRegex = /^import\s+\{([^}]*)\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*$/m
+  const importRegex = /^import\s+\{([^}]*)\}\s+from\s+['"]react-router['"][ \t]*;?[ \t]*$/m
   const existing = raw.match(importRegex)
   if (!existing) {
-    return `import { ${needed.join(', ')} } from 'react-router-dom'\n${raw}`
+    return `import { ${needed.join(', ')} } from 'react-router'\n${raw}`
   }
 
   const existingSpecifiers = existing[1]
@@ -147,7 +147,7 @@ function ensureRouterDomImports(raw: string): string {
     .filter(Boolean)
 
   const merged = [...new Set([...existingSpecifiers, ...needed])].sort()
-  return raw.replace(importRegex, `import { ${merged.join(', ')} } from 'react-router-dom'`)
+  return raw.replace(importRegex, `import { ${merged.join(', ')} } from 'react-router'`)
 }
 
 // ─── Unified import resolver — v5.1 port ─────────────────────────────────────
@@ -606,19 +606,19 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     }
   }
 
-  // Detect react-router-dom needs before resolveImports so we can inject them
+  // Detect react-router needs before resolveImports so we can inject them
   const combinedRaw    = allSources.join('\n')
   const needsLocation  = /\buseLocation\s*\(/.test(combinedRaw)
   const needsLink      = /<Link\b/.test(combinedRaw)
 
-  const routerDomSpecifiers = [
+  const routerSpecifiers = [
     'useNavigate',
     needsLocation && 'useLocation',
     needsLink && 'Link',
   ].filter(Boolean).join(', ')
-  const routerDomImportLine = `import { ${routerDomSpecifiers} } from 'react-router-dom'`
+  const routerImportLine = `import { ${routerSpecifiers} } from 'react-router'`
 
-  const extraLines = [layoutImport, animImport, routerDomImportLine, styleImport]
+  const extraLines = [layoutImport, animImport, routerImportLine, styleImport]
     .filter(Boolean).join('\n')
 
   // Detect extra React hooks
@@ -951,7 +951,7 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
       [normalizeForVite(layout.raw.trim())],
       { reactHooks: [], framerNamed: [] }
     )
-    // Ensure react-router-dom imports are present in the stripped body
+    // Ensure react-router imports are present in the stripped body
     const bodyWithRouterDom = ensureRouterDomImports(strippedSources[0])
     const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [React+Vite]\n\n${canonicalBlock}\n\n${bodyWithRouterDom}\n`
     fs.writeFileSync(filePath, content, 'utf-8')
@@ -1078,7 +1078,7 @@ function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string;
 // ============================================================
 
 import React from 'react'
-import { Navigate } from 'react-router-dom'
+import { Navigate } from 'react-router'
 
 const ${componentName} = () => {
   return <Navigate to="${destination}" replace />

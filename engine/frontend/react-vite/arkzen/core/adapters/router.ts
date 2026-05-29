@@ -6,7 +6,7 @@
 // satisfies that import for the React+Vite stack.
 // ============================================================
 
-import { useNavigate, useLocation } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router'
 
 export interface ArkzenRouter {
   replace: (path: string) => void

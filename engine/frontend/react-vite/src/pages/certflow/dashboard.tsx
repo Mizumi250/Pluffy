@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:23.452Z
+// Generated: 2026-05-29T01:01:06.201Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,7 @@ import { CheckCircle2, ClipboardList, Clock, Copy, FolderOpen, Frown, Graduation
 import { create } from 'zustand'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { certflowAnimations, pageVariants } from '@/arkzen/generated/certflow.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 import './styles/global.css'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────

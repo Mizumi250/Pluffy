@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — church-community/admin [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:13:23.982Z
+// Generated: 2026-05-29T01:01:06.915Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { Bookmark, Calendar, Heart, Image as ImageIcon, Loader2, MessageCircle, 
 import { create } from 'zustand'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { churchCommunityAnimations, pageVariants } from '@/arkzen/generated/church-community.animations'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router'
 
 // ── Shared components from @arkzen:components ─────────────────────────────────
 // ─── Theme tokens ─────────────────────────────────────────────────────────────

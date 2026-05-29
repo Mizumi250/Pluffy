@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — inventory-management [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-27T12:13:24.864Z
+// Generated: 2026-05-29T01:01:07.844Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

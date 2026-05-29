@@ -3,7 +3,7 @@
 // ============================================================
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import { BrowserRouter } from 'react-router-dom'
+import { BrowserRouter } from 'react-router'
 import App from './App'
 import { ToastProvider } from '@/arkzen/core/components/Toast'
 import { setActiveTatemono } from '@/arkzen/core/stores/authStore'
@@ -23,7 +23,7 @@ if (typeof window !== 'undefined') {
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
     <ToastProvider position="top-right">
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     </ToastProvider>
