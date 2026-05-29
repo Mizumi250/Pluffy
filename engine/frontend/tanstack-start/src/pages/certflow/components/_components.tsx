@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T23:23:09.597Z
+// Generated: 2026-05-29T02:10:11.509Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

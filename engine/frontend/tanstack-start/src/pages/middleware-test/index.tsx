@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — middleware-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T23:23:14.753Z
+// Generated: 2026-05-29T02:10:14.211Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

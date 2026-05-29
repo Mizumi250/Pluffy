@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T23:23:17.188Z
+// Generated: 2026-05-29T02:10:16.227Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

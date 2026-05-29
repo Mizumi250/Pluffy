@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — jo-payroll [TanStack]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T23:23:13.595Z
+// Generated: 2026-05-29T02:10:13.346Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

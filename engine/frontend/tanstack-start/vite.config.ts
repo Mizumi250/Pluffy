@@ -1,14 +1,15 @@
 // ============================================================
-// ARKZEN — Vite Config (TanStack Start stack) v1.5
+// ARKZEN — Vite Config (TanStack Start stack) v1.6
 //
 // v1.5: Tailwind v4 via @tailwindcss/vite added.
+// v1.6: Removed vite-plugin-top-level-await (Vite 8 + Rolldown
+//       handles top-level await natively — plugin no longer needed).
 // ============================================================
 import { defineConfig, type Plugin } from 'vite'
 import { tanstackStart } from '@tanstack/react-start/plugin/vite'
 import viteReact from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
 import path from 'path'
 import fs from 'fs'
 
@@ -89,7 +90,6 @@ export default defineConfig({
   plugins: [
     tailwindcss(),      // Tailwind v4 — must be before tanstackStart
     wasm(),
-    topLevelAwait(),
     arkzenApiPlugin(),
     arkzenReadyPlugin(),
     tanstackStart(),

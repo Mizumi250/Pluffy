@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — upload-test/dashboard
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T23:23:17.887Z
+// Generated: 2026-05-29T02:10:16.505Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
