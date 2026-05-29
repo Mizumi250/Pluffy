@@ -1,45 +1,20 @@
 // ============================================================
-// ARKZEN GENERATED SCREEN — hello-native/index [Expo]
-// Source: @arkzen:native:page:index
-// Layout: default | Auth required: false
-// DO NOT EDIT — edit tatemono @arkzen:native:page:index instead
-// Generated: 2026-05-29T11:51:15.393Z
+// ARKZEN GENERATED SCREEN — hello-native/index
 // ============================================================
 
 import React from 'react'
+// No layout wrapper
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  SafeAreaView,
-  Image,
-  Pressable,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  FlatList, ActivityIndicator, SafeAreaView, Image,
+  Pressable, RefreshControl, KeyboardAvoidingView, Platform
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-// No layout wrapper — default bare screen
+// No layout wrapper
 
-export function IndexScreen() {
-  const router = useRouter()
-
-  return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        const IndexScreen = () => {
+// User's component (extracted from @arkzen:native:page)
+const IndexScreen = () => {
   const router = useRouter()
 
   return (
@@ -83,10 +58,26 @@ export function IndexScreen() {
     </View>
   )
 }
+
+// Engine wrapper – unique name (no conflict)
+export function ArkzenScreen_HelloNative_Index() {
+  const router = useRouter()
+
+  return (
+    <SafeAreaView className="flex-1 bg-neutral-50">
+      <StatusBar style="dark" />
+      
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <IndexScreen />
       </ScrollView>
       
     </SafeAreaView>
   )
 }
 
-export default IndexScreen
+export default ArkzenScreen_HelloNative_Index

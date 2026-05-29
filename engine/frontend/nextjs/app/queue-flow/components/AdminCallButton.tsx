@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — AdminCallButton
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T11:51:28.309Z
+// Generated: 2026-05-29T14:25:17.891Z
 // ============================================================
 
 export { AdminCallButton } from './_components'

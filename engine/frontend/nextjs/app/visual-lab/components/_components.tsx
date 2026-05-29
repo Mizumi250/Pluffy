@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — visual-lab
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T11:51:30.812Z
+// Generated: 2026-05-29T14:25:19.827Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceMap
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T11:51:24.160Z
+// Generated: 2026-05-29T14:25:14.606Z
 // ============================================================
 
 export { GeofenceMap } from './_components'

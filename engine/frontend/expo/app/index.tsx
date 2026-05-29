@@ -338,11 +338,7 @@ function ArkzenHub() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function Index() {
-  // Tatemonos exist → go straight to first screen
-  if (ARKZEN_EXPO_ROUTES.length > 0) {
-    return <Redirect href={ARKZEN_EXPO_ROUTES[0].routePath as any} />
-  }
-
+  
   // No tatemonos yet → show hub
   return <ArkzenHub />
 }

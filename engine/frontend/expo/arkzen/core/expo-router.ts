@@ -1,28 +1,10 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v2.0
+// ARKZEN ENGINE — EXPO ROUTER v2.2
 //
-// Generates Expo screen files from @arkzen:native:page blocks ONLY.
-// Never touches web DSL (@arkzen:web:page). If a tatemono has no
-// nativePages the builder already skips it before reaching here.
-//
-// Outputs per tatemono screen:
-//
-//   1. src/screens/{tat}/{screen}.tsx
-//      Screen component built from @arkzen:native:page JSX.
-//      Uses React Native primitives + NativeWind className.
-//
-//   2. app/{tat}/{screen}.tsx
-//      Thin Expo Router file-based route entry — re-exports
-//      the screen. Expo Router auto-discovers these as routes.
-//
-//   3. src/arkzen/generated/routes.ts
-//      Route registry consumed by layouts and navigation helpers.
-//
-// Layout values for native pages (set via @arkzen:native:page:layout:name):
-//   auth    → wrapped in AuthLayout  (requires login)
-//   guest   → wrapped in GuestLayout (redirects if logged in)
-//   app     → wrapped in AppLayout   (no auth redirect, general shell)
-//   default → bare SafeAreaView, no layout wrapper
+// v2.2 – Component extraction: now works like Next.js.
+//         If the user writes a full component (const X = () => {...})
+//         inside @arkzen:native:page, the engine extracts it and
+//         renders <X /> inside the ScrollView. No more raw paste.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -45,15 +27,173 @@ function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
 
-// ─── Screen component generator ───────────────────────────────────────────────
-//
-// Generates src/screens/{tat}/{screen}.tsx from @arkzen:native:page JSX.
-// No web JSX fallback — if there's no native content a clean placeholder
-// is generated so the screen still compiles.
+// ─── Unified Import Resolver (unchanged) ──────────────────────────────────────
+
+interface ResolvedImports {
+  canonicalBlock:  string
+  strippedSources: string[]
+}
+
+const ENGINE_OWNED_MODULES = new Set([
+  'react',
+  'react-native',
+  'expo-router',
+  'expo-status-bar',
+])
+
+function flattenMultilineImports(src: string): string {
+  return src.replace(/import\s[^;'"]*?\n[^;'"]*?from\s+['"][^'"]+['"]/g, m =>
+    m.replace(/\n\s*/g, ' ')
+  )
+}
+
+function resolveImports(
+  sources: string[],
+  engineRequired: {
+    reactHooks?: string[]
+    extra?: string
+  } = {}
+): ResolvedImports {
+  const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
+  const getEntry = (mod: string) => {
+    if (!importMap.has(mod)) importMap.set(mod, { named: new Set() })
+    return importMap.get(mod)!
+  }
+
+  const reactEntry = getEntry('react')
+  ;(engineRequired.reactHooks ?? []).forEach(h => reactEntry.named.add(h))
+
+  const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const mixedImportRe     = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const namespaceImportRe = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const sideEffectRe      = /^import\s+['"]([^'"]+)['"]\s*;?/
+
+  const sideEffects: string[] = []
+
+  for (const source of sources) {
+    const flattened = flattenMultilineImports(source)
+    for (const rawLine of flattened.split('\n')) {
+      const line = rawLine.trim()
+      if (!line.startsWith('import ')) continue
+
+      let m: RegExpMatchArray | null
+
+      m = line.match(mixedImportRe)
+      if (m) {
+        const [, def, namedStr, mod] = m
+        if (!ENGINE_OWNED_MODULES.has(mod)) {
+          const entry = getEntry(mod)
+          entry.defaultImport = def
+          namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => entry.named.add(n))
+        }
+        continue
+      }
+
+      m = line.match(namespaceImportRe)
+      if (m) {
+        const [, ns, mod] = m
+        if (!ENGINE_OWNED_MODULES.has(mod)) getEntry(mod).defaultImport = `* as ${ns}`
+        continue
+      }
+
+      m = line.match(namedImportRe)
+      if (m) {
+        const [, namedStr, mod] = m
+        if (ENGINE_OWNED_MODULES.has(mod)) {
+          if (mod === 'react') {
+            namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+              if (n !== 'React') reactEntry.named.add(n)
+            })
+          }
+          continue
+        }
+        const entry = getEntry(mod)
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => entry.named.add(n))
+        continue
+      }
+
+      m = line.match(defaultImportRe)
+      if (m) {
+        const [, def, mod] = m
+        if (!ENGINE_OWNED_MODULES.has(mod)) getEntry(mod).defaultImport = def
+        continue
+      }
+
+      m = line.match(sideEffectRe)
+      if (m) {
+        if (!ENGINE_OWNED_MODULES.has(m[1])) sideEffects.push(`import '${m[1]}'`)
+        continue
+      }
+    }
+  }
+
+  const lines: string[] = []
+  const reactNamed = [...(importMap.get('react')?.named ?? [])].filter(n => n !== 'React').sort()
+  lines.push(
+    reactNamed.length > 0
+      ? `import React, { ${reactNamed.join(', ')} } from 'react'`
+      : `import React from 'react'`
+  )
+
+  const otherModules = [...importMap.keys()]
+    .filter(m => m !== 'react' && !ENGINE_OWNED_MODULES.has(m))
+    .sort()
+
+  for (const mod of otherModules) {
+    const { defaultImport, named } = importMap.get(mod)!
+    const namedArr = [...named].sort()
+    if (defaultImport?.startsWith('* as ')) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (defaultImport && namedArr.length > 0) {
+      lines.push(`import ${defaultImport}, { ${namedArr.join(', ')} } from '${mod}'`)
+    } else if (defaultImport) {
+      lines.push(`import ${defaultImport} from '${mod}'`)
+    } else if (namedArr.length > 0) {
+      lines.push(`import { ${namedArr.join(', ')} } from '${mod}'`)
+    }
+  }
+
+  sideEffects.forEach(s => lines.push(s))
+  if (engineRequired.extra) lines.push(engineRequired.extra)
+
+  const canonicalBlock = lines.filter(Boolean).join('\n')
+
+  const stripRaw = (src: string) =>
+    src
+      .replace(/^\s*import\s[\s\S]*?from\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '')
+      .replace(/^\s*import\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '')
+      .trim()
+
+  const strippedSources = sources.map(stripRaw)
+
+  return { canonicalBlock, strippedSources }
+}
+
+// ─── NEW: Component extractor (copied from Next.js router logic) ─────────────
+
+interface ExtractedComponent {
+  name: string
+  definition: string
+}
+
+function extractComponentFromBlock(raw: string): ExtractedComponent | null {
+  // Match const Name = () => { ... } or function Name() { ... }
+  const constMatch = raw.match(/^(const\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:\(\))?\s*=>\s*\{[\s\S]*\})/m)
+  if (constMatch) {
+    return { name: constMatch[2], definition: constMatch[1] }
+  }
+  const funcMatch = raw.match(/^(function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*\)\s*\{[\s\S]*\})/m)
+  if (funcMatch) {
+    return { name: funcMatch[2], definition: funcMatch[1] }
+  }
+  return null
+}
+
+// ─── Screen component generator (FIXED) ───────────────────────────────────────
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const tatName    = tatemono.meta.name
-  const screenName = toPascalCase(page.name) + 'Screen'
   const layout     = page.layout ?? 'default'
   const isAuth     = layout === 'auth'
   const isGuest    = layout === 'guest'
@@ -65,7 +205,7 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
     ? `import { GuestLayout } from '@/layouts/GuestLayout'`
     : isApp
     ? `import { AppLayout }   from '@/layouts/AppLayout'`
-    : `// No layout wrapper — default bare screen`
+    : `// No layout wrapper`
 
   const layoutOpen = isAuth
     ? `<AuthLayout tatSlug="${tatName}" loginRoute="/${tatName}/login">`
@@ -85,50 +225,87 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
 
   const hasNativeContent = page.raw && page.raw.trim().length > 0
 
-  const screenBody = hasNativeContent
-    ? page.raw.trim()
-    : `{/* ── PLACEHOLDER — write JSX inside @arkzen:native:page:${page.name} ── */}
-        <View className="flex-1 items-center justify-center p-6">
-          <Text className="text-xs text-gray-400 uppercase tracking-widest mb-2">
-            ${tatName}
-          </Text>
-          <Text className="text-2xl font-semibold text-gray-900 mb-3">
-            ${page.name}
-          </Text>
-          <Text className="text-sm text-gray-500 text-center max-w-xs leading-5">
-            Add your native UI inside @arkzen:native:page:${page.name} in your tatemono.
-          </Text>
-        </View>`
+  // ── Placeholder when empty (same as Next.js minimal) ──
+  if (!hasNativeContent) {
+    const uniqueWrapper = `ArkzenScreen_${tatName}_${page.name}`
+    const placeholderBody = `<View className="flex-1 items-center justify-center p-6">
+      <Text className="text-gray-400">Add JSX to @arkzen:native:page:${page.name}</Text>
+    </View>`
 
-  return `// ============================================================
-// ARKZEN GENERATED SCREEN — ${tatName}/${page.name} [Expo]
-// Source: @arkzen:native:page:${page.name}
-// Layout: ${layout} | Auth required: ${isAuth}
-// DO NOT EDIT — edit tatemono @arkzen:native:page:${page.name} instead
-// Generated: ${new Date().toISOString()}
+    return `// ============================================================
+// ARKZEN GENERATED SCREEN — ${tatName}/${page.name} (placeholder)
 // ============================================================
 
 import React from 'react'
+import { View, Text, SafeAreaView, ScrollView } from 'react-native'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+${layoutImport}
+
+export function ${uniqueWrapper}() {
+  const router = useRouter()
+  return (
+    <SafeAreaView className="flex-1 bg-neutral-50">
+      <StatusBar style="dark" />
+      ${layoutOpen}
+      <ScrollView className="flex-1">
+        ${placeholderBody}
+      </ScrollView>
+      ${layoutClose}
+    </SafeAreaView>
+  )
+}
+
+export default ${uniqueWrapper}
+`
+  }
+
+  // ── User wrote content – resolve imports and extract component ──
+  const { canonicalBlock, strippedSources } = resolveImports([page.raw.trim()], {
+    reactHooks: [],
+    extra: layoutImport
+  })
+
+  let userCode = strippedSources[0]
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    .trim()
+
+  // Extract component name (like Next.js extractComponentName)
+  let componentName: string
+  let componentDefinition: string
+
+  const extracted = extractComponentFromBlock(userCode)
+  if (extracted) {
+    componentName = extracted.name
+    componentDefinition = extracted.definition
+  } else {
+    // Raw JSX – wrap into a default component
+    componentName = toPascalCase(page.name) + 'Content'
+    componentDefinition = `const ${componentName} = () => (\n  ${userCode}\n)`
+  }
+
+  // UNIQUE wrapper name – never clashes with user's component (exactly like Next.js)
+  const wrapperName = `ArkzenScreen_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
+
+  return `// ============================================================
+// ARKZEN GENERATED SCREEN — ${tatName}/${page.name}
+// ============================================================
+
+${canonicalBlock}
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  SafeAreaView,
-  Image,
-  Pressable,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  FlatList, ActivityIndicator, SafeAreaView, Image,
+  Pressable, RefreshControl, KeyboardAvoidingView, Platform
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 ${layoutImport}
 
-export function ${screenName}() {
+// User's component (extracted from @arkzen:native:page)
+${componentDefinition}
+
+// Engine wrapper – unique name (no conflict)
+export function ${wrapperName}() {
   const router = useRouter()
 
   return (
@@ -141,20 +318,18 @@ export function ${screenName}() {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        ${screenBody}
+        <${componentName} />
       </ScrollView>
       ${layoutClose}
     </SafeAreaView>
   )
 }
 
-export default ${screenName}
+export default ${wrapperName}
 `
 }
 
-// ─── Expo Router file-based route entry ───────────────────────────────────────
-//
-// app/{tat}/{screen}.tsx — thin re-export, no logic here.
+// ─── Expo Router file-based route entry (unchanged) ───────────────────────────
 
 function generateExpoRouteFile(tatName: string, screenName: string): string {
   return `// ============================================================
@@ -166,7 +341,7 @@ export { default } from '@/screens/${tatName}/${screenName}'
 `
 }
 
-// ─── Route registry ───────────────────────────────────────────────────────────
+// ─── Route registry (unchanged) ───────────────────────────────────────────────
 
 interface ExpoRoute {
   tatName:    string
@@ -202,7 +377,7 @@ function writeRouteRegistry(routes: ExpoRoute[]): void {
   ).join('\n')
 
   const content = `// ============================================================
-// ARKZEN GENERATED — Expo Route Registry v2.0
+// ARKZEN GENERATED — Expo Route Registry v2.2
 // Auto-updated when tatemonos are built / removed
 // DO NOT EDIT — managed by Arkzen engine
 //
@@ -249,10 +424,7 @@ export function getDashboardRoute(tatName: string): string {
   fs.writeFileSync(ROUTES_FILE, content, 'utf-8')
 }
 
-// ─── Main: register native screens only ──────────────────────────────────────
-//
-// Called by expo-builder AFTER the native guard passes, so parsed.nativePages
-// is guaranteed non-empty here. Uses parsed.nativePages exclusively.
+// ─── Main: register native screens only ───────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
@@ -270,11 +442,9 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
     const routePath  = `/${tatName}/${screenName}`
     const layout     = page.layout ?? 'default'
 
-    // src/screens/{tat}/{screen}.tsx
     const screenContent = generateScreenFile(tatemono, page)
     fs.writeFileSync(path.join(screenDir, `${screenName}.tsx`), screenContent, 'utf-8')
 
-    // app/{tat}/{screen}.tsx
     const routeContent = generateExpoRouteFile(tatName, screenName)
     fs.writeFileSync(path.join(appDir, `${screenName}.tsx`), routeContent, 'utf-8')
 
@@ -292,8 +462,6 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Expo Router] ✓ Route registry updated: ${newRoutes.length} screen(s)`)
 }
-
-// ─── Remove tatemono screens ──────────────────────────────────────────────────
 
 export function unregisterExpoScreens(tatName: string): void {
   const screenDir = path.join(SRC_SCREENS_DIR, tatName)

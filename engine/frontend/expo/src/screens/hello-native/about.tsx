@@ -1,45 +1,20 @@
 // ============================================================
-// ARKZEN GENERATED SCREEN — hello-native/about [Expo]
-// Source: @arkzen:native:page:about
-// Layout: default | Auth required: false
-// DO NOT EDIT — edit tatemono @arkzen:native:page:about instead
-// Generated: 2026-05-29T11:51:15.397Z
+// ARKZEN GENERATED SCREEN — hello-native/about
 // ============================================================
 
 import React from 'react'
+// No layout wrapper
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-  ActivityIndicator,
-  SafeAreaView,
-  Image,
-  Pressable,
-  RefreshControl,
-  KeyboardAvoidingView,
-  Platform,
+  View, Text, ScrollView, TouchableOpacity, TextInput,
+  FlatList, ActivityIndicator, SafeAreaView, Image,
+  Pressable, RefreshControl, KeyboardAvoidingView, Platform
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-// No layout wrapper — default bare screen
+// No layout wrapper
 
-export function AboutScreen() {
-  const router = useRouter()
-
-  return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ flexGrow: 1 }}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
-      >
-        const AboutScreen = () => {
+// User's component (extracted from @arkzen:native:page)
+const AboutScreen = () => {
   const router = useRouter()
   const [count, setCount] = useState(0)
 
@@ -95,10 +70,26 @@ export function AboutScreen() {
     </View>
   )
 }
+
+// Engine wrapper – unique name (no conflict)
+export function ArkzenScreen_HelloNative_About() {
+  const router = useRouter()
+
+  return (
+    <SafeAreaView className="flex-1 bg-neutral-50">
+      <StatusBar style="dark" />
+      
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+      >
+        <AboutScreen />
       </ScrollView>
       
     </SafeAreaView>
   )
 }
 
-export default AboutScreen
+export default ArkzenScreen_HelloNative_About

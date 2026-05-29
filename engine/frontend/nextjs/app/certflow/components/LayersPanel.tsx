@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LayersPanel
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T11:51:20.183Z
+// Generated: 2026-05-29T14:25:12.103Z
 // ============================================================
 
 export { LayersPanel } from './_components'

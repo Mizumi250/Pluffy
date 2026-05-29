@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN GENERATED — Expo Route Registry v2.0
+// ARKZEN GENERATED — Expo Route Registry v2.2
 // Auto-updated when tatemonos are built / removed
 // DO NOT EDIT — managed by Arkzen engine
 //
