@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T07:33:37.149Z
+// Generated: 2026-05-29T11:51:17.184Z
 // ============================================================
 
 export { GSAPHover3DSection } from './_components'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Navbar
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T06:47:01.855Z
+// Generated: 2026-05-29T11:51:27.628Z
 // ============================================================
 
 export { Navbar } from './_components'

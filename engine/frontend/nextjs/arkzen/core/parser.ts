@@ -282,6 +282,7 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     results.push({
       raw,
+      name:  identifier,   // ← add this
       start: openIdx,
       end:   closeIdx + closeMarker.length,
     })

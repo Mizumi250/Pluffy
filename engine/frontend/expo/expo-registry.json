@@ -1,5 +1,16 @@
 {
   "engine": "1.0.0",
   "project": "expo",
-  "modules": []
+  "modules": [
+    {
+      "name": "hello-native",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hello-native/core.tsx",
+      "screens": [],
+      "auth": false,
+      "registered": "2026-05-29T11:49:29.723Z",
+      "lastUpdated": "2026-05-29T11:51:15.400Z"
+    }
+  ]
 }
