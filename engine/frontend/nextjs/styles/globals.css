@@ -1,15 +1,13 @@
 /* ============================================================
    ARKZEN ENGINE — GLOBAL STYLES
-   Design system variables. Set once in arkzen.config.ts.
+   Tailwind v4 — @import "tailwindcss" replaces @tailwind directives
+   Design system variables set from arkzen.config.ts
    ============================================================ */
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-/* ─── CSS Variables (populated from arkzen.config.ts) ─────── */
-:root {
-  /* Colors */
+/* ─── Tailwind v4: custom theme tokens ───────────────────── */
+@theme {
   --color-primary:   #0a0a0a;
   --color-secondary: #404040;
   --color-accent:    #3b82f6;
@@ -17,19 +15,16 @@
   --color-border:    #e5e7eb;
   --color-muted:     #6b7280;
 
-  /* Typography */
   --font-sans:    'Inter Variable', 'Inter', sans-serif;
   --font-display: 'Cal Sans', 'Inter Variable', sans-serif;
   --font-mono:    'JetBrains Mono', 'Fira Code', monospace;
 
-  /* Spacing */
   --radius-sm:  0.375rem;
   --radius-md:  0.75rem;
   --radius-lg:  1rem;
   --radius-xl:  1.5rem;
   --radius-2xl: 1rem;
 
-  /* Shadows */
   --shadow-sm:  0 1px 2px 0 rgb(0 0 0 / 0.05);
   --shadow-md:  0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --shadow-lg:  0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -48,6 +43,10 @@
 /* ─── Base ──────────────────────────────────────────────────── */
 * {
   box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
 }
 
 html {
@@ -99,49 +98,73 @@ body {
 }
 
 /* ─── Arkzen Utility Classes ────────────────────────────────── */
-@layer utilities {
-  .arkzen-page {
-    @apply min-h-screen;
-  }
+@utility arkzen-page {
+  min-height: 100svh;
+}
 
-  .arkzen-container {
-    @apply max-w-7xl mx-auto px-6 py-8;
-  }
+@utility arkzen-container {
+  max-width: 80rem;
+  margin-inline: auto;
+  padding-inline: 1.5rem;
+  padding-block: 2rem;
+}
 
-  .arkzen-section {
-    @apply mb-8;
-  }
+@utility arkzen-section {
+  margin-bottom: 2rem;
+}
 
-  .arkzen-card {
-    @apply bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800;
-  }
+@utility arkzen-card {
+  background-color: white;
+  border-radius: 1rem;
+  border: 1px solid #f5f5f4;
+}
 
-  .arkzen-input {
-    @apply w-full px-3.5 py-2.5 text-sm rounded-xl border border-neutral-200 dark:border-neutral-700
-           bg-white dark:bg-neutral-900 text-neutral-900 dark:text-neutral-100
-           placeholder:text-neutral-400 dark:placeholder:text-neutral-500
-           focus:outline-none focus:ring-2 focus:ring-neutral-900 dark:focus:ring-white
-           focus:border-transparent transition-shadow;
-  }
+.dark .arkzen-card {
+  background-color: #171717;
+  border-color: #262626;
+}
 
-  .arkzen-btn-primary {
-    @apply px-4 py-2.5 text-sm font-medium rounded-xl
-           bg-neutral-900 dark:bg-white text-white dark:text-neutral-900
-           hover:bg-neutral-700 dark:hover:bg-neutral-100
-           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+@utility arkzen-input {
+  width: 100%;
+  padding-inline: 0.875rem;
+  padding-block: 0.625rem;
+  font-size: 0.875rem;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  background-color: white;
+  color: #171717;
+  transition: box-shadow 0.15s;
+}
 
-  .arkzen-btn-secondary {
-    @apply px-4 py-2.5 text-sm font-medium rounded-xl
-           border border-neutral-200 dark:border-neutral-700
-           text-neutral-700 dark:text-neutral-300
-           hover:bg-neutral-50 dark:hover:bg-neutral-800
-           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+@utility arkzen-btn-primary {
+  padding-inline: 1rem;
+  padding-block: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  background-color: #171717;
+  color: white;
+  transition: background-color 0.15s;
+}
 
-  .arkzen-btn-danger {
-    @apply px-4 py-2.5 text-sm font-medium rounded-xl
-           bg-red-600 hover:bg-red-700 text-white
-           transition-colors disabled:opacity-50 disabled:cursor-not-allowed;
-  }
+@utility arkzen-btn-secondary {
+  padding-inline: 1rem;
+  padding-block: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  border: 1px solid #e5e7eb;
+  color: #404040;
+  transition: background-color 0.15s;
+}
+
+@utility arkzen-btn-danger {
+  padding-inline: 1rem;
+  padding-block: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  background-color: #dc2626;
+  color: white;
+  transition: background-color 0.15s;
 }

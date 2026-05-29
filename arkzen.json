@@ -358,7 +358,7 @@
       "auth": false
     }
   ],
-  "activeStack": "react-inertia",
+  "activeStack": "nextjs",
   "activeAppStack": "expo",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",

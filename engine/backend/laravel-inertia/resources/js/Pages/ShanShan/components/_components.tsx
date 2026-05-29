@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — shan-shan [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:41:51.593Z
+// Generated: 2026-05-29T03:31:22.378Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

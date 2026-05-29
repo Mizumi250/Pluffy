@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — broadcast-test [React+Inertia]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:41:48.057Z
+// Generated: 2026-05-29T03:31:15.634Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

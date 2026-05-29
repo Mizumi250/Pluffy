@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — roles-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:41:50.647Z
+// Generated: 2026-05-29T03:31:20.835Z
 // Pages: login, register, dashboard
 // ============================================================
 

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — certflow/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:06:12.293Z
+// Generated: 2026-05-29T05:28:50.078Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

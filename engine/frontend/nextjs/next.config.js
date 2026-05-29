@@ -3,8 +3,7 @@ const nextConfig = {
   reactStrictMode: true,
   allowedDevOrigins: ['192.168.43.1'], // your hotspot IP
   experimental: {
-    forceSwcTransforms: false,
-    // Tree-shake heavy packages — reduces what Babel has to process per page
+    // Tree-shake heavy packages
     optimizePackageImports: [
       'three',
       '@react-three/fiber',
@@ -28,15 +27,12 @@ const nextConfig = {
       ...config.experiments,
       asyncWebAssembly: true,
     }
-    // Treat .wasm files as async webassembly
     config.module.rules.push({
       test: /\.wasm$/,
       type: 'webassembly/async',
     })
 
     if (dev) {
-      // In dev: split heavy graphics libs into their own chunks so
-      // visual-lab compilation doesn't block other tatemonos
       config.optimization.splitChunks = {
         chunks: 'all',
         cacheGroups: {

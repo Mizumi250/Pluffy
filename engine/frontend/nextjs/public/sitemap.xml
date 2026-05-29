@@ -21,11 +21,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/barbershop-booking</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/body-endpoint-handler</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -287,6 +282,11 @@
   </url>
   <url>
     <loc>http://localhost:3000/visual-lab</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/shan-shan</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

@@ -5,7 +5,7 @@
 // Tatemono: body-mail-notification
 // Subject: Welcome to Arkzen — blade_body injection test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:41:48.023798Z
+// Generated: 2026-05-29T03:31:15.481300Z
 // ============================================================
 
 namespace App\Mail\Arkzen\BodyMailNotification;

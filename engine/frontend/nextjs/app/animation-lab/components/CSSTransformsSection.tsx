@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSTransformsSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:06:09.620Z
+// Generated: 2026-05-29T05:28:47.716Z
 // ============================================================
 
 export { CSSTransformsSection } from './_components'

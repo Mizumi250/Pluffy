@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T02:41:49.700Z
+// Generated: 2026-05-29T03:31:18.680Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

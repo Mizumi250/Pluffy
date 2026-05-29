@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — UXSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-25T02:06:19.640Z
+// Generated: 2026-05-29T05:28:58.819Z
 // ============================================================
 
 export { UXSection } from './_components'
