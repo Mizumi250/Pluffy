@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:14:45.175Z
+// Generated: 2026-05-29T02:41:47.555Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

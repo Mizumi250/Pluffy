@@ -1,16 +1,25 @@
+// ============================================================
+// ARKZEN — Vite Config (Laravel+Inertia stack) v1.6
+//
+// v1.6: Upgraded to Vite 8 + @vitejs/plugin-react v6 (Oxc).
+//       Tailwind v4 via @tailwindcss/vite (removed postcss.config.js
+//       and tailwind.config.js — no longer needed in TW4).
+//       Removed vite-plugin-top-level-await (Vite 8 + Rolldown
+//       handles top-level await natively).
+// ============================================================
 import { defineConfig } from 'vite'
 import laravel from 'laravel-vite-plugin'
 import react from '@vitejs/plugin-react'
+import tailwindcss from '@tailwindcss/vite'
 import wasm from 'vite-plugin-wasm'
-import topLevelAwait from 'vite-plugin-top-level-await'
 import path from 'path'
 
 export default defineConfig({
     plugins: [
+        tailwindcss(),   // TW4 — must be before laravel()
         wasm(),
-        topLevelAwait(),
         laravel({
-            input: ['resources/css/app.css', 'resources/js/app.tsx'], // ← add app.css
+            input: ['resources/css/app.css', 'resources/js/app.tsx'],
             refresh: true,
         }),
         react(),

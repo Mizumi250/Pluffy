@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-27T12:14:44.579Z
+// Generated: 2026-05-29T02:41:46.690Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

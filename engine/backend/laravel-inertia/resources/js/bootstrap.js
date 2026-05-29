@@ -1,5 +1,3 @@
-import axios from 'axios';
-window.axios = axios;
-
-window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
-
+// bootstrap.js
+// Inertia v3 removed Axios — built-in XHR client handles requests.
+// Add any global setup here if needed.

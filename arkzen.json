@@ -358,7 +358,7 @@
       "auth": false
     }
   ],
-  "activeStack": "tanstack-start",
+  "activeStack": "react-inertia",
   "activeAppStack": "expo",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
