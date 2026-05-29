@@ -215,7 +215,7 @@ function startAppStack() {
 
   // Process 2: metro bundler
   log('app', `Starting ${activeAppStack} (Metro bundler) — scan QR with Expo Go`)
-  const metro = spawn('npx', ['expo', 'start', '--clear'], {
+  const metro = spawn('npx', ['expo', 'start', '--clear', '--tunnel'], {
     cwd: APP_DIR,
     stdio: 'pipe',
     env: { ...process.env, FORCE_COLOR: '1' },

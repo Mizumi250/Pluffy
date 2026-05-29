@@ -3,7 +3,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T05:28:47.685Z
+// Generated: 2026-05-29T07:33:37.127Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
