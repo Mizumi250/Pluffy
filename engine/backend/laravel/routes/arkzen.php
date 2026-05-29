@@ -8,13 +8,22 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\ArkzenEngineController;
+use App\Http\Controllers\Arkzen\ArkzenExpoRegistryController;
 
 // Health check — frontend bridge pings this on startup
 Route::get('/health', [ArkzenEngineController::class, 'health']);
 
-// Registry — Hub page polls this to display all tatemonos
-// Reads arkzen.json written by the frontend watcher
+// Registry — web Hub page polls this to display all tatemonos
 Route::get('/registry', [ArkzenEngineController::class, 'registry']);
+
+// Expo Registry — Expo Hub polls this every 3 s
+// Reads expo-registry.json written by the Expo watcher
+Route::get('/expo-registry', [ArkzenExpoRegistryController::class, 'index']);
+Route::options('/expo-registry', fn () => response('', 204)->withHeaders([
+    'Access-Control-Allow-Origin'  => '*',
+    'Access-Control-Allow-Methods' => 'GET, OPTIONS',
+    'Access-Control-Allow-Headers' => 'Content-Type, Accept',
+]));
 
 // Build — receives tatemono data and builds everything
 Route::post('/build', [ArkzenEngineController::class, 'build']);
