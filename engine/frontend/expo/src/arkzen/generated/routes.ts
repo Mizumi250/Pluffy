@@ -24,6 +24,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false
   { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
+// ROUTE:mail-test:login:/mail-test/login:guest:false
+  { tatName: 'mail-test', screenName: 'login', routePath: '/mail-test/login', layout: 'guest', auth: false },
+// ROUTE:mail-test:register:/mail-test/register:guest:false
+  { tatName: 'mail-test', screenName: 'register', routePath: '/mail-test/register', layout: 'guest', auth: false },
+// ROUTE:mail-test:dashboard:/mail-test/dashboard:auth:true
+  { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 ]

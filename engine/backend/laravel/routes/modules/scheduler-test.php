@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — scheduler-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:20:27.519696Z
+// Generated: 2026-05-30T13:43:45.876323Z
 // Resources: CommandRun
 // Custom controllers: 
 // ============================================================

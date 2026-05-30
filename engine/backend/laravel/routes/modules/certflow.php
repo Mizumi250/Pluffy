@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/certflow/auth')->group(
 // ============================================================
 // ARKZEN GENERATED ROUTES — certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:20:23.515735Z
+// Generated: 2026-05-30T13:43:41.109167Z
 // Resources: Template, Field, Submission, Scan
 // Custom controllers: CertflowController
 // ============================================================
