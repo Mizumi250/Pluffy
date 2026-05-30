@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — SendLog
 // Tatemono: body-mail-notification
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:15:54.600997Z
+// Generated: 2026-05-30T13:20:22.437251Z
 // ============================================================
 
 namespace App\Models\Arkzen\BodyMailNotification;

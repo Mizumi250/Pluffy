@@ -8,6 +8,7 @@ import * as DocumentPicker from 'expo-document-picker'
 import * as FileSystem from 'expo-file-system/legacy'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
+import * as Sharing from 'expo-sharing'
 import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 import { useRouter } from 'expo-router'
@@ -124,11 +125,16 @@ const DashboardScreen = () => {
     setDownloading(f.id)
     try {
       const localUri = `${FileSystem.cacheDirectory}${f.original_name}`
-      await FileSystem.downloadAsync(
+      const dl = await FileSystem.downloadAsync(
         `${BACKEND_URL}/api/upload-test/files/${f.id}/url`,
         localUri
       )
-      Alert.alert('Downloaded', `${f.original_name} saved to device cache.`)
+      const canShare = await Sharing.isAvailableAsync()
+      if (canShare) {
+        await Sharing.shareAsync(dl.uri, { mimeType: f.mime_type, dialogTitle: f.original_name })
+      } else {
+        Alert.alert('Downloaded', `Saved: ${f.original_name}`)
+      }
     } catch (e) {
       Alert.alert('Download failed', e instanceof Error ? e.message : 'Unknown error')
     } finally {

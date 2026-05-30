@@ -51,7 +51,8 @@
       "expo-video",
       "expo-audio",
       "expo-asset",
-      "expo-status-bar"
+      "expo-status-bar",
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — scheduler-test
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:15:59.663Z
+// Generated: 2026-05-30T13:20:27.446Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

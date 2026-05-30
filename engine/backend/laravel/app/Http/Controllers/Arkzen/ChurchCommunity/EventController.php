@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventController
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:15:55.968605Z
+// Generated: 2026-05-30T13:20:24.371483Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ChurchCommunity;

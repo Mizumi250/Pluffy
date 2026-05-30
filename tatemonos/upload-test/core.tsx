@@ -287,6 +287,7 @@ import {
 import * as ImagePicker from 'expo-image-picker'
 import * as DocumentPicker from 'expo-document-picker'
 import * as FileSystem from 'expo-file-system/legacy'
+import * as Sharing from 'expo-sharing'
 import { Image } from 'expo-image'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 
@@ -402,11 +403,16 @@ const DashboardScreen = () => {
     setDownloading(f.id)
     try {
       const localUri = `${FileSystem.cacheDirectory}${f.original_name}`
-      await FileSystem.downloadAsync(
+      const dl = await FileSystem.downloadAsync(
         `${BACKEND_URL}/api/upload-test/files/${f.id}/url`,
         localUri
       )
-      Alert.alert('Downloaded', `${f.original_name} saved to device cache.`)
+      const canShare = await Sharing.isAvailableAsync()
+      if (canShare) {
+        await Sharing.shareAsync(dl.uri, { mimeType: f.mime_type, dialogTitle: f.original_name })
+      } else {
+        Alert.alert('Downloaded', `Saved: ${f.original_name}`)
+      }
     } catch (e) {
       Alert.alert('Download failed', e instanceof Error ? e.message : 'Unknown error')
     } finally {

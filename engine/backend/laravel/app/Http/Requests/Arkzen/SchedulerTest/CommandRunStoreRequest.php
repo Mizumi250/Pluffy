@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — CommandRunStoreRequest
 // Tatemono: scheduler-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:15:59.732930Z
+// Generated: 2026-05-30T13:20:27.517062Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\SchedulerTest;
