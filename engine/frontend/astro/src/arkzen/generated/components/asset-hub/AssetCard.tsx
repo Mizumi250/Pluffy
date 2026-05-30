@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AssetCard
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T07:25:33.618Z
+// Generated: 2026-05-30T12:11:27.289Z
 // ============================================================
 
 export { AssetCard } from './_components'
