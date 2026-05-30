@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — roles-test
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:43:44.922Z
+// Generated: 2026-05-30T14:06:50.017Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

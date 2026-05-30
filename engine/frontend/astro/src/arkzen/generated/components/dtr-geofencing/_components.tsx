@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — dtr-geofencing
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T13:43:43.136Z
+// Generated: 2026-05-30T14:06:47.574Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

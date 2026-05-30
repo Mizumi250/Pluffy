@@ -1,23 +1,19 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED AUTH STORE v1.2
+// ARKZEN ENGINE — SHARED AUTH STORE v1.1
 // Framework-agnostic. No next/navigation or react-router imports.
 // Works identically in Next.js, React+Vite, React+Inertia,
 // React Native — any stack that has zustand + fetch.
 //
-// Storage is injected via ./storage.ts — a tiny shim each stack
-// owns and shared-sync.ts never overwrites. Web stacks provide
-// localStorage, native stacks provide AsyncStorage. authStore
-// itself is identical everywhere.
+// Cookie helpers use document.cookie (web stacks only).
+// For React Native, override setCookie/clearCookie in the adapter.
 //
-// This file lives in engine/shared/arkzen/web-core/stores/ and
-// is sync-copied into each stack's arkzen/core/stores/ by
-// shared-sync.ts.
+// This file lives in engine/shared and is sync-copied into
+// each stack's arkzen/core/stores/ by shared-sync.ts.
 // ============================================================
 
-import { create }                     from 'zustand'
-import { persist, createJSONStorage } from 'zustand/middleware'
-import { useEffect, useState }        from 'react'
-import { arkzenStorage }              from './storage'
+import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { useEffect, useState } from 'react'
 
 // ─────────────────────────────────────────────
 // TATEMONO SLUG RESOLUTION
@@ -197,10 +193,18 @@ export const useAuthStore = create<AuthState>()(
     }),
 
     {
+      // IMPORTANT: name must use a lazy getter, not a template literal evaluated at
+      // module load time. On MPA stacks (Astro), ES module imports are hoisted and
+      // evaluated before any component code runs — so window.__ARKZEN_TATEMONO__ is
+      // always undefined when the store is first created, causing every tatemono to
+      // share the key 'arkzen-auth-default'. The lazy getter resolves the slug at the
+      // moment zustand/persist first reads or writes localStorage, by which point the
+      // island's setActiveTatemono() call has already executed.
+      // On SPA stacks (Next.js, Vite, Inertia) this is a no-op change — the store is
+      // created once and setActiveTatemono() is called before any auth action anyway.
       get name() {
         return `arkzen-auth-${typeof window !== 'undefined' ? (window.__ARKZEN_TATEMONO__ ?? 'default') : 'default'}`
       },
-      storage:    createJSONStorage(() => arkzenStorage),
       partialize: (state) => ({ token: state.token }),
     }
   )

@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-05-30T13:43:38.398Z"
+      "lastUpdated": "2026-05-30T14:06:43.810Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-05-30T13:43:38.306Z"
+      "lastUpdated": "2026-05-30T14:06:43.648Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-05-30T13:43:37.631Z"
+      "lastUpdated": "2026-05-30T14:06:42.657Z"
     },
     {
       "name": "upload-test",
@@ -51,7 +51,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T07:24:49.161Z",
-      "lastUpdated": "2026-05-30T13:43:38.918Z"
+      "lastUpdated": "2026-05-30T14:06:44.693Z"
     },
     {
       "name": "mail-test",
@@ -65,7 +65,19 @@
       ],
       "auth": true,
       "registered": "2026-05-30T13:43:13.671Z",
-      "lastUpdated": "2026-05-30T13:43:38.685Z"
+      "lastUpdated": "2026-05-30T14:06:44.375Z"
+    },
+    {
+      "name": "inventory-management",
+      "version": "2.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/inventory-management/core.tsx",
+      "screens": [
+        "index"
+      ],
+      "auth": false,
+      "registered": "2026-05-30T13:54:53.420Z",
+      "lastUpdated": "2026-05-30T14:06:44.048Z"
     }
   ]
 }
