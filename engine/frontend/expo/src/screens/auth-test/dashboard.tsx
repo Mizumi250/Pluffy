@@ -3,7 +3,7 @@
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '@/arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { AuthLayout }  from '@/layouts/AuthLayout'

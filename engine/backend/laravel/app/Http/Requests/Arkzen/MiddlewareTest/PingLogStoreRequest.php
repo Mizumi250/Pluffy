@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — PingLogStoreRequest
 // Tatemono: middleware-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T05:16:41.863634Z
+// Generated: 2026-05-30T07:14:23.597910Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\MiddlewareTest;

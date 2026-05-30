@@ -13,6 +13,7 @@
     "expo:ios": "expo start --ios"
   },
   "dependencies": {
+    "@react-native-async-storage/async-storage": "2.2.0",
     "chokidar": "^3.6.0",
     "expo": "~56.0.7",
     "expo-asset": "~56.0.15",

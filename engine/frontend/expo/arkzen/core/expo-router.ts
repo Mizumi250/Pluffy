@@ -268,6 +268,19 @@ function ensureStatusBarImport(canonicalBlock: string): string {
   return canonicalBlock + `${sep}\nimport { StatusBar } from 'expo-status-bar'`
 }
 
+// ─── Native import normaliser ─────────────────────────────────────────────────
+// The shared authStore (and any other arkzen core files) live at
+// <expo-root>/arkzen/core/... — outside src/.
+// Metro resolves @/* → src/*, so @/arkzen/* would look inside src/arkzen/
+// which does not exist. We rewrite @/arkzen/* → ../../../arkzen/* at generation
+// time so screens are self-contained regardless of any babel alias config.
+// Depth is fixed: src/screens/{tat}/{screen}.tsx → 3 levels up = expo root.
+
+function normaliseNativeImports(block: string): string {
+  return block.replace(/from\s+'@\/arkzen\//g, `from '../../../arkzen/`)
+              .replace(/from\s+"@\/arkzen\//g, `from "../../../arkzen/`)
+}
+
 // ─── Screen file generator ────────────────────────────────────────────────────
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
@@ -350,6 +363,9 @@ export default ${wrapperName}
   if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
     canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`
   }
+
+  // ── Rewrite @/arkzen/* → ../../arkzen/* so Metro can resolve without aliases ─
+  canonicalBlock = normaliseNativeImports(canonicalBlock)
 
   // strippedSources[0..n-1] = shared blocks, last = page block
   const sharedCode = strippedSources.slice(0, strippedSources.length - 1).join('\n\n')

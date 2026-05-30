@@ -1,13 +1,10 @@
 // ============================================================
-// ARKZEN — GuestLayout (Expo) v1.0
+// ARKZEN — GuestLayout (Expo) v2.0
 // src/layouts/GuestLayout.tsx
 //
-// For login / register screens.
-// Redirects to dashboard if user is already authenticated.
-//
-// Uses NativeWind className for styling.
-// Uses expo-router for navigation.
-// Handles keyboard avoiding for form inputs.
+// Uses useAuthStore (zustand + AsyncStorage) — same store the
+// generated screens use. v1.0 used useArkzenExpoAuth (SecureStore)
+// which was a separate store, causing the redirect loop after login.
 // ============================================================
 
 import React, { useEffect } from 'react'
@@ -16,27 +13,38 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
+  ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { useArkzenExpoAuth } from '@/hooks/useArkzenExpoAuth'
+import { useAuthStore, useAuthStoreHydrated } from '../../arkzen/core/stores/authStore'
 
 interface GuestLayoutProps {
   children:       React.ReactNode
   tatSlug:        string
-  dashboardRoute: string  // e.g. '/barbershop-booking/dashboard'
+  dashboardRoute: string
 }
 
 export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutProps) {
-  const router   = useRouter()
-  const { isAuthed, isLoading } = useArkzenExpoAuth(tatSlug)
+  const router          = useRouter()
+  const hydrated        = useAuthStoreHydrated()
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
 
-  // If already logged in, redirect away from guest screens
   useEffect(() => {
-    if (!isLoading && isAuthed) {
+    if (!hydrated) return
+    if (isAuthenticated) {
       router.replace(dashboardRoute as any)
     }
-  }, [isLoading, isAuthed, dashboardRoute])
+  }, [hydrated, isAuthenticated, dashboardRoute])
+
+  // Wait for AsyncStorage to rehydrate before making auth decisions
+  if (!hydrated) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="small" color="#a3a3a3" />
+      </SafeAreaView>
+    )
+  }
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">

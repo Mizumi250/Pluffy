@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-05-30T05:16:36.145Z"
+      "lastUpdated": "2026-05-30T07:14:19.514Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-05-30T05:16:36.016Z"
+      "lastUpdated": "2026-05-30T07:14:19.413Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-05-30T05:16:35.139Z"
+      "lastUpdated": "2026-05-30T07:14:18.476Z"
     }
   ]
 }

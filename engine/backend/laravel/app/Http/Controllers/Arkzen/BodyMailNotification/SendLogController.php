@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — SendLogController
 // Tatemono: body-mail-notification
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T05:16:38.418881Z
+// Generated: 2026-05-30T07:14:20.846549Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BodyMailNotification;

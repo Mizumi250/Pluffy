@@ -1,53 +1,52 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED AUTH STORE v1.1
-// Framework-agnostic. No next/navigation or react-router imports.
-// Works identically in Next.js, React+Vite, React+Inertia,
-// React Native — any stack that has zustand + fetch.
+// ARKZEN ENGINE — NATIVE AUTH STORE v1.0
+// React Native specific. No window/document/localStorage.
 //
-// Cookie helpers use document.cookie (web stacks only).
-// For React Native, override setCookie/clearCookie in the adapter.
+// Identical logic to web-core/stores/authStore.ts except:
+//   - persist uses AsyncStorage instead of localStorage
+//   - slug resolved via global instead of window
+//   - cookie helpers are no-ops (token lives in AsyncStorage)
+//   - useAuthStoreHydrated starts false (AsyncStorage is async)
 //
-// This file lives in engine/shared and is sync-copied into
-// each stack's arkzen/core/stores/ by shared-sync.ts.
+// Lives in engine/shared/arkzen/native-core/stores/ and is
+// sync-copied into mobile stacks (expo, bare-rn, lynx) by
+// shared-sync.ts.
 // ============================================================
 
-import { create } from 'zustand'
-import { persist } from 'zustand/middleware'
-import { useEffect, useState } from 'react'
+import AsyncStorage                    from '@react-native-async-storage/async-storage'
+import { create }                      from 'zustand'
+import { persist, createJSONStorage }  from 'zustand/middleware'
+import { useEffect, useState }         from 'react'
 
 // ─────────────────────────────────────────────
 // TATEMONO SLUG RESOLUTION
 // ─────────────────────────────────────────────
 
 declare global {
-  interface Window {
-    __ARKZEN_TATEMONO__?: string
-  }
+  // eslint-disable-next-line no-var
+  var __ARKZEN_TATEMONO__: string | undefined
 }
 
 function getSlug(): string {
-  const s = typeof window !== 'undefined' ? window.__ARKZEN_TATEMONO__ : undefined
-  if (!s) throw new Error('[Arkzen] window.__ARKZEN_TATEMONO__ is not set. Did you forget to call setActiveTatemono() in your tatemono?')
+  const s = global.__ARKZEN_TATEMONO__
+  if (!s) throw new Error('[Arkzen] __ARKZEN_TATEMONO__ is not set. Did you forget to call setActiveTatemono()?')
   return s
 }
 
 function getAuthBase(): string {
-  return `/api/${getSlug()}/auth`
+  const base = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+  return `${base}/api/${getSlug()}/auth`
 }
 
 // ─────────────────────────────────────────────
-// COOKIE HELPERS
+// COOKIE HELPERS — no-ops on native
+// Token is persisted via AsyncStorage instead
 // ─────────────────────────────────────────────
 
-function setCookie(slug: string, token: string): void {
-  if (typeof document === 'undefined') return
-  document.cookie = `arkzen-auth-${slug}=${token}; path=/; SameSite=Lax`
-}
-
-function clearCookie(slug: string): void {
-  if (typeof document === 'undefined') return
-  document.cookie = `arkzen-auth-${slug}=; path=/; max-age=0`
-}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function setCookie(_slug: string, _token: string): void {}
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+function clearCookie(_slug: string): void {}
 
 // ─────────────────────────────────────────────
 // SAFE JSON HELPER
@@ -193,18 +192,10 @@ export const useAuthStore = create<AuthState>()(
     }),
 
     {
-      // IMPORTANT: name must use a lazy getter, not a template literal evaluated at
-      // module load time. On MPA stacks (Astro), ES module imports are hoisted and
-      // evaluated before any component code runs — so window.__ARKZEN_TATEMONO__ is
-      // always undefined when the store is first created, causing every tatemono to
-      // share the key 'arkzen-auth-default'. The lazy getter resolves the slug at the
-      // moment zustand/persist first reads or writes localStorage, by which point the
-      // island's setActiveTatemono() call has already executed.
-      // On SPA stacks (Next.js, Vite, Inertia) this is a no-op change — the store is
-      // created once and setActiveTatemono() is called before any auth action anyway.
       get name() {
-        return `arkzen-auth-${typeof window !== 'undefined' ? (window.__ARKZEN_TATEMONO__ ?? 'default') : 'default'}`
+        return `arkzen-auth-${global.__ARKZEN_TATEMONO__ ?? 'default'}`
       },
+      storage:    createJSONStorage(() => AsyncStorage),
       partialize: (state) => ({ token: state.token }),
     }
   )
@@ -214,39 +205,17 @@ export const useAuthStore = create<AuthState>()(
 // HYDRATION HOOK
 // ─────────────────────────────────────────────
 //
-// useAuthStoreHydrated() — returns true once zustand/persist has
-// finished rehydrating the token from localStorage.
-//
-// WHY THIS EXISTS:
-//   SPA stacks (Next.js, Vite, Inertia) never destroy the store
-//   between navigations, so hasHydrated() is already true by the
-//   time any layout mounts. This hook is a safe no-op for them.
-//
-//   Astro (and any MPA stack) does a full page reload on every
-//   navigation. The store is re-created cold and persist rehydrates
-//   asynchronously. Without this hook, AuthLayout's useEffect fires
-//   before the token is restored → sees null → redirects to /login.
-//
-// USAGE: call at the top of AuthLayout / GuestLayout:
-//   const hydrated = useAuthStoreHydrated()
-//   if (!hydrated) return <spinner>
+// Starts false — AsyncStorage reads are always async on native.
+// Layouts must gate on this to avoid redirecting to login before
+// the token is restored from storage.
 
 export function useAuthStoreHydrated(): boolean {
-  // On the server (SSR), zustand/persist skips storage init because localStorage
-  // doesn't exist — useAuthStore.persist is undefined. Return true immediately so
-  // layouts don't block render. Hydration only matters client-side.
-  const isServer = typeof window === 'undefined'
-
-  const [hydrated, setHydrated] = useState(() => {
-    if (isServer) return true
-    return useAuthStore.persist?.hasHydrated() ?? true
-  })
+  const [hydrated, setHydrated] = useState(() => useAuthStore.persist?.hasHydrated() ?? false)
 
   useEffect(() => {
     if (hydrated) return
     if (!useAuthStore.persist) { setHydrated(true); return }
     const unsub = useAuthStore.persist.onFinishHydration(() => setHydrated(true))
-    // Catch the race: may have finished between useState initialiser and useEffect
     if (useAuthStore.persist.hasHydrated()) setHydrated(true)
     return unsub
   }, [])
@@ -282,7 +251,5 @@ export async function arkzenGet<T = unknown>(url: string): Promise<T> {
 // ─────────────────────────────────────────────
 
 export function setActiveTatemono(slug: string): void {
-  if (typeof window !== 'undefined') {
-    window.__ARKZEN_TATEMONO__ = slug
-  }
+  global.__ARKZEN_TATEMONO__ = slug
 }

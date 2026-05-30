@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — ItemResource
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T05:16:40.416248Z
+// Generated: 2026-05-30T07:14:22.543591Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\CrudTest;

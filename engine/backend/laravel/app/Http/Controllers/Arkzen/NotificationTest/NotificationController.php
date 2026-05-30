@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — NotificationController
 // Tatemono: notification-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T05:16:42.180684Z
+// Generated: 2026-05-30T07:14:23.770992Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\NotificationTest;

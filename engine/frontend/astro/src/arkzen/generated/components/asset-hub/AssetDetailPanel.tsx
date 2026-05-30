@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AssetDetailPanel
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T05:16:37.914Z
+// Generated: 2026-05-30T07:14:20.383Z
 // ============================================================
 
 export { AssetDetailPanel } from './_components'

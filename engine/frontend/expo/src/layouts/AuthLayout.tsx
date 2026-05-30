@@ -1,12 +1,11 @@
 // ============================================================
-// ARKZEN — AuthLayout (Expo) v1.0
+// ARKZEN — AuthLayout (Expo) v2.0
 // src/layouts/AuthLayout.tsx
 //
-// Wraps auth-protected screens.
-// Checks token via useArkzenExpoAuth — redirects to login if not authed.
-//
-// Uses NativeWind className for styling (same Tailwind syntax as web).
-// Uses expo-router for navigation.
+// Uses useAuthStore (zustand + AsyncStorage) — same store the
+// generated screens use. v1.0 used useArkzenExpoAuth (SecureStore)
+// which was a separate store, causing auth checks to always fail
+// after login via the generated screens.
 // ============================================================
 
 import React, { useEffect } from 'react'
@@ -18,40 +17,36 @@ import {
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { useArkzenExpoAuth } from '@/hooks/useArkzenExpoAuth'
+import { useAuthStore, useAuthStoreHydrated } from '../../arkzen/core/stores/authStore'
 
 interface AuthLayoutProps {
   children:   React.ReactNode
   tatSlug:    string
-  loginRoute: string  // e.g. '/barbershop-booking/login'
+  loginRoute: string
 }
 
 export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
-  const router = useRouter()
-  const { user, isLoading, isAuthed, logout } = useArkzenExpoAuth(tatSlug)
+  const router          = useRouter()
+  const hydrated        = useAuthStoreHydrated()
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+  const user            = useAuthStore(s => s.user)
+  const logout          = useAuthStore(s => s.logout)
 
   useEffect(() => {
-    if (!isLoading && !isAuthed) {
+    if (!hydrated) return
+    if (!isAuthenticated) {
       router.replace(loginRoute as any)
     }
-  }, [isLoading, isAuthed, loginRoute])
+  }, [hydrated, isAuthenticated, loginRoute])
 
-  // ── Loading state ──────────────────────────────────────────────────────────
-  if (isLoading) {
+  if (!hydrated || !isAuthenticated) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
         <ActivityIndicator size="small" color="#a3a3a3" />
-        <Text className="mt-3 text-xs text-neutral-400 tracking-wide">
-          Checking auth...
-        </Text>
       </SafeAreaView>
     )
   }
 
-  // ── Not authed — render nothing while redirect fires ───────────────────────
-  if (!isAuthed) return null
-
-  // ── Authed ─────────────────────────────────────────────────────────────────
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
 
