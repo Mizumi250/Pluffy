@@ -20,6 +20,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
+// ROUTE:events-test:index:/events-test:default:false
+  { tatName: 'events-test', screenName: 'index', routePath: '/events-test', layout: 'default', auth: false },
 // ROUTE:hello-native:index:/hello-native:default:false
   { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false

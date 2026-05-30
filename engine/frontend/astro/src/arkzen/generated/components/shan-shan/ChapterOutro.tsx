@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterOutro
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:06:51.430Z
+// Generated: 2026-05-30T14:22:13.715Z
 // ============================================================
 
 export { ChapterOutro } from './_components'

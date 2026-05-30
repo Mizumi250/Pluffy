@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-05-30T14:06:43.810Z"
+      "lastUpdated": "2026-05-30T14:22:07.313Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-05-30T14:06:43.648Z"
+      "lastUpdated": "2026-05-30T14:22:06.923Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-05-30T14:06:42.657Z"
+      "lastUpdated": "2026-05-30T14:22:06.089Z"
     },
     {
       "name": "upload-test",
@@ -51,7 +51,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T07:24:49.161Z",
-      "lastUpdated": "2026-05-30T14:06:44.693Z"
+      "lastUpdated": "2026-05-30T14:22:08.009Z"
     },
     {
       "name": "mail-test",
@@ -65,7 +65,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T13:43:13.671Z",
-      "lastUpdated": "2026-05-30T14:06:44.375Z"
+      "lastUpdated": "2026-05-30T14:22:07.755Z"
     },
     {
       "name": "inventory-management",
@@ -77,7 +77,19 @@
       ],
       "auth": false,
       "registered": "2026-05-30T13:54:53.420Z",
-      "lastUpdated": "2026-05-30T14:06:44.048Z"
+      "lastUpdated": "2026-05-30T14:22:07.488Z"
+    },
+    {
+      "name": "events-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/events-test/core.tsx",
+      "screens": [
+        "index"
+      ],
+      "auth": false,
+      "registered": "2026-05-30T14:20:09.470Z",
+      "lastUpdated": "2026-05-30T14:22:07.275Z"
     }
   ]
 }
