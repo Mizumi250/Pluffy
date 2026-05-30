@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — InventoryUpdateRequest
 // Tatemono: inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:42:21.129226Z
+// Generated: 2026-05-30T14:56:48.055751Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\InventoryManagement;

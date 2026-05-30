@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FundingBar
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:42:21.192Z
+// Generated: 2026-05-30T14:56:48.120Z
 // ============================================================
 
 export { FundingBar } from './_components'

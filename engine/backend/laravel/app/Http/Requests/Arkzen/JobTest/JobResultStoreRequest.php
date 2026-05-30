@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — JobResultStoreRequest
 // Tatemono: job-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:42:21.344274Z
+// Generated: 2026-05-30T14:56:48.369505Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\JobTest;

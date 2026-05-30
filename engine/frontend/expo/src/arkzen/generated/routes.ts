@@ -36,6 +36,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'mail-test', screenName: 'register', routePath: '/mail-test/register', layout: 'guest', auth: false },
 // ROUTE:mail-test:dashboard:/mail-test/dashboard:auth:true
   { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:default:false
+  { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 ]

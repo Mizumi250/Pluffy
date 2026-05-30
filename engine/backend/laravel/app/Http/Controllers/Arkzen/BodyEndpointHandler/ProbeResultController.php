@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ProbeResultController
 // Tatemono: body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:42:17.831986Z
+// Generated: 2026-05-30T14:56:45.093711Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BodyEndpointHandler;
