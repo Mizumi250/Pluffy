@@ -2,18 +2,74 @@
 // ARKZEN GENERATED SCREEN — hello-native/index
 // ============================================================
 
-import React from 'react'
-// No layout wrapper
-import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
-  FlatList, ActivityIndicator, SafeAreaView, Image,
-  Pressable, RefreshControl, KeyboardAvoidingView, Platform
-} from 'react-native'
+import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
+import { Pressable, Text, TouchableOpacity, View, ScrollView } from 'react-native'// No layout wrapper
 import { StatusBar } from 'expo-status-bar'
-// No layout wrapper
+import { SafeAreaView } from 'react-native-safe-area-context'
 
-// User's component (extracted from @arkzen:native:page)
+// Shared components (from @arkzen:native:components:*)
+// ── Pill badge ────────────────────────────────────────────────
+export const Badge = ({ label }: { label: string }) => (
+  <View className="px-3 py-1 bg-indigo-100 rounded-full self-start">
+    <Text className="text-xs font-semibold text-indigo-600 tracking-wide">
+      {label}
+    </Text>
+  </View>
+)
+
+// ── Primary button ────────────────────────────────────────────
+export const PrimaryButton = ({
+  label,
+  onPress,
+  disabled = false,
+}: {
+  label: string
+  onPress: () => void
+  disabled?: boolean
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    disabled={disabled}
+    activeOpacity={0.82}
+    className={`rounded-2xl py-4 px-6 items-center ${
+      disabled ? 'bg-indigo-200' : 'bg-indigo-500'
+    }`}
+  >
+    <Text className="text-white font-semibold text-base tracking-wide">
+      {label}
+    </Text>
+  </TouchableOpacity>
+)
+
+// ── Ghost button ──────────────────────────────────────────────
+export const GhostButton = ({
+  label,
+  onPress,
+}: {
+  label: string
+  onPress: () => void
+}) => (
+  <Pressable onPress={onPress} className="rounded-2xl py-4 px-6 items-center border border-neutral-200">
+    <Text className="text-neutral-600 font-medium text-base">{label}</Text>
+  </Pressable>
+)
+
+// ── Section card ──────────────────────────────────────────────
+export const Card = ({
+  title,
+  body,
+}: {
+  title: string
+  body: string
+}) => (
+  <View className="bg-white rounded-2xl p-5 border border-neutral-100 shadow-sm mb-3">
+    <Text className="text-sm font-semibold text-neutral-800 mb-1">{title}</Text>
+    <Text className="text-sm text-neutral-500 leading-5">{body}</Text>
+  </View>
+)
+
+// User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {
   const router = useRouter()
 
@@ -59,10 +115,9 @@ const IndexScreen = () => {
   )
 }
 
-// Engine wrapper – unique name (no conflict)
+// Engine wrapper
 export function ArkzenScreen_HelloNative_Index() {
   const router = useRouter()
-
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />

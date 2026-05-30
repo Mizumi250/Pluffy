@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T00:15:10.126Z
+// Generated: 2026-05-30T00:49:34.859Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -1,17 +1,15 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v2.2
+// ARKZEN ENGINE — EXPO ROUTER v3.1
 //
-// v2.2 – Component extraction: now works like Next.js.
-//         If the user writes a full component (const X = () => {...})
-//         inside @arkzen:native:page, the engine extracts it and
-//         renders <X /> inside the ScrollView. No more raw paste.
+// v3.1 – Fixed duplicate imports and missing ScrollView.
+//        Engine now merges required components into existing
+//        react-native import instead of adding a second one.
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage } from '../types'
 
-// Resolved relative to CWD (engine/frontend/expo/)
 const SRC_SCREENS_DIR  = path.resolve(process.cwd(), 'src', 'screens')
 const APP_DIR          = path.resolve(process.cwd(), 'app')
 const GENERATED_DIR    = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
@@ -27,24 +25,63 @@ function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
 
-// ─── Unified Import Resolver (unchanged) ──────────────────────────────────────
+// ─── flattenMultilineImports — brace-counting (from Next.js router.ts) ────────
+
+function flattenMultilineImports(code: string): string {
+  const lines = code.split('\n')
+  const out: string[] = []
+  let inImport = false
+  let buffer = ''
+  let depth = 0
+
+  const isCompleteImport = (s: string): boolean =>
+    /^import\s+(?:(?:[\w*\s{},]+)\s+from\s+['"][^'"]+['"]|['"][^'"]+['"'])\s*;?\s*$/.test(s)
+
+  for (const line of lines) {
+    const trimmed = line.trim()
+    if (!inImport && /^\s*import\s/.test(line)) {
+      inImport = true
+      buffer = trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+        depth = 0
+      }
+      continue
+    }
+
+    if (inImport) {
+      buffer += ' ' + trimmed
+      depth += (trimmed.match(/\{/g) || []).length
+      depth -= (trimmed.match(/\}/g) || []).length
+      const collapsed = buffer.replace(/\s+/g, ' ')
+      if (depth === 0 && isCompleteImport(collapsed)) {
+        out.push(collapsed)
+        inImport = false
+        buffer = ''
+        depth = 0
+      }
+      continue
+    }
+
+    out.push(line)
+  }
+
+  if (inImport && buffer.trim()) out.push(buffer.replace(/\s+/g, ' '))
+  return out.join('\n')
+}
+
+// ─── resolveImports — mirrors Next.js router.ts exactly ──────────────────────
+// NO ENGINE_OWNED_MODULES guard. Every module is processed freely.
+// React default import is always implicit; only named hooks are tracked.
 
 interface ResolvedImports {
   canonicalBlock:  string
   strippedSources: string[]
-}
-
-const ENGINE_OWNED_MODULES = new Set([
-  'react',
-  'react-native',
-  'expo-router',
-  'expo-status-bar',
-])
-
-function flattenMultilineImports(src: string): string {
-  return src.replace(/import\s[^;'"]*?\n[^;'"]*?from\s+['"][^'"]+['"]/g, m =>
-    m.replace(/\n\s*/g, ' ')
-  )
 }
 
 function resolveImports(
@@ -60,6 +97,7 @@ function resolveImports(
     return importMap.get(mod)!
   }
 
+  // Seed react entry with any engine-required hooks
   const reactEntry = getEntry('react')
   ;(engineRequired.reactHooks ?? []).forEach(h => reactEntry.named.add(h))
 
@@ -79,65 +117,72 @@ function resolveImports(
 
       let m: RegExpMatchArray | null
 
+      // mixed: import Default, { a, b } from 'mod'
       m = line.match(mixedImportRe)
       if (m) {
         const [, def, namedStr, mod] = m
-        if (!ENGINE_OWNED_MODULES.has(mod)) {
-          const entry = getEntry(mod)
-          entry.defaultImport = def
-          namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => entry.named.add(n))
-        }
+        const entry = getEntry(mod)
+        // React default is implicit — skip it, only collect hooks
+        if (mod !== 'react') entry.defaultImport = def
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
         continue
       }
 
+      // namespace: import * as Ns from 'mod'
       m = line.match(namespaceImportRe)
       if (m) {
         const [, ns, mod] = m
-        if (!ENGINE_OWNED_MODULES.has(mod)) getEntry(mod).defaultImport = `* as ${ns}`
+        getEntry(mod).defaultImport = `* as ${ns}`
         continue
       }
 
+      // named: import { a, b } from 'mod'
       m = line.match(namedImportRe)
       if (m) {
         const [, namedStr, mod] = m
-        if (ENGINE_OWNED_MODULES.has(mod)) {
-          if (mod === 'react') {
-            namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
-              if (n !== 'React') reactEntry.named.add(n)
-            })
-          }
-          continue
-        }
         const entry = getEntry(mod)
-        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => entry.named.add(n))
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+          if (n !== 'React') entry.named.add(n)
+        })
         continue
       }
 
+      // default: import Default from 'mod'
       m = line.match(defaultImportRe)
       if (m) {
         const [, def, mod] = m
-        if (!ENGINE_OWNED_MODULES.has(mod)) getEntry(mod).defaultImport = def
+        if (mod === 'react') continue // React default is implicit
+        getEntry(mod).defaultImport = def
         continue
       }
 
+      // side-effect: import 'mod'
       m = line.match(sideEffectRe)
       if (m) {
-        if (!ENGINE_OWNED_MODULES.has(m[1])) sideEffects.push(`import '${m[1]}'`)
+        sideEffects.push(`import '${m[1]}'`)
         continue
       }
     }
   }
 
+  // ── Build canonical import block ──────────────────────────────────────────
   const lines: string[] = []
-  const reactNamed = [...(importMap.get('react')?.named ?? [])].filter(n => n !== 'React').sort()
+
+  // 1. React always first
+  const reactNamed = [...(importMap.get('react')?.named ?? [])]
+    .filter(n => n !== 'React')
+    .sort()
   lines.push(
     reactNamed.length > 0
       ? `import React, { ${reactNamed.join(', ')} } from 'react'`
       : `import React from 'react'`
   )
 
+  // 2. All other modules — alphabetical
   const otherModules = [...importMap.keys()]
-    .filter(m => m !== 'react' && !ENGINE_OWNED_MODULES.has(m))
+    .filter(m => m !== 'react')
     .sort()
 
   for (const mod of otherModules) {
@@ -154,11 +199,15 @@ function resolveImports(
     }
   }
 
+  // 3. Side-effects
   sideEffects.forEach(s => lines.push(s))
+
+  // 4. Verbatim extra (layout import etc.)
   if (engineRequired.extra) lines.push(engineRequired.extra)
 
   const canonicalBlock = lines.filter(Boolean).join('\n')
 
+  // ── Strip all imports from raw sources ────────────────────────────────────
   const stripRaw = (src: string) =>
     src
       .replace(/^\s*import\s[\s\S]*?from\s+['"][^'"]+['"]\s*;?\s*\n?/gm, '')
@@ -170,7 +219,7 @@ function resolveImports(
   return { canonicalBlock, strippedSources }
 }
 
-// ─── NEW: Component extractor (copied from Next.js router logic) ─────────────
+// ─── Component extractor ──────────────────────────────────────────────────────
 
 interface ExtractedComponent {
   name: string
@@ -178,26 +227,47 @@ interface ExtractedComponent {
 }
 
 function extractComponentFromBlock(raw: string): ExtractedComponent | null {
-  // Match const Name = () => { ... } or function Name() { ... }
   const constMatch = raw.match(/^(const\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:\(\))?\s*=>\s*\{[\s\S]*\})/m)
-  if (constMatch) {
-    return { name: constMatch[2], definition: constMatch[1] }
-  }
+  if (constMatch) return { name: constMatch[2], definition: constMatch[1] }
   const funcMatch = raw.match(/^(function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*\)\s*\{[\s\S]*\})/m)
-  if (funcMatch) {
-    return { name: funcMatch[2], definition: funcMatch[1] }
-  }
+  if (funcMatch) return { name: funcMatch[2], definition: funcMatch[1] }
   return null
 }
 
-// ─── Screen component generator (FIXED) ───────────────────────────────────────
+// ─── Import merger helpers ────────────────────────────────────────────────────
+
+function ensureReactNativeImport(canonicalBlock: string, requiredComponents: string[]): string {
+  const importRe = /^import\s+\{([^}]*)\}\s+from\s+['"]react-native['"]\s*;?/m
+  const match = canonicalBlock.match(importRe)
+  if (!match) {
+    // No react-native import → add a new one
+    return canonicalBlock + `\nimport { ${requiredComponents.join(', ')} } from 'react-native'`
+  }
+  // Merge missing components
+  const existing = match[1].split(',').map(s => s.trim()).filter(Boolean)
+  const merged = Array.from(new Set([...existing, ...requiredComponents]))
+  const newLine = `import { ${merged.join(', ')} } from 'react-native'`
+  return canonicalBlock.replace(importRe, newLine)
+}
+
+function ensureExpoRouterImport(canonicalBlock: string): string {
+  if (/from ['"]expo-router['"]/.test(canonicalBlock)) return canonicalBlock
+  return canonicalBlock + `\nimport { useRouter } from 'expo-router'`
+}
+
+function ensureStatusBarImport(canonicalBlock: string): string {
+  if (/from ['"]expo-status-bar['"]/.test(canonicalBlock)) return canonicalBlock
+  return canonicalBlock + `\nimport { StatusBar } from 'expo-status-bar'`
+}
+
+// ─── Screen file generator ────────────────────────────────────────────────────
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
-  const tatName    = tatemono.meta.name
-  const layout     = page.layout ?? 'default'
-  const isAuth     = layout === 'auth'
-  const isGuest    = layout === 'guest'
-  const isApp      = layout === 'app'
+  const tatName  = tatemono.meta.name
+  const layout   = page.layout ?? 'default'
+  const isAuth   = layout === 'auth'
+  const isGuest  = layout === 'guest'
+  const isApp    = layout === 'app'
 
   const layoutImport = isAuth
     ? `import { AuthLayout }  from '@/layouts/AuthLayout'`
@@ -215,62 +285,71 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
     ? `<AppLayout tatSlug="${tatName}">`
     : ''
 
-  const layoutClose = isAuth
-    ? `</AuthLayout>`
-    : isGuest
-    ? `</GuestLayout>`
-    : isApp
-    ? `</AppLayout>`
-    : ''
+  const layoutClose = isAuth ? `</AuthLayout>` : isGuest ? `</GuestLayout>` : isApp ? `</AppLayout>` : ''
 
   const hasNativeContent = page.raw && page.raw.trim().length > 0
 
-  // ── Placeholder when empty (same as Next.js minimal) ──
+  // ── Placeholder ────────────────────────────────────────────────────────────
   if (!hasNativeContent) {
-    const uniqueWrapper = `ArkzenScreen_${tatName}_${page.name}`
-    const placeholderBody = `<View className="flex-1 items-center justify-center p-6">
-      <Text className="text-gray-400">Add JSX to @arkzen:native:page:${page.name}</Text>
-    </View>`
-
+    const wrapperName = `ArkzenScreen_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
     return `// ============================================================
 // ARKZEN GENERATED SCREEN — ${tatName}/${page.name} (placeholder)
 // ============================================================
 
 import React from 'react'
-import { View, Text, SafeAreaView, ScrollView } from 'react-native'
+import { View, Text, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 ${layoutImport}
 
-export function ${uniqueWrapper}() {
+export function ${wrapperName}() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
       ${layoutOpen}
       <ScrollView className="flex-1">
-        ${placeholderBody}
+        <View className="flex-1 items-center justify-center p-6">
+          <Text className="text-gray-400">Add JSX to @arkzen:native:page:${page.name}</Text>
+        </View>
       </ScrollView>
       ${layoutClose}
     </SafeAreaView>
   )
 }
 
-export default ${uniqueWrapper}
+export default ${wrapperName}
 `
   }
 
-  // ── User wrote content – resolve imports and extract component ──
-  const { canonicalBlock, strippedSources } = resolveImports([page.raw.trim()], {
-    reactHooks: [],
-    extra: layoutImport
+  // ── Resolve imports across ALL shared component blocks + this page ─────────
+  const allSources = [
+    ...(tatemono.nativeComponents ?? []).map(c => c.raw.trim()),
+    page.raw.trim(),
+  ]
+
+  let { canonicalBlock, strippedSources } = resolveImports(allSources, {
+    extra: layoutImport,
   })
 
-  let userCode = strippedSources[0]
+  // ── Merge engine-required imports into canonicalBlock (no duplicates) ─────
+  const engineRequiredRN = ['ScrollView']  // used by the wrapper
+  canonicalBlock = ensureReactNativeImport(canonicalBlock, engineRequiredRN)
+  canonicalBlock = ensureExpoRouterImport(canonicalBlock)
+  canonicalBlock = ensureStatusBarImport(canonicalBlock)
+  // SafeAreaView is never imported by user code – always add separately
+  if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
+    canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`
+  }
+
+  // strippedSources[0..n-1] = shared blocks, last = page block
+  const sharedCode = strippedSources.slice(0, strippedSources.length - 1).join('\n\n')
+  let userCode = strippedSources[strippedSources.length - 1]
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
 
-  // Extract component name (like Next.js extractComponentName)
+  // Extract the page's component
   let componentName: string
   let componentDefinition: string
 
@@ -279,35 +358,28 @@ export default ${uniqueWrapper}
     componentName = extracted.name
     componentDefinition = extracted.definition
   } else {
-    // Raw JSX – wrap into a default component
     componentName = toPascalCase(page.name) + 'Content'
     componentDefinition = `const ${componentName} = () => (\n  ${userCode}\n)`
   }
 
-  // UNIQUE wrapper name – never clashes with user's component (exactly like Next.js)
   const wrapperName = `ArkzenScreen_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
 
+  // ── Build final file ──────────────────────────────────────────────────────
   return `// ============================================================
 // ARKZEN GENERATED SCREEN — ${tatName}/${page.name}
 // ============================================================
 
 ${canonicalBlock}
-import {
-  View, Text, ScrollView, TouchableOpacity, TextInput,
-  FlatList, ActivityIndicator, SafeAreaView, Image,
-  Pressable, RefreshControl, KeyboardAvoidingView, Platform
-} from 'react-native'
-import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
-${layoutImport}
 
-// User's component (extracted from @arkzen:native:page)
+// Shared components (from @arkzen:native:components:*)
+${sharedCode}
+
+// User screen (from @arkzen:native:page:${page.name})
 ${componentDefinition}
 
-// Engine wrapper – unique name (no conflict)
+// Engine wrapper
 export function ${wrapperName}() {
   const router = useRouter()
-
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
@@ -329,7 +401,7 @@ export default ${wrapperName}
 `
 }
 
-// ─── Expo Router file-based route entry (unchanged) ───────────────────────────
+// ─── Expo Router route file ────────────────────────────────────────────────────
 
 function generateExpoRouteFile(tatName: string, screenName: string): string {
   return `// ============================================================
@@ -341,7 +413,7 @@ export { default } from '@/screens/${tatName}/${screenName}'
 `
 }
 
-// ─── Route registry (unchanged) ───────────────────────────────────────────────
+// ─── Route registry ───────────────────────────────────────────────────────────
 
 interface ExpoRoute {
   tatName:    string
@@ -354,11 +426,7 @@ interface ExpoRoute {
 function readExistingRoutes(): ExpoRoute[] {
   if (!fs.existsSync(ROUTES_FILE)) return []
   const content = fs.readFileSync(ROUTES_FILE, 'utf-8')
-  const matches = [
-    ...content.matchAll(
-      /\/\/ ROUTE:([^:]+):([^:]+):([^:]+):([^:]+):(true|false)/g
-    ),
-  ]
+  const matches = [...content.matchAll(/\/\/ ROUTE:([^:]+):([^:]+):([^:]+):([^:]+):(true|false)/g)]
   return matches.map(m => ({
     tatName:    m[1],
     screenName: m[2],
@@ -377,25 +445,14 @@ function writeRouteRegistry(routes: ExpoRoute[]): void {
   ).join('\n')
 
   const content = `// ============================================================
-// ARKZEN GENERATED — Expo Route Registry v2.2
-// Auto-updated when tatemonos are built / removed
+// ARKZEN GENERATED — Expo Route Registry v3.1
 // DO NOT EDIT — managed by Arkzen engine
-//
-// Only tatemonos with @arkzen:native:page blocks appear here.
-// Web-only tatemonos are never registered.
-//
-// Consumed by:
-//   src/layouts/AuthLayout.tsx   — login route per tatemono
-//   src/layouts/GuestLayout.tsx  — dashboard route per tatemono
-//   src/layouts/AppLayout.tsx    — app shell per tatemono
 // ============================================================
 
 export interface ArkzenExpoRoute {
   tatName:    string
   screenName: string
-  /** Expo Router path e.g. '/barbershop-booking/index' */
   routePath:  string
-  /** 'guest' | 'auth' | 'app' | 'default' */
   layout:     string
   auth:       boolean
 }
@@ -404,15 +461,11 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
 ${routeLines}
 ]
 
-/** Find the login route for a given tatemono */
 export function getLoginRoute(tatName: string): string {
-  const login = ARKZEN_EXPO_ROUTES.find(
-    r => r.tatName === tatName && r.screenName === 'login'
-  )
+  const login = ARKZEN_EXPO_ROUTES.find(r => r.tatName === tatName && r.screenName === 'login')
   return login?.routePath ?? \`/\${tatName}/login\`
 }
 
-/** Find the dashboard / first auth-required route for a given tatemono */
 export function getDashboardRoute(tatName: string): string {
   const dashboard = ARKZEN_EXPO_ROUTES.find(
     r => r.tatName === tatName && (r.screenName === 'dashboard' || r.screenName === 'index') && r.auth
@@ -420,11 +473,20 @@ export function getDashboardRoute(tatName: string): string {
   return dashboard?.routePath ?? \`/\${tatName}/dashboard\`
 }
 `
-
   fs.writeFileSync(ROUTES_FILE, content, 'utf-8')
 }
 
-// ─── Main: register native screens only ───────────────────────────────────────
+// ─── Write-if-changed — prevents Metro from seeing spurious events ────────────
+
+function writeIfChanged(filePath: string, content: string): void {
+  if (fs.existsSync(filePath)) {
+    const existing = fs.readFileSync(filePath, 'utf-8')
+    if (existing === content) return
+  }
+  fs.writeFileSync(filePath, content, 'utf-8')
+}
+
+// ─── Register / Unregister ────────────────────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
@@ -442,20 +504,10 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
     const routePath  = `/${tatName}/${screenName}`
     const layout     = page.layout ?? 'default'
 
-    const screenContent = generateScreenFile(tatemono, page)
-    fs.writeFileSync(path.join(screenDir, `${screenName}.tsx`), screenContent, 'utf-8')
+    writeIfChanged(path.join(screenDir, `${screenName}.tsx`), generateScreenFile(tatemono, page))
+    writeIfChanged(path.join(appDir,    `${screenName}.tsx`), generateExpoRouteFile(tatName, screenName))
 
-    const routeContent = generateExpoRouteFile(tatName, screenName)
-    fs.writeFileSync(path.join(appDir, `${screenName}.tsx`), routeContent, 'utf-8')
-
-    newRoutes.push({
-      tatName,
-      screenName,
-      routePath,
-      layout,
-      auth: tatemono.meta.auth && layout === 'auth',
-    })
-
+    newRoutes.push({ tatName, screenName, routePath, layout, auth: tatemono.meta.auth && layout === 'auth' })
     console.log(`[Arkzen Expo Router] ✓ ${routePath} [${layout}]`)
   }
 
@@ -476,7 +528,6 @@ export function unregisterExpoScreens(tatName: string): void {
     console.log(`[Arkzen Expo Router] ✓ Removed app routes: ${tatName}`)
   }
 
-  const routes = readExistingRoutes().filter(r => r.tatName !== tatName)
-  writeRouteRegistry(routes)
+  writeRouteRegistry(readExistingRoutes().filter(r => r.tatName !== tatName))
   console.log(`[Arkzen Expo Router] ✓ Route registry updated`)
 }

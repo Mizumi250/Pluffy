@@ -62,16 +62,17 @@ export function updateExpoRegistry(tatemono: ParsedTatemono): void {
 
   const existingIndex = registry.modules.findIndex(m => m.name === tatemono.meta.name)
 
-  const entry: ExpoRegistryEntry = {
-    name:        tatemono.meta.name,
-    version:     tatemono.meta.version,
-    status:      'active',
-    filePath:    tatemono.filePath,
-    screens:     tatemono.pages.map(p => p.name),
-    auth:        tatemono.meta.auth,
-    registered:  existingIndex === -1 ? now : registry.modules[existingIndex].registered,
-    lastUpdated: now,
-  }
+
+const entry: ExpoRegistryEntry = {
+  name:        tatemono.meta.name,
+  version:     tatemono.meta.version,
+  status:      'active',
+  filePath:    tatemono.filePath,
+  screens:     tatemono.nativePages.map(p => p.name),  // ← was tatemono.pages
+  auth:        tatemono.meta.auth,
+  registered:  existingIndex === -1 ? now : registry.modules[existingIndex].registered,
+  lastUpdated: now,
+}
 
   if (existingIndex === -1) {
     registry.modules.push(entry)

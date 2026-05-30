@@ -1,15 +1,13 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO WATCHER v1.0
+// ARKZEN ENGINE — EXPO WATCHER v2.0
 //
-// Expo equivalent of nextjs/arkzen/core/watcher.ts.
-// Watches the same tatemonos/ folder — same DSL, native output.
-//
-// Mirrors the web watcher pattern exactly:
-//   add    → buildExpoTatemono()
-//   change → rebuildExpoTatemono()
-//   unlink → removeExpoTatemono()
-//
-// Also cleans stale modules on startup (same as web watcher).
+// v2.0 – Rewritten to mirror Next.js watcher.ts exactly.
+//         No skip logic. No delay. Just rebuild everything on
+//         startup the same way Next.js does. The Metro crash
+//         from v1.0 was caused by writing files too early;
+//         the real fix is that expo-router.ts now only writes
+//         files that actually changed (same content = no write),
+//         so Metro never sees a spurious change event.
 // ============================================================
 
 import * as path    from 'path'
@@ -20,11 +18,10 @@ import {
   rebuildExpoTatemono,
   removeExpoTatemono,
 } from './expo-builder'
-import { checkBackendHealth }           from './backend-bridge'
-import { syncSharedCoreToCurrentStack } from './shared-sync'
-import { getExpoRegistry, listExpoModules } from './expo-registry'
+import { checkBackendHealth }              from './backend-bridge'
+import { syncSharedCoreToCurrentStack }    from './shared-sync'
+import { getExpoRegistry }                 from './expo-registry'
 
-// Root is 3 levels up from engine/frontend/expo/arkzen/core/
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
 const DEBOUNCE_MS = 500
@@ -57,7 +54,6 @@ async function rebuildAllFromRoot(): Promise<void> {
     return
   }
 
-  // Get all folders that have a core.tsx
   const existingFolders = new Set(
     fs.readdirSync(MODULES_DIR).filter(f => {
       const corePath = path.join(MODULES_DIR, f, 'core.tsx')
@@ -67,10 +63,9 @@ async function rebuildAllFromRoot(): Promise<void> {
     })
   )
 
-  // Clean up stale modules from registry
+  // Clean stale registry entries
   const registry   = getExpoRegistry()
   let   staleCount = 0
-
   for (const module of registry.modules) {
     if (!existingFolders.has(module.name)) {
       console.log(`[Arkzen Expo] Cleaning up stale module: ${module.name}`)
@@ -78,10 +73,7 @@ async function rebuildAllFromRoot(): Promise<void> {
       staleCount++
     }
   }
-
-  if (staleCount > 0) {
-    console.log(`[Arkzen Expo] ✓ Cleaned up ${staleCount} stale module(s)`)
-  }
+  if (staleCount > 0) console.log(`[Arkzen Expo] ✓ Cleaned up ${staleCount} stale module(s)`)
 
   if (existingFolders.size === 0) {
     console.log(`[Arkzen Expo] No tatemonos found. Engine ready for first drop.`)
@@ -98,35 +90,27 @@ async function rebuildAllFromRoot(): Promise<void> {
 
 export async function startExpoWatcher(): Promise<void> {
   console.log(`\n╔══════════════════════════════════════════╗`)
-  console.log(`║   ARKZEN ENGINE v1.0 — EXPO GO STACK    ║`)
+  console.log(`║   ARKZEN ENGINE v2.0 — EXPO GO STACK    ║`)
   console.log(`╚══════════════════════════════════════════╝`)
   console.log(`[Arkzen Expo] Watching tatemonos at: ${MODULES_DIR}`)
   console.log(`[Arkzen Expo] Screens output:        src/screens/`)
   console.log(`[Arkzen Expo] Expo routes output:    app/`)
   console.log(`[Arkzen Expo] Route registry:        src/arkzen/generated/routes.ts`)
-  console.log(`[Arkzen Expo] Styling:               NativeWind v4 (Tailwind className)`)
-  console.log(`[Arkzen Expo] Navigation:             Expo Router (file-based)`)
 
-  // Ensure tatemonos dir exists
   fs.mkdirSync(MODULES_DIR, { recursive: true })
-
-  // Sync shared core files (parser, backend-bridge, assets, etc.)
   syncSharedCoreToCurrentStack('Arkzen Expo Watcher')
 
-  // Check Laravel backend
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
     console.log(`[Arkzen Expo] ✓ Laravel backend is running`)
   } else {
-    console.warn(`[Arkzen Expo] ⚠ Laravel backend not reachable — start it first with: node start.js`)
+    console.warn(`[Arkzen Expo] ⚠ Laravel backend not reachable — start it with: node start.js`)
   }
 
-  // Build all existing tatemonos on startup
   await rebuildAllFromRoot()
 
   console.log(`[Arkzen Expo] ✓ Engine ready. Drop tatemonos at: tatemonos/<name>/core.tsx\n`)
 
-  // Watch for changes
   const watcher = chokidar.watch(MODULES_DIR, {
     ignored:          /(^|[\/\\])\../,
     persistent:       true,
@@ -160,6 +144,8 @@ export async function startExpoWatcher(): Promise<void> {
       removeExpoTatemono(name)
     })
   })
+
+  watcher.on('error', (error: Error) => console.error(`[Arkzen Expo Watcher] ✗ Error:`, error))
 
   process.on('SIGINT',  () => { watcher.close(); process.exit(0) })
   process.on('SIGTERM', () => { watcher.close(); process.exit(0) })
