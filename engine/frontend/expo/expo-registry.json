@@ -13,7 +13,33 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-05-30T04:53:10.267Z"
+      "lastUpdated": "2026-05-30T05:16:36.145Z"
+    },
+    {
+      "name": "crud-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/crud-test/core.tsx",
+      "screens": [
+        "index"
+      ],
+      "auth": false,
+      "registered": "2026-05-30T05:01:27.802Z",
+      "lastUpdated": "2026-05-30T05:16:36.016Z"
+    },
+    {
+      "name": "auth-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/auth-test/core.tsx",
+      "screens": [
+        "login",
+        "register",
+        "dashboard"
+      ],
+      "auth": true,
+      "registered": "2026-05-30T05:13:01.615Z",
+      "lastUpdated": "2026-05-30T05:16:35.139Z"
     }
   ]
 }

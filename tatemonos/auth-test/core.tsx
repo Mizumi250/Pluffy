@@ -247,3 +247,305 @@ const DashboardPage = () => {
   )
 }
 /* @arkzen:web:page:dashboard:end */
+
+/* @arkzen:native:components:shared */
+
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native'
+import { useRouter } from 'expo-router'
+import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '@/arkzen/core/stores/authStore'
+
+// Set the active tatemono slug so the auth store uses the correct
+// isolated token key and API prefix for auth-test
+setActiveTatemono('auth-test')
+
+const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+// ── Input field ───────────────────────────────────────────────
+const Field = ({
+  placeholder,
+  value,
+  onChangeText,
+  secureTextEntry = false,
+  keyboardType = 'default',
+}: {
+  placeholder:      string
+  value:            string
+  onChangeText:     (v: string) => void
+  secureTextEntry?: boolean
+  keyboardType?:    'default' | 'email-address' | 'numeric'
+}) => (
+  <TextInput
+    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
+    placeholder={placeholder}
+    placeholderTextColor="#a3a3a3"
+    value={value}
+    onChangeText={onChangeText}
+    secureTextEntry={secureTextEntry}
+    keyboardType={keyboardType}
+    autoCapitalize="none"
+    autoCorrect={false}
+  />
+)
+
+// ── Error box ─────────────────────────────────────────────────
+const ErrorBox = ({ message }: { message: string }) => (
+  <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
+    <Text className="text-xs text-red-600">{message}</Text>
+  </View>
+)
+
+// ── Primary button ────────────────────────────────────────────
+const PrimaryBtn = ({
+  label,
+  onPress,
+  loading = false,
+}: {
+  label:    string
+  onPress:  () => void
+  loading?: boolean
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    disabled={loading}
+    activeOpacity={0.8}
+    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
+  >
+    {loading
+      ? <ActivityIndicator size="small" color="#fff" />
+      : <Text className="text-white text-sm font-semibold">{label}</Text>
+    }
+  </TouchableOpacity>
+)
+
+/* @arkzen:native:components:shared:end */
+
+/* @arkzen:native:page:login */
+/* @arkzen:native:page:layout:guest */
+
+const LoginScreen = () => {
+  const router             = useRouter()
+  const { login, isLoading } = useAuthStore()
+  const [email,    setEmail]    = useState('test@arkzen.local')
+  const [password, setPassword] = useState('password')
+  const [error,    setError]    = useState<string | null>(null)
+
+  const handleLogin = async () => {
+    setError(null)
+    try {
+      await login(email, password)
+      router.replace('/auth-test/dashboard' as any)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Login failed')
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1 bg-neutral-50"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        keyboardShouldPersistTaps="handled"
+        className="px-6"
+      >
+        {/* Header */}
+        <View className="mb-8">
+          <View className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <Text className="text-white text-lg font-bold">🔒</Text>
+          </View>
+          <Text className="text-2xl font-bold text-neutral-900">Auth Test</Text>
+          <Text className="text-sm text-neutral-500 mt-1">
+            Sign in to access the protected dashboard
+          </Text>
+        </View>
+
+        {/* Form */}
+        <View className="gap-y-3">
+          {error && <ErrorBox message={error} />}
+
+          <Field
+            placeholder="Email"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <Field
+            placeholder="Password"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
+
+          <PrimaryBtn label="Sign in" onPress={handleLogin} loading={isLoading} />
+        </View>
+
+        {/* Footer */}
+        <View className="mt-6 items-center gap-y-3">
+          <TouchableOpacity onPress={() => router.push('/auth-test/register' as any)}>
+            <Text className="text-xs text-neutral-400">
+              No account?{' '}
+              <Text className="text-neutral-700 font-medium">Register</Text>
+            </Text>
+          </TouchableOpacity>
+
+          <View className="bg-neutral-100 rounded-xl px-4 py-2.5">
+            <Text className="text-xs text-neutral-400 font-mono">
+              test@arkzen.local / password
+            </Text>
+          </View>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  )
+}
+
+/* @arkzen:native:page:login:end */
+
+/* @arkzen:native:page:register */
+/* @arkzen:native:page:layout:guest */
+
+const RegisterScreen = () => {
+  const router                  = useRouter()
+  const { register, isLoading } = useAuthStore()
+  const [name,     setName]     = useState('Test User')
+  const [email,    setEmail]    = useState('test@arkzen.local')
+  const [password, setPassword] = useState('password')
+  const [confirm,  setConfirm]  = useState('password')
+  const [error,    setError]    = useState<string | null>(null)
+
+  const handleRegister = async () => {
+    setError(null)
+    if (password !== confirm) { setError('Passwords do not match'); return }
+    try {
+      await register(name, email, password, confirm)
+      router.replace('/auth-test/dashboard' as any)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Registration failed')
+    }
+  }
+
+  return (
+    <KeyboardAvoidingView
+      className="flex-1 bg-neutral-50"
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+    >
+      <ScrollView
+        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+        keyboardShouldPersistTaps="handled"
+        className="px-6"
+      >
+        {/* Header */}
+        <View className="mb-8">
+          <View className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <Text className="text-white text-lg font-bold">🔒</Text>
+          </View>
+          <Text className="text-2xl font-bold text-neutral-900">Auth Test</Text>
+          <Text className="text-sm text-neutral-500 mt-1">Create an account</Text>
+        </View>
+
+        {/* Form */}
+        <View className="gap-y-3">
+          {error && <ErrorBox message={error} />}
+
+          <Field placeholder="Name"             value={name}     onChangeText={setName}     />
+          <Field placeholder="Email"            value={email}    onChangeText={setEmail}    keyboardType="email-address" />
+          <Field placeholder="Password"         value={password} onChangeText={setPassword} secureTextEntry />
+          <Field placeholder="Confirm password" value={confirm}  onChangeText={setConfirm}  secureTextEntry />
+
+          <PrimaryBtn label="Create account" onPress={handleRegister} loading={isLoading} />
+        </View>
+
+        {/* Footer */}
+        <View className="mt-6 items-center">
+          <TouchableOpacity onPress={() => router.push('/auth-test/login' as any)}>
+            <Text className="text-xs text-neutral-400">
+              Already have an account?{' '}
+              <Text className="text-neutral-700 font-medium">Sign in</Text>
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
+  )
+}
+
+/* @arkzen:native:page:register:end */
+
+/* @arkzen:native:page:dashboard */
+/* @arkzen:native:page:layout:auth */
+
+const DashboardScreen = () => {
+  const router          = useRouter()
+  const { user, logout } = useAuthStore()
+
+  const handleLogout = async () => {
+    await logout()
+    router.replace('/auth-test/login' as any)
+  }
+
+  return (
+    <View className="flex-1 bg-neutral-50">
+
+      {/* Header */}
+      <View className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <View>
+          <Text className="text-base font-semibold text-neutral-900">✅ Auth Test</Text>
+          <Text className="text-xs text-neutral-400 mt-0.5">{user?.email}</Text>
+        </View>
+        <TouchableOpacity onPress={handleLogout}>
+          <Text className="text-xs text-neutral-400">Sign out</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        className="flex-1"
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Success card */}
+        <View className="mx-4 mt-6 bg-white rounded-2xl border border-neutral-100 p-8 items-center">
+          <Text className="text-4xl mb-3">🛡️</Text>
+          <Text className="text-base font-semibold text-neutral-900 mb-1">
+            Authentication successful
+          </Text>
+          <Text className="text-xs text-neutral-500 text-center leading-5">
+            This screen is protected by the auth layout.{'\n'}
+            Only signed-in users can see it.
+          </Text>
+        </View>
+
+        {/* User info */}
+        <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 p-5">
+          <Text className="text-sm font-semibold text-neutral-900 mb-3">User info</Text>
+          <View className="bg-neutral-50 rounded-xl p-4">
+            <Text className="text-xs font-mono text-neutral-500 leading-5">
+              {JSON.stringify(user, null, 2)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer note */}
+        <View className="mx-4 mt-4 mb-8 bg-neutral-100 rounded-2xl px-4 py-3">
+          <Text className="text-xs text-neutral-500 font-mono leading-5">
+            token: Sanctum Bearer{'\n'}
+            scope: auth-test SQLite{'\n'}
+            shared: web ↔ native same token
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:dashboard:end */

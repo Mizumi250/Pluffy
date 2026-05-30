@@ -243,27 +243,29 @@ function extractComponentFromBlock(raw: string): ExtractedComponent | null {
 // ─── Import merger helpers ────────────────────────────────────────────────────
 
 function ensureReactNativeImport(canonicalBlock: string, requiredComponents: string[]): string {
-  const importRe = /^import\s+\{([^}]*)\}\s+from\s+['"]react-native['"]\s*;?/m
+  const importRe = /^import\s+\{([^}]*)\}\s+from\s+['"]react-native['"]\s*;?\n?/m
   const match = canonicalBlock.match(importRe)
   if (!match) {
     // No react-native import → add a new one
     return canonicalBlock + `\nimport { ${requiredComponents.join(', ')} } from 'react-native'`
   }
-  // Merge missing components
+  // Merge missing components — always preserve trailing newline
   const existing = match[1].split(',').map(s => s.trim()).filter(Boolean)
   const merged = Array.from(new Set([...existing, ...requiredComponents]))
-  const newLine = `import { ${merged.join(', ')} } from 'react-native'`
+  const newLine = `import { ${merged.join(', ')} } from 'react-native'\n`
   return canonicalBlock.replace(importRe, newLine)
 }
 
 function ensureExpoRouterImport(canonicalBlock: string): string {
   if (/from ['"]expo-router['"]/.test(canonicalBlock)) return canonicalBlock
-  return canonicalBlock + `\nimport { useRouter } from 'expo-router'`
+  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
+  return canonicalBlock + `${sep}\nimport { useRouter } from 'expo-router'`
 }
 
 function ensureStatusBarImport(canonicalBlock: string): string {
   if (/from ['"]expo-status-bar['"]/.test(canonicalBlock)) return canonicalBlock
-  return canonicalBlock + `\nimport { StatusBar } from 'expo-status-bar'`
+  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
+  return canonicalBlock + `${sep}\nimport { StatusBar } from 'expo-status-bar'`
 }
 
 // ─── Screen file generator ────────────────────────────────────────────────────

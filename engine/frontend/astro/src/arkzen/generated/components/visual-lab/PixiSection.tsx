@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PixiSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-28T14:53:03.867Z
+// Generated: 2026-05-30T05:16:44.368Z
 // ============================================================
 
 export { PixiSection } from './_components'

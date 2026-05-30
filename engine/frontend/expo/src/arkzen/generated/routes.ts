@@ -12,6 +12,14 @@ export interface ArkzenExpoRoute {
 }
 
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
+// ROUTE:auth-test:login:/auth-test/login:guest:false
+  { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
+// ROUTE:auth-test:register:/auth-test/register:guest:false
+  { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
+// ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
+  { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:crud-test:index:/crud-test:default:false
+  { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
 // ROUTE:hello-native:index:/hello-native:default:false
   { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false

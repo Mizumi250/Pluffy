@@ -282,6 +282,7 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     results.push({
       raw,
+      name:  identifier,   // ← add this
       start: openIdx,
       end:   closeIdx + closeMarker.length,
     })
@@ -1699,6 +1700,8 @@ function validateDslTags(content: string, filePath: string): void {
     if (trimmed.includes(':end */'))        continue
     // v7.0: skip web:page:layout: inline declarations (no :end needed)
     if (trimmed.match(/^\/\* @arkzen:web:page:layout:/)) continue
+    // v10.1: skip native:page:layout: inline declarations (same pattern as web)
+    if (trimmed.match(/^\/\* @arkzen:native:page:layout:/)) continue
 
     // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
     const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop):)?([a-zA-Z]+)/)
