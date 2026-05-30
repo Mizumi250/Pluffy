@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — jo-payroll
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T07:14:23.123Z
+// Generated: 2026-05-30T07:25:35.972Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

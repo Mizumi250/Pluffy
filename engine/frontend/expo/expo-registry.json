@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-05-30T07:14:19.514Z"
+      "lastUpdated": "2026-05-30T07:25:32.558Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-05-30T07:14:19.413Z"
+      "lastUpdated": "2026-05-30T07:25:32.465Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,19 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-05-30T07:14:18.476Z"
+      "lastUpdated": "2026-05-30T07:25:31.789Z"
+    },
+    {
+      "name": "upload-test",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
+      "screens": [
+        "dashboard"
+      ],
+      "auth": false,
+      "registered": "2026-05-30T07:24:49.161Z",
+      "lastUpdated": "2026-05-30T07:29:29.547Z"
     }
   ]
 }

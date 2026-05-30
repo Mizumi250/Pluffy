@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TemplateStoreRequest
 // Tatemono: certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T07:14:21.701230Z
+// Generated: 2026-05-30T07:25:34.833698Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\Certflow;

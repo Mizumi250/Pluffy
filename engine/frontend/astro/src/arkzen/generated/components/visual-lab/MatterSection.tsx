@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MatterSection
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T07:14:25.693Z
+// Generated: 2026-05-30T07:25:37.768Z
 // ============================================================
 
 export { MatterSection } from './_components'

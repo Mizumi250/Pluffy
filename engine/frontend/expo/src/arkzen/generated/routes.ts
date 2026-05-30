@@ -24,6 +24,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false
   { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
+// ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
+  { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {
