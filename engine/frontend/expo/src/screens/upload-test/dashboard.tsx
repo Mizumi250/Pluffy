@@ -5,9 +5,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import * as DocumentPicker from 'expo-document-picker'
+import * as FileSystem from 'expo-file-system/legacy'
 import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
-import { ActivityIndicator, Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -32,11 +33,29 @@ const FileMime = ({ mime }: { mime: string }) => {
   return <Text className="text-xl">{label}</Text>
 }
 
+const { width: SW, height: SH } = Dimensions.get('window')
+
+const ImageViewerModal = ({ uri, onClose }: { uri: string; onClose: () => void }) => (
+  <Modal visible animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
+    <View style={{ flex: 1, backgroundColor: '#000' }}>
+      <TouchableOpacity
+        onPress={onClose}
+        style={{ position: 'absolute', top: 48, right: 20, zIndex: 10, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: 8 }}
+      >
+        <Text style={{ color: '#fff', fontSize: 16 }}>✕</Text>
+      </TouchableOpacity>
+      <Image source={{ uri }} style={{ width: SW, height: SH }} contentFit="contain" />
+    </View>
+  </Modal>
+)
+
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {
   const [files, setFiles]         = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
   const [deleting, setDeleting]   = useState<number | null>(null)
+  const [downloading, setDownloading] = useState<number | null>(null)
+  const [viewingImage, setViewingImage] = useState<string | null>(null)
   const [error, setError]         = useState<string | null>(null)
 
   const loadFiles = useCallback(async () => {
@@ -55,17 +74,20 @@ const DashboardScreen = () => {
     setUploading(true)
     setError(null)
     try {
-      const formData = new FormData()
-      formData.append('files[]', { uri, name, type } as any)
-
-      const res = await fetch(`${BACKEND_URL}/api/upload-test/files`, {
-        method:  'POST',
-        headers: { 'Accept': 'application/json' },
-        body:    formData,
-      })
-      if (!res.ok) {
-        const d = await res.json().catch(() => ({}))
-        throw new Error(d.message ?? `Upload failed (${res.status})`)
+      const response = await FileSystem.uploadAsync(
+        `${BACKEND_URL}/api/upload-test/files`,
+        uri,
+        {
+          httpMethod:  'POST',
+          uploadType:  FileSystem.FileSystemUploadType.MULTIPART,
+          fieldName:   'files[]',
+          mimeType:    type,
+          headers:     { Accept: 'application/json' },
+        }
+      )
+      if (response.status < 200 || response.status >= 300) {
+        const d = JSON.parse(response.body ?? '{}')
+        throw new Error(d.message ?? `Upload failed (${response.status})`)
       }
       await loadFiles()
     } catch (e) {
@@ -95,6 +117,22 @@ const DashboardScreen = () => {
     if (!result.canceled && result.assets[0]) {
       const asset = result.assets[0]
       await uploadFile(asset.uri, asset.name, asset.mimeType ?? 'application/octet-stream')
+    }
+  }
+
+  const downloadFile = async (f: any) => {
+    setDownloading(f.id)
+    try {
+      const localUri = `${FileSystem.cacheDirectory}${f.original_name}`
+      await FileSystem.downloadAsync(
+        `${BACKEND_URL}/api/upload-test/files/${f.id}/url`,
+        localUri
+      )
+      Alert.alert('Downloaded', `${f.original_name} saved to device cache.`)
+    } catch (e) {
+      Alert.alert('Download failed', e instanceof Error ? e.message : 'Unknown error')
+    } finally {
+      setDownloading(null)
     }
   }
 
@@ -169,7 +207,7 @@ const DashboardScreen = () => {
               >
                 {f.is_image && f.url ? (
                   <Image
-                    source={{ uri: f.url }}
+                    source={{ uri: `${BACKEND_URL}${f.url}` }}
                     style={{ width: 36, height: 36, borderRadius: 8 }}
                     contentFit="cover"
                   />
@@ -182,15 +220,31 @@ const DashboardScreen = () => {
                   <Text className="text-xs text-neutral-400">{formatSize(f.size_bytes)} · {f.mime_type}</Text>
                 </View>
 
-                <TouchableOpacity
-                  onPress={() => deleteFile(f.id)}
-                  disabled={deleting === f.id}
-                >
-                  {deleting === f.id
-                    ? <ActivityIndicator size="small" color="#f87171" />
-                    : <Text className="text-xs text-red-400">Delete</Text>
-                  }
-                </TouchableOpacity>
+                <View className="flex-row items-center gap-3">
+                  {f.is_image && f.url && (
+                    <TouchableOpacity onPress={() => setViewingImage(`${BACKEND_URL}${f.url}`)}>
+                      <Text className="text-xs text-blue-500">View</Text>
+                    </TouchableOpacity>
+                  )}
+                  <TouchableOpacity
+                    onPress={() => downloadFile(f)}
+                    disabled={downloading === f.id}
+                  >
+                    {downloading === f.id
+                      ? <ActivityIndicator size="small" color="#737373" />
+                      : <Text className="text-xs text-neutral-500">Download</Text>
+                    }
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    onPress={() => deleteFile(f.id)}
+                    disabled={deleting === f.id}
+                  >
+                    {deleting === f.id
+                      ? <ActivityIndicator size="small" color="#f87171" />
+                      : <Text className="text-xs text-red-400">Delete</Text>
+                    }
+                  </TouchableOpacity>
+                </View>
               </View>
             ))
           )}
@@ -205,6 +259,10 @@ const DashboardScreen = () => {
         </View>
 
       </ScrollView>
+
+    {viewingImage && (
+      <ImageViewerModal uri={viewingImage} onClose={() => setViewingImage(null)} />
+    )}
     </View>
   )
 }

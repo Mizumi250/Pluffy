@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — MailLog
 // Tatemono: mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T12:11:29.878358Z
+// Generated: 2026-05-30T13:15:57.267665Z
 // ============================================================
 
 namespace App\Models\Arkzen\MailTest;
