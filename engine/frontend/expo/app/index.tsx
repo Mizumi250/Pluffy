@@ -1,14 +1,12 @@
 // ============================================================
-// ARKZEN — Expo Root Index v2.0
+// ARKZEN — Expo Root Index v3.0
 // app/index.tsx
 //
-// Root entry point.
-//   - If tatemonos are registered → redirect to first screen
-//   - If no tatemonos → show the Arkzen Hub (mirrors web page.tsx)
-//
-// Hub polls /arkzen/expo-registry every 3 s and displays all
-// registered native tatemonos with their screens, status, and
-// quick-navigate actions — same concept as the Next.js hub page.
+// Root entry point — mirrors the Next.js hub page.tsx exactly.
+//   - Polls /arkzen/expo-registry every 3s
+//   - Shows all registered native tatemonos as cards
+//   - Entire card is tappable → navigates to tatemono index route
+//   - No pills, no separate Open button — same as web stack
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react'
@@ -23,9 +21,8 @@ import {
   Clipboard,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { Redirect, useRouter } from 'expo-router'
+import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { ARKZEN_EXPO_ROUTES } from '@/arkzen/generated/routes'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -69,6 +66,16 @@ function formatTime(iso: string): string {
   } catch { return '—' }
 }
 
+// ─── Route helper — mirrors Next.js routePath convention ─────────────────────
+// index screen → /tatName (Expo Router file-system convention)
+// other screens → /tatName/screenName
+
+function getTatemonoRoute(tatemono: TatemonoEntry): string {
+  const first = tatemono.screens[0]
+  if (!first) return `/${tatemono.name}`
+  return first === 'index' ? `/${tatemono.name}` : `/${tatemono.name}/${first}`
+}
+
 // ─── Status badge ─────────────────────────────────────────────────────────────
 
 function StatusBadge({ status }: { status: TatemonoEntry['status'] }) {
@@ -83,33 +90,13 @@ function StatusBadge({ status }: { status: TatemonoEntry['status'] }) {
   )
 }
 
-// ─── Screen pill ──────────────────────────────────────────────────────────────
-
-function ScreenPill({ screen, tatName, onPress }: {
-  screen:  string
-  tatName: string
-  onPress: (route: string) => void
-}) {
-  return (
-    <TouchableOpacity
-      onPress={() => onPress(`/${tatName}/${screen}`)}
-      className="px-2.5 py-1 rounded-lg bg-neutral-100 active:bg-neutral-200 mr-1.5 mb-1.5"
-      activeOpacity={0.7}
-    >
-      <Text className="text-xs text-neutral-600 font-mono">{screen}</Text>
-    </TouchableOpacity>
-  )
-}
-
-// ─── Tatemono card ────────────────────────────────────────────────────────────
+// ─── Tatemono card — entire card tappable, mirrors Next.js TatemonoCard ───────
 
 function TatemonoCard({ tatemono, onNavigate }: {
   tatemono:   TatemonoEntry
   onNavigate: (route: string) => void
 }) {
-  const primaryRoute = tatemono.screens[0]
-    ? `/${tatemono.name}/${tatemono.screens[0]}`
-    : null
+  const route = getTatemonoRoute(tatemono)
 
   function handleCopy() {
     Clipboard.setString(tatemono.name)
@@ -117,8 +104,11 @@ function TatemonoCard({ tatemono, onNavigate }: {
   }
 
   return (
-    <View className="bg-white rounded-2xl border border-neutral-100 mb-3 overflow-hidden">
-
+    <TouchableOpacity
+      onPress={() => onNavigate(route)}
+      activeOpacity={0.7}
+      className="bg-white rounded-2xl border border-neutral-100 mb-3 overflow-hidden"
+    >
       {/* Header */}
       <View className="px-4 pt-4 pb-3 flex-row items-start justify-between">
         <View className="flex-1 mr-3">
@@ -129,18 +119,6 @@ function TatemonoCard({ tatemono, onNavigate }: {
         </View>
         <StatusBadge status={tatemono.status} />
       </View>
-
-      {/* Screens */}
-      {tatemono.screens.length > 0 && (
-        <View className="px-4 pb-3">
-          <Text className="text-xs text-neutral-400 uppercase tracking-wider mb-2">Screens</Text>
-          <View className="flex-row flex-wrap">
-            {tatemono.screens.map(s => (
-              <ScreenPill key={s} screen={s} tatName={tatemono.name} onPress={onNavigate} />
-            ))}
-          </View>
-        </View>
-      )}
 
       {/* Meta */}
       <View className="px-4 pb-3 flex-row gap-4">
@@ -161,31 +139,20 @@ function TatemonoCard({ tatemono, onNavigate }: {
         )}
       </View>
 
-      {/* Actions */}
+      {/* Footer — route + copy, mirrors Next.js card actions */}
       <View className="flex-row border-t border-neutral-50">
-        {primaryRoute ? (
-          <TouchableOpacity
-            onPress={() => onNavigate(primaryRoute)}
-            className="flex-1 py-3 items-center justify-center active:bg-neutral-50"
-            activeOpacity={0.7}
-          >
-            <Text className="text-xs font-semibold text-neutral-900">▶  Open</Text>
-          </TouchableOpacity>
-        ) : (
-          <View className="flex-1 py-3 items-center justify-center">
-            <Text className="text-xs text-neutral-300">No screens</Text>
-          </View>
-        )}
-        <View className="w-px bg-neutral-50" />
+        <View className="flex-1 py-3 px-4 justify-center">
+          <Text className="text-xs text-neutral-400 font-mono">{route}</Text>
+        </View>
         <TouchableOpacity
-          onPress={handleCopy}
+          onPress={(e) => { e.stopPropagation?.(); handleCopy() }}
           className="px-5 py-3 items-center justify-center active:bg-neutral-50"
           activeOpacity={0.7}
         >
           <Text className="text-xs text-neutral-500">Copy</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </TouchableOpacity>
   )
 }
 
@@ -266,7 +233,7 @@ function ArkzenHub() {
 
   const active  = registry?.modules.filter(m => m.status === 'active').length ?? 0
   const total   = registry?.modules.length ?? 0
-  const screens = registry?.modules.reduce((n, m) => n + m.screens.length, 0) ?? 0
+  const errors  = registry?.modules.filter(m => m.status === 'removed').length ?? 0
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={['top']}>
@@ -306,7 +273,7 @@ function ArkzenHub() {
         <View className="flex-row gap-2.5 mb-5">
           <StatCard label="Active"  value={active}  accent="text-blue-600" />
           <StatCard label="Total"   value={total}   accent="text-neutral-900" />
-          <StatCard label="Screens" value={screens} accent="text-indigo-600" />
+          <StatCard label="Removed" value={errors}  accent="text-red-500" />
         </View>
 
         {/* Section label */}
@@ -338,7 +305,5 @@ function ArkzenHub() {
 // ─── Root ─────────────────────────────────────────────────────────────────────
 
 export default function Index() {
-  
-  // No tatemonos yet → show hub
   return <ArkzenHub />
 }

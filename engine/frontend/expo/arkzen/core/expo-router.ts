@@ -1,9 +1,15 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v3.1
+// ARKZEN ENGINE — EXPO ROUTER v3.2
 //
 // v3.1 – Fixed duplicate imports and missing ScrollView.
 //        Engine now merges required components into existing
 //        react-native import instead of adding a second one.
+// v3.2 – Fixed index screen routing: Expo Router treats
+//        app/{tat}/index.tsx as the /{tat} route, not /{tat}/index.
+//        routePath, hub navigation, and routes.ts now all use
+//        /{tat} for screenName === 'index' screens.
+//        Also fixed layoutImport='' for default layout so
+//        resolveImports doesn't append a comment onto import lines.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -275,7 +281,7 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
     ? `import { GuestLayout } from '@/layouts/GuestLayout'`
     : isApp
     ? `import { AppLayout }   from '@/layouts/AppLayout'`
-    : `// No layout wrapper`
+    : ''
 
   const layoutOpen = isAuth
     ? `<AuthLayout tatSlug="${tatName}" loginRoute="/${tatName}/login">`
@@ -501,7 +507,8 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
 
   for (const page of tatemono.nativePages) {
     const screenName = page.name
-    const routePath  = `/${tatName}/${screenName}`
+    // Expo Router convention: app/{tat}/index.tsx serves /{tat}, not /{tat}/index
+    const routePath  = screenName === 'index' ? `/${tatName}` : `/${tatName}/${screenName}`
     const layout     = page.layout ?? 'default'
 
     writeIfChanged(path.join(screenDir, `${screenName}.tsx`), generateScreenFile(tatemono, page))

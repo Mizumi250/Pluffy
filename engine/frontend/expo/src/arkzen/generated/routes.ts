@@ -12,8 +12,8 @@ export interface ArkzenExpoRoute {
 }
 
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
-// ROUTE:hello-native:index:/hello-native/index:default:false
-  { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native/index', layout: 'default', auth: false },
+// ROUTE:hello-native:index:/hello-native:default:false
+  { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false
   { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
 ]
