@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow
 // React island components — rendered with client:load in .astro pages
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T14:56:46.686Z
+// Generated: 2026-06-01T05:05:52.485Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

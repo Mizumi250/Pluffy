@@ -18,6 +18,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
 // ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
   { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
+  { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
+  { tatName: 'broadcast-test', screenName: 'register', routePath: '/broadcast-test/register', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:auth:true
+  { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
 // ROUTE:events-test:index:/events-test:default:false
