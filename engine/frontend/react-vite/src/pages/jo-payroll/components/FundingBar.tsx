@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FundingBar [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T01:01:08.089Z
+// Generated: 2026-06-04T00:49:19.530Z
 // ============================================================
 
 export { FundingBar } from './_components'

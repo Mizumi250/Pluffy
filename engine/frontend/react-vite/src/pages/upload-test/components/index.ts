@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — upload-test [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T01:01:10.335Z
+// Generated: 2026-06-04T00:49:21.263Z
 // ============================================================
 
 export * from './_components'

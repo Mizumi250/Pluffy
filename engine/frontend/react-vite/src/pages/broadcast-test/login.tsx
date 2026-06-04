@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T01:01:06.045Z
+// Generated: 2026-06-04T00:49:17.764Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

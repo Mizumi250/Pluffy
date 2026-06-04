@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T01:01:07.195Z
+// Generated: 2026-06-04T00:49:18.791Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -53,7 +53,6 @@ const IndexPage = () => {
       const res = await arkzenFetch('/api/crud-test/items')
       if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
-      // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
       if (isMounted.current) {
         setItems(data)
@@ -102,20 +101,18 @@ const IndexPage = () => {
     } finally { setSaving(false) }
   }
 
-const remove = async (id: number) => {
-  console.log('[DELETE] Attempting to delete ID:', id)  // Debug
-  setDeleting(id)
-  try {
-    const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
-    console.log('[DELETE] Response status:', res.status)  // Debug
-    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
-    await load()  // ← RELOAD from server instead of manual filter
-  } catch (err) {
-    console.error('[DELETE] Error:', err)
-  } finally { 
-    setDeleting(null)
+  const remove = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+      await load()
+    } catch (err) {
+      console.error('[DELETE] Error:', err)
+    } finally {
+      setDeleting(null)
+    }
   }
-}
 
   const statusColor = (s: string) => ({
     active:   'bg-green-100 text-green-700',

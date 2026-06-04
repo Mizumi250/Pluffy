@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TicketUpdateRequest
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-01T05:05:56.079283Z
+// Generated: 2026-06-04T00:49:20.216116Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\QueueFlow;
