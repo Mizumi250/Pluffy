@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MaskTop [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-04T00:49:21.205Z
+// Generated: 2026-06-05T13:13:36.861Z
 // ============================================================
 
 export { MaskTop } from './_components'

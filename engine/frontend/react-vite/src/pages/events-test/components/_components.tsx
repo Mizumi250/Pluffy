@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — events-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-04T00:49:19.324Z
+// Generated: 2026-06-05T13:13:34.087Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

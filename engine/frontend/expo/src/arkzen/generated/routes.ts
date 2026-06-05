@@ -46,6 +46,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
+// ROUTE:roles-test:login:/roles-test/login:guest:false
+  { tatName: 'roles-test', screenName: 'login', routePath: '/roles-test/login', layout: 'guest', auth: false },
+// ROUTE:roles-test:register:/roles-test/register:guest:false
+  { tatName: 'roles-test', screenName: 'register', routePath: '/roles-test/register', layout: 'guest', auth: false },
+// ROUTE:roles-test:dashboard:/roles-test/dashboard:auth:true
+  { tatName: 'roles-test', screenName: 'dashboard', routePath: '/roles-test/dashboard', layout: 'auth', auth: true },
 ]
 
 export function getLoginRoute(tatName: string): string {
