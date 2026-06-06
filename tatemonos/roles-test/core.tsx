@@ -54,7 +54,7 @@ timestamps: true
 model: RoleAuditLog
 controller: RoleAuditLogController
 prefix: /api/roles-test
-middleware: [auth, role:admin]
+middleware: [auth]
 endpoints:
   index:
     method: GET
@@ -65,7 +65,7 @@ endpoints:
   adminOnly:
     method: GET
     route: /admin-only
-    description: Admin-only route — role check performed in controller body ($user->role === 'admin'). Per-endpoint middleware override is not yet supported by RouteRegistrar; the check lives in the generated method.
+    description: Admin-only route — role check performed in controller body ($user->role === 'admin')
     type: role_admin_only
     response:
       type: single

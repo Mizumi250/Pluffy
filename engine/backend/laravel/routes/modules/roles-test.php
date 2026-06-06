@@ -66,32 +66,28 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 // ============================================================
 // ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-05T13:22:19.204626Z
+// Generated: 2026-06-06T03:10:37.244894Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
-use App\Http\Middleware\Arkzen\RolesTest\CheckRole;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\RolesTest\PersonalAccessToken as RolesTestToken;
 
 Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
 
-// ── Scoped middleware aliases for this tatemono ────────────
-app('router')->aliasMiddleware('role', \App\Http\Middleware\Arkzen\RolesTest\CheckRole::class);
-
 // ── RoleAuditLog ─────────────────────────────
-Route::middleware(['api', 'auth:sanctum', 'role:admin'])
+Route::middleware(['api', 'auth:sanctum'])
     ->prefix('/api/roles-test')
     ->group(function () {
 
         // Audit log of all access attempts
         Route::get('/logs', [RoleAuditLogController::class, 'index']);
 
-        // Admin-only route — role check performed in controller body ($user->role === 'admin'). Per-endpoint middleware override is not yet supported by RouteRegistrar; the check lives in the generated method.
+        // Admin-only route — role check performed in controller body ($user->role === 'admin')
         Route::get('/admin-only', [RoleAuditLogController::class, 'adminOnly']);
 
         // Any authenticated user — no role gate

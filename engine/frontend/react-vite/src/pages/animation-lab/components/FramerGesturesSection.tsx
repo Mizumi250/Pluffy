@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerGesturesSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-05T13:13:29.763Z
+// Generated: 2026-06-06T02:55:15.579Z
 // ============================================================
 
 export { FramerGesturesSection } from './_components'

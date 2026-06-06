@@ -229,8 +229,10 @@ export function useAuthStoreHydrated(): boolean {
 
 export async function arkzenFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = useAuthStore.getState().token
+  const base  = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+  const resolvedUrl = url.startsWith('/') ? `${base}${url}` : url
 
-  return fetch(url, {
+  return fetch(resolvedUrl, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
