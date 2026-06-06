@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — errors-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-06T02:55:18.637Z
+// Generated: 2026-06-06T04:12:38.858Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -36,7 +36,6 @@ const ERRORS: ErrorDef[] = [
   { code: 503, title: 'Service Unavailable', message: 'The service is temporarily offline for maintenance. We will be back soon.',                    color: 'text-slate-700',   bg: 'bg-slate-50',   border: 'border-slate-100',  btnColor: 'bg-slate-700 hover:bg-slate-800',    action: { label: 'Refresh',      href: 'javascript:location.reload()' } },
 ]
 
-// Shared ErrorScreen — used by not-found.tsx, error.tsx, and the index previews
 export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
   const err = ERRORS.find(e => e.code === code) ?? {
     code,
@@ -50,7 +49,7 @@ export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void 
   }
 
   const primaryHref  = reset ? undefined : err.action?.href
-  const primaryLabel = reset ? 'Try again'  : err.action?.label
+  const primaryLabel = reset ? 'Try again' : err.action?.label
 
   return (
     <div className={'min-h-screen flex items-center justify-center ' + err.bg + ' px-4'}>
@@ -131,7 +130,6 @@ const IndexPage = () => {
           </p>
         </div>
 
-        {/* Next.js real handlers */}
         <div className="space-y-3">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
             Next.js Segment Handlers
@@ -172,7 +170,6 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* API toast codes */}
         <div className="space-y-3">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
             API Response Codes — Toast

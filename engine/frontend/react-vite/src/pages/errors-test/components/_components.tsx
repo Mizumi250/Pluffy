@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — errors-test [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T02:55:18.627Z
+// Generated: 2026-06-06T04:12:38.849Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -33,7 +33,6 @@ export const ERRORS: ErrorDef[] = [
   { code: 503, title: 'Service Unavailable', message: 'The service is temporarily offline for maintenance. We will be back soon.',                    color: 'text-slate-700',   bg: 'bg-slate-50',   border: 'border-slate-100',  btnColor: 'bg-slate-700 hover:bg-slate-800',    action: { label: 'Refresh',      href: 'javascript:location.reload()' } },
 ]
 
-// Shared ErrorScreen — used by not-found.tsx, error.tsx, and the index previews
 export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
   const err = ERRORS.find(e => e.code === code) ?? {
     code,
@@ -47,7 +46,7 @@ export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void 
   }
 
   const primaryHref  = reset ? undefined : err.action?.href
-  const primaryLabel = reset ? 'Try again'  : err.action?.label
+  const primaryLabel = reset ? 'Try again' : err.action?.label
 
   return (
     <div className={'min-h-screen flex items-center justify-center ' + err.bg + ' px-4'}>

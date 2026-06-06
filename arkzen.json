@@ -13,7 +13,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:15.619Z",
-      "lastUpdated": "2026-06-06T02:55:15.748Z",
+      "lastUpdated": "2026-06-06T04:12:35.898Z",
       "auth": true
     },
     {
@@ -37,7 +37,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:15.964Z",
-      "lastUpdated": "2026-06-06T02:55:16.403Z",
+      "lastUpdated": "2026-06-06T04:12:36.280Z",
       "auth": false
     },
     {
@@ -51,7 +51,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.454Z",
-      "lastUpdated": "2026-06-06T02:55:17.140Z",
+      "lastUpdated": "2026-06-06T04:12:36.844Z",
       "auth": true
     },
     {
@@ -65,7 +65,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.532Z",
-      "lastUpdated": "2026-06-06T02:55:17.296Z",
+      "lastUpdated": "2026-06-06T04:12:36.990Z",
       "auth": true
     },
     {
@@ -82,7 +82,7 @@
         "register"
       ],
       "registered": "2026-05-07T23:46:16.645Z",
-      "lastUpdated": "2026-06-06T02:55:18.187Z",
+      "lastUpdated": "2026-06-06T04:12:37.773Z",
       "auth": true
     },
     {
@@ -94,7 +94,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.748Z",
-      "lastUpdated": "2026-06-06T02:55:18.364Z",
+      "lastUpdated": "2026-06-06T04:12:37.950Z",
       "auth": false
     },
     {
@@ -107,19 +107,19 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:16.876Z",
-      "lastUpdated": "2026-06-06T02:55:18.594Z",
+      "lastUpdated": "2026-06-06T04:12:38.816Z",
       "auth": false
     },
     {
       "name": "errors-test",
-      "version": "1.0.0",
+      "version": "1.2.0",
       "status": "active",
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/errors-test/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-05-07T23:46:16.889Z",
-      "lastUpdated": "2026-06-06T02:55:18.647Z",
+      "lastUpdated": "2026-06-06T04:12:38.866Z",
       "auth": false
     },
     {
@@ -131,7 +131,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.961Z",
-      "lastUpdated": "2026-06-06T02:55:19.742Z",
+      "lastUpdated": "2026-06-06T04:12:39.028Z",
       "auth": false
     },
     {
@@ -143,7 +143,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.040Z",
-      "lastUpdated": "2026-06-06T02:55:19.909Z",
+      "lastUpdated": "2026-06-06T04:12:39.219Z",
       "auth": false
     },
     {
@@ -161,7 +161,7 @@
         "payslip"
       ],
       "registered": "2026-05-07T23:46:17.164Z",
-      "lastUpdated": "2026-06-06T02:55:20.226Z",
+      "lastUpdated": "2026-06-06T04:12:39.473Z",
       "auth": false
     },
     {
@@ -173,7 +173,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.234Z",
-      "lastUpdated": "2026-06-06T02:55:20.317Z",
+      "lastUpdated": "2026-06-06T04:12:39.570Z",
       "auth": false
     },
     {
@@ -187,19 +187,19 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.302Z",
-      "lastUpdated": "2026-06-06T02:55:20.416Z",
+      "lastUpdated": "2026-06-06T04:12:39.683Z",
       "auth": true
     },
     {
       "name": "middleware-test",
-      "version": "2.0.0",
+      "version": "2.1.0",
       "status": "active",
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/middleware-test/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-05-07T23:46:17.397Z",
-      "lastUpdated": "2026-06-06T02:55:20.539Z",
+      "lastUpdated": "2026-06-06T04:12:39.826Z",
       "auth": false
     },
     {
@@ -213,7 +213,7 @@
         "features"
       ],
       "registered": "2026-05-07T23:46:17.412Z",
-      "lastUpdated": "2026-06-06T02:55:20.568Z",
+      "lastUpdated": "2026-06-06T04:12:39.895Z",
       "auth": false
     },
     {
@@ -227,7 +227,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.482Z",
-      "lastUpdated": "2026-06-06T02:55:20.752Z",
+      "lastUpdated": "2026-06-06T04:12:40.031Z",
       "auth": true
     },
     {
@@ -239,7 +239,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.494Z",
-      "lastUpdated": "2026-06-06T02:55:20.769Z",
+      "lastUpdated": "2026-06-06T04:12:40.064Z",
       "auth": false
     },
     {
@@ -253,7 +253,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:17.613Z",
-      "lastUpdated": "2026-06-06T02:55:21.217Z",
+      "lastUpdated": "2026-06-06T04:12:40.284Z",
       "auth": false
     },
     {
@@ -267,7 +267,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.362Z",
-      "lastUpdated": "2026-06-06T03:10:37.946Z",
+      "lastUpdated": "2026-06-06T04:12:41.069Z",
       "auth": true
     },
     {
@@ -279,7 +279,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.447Z",
-      "lastUpdated": "2026-06-06T02:55:22.714Z",
+      "lastUpdated": "2026-06-06T04:12:41.170Z",
       "auth": false
     },
     {
@@ -291,7 +291,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.508Z",
-      "lastUpdated": "2026-06-06T02:55:22.983Z",
+      "lastUpdated": "2026-06-06T04:12:41.353Z",
       "auth": false
     },
     {
@@ -306,7 +306,7 @@
         "verify"
       ],
       "registered": "2026-05-10T12:24:58.406Z",
-      "lastUpdated": "2026-06-06T02:55:17.985Z",
+      "lastUpdated": "2026-06-06T04:12:37.590Z",
       "auth": true
     },
     {
@@ -318,7 +318,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.134Z",
-      "lastUpdated": "2026-06-06T02:55:15.646Z",
+      "lastUpdated": "2026-06-06T04:12:35.805Z",
       "auth": false
     },
     {
@@ -330,7 +330,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.152Z",
-      "lastUpdated": "2026-06-06T02:55:15.720Z",
+      "lastUpdated": "2026-06-06T04:12:35.857Z",
       "auth": false
     },
     {
@@ -342,7 +342,7 @@
         "index"
       ],
       "registered": "2026-05-23T08:37:02.596Z",
-      "lastUpdated": "2026-06-06T02:55:23.073Z",
+      "lastUpdated": "2026-06-06T04:12:41.477Z",
       "auth": false
     },
     {
@@ -354,7 +354,7 @@
         "index"
       ],
       "registered": "2026-05-25T07:15:09.255Z",
-      "lastUpdated": "2026-06-06T02:55:22.831Z",
+      "lastUpdated": "2026-06-06T04:12:41.256Z",
       "auth": false
     },
     {
@@ -364,7 +364,7 @@
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-06-04T00:45:44.271Z",
-      "lastUpdated": "2026-06-06T02:55:19.785Z",
+      "lastUpdated": "2026-06-06T04:12:39.052Z",
       "auth": false
     }
   ],
