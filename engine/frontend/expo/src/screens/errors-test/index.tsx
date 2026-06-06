@@ -89,8 +89,12 @@ const ResultBanner = ({ result }: { result: { code: number; body: string } | nul
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {
-  const [simulating, setSimulating] = useState<number | null>(null)
-  const [result,     setResult]     = useState<{ code: number; body: string } | null>(null)
+  const router = useRouter()
+  const [simulating,   setSimulating]   = useState<number | null>(null)
+  const [result,       setResult]       = useState<{ code: number; body: string } | null>(null)
+  const [shouldCrash,  setShouldCrash]  = useState(false)
+
+  if (shouldCrash) throw new Error('Intentional crash to trigger error-boundary')
 
   const simulate = async (code: number) => {
     setSimulating(code)
@@ -107,6 +111,10 @@ const IndexScreen = () => {
       setSimulating(null)
     }
   }
+
+  const triggerCrash = () => setShouldCrash(true)
+
+  const API_CODES  = [400, 401, 403, 409, 422, 429, 503]
 
   return (
     <View className="flex-1 bg-neutral-50">
@@ -127,18 +135,62 @@ const IndexScreen = () => {
 
         <ResultBanner result={result} />
 
+        {/* Expo Router error handlers */}
         <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
           <View className="px-5 py-4 border-b border-neutral-100">
             <Text className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-              All Error Codes
+              Expo Router Handlers
             </Text>
           </View>
 
-          {NATIVE_ERRORS.map((err, i) => (
+          <View className="px-5 py-4 flex-row items-center justify-between border-b border-neutral-50">
+            <View className="flex-1 mr-4">
+              <View className="flex-row items-center gap-x-2 mb-0.5">
+                <Text className="text-sm font-bold text-neutral-700">404</Text>
+                <Text className="text-sm text-neutral-700">Not Found</Text>
+              </View>
+              <Text className="text-xs text-neutral-400">Navigates to a non-existent route</Text>
+            </View>
+            <TouchableOpacity
+              onPress={() => router.push('/errors-test/fake-route' as any)}
+              activeOpacity={0.7}
+              className="px-4 py-2 rounded-xl items-center bg-neutral-900"
+            >
+              <Text className="text-white text-xs font-semibold">Trigger</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View className="px-5 py-4 flex-row items-center justify-between">
+            <View className="flex-1 mr-4">
+              <View className="flex-row items-center gap-x-2 mb-0.5">
+                <Text className="text-sm font-bold text-red-700">500</Text>
+                <Text className="text-sm text-neutral-700">Server Error</Text>
+              </View>
+              <Text className="text-xs text-neutral-400">Crashes the component to trigger error boundary</Text>
+            </View>
+            <TouchableOpacity
+              onPress={triggerCrash}
+              activeOpacity={0.7}
+              className="px-4 py-2 rounded-xl items-center bg-red-600"
+            >
+              <Text className="text-white text-xs font-semibold">Trigger</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* API simulate codes */}
+        <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <View className="px-5 py-4 border-b border-neutral-100">
+            <Text className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+              API Response Codes
+            </Text>
+          </View>
+
+          {NATIVE_ERRORS.filter(e => API_CODES.includes(e.code)).map((err, i) => (
             <View
               key={err.code}
               className={`px-5 py-4 flex-row items-center justify-between ${
-                i < NATIVE_ERRORS.length - 1 ? 'border-b border-neutral-50' : ''
+                i < API_CODES.length - 1 ? 'border-b border-neutral-50' : ''
               }`}
             >
               <View className="flex-1 mr-4">
@@ -164,15 +216,6 @@ const IndexScreen = () => {
               </TouchableOpacity>
             </View>
           ))}
-        </View>
-
-        <View className="mx-4 mt-4 bg-neutral-100 rounded-2xl px-4 py-3">
-          <Text className="text-xs text-neutral-500 leading-5">
-            Each button hits{' '}
-            <Text className="font-mono">GET /api/errors-test/simulate/{'{code}'}</Text>
-            {' '}and displays the raw response above.
-            On web, API codes also fire toasts via the arkzenFetch interceptor.
-          </Text>
         </View>
 
       </ScrollView>

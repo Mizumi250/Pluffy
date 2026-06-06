@@ -26,8 +26,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
-// ROUTE:errors-test:index:/errors-test:default:false
-  { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
 // ROUTE:events-test:index:/events-test:default:false
   { tatName: 'events-test', screenName: 'index', routePath: '/events-test', layout: 'default', auth: false },
 // ROUTE:hello-native:index:/hello-native:default:false
@@ -56,6 +54,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
+// ROUTE:errors-test:index:/errors-test:default:false
+  { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

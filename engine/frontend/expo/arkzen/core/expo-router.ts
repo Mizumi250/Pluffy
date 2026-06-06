@@ -1,5 +1,10 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v3.2
+// ARKZEN ENGINE — EXPO ROUTER v3.3
+//
+// v3.3 – native:error handler support.
+//        generateNotFoundFile(): generates app/{tat}/+not-found.tsx
+//        generateErrorBoundaryFile(): generates src/screens/{tat}/error-boundary.tsx
+//        registerExpoScreens() now processes tatemono.nativeErrorHandlers.
 //
 // v3.1 – Fixed duplicate imports and missing ScrollView.
 //        Engine now merges required components into existing
@@ -14,7 +19,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 
 const SRC_SCREENS_DIR  = path.resolve(process.cwd(), 'src', 'screens')
 const APP_DIR          = path.resolve(process.cwd(), 'app')
@@ -427,7 +432,27 @@ export default ${wrapperName}
 
 // ─── Expo Router route file ────────────────────────────────────────────────────
 
-function generateExpoRouteFile(tatName: string, screenName: string): string {
+function generateExpoRouteFile(tatName: string, screenName: string, hasErrorBoundary = false): string {
+  if (hasErrorBoundary) {
+    return `// ============================================================
+// ARKZEN EXPO ROUTE — ${tatName}/${screenName}
+// DO NOT EDIT — managed by Arkzen engine
+// ============================================================
+
+import React from 'react'
+import Screen from '@/screens/${tatName}/${screenName}'
+import { ErrorBoundary } from '@/screens/${tatName}/error-boundary'
+
+const WrappedScreen = () => (
+  <ErrorBoundary>
+    <Screen />
+  </ErrorBoundary>
+)
+
+export default WrappedScreen
+`
+  }
+
   return `// ============================================================
 // ARKZEN EXPO ROUTE — ${tatName}/${screenName}
 // DO NOT EDIT — managed by Arkzen engine
@@ -510,6 +535,102 @@ function writeIfChanged(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content, 'utf-8')
 }
 
+
+// ─── Not-found file generator (+not-found.tsx) ────────────────────────────────
+
+function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
+  const tatName = tatemono.meta.name
+
+  // Inline shared components so +not-found.tsx is self-contained — no separate shared file exists
+  const sharedSources = [
+    ...(tatemono.nativeComponents ?? []).map(c => c.raw.trim()),
+    handler.raw.trim(),
+  ]
+
+  let { canonicalBlock, strippedSources } = resolveImports(sharedSources)
+  canonicalBlock = ensureReactNativeImport(canonicalBlock, ['View', 'Text', 'TouchableOpacity'])
+  canonicalBlock = ensureExpoRouterImport(canonicalBlock)
+  canonicalBlock = normaliseNativeImports(canonicalBlock)
+
+  const sharedCode  = strippedSources.slice(0, strippedSources.length - 1).join('\n\n')
+  const handlerCode = strippedSources[strippedSources.length - 1]
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    .trim()
+
+  return `// ============================================================
+// ARKZEN EXPO ROUTE — ${tatName}/+not-found
+// DO NOT EDIT — managed by Arkzen engine
+// ============================================================
+
+${canonicalBlock}
+
+${sharedCode}
+
+${handlerCode}
+
+export default NativeNotFoundScreen
+`
+}
+
+// ─── Error boundary file generator (error-boundary.tsx) ──────────────────────
+
+function generateErrorBoundaryFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
+  const tatName = tatemono.meta.name
+
+  // Inline shared components so error-boundary.tsx is self-contained
+  const sharedSources = [
+    ...(tatemono.nativeComponents ?? []).map(c => c.raw.trim()),
+    handler.raw.trim(),
+  ]
+
+  let { canonicalBlock, strippedSources } = resolveImports(sharedSources)
+  canonicalBlock = ensureReactNativeImport(canonicalBlock, ['View', 'Text', 'TouchableOpacity'])
+  canonicalBlock = ensureExpoRouterImport(canonicalBlock)
+  canonicalBlock = normaliseNativeImports(canonicalBlock)
+
+  const sharedCode  = strippedSources.slice(0, strippedSources.length - 1).join('\n\n')
+  const handlerCode = strippedSources[strippedSources.length - 1]
+    .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
+    .trim()
+
+  return `// ============================================================
+// ARKZEN EXPO SCREEN — ${tatName}/error-boundary
+// DO NOT EDIT — managed by Arkzen engine
+// ============================================================
+
+${canonicalBlock}
+
+${sharedCode}
+
+${handlerCode}
+
+export class ErrorBoundary extends React.Component<
+  { children: React.ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: React.ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+
+  static getDerivedStateFromError(): { hasError: boolean } {
+    return { hasError: true }
+  }
+
+  reset = () => this.setState({ hasError: false })
+
+  render() {
+    if (this.state.hasError) {
+      return <NativeServerErrorScreen reset={this.reset} />
+    }
+    return this.props.children
+  }
+}
+
+export default ErrorBoundary
+`
+}
+
 // ─── Register / Unregister ────────────────────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
@@ -530,10 +651,24 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
     const layout     = page.layout ?? 'default'
 
     writeIfChanged(path.join(screenDir, `${screenName}.tsx`), generateScreenFile(tatemono, page))
-    writeIfChanged(path.join(appDir,    `${screenName}.tsx`), generateExpoRouteFile(tatName, screenName))
+    writeIfChanged(path.join(appDir,    `${screenName}.tsx`), generateExpoRouteFile(tatName, screenName, (tatemono.nativeErrorHandlers ?? []).some(h => h.type === '500')))
 
     newRoutes.push({ tatName, screenName, routePath, layout, auth: tatemono.meta.auth && layout === 'auth' })
     console.log(`[Arkzen Expo Router] ✓ ${routePath} [${layout}]`)
+  }
+
+  // v3.3: generate +not-found.tsx and error-boundary.tsx from nativeErrorHandlers
+  for (const handler of tatemono.nativeErrorHandlers ?? []) {
+    if (handler.type === '404') {
+      const notFoundPath = path.join(appDir, '+not-found.tsx')
+      writeIfChanged(notFoundPath, generateNotFoundFile(tatemono, handler))
+      console.log(`[Arkzen Expo Router] ✓ +not-found.tsx generated for ${tatName}`)
+    }
+    if (handler.type === '500') {
+      const errorBoundaryPath = path.join(screenDir, 'error-boundary.tsx')
+      writeIfChanged(errorBoundaryPath, generateErrorBoundaryFile(tatemono, handler))
+      console.log(`[Arkzen Expo Router] ✓ error-boundary.tsx generated for ${tatName}`)
+    }
   }
 
   writeRouteRegistry([...existingRoutes, ...newRoutes])

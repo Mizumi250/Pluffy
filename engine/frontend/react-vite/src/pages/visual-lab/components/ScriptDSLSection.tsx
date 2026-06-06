@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ScriptDSLSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T04:12:41.448Z
+// Generated: 2026-06-06T18:28:14.382Z
 // ============================================================
 
 export { ScriptDSLSection } from './_components'

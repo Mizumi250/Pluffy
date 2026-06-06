@@ -3,4 +3,14 @@
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
 
-export { default } from '@/screens/errors-test/index'
+import React from 'react'
+import Screen from '@/screens/errors-test/index'
+import { ErrorBoundary } from '@/screens/errors-test/error-boundary'
+
+const WrappedScreen = () => (
+  <ErrorBoundary>
+    <Screen />
+  </ErrorBoundary>
+)
+
+export default WrappedScreen
