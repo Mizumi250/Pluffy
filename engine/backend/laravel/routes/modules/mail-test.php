@@ -66,18 +66,18 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/mail-test/auth')->group
 // ============================================================
 // ARKZEN GENERATED ROUTES — mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:12.262476Z
+// Generated: 2026-06-06T23:16:27.304875Z
 // Resources: MailLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\MailTest\MailLogController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\MailTest\PersonalAccessToken as MailTestToken;
 
 Sanctum::usePersonalAccessTokenModel(MailTestToken::class);
+use App\Http\Controllers\Arkzen\MailTest\MailLogController;
 
 // ── MailLog ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

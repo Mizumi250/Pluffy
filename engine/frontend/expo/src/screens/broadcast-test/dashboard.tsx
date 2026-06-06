@@ -175,9 +175,12 @@ const DashboardScreen = () => {
 
         // 2. private
         try {
+          const privateHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` }
+          console.log('[broadcast-test] private auth headers:', JSON.stringify(privateHeaders))
+          console.log('[broadcast-test] private auth body:', JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }))
           const res = await fetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            headers: privateHeaders,
             body:    JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }),
           })
           console.log('[broadcast-test] private auth status:', res.status)
@@ -190,9 +193,11 @@ const DashboardScreen = () => {
 
         // 3. presence
         try {
+          const presenceHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` }
+          console.log('[broadcast-test] presence auth headers:', JSON.stringify(presenceHeaders))
           const res = await fetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
             method:  'POST',
-            headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` },
+            headers: presenceHeaders,
             body:    JSON.stringify({ socket_id: socketId, channel_name: 'presence-broadcast-test-presence' }),
           })
           console.log('[broadcast-test] presence auth status:', res.status)

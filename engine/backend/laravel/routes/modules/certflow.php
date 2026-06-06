@@ -66,22 +66,22 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/certflow/auth')->group(
 // ============================================================
 // ARKZEN GENERATED ROUTES — certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:08.913207Z
+// Generated: 2026-06-06T23:16:24.811762Z
 // Resources: Template, Field, Submission, Scan
 // Custom controllers: CertflowController
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\Certflow\TemplateController;
-use App\Http\Controllers\Arkzen\Certflow\FieldController;
-use App\Http\Controllers\Arkzen\Certflow\SubmissionController;
-use App\Http\Controllers\Arkzen\Certflow\ScanController;
-use App\Http\Controllers\Arkzen\Certflow\CertflowController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\Certflow\PersonalAccessToken as CertflowToken;
 
 Sanctum::usePersonalAccessTokenModel(CertflowToken::class);
+use App\Http\Controllers\Arkzen\Certflow\TemplateController;
+use App\Http\Controllers\Arkzen\Certflow\FieldController;
+use App\Http\Controllers\Arkzen\Certflow\SubmissionController;
+use App\Http\Controllers\Arkzen\Certflow\ScanController;
+use App\Http\Controllers\Arkzen\Certflow\CertflowController;
 
 // ── Template ─────────────────────────────
 Route::middleware(['api'])

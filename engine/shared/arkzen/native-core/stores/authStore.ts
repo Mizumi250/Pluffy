@@ -1,12 +1,18 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE AUTH STORE v1.0
+// ARKZEN ENGINE — NATIVE AUTH STORE v1.1
 // React Native specific. No window/document/localStorage.
 //
-// Identical logic to web-core/stores/authStore.ts except:
-//   - persist uses AsyncStorage instead of localStorage
-//   - slug resolved via global instead of window
-//   - cookie helpers are no-ops (token lives in AsyncStorage)
-//   - useAuthStoreHydrated starts false (AsyncStorage is async)
+// v1.1: Fixed per-tatemono token isolation.
+//       v1.0 used a dynamic persist name getter which caused
+//       cross-tatemono token bleed — the store rehydrated with
+//       whichever slug was last active, so broadcast-test would
+//       load the roles-test token and get 401 on auth:sanctum.
+//
+//       Fix: persist a single map of slug→token in AsyncStorage
+//       under a fixed key 'arkzen-auth-tokens'. getToken() reads
+//       the current slug's token at call time. setToken/clearToken
+//       update only that slug's entry. The store itself holds the
+//       currently active user + token for the active tatemono.
 //
 // Lives in engine/shared/arkzen/native-core/stores/ and is
 // sync-copied into mobile stacks (expo, bare-rn, lynx) by
@@ -39,8 +45,46 @@ function getAuthBase(): string {
 }
 
 // ─────────────────────────────────────────────
+// PER-TATEMONO TOKEN MAP
+// Stored under a fixed AsyncStorage key so each
+// slug's token is isolated and survives app restarts.
+// ─────────────────────────────────────────────
+
+const TOKEN_MAP_KEY = 'arkzen-auth-tokens'
+
+async function readTokenMap(): Promise<Record<string, string>> {
+  try {
+    const raw = await AsyncStorage.getItem(TOKEN_MAP_KEY)
+    return raw ? JSON.parse(raw) : {}
+  } catch {
+    return {}
+  }
+}
+
+async function writeTokenToMap(slug: string, token: string): Promise<void> {
+  try {
+    const map = await readTokenMap()
+    map[slug] = token
+    await AsyncStorage.setItem(TOKEN_MAP_KEY, JSON.stringify(map))
+  } catch {}
+}
+
+async function clearTokenFromMap(slug: string): Promise<void> {
+  try {
+    const map = await readTokenMap()
+    delete map[slug]
+    await AsyncStorage.setItem(TOKEN_MAP_KEY, JSON.stringify(map))
+  } catch {}
+}
+
+async function getTokenForSlug(slug: string): Promise<string | null> {
+  const map = await readTokenMap()
+  return map[slug] ?? null
+}
+
+// ─────────────────────────────────────────────
 // COOKIE HELPERS — no-ops on native
-// Token is persisted via AsyncStorage instead
+// Token is persisted via AsyncStorage token map instead
 // ─────────────────────────────────────────────
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -106,6 +150,7 @@ export const useAuthStore = create<AuthState>()(
       isLoading:       false,
 
       login: async (email, password) => {
+        const slug = getSlug()
         set({ isLoading: true })
         try {
           const res  = await fetch(`${getAuthBase()}/login`, {
@@ -116,13 +161,14 @@ export const useAuthStore = create<AuthState>()(
           const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
           if (!res.ok) throw new Error(data.message ?? 'Login failed. Check your credentials.')
           set({ user: data.user, token: data.token, isAuthenticated: true })
-          setCookie(getSlug(), data.token)
+          await writeTokenToMap(slug, data.token)
         } finally {
           set({ isLoading: false })
         }
       },
 
       register: async (name, email, password, passwordConfirmation) => {
+        const slug = getSlug()
         set({ isLoading: true })
         try {
           const res  = await fetch(`${getAuthBase()}/register`, {
@@ -133,13 +179,14 @@ export const useAuthStore = create<AuthState>()(
           const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
           if (!res.ok) throw new Error(data.message ?? 'Registration failed.')
           set({ user: data.user, token: data.token, isAuthenticated: true })
-          setCookie(getSlug(), data.token)
+          await writeTokenToMap(slug, data.token)
         } finally {
           set({ isLoading: false })
         }
       },
 
       logout: async () => {
+        const slug    = getSlug()
         const { token } = get()
         try {
           await fetch(`${getAuthBase()}/logout`, {
@@ -154,7 +201,7 @@ export const useAuthStore = create<AuthState>()(
           // logout locally even if request fails
         } finally {
           set({ user: null, token: null, isAuthenticated: false })
-          clearCookie(getSlug())
+          await clearTokenFromMap(slug)
         }
       },
 
@@ -181,22 +228,27 @@ export const useAuthStore = create<AuthState>()(
       },
 
       setToken: (token, user) => {
+        const slug = getSlug()
         set({ token, user, isAuthenticated: true })
-        setCookie(getSlug(), token)
+        void writeTokenToMap(slug, token)
       },
 
       clear: () => {
+        const slug = getSlug()
         set({ user: null, token: null, isAuthenticated: false })
-        clearCookie(getSlug())
+        void clearTokenFromMap(slug)
       },
     }),
 
     {
-      get name() {
-        return `arkzen-auth-${global.__ARKZEN_TATEMONO__ ?? 'default'}`
-      },
-      storage:    createJSONStorage(() => AsyncStorage),
-      partialize: (state) => ({ token: state.token }),
+      // Fixed key — token isolation is now handled by the token map,
+      // not by a dynamic persist name. The store persists user + auth
+      // state for the currently active tatemono only.
+      name:    'arkzen-auth-active',
+      storage: createJSONStorage(() => AsyncStorage),
+      // v1.1: do NOT persist token here — token lives in the token map.
+      // Persisting it here caused the cross-tatemono bleed in v1.0.
+      partialize: (state) => ({ user: state.user, isAuthenticated: state.isAuthenticated }),
     }
   )
 )
@@ -226,10 +278,18 @@ export function useAuthStoreHydrated(): boolean {
 // ─────────────────────────────────────────────
 // FETCH HELPERS
 // ─────────────────────────────────────────────
+//
+// v1.1: arkzenFetch reads the token from the per-slug token map
+// so it always uses the correct token for the active tatemono,
+// even if the store was rehydrated with a different slug's state.
 
 export async function arkzenFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = useAuthStore.getState().token
-  const base  = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+  const slug  = global.__ARKZEN_TATEMONO__
+  const token = slug
+    ? await getTokenForSlug(slug)
+    : useAuthStore.getState().token
+
+  const base        = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
   const resolvedUrl = url.startsWith('/') ? `${base}${url}` : url
 
   return fetch(resolvedUrl, {
@@ -251,7 +311,22 @@ export async function arkzenGet<T = unknown>(url: string): Promise<T> {
 // ─────────────────────────────────────────────
 // TATEMONO LAYOUT HELPER
 // ─────────────────────────────────────────────
+//
+// v1.1: Also syncs the active tatemono's token from the map
+// into the store so useAuthStore().token is correct for the
+// current screen.
 
 export function setActiveTatemono(slug: string): void {
   global.__ARKZEN_TATEMONO__ = slug
+  // Sync token from map into store for the newly active tatemono
+  void getTokenForSlug(slug).then(token => {
+    if (token) {
+      const state = useAuthStore.getState()
+      if (state.token !== token) {
+        useAuthStore.setState({ token, isAuthenticated: true })
+      }
+    } else {
+      useAuthStore.setState({ token: null, isAuthenticated: false, user: null })
+    }
+  })
 }

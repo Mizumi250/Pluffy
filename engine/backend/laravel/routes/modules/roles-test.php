@@ -66,18 +66,18 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 // ============================================================
 // ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:13.129350Z
+// Generated: 2026-06-06T23:16:28.511458Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\RolesTest\PersonalAccessToken as RolesTestToken;
 
 Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
+use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
 
 // ── RoleAuditLog ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

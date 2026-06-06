@@ -66,18 +66,18 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/notification-test/auth'
 // ============================================================
 // ARKZEN GENERATED ROUTES — notification-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:12.623866Z
+// Generated: 2026-06-06T23:16:27.591342Z
 // Resources: Notification
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\NotificationTest\NotificationController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\NotificationTest\PersonalAccessToken as NotificationTestToken;
 
 Sanctum::usePersonalAccessTokenModel(NotificationTestToken::class);
+use App\Http\Controllers\Arkzen\NotificationTest\NotificationController;
 
 // ── Notification ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

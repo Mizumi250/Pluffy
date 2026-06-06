@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — FieldController
 // Tatemono: certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:08.905570Z
+// Generated: 2026-06-06T23:16:24.801311Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Certflow;

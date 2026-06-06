@@ -66,18 +66,18 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/broadcast-test/auth')->
 // ============================================================
 // ARKZEN GENERATED ROUTES — broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:08.670131Z
+// Generated: 2026-06-06T23:16:24.525166Z
 // Resources: Message
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\BroadcastTest\MessageController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\BroadcastTest\PersonalAccessToken as BroadcastTestToken;
 
 Sanctum::usePersonalAccessTokenModel(BroadcastTestToken::class);
+use App\Http\Controllers\Arkzen\BroadcastTest\MessageController;
 
 // ── Message ─────────────────────────────
 Route::middleware(['api'])

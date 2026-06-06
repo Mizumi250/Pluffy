@@ -72,6 +72,10 @@ const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 const ArkzenPage_DtrGeofencing_Index = lazy(() => import('@/pages/dtr-geofencing/index'))
 // ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:false
 const ArkzenPage_DtrGeofencing_Admin = lazy(() => import('@/pages/dtr-geofencing/admin'))
+// ROUTE:errors-test:index:/errors-test:false:ArkzenErrorBoundary_ErrorsTest
+const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index'))
+// ROUTE:errors-test:not-found:/errors-test/*:false
+const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
@@ -150,10 +154,6 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:errors-test:index:/errors-test:false:ArkzenErrorBoundary_ErrorsTest
-const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index'))
-// ROUTE:errors-test:not-found:/errors-test/*:false
-const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -191,6 +191,8 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
   { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
+  { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
+  { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
@@ -230,6 +232,4 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
-  { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
 ]

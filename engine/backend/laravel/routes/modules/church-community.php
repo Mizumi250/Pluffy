@@ -66,21 +66,21 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 // ============================================================
 // ARKZEN GENERATED ROUTES — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T18:28:09.789431Z
+// Generated: 2026-06-06T23:16:26.010997Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Arkzen\ChurchCommunity\EventController;
-use App\Http\Controllers\Arkzen\ChurchCommunity\MemberController;
-use App\Http\Controllers\Arkzen\ChurchCommunity\PhotoController;
-use App\Http\Controllers\Arkzen\ChurchCommunity\ChurchController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\ChurchCommunity\PersonalAccessToken as ChurchCommunityToken;
 
 Sanctum::usePersonalAccessTokenModel(ChurchCommunityToken::class);
+use App\Http\Controllers\Arkzen\ChurchCommunity\EventController;
+use App\Http\Controllers\Arkzen\ChurchCommunity\MemberController;
+use App\Http\Controllers\Arkzen\ChurchCommunity\PhotoController;
+use App\Http\Controllers\Arkzen\ChurchCommunity\ChurchController;
 
 // ── Event ─────────────────────────────
 Route::middleware(['api'])
