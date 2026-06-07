@@ -393,6 +393,10 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_CrudTest_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
+  setActiveTatemono('crud-test')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">

@@ -206,8 +206,17 @@ export const useAuthStore = create<AuthState>()(
       },
 
       fetchMe: async () => {
-        const { token } = get()
+        // Read from the isolated token map — not get().token which is
+        // never persisted and is always null on cold start, causing
+        // fetchMe to immediately wipe isAuthenticated and corrupt the
+        // store for the active tatemono.
+        const slug  = global.__ARKZEN_TATEMONO__ ?? ''
+        const token = slug
+          ? await getTokenForSlug(slug)
+          : get().token
         if (!token) { set({ isAuthenticated: false }); return }
+        // Sync token into store so the rest of the app can read it
+        set({ token })
         set({ isLoading: true })
         try {
           const res = await fetch(`${getAuthBase()}/me`, {

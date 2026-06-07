@@ -66,18 +66,26 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/mail-test/auth')->group
 // ============================================================
 // ARKZEN GENERATED ROUTES — mail-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T23:16:27.304875Z
+// Generated: 2026-06-07T01:05:07.088572Z
 // Resources: MailLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Arkzen\MailTest\MailLogController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\MailTest\PersonalAccessToken as MailTestToken;
 
-Sanctum::usePersonalAccessTokenModel(MailTestToken::class);
-use App\Http\Controllers\Arkzen\MailTest\MailLogController;
+// v5.1: Scoped per-request — fires only when a route under /api/mail-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/mail-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(MailTestToken::class);
+    }
+});
 
 // ── MailLog ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

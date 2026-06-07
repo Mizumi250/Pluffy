@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — new-updates-styles [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T23:16:27.457Z
+// Generated: 2026-06-07T01:05:07.315Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

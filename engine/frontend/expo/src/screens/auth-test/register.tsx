@@ -14,8 +14,6 @@ import { SafeAreaView } from 'react-native-safe-area-context'
 // Shared components (from @arkzen:native:components:*)
 // Set the active tatemono slug so the auth store uses the correct
 // isolated token key and API prefix for auth-test
-setActiveTatemono('auth-test')
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
 // ── Input field ───────────────────────────────────────────────
@@ -143,6 +141,10 @@ const RegisterScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_AuthTest_Register() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
+  setActiveTatemono('auth-test')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">

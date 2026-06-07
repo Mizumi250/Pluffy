@@ -330,6 +330,7 @@ import { StatusBar } from 'expo-status-bar'
 ${layoutImport}
 
 export function ${wrapperName}() {
+  setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
@@ -373,7 +374,16 @@ export default ${wrapperName}
   canonicalBlock = normaliseNativeImports(canonicalBlock)
 
   // strippedSources[0..n-1] = shared blocks, last = page block
-  const sharedCode = strippedSources.slice(0, strippedSources.length - 1).join('\n\n')
+  // Strip bare module-level setActiveTatemono() calls from shared code.
+  // These fire at import time and stomp __ARKZEN_TATEMONO__ globally the
+  // moment Expo Router eagerly loads all screen files on startup — even
+  // screens not being viewed. The layout (AuthLayout/GuestLayout) already
+  // calls setActiveTatemono(tatSlug) correctly at mount time via the
+  // explicit tatSlug prop, so the module-level call is not needed.
+  const sharedCode = strippedSources
+    .slice(0, strippedSources.length - 1)
+    .join('\n\n')
+    .replace(/^setActiveTatemono\([^)]*\)\s*\n?/gm, '')
   let userCode = strippedSources[strippedSources.length - 1]
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
@@ -408,6 +418,10 @@ ${componentDefinition}
 
 // Engine wrapper
 export function ${wrapperName}() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
+  setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">

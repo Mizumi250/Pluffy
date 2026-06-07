@@ -66,18 +66,26 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 // ============================================================
 // ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T23:16:28.511458Z
+// Generated: 2026-06-07T01:05:07.912310Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\RolesTest\PersonalAccessToken as RolesTestToken;
 
-Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
-use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
+// v5.1: Scoped per-request — fires only when a route under /api/roles-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/roles-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
+    }
+});
 
 // ── RoleAuditLog ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

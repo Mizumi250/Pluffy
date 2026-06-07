@@ -208,6 +208,10 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_SchedulerTest_Dashboard() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
+  setActiveTatemono('scheduler-test')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">

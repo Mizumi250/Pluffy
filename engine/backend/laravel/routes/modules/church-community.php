@@ -66,21 +66,29 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 // ============================================================
 // ARKZEN GENERATED ROUTES — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-06T23:16:26.010997Z
+// Generated: 2026-06-07T01:05:05.977115Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
-
-use Laravel\Sanctum\Sanctum;
-use App\Models\Arkzen\ChurchCommunity\PersonalAccessToken as ChurchCommunityToken;
-
-Sanctum::usePersonalAccessTokenModel(ChurchCommunityToken::class);
 use App\Http\Controllers\Arkzen\ChurchCommunity\EventController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\MemberController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\PhotoController;
 use App\Http\Controllers\Arkzen\ChurchCommunity\ChurchController;
+
+use Laravel\Sanctum\Sanctum;
+use App\Models\Arkzen\ChurchCommunity\PersonalAccessToken as ChurchCommunityToken;
+
+// v5.1: Scoped per-request — fires only when a route under /api/church-community/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/church-community/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(ChurchCommunityToken::class);
+    }
+});
 
 // ── Event ─────────────────────────────
 Route::middleware(['api'])

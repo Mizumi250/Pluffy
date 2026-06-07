@@ -13,8 +13,6 @@ import { StatusBar } from 'expo-status-bar'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Shared components (from @arkzen:native:components:*)
-setActiveTatemono('mail-test')
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
 interface MailLog {
@@ -173,6 +171,10 @@ const LoginScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_MailTest_Login() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
+  setActiveTatemono('mail-test')
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
