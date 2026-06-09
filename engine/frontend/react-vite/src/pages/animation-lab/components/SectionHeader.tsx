@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T05:23:06.928Z
+// Generated: 2026-06-09T06:27:28.637Z
 // ============================================================
 
 export { SectionHeader } from './_components'

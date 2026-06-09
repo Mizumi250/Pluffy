@@ -85,7 +85,7 @@ const LoginScreen = () => {
     setError(null)
     try {
       await login(email, password)
-      router.replace('/auth-test/dashboard' as any)
+      // No navigation here — GuestLayout handles redirect on isAuthenticated change
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed')
     }

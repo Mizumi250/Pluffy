@@ -734,7 +734,7 @@ const LoginScreen = () => {
     setError(null)
     try {
       await login(email, password)
-      router.replace('/notification-test/dashboard' as any)
+      // No navigation here — GuestLayout handles redirect on isAuthenticated change
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed')
     }
@@ -815,7 +815,7 @@ const RegisterScreen = () => {
     if (password !== confirm) { setError('Passwords do not match'); return }
     try {
       await register(name, email, password, confirm)
-      router.replace('/notification-test/dashboard' as any)
+      // No navigation here — GuestLayout handles redirect on isAuthenticated change
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed')
     }

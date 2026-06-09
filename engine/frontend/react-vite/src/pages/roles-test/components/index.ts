@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — roles-test [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T05:23:12.110Z
+// Generated: 2026-06-09T06:27:34.222Z
 // ============================================================
 
 export * from './_components'

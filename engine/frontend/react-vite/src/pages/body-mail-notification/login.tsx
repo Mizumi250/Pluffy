@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-09T05:23:07.503Z
+// Generated: 2026-06-09T06:27:29.320Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

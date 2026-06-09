@@ -38,20 +38,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'inventory-management', screenName: 'index', routePath: '/inventory-management', layout: 'default', auth: false },
 // ROUTE:job-test:dashboard:/job-test/dashboard:default:false
   { tatName: 'job-test', screenName: 'dashboard', routePath: '/job-test/dashboard', layout: 'default', auth: false },
-// ROUTE:mail-test:login:/mail-test/login:guest:false
-  { tatName: 'mail-test', screenName: 'login', routePath: '/mail-test/login', layout: 'guest', auth: false },
-// ROUTE:mail-test:register:/mail-test/register:guest:false
-  { tatName: 'mail-test', screenName: 'register', routePath: '/mail-test/register', layout: 'guest', auth: false },
-// ROUTE:mail-test:dashboard:/mail-test/dashboard:auth:true
-  { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:middleware-test:index:/middleware-test:default:false
   { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test', layout: 'default', auth: false },
-// ROUTE:notification-test:login:/notification-test/login:guest:false
-  { tatName: 'notification-test', screenName: 'login', routePath: '/notification-test/login', layout: 'guest', auth: false },
-// ROUTE:notification-test:register:/notification-test/register:guest:false
-  { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
-// ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
-  { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:roles-test:login:/roles-test/login:guest:false
   { tatName: 'roles-test', screenName: 'login', routePath: '/roles-test/login', layout: 'guest', auth: false },
 // ROUTE:roles-test:register:/roles-test/register:guest:false
@@ -62,6 +50,18 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
+// ROUTE:mail-test:login:/mail-test/login:guest:false
+  { tatName: 'mail-test', screenName: 'login', routePath: '/mail-test/login', layout: 'guest', auth: false },
+// ROUTE:mail-test:register:/mail-test/register:guest:false
+  { tatName: 'mail-test', screenName: 'register', routePath: '/mail-test/register', layout: 'guest', auth: false },
+// ROUTE:mail-test:dashboard:/mail-test/dashboard:auth:true
+  { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:notification-test:login:/notification-test/login:guest:false
+  { tatName: 'notification-test', screenName: 'login', routePath: '/notification-test/login', layout: 'guest', auth: false },
+// ROUTE:notification-test:register:/notification-test/register:guest:false
+  { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
+// ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
+  { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
 ]
 
 export function getLoginRoute(tatName: string): string {

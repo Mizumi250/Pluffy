@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ProbeResultArkzenSeeder
 // Tatemono: body-endpoint-handler  |  Connection: body_endpoint_handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T05:23:07.389537Z
+// Generated: 2026-06-09T06:27:29.186624Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\BodyEndpointHandler;

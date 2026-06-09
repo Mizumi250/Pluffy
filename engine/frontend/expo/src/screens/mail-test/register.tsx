@@ -105,7 +105,7 @@ const RegisterScreen = () => {
     if (password !== confirm) { setError('Passwords do not match'); return }
     try {
       await register(name, email, password, confirm)
-      router.replace('/mail-test/dashboard' as any)
+      // No navigation here — GuestLayout handles redirect on isAuthenticated change
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Registration failed')
     }
