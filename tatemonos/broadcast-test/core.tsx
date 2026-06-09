@@ -883,7 +883,7 @@ const DashboardScreen = () => {
     } catch (e) { console.error(e) }
   }, [])
 
-  const connectReverb = useCallback(async (userId: number) => {
+  const connectReverb = useCallback(async (userId: number, authToken: string) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
 
     setPublicStatus('connecting')
@@ -892,6 +892,8 @@ const DashboardScreen = () => {
 
     const ws = new WebSocket(`${REVERB_SCHEME}://${REVERB_HOST}:${REVERB_PORT}/app/${APP_KEY}`)
     wsRef.current = ws
+
+    ws.onopen = () => { /* wait for pusher:connection_established */ }
 
     ws.onmessage = async (event) => {
       if (!mountedRef.current) return
@@ -966,7 +968,7 @@ const DashboardScreen = () => {
       if (!mountedRef.current) return
       setPublicStatus('error'); setPrivateStatus('error'); setPresenceStatus('error')
       reconnectTimeout.current = setTimeout(() => {
-        if (mountedRef.current) connectReverb(userId)
+        if (mountedRef.current) connectReverb(userId, authToken)
       }, 3000)
     }
   }, [])

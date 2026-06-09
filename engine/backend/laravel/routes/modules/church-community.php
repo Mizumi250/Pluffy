@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/church-community/auth')
 // ============================================================
 // ARKZEN GENERATED ROUTES — church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-08T11:30:59.413701Z
+// Generated: 2026-06-09T01:33:41.884579Z
 // Resources: Event, Member, Photo
 // Custom controllers: ChurchController
 // ============================================================

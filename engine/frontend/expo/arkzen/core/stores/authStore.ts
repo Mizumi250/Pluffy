@@ -335,7 +335,10 @@ export function setActiveTatemono(slug: string): void {
         useAuthStore.setState({ token, isAuthenticated: true })
       }
     } else {
-      useAuthStore.setState({ token: null, isAuthenticated: false, user: null })
+      const current = useAuthStore.getState()
+      if (!current.token && !current.isAuthenticated) {
+        useAuthStore.setState({ token: null, isAuthenticated: false, user: null })
+      }
     }
   })
 }

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — job-test [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-08T11:31:02.314Z
+// Generated: 2026-06-09T01:33:42.977Z
 // ============================================================
 
 export * from './_components'

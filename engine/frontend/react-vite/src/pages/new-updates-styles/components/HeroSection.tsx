@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-08T11:31:03.065Z
+// Generated: 2026-06-09T01:33:43.293Z
 // ============================================================
 
 import styles from '../styles/HeroSection.module.css'

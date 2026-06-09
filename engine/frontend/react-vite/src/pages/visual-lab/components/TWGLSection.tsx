@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — TWGLSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-08T11:31:05.760Z
+// Generated: 2026-06-09T01:33:44.923Z
 // ============================================================
 
 export { TWGLSection } from './_components'

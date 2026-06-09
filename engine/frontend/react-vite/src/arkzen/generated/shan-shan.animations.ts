@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shan-shan [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-08T11:31:05.438Z
+// Generated: 2026-06-09T01:33:44.702Z
 // ============================================================
 
 import { gsap } from 'gsap'
