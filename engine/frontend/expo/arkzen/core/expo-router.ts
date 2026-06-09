@@ -273,6 +273,28 @@ function ensureStatusBarImport(canonicalBlock: string): string {
   return canonicalBlock + `${sep}\nimport { StatusBar } from 'expo-status-bar'`
 }
 
+// The wrapper always calls setActiveTatemono() — guarantee it is imported
+// regardless of whether the user tatemono code imports arkzenFetch or not.
+// Auth-false tatemonos use a plain apiFetch helper and never pull in authStore,
+// so setActiveTatemono ends up undefined at runtime without this guard.
+function ensureSetActiveTatemonoImport(canonicalBlock: string): string {
+  const authStorePath = `'../../../arkzen/core/stores/authStore'`
+  if (/setActiveTatemono/.test(canonicalBlock)) return canonicalBlock
+
+  // authStore import already present — merge setActiveTatemono into it
+  const existingImportRe = /import\s+\{([^}]*)\}\s+from\s+['"]\.\.\.\/\.\.\.\.\/\.\.\.\.\/arkzen\/core\/stores\/authStore['"]\s*;?/
+  const match = canonicalBlock.match(existingImportRe)
+  if (match) {
+    const named = match[1].split(',').map(s => s.trim()).filter(Boolean)
+    if (!named.includes('setActiveTatemono')) named.push('setActiveTatemono')
+    return canonicalBlock.replace(existingImportRe, `import { ${named.join(', ')} } from ${authStorePath}`)
+  }
+
+  // No authStore import at all — add a fresh one
+  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
+  return canonicalBlock + `${sep}\nimport { setActiveTatemono } from ${authStorePath}`
+}
+
 // ─── Native import normaliser ─────────────────────────────────────────────────
 // The shared authStore (and any other arkzen core files) live at
 // <expo-root>/arkzen/core/... — outside src/.
@@ -365,6 +387,7 @@ export default ${wrapperName}
   canonicalBlock = ensureReactNativeImport(canonicalBlock, engineRequiredRN)
   canonicalBlock = ensureExpoRouterImport(canonicalBlock)
   canonicalBlock = ensureStatusBarImport(canonicalBlock)
+  canonicalBlock = ensureSetActiveTatemonoImport(canonicalBlock)
   // SafeAreaView is never imported by user code – always add separately
   if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
     canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`

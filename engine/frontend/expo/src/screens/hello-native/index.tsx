@@ -7,6 +7,8 @@ import { useRouter } from 'expo-router'
 import { Pressable, Text, TouchableOpacity, View, ScrollView } from 'react-native'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Shared components (from @arkzen:native:components:*)

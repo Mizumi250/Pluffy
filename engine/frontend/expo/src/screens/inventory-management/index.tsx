@@ -8,6 +8,8 @@ import { AlertTriangle, ChevronRight, DollarSign, Edit2, Package, Plus, Search, 
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Shared components (from @arkzen:native:components:*)

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — DtrSettingArkzenSeeder
 // Tatemono: dtr-geofencing  |  Connection: dtr_geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T06:27:32.816792Z
+// Generated: 2026-06-09T09:45:52.895663Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\DtrGeofencing;

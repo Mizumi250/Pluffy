@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-09T06:27:28.965Z
+// Generated: 2026-06-09T10:06:35.271Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -66,6 +66,7 @@ const IndexPage = () => {
   const [ping,     setPing]     = useState<Record<string, any> | null>(null)
   const [latest,   setLatest]   = useState<ProbeResult[]>([])
   const [loading,  setLoading]  = useState(false)
+  const [deleting, setDeleting] = useState<number | null>(null)
 
   // Echo form state
   const [echoFields, setEchoFields] = useState([{ key: 'hello', value: 'world' }])
@@ -130,6 +131,16 @@ const IndexPage = () => {
       else        { toastError('Record failed') }
     } catch { toastError('Record request failed') }
     setHRecording(false)
+  }
+
+  const doDelete = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await arkzenFetch(`/api/body-endpoint-handler/probes/${id}`, { method: 'DELETE' })
+      if (res.ok) { toastSuccess('Probe deleted'); loadAll() }
+      else        { toastError('Delete failed') }
+    } catch { toastError('Delete request failed') }
+    setDeleting(null)
   }
 
   useEffect(() => { loadAll() }, [])
@@ -299,7 +310,7 @@ const IndexPage = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
                   <tr style={{ background: '#f4f4f5' }}>
-                    {['#', 'Source', 'Probe', 'Result', 'Ok', 'Time'].map(h => (
+                    {['#', 'Source', 'Probe', 'Result', 'Ok', 'Time', ''].map(h => (
                       <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, color: '#3f3f46' }}>{h}</th>
                     ))}
                   </tr>
@@ -313,6 +324,15 @@ const IndexPage = () => {
                       <td style={{ padding: '8px 10px', color: '#52525b', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.result ?? '—'}</td>
                       <td style={{ padding: '8px 10px' }}><Tag label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} /></td>
                       <td style={{ padding: '8px 10px', color: '#a1a1aa' }}>{new Date(r.created_at).toLocaleTimeString()}</td>
+                      <td style={{ padding: '8px 10px' }}>
+                        <button
+                          onClick={() => doDelete(r.id)}
+                          disabled={deleting === r.id}
+                          style={{ ...btn('#ef4444'), padding: '4px 10px', fontSize: 11, opacity: deleting === r.id ? 0.5 : 1 }}
+                        >
+                          {deleting === r.id ? '…' : 'Delete'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

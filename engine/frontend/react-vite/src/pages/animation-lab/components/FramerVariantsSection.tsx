@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T06:27:28.642Z
+// Generated: 2026-06-09T09:45:49.705Z
 // ============================================================
 
 export { FramerVariantsSection } from './_components'
