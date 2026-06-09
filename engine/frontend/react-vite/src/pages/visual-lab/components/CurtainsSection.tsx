@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T04:52:20.297Z
+// Generated: 2026-06-09T05:23:13.291Z
 // ============================================================
 
 export { CurtainsSection } from './_components'

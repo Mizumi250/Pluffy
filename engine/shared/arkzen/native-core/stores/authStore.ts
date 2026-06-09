@@ -292,5 +292,18 @@ export async function arkzenGet<T = unknown>(url: string): Promise<T> {
 // ─────────────────────────────────────────────
 
 export function setActiveTatemono(slug: string): void {
+  const previous = global.__ARKZEN_TATEMONO__
   global.__ARKZEN_TATEMONO__ = slug
+
+  // If switching to a different tatemono, wipe in-memory state so the previous
+  // tatemono's user/token don't bleed through. The new tatemono's layout will
+  // call fetchMe() on mount to restore its own session from the token map.
+  if (previous !== slug) {
+    useAuthStore.setState({
+      user:            null,
+      token:           null,
+      isAuthenticated: false,
+      isLoading:       false,
+    })
+  }
 }
