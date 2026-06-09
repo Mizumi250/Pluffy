@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Spinner [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T10:31:53.898Z
+// Generated: 2026-06-09T11:29:50.836Z
 // ============================================================
 
 export { Spinner } from './_components'

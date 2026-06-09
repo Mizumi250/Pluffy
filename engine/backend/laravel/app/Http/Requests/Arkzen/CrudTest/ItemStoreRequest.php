@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — ItemStoreRequest
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T10:31:52.358079Z
+// Generated: 2026-06-09T11:29:49.787935Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\CrudTest;
