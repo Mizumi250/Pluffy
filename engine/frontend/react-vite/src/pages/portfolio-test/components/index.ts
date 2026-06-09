@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — portfolio-test [React+Vite]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-07T01:05:07.505Z
+// Generated: 2026-06-08T11:31:03.739Z
 // ============================================================
 
 export * from './_components'

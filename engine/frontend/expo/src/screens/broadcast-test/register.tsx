@@ -3,7 +3,8 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { GuestLayout } from '@/layouts/GuestLayout'

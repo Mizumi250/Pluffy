@@ -3,7 +3,8 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { AuthLayout }  from '@/layouts/AuthLayout'
@@ -112,10 +113,7 @@ const ChannelCard = ({
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {
   const router                          = useRouter()
-  const { user, logout, token }         = useAuthStore()
-  const hydrated                        = useAuthStoreHydrated()
-
-  console.log('[broadcast-test] token:', token)
+  const { user, logout }                = useAuthStore()
   console.log('[broadcast-test] user:', user?.id, user?.email)
 
   const [publicMsgs,   setPublicMsgs]   = useState<NativeMessage[]>([])
@@ -148,7 +146,7 @@ const DashboardScreen = () => {
     } catch (e) { console.error(e) }
   }, [])
 
-  const connectReverb = useCallback(async (userId: number, authToken: string) => {
+  const connectReverb = useCallback(async (userId: number) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) return
 
     setPublicStatus('connecting')
@@ -167,21 +165,16 @@ const DashboardScreen = () => {
         const connData = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
         const socketId = (connData as any).socket_id as string
 
-        // 1. public
+        // 1. public — no auth needed
         setPublicStatus('connected')
         ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'broadcast-test-public' } }))
 
-        // 2. private
+        // 2. private — use arkzenFetch, handles auth token automatically from map
         try {
-          const privateHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` }
-          console.log('[broadcast-test] private auth headers:', JSON.stringify(privateHeaders))
-          console.log('[broadcast-test] private auth body:', JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }))
-          const res = await fetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
-            method:  'POST',
-            headers: privateHeaders,
-            body:    JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }),
+          const res = await arkzenFetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
+            method: 'POST',
+            body:   JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }),
           })
-          console.log('[broadcast-test] private auth status:', res.status)
           if (res.ok) {
             const { auth } = await res.json()
             ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: `private-broadcast-test.${userId}`, auth } }))
@@ -189,16 +182,12 @@ const DashboardScreen = () => {
           } else { setPrivateStatus('error') }
         } catch (e) { console.error('[broadcast-test] private auth error:', e); setPrivateStatus('error') }
 
-        // 3. presence
+        // 3. presence — use arkzenFetch, handles auth token automatically from map
         try {
-          const presenceHeaders = { 'Content-Type': 'application/json', 'Accept': 'application/json', 'Authorization': `Bearer ${authToken}` }
-          console.log('[broadcast-test] presence auth headers:', JSON.stringify(presenceHeaders))
-          const res = await fetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
-            method:  'POST',
-            headers: presenceHeaders,
-            body:    JSON.stringify({ socket_id: socketId, channel_name: 'presence-broadcast-test-presence' }),
+          const res = await arkzenFetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
+            method: 'POST',
+            body:   JSON.stringify({ socket_id: socketId, channel_name: 'presence-broadcast-test-presence' }),
           })
-          console.log('[broadcast-test] presence auth status:', res.status)
           if (res.ok) {
             const { auth, channel_data } = await res.json()
             ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'presence-broadcast-test-presence', auth, channel_data } }))
@@ -240,15 +229,23 @@ const DashboardScreen = () => {
       if (!mountedRef.current) return
       setPublicStatus('error'); setPrivateStatus('error'); setPresenceStatus('error')
       reconnectTimeout.current = setTimeout(() => {
-        if (mountedRef.current) connectReverb(userId, authToken)
+        if (mountedRef.current) connectReverb(userId)
       }, 3000)
     }
   }, [])
 
   useEffect(() => {
     mountedRef.current = true
-    if (hydrated && user?.id && token) {
-      const t = setTimeout(() => { if (mountedRef.current) connectReverb(user.id, token) }, 50)
+    if (user?.id) {
+      // Read token fresh from AsyncStorage map — store.token is not
+      // persisted and may be null even when the user is authenticated.
+      const run = async () => {
+        const raw = await AsyncStorage.getItem('arkzen-auth-tokens')
+        const map: Record<string, string> = raw ? JSON.parse(raw) : {}
+        const authToken = map['broadcast-test'] ?? null
+        if (authToken && mountedRef.current) connectReverb(user.id, authToken)
+      }
+      const t = setTimeout(run, 50)
       return () => clearTimeout(t)
     }
     return () => {
@@ -256,7 +253,7 @@ const DashboardScreen = () => {
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current)
       wsRef.current?.close()
     }
-  }, [user?.id, hydrated, token])
+  }, [user?.id])
 
   const handleLogout = async () => {
     wsRef.current?.close()

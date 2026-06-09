@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — PhotoUpdateRequest
 // Tatemono: church-community
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-07T01:05:05.952663Z
+// Generated: 2026-06-08T11:30:59.390877Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ChurchCommunity;

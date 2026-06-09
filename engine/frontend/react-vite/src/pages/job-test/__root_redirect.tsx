@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — job-test [React+Vite]
 // Visiting /job-test redirects to /job-test/dashboard
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-07T01:05:06.916Z
+// Generated: 2026-06-08T11:31:02.318Z
 // ============================================================
 
 import React from 'react'
