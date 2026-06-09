@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T01:33:43.292Z
+// Generated: 2026-06-09T04:52:18.699Z
 // ============================================================
 
 import styles from '../styles/FeatureCard.module.css'

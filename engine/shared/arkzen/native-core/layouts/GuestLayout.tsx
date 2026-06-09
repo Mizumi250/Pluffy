@@ -1,117 +1,112 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE GUEST LAYOUT v1.1
+// ARKZEN — GuestLayout (Expo) v2.2
+// src/layouts/GuestLayout.tsx
 //
-// v1.1: Fixed cross-tatemono auth bleed — same root cause as
-//       AuthLayout v1.0.
-//       v1.0 read token from useAuthStore.getState().token
-//       (always null, never persisted) and isAuthenticated from
-//       the shared persisted store — which belonged to whichever
-//       tatemono last wrote it. fetchMe() then fired with a stale
-//       __ARKZEN_TATEMONO__ slug, hitting the wrong /auth/me
-//       endpoint, getting 401, clearing the store, and leaving
-//       the guest screen in a broken state that triggered a
-//       spurious login call on the wrong tatemono.
-//
-//       Fix: accept tatSlug + dashboardRoute as explicit props,
-//       call setActiveTatemono(tatSlug) first, read token from
-//       the isolated AsyncStorage map, never from store state.
+// v2.2: Added setActiveTatemono before fetchMe.
+//       Uses single async restore effect that waits for token
+//       restoration before deciding to redirect to dashboard.
+//       Prevents race conditions and ensures per‑tatemono isolation.
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
-import { View, ActivityIndicator } from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import {
+  View,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import AsyncStorage from '@react-native-async-storage/async-storage'
-import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '../stores/authStore'
-import { ToastProvider } from '../components/Toast'
+import { 
+  useAuthStore, 
+  setActiveTatemono 
+} from '../../arkzen/core/stores/authStore'
 
-export interface GuestLayoutProps {
-  children:        React.ReactNode
-  tatSlug:         string
-  dashboardRoute:  string
-  redirectIfAuth?: boolean
-  guestOnly?:      boolean
-  className?:      string
+interface GuestLayoutProps {
+  children:       React.ReactNode
+  tatSlug:        string
+  dashboardRoute: string
 }
 
-async function getTokenForSlug(slug: string): Promise<string | null> {
-  try {
-    const raw = await AsyncStorage.getItem('arkzen-auth-tokens')
-    const map: Record<string, string> = raw ? JSON.parse(raw) : {}
-    return map[slug] ?? null
-  } catch {
-    return null
-  }
-}
+export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutProps) {
+  const router          = useRouter()
+  const isLoading       = useAuthStore(s => s.isLoading)
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+  const fetchMe         = useAuthStore(s => s.fetchMe)
 
-export const NativeGuestLayout: React.FC<GuestLayoutProps> = ({
-  children,
-  tatSlug,
-  dashboardRoute,
-  redirectIfAuth = false,
-  guestOnly      = false,
-  className = '',
-}) => {
-  const router              = useRouter()
-  const hydrated            = useAuthStoreHydrated()
-  const shouldGuard         = redirectIfAuth || guestOnly
-  const [checking, setChecking] = useState(shouldGuard)
-  const checked                 = useRef(false)
+  // Ensure the global tatemono slug is set before any store operations
+  useEffect(() => {
+    setActiveTatemono(tatSlug)
+  }, [tatSlug])
+
+  // Restore session + redirect – no race condition
+  const isRedirectingRef = useRef(false)
 
   useEffect(() => {
-    if (!hydrated) return
-    if (checked.current) return
-    checked.current = true
+    let active = true
+    const restoreAndRedirect = async () => {
+      if (isRedirectingRef.current) return
+      isRedirectingRef.current = true
 
-    // Set slug FIRST so fetchMe() hits the correct /auth/me endpoint
-    setActiveTatemono(tatSlug)
-
-    if (!shouldGuard) { setChecking(false); return }
-
-    const check = async () => {
-      const token = await getTokenForSlug(tatSlug)
-
-      if (!token) {
-        setChecking(false)
-        return
-      }
-
-      const { isAuthenticated, fetchMe } = useAuthStore.getState()
-
-      if (isAuthenticated) {
-        router.replace(dashboardRoute as any)
-        return
-      }
-
+      // 1. Restore user/token from the isolated map into the store
       await fetchMe()
 
-      if (useAuthStore.getState().isAuthenticated) {
+      if (!active) return
+
+      // 2. After fetchMe completes, check final auth state
+      const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
+      if (!finalLoading && finalAuth) {
         router.replace(dashboardRoute as any)
-        return
       }
 
-      setChecking(false)
+      isRedirectingRef.current = false
     }
 
-    check()
-  }, [hydrated])
+    restoreAndRedirect()
+    return () => { active = false }
+  }, [tatSlug, dashboardRoute])
 
-  if (checking) {
+  // Show loader while restoring or redirecting
+  if (isLoading) {
     return (
-      <ToastProvider position="top-right">
-        <View className="flex-1 items-center justify-center bg-neutral-50">
-          <ActivityIndicator size="small" color="#404040" />
-        </View>
-      </ToastProvider>
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="small" color="#a3a3a3" />
+      </SafeAreaView>
     )
   }
 
+  // If authenticated and not loading, redirect already triggered
+  // (but prevent flash of content – keep loader)
+  if (isAuthenticated) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="small" color="#a3a3a3" />
+      </SafeAreaView>
+    )
+  }
+
+  // Not authenticated – render guest content (login/register forms)
   return (
-    <ToastProvider position="top-right">
-      <View className={`flex-1 ${className}`}>
-        {children}
-      </View>
-    </ToastProvider>
+    <SafeAreaView className="flex-1 bg-neutral-50">
+      <KeyboardAvoidingView
+        className="flex-1"
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        keyboardVerticalOffset={0}
+      >
+        <ScrollView
+          className="flex-1"
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          <View className="flex-1 items-center justify-center px-6 py-12">
+            {children}
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   )
 }
 
-export const GuestLayout = NativeGuestLayout
+export default GuestLayout

@@ -1,92 +1,124 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE AUTH LAYOUT v1.2
+// ARKZEN — AuthLayout (Expo) v2.2
+// src/layouts/AuthLayout.tsx
 //
-// v1.2: Always call fetchMe when user is null, even if
-//       isAuthenticated is true. setActiveTatemono syncs
-//       the token and sets isAuthenticated:true but leaves
-//       user:null — so the dashboard gets user?.id = undefined
-//       and connectReverb never fires.
+// v2.2: Fixed redirect race condition with fetchMe().
+//       Uses async restore session that waits for token restoration
+//       before deciding to redirect. Also ensures tatemono slug is
+//       set in the global store before mounting.
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
-import { View, ActivityIndicator } from 'react-native'
+import React, { useEffect, useRef } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ActivityIndicator,
+} from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '../stores/authStore'
-import { ToastProvider } from '../components/Toast'
+import { 
+  useAuthStore, 
+  setActiveTatemono 
+} from '../../arkzen/core/stores/authStore'  // import setActiveTatemono
 
-export interface AuthLayoutProps {
-  children:     React.ReactNode
-  tatSlug:      string
-  loginRoute:   string
-  requireAuth?: boolean
-  className?:   string
+interface AuthLayoutProps {
+  children:   React.ReactNode
+  tatSlug:    string
+  loginRoute: string
 }
 
-export const NativeAuthLayout: React.FC<AuthLayoutProps> = ({
-  children,
-  tatSlug,
-  loginRoute,
-  requireAuth = true,
-  className = '',
-}) => {
-  const router   = useRouter()
-  const hydrated = useAuthStoreHydrated()
-  const [checking, setChecking] = useState(requireAuth)
-  const checked = useRef(false)
+export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
+  const router          = useRouter()
+  const isLoading       = useAuthStore(s => s.isLoading)
+  const isAuthenticated = useAuthStore(s => s.isAuthenticated)
+  const user            = useAuthStore(s => s.user)
+  const logout          = useAuthStore(s => s.logout)
+  const fetchMe         = useAuthStore(s => s.fetchMe)
+
+  // Ensure the global tatemono slug is set before any store operations
+  // Must run before the restore effect
+  useEffect(() => {
+    setActiveTatemono(tatSlug)
+  }, [tatSlug])
+
+  // Restore session + redirect – async, no race condition
+  const isRedirectingRef = useRef(false)
 
   useEffect(() => {
-    if (!hydrated) return
-    if (checked.current) return
-    checked.current = true
+    let active = true
+    const restoreAndRedirect = async () => {
+      if (isRedirectingRef.current) return
+      isRedirectingRef.current = true
 
-    setActiveTatemono(tatSlug)
+      // 1. Restore user/token from the isolated map into the store
+      await fetchMe()
 
-    if (!requireAuth) { setChecking(false); return }
+      if (!active) return
 
-    const check = async () => {
-      // Wait for setActiveTatemono async token sync to settle
-      await new Promise(r => setTimeout(r, 80))
-
-      const { isAuthenticated, user, fetchMe } = useAuthStore.getState()
-
-      if (!isAuthenticated) {
+      // 2. After fetchMe completes, check final auth state
+      const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
+      if (!finalLoading && !finalAuth) {
         router.replace(loginRoute as any)
-        return
       }
 
-      // Token synced but user not fetched yet — always fetchMe when user is null
-      if (!user) {
-        await fetchMe()
-      }
-
-      if (!useAuthStore.getState().isAuthenticated) {
-        router.replace(loginRoute as any)
-        return
-      }
-
-      setChecking(false)
+      isRedirectingRef.current = false
     }
 
-    check()
-  }, [hydrated])
+    restoreAndRedirect()
+    return () => { active = false }
+  }, [tatSlug, loginRoute]) // re-run if slug or loginRoute changes
 
-  if (checking) {
+  // Show loader while restoring or redirecting
+  if (isLoading) {
     return (
-      <ToastProvider position="top-right">
-        <View className="flex-1 items-center justify-center bg-neutral-50">
-          <ActivityIndicator size="small" color="#404040" />
-        </View>
-      </ToastProvider>
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="small" color="#a3a3a3" />
+      </SafeAreaView>
     )
   }
 
+  // If not authenticated and not loading, redirect already triggered
+  // (but prevent flash of content)
+  if (!isAuthenticated) {
+    return (
+      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
+        <ActivityIndicator size="small" color="#a3a3a3" />
+      </SafeAreaView>
+    )
+  }
+
+  // Fully authenticated – render content
   return (
-    <ToastProvider position="top-right">
-      <View className={`flex-1 ${className}`}>
+    <SafeAreaView className="flex-1 bg-neutral-50">
+      {/* Top bar */}
+      <View className="h-14 flex-row items-center justify-between px-5 bg-white/90 border-b border-black/5">
+        <Text className="text-sm font-semibold text-neutral-900 tracking-tight">
+          Arkzen
+        </Text>
+        <View className="flex-row items-center gap-3">
+          {user && (
+            <Text className="text-xs text-neutral-400 max-w-36" numberOfLines={1}>
+              {user.email}
+            </Text>
+          )}
+          <TouchableOpacity
+            onPress={logout}
+            className="px-3 py-1.5 rounded-md border border-neutral-200 bg-white active:opacity-70"
+          >
+            <Text className="text-xs text-neutral-600">
+              Logout
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+
+      {/* Screen content */}
+      <View className="flex-1">
         {children}
       </View>
-    </ToastProvider>
+    </SafeAreaView>
   )
 }
 
-export const AuthLayout = NativeAuthLayout
+export default AuthLayout
