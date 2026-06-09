@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — certflow [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T09:45:51.589Z
+// Generated: 2026-06-09T10:31:51.342Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

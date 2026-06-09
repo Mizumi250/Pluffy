@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/body-mail-notification/
 // ============================================================
 // ARKZEN GENERATED ROUTES — body-mail-notification
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T09:45:50.959819Z
+// Generated: 2026-06-09T10:31:50.602144Z
 // Resources: SendLog
 // Custom controllers: 
 // ============================================================

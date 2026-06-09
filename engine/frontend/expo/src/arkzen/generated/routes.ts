@@ -18,6 +18,14 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
 // ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
   { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:guest:false
+  { tatName: 'body-endpoint-handler', screenName: 'index', routePath: '/body-endpoint-handler', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:login:/body-mail-notification/login:guest:false
+  { tatName: 'body-mail-notification', screenName: 'login', routePath: '/body-mail-notification/login', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:register:/body-mail-notification/register:guest:false
+  { tatName: 'body-mail-notification', screenName: 'register', routePath: '/body-mail-notification/register', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:auth:true
+  { tatName: 'body-mail-notification', screenName: 'dashboard', routePath: '/body-mail-notification/dashboard', layout: 'auth', auth: true },
 // ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
   { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
 // ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
@@ -52,6 +60,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
 // ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
   { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:portfolio-test:index:/portfolio-test:guest:false
+  { tatName: 'portfolio-test', screenName: 'index', routePath: '/portfolio-test', layout: 'guest', auth: false },
 // ROUTE:roles-test:login:/roles-test/login:guest:false
   { tatName: 'roles-test', screenName: 'login', routePath: '/roles-test/login', layout: 'guest', auth: false },
 // ROUTE:roles-test:register:/roles-test/register:guest:false
@@ -62,8 +72,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
-// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:guest:false
-  { tatName: 'body-endpoint-handler', screenName: 'index', routePath: '/body-endpoint-handler', layout: 'guest', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

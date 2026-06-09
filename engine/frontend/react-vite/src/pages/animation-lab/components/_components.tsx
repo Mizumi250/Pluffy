@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — animation-lab [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T09:45:49.694Z
+// Generated: 2026-06-09T10:31:49.953Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

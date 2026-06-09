@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPStaggerSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T09:45:49.704Z
+// Generated: 2026-06-09T10:31:49.966Z
 // ============================================================
 
 export { GSAPStaggerSection } from './_components'
