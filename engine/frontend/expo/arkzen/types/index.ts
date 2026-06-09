@@ -1,6 +1,13 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v6.0
-// v6.0: @arkzen:meta:web separation.
+// ARKZEN ENGINE — TYPE DEFINITIONS v7.0
+// v7.0: Native platform fields added to ParsedTatemono.
+//       - ArkzenNativeMeta: expo app config (bundle_id, icon, splash, etc.)
+//       - ArkzenNativeConfig: NativeWind / theme / font config
+//       - ParsedTatemono: added nativeMeta, nativeConfig, nativeComponents,
+//         nativeLayouts, nativeStyles, nativeAnimation, nativeScript,
+//         nativeScripts, nativePages, nativeErrorHandlers, script, scripts.
+//         These mirror the web equivalents exactly.
+// v6.0 (kept): @arkzen:meta:web separation.
 //       - ArkzenWebMeta: new interface for web-only meta (favicon, title,
 //         label, og, pwa). Replaces favicon + pwa in ArkzenMeta.
 //       - ArkzenMeta: removed favicon, pwa. Kept: name, version,
@@ -52,6 +59,35 @@ export interface ArkzenWebMeta {
     image?:       string
   }
   pwa?:         ArkzenPWAMeta
+}
+
+// v7.0: Native-only meta — declared via @arkzen:meta:native block
+// Covers Expo app.json / app.config.js values that only make sense on native.
+export interface ArkzenNativeMeta {
+  label?:       string                    // Human-readable app name
+  description?: string                    // App store description
+  expo?: {
+    bundle_id?:       string              // iOS bundle ID / Android app ID
+    icon?:            string              // Path to app icon
+    scheme?:          string              // Deep link scheme
+    version?:         string              // App version string
+    orientation?:     'portrait' | 'landscape' | 'default'
+    status_bar_style?: 'default' | 'light-content' | 'dark-content'
+    permissions?:     string[]
+    splash?: {
+      image?:            string
+      background_color?: string
+      resize_mode?:      string
+    }
+  }
+}
+
+// v7.0: Native config — declared via @arkzen:native:config block
+// NativeWind theme, custom fonts, gesture handler settings, etc.
+export interface ArkzenNativeConfig {
+  theme?: Record<string, unknown>
+  fonts?: Record<string, string>
+  [key: string]: unknown
 }
 
 export interface ArkzenMeta {
@@ -313,8 +349,10 @@ export interface ParsedTatemono {
   filePath: string
   fileName: string
   meta:     ArkzenMeta
-  webMeta?: ArkzenWebMeta    // v6.0: from @arkzen:meta:web block
-  config?:  ArkzenConfigOverride
+  webMeta?:      ArkzenWebMeta       // v6.0: from @arkzen:meta:web block
+  nativeMeta?:   ArkzenNativeMeta    // v7.0: from @arkzen:meta:native block
+  config?:       ArkzenConfigOverride
+  nativeConfig?: ArkzenNativeConfig  // v7.0: from @arkzen:native:config block
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
@@ -322,8 +360,8 @@ export interface ParsedTatemono {
   pages:              ArkzenPage[]
   layouts:            ArkzenLayout[]
 
-  errorHandlers:        ArkzenErrorHandler[]  // web: @arkzen:web:error:404/500
-  nativeErrorHandlers: ArkzenErrorHandler[]  // native: @arkzen:native:error:404/500 — v10.2
+  errorHandlers:       ArkzenErrorHandler[]  // web: @arkzen:web:error:404/500
+  nativeErrorHandlers: ArkzenErrorHandler[]  // native: @arkzen:native:error:404/500
 
   stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
@@ -333,17 +371,22 @@ export interface ParsedTatemono {
   mails:              ArkzenMail[]
   consoles:           ArkzenConsole[]
   components:         ArkzenSection[]
-  styles:             ArkzenStyle[]  // ← v6.4: CSS + CSS Modules support
-  middlewareSnippets: ArkzenMiddlewareSnippets  // ← v5.3
-  policySnippets:     Record<string, string>   // ← v6.0: base64-encoded PHP policy bodies
+  styles:             ArkzenStyle[]           // web: @arkzen:web:style
+  middlewareSnippets: ArkzenMiddlewareSnippets
+  policySnippets:     Record<string, string>  // base64-encoded PHP policy bodies
 
-  animation?: ArkzenSection
+  animation?: ArkzenSection  // web: @arkzen:web:animation — GSAP + framer pageVariants
+  script?:    ArkzenSection  // web: global @arkzen:web:script block
+  scripts:    ArkzenSection[] // web: named @arkzen:web:script:name blocks
 
-  // v10.2: @arkzen:native:error:404/500 — nativeErrorHandlers added to ParsedTatemono.
-//
-// v8.0: @arkzen:web:script (global) + @arkzen:web:script:name (named, multiple)
-  script?:  ArkzenSection        // global web script block
-  scripts:  ArkzenSection[]      // named web script blocks
+  // v7.0: native platform blocks (Expo / React Native)
+  nativePages:      ArkzenPage[]     // @arkzen:native:page:name
+  nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
+  nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
+  nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
+  nativeAnimation?: ArkzenSection    // @arkzen:native:animation — Reanimated / Moti
+  nativeScript?:    ArkzenSection    // @arkzen:native:script — global native utility block
+  nativeScripts:    ArkzenSection[]  // @arkzen:native:script:name — named native utility blocks
 }
 
 export interface ArkzenRegistry {

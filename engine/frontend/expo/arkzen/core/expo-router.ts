@@ -1,5 +1,14 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v3.3
+// ARKZEN ENGINE — EXPO ROUTER v3.4
+//
+// v3.4 – @arkzen:native:animation support.
+//        generateNativeAnimationFile(): strips imports via resolveImports,
+//        writes src/arkzen/generated/{name}.native-animations.ts.
+//        Supports both Reanimated (imperative hooks/worklets) and Moti
+//        (declarative presets) — no forced export convention unlike web.
+//        registerExpoScreens() now generates the animation file when
+//        tatemono.nativeAnimation is present.
+//        unregisterExpoScreens() cleans up the generated file.
 //
 // v3.3 – native:error handler support.
 //        generateNotFoundFile(): generates app/{tat}/+not-found.tsx
@@ -668,6 +677,51 @@ export default ErrorBoundary
 `
 }
 
+// ─── Native animation file generator ─────────────────────────────────────────
+// Mirrors the web generateAnimationFile() pattern from nextjs/router.ts but
+// without the forced GSAP header or pageVariants injection — native animation
+// code uses Reanimated hooks / Moti presets which have no single callable
+// entry point. The block is a free-form shared module: the author writes
+// whatever hooks, shared values, worklets, or Moti transition presets they
+// need and imports them directly in their screen / components:shared block.
+//
+// Output: src/arkzen/generated/{name}.native-animations.ts
+// Import: import { ... } from '@/arkzen/generated/{name}.native-animations'
+//         (or the normalised ../../arkzen/generated/... path in screen files)
+
+function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
+  if (!tatemono.nativeAnimation) return null
+
+  const { strippedSources } = resolveImports([tatemono.nativeAnimation.raw])
+  const clean = strippedSources[0]
+    // strip trailing */ bleed from the DSL block comment
+    .replace(/\*\/\s*$/, '')
+    .trim()
+
+  if (!clean) return null
+
+  // Rebuild canonical imports from the animation block alone so the file is
+  // self-contained — no engine-injected packages, author owns all imports.
+  const { canonicalBlock } = resolveImports([tatemono.nativeAnimation.raw])
+
+  return `// ============================================================
+// ARKZEN GENERATED NATIVE ANIMATIONS — ${tatemono.meta.name}
+// DO NOT EDIT DIRECTLY. Edit the @arkzen:native:animation block instead.
+// Generated: ${new Date().toISOString()}
+//
+// Supported patterns:
+//   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,
+//                withSequence, runOnUI, worklets, etc.
+//   Moti       — transition presets, useDynamicAnimation, etc.
+//   Both can coexist freely in this file.
+// ============================================================
+
+${canonicalBlock}
+
+${clean}
+`
+}
+
 // ─── Register / Unregister ────────────────────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
@@ -677,6 +731,17 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const appDir    = path.join(APP_DIR, tatName)
   ensureDir(screenDir)
   ensureDir(appDir)
+
+  // v3.4: generate native animation file if present
+  if (tatemono.nativeAnimation) {
+    ensureDir(GENERATED_DIR)
+    const animContent = generateNativeAnimationFile(tatemono)
+    if (animContent) {
+      const animPath = path.join(GENERATED_DIR, `${tatName}.native-animations.ts`)
+      writeIfChanged(animPath, animContent)
+      console.log(`[Arkzen Expo Router] ✓ Native animation file generated: ${tatName}.native-animations.ts`)
+    }
+  }
 
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ExpoRoute[] = []
@@ -723,6 +788,13 @@ export function unregisterExpoScreens(tatName: string): void {
   if (fs.existsSync(appDir)) {
     fs.rmSync(appDir, { recursive: true, force: true })
     console.log(`[Arkzen Expo Router] ✓ Removed app routes: ${tatName}`)
+  }
+
+  // v3.4: clean up generated native animation file
+  const animPath = path.join(GENERATED_DIR, `${tatName}.native-animations.ts`)
+  if (fs.existsSync(animPath)) {
+    fs.unlinkSync(animPath)
+    console.log(`[Arkzen Expo Router] ✓ Removed native animation file: ${tatName}.native-animations.ts`)
   }
 
   writeRouteRegistry(readExistingRoutes().filter(r => r.tatName !== tatName))
