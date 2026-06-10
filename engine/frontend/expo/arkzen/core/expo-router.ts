@@ -7,7 +7,7 @@
 //        Supports both Reanimated (imperative hooks/worklets) and Moti
 //        (declarative presets) — no forced export convention unlike web.
 //        registerExpoScreens() now generates the animation file when
-//        tatemono.nativeAnimation is present.
+//        tatemono.nativeAnimationRN is present.
 //        unregisterExpoScreens() cleans up the generated file.
 //
 // v3.3 – native:error handler support.
@@ -678,22 +678,18 @@ export default ErrorBoundary
 `
 }
 
-// ─── Native animation file generator ─────────────────────────────────────────
-// Mirrors the web generateAnimationFile() pattern from nextjs/router.ts but
-// without the forced GSAP header or pageVariants injection — native animation
-// code uses Reanimated hooks / Moti presets which have no single callable
-// entry point. The block is a free-form shared module: the author writes
-// whatever hooks, shared values, worklets, or Moti transition presets they
-// need and imports them directly in their screen / components:shared block.
+// ─── Native animation file generator (RN / Expo) ─────────────────────────────
+// Reads @arkzen:native:animation:rn — Reanimated hooks / Moti presets.
+// Lynx reads @arkzen:native:animation:lynx in its own builder (not here).
 //
 // Output: src/arkzen/generated/{name}.native-animations.ts
 // Import: import { ... } from '@/arkzen/generated/{name}.native-animations'
 //         (or the normalised ../../arkzen/generated/... path in screen files)
 
 function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
-  if (!tatemono.nativeAnimation) return null
+  if (!tatemono.nativeAnimationRN) return null
 
-  const { strippedSources } = resolveImports([tatemono.nativeAnimation.raw])
+  const { strippedSources } = resolveImports([tatemono.nativeAnimationRN.raw])
   const clean = strippedSources[0]
     // strip trailing */ bleed from the DSL block comment
     .replace(/\*\/\s*$/, '')
@@ -703,11 +699,12 @@ function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
 
   // Rebuild canonical imports from the animation block alone so the file is
   // self-contained — no engine-injected packages, author owns all imports.
-  const { canonicalBlock } = resolveImports([tatemono.nativeAnimation.raw])
+  const { canonicalBlock } = resolveImports([tatemono.nativeAnimationRN.raw])
 
   return `// ============================================================
 // ARKZEN GENERATED NATIVE ANIMATIONS — ${tatemono.meta.name}
-// DO NOT EDIT DIRECTLY. Edit the @arkzen:native:animation block instead.
+// Source: @arkzen:native:animation:rn
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 //
 // Supported patterns:
@@ -750,8 +747,8 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   ensureDir(screenDir)
   ensureDir(appDir)
 
-  // v3.4: generate native animation file if present
-  if (tatemono.nativeAnimation) {
+  // v3.4: generate native animation file if present (:rn block — Expo / bare RN)
+  if (tatemono.nativeAnimationRN) {
     ensureDir(GENERATED_DIR)
     const animContent = generateNativeAnimationFile(tatemono)
     if (animContent) {

@@ -4,8 +4,8 @@
 //       - ArkzenNativeMeta: expo app config (bundle_id, icon, splash, etc.)
 //       - ArkzenNativeConfig: NativeWind / theme / font config
 //       - ParsedTatemono: added nativeMeta, nativeConfig, nativeComponents,
-//         nativeLayouts, nativeStyles, nativeAnimation, nativeScript,
-//         nativeScripts, nativePages, nativeErrorHandlers, script, scripts.
+//         nativeLayouts, nativeStyles, nativeAnimationRN, nativeAnimationLynx,
+//         nativeScript, nativeScripts, nativePages, nativeErrorHandlers, script, scripts.
 //         These mirror the web equivalents exactly.
 // v6.0 (kept): @arkzen:meta:web separation.
 //       - ArkzenWebMeta: new interface for web-only meta (favicon, title,
@@ -384,7 +384,8 @@ export interface ParsedTatemono {
   nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
   nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
   nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
-  nativeAnimation?: ArkzenSection    // @arkzen:native:animation — Reanimated / Moti
+  nativeAnimationRN?:   ArkzenSection  // @arkzen:native:animation:rn   — Expo + bare RN (Reanimated / Moti)
+  nativeAnimationLynx?: ArkzenSection  // @arkzen:native:animation:lynx — Lynx (CSS keyframes / lynx.createAnimation)
   nativeScript?:    ArkzenSection    // @arkzen:native:script — global native utility block
   nativeScripts:    ArkzenSection[]  // @arkzen:native:script:name — named native utility blocks
 }
