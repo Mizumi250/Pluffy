@@ -29,6 +29,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
+import { emitNativeStyles } from './lib/dsl-native-style-emitter'
 
 const SRC_SCREENS_DIR  = path.resolve(process.cwd(), 'src', 'screens')
 const NATIVE_LAYOUTS_DIR = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
@@ -318,6 +319,18 @@ function normaliseNativeImports(block: string): string {
               .replace(/from\s+"@\/arkzen\//g, `from "../../../arkzen/`)
 }
 
+// ─── Extract named exports from a raw DSL block ───────────────────────────────
+// Used to destructure animation hook/preset names into screen scope so the
+// author can write  useSpin()  directly rather than  NativeAnims.useSpin().
+
+function extractExportNames(raw: string): string[] {
+  const names: string[] = []
+  const namedRe = /^\s*export\s+(?:function|const|class|let|var)\s+([A-Za-z_$][\w$]*)/gm
+  let m: RegExpExecArray | null
+  while ((m = namedRe.exec(raw)) !== null) names.push(m[1])
+  return names
+}
+
 // ─── Screen file generator ────────────────────────────────────────────────────
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
@@ -388,8 +401,18 @@ export default ${wrapperName}
     page.raw.trim(),
   ]
 
+  const animImportLine = tatemono.nativeAnimationRN
+    ? `import { ${extractExportNames(tatemono.nativeAnimationRN.raw).join(', ')} } from '../../arkzen/generated/${tatName}.native-animations'`
+    : ''
+
+  const styleImportLine = (tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
+    ? `import { s } from '../../arkzen/generated/${tatName}.native-styles'`
+    : ''
+
+  const extraLines = [layoutImport, animImportLine, styleImportLine].filter(Boolean).join('\n')
+
   let { canonicalBlock, strippedSources } = resolveImports(allSources, {
-    extra: layoutImport,
+    extra: extraLines,
   })
 
   // ── Merge engine-required imports into canonicalBlock (no duplicates) ─────
@@ -746,6 +769,9 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const appDir    = path.join(APP_DIR, tatName)
   ensureDir(screenDir)
   ensureDir(appDir)
+
+  // v3.5: emit native styles from @arkzen:native:style:* blocks
+  emitNativeStyles(tatName, tatemono.nativeStyles ?? [], GENERATED_DIR, 'Arkzen Expo Router')
 
   // v3.4: generate native animation file if present (:rn block — Expo / bare RN)
   if (tatemono.nativeAnimationRN) {

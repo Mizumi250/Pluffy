@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — TimeRecordResource
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:15.034275Z
+// Generated: 2026-06-10T11:33:09.295687Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\DtrGeofencing;

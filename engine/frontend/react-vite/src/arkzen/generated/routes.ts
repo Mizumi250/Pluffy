@@ -14,8 +14,6 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
-// ROUTE:animation-lab:index:/animation-lab:false
-const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:auth-test:login:/auth-test/login:true
@@ -126,6 +124,14 @@ const ArkzenPage_NotificationTest_Dashboard = lazy(() => import('@/pages/notific
 const ArkzenPage_NotificationTest_RootRedirect = lazy(() => import('@/pages/notification-test/__root_redirect'))
 // ROUTE:portfolio-test:index:/portfolio-test:false
 const ArkzenPage_PortfolioTest_Index = lazy(() => import('@/pages/portfolio-test/index'))
+// ROUTE:queue-flow:index:/queue-flow:false
+const ArkzenPage_QueueFlow_Index = lazy(() => import('@/pages/queue-flow/index'))
+// ROUTE:queue-flow:join:/queue-flow/join:false
+const ArkzenPage_QueueFlow_Join = lazy(() => import('@/pages/queue-flow/join'))
+// ROUTE:queue-flow:admin:/queue-flow/admin:false
+const ArkzenPage_QueueFlow_Admin = lazy(() => import('@/pages/queue-flow/admin'))
+// ROUTE:queue-flow:not-found:/queue-flow/*:false
+const ArkzenPage_QueueFlow_NotFound = lazy(() => import('@/pages/queue-flow/not-found'))
 // ROUTE:roles-test:login:/roles-test/login:true
 const ArkzenPage_RolesTest_Login = lazy(() => import('@/pages/roles-test/login'))
 // ROUTE:roles-test:register:/roles-test/register:true
@@ -146,14 +152,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:queue-flow:index:/queue-flow:false
-const ArkzenPage_QueueFlow_Index = lazy(() => import('@/pages/queue-flow/index'))
-// ROUTE:queue-flow:join:/queue-flow/join:false
-const ArkzenPage_QueueFlow_Join = lazy(() => import('@/pages/queue-flow/join'))
-// ROUTE:queue-flow:admin:/queue-flow/admin:false
-const ArkzenPage_QueueFlow_Admin = lazy(() => import('@/pages/queue-flow/admin'))
-// ROUTE:queue-flow:not-found:/queue-flow/*:false
-const ArkzenPage_QueueFlow_NotFound = lazy(() => import('@/pages/queue-flow/not-found'))
+// ROUTE:animation-lab:index:/animation-lab:false
+const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -162,7 +162,6 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 }
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
-  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
   { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
@@ -218,6 +217,10 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/notification-test/dashboard', name: 'dashboard', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Dashboard, auth: true },
   { path: '/notification-test', name: '__root_redirect', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_RootRedirect, auth: true },
   { path: '/portfolio-test', name: 'index', tatemono: 'portfolio-test', component: ArkzenPage_PortfolioTest_Index, auth: false },
+  { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
+  { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
+  { path: '/queue-flow/admin', name: 'admin', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Admin, auth: false },
+  { path: '/queue-flow/*', name: 'not-found', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_NotFound, auth: false },
   { path: '/roles-test/login', name: 'login', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Login, auth: true },
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },
@@ -228,8 +231,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
-  { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
-  { path: '/queue-flow/admin', name: 'admin', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Admin, auth: false },
-  { path: '/queue-flow/*', name: 'not-found', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_NotFound, auth: false },
+  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
 ]

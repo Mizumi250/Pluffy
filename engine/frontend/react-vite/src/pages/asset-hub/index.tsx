@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-10T01:21:12.844Z
+// Generated: 2026-06-10T11:33:06.162Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

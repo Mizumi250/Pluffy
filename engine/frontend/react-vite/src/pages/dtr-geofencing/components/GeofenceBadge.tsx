@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceBadge [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:14.915Z
+// Generated: 2026-06-10T11:33:09.182Z
 // ============================================================
 
 export { GeofenceBadge } from './_components'

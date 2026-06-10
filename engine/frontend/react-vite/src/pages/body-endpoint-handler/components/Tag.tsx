@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Tag [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:12.959Z
+// Generated: 2026-06-10T11:33:06.309Z
 // ============================================================
 
 export { Tag } from './_components'

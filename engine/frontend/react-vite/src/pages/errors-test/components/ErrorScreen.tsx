@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ErrorScreen [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:15.111Z
+// Generated: 2026-06-10T11:33:09.464Z
 // ============================================================
 
 export { ErrorScreen } from './_components'

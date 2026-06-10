@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — asset-hub [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:12.836Z
+// Generated: 2026-06-10T11:33:06.139Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

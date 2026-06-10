@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — middleware-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T01:21:16.572643Z
+// Generated: 2026-06-10T11:33:11.324233Z
 // Resources: PingLog
 // Custom controllers: 
 // ============================================================

@@ -32,14 +32,15 @@
 //          parseAllNativeLayouts()       — @arkzen:native:layout:name
 //          parseAllNativeStyles()        — @arkzen:native:style:name
 //          parseAllNativePages()         — @arkzen:native:page:name
-//          parseGlobalNativeAnimation()  — @arkzen:native:animation
+//          parseNativeAnimationRN()      — @arkzen:native:animation:rn   (Expo + bare RN)
+//          parseNativeAnimationLynx()    — @arkzen:native:animation:lynx (Lynx)
 //          parseGlobalNativeScript()     — @arkzen:native:script
 //          parseAllNamedNativeScripts()  — @arkzen:native:script:name
 //        CODE_BLOCK_TAGS updated: native equivalents added.
 //        YAML_ONLY_TAGS updated: 'meta:native', 'native:config' added.
 //        ParsedTatemono: nativeMeta, nativeConfig, nativePages,
 //          nativeLayouts, nativeComponents, nativeStyles,
-//          nativeAnimation, nativeScript, nativeScripts.
+//          nativeAnimationRN, nativeAnimationLynx, nativeScript, nativeScripts.
 //        validatePages() updated: native-only tatemonos are valid.
 //        hasSections() updated: native checks added.
 //        parseTatemono() logs native blocks.
@@ -433,7 +434,8 @@ function parseConfig(content: string): ArkzenConfigOverride | undefined {
 // @arkzen:native:layout:name      — CODE_BLOCK, Type B
 // @arkzen:native:style:name       — CODE_BLOCK, Type B
 // @arkzen:native:page:name        — CODE_BLOCK, Type B
-// @arkzen:native:animation        — CODE_BLOCK, Type B (global, one per tatemono)
+// @arkzen:native:animation:rn   — CODE_BLOCK, Type B (Expo + bare RN — Reanimated / Moti)
+// @arkzen:native:animation:lynx — CODE_BLOCK, Type B (Lynx — CSS keyframes / lynx.createAnimation)
 // @arkzen:native:script           — CODE_BLOCK, Type B (global)
 // @arkzen:native:script:name      — CODE_BLOCK, Type B (named, multiple)
 // ─────────────────────────────────────────────
@@ -508,8 +510,12 @@ function parseAllNativePages(content: string): ArkzenPage[] {
   })
 }
 
-function parseGlobalNativeAnimation(content: string): ArkzenSection | undefined {
-  return extractSectionWithPosition(content, 'native:animation') ?? undefined
+function parseNativeAnimationRN(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation:rn') ?? undefined
+}
+
+function parseNativeAnimationLynx(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation:lynx') ?? undefined
 }
 
 function parseGlobalNativeScript(content: string): ArkzenSection | undefined {
@@ -1720,7 +1726,7 @@ const CODE_BLOCK_TAGS = [
   // web
   'web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error',
   // native — v10.0
-  'native:components', 'native:layout', 'native:animation', 'native:script', 'native:page', 'native:style', 'native:error',
+  'native:components', 'native:layout', 'native:animation:rn', 'native:animation:lynx', 'native:script', 'native:page', 'native:style', 'native:error',
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -1966,7 +1972,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const nativeLayouts    = parseAllNativeLayouts(content)
   const nativeStyles     = parseAllNativeStyles(content)
   const nativePages      = parseAllNativePages(content)
-  const nativeAnimation       = parseGlobalNativeAnimation(content)
+  const nativeAnimationRN         = parseNativeAnimationRN(content)
+  const nativeAnimationLynx       = parseNativeAnimationLynx(content)
   const nativeScript          = parseGlobalNativeScript(content)
   const nativeScripts         = parseAllNamedNativeScripts(content)
   const nativeErrorHandlers   = parseAllNativeErrorHandlers(content)  // v10.2
@@ -2035,7 +2042,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeLayouts,
     nativeComponents,
     nativeStyles,
-    nativeAnimation,
+    nativeAnimationRN,
+    nativeAnimationLynx,
     nativeScript,
     nativeScripts,
     nativeErrorHandlers,   // v10.2
@@ -2080,7 +2088,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
     if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
     if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
-    if (nativeAnimation)                 console.log(`[Arkzen Parser]   Native animation: global`)
+    if (nativeAnimationRN)                   console.log(`[Arkzen Parser]   Native animation: :rn block`)
+    if (nativeAnimationLynx)                 console.log(`[Arkzen Parser]   Native animation: :lynx block`)
     if (nativeScript)                    console.log(`[Arkzen Parser]   Native script: global`)
     if (nativeScripts.length)            console.log(`[Arkzen Parser]   Native scripts (${nativeScripts.length}): named blocks`)
   }
@@ -2110,7 +2119,8 @@ export function hasSections(filePath: string) {
     nativeConfig:       content.includes('/* @arkzen:native:config'),
     nativeComponents:   content.includes('/* @arkzen:native:components:'),
     nativePage:         content.includes('/* @arkzen:native:page:'),
-    nativeAnimation:    content.includes('/* @arkzen:native:animation'),
+    nativeAnimationRN:    content.includes('/* @arkzen:native:animation:rn'),
+    nativeAnimationLynx:  content.includes('/* @arkzen:native:animation:lynx'),
     nativeScript:       content.includes('/* @arkzen:native:script'),
     nativeLayout:       content.includes('/* @arkzen:native:layout:'),
     nativeStyle:        content.includes('/* @arkzen:native:style:'),
