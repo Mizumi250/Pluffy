@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — FieldStoreRequest
 // Tatemono: certflow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T11:29:48.936460Z
+// Generated: 2026-06-10T01:21:14.072343Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\Certflow;

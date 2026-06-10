@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-09T11:45:14.769Z
+// Generated: 2026-06-10T01:54:20.123Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -81,6 +81,8 @@ export const useQueueStore = create<QueueStore>((set) => ({
 
 export const fmtWait = (mins: number) =>
   mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
+
+
 
 export const useAnnounce = () => {
   const announce = useCallback((text: string) => {

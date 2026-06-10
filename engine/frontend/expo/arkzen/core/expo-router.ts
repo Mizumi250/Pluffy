@@ -31,6 +31,7 @@ import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
 
 const SRC_SCREENS_DIR  = path.resolve(process.cwd(), 'src', 'screens')
+const NATIVE_LAYOUTS_DIR = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
 const APP_DIR          = path.resolve(process.cwd(), 'app')
 const GENERATED_DIR    = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
 const ROUTES_FILE      = path.join(GENERATED_DIR, 'routes.ts')
@@ -331,7 +332,7 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
     : isGuest
     ? `import { GuestLayout } from '@/layouts/GuestLayout'`
     : isApp
-    ? `import { AppLayout }   from '@/layouts/AppLayout'`
+    ? `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${tatName}-${layout}'`
     : ''
 
   const layoutOpen = isAuth
@@ -339,10 +340,10 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
     : isGuest
     ? `<GuestLayout tatSlug="${tatName}" dashboardRoute="/${tatName}/dashboard">`
     : isApp
-    ? `<AppLayout tatSlug="${tatName}">`
+    ? `<${toPascalCase(layout)}Layout tatSlug="${tatName}">`
     : ''
 
-  const layoutClose = isAuth ? `</AuthLayout>` : isGuest ? `</GuestLayout>` : isApp ? `</AppLayout>` : ''
+  const layoutClose = isAuth ? `</AuthLayout>` : isGuest ? `</GuestLayout>` : isApp ? `</${toPascalCase(layout)}Layout>` : ''
 
   const hasNativeContent = page.raw && page.raw.trim().length > 0
 
@@ -722,6 +723,23 @@ ${clean}
 `
 }
 
+// ─── Custom layout generator (mirrors web stacks) ───────────────────────────────
+
+function generateCustomLayouts(tatemono: ParsedTatemono): void {
+  if (!tatemono.nativeLayouts || tatemono.nativeLayouts.length === 0) return
+  ensureDir(NATIVE_LAYOUTS_DIR)
+
+  for (const layout of tatemono.nativeLayouts) {
+    const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
+    const filePath = path.join(NATIVE_LAYOUTS_DIR, fileName)
+
+    const { canonicalBlock, strippedSources } = resolveImports([normaliseNativeImports(layout.raw ?? '')])
+    const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [Expo]\n\n${canonicalBlock}\n\n${strippedSources[0]}\n`
+    writeIfChanged(filePath, content)
+    console.log(`[Arkzen Expo Router] ✓ Custom layout: ${fileName}`)
+  }
+}
+
 // ─── Register / Unregister ────────────────────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
@@ -742,6 +760,9 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
       console.log(`[Arkzen Expo Router] ✓ Native animation file generated: ${tatName}.native-animations.ts`)
     }
   }
+
+  // v3.5: generate custom native layouts from @arkzen:native:layout:* blocks
+  generateCustomLayouts(tatemono)
 
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ExpoRoute[] = []

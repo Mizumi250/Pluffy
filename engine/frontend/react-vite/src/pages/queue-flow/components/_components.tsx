@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — queue-flow [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-09T11:45:14.745Z
+// Generated: 2026-06-10T01:54:20.096Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -78,6 +78,8 @@ export const useQueueStore = create<QueueStore>((set) => ({
 
 export const fmtWait = (mins: number) =>
   mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
+
+
 
 export const useAnnounce = () => {
   const announce = useCallback((text: string) => {
