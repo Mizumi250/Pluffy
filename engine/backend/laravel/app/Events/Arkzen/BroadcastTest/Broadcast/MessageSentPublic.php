@@ -5,7 +5,7 @@
 // Tatemono: broadcast-test
 // Channel: broadcast-test-public (public)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T11:33:07.720578Z
+// Generated: 2026-06-10T18:08:21.292054Z
 // ============================================================
 
 namespace App\Events\Arkzen\BroadcastTest\Broadcast;
