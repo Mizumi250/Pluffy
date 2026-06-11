@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatusDot [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T18:08:20.447Z
+// Generated: 2026-06-11T01:13:13.708Z
 // ============================================================
 
 export { StatusDot } from './_components'

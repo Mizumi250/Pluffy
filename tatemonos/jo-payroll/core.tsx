@@ -471,9 +471,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const currentLabel = NAV_ITEMS.find(n => n.href === pathname)?.label ?? 'J.O Payroll'
 
   return (
-    <div className="flex h-screen bg-[#F4F5F7] overflow-hidden font-['DM_Sans',sans-serif]">
+    <div className="flex h-screen bg-[#F4F5F7] overflow-hidden font-['Inter',sans-serif]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
         .nav-pill { transition: all 0.2s cubic-bezier(.4,0,.2,1); }
         .nav-pill:hover { transform: translateX(3px); }
         .nav-pill.active { transform: translateX(0); }
@@ -499,7 +499,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-neutral-800 shrink-0">
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
-            <span className="text-neutral-900 font-['Syne',sans-serif] font-800 text-sm">J.</span>
+            <span className="text-neutral-900 font-['Plus Jakarta Sans',sans-serif] font-800 text-sm">J.</span>
           </div>
         </div>
 
@@ -557,7 +557,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           </button>
           <div className="flex-1">
             <p className="text-xs text-neutral-400 font-medium uppercase tracking-widest">J.O. PAYROLL SYSTEM</p>
-            <h1 className="text-sm font-semibold text-neutral-900 font-['Syne',sans-serif] -mt-0.5">{currentLabel}</h1>
+            <h1 className="text-sm font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] -mt-0.5">{currentLabel}</h1>
           </div>
           <div className="flex items-center gap-3">
             <button className="relative p-2 rounded-xl hover:bg-neutral-100 transition-colors">
@@ -565,7 +565,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />
             </button>
             <div className="w-9 h-9 bg-neutral-900 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-semibold font-['Syne',sans-serif]">LGU</span>
+              <span className="text-white text-xs font-semibold font-['Plus Jakarta Sans',sans-serif]">LGU</span>
             </div>
           </div>
         </header>
@@ -751,7 +751,7 @@ export const StatChip = ({
       <div className="flex items-start justify-between mb-3">
         <Icon size={18} className={iconAccents[accent]} />
       </div>
-      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{value}</p>
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
@@ -767,7 +767,7 @@ export const SectionHeader = ({
 }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
-      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h2>
       {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
     </div>
     {action}
@@ -929,7 +929,7 @@ export const JOFormModal = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+            <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">
               {initial ? 'Edit Job Order' : 'New Job Order'}
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>
@@ -1183,7 +1183,7 @@ const DashboardPage = () => {
             <p className="text-xs text-neutral-400 font-medium mb-1">
               {today}
             </p>
-            <h2 className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif] mb-1">
+            <h2 className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] mb-1">
               J.O. Payroll Overview
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed">
@@ -1207,7 +1207,7 @@ const DashboardPage = () => {
           {/* Decorative illustration area */}
           <div className="hidden md:flex items-center justify-center w-28 h-28 bg-neutral-50 rounded-2xl shrink-0">
             <div className="text-center">
-              <p className="text-4xl font-black font-['Syne',sans-serif] text-neutral-900">
+              <p className="text-4xl font-black font-['Plus Jakarta Sans',sans-serif] text-neutral-900">
                 {summary?.total_active ?? 0}
               </p>
               <p className="text-xs text-neutral-400 font-medium mt-0.5">Active JOs</p>
@@ -1223,7 +1223,7 @@ const DashboardPage = () => {
                 <TrendingUp size={16} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.net_pay)}</p>
+                <p className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.net_pay)}</p>
                 <p className="text-xs text-neutral-400">Net Pay (Active)</p>
               </div>
             </div>
@@ -1234,7 +1234,7 @@ const DashboardPage = () => {
                 <TrendingDown size={16} className="text-rose-600" />
               </div>
               <div>
-                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_deductions)}</p>
+                <p className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.total_deductions)}</p>
                 <p className="text-xs text-neutral-400">Total Deductions</p>
               </div>
             </div>
@@ -1246,27 +1246,27 @@ const DashboardPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Users size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_active ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_active ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Active Workers</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Banknote size={16} className="text-amber-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_cash ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_cash ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Cash Disbursement</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <CreditCard size={16} className="text-blue-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_atm ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_atm ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">ATM Disbursement</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Wallet size={16} className="text-violet-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_basic_pay)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.total_basic_pay)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Gross Pay</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <AlertCircle size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_inactive ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_inactive ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Inactive Workers</p>
         </div>
       </div>
@@ -1304,7 +1304,7 @@ const DashboardPage = () => {
           <div className="flex gap-2 mb-5">
             {Object.entries(summary?.group_breakdown ?? {}).map(([g, count]) => (
               <div key={g} className="flex-1 bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">
-                <p className="text-lg font-bold text-neutral-900 font-['Syne',sans-serif]">{count as number}</p>
+                <p className="text-lg font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{count as number}</p>
                 <p className="text-xs text-neutral-400 font-medium mt-0.5">{g}</p>
               </div>
             ))}
@@ -1325,7 +1325,7 @@ const DashboardPage = () => {
 
           {/* Premium CTA — reference "Learn even more!" card */}
           <div className="mt-5 bg-neutral-900 rounded-2xl p-4 text-white">
-            <p className="text-sm font-bold font-['Syne',sans-serif] mb-1">Deduction Summary</p>
+            <p className="text-sm font-bold font-['Plus Jakarta Sans',sans-serif] mb-1">Deduction Summary</p>
             <p className="text-xs text-neutral-400 mb-3">Total monthly deductions across all active workers.</p>
             <div className="space-y-1.5">
               {[
@@ -1525,7 +1525,7 @@ const CashAtmPage = () => {
     <div className="section-card bg-white rounded-2xl border border-neutral-100 shadow-sm p-5">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">{title}</h3>
+          <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h3>
           <p className="text-xs text-neutral-400 mt-0.5">{list.length} workers · {formatPeso(total)} total</p>
         </div>
         <span className={`px-3 py-1 rounded-xl text-xs font-bold ${accent}`}>
@@ -1563,19 +1563,19 @@ const CashAtmPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[140px] bg-white rounded-2xl p-4 border border-amber-100 shadow-sm">
           <Banknote size={16} className="text-amber-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{cashList.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{cashList.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">CASH Workers</p>
           <p className="text-xs text-amber-600 font-semibold mt-1">{formatPeso(cashTotal)}</p>
         </div>
         <div className="stat-chip flex-1 min-w-[140px] bg-white rounded-2xl p-4 border border-blue-100 shadow-sm">
           <CreditCard size={16} className="text-blue-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{atmList.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{atmList.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">ATM Workers</p>
           <p className="text-xs text-blue-600 font-semibold mt-1">{formatPeso(atmTotal)}</p>
         </div>
         <div className="stat-chip flex-1 min-w-[140px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Wallet size={16} className="text-violet-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(cashTotal + atmTotal)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(cashTotal + atmTotal)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Total Gross</p>
         </div>
       </div>
@@ -1634,17 +1634,17 @@ const SssPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Building2 size={16} className="text-rose-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{list.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{list.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">SSS Members</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-rose-100 shadow-sm">
           <TrendingDown size={16} className="text-rose-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalSss)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalSss)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">SSS Deductions</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <AlertCircle size={16} className="text-amber-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalCalamity)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalCalamity)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Calamity Loans</p>
         </div>
       </div>
@@ -1738,22 +1738,22 @@ const HdmfPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Landmark size={16} className="text-violet-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{list.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{list.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">HDMF Members</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-violet-100 shadow-sm">
           <TrendingDown size={16} className="text-violet-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalPremium)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalPremium)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">HDMF Premium</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Wallet size={16} className="text-blue-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalMpl)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalMpl)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">HDMF MPL Loans</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Wallet size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalPremium + totalMpl)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalPremium + totalMpl)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Total HDMF</p>
         </div>
       </div>
@@ -1849,17 +1849,17 @@ const AppointmentsPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <CalendarDays size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{sorted.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{sorted.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Appointment Slots</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-emerald-100 shadow-sm">
           <CheckCircle size={16} className="text-emerald-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{activeCount}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{activeCount}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Active Slots</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <XCircle size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{inactiveCount}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{inactiveCount}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Inactive Slots</p>
         </div>
       </div>
@@ -2041,7 +2041,7 @@ const PayslipPage = () => {
               <div className="border-2 border-dashed border-neutral-200 rounded-2xl p-5 font-mono text-xs">
                 {/* Header */}
                 <div className="text-center border-b border-neutral-200 pb-4 mb-4">
-                  <p className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif] non-mono">LOCAL GOVERNMENT UNIT</p>
+                  <p className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] non-mono">LOCAL GOVERNMENT UNIT</p>
                   <p className="text-xs text-neutral-500 non-mono">Job Order Payroll System</p>
                   <p className="text-xs text-neutral-400 mt-1 non-mono">Pay Period: {periodLabel}</p>
                 </div>
@@ -2081,8 +2081,8 @@ const PayslipPage = () => {
                 </div>
                 {/* Net */}
                 <div className="bg-neutral-900 rounded-xl px-4 py-3 flex justify-between items-center">
-                  <span className="text-white font-bold font-['Syne',sans-serif] non-mono text-sm">NET PAY</span>
-                  <span className="text-white font-bold font-['Syne',sans-serif] non-mono text-lg">{formatPeso(computedPay.net)}</span>
+                  <span className="text-white font-bold font-['Plus Jakarta Sans',sans-serif] non-mono text-sm">NET PAY</span>
+                  <span className="text-white font-bold font-['Plus Jakarta Sans',sans-serif] non-mono text-lg">{formatPeso(computedPay.net)}</span>
                 </div>
               </div>
               {/* Print */}
@@ -2109,11 +2109,11 @@ import React from 'react'
 import Link from 'next/link'
 
 const NotFoundPage = () => (
-  <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-8 font-['DM_Sans',sans-serif]">
-    <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap');`}</style>
+  <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-8 font-['Inter',sans-serif]">
+    <style>{`@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Plus Jakarta Sans:wght@700;800&display=swap');`}</style>
     <div className="text-center max-w-md">
-      <p className="text-[120px] font-black text-neutral-200 font-['Syne',sans-serif] leading-none">404</p>
-      <h1 className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif] -mt-2 mb-2">Page not found</h1>
+      <p className="text-[120px] font-black text-neutral-200 font-['Plus Jakarta Sans',sans-serif] leading-none">404</p>
+      <h1 className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] -mt-2 mb-2">Page not found</h1>
       <p className="text-sm text-neutral-500 mb-6">The page you're looking for doesn't exist in this module.</p>
       <Link href="/jo-payroll" className="inline-flex items-center gap-2 px-5 py-2.5 bg-neutral-900 text-white text-sm font-semibold rounded-xl hover:bg-neutral-700 transition-colors">
         Back to Dashboard
@@ -2124,3 +2124,1026 @@ const NotFoundPage = () => (
 
 
 /* @arkzen:web:error:404:end */
+/* @arkzen:meta:native
+label: J.O. Payroll
+description: Job Order payroll viewer for LGU workers — payslip, deductions, and worker directory
+expo:
+  bundle_id: com.arkzen.jopayroll
+  scheme: jopayroll
+  version: 2.0.0
+  orientation: portrait
+  status_bar_style: dark
+*/
+
+/* @arkzen:native:config
+theme:
+  primary: "#171717"
+  background: "#F4F5F7"
+  surface: "#ffffff"
+  border: "#e5e7eb"
+  muted: "#9ca3af"
+  text: "#111827"
+  subtext: "#6b7280"
+  emerald: "#059669"
+  rose: "#e11d48"
+  amber: "#d97706"
+  violet: "#7c3aed"
+  blue: "#2563eb"
+*/
+
+/* @arkzen:native:style:shared */
+.screen {
+  flex: 1;
+  background-color: #F4F5F7;
+}
+
+.card {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border-width: 1px;
+  border-color: #e5e7eb;
+  margin-bottom: 12px;
+}
+
+.card-padded {
+  background-color: #ffffff;
+  border-radius: 16px;
+  border-width: 1px;
+  border-color: #e5e7eb;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.section-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.2px;
+}
+
+.section-subtitle {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.eyebrow {
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  letter-spacing: 1.5px;
+}
+
+.stat-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: #9ca3af;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.row-name {
+  font-size: 13px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.row-sub {
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+.badge-cash {
+  background-color: #fef3c7;
+  border-radius: 8px;
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+}
+
+.badge-cash-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #d97706;
+}
+
+.badge-atm {
+  background-color: #dbeafe;
+  border-radius: 8px;
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+}
+
+.badge-atm-text {
+  font-size: 11px;
+  font-weight: 700;
+  color: #2563eb;
+}
+
+.badge-active {
+  background-color: #d1fae5;
+  border-radius: 8px;
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+}
+
+.badge-active-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #059669;
+}
+
+.badge-inactive {
+  background-color: #f3f4f6;
+  border-radius: 8px;
+  padding-horizontal: 8px;
+  padding-vertical: 4px;
+}
+
+.badge-inactive-text {
+  font-size: 11px;
+  font-weight: 600;
+  color: #9ca3af;
+}
+
+.amount-positive {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+}
+
+.amount-deduction {
+  font-size: 12px;
+  font-weight: 600;
+  color: #e11d48;
+}
+
+.divider {
+  height: 1px;
+  background-color: #f3f4f6;
+  margin-vertical: 4px;
+}
+
+.tab-active {
+  background-color: #171717;
+  border-radius: 8px;
+  padding-horizontal: 12px;
+  padding-vertical: 6px;
+}
+
+.tab-active-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.tab-inactive {
+  border-radius: 8px;
+  padding-horizontal: 12px;
+  padding-vertical: 6px;
+}
+
+.tab-inactive-text {
+  font-size: 12px;
+  font-weight: 500;
+  color: #9ca3af;
+}
+/* @arkzen:native:style:shared:end */
+
+/* @arkzen:native:layout:app */
+
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native'
+import { useRouter, usePathname } from 'expo-router'
+import { LayoutDashboard, Users, Banknote, CalendarDays, FileText } from 'lucide-react-native'
+
+const NAV = [
+  { href: '/jo-payroll',              label: 'Home',       icon: LayoutDashboard },
+  { href: '/jo-payroll/job-database',      label: 'Workers',    icon: Users           },
+  { href: '/jo-payroll/cash-atm',     label: 'Cash/ATM',   icon: Banknote        },
+  { href: '/jo-payroll/appointments', label: 'Appts',      icon: CalendarDays    },
+  { href: '/jo-payroll/payslip',      label: 'Payslip',    icon: FileText        },
+]
+
+export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const router   = useRouter()
+  const pathname = usePathname()
+
+  return (
+    <SafeAreaView style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
+      <View style={{ flex: 1 }}>{children}</View>
+
+      {/* Bottom tab bar */}
+      <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingBottom: 4, paddingTop: 8 }}>
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href
+          return (
+            <TouchableOpacity
+              key={href}
+              onPress={() => router.push(href as any)}
+              activeOpacity={0.7}
+              style={{ flex: 1, alignItems: 'center', gap: 3 }}
+            >
+              <Icon size={20} color={active ? '#171717' : '#d1d5db'} />
+              <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? '#171717' : '#d1d5db' }}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          )
+        })}
+      </View>
+    </SafeAreaView>
+  )
+}
+
+/* @arkzen:native:layout:app:end */
+
+/* @arkzen:native:components:shared */
+
+import React, { useState, useEffect, useMemo } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, TextInput, ActivityIndicator } from 'react-native'
+import { create } from 'zustand'
+import { Search, TrendingDown, TrendingUp, Users, Banknote, CreditCard, Wallet, Building2, Landmark, AlertCircle } from 'lucide-react-native'
+
+// ── Types ────────────────────────────────────────────────────
+
+export interface JobOrder {
+  id: number
+  jor_number: number
+  name_of_jo: string
+  job_title: string
+  funding: string
+  basic_pay: number
+  disbursement_type: 'CASH' | 'ATM'
+  jor_pyrl_group?: string
+  hdmf_no?: string
+  sss_number?: string
+  sss_amount?: number
+  calamity_loan?: number
+  hdmf_mpl?: number
+  hdmf_premium?: number
+  cash_card_number?: string
+  appointment_order?: number
+  status: 'active' | 'inactive'
+}
+
+export interface PayrollSummary {
+  total_active: number
+  total_inactive: number
+  total_atm: number
+  total_cash: number
+  total_basic_pay: number
+  total_sss: number
+  total_hdmf_premium: number
+  total_hdmf_mpl: number
+  total_calamity_loan: number
+  total_deductions: number
+  net_pay: number
+  funding_breakdown?: Record<string, { count: number; total_pay: number }>
+  group_breakdown?: Record<string, number>
+}
+
+// ── Store ────────────────────────────────────────────────────
+
+interface PayrollStore {
+  jobOrders: JobOrder[]
+  summary: PayrollSummary | null
+  isLoading: boolean
+  setJobOrders: (o: JobOrder[]) => void
+  setSummary: (s: PayrollSummary) => void
+  setLoading: (v: boolean) => void
+}
+
+export const usePayrollStore = create<PayrollStore>((set) => ({
+  jobOrders: [],
+  summary: null,
+  isLoading: false,
+  setJobOrders: (jobOrders) => set({ jobOrders }),
+  setSummary: (summary) => set({ summary }),
+  setLoading: (isLoading) => set({ isLoading }),
+}))
+
+// ── Utils ────────────────────────────────────────────────────
+
+export const BASE = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+export const formatPeso = (v?: number) =>
+  v == null ? '₱0.00' : `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+
+export const getInitials = (name: string) => {
+  const parts = name.replace(/,/g, '').trim().split(/\s+/)
+  return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase()
+}
+
+const AVATAR_COLORS = [
+  { bg: '#ede9fe', text: '#7c3aed' },
+  { bg: '#dbeafe', text: '#2563eb' },
+  { bg: '#d1fae5', text: '#059669' },
+  { bg: '#fef3c7', text: '#d97706' },
+  { bg: '#ffe4e6', text: '#e11d48' },
+  { bg: '#cffafe', text: '#0891b2' },
+]
+
+export const getAvatarColor = (name: string) => {
+  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
+}
+
+// ── Avatar ───────────────────────────────────────────────────
+
+export const Avatar = ({ name, size = 36 }: { name: string; size?: number }) => {
+  const color = getAvatarColor(name)
+  return (
+    <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: color.bg, alignItems: 'center', justifyContent: 'center' }}>
+      <Text style={{ fontSize: size * 0.33, fontWeight: '700', color: color.text }}>{getInitials(name)}</Text>
+    </View>
+  )
+}
+
+// ── StatCard ─────────────────────────────────────────────────
+
+export const StatCard = ({ value, label, color = '#111827', bg = '#ffffff', borderColor = '#e5e7eb' }: {
+  value: string | number
+  label: string
+  color?: string
+  bg?: string
+  borderColor?: string
+}) => (
+  <View style={{ flex: 1, backgroundColor: bg, borderRadius: 14, borderWidth: 1, borderColor, padding: 14 }}>
+    <Text style={{ fontSize: 22, fontWeight: '700', color }}>{value}</Text>
+    <Text style={{ fontSize: 11, color: '#9ca3af', fontWeight: '500', marginTop: 2 }}>{label}</Text>
+  </View>
+)
+
+// ── WorkerRow ────────────────────────────────────────────────
+
+export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void }) => {
+  const deductions = (jo.sss_amount ?? 0) + (jo.hdmf_premium ?? 0) + (jo.hdmf_mpl ?? 0) + (jo.calamity_loan ?? 0)
+  const netPay = jo.basic_pay - deductions
+
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      activeOpacity={0.7}
+      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}
+    >
+      <Avatar name={jo.name_of_jo} size={38} />
+      <View style={{ flex: 1 }}>
+        <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
+        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · {jo.funding}</Text>
+      </View>
+      <View style={{ alignItems: 'flex-end', gap: 4 }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(netPay)}</Text>
+        <View style={{ backgroundColor: jo.disbursement_type === 'ATM' ? '#dbeafe' : '#fef3c7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
+          <Text style={{ fontSize: 10, fontWeight: '700', color: jo.disbursement_type === 'ATM' ? '#2563eb' : '#d97706' }}>
+            {jo.disbursement_type}
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  )
+}
+
+// ── SearchBar ────────────────────────────────────────────────
+
+export const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 10, gap: 8 }}>
+    <Search size={14} color="#9ca3af" />
+    <TextInput
+      value={value}
+      onChangeText={onChange}
+      placeholder={placeholder ?? 'Search…'}
+      placeholderTextColor="#d1d5db"
+      style={{ flex: 1, fontSize: 13, color: '#111827' }}
+    />
+  </View>
+)
+
+// ── TabRow ───────────────────────────────────────────────────
+
+export const TabRow = ({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) => (
+  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+    {tabs.map(t => (
+      <TouchableOpacity
+        key={t}
+        onPress={() => onChange(t)}
+        activeOpacity={0.7}
+        style={{ borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active === t ? '#171717' : 'transparent' }}
+      >
+        <Text style={{ fontSize: 12, fontWeight: '600', color: active === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
+      </TouchableOpacity>
+    ))}
+  </View>
+)
+
+/* @arkzen:native:components:shared:end */
+
+
+/* @arkzen:native:page:index */
+/* @arkzen:native:page:layout:app */
+
+import Animated, { FadeInDown } from 'react-native-reanimated'
+
+const DashboardScreen = () => {
+  const { summary, setSummary, jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+
+  useEffect(() => {
+    if (summary && jobOrders.length > 0) return
+    const load = async () => {
+      setLoading(true)
+      try {
+        const [sumRes, joRes] = await Promise.all([
+          fetch(`${BASE}/api/jo-payroll/job-orders/stats/summary`),
+          fetch(`${BASE}/api/jo-payroll/job-orders`),
+        ])
+        setSummary(await sumRes.json())
+        const joData = await joRes.json()
+        setJobOrders(Array.isArray(joData) ? joData : joData.data ?? [])
+      } catch {
+        setSummary({
+          total_active: 11, total_inactive: 1, total_atm: 6, total_cash: 5,
+          total_basic_pay: 4142, total_sss: 1140, total_hdmf_premium: 1100,
+          total_hdmf_mpl: 1000, total_calamity_loan: 450,
+          total_deductions: 3690, net_pay: 452,
+          group_breakdown: { 'GROUP A': 6, 'GROUP B': 6 },
+        })
+      } finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const recentJOs = useMemo(() => jobOrders.slice(0, 5), [jobOrders])
+
+  if (isLoading) return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <ActivityIndicator color="#171717" />
+    </View>
+  )
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
+
+      {/* Header */}
+      <Animated.View entering={FadeInDown.duration(400)} style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>J.O. PAYROLL SYSTEM</Text>
+        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Dashboard</Text>
+      </Animated.View>
+
+      {/* Net pay + deductions hero */}
+      <Animated.View entering={FadeInDown.duration(400).delay(60)} style={{ backgroundColor: '#171717', borderRadius: 20, padding: 20, marginBottom: 12 }}>
+        <Text style={{ fontSize: 11, color: '#6b7280', letterSpacing: 1.5, marginBottom: 8 }}>ACTIVE WORKERS NET PAY</Text>
+        <Text style={{ fontSize: 32, fontWeight: '800', color: '#ffffff', letterSpacing: -1 }}>{formatPeso(summary?.net_pay)}</Text>
+        <View style={{ flexDirection: 'row', gap: 16, marginTop: 12 }}>
+          <View>
+            <Text style={{ fontSize: 11, color: '#6b7280' }}>Gross Pay</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#ffffff', marginTop: 2 }}>{formatPeso(summary?.total_basic_pay)}</Text>
+          </View>
+          <View>
+            <Text style={{ fontSize: 11, color: '#6b7280' }}>Total Deductions</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#f87171', marginTop: 2 }}>{formatPeso(summary?.total_deductions)}</Text>
+          </View>
+        </View>
+      </Animated.View>
+
+      {/* Stat row */}
+      <Animated.View entering={FadeInDown.duration(400).delay(120)} style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+        <StatCard value={summary?.total_active ?? 0}   label="Active JOs"   color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
+        <StatCard value={summary?.total_cash ?? 0}     label="Cash"         color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
+        <StatCard value={summary?.total_atm ?? 0}      label="ATM"          color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
+        <StatCard value={summary?.total_inactive ?? 0} label="Inactive"     color="#9ca3af" />
+      </Animated.View>
+
+      {/* Deduction breakdown */}
+      <Animated.View entering={FadeInDown.duration(400).delay(180)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Deduction Breakdown</Text>
+        {[
+          { label: 'SSS',           value: summary?.total_sss,          color: '#e11d48' },
+          { label: 'HDMF Premium',  value: summary?.total_hdmf_premium, color: '#7c3aed' },
+          { label: 'HDMF MPL',      value: summary?.total_hdmf_mpl,     color: '#2563eb' },
+          { label: 'Calamity Loan', value: summary?.total_calamity_loan, color: '#d97706' },
+        ].map(({ label, value, color }) => (
+          <View key={label} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
+            <Text style={{ fontSize: 13, color: '#374151' }}>{label}</Text>
+            <Text style={{ fontSize: 13, fontWeight: '600', color }}>{formatPeso(value)}</Text>
+          </View>
+        ))}
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10 }}>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Total</Text>
+          <Text style={{ fontSize: 14, fontWeight: '800', color: '#e11d48' }}>{formatPeso(summary?.total_deductions)}</Text>
+        </View>
+      </Animated.View>
+
+      {/* Recent JOs */}
+      <Animated.View entering={FadeInDown.duration(400).delay(240)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden', marginBottom: 12 }}>
+        <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Recent Workers</Text>
+          <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Latest 5 entries</Text>
+        </View>
+        {recentJOs.length === 0
+          ? <View style={{ padding: 32, alignItems: 'center' }}><Text style={{ fontSize: 13, color: '#9ca3af' }}>No data</Text></View>
+          : recentJOs.map(jo => <WorkerRow key={jo.id} jo={jo} />)
+        }
+      </Animated.View>
+
+    </ScrollView>
+  )
+}
+
+/* @arkzen:native:page:index:end */
+
+
+/* @arkzen:native:page:job-database */
+/* @arkzen:native:page:layout:app */
+
+import Animated, { FadeInDown } from 'react-native-reanimated'
+
+const WorkersScreen = () => {
+  const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+  const [search, setSearch] = useState('')
+  const [activeTab, setActiveTab] = useState('All')
+  const [expanded, setExpanded] = useState<number | null>(null)
+
+  const TABS = ['All', 'Active', 'Inactive', 'CASH', 'ATM']
+
+  useEffect(() => {
+    if (jobOrders.length > 0) return
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res  = await fetch(`${BASE}/api/jo-payroll/job-orders`)
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
+      } catch {} finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const filtered = useMemo(() =>
+    jobOrders.filter(jo => {
+      const matchSearch = search === '' ||
+        jo.name_of_jo.toLowerCase().includes(search.toLowerCase()) ||
+        jo.funding.toLowerCase().includes(search.toLowerCase()) ||
+        (jo.sss_number ?? '').includes(search)
+      const matchTab =
+        activeTab === 'All'      ? true :
+        activeTab === 'Active'   ? jo.status === 'active' :
+        activeTab === 'Inactive' ? jo.status === 'inactive' :
+        activeTab === 'CASH'     ? jo.disbursement_type === 'CASH' :
+        activeTab === 'ATM'      ? jo.disbursement_type === 'ATM' : true
+      return matchSearch && matchTab
+    }), [jobOrders, search, activeTab])
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
+      {/* Fixed header */}
+      <View style={{ backgroundColor: '#F4F5F7', paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12 }}>
+        <Animated.View entering={FadeInDown.duration(350)}>
+          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>JO DATABASE</Text>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Workers</Text>
+        </Animated.View>
+        <View style={{ gap: 8, marginTop: 12 }}>
+          <SearchBar value={search} onChange={setSearch} placeholder="Search name, funding, SSS…" />
+          <TabRow tabs={TABS} active={activeTab} onChange={setActiveTab} />
+        </View>
+        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>{filtered.length} records</Text>
+      </View>
+
+      {/* List */}
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+          <ActivityIndicator color="#171717" />
+        </View>
+      ) : (
+        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, marginHorizontal: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden', paddingBottom: 8 }}>
+          {filtered.length === 0 ? (
+            <View style={{ padding: 40, alignItems: 'center' }}>
+              <Text style={{ fontSize: 13, color: '#9ca3af' }}>No records found</Text>
+            </View>
+          ) : filtered.map(jo => (
+            <View key={jo.id}>
+              <WorkerRow jo={jo} onPress={() => setExpanded(expanded === jo.id ? null : jo.id)} />
+              {expanded === jo.id && (
+                <View style={{ paddingHorizontal: 16, paddingBottom: 14, paddingTop: 4, backgroundColor: '#fafafa', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
+                  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                    {[
+                      { label: 'JOR #',      value: String(jo.jor_number) },
+                      { label: 'Group',      value: jo.jor_pyrl_group ?? '—' },
+                      { label: 'SSS No.',    value: jo.sss_number ?? '—' },
+                      { label: 'Basic Pay',  value: `${formatPeso(jo.basic_pay)}/day` },
+                      { label: 'SSS',        value: formatPeso(jo.sss_amount) },
+                      { label: 'HDMF Prem.', value: formatPeso(jo.hdmf_premium) },
+                      { label: 'HDMF MPL',   value: formatPeso(jo.hdmf_mpl) },
+                      { label: 'Calamity',   value: formatPeso(jo.calamity_loan) },
+                    ].map(({ label, value }) => (
+                      <View key={label} style={{ backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 10, paddingVertical: 8, minWidth: '44%', flex: 1 }}>
+                        <Text style={{ fontSize: 10, color: '#9ca3af', fontWeight: '600', marginBottom: 2 }}>{label}</Text>
+                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#111827' }}>{value}</Text>
+                      </View>
+                    ))}
+                  </View>
+                  <View style={{ marginTop: 8, flexDirection: 'row', gap: 8 }}>
+                    <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
+                      <Text style={{ fontSize: 11, fontWeight: '600', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+                        {jo.status.toUpperCase()}
+                      </Text>
+                    </View>
+                    {jo.cash_card_number && (
+                      <View style={{ backgroundColor: '#eff6ff', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
+                        <Text style={{ fontSize: 11, fontWeight: '600', color: '#2563eb', fontFamily: 'monospace' }}>
+                          ····{jo.cash_card_number.slice(-4)}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              )}
+            </View>
+          ))}
+        </View>
+      )}
+    </View>
+  )
+}
+
+/* @arkzen:native:page:job-database:end */
+
+
+/* @arkzen:native:page:cash-atm */
+/* @arkzen:native:page:layout:app */
+
+import Animated, { FadeInDown } from 'react-native-reanimated'
+
+const CashAtmScreen = () => {
+  const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+  const [activeTab, setActiveTab] = useState('CASH')
+
+  useEffect(() => {
+    if (jobOrders.length > 0) return
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res  = await fetch(`${BASE}/api/jo-payroll/job-orders`)
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
+      } catch {} finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const active   = useMemo(() => jobOrders.filter(j => j.status === 'active'), [jobOrders])
+  const cashList = useMemo(() => active.filter(j => j.disbursement_type === 'CASH'), [active])
+  const atmList  = useMemo(() => active.filter(j => j.disbursement_type === 'ATM'),  [active])
+  const cashTotal = useMemo(() => cashList.reduce((a, j) => a + j.basic_pay, 0), [cashList])
+  const atmTotal  = useMemo(() => atmList.reduce((a, j) => a + j.basic_pay, 0),  [atmList])
+
+  const list  = activeTab === 'CASH' ? cashList : atmList
+  const total = activeTab === 'CASH' ? cashTotal : atmTotal
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
+      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
+
+        <Animated.View entering={FadeInDown.duration(350)} style={{ marginBottom: 16 }}>
+          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>DISBURSEMENT</Text>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Cash / ATM</Text>
+        </Animated.View>
+
+        {/* Summary cards */}
+        <Animated.View entering={FadeInDown.duration(350).delay(60)} style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+          <StatCard value={cashList.length} label="Cash Workers" color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
+          <StatCard value={atmList.length}  label="ATM Workers"  color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
+        </Animated.View>
+        <Animated.View entering={FadeInDown.duration(350).delay(90)} style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+          <StatCard value={formatPeso(cashTotal)} label="Cash Total"  color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
+          <StatCard value={formatPeso(atmTotal)}  label="ATM Total"   color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
+        </Animated.View>
+
+        {/* Tab toggle */}
+        <Animated.View entering={FadeInDown.duration(350).delay(120)} style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+          {(['CASH', 'ATM'] as const).map(t => (
+            <TouchableOpacity
+              key={t}
+              onPress={() => setActiveTab(t)}
+              activeOpacity={0.8}
+              style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: activeTab === t ? '#171717' : '#ffffff', borderWidth: 1, borderColor: activeTab === t ? '#171717' : '#e5e7eb' }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '700', color: activeTab === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
+              <Text style={{ fontSize: 11, color: activeTab === t ? '#9ca3af' : '#d1d5db', marginTop: 2 }}>{t === 'CASH' ? cashList.length : atmList.length} workers</Text>
+            </TouchableOpacity>
+          ))}
+        </Animated.View>
+
+        {/* List */}
+        <Animated.View entering={FadeInDown.duration(350).delay(160)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' }}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+            <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{activeTab} Disbursement</Text>
+            <Text style={{ fontSize: 12, fontWeight: '600', color: activeTab === 'CASH' ? '#d97706' : '#2563eb' }}>{formatPeso(total)}</Text>
+          </View>
+
+          {isLoading ? (
+            <View style={{ padding: 32, alignItems: 'center' }}><ActivityIndicator color="#171717" /></View>
+          ) : list.length === 0 ? (
+            <View style={{ padding: 32, alignItems: 'center' }}><Text style={{ fontSize: 13, color: '#9ca3af' }}>No entries</Text></View>
+          ) : (
+            list.map(jo => (
+              <View key={jo.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
+                <Avatar name={jo.name_of_jo} size={36} />
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
+                  <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</Text>
+                </View>
+                {activeTab === 'ATM' && jo.cash_card_number && (
+                  <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>····{jo.cash_card_number.slice(-4)}</Text>
+                )}
+                <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(jo.basic_pay)}</Text>
+              </View>
+            ))
+          )}
+        </Animated.View>
+
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:cash-atm:end */
+
+
+/* @arkzen:native:page:appointments */
+/* @arkzen:native:page:layout:app */
+
+import Animated, { FadeInDown } from 'react-native-reanimated'
+
+const AppointmentsScreen = () => {
+  const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+  const [search, setSearch] = useState('')
+
+  useEffect(() => {
+    if (jobOrders.length > 0) return
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res  = await fetch(`${BASE}/api/jo-payroll/job-orders`)
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
+      } catch {} finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const sorted = useMemo(() =>
+    [...jobOrders]
+      .filter(j => j.appointment_order != null)
+      .sort((a, b) => (a.appointment_order ?? 0) - (b.appointment_order ?? 0))
+      .filter(j => search === '' ||
+        j.name_of_jo.toLowerCase().includes(search.toLowerCase()) ||
+        j.job_title.toLowerCase().includes(search.toLowerCase()))
+  , [jobOrders, search])
+
+  const activeCount = useMemo(() => sorted.filter(j => j.status === 'active').length, [sorted])
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
+      <View style={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, backgroundColor: '#F4F5F7' }}>
+        <Animated.View entering={FadeInDown.duration(350)}>
+          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>SEQUENCE</Text>
+          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Appointments</Text>
+        </Animated.View>
+
+        <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 12 }}>
+          <StatCard value={sorted.length}  label="Total Slots"   />
+          <StatCard value={activeCount}    label="Active Slots"  color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
+        </View>
+
+        <SearchBar value={search} onChange={setSearch} placeholder="Search name or title…" />
+      </View>
+
+      {isLoading ? (
+        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
+          <ActivityIndicator color="#171717" />
+        </View>
+      ) : sorted.length === 0 ? (
+        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb', marginHorizontal: 16 }}>
+          <Text style={{ fontSize: 13, color: '#9ca3af' }}>No appointments found</Text>
+        </View>
+      ) : (
+        <View style={{ paddingHorizontal: 16, paddingBottom: 24 }}>
+          {sorted.map((jo, index) => (
+            <Animated.View key={jo.id} entering={FadeInDown.duration(300).delay(index * 40)} style={{ backgroundColor: '#ffffff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
+              <View style={{ width: 36, height: 36, backgroundColor: '#f3f4f6', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
+                <Text style={{ fontSize: 12, fontWeight: '800', color: '#374151' }}>#{jo.appointment_order}</Text>
+              </View>
+              <Avatar name={jo.name_of_jo} size={36} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
+                <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</Text>
+              </View>
+              <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
+                <Text style={{ fontSize: 10, fontWeight: '700', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+                  {jo.status.toUpperCase()}
+                </Text>
+              </View>
+            </Animated.View>
+          ))}
+        </View>
+      )}
+    </View>
+  )
+}
+
+/* @arkzen:native:page:appointments:end */
+
+
+/* @arkzen:native:page:payslip */
+/* @arkzen:native:page:layout:app */
+
+import Animated, { FadeInDown } from 'react-native-reanimated'
+
+const PayslipScreen = () => {
+  const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
+  const [search, setSearch]     = useState('')
+  const [selected, setSelected] = useState<JobOrder | null>(null)
+  const [workDays, setWorkDays] = useState('26')
+
+  useEffect(() => {
+    if (jobOrders.length > 0) return
+    const load = async () => {
+      setLoading(true)
+      try {
+        const res  = await fetch(`${BASE}/api/jo-payroll/job-orders`)
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
+      } catch {} finally { setLoading(false) }
+    }
+    load()
+  }, [])
+
+  const activeJOs = useMemo(() => jobOrders.filter(j => j.status === 'active'), [jobOrders])
+  const filtered  = useMemo(() =>
+    activeJOs.filter(j => search === '' || j.name_of_jo.toLowerCase().includes(search.toLowerCase()))
+  , [activeJOs, search])
+
+  const computed = useMemo(() => {
+    if (!selected) return null
+    const days       = parseInt(workDays) || 0
+    const gross      = selected.basic_pay * days
+    const sss        = selected.sss_amount ?? 0
+    const hdmfPrem   = selected.hdmf_premium ?? 0
+    const hdmfMpl    = selected.hdmf_mpl ?? 0
+    const calamity   = selected.calamity_loan ?? 0
+    const deductions = sss + hdmfPrem + hdmfMpl + calamity
+    return { gross, sss, hdmfPrem, hdmfMpl, calamity, deductions, net: gross - deductions, days }
+  }, [selected, workDays])
+
+  const now = new Date()
+  const periodLabel = now.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' })
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 32 }}>
+
+      <Animated.View entering={FadeInDown.duration(350)} style={{ marginBottom: 16 }}>
+        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>GENERATE</Text>
+        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Payslip</Text>
+      </Animated.View>
+
+      {/* Worker search */}
+      <Animated.View entering={FadeInDown.duration(350).delay(60)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 10 }}>Select Worker</Text>
+        <SearchBar value={search} onChange={setSearch} placeholder="Search worker name…" />
+
+        <View style={{ marginTop: 10, gap: 4 }}>
+          {(search ? filtered : activeJOs.slice(0, 8)).map(jo => (
+            <TouchableOpacity
+              key={jo.id}
+              onPress={() => setSelected(jo)}
+              activeOpacity={0.7}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, backgroundColor: selected?.id === jo.id ? '#171717' : 'transparent' }}
+            >
+              <Avatar name={jo.name_of_jo} size={32} />
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 12, fontWeight: '600', color: selected?.id === jo.id ? '#ffffff' : '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
+                <Text style={{ fontSize: 11, color: '#9ca3af' }}>{jo.job_title} · {formatPeso(jo.basic_pay)}/day</Text>
+              </View>
+              {selected?.id === jo.id && (
+                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
+                  <Text style={{ fontSize: 12, color: '#171717' }}>✓</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+
+        {/* Work days input */}
+        <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500' }}>Work Days:</Text>
+          <View style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 8 }}>
+            <TextInput
+              value={workDays}
+              onChangeText={setWorkDays}
+              keyboardType="number-pad"
+              style={{ fontSize: 13, color: '#111827', fontWeight: '600' }}
+            />
+          </View>
+          <Text style={{ fontSize: 11, color: '#9ca3af' }}>days</Text>
+        </View>
+      </Animated.View>
+
+      {/* Payslip preview */}
+      {selected && computed ? (
+        <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', padding: 18, marginBottom: 12 }}>
+
+          {/* Header */}
+          <View style={{ alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 14, marginBottom: 14 }}>
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#111827', letterSpacing: -0.3 }}>LOCAL GOVERNMENT UNIT</Text>
+            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Job Order Payroll System</Text>
+            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Pay Period: {periodLabel}</Text>
+          </View>
+
+          {/* Worker info */}
+          <View style={{ gap: 6, marginBottom: 14 }}>
+            {[
+              { label: 'Name',          value: selected.name_of_jo },
+              { label: 'JOR #',         value: String(selected.jor_number) },
+              { label: 'Title',         value: selected.job_title },
+              { label: 'Funding',       value: selected.funding },
+              { label: 'Disbursement',  value: selected.disbursement_type },
+              { label: 'Days Worked',   value: `${computed.days} days` },
+            ].map(({ label, value }) => (
+              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{label}:</Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#111827', fontFamily: 'monospace' }}>{value}</Text>
+              </View>
+            ))}
+          </View>
+
+          {/* Gross pay */}
+          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 12, marginBottom: 4 }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>
+                Basic Pay ({formatPeso(selected.basic_pay)}/day × {computed.days})
+              </Text>
+              <Text style={{ fontSize: 12, fontWeight: '700', color: '#111827', fontFamily: 'monospace' }}>{formatPeso(computed.gross)}</Text>
+            </View>
+          </View>
+
+          {/* Deductions */}
+          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, marginTop: 8, gap: 6 }}>
+            <Text style={{ fontSize: 10, color: '#9ca3af', fontFamily: 'monospace', letterSpacing: 1 }}>DEDUCTIONS:</Text>
+            {[
+              { label: 'SSS Contribution', value: computed.sss,      show: computed.sss > 0 },
+              { label: 'HDMF Premium',     value: computed.hdmfPrem, show: computed.hdmfPrem > 0 },
+              { label: 'HDMF MPL',         value: computed.hdmfMpl,  show: computed.hdmfMpl > 0 },
+              { label: 'Calamity Loan',    value: computed.calamity, show: computed.calamity > 0 },
+            ].filter(d => d.show).map(({ label, value }) => (
+              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+                <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>{label}</Text>
+                <Text style={{ fontSize: 11, fontWeight: '600', color: '#e11d48', fontFamily: 'monospace' }}>({formatPeso(value)})</Text>
+              </View>
+            ))}
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 6 }}>
+              <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>Total Deductions</Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: '#e11d48', fontFamily: 'monospace' }}>({formatPeso(computed.deductions)})</Text>
+            </View>
+          </View>
+
+          {/* Net pay */}
+          <View style={{ backgroundColor: '#171717', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
+            <Text style={{ fontSize: 14, fontWeight: '800', color: '#ffffff' }}>NET PAY</Text>
+            <Text style={{ fontSize: 20, fontWeight: '800', color: '#ffffff' }}>{formatPeso(computed.net)}</Text>
+          </View>
+        </Animated.View>
+      ) : (
+        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 40, alignItems: 'center' }}>
+          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Select a worker to preview payslip</Text>
+        </View>
+      )}
+
+    </ScrollView>
+  )
+}
+
+/* @arkzen:native:page:payslip:end */
+
+/* @arkzen:native:animation:rn */
+import { withTiming, withDelay, useSharedValue, useAnimatedStyle, Easing } from 'react-native-reanimated'
+
+export const useSlideIn = (delay = 0) => {
+  const opacity    = useSharedValue(0)
+  const translateY = useSharedValue(16)
+
+  useEffect(() => {
+    opacity.value    = withDelay(delay, withTiming(1, { duration: 350, easing: Easing.out(Easing.cubic) }))
+    translateY.value = withDelay(delay, withTiming(0, { duration: 350, easing: Easing.out(Easing.cubic) }))
+  }, [])
+
+  return useAnimatedStyle(() => ({
+    opacity: opacity.value,
+    transform: [{ translateY: translateY.value }],
+  }))
+}
+/* @arkzen:native:animation:rn:end */

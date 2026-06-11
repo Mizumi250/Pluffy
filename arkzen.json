@@ -13,7 +13,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:15.619Z",
-      "lastUpdated": "2026-06-10T18:08:20.114Z",
+      "lastUpdated": "2026-06-11T01:13:12.236Z",
       "auth": true
     },
     {
@@ -37,7 +37,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:15.964Z",
-      "lastUpdated": "2026-06-10T18:08:20.403Z",
+      "lastUpdated": "2026-06-11T01:13:13.453Z",
       "auth": false
     },
     {
@@ -51,7 +51,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.454Z",
-      "lastUpdated": "2026-06-10T18:08:20.921Z",
+      "lastUpdated": "2026-06-11T01:13:15.570Z",
       "auth": true
     },
     {
@@ -65,24 +65,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.532Z",
-      "lastUpdated": "2026-06-10T18:08:21.310Z",
-      "auth": true
-    },
-    {
-      "name": "church-community",
-      "version": "3.0.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/church-community/core.tsx",
-      "pages": [
-        "index",
-        "members",
-        "inventory",
-        "admin",
-        "login",
-        "register"
-      ],
-      "registered": "2026-05-07T23:46:16.645Z",
-      "lastUpdated": "2026-06-10T18:08:22.109Z",
+      "lastUpdated": "2026-06-11T01:13:16.514Z",
       "auth": true
     },
     {
@@ -94,7 +77,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.748Z",
-      "lastUpdated": "2026-06-10T18:08:22.343Z",
+      "lastUpdated": "2026-06-11T01:13:17.416Z",
       "auth": false
     },
     {
@@ -107,7 +90,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:16.876Z",
-      "lastUpdated": "2026-06-10T18:08:22.543Z",
+      "lastUpdated": "2026-06-11T01:13:18.779Z",
       "auth": false
     },
     {
@@ -119,7 +102,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.889Z",
-      "lastUpdated": "2026-06-10T18:08:22.574Z",
+      "lastUpdated": "2026-06-11T01:13:18.932Z",
       "auth": false
     },
     {
@@ -131,7 +114,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.961Z",
-      "lastUpdated": "2026-06-10T18:08:22.685Z",
+      "lastUpdated": "2026-06-11T01:13:19.730Z",
       "auth": false
     },
     {
@@ -143,7 +126,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.040Z",
-      "lastUpdated": "2026-06-10T18:08:22.829Z",
+      "lastUpdated": "2026-06-11T01:13:20.441Z",
       "auth": false
     },
     {
@@ -161,7 +144,7 @@
         "payslip"
       ],
       "registered": "2026-05-07T23:46:17.164Z",
-      "lastUpdated": "2026-06-10T18:08:23.107Z",
+      "lastUpdated": "2026-06-11T01:40:08.467Z",
       "auth": false
     },
     {
@@ -173,7 +156,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.234Z",
-      "lastUpdated": "2026-06-10T18:08:23.878Z",
+      "lastUpdated": "2026-06-11T01:13:23.721Z",
       "auth": false
     },
     {
@@ -187,7 +170,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.302Z",
-      "lastUpdated": "2026-06-10T18:08:24.014Z",
+      "lastUpdated": "2026-06-11T01:13:26.509Z",
       "auth": true
     },
     {
@@ -199,7 +182,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.397Z",
-      "lastUpdated": "2026-06-10T18:08:24.386Z",
+      "lastUpdated": "2026-06-11T01:13:27.438Z",
       "auth": false
     },
     {
@@ -213,7 +196,7 @@
         "features"
       ],
       "registered": "2026-05-07T23:46:17.412Z",
-      "lastUpdated": "2026-06-10T18:08:24.419Z",
+      "lastUpdated": "2026-06-11T01:13:27.577Z",
       "auth": false
     },
     {
@@ -227,7 +210,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.482Z",
-      "lastUpdated": "2026-06-10T18:08:24.520Z",
+      "lastUpdated": "2026-06-11T01:13:28.131Z",
       "auth": true
     },
     {
@@ -239,7 +222,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.494Z",
-      "lastUpdated": "2026-06-10T18:08:24.535Z",
+      "lastUpdated": "2026-06-11T01:13:28.217Z",
       "auth": false
     },
     {
@@ -253,7 +236,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:17.613Z",
-      "lastUpdated": "2026-06-10T18:08:24.737Z",
+      "lastUpdated": "2026-06-11T01:13:28.914Z",
       "auth": false
     },
     {
@@ -267,7 +250,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.362Z",
-      "lastUpdated": "2026-06-10T18:08:25.530Z",
+      "lastUpdated": "2026-06-11T01:13:30.300Z",
       "auth": true
     },
     {
@@ -279,7 +262,7 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.447Z",
-      "lastUpdated": "2026-06-10T18:08:25.739Z",
+      "lastUpdated": "2026-06-11T01:13:30.592Z",
       "auth": false
     },
     {
@@ -291,23 +274,8 @@
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.508Z",
-      "lastUpdated": "2026-06-10T18:08:25.969Z",
+      "lastUpdated": "2026-06-11T01:13:31.122Z",
       "auth": false
-    },
-    {
-      "name": "certflow",
-      "version": "1.0.0",
-      "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/certflow/core.tsx",
-      "pages": [
-        "login",
-        "dashboard",
-        "fill",
-        "verify"
-      ],
-      "registered": "2026-05-10T12:24:58.406Z",
-      "lastUpdated": "2026-06-10T18:08:21.901Z",
-      "auth": true
     },
     {
       "name": "animation-lab",
@@ -318,7 +286,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.134Z",
-      "lastUpdated": "2026-06-10T18:08:19.954Z",
+      "lastUpdated": "2026-06-11T01:13:11.619Z",
       "auth": false
     },
     {
@@ -330,7 +298,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.152Z",
-      "lastUpdated": "2026-06-10T18:08:20.057Z",
+      "lastUpdated": "2026-06-11T01:13:11.989Z",
       "auth": false
     },
     {
@@ -342,7 +310,7 @@
         "index"
       ],
       "registered": "2026-05-23T08:37:02.596Z",
-      "lastUpdated": "2026-06-10T18:08:26.104Z",
+      "lastUpdated": "2026-06-11T01:13:31.560Z",
       "auth": false
     },
     {
@@ -354,7 +322,7 @@
         "index"
       ],
       "registered": "2026-05-25T07:15:09.255Z",
-      "lastUpdated": "2026-06-10T18:08:25.806Z",
+      "lastUpdated": "2026-06-11T01:13:30.852Z",
       "auth": false
     },
     {
@@ -364,7 +332,7 @@
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-06-04T00:45:44.271Z",
-      "lastUpdated": "2026-06-10T18:08:22.702Z",
+      "lastUpdated": "2026-06-11T01:13:19.776Z",
       "auth": false
     }
   ],

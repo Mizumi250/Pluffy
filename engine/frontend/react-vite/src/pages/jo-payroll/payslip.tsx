@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/payslip [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-10T18:08:22.912Z
+// Generated: 2026-06-11T01:40:07.501Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -168,7 +168,7 @@ export const StatChip = ({
       <div className="flex items-start justify-between mb-3">
         <Icon size={18} className={iconAccents[accent]} />
       </div>
-      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{value}</p>
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
@@ -184,7 +184,7 @@ export const SectionHeader = ({
 }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
-      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h2>
       {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
     </div>
     {action}
@@ -346,7 +346,7 @@ export const JOFormModal = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+            <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">
               {initial ? 'Edit Job Order' : 'New Job Order'}
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>
@@ -594,7 +594,7 @@ const PayslipPage = () => {
               <div className="border-2 border-dashed border-neutral-200 rounded-2xl p-5 font-mono text-xs">
                 {/* Header */}
                 <div className="text-center border-b border-neutral-200 pb-4 mb-4">
-                  <p className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif] non-mono">LOCAL GOVERNMENT UNIT</p>
+                  <p className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] non-mono">LOCAL GOVERNMENT UNIT</p>
                   <p className="text-xs text-neutral-500 non-mono">Job Order Payroll System</p>
                   <p className="text-xs text-neutral-400 mt-1 non-mono">Pay Period: {periodLabel}</p>
                 </div>
@@ -634,8 +634,8 @@ const PayslipPage = () => {
                 </div>
                 {/* Net */}
                 <div className="bg-neutral-900 rounded-xl px-4 py-3 flex justify-between items-center">
-                  <span className="text-white font-bold font-['Syne',sans-serif] non-mono text-sm">NET PAY</span>
-                  <span className="text-white font-bold font-['Syne',sans-serif] non-mono text-lg">{formatPeso(computedPay.net)}</span>
+                  <span className="text-white font-bold font-['Plus Jakarta Sans',sans-serif] non-mono text-sm">NET PAY</span>
+                  <span className="text-white font-bold font-['Plus Jakarta Sans',sans-serif] non-mono text-lg">{formatPeso(computedPay.net)}</span>
                 </div>
               </div>
               {/* Print */}

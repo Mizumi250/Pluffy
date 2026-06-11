@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/sss [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-10T18:08:22.904Z
+// Generated: 2026-06-11T01:40:07.436Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -168,7 +168,7 @@ export const StatChip = ({
       <div className="flex items-start justify-between mb-3">
         <Icon size={18} className={iconAccents[accent]} />
       </div>
-      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{value}</p>
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
@@ -184,7 +184,7 @@ export const SectionHeader = ({
 }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
-      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h2>
       {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
     </div>
     {action}
@@ -346,7 +346,7 @@ export const JOFormModal = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+            <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">
               {initial ? 'Edit Job Order' : 'New Job Order'}
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>
@@ -505,17 +505,17 @@ const SssPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Building2 size={16} className="text-rose-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{list.length}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{list.length}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">SSS Members</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-rose-100 shadow-sm">
           <TrendingDown size={16} className="text-rose-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalSss)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalSss)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">SSS Deductions</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <AlertCircle size={16} className="text-amber-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(totalCalamity)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(totalCalamity)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Calamity Loans</p>
         </div>
       </div>

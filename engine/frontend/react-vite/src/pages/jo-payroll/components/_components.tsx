@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED UTILITIES — jo-payroll [React+Vite]
 // All utilities, types, constants from @arkzen:components
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-10T18:08:22.881Z
+// Generated: 2026-06-11T01:40:07.211Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -164,7 +164,7 @@ export const StatChip = ({
       <div className="flex items-start justify-between mb-3">
         <Icon size={18} className={iconAccents[accent]} />
       </div>
-      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{value}</p>
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
@@ -180,7 +180,7 @@ export const SectionHeader = ({
 }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
-      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h2>
       {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
     </div>
     {action}
@@ -342,7 +342,7 @@ export const JOFormModal = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+            <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">
               {initial ? 'Edit Job Order' : 'New Job Order'}
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>

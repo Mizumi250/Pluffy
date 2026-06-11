@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-10T18:08:22.895Z
+// Generated: 2026-06-11T01:40:07.337Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -168,7 +168,7 @@ export const StatChip = ({
       <div className="flex items-start justify-between mb-3">
         <Icon size={18} className={iconAccents[accent]} />
       </div>
-      <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{value}</p>
+      <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{value}</p>
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
@@ -184,7 +184,7 @@ export const SectionHeader = ({
 }) => (
   <div className="flex items-center justify-between mb-5">
     <div>
-      <h2 className="text-base font-semibold text-neutral-900 font-['Syne',sans-serif]">{title}</h2>
+      <h2 className="text-base font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{title}</h2>
       {subtitle && <p className="text-xs text-neutral-400 mt-0.5">{subtitle}</p>}
     </div>
     {action}
@@ -346,7 +346,7 @@ export const JOFormModal = ({
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
           <div>
-            <h3 className="text-sm font-bold text-neutral-900 font-['Syne',sans-serif]">
+            <h3 className="text-sm font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">
               {initial ? 'Edit Job Order' : 'New Job Order'}
             </h3>
             <p className="text-xs text-neutral-400 mt-0.5">Fill in the employee payroll details</p>
@@ -535,7 +535,7 @@ const DashboardPage = () => {
             <p className="text-xs text-neutral-400 font-medium mb-1">
               {today}
             </p>
-            <h2 className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif] mb-1">
+            <h2 className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] mb-1">
               J.O. Payroll Overview
             </h2>
             <p className="text-sm text-neutral-500 leading-relaxed">
@@ -559,7 +559,7 @@ const DashboardPage = () => {
           {/* Decorative illustration area */}
           <div className="hidden md:flex items-center justify-center w-28 h-28 bg-neutral-50 rounded-2xl shrink-0">
             <div className="text-center">
-              <p className="text-4xl font-black font-['Syne',sans-serif] text-neutral-900">
+              <p className="text-4xl font-black font-['Plus Jakarta Sans',sans-serif] text-neutral-900">
                 {summary?.total_active ?? 0}
               </p>
               <p className="text-xs text-neutral-400 font-medium mt-0.5">Active JOs</p>
@@ -575,7 +575,7 @@ const DashboardPage = () => {
                 <TrendingUp size={16} className="text-emerald-600" />
               </div>
               <div>
-                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.net_pay)}</p>
+                <p className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.net_pay)}</p>
                 <p className="text-xs text-neutral-400">Net Pay (Active)</p>
               </div>
             </div>
@@ -586,7 +586,7 @@ const DashboardPage = () => {
                 <TrendingDown size={16} className="text-rose-600" />
               </div>
               <div>
-                <p className="text-xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_deductions)}</p>
+                <p className="text-xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.total_deductions)}</p>
                 <p className="text-xs text-neutral-400">Total Deductions</p>
               </div>
             </div>
@@ -598,27 +598,27 @@ const DashboardPage = () => {
       <div className="flex gap-3 overflow-x-auto pb-1">
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Users size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_active ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_active ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Active Workers</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Banknote size={16} className="text-amber-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_cash ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_cash ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Cash Disbursement</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <CreditCard size={16} className="text-blue-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_atm ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_atm ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">ATM Disbursement</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <Wallet size={16} className="text-violet-500 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{formatPeso(summary?.total_basic_pay)}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{formatPeso(summary?.total_basic_pay)}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Gross Pay</p>
         </div>
         <div className="stat-chip flex-1 min-w-[130px] bg-white rounded-2xl p-4 border border-neutral-100 shadow-sm">
           <AlertCircle size={16} className="text-neutral-400 mb-2" />
-          <p className="text-2xl font-bold text-neutral-900 font-['Syne',sans-serif]">{summary?.total_inactive ?? 0}</p>
+          <p className="text-2xl font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{summary?.total_inactive ?? 0}</p>
           <p className="text-xs text-neutral-500 font-medium mt-0.5">Inactive Workers</p>
         </div>
       </div>
@@ -656,7 +656,7 @@ const DashboardPage = () => {
           <div className="flex gap-2 mb-5">
             {Object.entries(summary?.group_breakdown ?? {}).map(([g, count]) => (
               <div key={g} className="flex-1 bg-neutral-50 rounded-xl p-3 text-center border border-neutral-100">
-                <p className="text-lg font-bold text-neutral-900 font-['Syne',sans-serif]">{count as number}</p>
+                <p className="text-lg font-bold text-neutral-900 font-['Plus Jakarta Sans',sans-serif]">{count as number}</p>
                 <p className="text-xs text-neutral-400 font-medium mt-0.5">{g}</p>
               </div>
             ))}
@@ -677,7 +677,7 @@ const DashboardPage = () => {
 
           {/* Premium CTA — reference "Learn even more!" card */}
           <div className="mt-5 bg-neutral-900 rounded-2xl p-4 text-white">
-            <p className="text-sm font-bold font-['Syne',sans-serif] mb-1">Deduction Summary</p>
+            <p className="text-sm font-bold font-['Plus Jakarta Sans',sans-serif] mb-1">Deduction Summary</p>
             <p className="text-xs text-neutral-400 mb-3">Total monthly deductions across all active workers.</p>
             <div className="space-y-1.5">
               {[
