@@ -46,10 +46,6 @@ const ArkzenPage_BroadcastTest_Dashboard = lazy(() => import('@/pages/broadcast-
 const ArkzenPage_BroadcastTest_RootRedirect = lazy(() => import('@/pages/broadcast-test/__root_redirect'))
 // ROUTE:crud-test:index:/crud-test:false
 const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
-// ROUTE:dtr-geofencing:index:/dtr-geofencing:false
-const ArkzenPage_DtrGeofencing_Index = lazy(() => import('@/pages/dtr-geofencing/index'))
-// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:false
-const ArkzenPage_DtrGeofencing_Admin = lazy(() => import('@/pages/dtr-geofencing/admin'))
 // ROUTE:errors-test:index:/errors-test:false:ArkzenErrorBoundary_ErrorsTest
 const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index'))
 // ROUTE:errors-test:not-found:/errors-test/*:false
@@ -58,6 +54,22 @@ const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/no
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
 const ArkzenPage_InventoryManagement_Index = lazy(() => import('@/pages/inventory-management/index'))
+// ROUTE:jo-payroll:index:/jo-payroll:false
+const ArkzenPage_JoPayroll_Index = lazy(() => import('@/pages/jo-payroll/index'))
+// ROUTE:jo-payroll:job-database:/jo-payroll/job-database:false
+const ArkzenPage_JoPayroll_JobDatabase = lazy(() => import('@/pages/jo-payroll/job-database'))
+// ROUTE:jo-payroll:cash-atm:/jo-payroll/cash-atm:false
+const ArkzenPage_JoPayroll_CashAtm = lazy(() => import('@/pages/jo-payroll/cash-atm'))
+// ROUTE:jo-payroll:sss:/jo-payroll/sss:false
+const ArkzenPage_JoPayroll_Sss = lazy(() => import('@/pages/jo-payroll/sss'))
+// ROUTE:jo-payroll:hdmf:/jo-payroll/hdmf:false
+const ArkzenPage_JoPayroll_Hdmf = lazy(() => import('@/pages/jo-payroll/hdmf'))
+// ROUTE:jo-payroll:appointments:/jo-payroll/appointments:false
+const ArkzenPage_JoPayroll_Appointments = lazy(() => import('@/pages/jo-payroll/appointments'))
+// ROUTE:jo-payroll:payslip:/jo-payroll/payslip:false
+const ArkzenPage_JoPayroll_Payslip = lazy(() => import('@/pages/jo-payroll/payslip'))
+// ROUTE:jo-payroll:not-found:/jo-payroll/*:false
+const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-found'))
 // ROUTE:job-test:dashboard:/job-test/dashboard:false
 const ArkzenPage_JobTest_Dashboard = lazy(() => import('@/pages/job-test/dashboard'))
 // ROUTE:job-test:__root_redirect:/job-test:false
@@ -116,22 +128,10 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:jo-payroll:index:/jo-payroll:false
-const ArkzenPage_JoPayroll_Index = lazy(() => import('@/pages/jo-payroll/index'))
-// ROUTE:jo-payroll:job-database:/jo-payroll/job-database:false
-const ArkzenPage_JoPayroll_JobDatabase = lazy(() => import('@/pages/jo-payroll/job-database'))
-// ROUTE:jo-payroll:cash-atm:/jo-payroll/cash-atm:false
-const ArkzenPage_JoPayroll_CashAtm = lazy(() => import('@/pages/jo-payroll/cash-atm'))
-// ROUTE:jo-payroll:sss:/jo-payroll/sss:false
-const ArkzenPage_JoPayroll_Sss = lazy(() => import('@/pages/jo-payroll/sss'))
-// ROUTE:jo-payroll:hdmf:/jo-payroll/hdmf:false
-const ArkzenPage_JoPayroll_Hdmf = lazy(() => import('@/pages/jo-payroll/hdmf'))
-// ROUTE:jo-payroll:appointments:/jo-payroll/appointments:false
-const ArkzenPage_JoPayroll_Appointments = lazy(() => import('@/pages/jo-payroll/appointments'))
-// ROUTE:jo-payroll:payslip:/jo-payroll/payslip:false
-const ArkzenPage_JoPayroll_Payslip = lazy(() => import('@/pages/jo-payroll/payslip'))
-// ROUTE:jo-payroll:not-found:/jo-payroll/*:false
-const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-found'))
+// ROUTE:dtr-geofencing:index:/dtr-geofencing:false
+const ArkzenPage_DtrGeofencing_Index = lazy(() => import('@/pages/dtr-geofencing/index'))
+// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:false
+const ArkzenPage_DtrGeofencing_Admin = lazy(() => import('@/pages/dtr-geofencing/admin'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -156,12 +156,18 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/broadcast-test/dashboard', name: 'dashboard', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Dashboard, auth: true },
   { path: '/broadcast-test', name: '__root_redirect', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_RootRedirect, auth: true },
   { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
-  { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
-  { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
   { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
+  { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
+  { path: '/jo-payroll/job-database', name: 'job-database', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_JobDatabase, auth: false },
+  { path: '/jo-payroll/cash-atm', name: 'cash-atm', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_CashAtm, auth: false },
+  { path: '/jo-payroll/sss', name: 'sss', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Sss, auth: false },
+  { path: '/jo-payroll/hdmf', name: 'hdmf', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Hdmf, auth: false },
+  { path: '/jo-payroll/appointments', name: 'appointments', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Appointments, auth: false },
+  { path: '/jo-payroll/payslip', name: 'payslip', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Payslip, auth: false },
+  { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
   { path: '/job-test/dashboard', name: 'dashboard', tatemono: 'job-test', component: ArkzenPage_JobTest_Dashboard, auth: false },
   { path: '/job-test', name: '__root_redirect', tatemono: 'job-test', component: ArkzenPage_JobTest_RootRedirect, auth: false },
   { path: '/mail-test/login', name: 'login', tatemono: 'mail-test', component: ArkzenPage_MailTest_Login, auth: true },
@@ -191,12 +197,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
-  { path: '/jo-payroll/job-database', name: 'job-database', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_JobDatabase, auth: false },
-  { path: '/jo-payroll/cash-atm', name: 'cash-atm', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_CashAtm, auth: false },
-  { path: '/jo-payroll/sss', name: 'sss', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Sss, auth: false },
-  { path: '/jo-payroll/hdmf', name: 'hdmf', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Hdmf, auth: false },
-  { path: '/jo-payroll/appointments', name: 'appointments', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Appointments, auth: false },
-  { path: '/jo-payroll/payslip', name: 'payslip', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Payslip, auth: false },
-  { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
+  { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
+  { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
 ]

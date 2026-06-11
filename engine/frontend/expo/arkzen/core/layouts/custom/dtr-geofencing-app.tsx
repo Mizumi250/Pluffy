@@ -3,7 +3,8 @@
 import React, { useState } from 'react'
 import { usePathname, useRouter } from 'expo-router'
 import { CalendarClock, Settings } from 'lucide-react-native'
-import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
+import { Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 
 const NAV = [
   { href: '/dtr-geofencing',       label: 'Clock In/Out', icon: CalendarClock },

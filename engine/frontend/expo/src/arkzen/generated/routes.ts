@@ -36,10 +36,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
-// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
-  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
-// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
-  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
 // ROUTE:errors-test:index:/errors-test:default:false
   { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
 // ROUTE:events-test:index:/events-test:default:false
@@ -50,6 +46,16 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
 // ROUTE:inventory-management:index:/inventory-management:default:false
   { tatName: 'inventory-management', screenName: 'index', routePath: '/inventory-management', layout: 'default', auth: false },
+// ROUTE:jo-payroll:index:/jo-payroll:app:false
+  { tatName: 'jo-payroll', screenName: 'index', routePath: '/jo-payroll', layout: 'app', auth: false },
+// ROUTE:jo-payroll:job-database:/jo-payroll/job-database:app:false
+  { tatName: 'jo-payroll', screenName: 'job-database', routePath: '/jo-payroll/job-database', layout: 'app', auth: false },
+// ROUTE:jo-payroll:cash-atm:/jo-payroll/cash-atm:app:false
+  { tatName: 'jo-payroll', screenName: 'cash-atm', routePath: '/jo-payroll/cash-atm', layout: 'app', auth: false },
+// ROUTE:jo-payroll:appointments:/jo-payroll/appointments:app:false
+  { tatName: 'jo-payroll', screenName: 'appointments', routePath: '/jo-payroll/appointments', layout: 'app', auth: false },
+// ROUTE:jo-payroll:payslip:/jo-payroll/payslip:app:false
+  { tatName: 'jo-payroll', screenName: 'payslip', routePath: '/jo-payroll/payslip', layout: 'app', auth: false },
 // ROUTE:job-test:dashboard:/job-test/dashboard:default:false
   { tatName: 'job-test', screenName: 'dashboard', routePath: '/job-test/dashboard', layout: 'default', auth: false },
 // ROUTE:mail-test:login:/mail-test/login:guest:false
@@ -90,16 +96,10 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
-// ROUTE:jo-payroll:index:/jo-payroll:app:false
-  { tatName: 'jo-payroll', screenName: 'index', routePath: '/jo-payroll', layout: 'app', auth: false },
-// ROUTE:jo-payroll:job-database:/jo-payroll/job-database:app:false
-  { tatName: 'jo-payroll', screenName: 'job-database', routePath: '/jo-payroll/job-database', layout: 'app', auth: false },
-// ROUTE:jo-payroll:cash-atm:/jo-payroll/cash-atm:app:false
-  { tatName: 'jo-payroll', screenName: 'cash-atm', routePath: '/jo-payroll/cash-atm', layout: 'app', auth: false },
-// ROUTE:jo-payroll:appointments:/jo-payroll/appointments:app:false
-  { tatName: 'jo-payroll', screenName: 'appointments', routePath: '/jo-payroll/appointments', layout: 'app', auth: false },
-// ROUTE:jo-payroll:payslip:/jo-payroll/payslip:app:false
-  { tatName: 'jo-payroll', screenName: 'payslip', routePath: '/jo-payroll/payslip', layout: 'app', auth: false },
+// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
+  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
+// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
+  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EmployeeDropdown [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-11T01:13:17.832Z
+// Generated: 2026-06-11T02:31:08.784Z
 // ============================================================
 
 export { EmployeeDropdown } from './_components'

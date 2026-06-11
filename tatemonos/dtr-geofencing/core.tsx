@@ -1207,7 +1207,8 @@ export const pageVariants = {
 /* @arkzen:native:layout:app */
 
 import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, SafeAreaView } from 'react-native'
+import { View, Text, TouchableOpacity } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter, usePathname } from 'expo-router'
 import { CalendarClock, Settings } from 'lucide-react-native'
 
