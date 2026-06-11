@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE ANIMATIONS — dtr-geofencing
 // Source: @arkzen:native:animation:rn
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-11T02:31:08.723Z
+// Generated: 2026-06-11T03:25:47.167Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,

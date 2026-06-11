@@ -14,6 +14,8 @@ export interface ArkzenExpoRoute {
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
 // ROUTE:animation-lab:index:/animation-lab:default:false
   { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
+// ROUTE:asset-hub:index:/asset-hub:default:false
+  { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
 // ROUTE:auth-test:login:/auth-test/login:guest:false
   { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
 // ROUTE:auth-test:register:/auth-test/register:guest:false
@@ -36,6 +38,10 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
+// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
+  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
+// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
+  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
 // ROUTE:errors-test:index:/errors-test:default:false
   { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
 // ROUTE:events-test:index:/events-test:default:false
@@ -96,10 +102,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
-// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
-  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
-// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
-  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

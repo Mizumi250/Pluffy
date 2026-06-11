@@ -29,13 +29,15 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
-import { emitNativeStyles } from './lib/dsl-native-style-emitter'
+import { emitNativeStyles }                    from './lib/dsl-native-style-emitter'
+import { copyAssetsToExpo, cleanExpoAssets }   from '../../../../shared/arkzen/native-core/assets'
 
-const SRC_SCREENS_DIR  = path.resolve(process.cwd(), 'src', 'screens')
+const SRC_SCREENS_DIR    = path.resolve(process.cwd(), 'src', 'screens')
 const NATIVE_LAYOUTS_DIR = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
-const APP_DIR          = path.resolve(process.cwd(), 'app')
-const GENERATED_DIR    = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
-const ROUTES_FILE      = path.join(GENERATED_DIR, 'routes.ts')
+const APP_DIR            = path.resolve(process.cwd(), 'app')
+const GENERATED_DIR      = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
+const ROUTES_FILE        = path.join(GENERATED_DIR, 'routes.ts')
+const EXPO_ASSETS_DIR    = path.resolve(process.cwd(), 'assets')
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -773,6 +775,14 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   // v3.5: emit native styles from @arkzen:native:style:* blocks
   emitNativeStyles(tatName, tatemono.nativeStyles ?? [], GENERATED_DIR, 'Arkzen Expo Router')
 
+  // Distribute tatemono assets → assets/tatemonos/{tatName}/
+  const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')
+  const assetsPath   = path.join(tatemonosDir, tatName, 'assets')
+  const hasAssets    = copyAssetsToExpo(tatName, assetsPath, EXPO_ASSETS_DIR)
+  if (!hasAssets) {
+    console.log(`[Arkzen Expo Router] No assets folder for ${tatName}`)
+  }
+
   // v3.4: generate native animation file if present (:rn block — Expo / bare RN)
   if (tatemono.nativeAnimationRN) {
     ensureDir(GENERATED_DIR)
@@ -833,6 +843,9 @@ export function unregisterExpoScreens(tatName: string): void {
     fs.rmSync(appDir, { recursive: true, force: true })
     console.log(`[Arkzen Expo Router] ✓ Removed app routes: ${tatName}`)
   }
+
+  // Clean distributed assets
+  cleanExpoAssets(tatName, EXPO_ASSETS_DIR)
 
   // v3.4: clean up generated native animation file
   const animPath = path.join(GENERATED_DIR, `${tatName}.native-animations.ts`)
