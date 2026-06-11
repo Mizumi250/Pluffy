@@ -2016,3 +2016,1744 @@ const IndexPage = () => {
   )
 }
 /* @arkzen:web:page:index:end */
+
+
+/* @arkzen:meta:native
+label: Shan Sabal Cezar
+description: Portfolio of Shan Sabal Cezar — designer, document specialist, researcher
+expo:
+  bundle_id: com.shanshan.portfolio
+  scheme: shanshan
+  version: 2.0.0
+  orientation: portrait
+  status_bar_style: light
+*/
+
+/* @arkzen:native:config
+theme:
+  primary: "#CC0000"
+  secondary: "#1a1a1a"
+  accent: "#8B0000"
+  background: "#f5f0eb"
+  surface: "#ffffff"
+  text: "#1a1a1a"
+  muted: "#888888"
+*/
+
+/* @arkzen:native:style:shared */
+.screen {
+  flex: 1;
+  background-color: #f5f0eb;
+}
+
+.screen-dark {
+  flex: 1;
+  background-color: #1a1a1a;
+}
+
+.section-label {
+  font-size: 9px;
+  font-weight: 400;
+  color: #CC0000;
+  letter-spacing: 4px;
+}
+
+.section-label-light {
+  font-size: 9px;
+  font-weight: 400;
+  color: rgba(255,255,255,0.4);
+  letter-spacing: 4px;
+}
+
+.divider {
+  height: 1px;
+  background-color: rgba(26,26,26,0.1);
+}
+
+.divider-dark {
+  height: 1px;
+  background-color: rgba(255,255,255,0.08);
+}
+
+.red-pill {
+  padding-horizontal: 12px;
+  padding-vertical: 4px;
+  background-color: #CC0000;
+  align-self: flex-start;
+}
+
+.red-pill-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.dark-pill {
+  padding-horizontal: 12px;
+  padding-vertical: 4px;
+  background-color: #1a1a1a;
+  align-self: flex-start;
+}
+
+.dark-pill-text {
+  font-size: 9px;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: 2px;
+}
+
+.tag-pill {
+  padding-horizontal: 12px;
+  padding-vertical: 5px;
+  background-color: #ffffff;
+  border-width: 1px;
+  border-color: rgba(26,26,26,0.12);
+}
+
+.tag-pill-text {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #1a1a1a;
+}
+
+.tag-pill-red {
+  padding-horizontal: 12px;
+  padding-vertical: 5px;
+  background-color: rgba(204,0,0,0.08);
+  border-width: 1px;
+  border-color: rgba(204,0,0,0.2);
+}
+
+.tag-pill-red-text {
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  color: #CC0000;
+}
+
+.cta-button {
+  background-color: #CC0000;
+  padding-vertical: 16px;
+  padding-horizontal: 36px;
+  align-items: center;
+  justify-content: center;
+}
+
+.cta-button-text {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.outline-button {
+  border-width: 1.5px;
+  border-color: #1a1a1a;
+  padding-vertical: 16px;
+  padding-horizontal: 36px;
+  align-items: center;
+  justify-content: center;
+}
+
+.outline-button-text {
+  color: #1a1a1a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.outline-button-light {
+  border-width: 1.5px;
+  border-color: rgba(255,255,255,0.4);
+  padding-vertical: 16px;
+  padding-horizontal: 36px;
+  align-items: center;
+  justify-content: center;
+}
+
+.outline-button-light-text {
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2.5px;
+}
+
+.info-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.3);
+  margin-bottom: 4px;
+}
+
+.info-value {
+  font-size: 14px;
+  color: rgba(255,255,255,0.82);
+  font-style: italic;
+  line-height: 20px;
+}
+/* @arkzen:native:style:shared:end */
+
+/* @arkzen:native:style:hero */
+.hero-wrap {
+  background-color: #CC0000;
+  padding-top: 72px;
+  padding-bottom: 64px;
+  padding-horizontal: 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+.hero-eyebrow {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.5);
+  margin-bottom: 20px;
+}
+
+.hero-logo {
+  font-size: 80px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -4px;
+  line-height: 80px;
+  margin-bottom: 6px;
+}
+
+.hero-subtitle {
+  font-size: 13px;
+  color: rgba(255,255,255,0.65);
+  letter-spacing: 1px;
+  line-height: 20px;
+  margin-bottom: 36px;
+}
+
+.hero-watermark {
+  position: absolute;
+  bottom: -20px;
+  right: -12px;
+  font-size: 130px;
+  font-weight: 900;
+  color: rgba(0,0,0,0.06);
+  letter-spacing: -7px;
+  line-height: 130px;
+}
+
+.hero-scroll-hint {
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.hero-scroll-line {
+  width: 32px;
+  height: 1px;
+  background-color: rgba(255,255,255,0.35);
+}
+
+.hero-scroll-text {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.45);
+}
+/* @arkzen:native:style:hero:end */
+
+/* @arkzen:native:style:intro */
+.intro-wrap {
+  background-color: #f5f0eb;
+  padding-horizontal: 28px;
+  padding-top: 56px;
+  padding-bottom: 48px;
+}
+
+.intro-pre {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: #CC0000;
+  margin-bottom: 16px;
+}
+
+.intro-title {
+  font-size: 40px;
+  font-weight: 300;
+  color: #1a1a1a;
+  font-style: italic;
+  line-height: 44px;
+  letter-spacing: -1.5px;
+  margin-bottom: 20px;
+}
+
+.intro-abstract {
+  font-size: 15px;
+  color: #666666;
+  line-height: 24px;
+  font-style: italic;
+  margin-bottom: 12px;
+}
+
+.intro-caption {
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: #aaaaaa;
+}
+/* @arkzen:native:style:intro:end */
+
+/* @arkzen:native:style:marquee */
+.marquee-wrap {
+  background-color: #CC0000;
+  padding-vertical: 18px;
+  overflow: hidden;
+}
+
+.marquee-item {
+  font-size: 14px;
+  font-weight: 700;
+  color: #ffffff;
+  padding-horizontal: 18px;
+  letter-spacing: 1px;
+}
+/* @arkzen:native:style:marquee:end */
+
+/* @arkzen:native:style:chapter */
+.chapter-section-header {
+  background-color: #ffffff;
+  padding-horizontal: 28px;
+  padding-top: 48px;
+  padding-bottom: 24px;
+}
+
+.chapter-section-eyebrow {
+  font-size: 9px;
+  letter-spacing: 4px;
+  color: #CC0000;
+  margin-bottom: 10px;
+}
+
+.chapter-section-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -1.5px;
+  line-height: 34px;
+}
+
+.chapter-wrap {
+  margin-bottom: 2px;
+  background-color: #ffffff;
+  overflow: hidden;
+}
+
+.chapter-cover-img {
+  width: 100%;
+  height: 260px;
+}
+
+.chapter-cover-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 260px;
+  background-color: rgba(0,0,0,0.36);
+}
+
+.chapter-cover-num {
+  font-size: 88px;
+  font-weight: 900;
+  color: rgba(255,255,255,0.07);
+  letter-spacing: -5px;
+  line-height: 88px;
+}
+
+.chapter-cover-badge {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+}
+
+.chapter-cover-label {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+}
+
+.chapter-cover-label-text {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: rgba(255,255,255,0.7);
+}
+
+.chapter-body {
+  padding-horizontal: 24px;
+  padding-top: 28px;
+  padding-bottom: 0px;
+}
+
+.chapter-tagline {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #CC0000;
+  margin-bottom: 8px;
+}
+
+.chapter-title {
+  font-size: 32px;
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -1.5px;
+  line-height: 34px;
+  margin-bottom: 16px;
+}
+
+.chapter-headline {
+  font-size: 16px;
+  font-weight: 300;
+  color: #444444;
+  font-style: italic;
+  line-height: 24px;
+  margin-bottom: 20px;
+}
+
+.chapter-desc {
+  font-size: 13px;
+  color: #666666;
+  line-height: 22px;
+  margin-bottom: 24px;
+}
+
+.chapter-divider {
+  height: 1px;
+  background-color: rgba(0,0,0,0.07);
+  margin-horizontal: 24px;
+  margin-vertical: 4px;
+}
+
+.chapter-lookbook-img {
+  width: 100%;
+  height: 200px;
+}
+
+.chapter-craft-wrap {
+  padding-horizontal: 24px;
+  padding-vertical: 24px;
+  background-color: #f9f6f2;
+}
+
+.chapter-craft-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #aaaaaa;
+  margin-bottom: 10px;
+}
+
+.chapter-craft-text {
+  font-size: 14px;
+  color: #555555;
+  font-style: italic;
+  line-height: 22px;
+  border-left-width: 2px;
+  border-left-color: #CC0000;
+  padding-left: 14px;
+}
+
+.chapter-tags-wrap {
+  padding-horizontal: 24px;
+  padding-vertical: 20px;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.chapter-sound-strip {
+  flex-direction: row;
+  align-items: center;
+  padding-horizontal: 24px;
+  padding-vertical: 20px;
+  border-top-width: 1px;
+  border-top-color: rgba(0,0,0,0.06);
+  gap: 10px;
+}
+
+.chapter-sound-label {
+  font-size: 8px;
+  letter-spacing: 2px;
+  color: #bbbbbb;
+}
+
+.chapter-sound-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+  flex: 1;
+}
+
+.chapter-outro-wrap {
+  background-color: #f5f0eb;
+  padding-horizontal: 24px;
+  padding-top: 32px;
+  padding-bottom: 40px;
+  margin-bottom: 2px;
+}
+
+.chapter-outro-desc {
+  font-size: 13px;
+  color: #666666;
+  font-style: italic;
+  line-height: 22px;
+  margin-bottom: 20px;
+}
+
+.chapter-next-label {
+  font-size: 9px;
+  letter-spacing: 3px;
+  color: #bbbbbb;
+  margin-top: 24px;
+  margin-bottom: 6px;
+}
+
+.chapter-next-title {
+  font-size: 22px;
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -0.5px;
+}
+/* @arkzen:native:style:chapter:end */
+
+/* @arkzen:native:style:skills */
+.skills-section {
+  background-color: #ffffff;
+  padding-horizontal: 28px;
+  padding-vertical: 48px;
+}
+
+.skills-title {
+  font-size: 28px;
+  font-weight: 900;
+  color: #1a1a1a;
+  letter-spacing: -1px;
+  margin-bottom: 4px;
+}
+
+.skills-sub {
+  font-size: 12px;
+  color: #888888;
+  letter-spacing: 1px;
+  margin-bottom: 32px;
+}
+
+.skill-row {
+  margin-bottom: 20px;
+}
+
+.skill-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: 1.5px;
+  margin-bottom: 8px;
+}
+
+.skill-bar-bg {
+  height: 2px;
+  background-color: rgba(26,26,26,0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.skill-bar-fill {
+  height: 2px;
+  background-color: #CC0000;
+  border-radius: 2px;
+}
+/* @arkzen:native:style:skills:end */
+
+/* @arkzen:native:style:about */
+.about-wrap {
+  background-color: #1a1a1a;
+  padding-bottom: 60px;
+}
+
+.about-photo {
+  width: 100%;
+  height: 320px;
+}
+
+.about-body {
+  padding-horizontal: 28px;
+  padding-top: 40px;
+}
+
+.about-name {
+  font-size: 52px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -3px;
+  line-height: 50px;
+  margin-bottom: 40px;
+  margin-top: 16px;
+}
+
+.about-info-row {
+  padding-vertical: 16px;
+}
+/* @arkzen:native:style:about:end */
+
+/* @arkzen:native:style:contact */
+.contact-wrap {
+  background-color: #f5f0eb;
+  padding-horizontal: 28px;
+  padding-vertical: 64px;
+  align-items: center;
+}
+
+.contact-headline {
+  font-size: 40px;
+  font-weight: 300;
+  color: #1a1a1a;
+  font-style: italic;
+  text-align: center;
+  line-height: 44px;
+  letter-spacing: -1.5px;
+  margin-top: 16px;
+  margin-bottom: 40px;
+}
+
+.contact-watermark {
+  font-size: 88px;
+  font-weight: 900;
+  color: rgba(204,0,0,0.04);
+  letter-spacing: -5px;
+  margin-top: 40px;
+  text-align: center;
+}
+/* @arkzen:native:style:contact:end */
+
+/* @arkzen:native:style:footer */
+.footer-wrap {
+  background-color: #0a0a0a;
+  padding-horizontal: 28px;
+  padding-top: 48px;
+  padding-bottom: 40px;
+}
+
+.footer-logo {
+  font-size: 48px;
+  font-weight: 900;
+  color: #CC0000;
+  letter-spacing: -3px;
+  line-height: 48px;
+  margin-bottom: 24px;
+}
+
+.footer-copy {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.2);
+  text-align: center;
+  margin-top: 20px;
+}
+
+.footer-social-btn {
+  padding-horizontal: 20px;
+  padding-vertical: 10px;
+  border-width: 1px;
+  border-color: rgba(255,255,255,0.12);
+}
+
+.footer-social-text {
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: rgba(255,255,255,0.4);
+}
+/* @arkzen:native:style:footer:end */
+
+/* @arkzen:native:style:nav */
+.nav-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(10,10,10,0.97);
+  z-index: 100;
+  justify-content: center;
+  align-items: center;
+  padding-horizontal: 40px;
+}
+
+.nav-link-text {
+  font-size: 36px;
+  font-weight: 900;
+  color: #ffffff;
+  letter-spacing: -1px;
+  padding-vertical: 12px;
+}
+
+.nav-link-text-active {
+  font-size: 36px;
+  font-weight: 900;
+  color: #CC0000;
+  letter-spacing: -1px;
+  padding-vertical: 12px;
+}
+
+.nav-close-btn {
+  position: absolute;
+  top: 52px;
+  right: 24px;
+  width: 44px;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-close-text {
+  font-size: 28px;
+  color: #ffffff;
+  font-weight: 300;
+}
+
+.burger-btn {
+  position: absolute;
+  top: 52px;
+  right: 24px;
+  z-index: 50;
+  width: 44px;
+  height: 36px;
+  justify-content: space-between;
+  padding-vertical: 4px;
+  align-items: flex-end;
+}
+/* @arkzen:native:style:nav:end */
+
+/* @arkzen:native:style:loader */
+.loader-wrap {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #0a0a0a;
+  z-index: 999;
+  justify-content: flex-end;
+  align-items: flex-start;
+  padding-horizontal: 40px;
+  padding-bottom: 48px;
+}
+
+.loader-count {
+  font-size: 100px;
+  font-weight: 900;
+  color: #CC0000;
+  letter-spacing: -5px;
+  line-height: 100px;
+}
+
+.loader-label {
+  font-size: 11px;
+  letter-spacing: 4px;
+  color: rgba(255,255,255,0.25);
+  margin-top: 8px;
+}
+
+.loader-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 3px;
+  background-color: #CC0000;
+}
+/* @arkzen:native:style:loader:end */
+
+/* @arkzen:native:components:shared */
+
+import React, { useRef, useEffect, useState, useCallback } from 'react'
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Linking,
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+} from 'react-native'
+import { setActiveTatemono } from '@/arkzen/core/stores/authStore'
+
+setActiveTatemono('shan-shan')
+
+const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window')
+
+// ─── DATA ─────────────────────────────────────────────────────────────────────
+
+const CHAPTERS = [
+  {
+    id: 'design',
+    num: '01',
+    coverLabel: 'Visual',
+    tagline: 'GRAPHIC DESIGN',
+    headline: 'Visual clarity,\nbold impressions.',
+    desc: 'Visual design for print and digital — posters, flyers, social media graphics, brand materials. Clean layouts with bold typography that communicate clearly and leave an impression.',
+    craft: 'Every layout starts from a single question: what should the eye land on first? From there, hierarchy, contrast, and rhythm carry the rest.',
+    sound: 'FORM FOLLOWS FEELING',
+    tags: ['Print Design', 'Social Graphics', 'Brand Identity', 'Typography'],
+    img: require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+    gallery: [
+      require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+    ],
+    color: '#CC0000',
+  },
+  {
+    id: 'docs',
+    num: '02',
+    coverLabel: 'Document',
+    tagline: 'DOCUMENT PREPARATION',
+    headline: 'Every page structured,\nevery detail polished.',
+    desc: 'Professional document preparation — reports, proposals, templates, formatted deliverables. Every page structured, every section purposeful, every detail polished.',
+    craft: 'A document is architecture in two dimensions. The margins, the headers, the flow from section to section — all of it is intentional.',
+    sound: 'STRUCTURE IS THE STORY',
+    tags: ['Reports', 'Proposals', 'Templates', 'Formatting'],
+    img: require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+    gallery: [
+      require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+    ],
+    color: '#111111',
+  },
+  {
+    id: 'research',
+    num: '03',
+    coverLabel: 'Research',
+    tagline: 'RESEARCH & ANALYSIS',
+    headline: 'Deep dives.\nActionable insights.',
+    desc: 'Thorough research and analysis — academic papers, market studies, data gathering and synthesis. Deep dives that turn complex information into clear, actionable insights.',
+    craft: "Good research isn't just gathering data — it's knowing which question to ask next, and having the patience to follow it all the way down.",
+    sound: 'DEPTH BEFORE DELIVERY',
+    tags: ['Academic Research', 'Market Studies', 'Data Synthesis', 'Analysis'],
+    img: require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+    gallery: [
+      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
+    ],
+    color: '#8B0000',
+  },
+  {
+    id: 'present',
+    num: '04',
+    coverLabel: 'Present',
+    tagline: 'PRESENTATION DESIGN',
+    headline: 'Stories told\none slide at a time.',
+    desc: 'Clean, impactful slide decks — pitch presentations, school projects, business proposals. Every slide designed to support the story, not distract from it.',
+    craft: 'A great presentation is a rhythm. Breath in: information. Breath out: space. Every slide knows exactly when to speak and when to let silence work.',
+    sound: 'ONE SLIDE, ONE TRUTH',
+    tags: ['Pitch Decks', 'School Projects', 'Business Proposals', 'Slide Design'],
+    img: require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+    gallery: [
+      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
+      require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+    ],
+    color: '#1a1a2e',
+  },
+]
+
+const SKILLS = [
+  { name: 'CANVA',               pct: 96 },
+  { name: 'ADOBE ILLUSTRATOR',   pct: 85 },
+  { name: 'PHOTOSHOP',           pct: 80 },
+  { name: 'MICROSOFT WORD',      pct: 98 },
+  { name: 'POWERPOINT',          pct: 94 },
+  { name: 'GOOGLE SLIDES',       pct: 95 },
+  { name: 'RESEARCH WRITING',    pct: 90 },
+  { name: 'LAYOUT DESIGN',       pct: 88 },
+  { name: 'TYPOGRAPHY',          pct: 84 },
+]
+
+const SKILLS_MARQUEE = [
+  'Canva', '·', 'Adobe Illustrator', '·', 'Photoshop', '·',
+  'Microsoft Word', '·', 'PowerPoint', '·', 'Google Slides', '·',
+  'Google Docs', '·', 'Excel', '·', 'Research Writing', '·',
+  'Layout Design', '·', 'Typography', '·', 'Brand Identity', '·',
+]
+
+const PERSONAL_INFO = [
+  { label: 'NAME',    value: 'Shan Sabal Cezar' },
+  { label: 'ROLE',    value: 'Designer · Document Specialist · Researcher' },
+  { label: 'BASE',    value: 'Philippines' },
+  { label: 'TOOLS',   value: 'Canva, Microsoft Office, Google Workspace, Adobe Suite' },
+  { label: 'STATUS',  value: 'Open for freelance projects and collaborations' },
+  { label: 'CONTACT', value: 'Facebook · @shan.cezar.71' },
+]
+
+const NAV_LINKS = [
+  { label: "SHAN'S WORK", scrollTo: 'work' },
+  { label: 'SKILLS',      scrollTo: 'skills' },
+  { label: 'ABOUT',       scrollTo: 'about' },
+  { label: 'CONTACT',     scrollTo: 'contact' },
+]
+
+// ─── LOADER ───────────────────────────────────────────────────────────────────
+
+const Loader = ({ onComplete }: { onComplete: () => void }) => {
+  const [count, setCount] = useState(0)
+  const barWidth  = useRef(new Animated.Value(0)).current
+  const barHeight = useRef(new Animated.Value(3)).current
+  const opacity   = useRef(new Animated.Value(1)).current
+
+  useEffect(() => {
+    // Count 0→100
+    let frame = 0
+    const total = 60
+    const timer = setInterval(() => {
+      frame++
+      setCount(Math.round((frame / total) * 100))
+      if (frame >= total) clearInterval(timer)
+    }, 23)
+
+    // Bar sweep → expand → fade
+    Animated.sequence([
+      Animated.timing(barWidth, {
+        toValue: SCREEN_W,
+        duration: 1400,
+        useNativeDriver: false,
+      }),
+      Animated.timing(barHeight, {
+        toValue: SCREEN_H,
+        duration: 400,
+        useNativeDriver: false,
+      }),
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 400,
+        useNativeDriver: false,
+      }),
+    ]).start(() => onComplete())
+
+    return () => clearInterval(timer)
+  }, [])
+
+  return (
+    <Animated.View style={[s.loaderWrap, { opacity }]} pointerEvents="none">
+      {/* Bar */}
+      <Animated.View style={[s.loaderBar, { width: barWidth, height: barHeight }]} />
+      {/* Count */}
+      <Text style={s.loaderCount}>{count}</Text>
+      <Text style={s.loaderLabel}>SHAN SABAL CEZAR</Text>
+    </Animated.View>
+  )
+}
+
+// ─── SOUND BARS ───────────────────────────────────────────────────────────────
+
+const SoundBars = () => {
+  const anims = useRef(
+    Array.from({ length: 9 }, (_, i) => ({
+      val: new Animated.Value(4),
+      delay: i * 110,
+    }))
+  ).current
+
+  useEffect(() => {
+    anims.forEach(({ val, delay }) => {
+      Animated.loop(
+        Animated.sequence([
+          Animated.delay(delay),
+          Animated.timing(val, { toValue: 20, duration: 380, useNativeDriver: false }),
+          Animated.timing(val, { toValue: 4,  duration: 380, useNativeDriver: false }),
+        ])
+      ).start()
+    })
+  }, [])
+
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 3, height: 20 }}>
+      {anims.map(({ val }, i) => (
+        <Animated.View
+          key={i}
+          style={{
+            width: 2,
+            height: val,
+            backgroundColor: '#CC0000',
+            borderRadius: 1,
+          }}
+        />
+      ))}
+    </View>
+  )
+}
+
+// ─── FADE-IN WRAPPER ──────────────────────────────────────────────────────────
+
+const FadeIn = ({
+  children,
+  delay = 0,
+  from = 'bottom',
+  distance = 28,
+}: {
+  children: React.ReactNode
+  delay?: number
+  from?: 'bottom' | 'left' | 'right' | 'none'
+  distance?: number
+}) => {
+  const opacity = useRef(new Animated.Value(0)).current
+  const translate = useRef(new Animated.Value(distance)).current
+
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1, duration: 640, delay,
+        useNativeDriver: true,
+      }),
+      Animated.timing(translate, {
+        toValue: 0, duration: 640, delay,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [])
+
+  const transform =
+    from === 'bottom' ? [{ translateY: translate }] :
+    from === 'left'   ? [{ translateX: translate }] :
+    from === 'right'  ? [{ translateX: Animated.multiply(translate, -1) }] :
+    []
+
+  return (
+    <Animated.View style={{ opacity, transform }}>
+      {children}
+    </Animated.View>
+  )
+}
+
+// ─── STAGGER CONTAINER ────────────────────────────────────────────────────────
+// Wraps children and triggers FadeIn only when onLayout fires (scroll-into-view sim)
+
+const StaggerReveal = ({
+  children,
+  baseDelay = 0,
+  stagger = 80,
+}: {
+  children: React.ReactNode[]
+  baseDelay?: number
+  stagger?: number
+}) => (
+  <>
+    {React.Children.map(children, (child, i) => (
+      <FadeIn key={i} delay={baseDelay + i * stagger}>
+        {child}
+      </FadeIn>
+    ))}
+  </>
+)
+
+// ─── BURGER / NAV ─────────────────────────────────────────────────────────────
+
+const BurgerNav = ({
+  onNavigate,
+  darkBg = false,
+}: {
+  onNavigate: (target: string) => void
+  darkBg?: boolean
+}) => {
+  const [open, setOpen] = useState(false)
+  const [active, setActive] = useState<string | null>(null)
+  const overlayOpacity = useRef(new Animated.Value(0)).current
+  const navItemAnims   = useRef(NAV_LINKS.map(() => ({
+    opacity:    new Animated.Value(0),
+    translateX: new Animated.Value(-40),
+  }))).current
+
+  const openNav = () => {
+    setOpen(true)
+    Animated.timing(overlayOpacity, {
+      toValue: 1, duration: 320,
+      useNativeDriver: true,
+    }).start(() => {
+      NAV_LINKS.forEach((_, i) => {
+        Animated.parallel([
+          Animated.timing(navItemAnims[i].opacity, {
+            toValue: 1, duration: 340, delay: i * 80,
+            useNativeDriver: true,
+          }),
+          Animated.timing(navItemAnims[i].translateX, {
+            toValue: 0, duration: 340, delay: i * 80,
+            useNativeDriver: true,
+          }),
+        ]).start()
+      })
+    })
+  }
+
+  const closeNav = () => {
+    navItemAnims.forEach(({ opacity: op, translateX: tx }) => {
+      Animated.timing(op,  { toValue: 0, duration: 180, useNativeDriver: true }).start()
+      Animated.timing(tx,  { toValue: -40, duration: 180, useNativeDriver: true }).start()
+    })
+    Animated.timing(overlayOpacity, {
+      toValue: 0, duration: 300, delay: 120,
+      useNativeDriver: true,
+    }).start(() => {
+      setOpen(false)
+      navItemAnims.forEach(({ opacity: op, translateX: tx }) => {
+        op.setValue(0); tx.setValue(-40)
+      })
+    })
+  }
+
+  const handleLink = (scrollTo: string) => {
+    setActive(scrollTo)
+    closeNav()
+    setTimeout(() => {
+      onNavigate(scrollTo)
+      setActive(null)
+    }, 340)
+  }
+
+  // Burger lines
+  const line1Rotate    = useRef(new Animated.Value(0)).current
+  const line2Opacity   = useRef(new Animated.Value(1)).current
+  const line3Rotate    = useRef(new Animated.Value(0)).current
+
+  useEffect(() => {
+    if (open) {
+      Animated.parallel([
+        Animated.timing(line1Rotate,  { toValue: 1, duration: 280, useNativeDriver: true }),
+        Animated.timing(line2Opacity, { toValue: 0, duration: 200, useNativeDriver: true }),
+        Animated.timing(line3Rotate,  { toValue: 1, duration: 280, useNativeDriver: true }),
+      ]).start()
+    } else {
+      Animated.parallel([
+        Animated.timing(line1Rotate,  { toValue: 0, duration: 280, useNativeDriver: true }),
+        Animated.timing(line2Opacity, { toValue: 1, duration: 200, useNativeDriver: true }),
+        Animated.timing(line3Rotate,  { toValue: 0, duration: 280, useNativeDriver: true }),
+      ]).start()
+    }
+  }, [open])
+
+  const lineColor = darkBg ? '#ffffff' : '#ffffff'
+
+  return (
+    <>
+      {/* Burger button */}
+      <TouchableOpacity
+        style={s.burgerBtn}
+        onPress={openNav}
+        activeOpacity={0.7}
+        hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+      >
+        <Animated.View style={{
+          height: 2, width: 28, backgroundColor: lineColor, borderRadius: 1,
+          transform: [{
+            rotate: line1Rotate.interpolate({ inputRange: [0,1], outputRange: ['0deg', '45deg'] }),
+          }, {
+            translateY: line1Rotate.interpolate({ inputRange: [0,1], outputRange: [0, 10] }),
+          }],
+        }} />
+        <Animated.View style={{
+          height: 2, width: 20, backgroundColor: lineColor, borderRadius: 1,
+          opacity: line2Opacity,
+        }} />
+        <Animated.View style={{
+          height: 2, width: 28, backgroundColor: lineColor, borderRadius: 1,
+          transform: [{
+            rotate: line3Rotate.interpolate({ inputRange: [0,1], outputRange: ['0deg', '-45deg'] }),
+          }, {
+            translateY: line3Rotate.interpolate({ inputRange: [0,1], outputRange: [0, -10] }),
+          }],
+        }} />
+      </TouchableOpacity>
+
+      {/* Full-screen nav overlay */}
+      <Modal visible={open} transparent animationType="none" statusBarTranslucent>
+        <Animated.View style={[s.navOverlay, { opacity: overlayOpacity }]}>
+          {/* Close button */}
+          <TouchableOpacity style={s.navCloseBtn} onPress={closeNav} activeOpacity={0.7}>
+            <Text style={s.navCloseText}>×</Text>
+          </TouchableOpacity>
+
+          {/* Nav links */}
+          <View style={{ width: '100%', gap: 4 }}>
+            {NAV_LINKS.map((link, i) => (
+              <Animated.View
+                key={link.scrollTo}
+                style={{
+                  opacity: navItemAnims[i].opacity,
+                  transform: [{ translateX: navItemAnims[i].translateX }],
+                }}
+              >
+                <TouchableOpacity
+                  onPress={() => handleLink(link.scrollTo)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={active === link.scrollTo ? s.navLinkTextActive : s.navLinkText}>
+                    {link.label}
+                  </Text>
+                </TouchableOpacity>
+              </Animated.View>
+            ))}
+          </View>
+
+          {/* Bottom micro info */}
+          <View style={{ position: 'absolute', bottom: 48, left: 40 }}>
+            <Text style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.2)' }}>
+              SHAN SABAL CEZAR · PORTFOLIO
+            </Text>
+          </View>
+        </Animated.View>
+      </Modal>
+    </>
+  )
+}
+
+// ─── GALLERY STRIP ────────────────────────────────────────────────────────────
+
+const GalleryStrip = ({ images }: { images: any[] }) => (
+  <ScrollView
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    contentContainerStyle={{ gap: 2, paddingHorizontal: 0 }}
+  >
+    {images.map((img, i) => (
+      <Image
+        key={i}
+        source={img}
+        style={{ width: SCREEN_W * 0.72, height: 200 }}
+        resizeMode="cover"
+      />
+    ))}
+  </ScrollView>
+)
+
+// ─── SKILL BAR ────────────────────────────────────────────────────────────────
+
+const SkillBar = ({ name, pct, delay = 0 }: { name: string; pct: number; delay?: number }) => {
+  const width = useRef(new Animated.Value(0)).current
+  const opacity = useRef(new Animated.Value(0)).current
+
+  const reveal = useCallback(() => {
+    Animated.parallel([
+      Animated.timing(opacity, {
+        toValue: 1, duration: 400, delay,
+        useNativeDriver: true,
+      }),
+      Animated.timing(width, {
+        toValue: (SCREEN_W - 56) * (pct / 100),
+        duration: 800, delay,
+        useNativeDriver: false,
+      }),
+    ]).start()
+  }, [])
+
+  useEffect(() => { reveal() }, [])
+
+  return (
+    <Animated.View style={[s.skillRow, { opacity }]}>
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+        <Text style={s.skillName}>{name}</Text>
+        <Text style={{ fontSize: 10, color: '#aaa', letterSpacing: 1 }}>{pct}%</Text>
+      </View>
+      <View style={s.skillBarBg}>
+        <Animated.View style={[s.skillBarFill, { width }]} />
+      </View>
+    </Animated.View>
+  )
+}
+
+// ─── CHAPTER COMPONENT ────────────────────────────────────────────────────────
+
+const Chapter = ({
+  chapter,
+  index,
+  onWorkPress,
+}: {
+  chapter: typeof CHAPTERS[0]
+  index: number
+  onWorkPress: () => void
+}) => {
+  const coverScale   = useRef(new Animated.Value(1)).current
+  const bodyOpacity  = useRef(new Animated.Value(0)).current
+  const bodyTranslate = useRef(new Animated.Value(32)).current
+  const [revealed, setRevealed] = useState(false)
+
+  const revealBody = useCallback(() => {
+    if (revealed) return
+    setRevealed(true)
+    Animated.parallel([
+      Animated.timing(bodyOpacity, {
+        toValue: 1, duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(bodyTranslate, {
+        toValue: 0, duration: 600,
+        useNativeDriver: true,
+      }),
+    ]).start()
+  }, [revealed])
+
+  // Subtle cover scale pulse on mount
+  useEffect(() => {
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(coverScale, { toValue: 1.04, duration: 6000, useNativeDriver: true }),
+        Animated.timing(coverScale, { toValue: 1.00, duration: 6000, useNativeDriver: true }),
+      ])
+    ).start()
+  }, [])
+
+  const nextChapter = CHAPTERS[index + 1]
+
+  return (
+    <View
+      style={s.chapterWrap}
+      onLayout={revealBody}
+    >
+      {/* ── Cover image ── */}
+      <View style={{ overflow: 'hidden', height: 260 }}>
+        <Animated.Image
+          source={chapter.img}
+          style={[s.chapterCoverImg, { transform: [{ scale: coverScale }] }]}
+          resizeMode="cover"
+        />
+        <View style={s.chapterCoverOverlay} />
+
+        {/* Num watermark */}
+        <View style={{ position: 'absolute', bottom: 8, right: 16 }}>
+          <Text style={s.chapterCoverNum}>{chapter.num}</Text>
+        </View>
+
+        {/* Chapter label badge */}
+        <View style={[s.chapterCoverBadge]}>
+          <View style={s.redPill}>
+            <Text style={s.redPillText}>[{chapter.coverLabel.toUpperCase()}]</Text>
+          </View>
+        </View>
+
+        {/* Bottom cover label */}
+        <View style={s.chapterCoverLabel}>
+          <Text style={s.chapterCoverLabelText}>[{chapter.num}] [CHAPTER]</Text>
+        </View>
+      </View>
+
+      {/* ── Chapter body (animated in) ── */}
+      <Animated.View style={{ opacity: bodyOpacity, transform: [{ translateY: bodyTranslate }] }}>
+
+        {/* Header */}
+        <View style={s.chapterBody}>
+          <Text style={s.chapterTagline}>{chapter.tagline}</Text>
+          <Text style={s.chapterTitle}>{chapter.coverLabel.toUpperCase()}</Text>
+          <Text style={s.chapterHeadline}>{chapter.headline}</Text>
+          <Text style={s.chapterDesc}>{chapter.desc}</Text>
+
+          {/* Tags row */}
+          <View style={s.chapterTagsWrap}>
+            {chapter.tags.map((tag) => (
+              <View key={tag} style={s.tagPill}>
+                <Text style={s.tagPillText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+        </View>
+
+        <View style={s.chapterDivider} />
+
+        {/* Gallery strip */}
+        <View style={{ marginVertical: 2 }}>
+          <GalleryStrip images={chapter.gallery} />
+        </View>
+
+        <View style={s.chapterDivider} />
+
+        {/* Craft quote */}
+        <View style={s.chapterCraftWrap}>
+          <Text style={s.chapterCraftLabel}>[MY APPROACH]</Text>
+          <Text style={s.chapterCraftText}>{chapter.craft}</Text>
+        </View>
+
+        <View style={s.chapterDivider} />
+
+        {/* Sound strip */}
+        <View style={s.chapterSoundStrip}>
+          <Text style={s.chapterSoundLabel}>THE SOUND WITHIN</Text>
+          <Text style={s.chapterSoundTitle}>{chapter.sound}</Text>
+          <SoundBars />
+        </View>
+
+        {/* Outro */}
+        <View style={s.chapterOutroWrap}>
+          <Text style={s.chapterOutroDesc}>{chapter.desc.slice(0, 90)}…</Text>
+
+          <TouchableOpacity style={s.ctaButton} onPress={onWorkPress} activeOpacity={0.8}>
+            <Text style={s.ctaButtonText}>LET'S WORK</Text>
+          </TouchableOpacity>
+
+          {nextChapter && (
+            <>
+              <Text style={s.chapterNextLabel}>NEXT CHAPTER</Text>
+              <Text style={s.chapterNextTitle}>{nextChapter.coverLabel.toUpperCase()} →</Text>
+            </>
+          )}
+        </View>
+
+      </Animated.View>
+    </View>
+  )
+}
+
+/* @arkzen:native:components:shared:end */
+
+/* @arkzen:native:animation:rn */
+import Animated as RAnimated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withRepeat,
+  withTiming,
+  withSequence,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated'
+
+export function shanShanNativeAnimations() {
+  // ── Marquee scroll ───────────────────────────────────────────────────────
+  const marqueeX = useSharedValue(0)
+
+  const startMarquee = (halfWidth: number) => {
+    marqueeX.value = withRepeat(
+      withTiming(-halfWidth, {
+        duration: 22000,
+        easing: Easing.linear,
+      }),
+      -1,
+      false
+    )
+  }
+
+  const marqueeStyle = useAnimatedStyle(() => ({
+    transform: [{ translateX: marqueeX.value }],
+  }))
+
+  // ── Hero SHAN logo pulse ─────────────────────────────────────────────────
+  const logoScale   = useSharedValue(0.88)
+  const logoOpacity = useSharedValue(0)
+
+  const revealLogo = () => {
+    logoOpacity.value = withDelay(200, withTiming(1, { duration: 500 }))
+    logoScale.value   = withDelay(200, withTiming(1, { duration: 500, easing: Easing.out(Easing.back(1.4)) }))
+  }
+
+  const logoStyle = useAnimatedStyle(() => ({
+    opacity:   logoOpacity.value,
+    transform: [{ scale: logoScale.value }],
+  }))
+
+  // ── Scroll indicator line bounce ─────────────────────────────────────────
+  const scrollBounce = useSharedValue(0)
+
+  const startScrollBounce = () => {
+    scrollBounce.value = withRepeat(
+      withSequence(
+        withTiming(8,  { duration: 700, easing: Easing.inOut(Easing.ease) }),
+        withTiming(0,  { duration: 700, easing: Easing.inOut(Easing.ease) }),
+      ),
+      -1,
+      false
+    )
+  }
+
+  const scrollBounceStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: scrollBounce.value }],
+  }))
+
+  return {
+    startMarquee, marqueeStyle,
+    revealLogo, logoStyle,
+    startScrollBounce, scrollBounceStyle,
+  }
+}
+/* @arkzen:native:animation:rn:end */
+
+/* @arkzen:native:page:index */
+/* @arkzen:native:page:layout:guest */
+
+const IndexScreen = () => {
+  const scrollRef = useRef<ScrollView>(null)
+  const [loaded,  setLoaded]  = useState(false)
+  const [marqueeWidth, setMarqueeWidth] = useState(0)
+
+  // Section ref Y positions for nav scroll
+  const sectionY = useRef<Record<string, number>>({
+    work: 0, skills: 0, about: 0, contact: 0,
+  }).current
+
+  const handleNavigate = useCallback((target: string) => {
+    const y = sectionY[target] ?? 0
+    scrollRef.current?.scrollTo({ y, animated: true })
+  }, [])
+
+  const handleContactPress = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: sectionY['contact'] ?? 9999, animated: true })
+  }, [])
+
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" backgroundColor="#CC0000" />
+
+      {/* Loader */}
+      {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+
+      {/* Burger (absolute over everything) */}
+      <BurgerNav onNavigate={handleNavigate} darkBg={false} />
+
+      <ScrollView
+        ref={scrollRef}
+        style={s.screen}
+        contentContainerStyle={{ paddingBottom: 0 }}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+      >
+
+        {/* ── HERO ── */}
+        <View style={s.heroWrap}>
+          <FadeIn delay={300}>
+            <Text style={s.heroEyebrow}>DESIGNER · DOCUMENT SPECIALIST · RESEARCHER</Text>
+          </FadeIn>
+
+          {/* Shan photo half */}
+          <FadeIn delay={200} from="none">
+            <Image
+              source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
+              style={{ width: '100%', height: 280, marginBottom: 28 }}
+              resizeMode="cover"
+            />
+          </FadeIn>
+
+          <FadeIn delay={400}>
+            <Text style={s.heroLogo}>SHAN.</Text>
+          </FadeIn>
+
+          <FadeIn delay={520}>
+            <Text style={s.heroSubtitle}>Shan Sabal Cezar</Text>
+          </FadeIn>
+
+          <FadeIn delay={640}>
+            <View style={s.heroScrollHint}>
+              <View style={s.heroScrollLine} />
+              <Text style={s.heroScrollText}>SCROLL</Text>
+            </View>
+          </FadeIn>
+
+          {/* Watermark */}
+          <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
+        </View>
+
+        {/* ── INTRO ── */}
+        <View style={s.introWrap}>
+          <FadeIn>
+            <Text style={s.introPre}>[Intro]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.introTitle}>The Invisible{'\n'}Echo</Text>
+          </FadeIn>
+          <FadeIn delay={160}>
+            <Text style={s.introAbstract}>
+              Before the gesture, there is an idea. Before the design, a purpose.
+              Shan gathers these invisible intentions and transforms them into work
+              that speaks clearly, lingers beautifully.
+            </Text>
+          </FadeIn>
+          <FadeIn delay={240}>
+            <Text style={s.introCaption}>An invitation to build something worth remembering.</Text>
+          </FadeIn>
+        </View>
+
+        {/* ── SKILLS MARQUEE STRIP ── */}
+        <View
+          style={s.marqueeWrap}
+          onLayout={(e) => setMarqueeWidth(e.nativeEvent.layout.width)}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
+            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
+          >
+            {[...SKILLS_MARQUEE, ...SKILLS_MARQUEE, ...SKILLS_MARQUEE].map((skill, i) => (
+              <Text key={i} style={s.marqueeItem}>{skill}</Text>
+            ))}
+          </ScrollView>
+        </View>
+
+        {/* ── CHAPTERS SECTION ── */}
+        <View
+          onLayout={(e) => { sectionY['work'] = e.nativeEvent.layout.y }}
+        >
+          <View style={s.chapterSectionHeader}>
+            <FadeIn>
+              <Text style={s.chapterSectionEyebrow}>[Work]</Text>
+            </FadeIn>
+            <FadeIn delay={80}>
+              <Text style={s.chapterSectionTitle}>What I Do.</Text>
+            </FadeIn>
+          </View>
+
+          {CHAPTERS.map((chapter, index) => (
+            <Chapter
+              key={chapter.id}
+              chapter={chapter}
+              index={index}
+              onWorkPress={handleContactPress}
+            />
+          ))}
+        </View>
+
+        {/* ── SKILLS ── */}
+        <View
+          style={s.skillsSection}
+          onLayout={(e) => { sectionY['skills'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn>
+            <Text style={s.sectionLabel}>[Skills]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.skillsTitle}>Tools of{'\n'}the Trade.</Text>
+          </FadeIn>
+          <FadeIn delay={160}>
+            <Text style={s.skillsSub}>PROFICIENCY · 2026</Text>
+          </FadeIn>
+
+          <View style={{ marginTop: 8 }}>
+            {SKILLS.map((skill, i) => (
+              <SkillBar key={skill.name} name={skill.name} pct={skill.pct} delay={i * 80} />
+            ))}
+          </View>
+        </View>
+
+        {/* ── ABOUT ── */}
+        <View
+          style={s.aboutWrap}
+          onLayout={(e) => { sectionY['about'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn from="none">
+            <Image
+              source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
+              style={s.aboutPhoto}
+              resizeMode="cover"
+            />
+          </FadeIn>
+
+          <View style={s.aboutBody}>
+            <FadeIn>
+              <Text style={s.sectionLabelLight}>[About Me]</Text>
+            </FadeIn>
+            <FadeIn delay={80}>
+              <Text style={s.aboutName}>Shan{'\n'}Sabal{'\n'}Cezar</Text>
+            </FadeIn>
+
+            {/* Info rows */}
+            {PERSONAL_INFO.map((row, i) => (
+              <FadeIn key={row.label} delay={i * 60}>
+                <View style={s.aboutInfoRow}>
+                  <Text style={s.infoLabel}>{row.label}</Text>
+                  <Text style={s.infoValue}>{row.value}</Text>
+                </View>
+                <View style={s.dividerDark} />
+              </FadeIn>
+            ))}
+
+            {/* About CTA */}
+            <View style={{ marginTop: 36, gap: 12 }}>
+              <FadeIn delay={360}>
+                <TouchableOpacity
+                  style={s.ctaButton}
+                  onPress={handleContactPress}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.ctaButtonText}>LET'S WORK TOGETHER</Text>
+                </TouchableOpacity>
+              </FadeIn>
+              <FadeIn delay={440}>
+                <TouchableOpacity
+                  style={s.outlineButtonLight}
+                  onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.outlineButtonLightText}>FOLLOW ON FACEBOOK</Text>
+                </TouchableOpacity>
+              </FadeIn>
+            </View>
+          </View>
+        </View>
+
+        {/* ── CONTACT ── */}
+        <View
+          style={s.contactWrap}
+          onLayout={(e) => { sectionY['contact'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn>
+            <Text style={s.sectionLabel}>[Contact]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.contactHeadline}>
+              From Five,{'\n'}Everything{'\n'}Begins.
+            </Text>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <TouchableOpacity
+              style={[s.ctaButton, { width: '100%' }]}
+              onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+              activeOpacity={0.8}
+            >
+              <Text style={s.ctaButtonText}>FACEBOOK</Text>
+            </TouchableOpacity>
+          </FadeIn>
+
+          <View style={{ height: 12 }} />
+
+          <FadeIn delay={240}>
+            <TouchableOpacity
+              style={[s.outlineButton, { width: '100%' }]}
+              onPress={() => Linking.openURL('mailto:shan@example.com')}
+              activeOpacity={0.8}
+            >
+              <Text style={s.outlineButtonText}>EMAIL</Text>
+            </TouchableOpacity>
+          </FadeIn>
+
+          <Text style={s.contactWatermark}>SHAN</Text>
+        </View>
+
+        {/* ── FOOTER ── */}
+        <View style={s.footerWrap}>
+          <Text style={s.footerLogo}>SHAN.</Text>
+          <View style={s.dividerDark} />
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 20, marginBottom: 8, flexWrap: 'wrap' }}>
+            <TouchableOpacity
+              style={s.footerSocialBtn}
+              onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.footerSocialText}>FACEBOOK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.footerSocialBtn}
+              onPress={() => Linking.openURL('mailto:shan@example.com')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.footerSocialText}>EMAIL</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={s.footerCopy}>© 2026 SHAN SABAL CEZAR · ALL RIGHTS RESERVED</Text>
+        </View>
+
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:index:end */

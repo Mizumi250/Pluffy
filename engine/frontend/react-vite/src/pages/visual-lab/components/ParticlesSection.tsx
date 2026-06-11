@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ParticlesSection [React+Vite]
 // Re-exported from _components.tsx
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-11T03:25:51.910Z
+// Generated: 2026-06-11T12:58:15.824Z
 // ============================================================
 
 export { ParticlesSection } from './_components'
