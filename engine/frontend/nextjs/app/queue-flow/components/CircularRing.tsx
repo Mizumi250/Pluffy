@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CircularRing
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:13.643Z
+// Generated: 2026-06-12T09:10:09.102Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,7 +14,7 @@ import { create } from 'zustand'
 
 // ─── Circular Ring ────────────────────────────────────────────────────────────
 
-const CircularRing = ({ label, sublabel }: { label: string; sublabel: string }) => {
+export const CircularRing = ({ label, sublabel }: { label: string; sublabel: string }) => {
   const [angle, setAngle] = useState(45)
   useEffect(() => {
     const id = setInterval(() => setAngle(a => (a + 0.3) % 360), 50)

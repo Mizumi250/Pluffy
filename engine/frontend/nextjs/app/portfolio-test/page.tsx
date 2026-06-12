@@ -3,12 +3,13 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:13.345Z
+// Generated: 2026-06-12T09:10:08.881Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { PROJECTS, SKILLS } from './components/constants'
 
 // Page component code (from @arkzen:page:index)
 const PortfolioPage = () => {

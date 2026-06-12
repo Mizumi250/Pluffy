@@ -3,13 +3,14 @@
 // ARKZEN GENERATED COMPONENT — ErrorScreen
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:10.190Z
+// Generated: 2026-06-12T09:10:05.841Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useToast } from '@/arkzen/core/components/Toast'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ERRORS } from './constants'
 
 export const ErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
   const err = ERRORS.find(e => e.code === code) ?? {

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:06.754Z
+// Generated: 2026-06-12T09:10:02.219Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -31,6 +31,7 @@ import { ParallaxDemo } from './components/ParallaxDemo'
 import { ResetBtn } from './components/ResetBtn'
 import { ScrollTransformDemo } from './components/ScrollTransformDemo'
 import { SectionHeader } from './components/SectionHeader'
+import { NAV_SECTIONS } from './components/constants'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

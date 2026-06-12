@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — BurgerMenu
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.774Z
+// Generated: 2026-06-12T09:10:10.694Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { NAV_LINKS } from './constants'
 
 // ─── BURGER ───────────────────────────────────────────────────────────────────
 
-const BurgerMenu = () => {
+export const BurgerMenu = () => {
   const [open, setOpen] = useState(false)
 
   useEffect(() => {

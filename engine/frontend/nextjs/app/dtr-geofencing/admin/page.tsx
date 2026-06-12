@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:09.878Z
+// Generated: 2026-06-12T09:10:05.472Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'

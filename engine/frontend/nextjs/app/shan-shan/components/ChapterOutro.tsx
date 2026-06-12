@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ChapterOutro
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.778Z
+// Generated: 2026-06-12T09:10:10.700Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
 
 // ─── CHAPTER OUTRO ────────────────────────────────────────────────────────────
 
-const ChapterOutro = ({ chapter, nextChapter }: { chapter: (typeof CHAPTERS)[0], nextChapter?: (typeof CHAPTERS)[0] }) => (
+export const ChapterOutro = ({ chapter, nextChapter }: { chapter: (typeof CHAPTERS)[0], nextChapter?: (typeof CHAPTERS)[0] }) => (
   <div className="chapter-outro">
     <div className="chapter-outro-inner">
       <div className="chapter-outro-head">

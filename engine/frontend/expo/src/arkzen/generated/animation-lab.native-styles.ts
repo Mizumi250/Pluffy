@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE STYLES — animation-lab
 // Source: @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:04.730Z
+// Generated: 2026-06-12T09:10:00.407Z
 // ============================================================
 
 import { StyleSheet } from 'react-native'

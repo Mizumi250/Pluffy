@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — queue-flow/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:13.653Z
+// Generated: 2026-06-12T09:10:09.110Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { AdminCallButton } from './components/AdminCallButton'

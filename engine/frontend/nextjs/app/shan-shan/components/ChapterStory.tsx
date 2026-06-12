@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ChapterStory
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.777Z
+// Generated: 2026-06-12T09:10:10.699Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
 
 // ─── CHAPTER STORY ────────────────────────────────────────────────────────────
 
-const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+export const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
   <div className="chapter-story">
     <div className="chapter-story-inner">
       <div className="chapter-story-content">

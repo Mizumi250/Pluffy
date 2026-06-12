@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:14.151Z
+// Generated: 2026-06-12T09:10:09.425Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 

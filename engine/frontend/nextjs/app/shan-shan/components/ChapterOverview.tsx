@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ChapterOverview
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.778Z
+// Generated: 2026-06-12T09:10:10.699Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
 
 // ─── CHAPTER TAGS / OVERVIEW ──────────────────────────────────────────────────
 
-const ChapterOverview = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+export const ChapterOverview = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
   <div className="chapter-overview" style={{ '--chapter-color': chapter.color } as React.CSSProperties}>
     <div className="chapter-overview-title-wr">
       <h2 className="chapter-overview-title">{chapter.tagline}</h2>

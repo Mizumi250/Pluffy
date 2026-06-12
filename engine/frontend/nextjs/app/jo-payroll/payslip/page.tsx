@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — jo-payroll/payslip
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:11.402Z
+// Generated: 2026-06-12T09:10:07.084Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'

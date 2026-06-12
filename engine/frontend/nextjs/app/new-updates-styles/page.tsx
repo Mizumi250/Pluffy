@@ -3,15 +3,16 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:12.811Z
+// Generated: 2026-06-12T09:10:08.307Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
+import { FEATURES } from './components/constants'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

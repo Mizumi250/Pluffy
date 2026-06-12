@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — shan-shan/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.784Z
+// Generated: 2026-06-12T09:10:10.710Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { shanShanAnimations, pageVariants } from '@/arkzen/generated/shan-shan.animations'
@@ -22,6 +22,7 @@ import { Loader } from './components/Loader'
 import { MaskBottom } from './components/MaskBottom'
 import { MaskTop } from './components/MaskTop'
 import { ShanHeroLogo } from './components/ShanHeroLogo'
+import { CHAPTERS, PERSONAL_INFO, SKILLS_MARQUEE } from './components/constants'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

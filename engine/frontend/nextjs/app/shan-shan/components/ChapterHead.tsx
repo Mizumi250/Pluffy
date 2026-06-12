@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ChapterHead
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.777Z
+// Generated: 2026-06-12T09:10:10.697Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
 
 // ─── CHAPTER HEAD ─────────────────────────────────────────────────────────────
 
-const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+export const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
   <div className="chapter-head" id={`ch-${chapter.id}`}>
     <div className="chapter-head-inner">
       <div className="chapter-head-pre">

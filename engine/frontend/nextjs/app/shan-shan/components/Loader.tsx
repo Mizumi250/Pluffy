@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Loader
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.773Z
+// Generated: 2026-06-12T09:10:10.693Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -13,7 +13,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
 
-const Loader = ({ onComplete }: { onComplete: () => void }) => {
+export const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const barRef    = useRef<HTMLDivElement>(null)
   const screenRef = useRef<HTMLDivElement>(null)
   const countRef  = useRef<HTMLDivElement>(null)

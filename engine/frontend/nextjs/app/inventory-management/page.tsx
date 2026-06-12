@@ -3,10 +3,10 @@
 // ARKZEN GENERATED PAGE — inventory-management/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:10.903Z
+// Generated: 2026-06-12T09:10:06.550Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'

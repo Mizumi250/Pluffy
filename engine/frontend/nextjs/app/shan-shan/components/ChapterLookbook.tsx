@@ -3,17 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ChapterLookbook
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T08:48:15.777Z
+// Generated: 2026-06-12T09:10:10.698Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
 
 // ─── CHAPTER LOOKBOOK ─────────────────────────────────────────────────────────
 
-const ChapterLookbook = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+export const ChapterLookbook = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
   <div className="chapter-lookbook">
     <div className="chapter-lookbook-inner">
       <div className="chapter-lookbook-side">

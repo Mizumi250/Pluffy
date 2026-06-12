@@ -370,12 +370,42 @@ function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
 }
 
 /**
- * Splits a stripped @arkzen:components source into one chunk per top-level
- * declaration (const Name = ... / function Name(...) {...}), keyed by name.
- * Leading comment lines directly above a declaration are kept with it.
- * Each chunk runs until the next top-level declaration (for any tracked
- * name) or EOF.
+ * Extracts ALL_CAPS top-level const declarations from @arkzen:components
+ * blocks (e.g. NAV_LINKS, CHAPTERS) — shared data constants referenced by
+ * both generated components and pages. These are written to a single
+ * components/constants.ts file rather than duplicated per-file.
  */
+function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const matches = stripped.match(/^(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)\s*[=:]/gm) || []
+    for (const match of matches) {
+      const name = match.match(/const\s+([A-Z][A-Z0-9_]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+/**
+ * Given a set of names (component or constant names) and a stripped source,
+ * returns the subset of names that are actually referenced (used, not just
+ * declared) somewhere in that source — i.e. they appear as a standalone
+ * identifier at least once.
+ */
+function findReferencedNames(strippedSource: string, names: Set<string>): string[] {
+  const found: string[] = []
+  for (const name of names) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (new RegExp(`[^\\w$]${escaped}\\b`).test(' ' + strippedSource)) {
+      found.push(name)
+    }
+  }
+  return found
+}
+
+
 function splitComponentDeclarations(strippedSource: string, names: Set<string>): Map<string, string> {
   const out = new Map<string, string>()
   if (names.size === 0) return out
@@ -444,14 +474,53 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
   }
 
   const extractedComponents = extractComponentNames(tatemono)
+  const sharedConstants = extractSharedConstantNames(tatemono)
+  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants])
 
-  // Split each stripped components-block source into per-declaration chunks
+  // Split each stripped components-block source into per-declaration chunks.
+  // Use the combined name set so constant declarations (e.g. CHAPTERS) form
+  // their own chunk boundaries instead of being swallowed by a neighbor.
   const declarationsByName = new Map<string, string>()
   for (const stripped of strippedSources) {
-    for (const [name, code] of splitComponentDeclarations(stripped, extractedComponents)) {
+    for (const [name, code] of splitComponentDeclarations(stripped, allDeclaredNames)) {
       declarationsByName.set(name, code)
     }
   }
+
+  // ── Shared constants file (components/constants.ts) ──────────────────
+  if (sharedConstants.size > 0) {
+    const constChunks = [...sharedConstants]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const)(\\s+${escapedName}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+
+    if (constChunks.length > 0) {
+      const constantsContent = `// ============================================================
+// ARKZEN GENERATED SHARED CONSTANTS — ${tatemono.meta.name}
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${constChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'constants.ts'), constantsContent, 'utf-8')
+      console.log(`[Arkzen Router] ✓ Shared constants: constants.ts`)
+    }
+  } else {
+    const constantsPath = path.join(componentsDir, 'constants.ts')
+    if (fs.existsSync(constantsPath)) {
+      fs.unlinkSync(constantsPath)
+      console.log(`[Arkzen Router] 🧹 Removed stale constants.ts`)
+    }
+  }
+
 
   // Write one real file per component, containing its actual code
   for (const compName of extractedComponents) {
@@ -468,10 +537,22 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
       ? `import styles from '../styles/${compName}.module.css'\n`
       : ''
 
-    // Ensure the declaration is exported so pages can import it by name
-    const exportedDeclaration = /^export\s/.test(declaration)
-      ? declaration
-      : declaration.replace(/^(const|function)\s/, 'export $1 ')
+    // Ensure the declaration is exported so pages can import it by name.
+    // The chunk may start with leading comment lines, so find the actual
+    // `const Name` / `function Name` / `export const Name` / `export function Name`
+    // line for this component and prepend `export ` only if missing.
+    const escapedName = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const exportedDeclaration = declaration.replace(
+      new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${escapedName}\\b)`, 'm'),
+      (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+    )
+
+    // If this component references any shared constants (e.g. CHAPTERS),
+    // import them from the generated constants.ts file.
+    const referencedConstants = findReferencedNames(declaration, sharedConstants)
+    const constantsImport = referencedConstants.length > 0
+      ? `import { ${referencedConstants.sort().join(', ')} } from './constants'\n`
+      : ''
 
     const content = `'use client'
 // ============================================================
@@ -482,7 +563,7 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
 // ============================================================
 
 ${canonicalBlock}
-${cssImport}
+${cssImport}${constantsImport}
 ${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
@@ -550,6 +631,19 @@ function generatePageFile(
     ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
+  // Detect React hooks actually called in the page's own source (e.g. useState,
+  // useCallback, useMemo, useContext) so we don't lose them now that component
+  // blocks no longer get merged in. useRef/useEffect are always seeded below.
+  const KNOWN_REACT_HOOKS = [
+    'useState', 'useCallback', 'useMemo', 'useContext', 'useReducer',
+    'useLayoutEffect', 'useImperativeHandle', 'useTransition', 'useDeferredValue',
+    'useId', 'useSyncExternalStore', 'useInsertionEffect',
+  ]
+  const pageStrippedForHooks = stripTemplateLiterals(page.raw)
+  const usedReactHooks = KNOWN_REACT_HOOKS.filter(hook =>
+    new RegExp(`[^\\w$]${hook}\\s*[(<]`).test(pageStrippedForHooks)
+  )
+
   // Per-component imports — one import line per file, e.g.
   //   import { MyButton } from './components/MyButton'
   const componentNames = extractComponentNames(tatemono)
@@ -558,10 +652,19 @@ function generatePageFile(
     .map(name => `import { ${name} } from '${componentsImportPath}/${name}'`)
     .join('\n')
 
-  const extraLines = [layoutImport, animImportLine, componentImportLines].filter(Boolean).join('\n')
+  // Shared constants (e.g. NAV_LINKS, CHAPTERS) — only import the ones this
+  // page's own code actually references.
+  const sharedConstants = extractSharedConstantNames(tatemono)
+  const pageStrippedForConsts = stripTemplateLiterals(page.raw)
+  const referencedConstants = findReferencedNames(pageStrippedForConsts, sharedConstants)
+  const constantsImportLine = referencedConstants.length > 0
+    ? `import { ${referencedConstants.sort().join(', ')} } from '${componentsImportPath}/constants'`
+    : ''
+
+  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
-    reactHooks:   ['useRef', 'useEffect'],
+    reactHooks:   ['useRef', 'useEffect', ...usedReactHooks],
     framerNamed:  [...framerNeeded],
     extra:        extraLines,
   })
