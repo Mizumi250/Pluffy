@@ -1,10 +1,37 @@
 'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — FeatureCard
-// Re-exported from _components.tsx
+// Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:19.453Z
+// Generated: 2026-06-12T08:48:12.802Z
 // ============================================================
 
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
+import Link from 'next/link'
 import styles from '../styles/FeatureCard.module.css'
-export { FeatureCard } from './_components'
+
+export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, color }) => {
+  const bgColors = {
+    blue:   'bg-blue-50 border-blue-200 text-blue-700',
+    purple: 'bg-purple-50 border-purple-200 text-purple-700',
+    green:  'bg-green-50 border-green-200 text-green-700',
+    orange: 'bg-orange-50 border-orange-200 text-orange-700',
+  }
+  
+  return (
+    <div className={`rounded-xl border-2 p-6 ${bgColors[color]}`}>
+      <div className="mb-3 text-3xl">{icon}</div>
+      <h3 className="font-bold text-lg">{title}</h3>
+      <p className="text-sm opacity-80">{description}</p>
+    </div>
+  )
+}
+
+interface HeroSectionProps {
+  title: string
+  subtitle: string
+  ctaText: string
+  onCta?: () => void
+}

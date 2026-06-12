@@ -1,9 +1,21 @@
 'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — AssetCard
-// Re-exported from _components.tsx
+// Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:12.094Z
+// Generated: 2026-06-12T08:48:06.965Z
 // ============================================================
 
-export { AssetCard } from './_components'
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+
+export const AssetCard = ({ asset }: { asset: AssetItem }) => (
+  <div className="ah-card">
+    <span className="ah-card-emoji">{CATEGORY_EMOJI[asset.category]}</span>
+    <div className="ah-card-info">
+      <p className="ah-card-name">{asset.name}</p>
+      <p className="ah-card-path">{asset.path}</p>
+    </div>
+    <span className="ah-card-ext">.{asset.ext}</span>
+  </div>
+)

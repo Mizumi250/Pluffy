@@ -3,28 +3,12 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:19.663Z
+// Generated: 2026-06-12T08:48:13.020Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-if (typeof window !== 'undefined') {
-  setActiveTatemono('notification-test')
-}
-
-// ─────────────────────────────────────────────
-// REVERB CONFIG — read from env, same as useWebSocket.ts
-// ─────────────────────────────────────────────
-const REVERB_HOST   = process.env.NEXT_PUBLIC_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = process.env.NEXT_PUBLIC_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = process.env.NEXT_PUBLIC_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = process.env.NEXT_PUBLIC_REVERB_APP_KEY ?? 'arkzen-key'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {

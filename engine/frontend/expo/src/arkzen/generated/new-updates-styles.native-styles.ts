@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE STYLES — new-updates-styles
 // Source: @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-11T12:58:13.205Z
+// Generated: 2026-06-12T08:48:07.851Z
 // ============================================================
 
 import { StyleSheet } from 'react-native'

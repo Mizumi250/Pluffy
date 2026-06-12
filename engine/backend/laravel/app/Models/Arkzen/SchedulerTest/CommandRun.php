@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — CommandRun
 // Tatemono: scheduler-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-11T12:58:15.263713Z
+// Generated: 2026-06-12T08:48:15.518774Z
 // ============================================================
 
 namespace App\Models\Arkzen\SchedulerTest;

@@ -1,9 +1,15 @@
 'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — InjectedBadge
-// Re-exported from _components.tsx
+// Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:12.687Z
+// Generated: 2026-06-12T08:48:07.468Z
 // ============================================================
 
-export { InjectedBadge } from './_components'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+
+export const InjectedBadge = ({ injected }: { injected: boolean }) => (
+  <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
+)

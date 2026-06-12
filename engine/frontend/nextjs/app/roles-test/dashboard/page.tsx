@@ -3,20 +3,12 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:20.512Z
+// Generated: 2026-06-12T08:48:14.151Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Shield } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-if (typeof window !== 'undefined') {
-  setActiveTatemono('roles-test')
-}
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {

@@ -3,29 +3,12 @@
 // ARKZEN GENERATED PAGE — crud-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:15.765Z
+// Generated: 2026-06-12T08:48:08.821Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Boxes } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-type Item = {
-  id:          number
-  name:        string
-  description: string | null
-  status:      'active' | 'pending' | 'archived'
-  priority:    number
-  tags:        string | null
-  created_at:  string
-  updated_at:  string
-}
-
-type FormData = { name: string; description: string; status: string; priority: number; tags: string }
-const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -53,7 +36,6 @@ const IndexPage = () => {
       const res = await arkzenFetch('/api/crud-test/items')
       if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
-      // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
       if (isMounted.current) {
         setItems(data)
@@ -102,20 +84,18 @@ const IndexPage = () => {
     } finally { setSaving(false) }
   }
 
-const remove = async (id: number) => {
-  console.log('[DELETE] Attempting to delete ID:', id)  // Debug
-  setDeleting(id)
-  try {
-    const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
-    console.log('[DELETE] Response status:', res.status)  // Debug
-    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
-    await load()  // ← RELOAD from server instead of manual filter
-  } catch (err) {
-    console.error('[DELETE] Error:', err)
-  } finally { 
-    setDeleting(null)
+  const remove = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+      await load()
+    } catch (err) {
+      console.error('[DELETE] Error:', err)
+    } finally {
+      setDeleting(null)
+    }
   }
-}
 
   const statusColor = (s: string) => ({
     active:   'bg-green-100 text-green-700',

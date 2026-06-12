@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/auth-test/auth')->group
 // ============================================================
 // ARKZEN GENERATED ROUTES — auth-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:12.381773Z
+// Generated: 2026-06-12T08:48:07.226277Z
 // Resources: 
 // Custom controllers: 
 // ============================================================
@@ -77,6 +77,14 @@ use Illuminate\Support\Facades\Route;
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\AuthTest\PersonalAccessToken as AuthTestToken;
 
-Sanctum::usePersonalAccessTokenModel(AuthTestToken::class);
+// v5.1: Scoped per-request — fires only when a route under /api/auth-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/auth-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(AuthTestToken::class);
+    }
+});
 
 

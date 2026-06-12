@@ -2,11 +2,11 @@
 // ARKZEN GENERATED — queue-flow/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-05-30T04:53:20.138Z
+// Generated: 2026-06-12T08:48:13.648Z
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 const NotFoundPage = () => (
   <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>

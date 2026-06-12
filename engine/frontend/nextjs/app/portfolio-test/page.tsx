@@ -3,27 +3,12 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:19.937Z
+// Generated: 2026-06-12T08:48:13.345Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-const PROJECTS = [
-  { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },
-  { id: 2, title: 'Tasks', description: 'Real-time collaboration', image: '✓', url: 'https://example.com', tags: ['React', 'WebSocket'] },
-  { id: 3, title: 'Analytics', description: 'Data dashboard', image: '📊', url: 'https://example.com', tags: ['Chart.js', 'Laravel'] }
-]
-
-const SKILLS = [
-  { name: 'React', category: 'Frontend', proficiency: 95 },
-  { name: 'Next.js', category: 'Frontend', proficiency: 92 },
-  { name: 'Laravel', category: 'Backend', proficiency: 90 },
-  { name: 'PostgreSQL', category: 'Database', proficiency: 85 }
-]
 
 // Page component code (from @arkzen:page:index)
 const PortfolioPage = () => {

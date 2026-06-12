@@ -100,10 +100,10 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'roles-test', screenName: 'dashboard', routePath: '/roles-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:default:false
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
-// ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
-  { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:shan-shan:index:/shan-shan:guest:false
   { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
+// ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
+  { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

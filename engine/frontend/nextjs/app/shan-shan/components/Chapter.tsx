@@ -1,9 +1,25 @@
 'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — Chapter
-// Re-exported from _components.tsx
+// Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:21.888Z
+// Generated: 2026-06-12T08:48:15.778Z
 // ============================================================
 
-export { Chapter } from './_components'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+
+// ─── FULL CHAPTER ─────────────────────────────────────────────────────────────
+
+const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; index: number }) => (
+  <section className="homepage-tale" id={`tale-${chapter.id}`}>
+    <ChapterCover chapter={chapter} />
+    <ChapterHead chapter={chapter} />
+    <ChapterLookbook chapter={chapter} />
+    <ChapterOverview chapter={chapter} />
+    <ChapterStory chapter={chapter} />
+    <ChapterOutro chapter={chapter} nextChapter={CHAPTERS[index + 1]} />
+  </section>
+)

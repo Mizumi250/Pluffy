@@ -344,55 +344,123 @@ function stripTemplateLiterals(src: string): string {
   return result
 }
 
-function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: string): void {
-  if (tatemono.components.length === 0) return
+/**
+ * Extracts PascalCase component (and other top-level exported declaration)
+ * names declared inside @arkzen:components blocks. Skips types, ALL_CAPS
+ * constants, and anything inside template literals (e.g. code-demo strings).
+ */
+function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
 
+    const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
+    }
+
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+/**
+ * Splits a stripped @arkzen:components source into one chunk per top-level
+ * declaration (const Name = ... / function Name(...) {...}), keyed by name.
+ * Leading comment lines directly above a declaration are kept with it.
+ * Each chunk runs until the next top-level declaration (for any tracked
+ * name) or EOF.
+ */
+function splitComponentDeclarations(strippedSource: string, names: Set<string>): Map<string, string> {
+  const out = new Map<string, string>()
+  if (names.size === 0) return out
+
+  const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+  const re = new RegExp(`^(?:export\\s+)?(const|function)\\s+(${nameAlt})\\b`, 'gm')
+
+  const starts: { index: number; name: string }[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(strippedSource)) !== null) {
+    starts.push({ index: m.index, name: m[2] })
+  }
+  if (starts.length === 0) return out
+
+  for (let i = 0; i < starts.length; i++) {
+    const { index, name } = starts[i]
+
+    // Pull in any leading comment/blank lines directly above the declaration
+    let chunkStart = index
+    const before = strippedSource.slice(0, index)
+    const lines = before.split('\n')
+    let li = lines.length - 1
+    let consumed = 0
+    while (li >= 0) {
+      const line = lines[li].trim()
+      if (line === '' || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
+        consumed += lines[li].length + 1
+        li--
+      } else {
+        break
+      }
+    }
+    if (consumed > 0) chunkStart = index - consumed
+
+    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : strippedSource.length
+    out.set(name, strippedSource.slice(chunkStart, chunkEnd).trim())
+  }
+
+  return out
+}
+
+function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: string): void {
   const componentsDir = path.join(baseDir, 'components')
+
+  if (tatemono.components.length === 0) {
+    // No @arkzen:components — remove stale components dir entirely if present
+    if (fs.existsSync(componentsDir)) {
+      fs.rmSync(componentsDir, { recursive: true })
+      console.log(`[Arkzen Router] 🧹 Removed stale components/ (no @arkzen:components)`)
+    }
+    return
+  }
+
   fs.mkdirSync(componentsDir, { recursive: true })
 
-  // Resolve imports across ALL component blocks into one canonical block
+  // Resolve imports across ALL component blocks into one canonical block —
+  // every per-component file gets this same canonical import set, since we
+  // don't statically know which imports each declaration individually needs.
   const rawSources = tatemono.components.map(c => c.raw.trim())
   const { canonicalBlock, strippedSources } = resolveImports(rawSources)
 
-  const componentsFile = path.join(componentsDir, '_components.tsx')
-  const componentsContent = `'use client'
-// ============================================================
-// ARKZEN GENERATED SHARED UTILITIES — ${tatemono.meta.name}
-// All utilities, types, constants from @arkzen:components
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-${canonicalBlock}
-
-${strippedSources.join('\n\n')}
-`
-  fs.writeFileSync(componentsFile, componentsContent, 'utf-8')
-  console.log(`[Arkzen Router] ✓ Utilities: _components.tsx`)
-
   // Build a map of component names that have CSS Modules (from named styles)
   const stylesByComponent = new Map<string, string>()
-  for (const style of tatemono.styles.filter(s => s.name)) {
+  for (const style of tatemono.styles.filter((s): s is typeof s & { name: string } => !!s.name)) {
     stylesByComponent.set(style.name, style.name)
   }
 
-  // Extract PascalCase component names from components block
-  // Extract PascalCase component names — skip types, ALL_CAPS constants, and
-  // anything inside template literals (e.g. code-demo strings in the tatemono).
-  const extractedComponents = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const componentMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of componentMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) {
-        extractedComponents.add(name)
-      }
+  const extractedComponents = extractComponentNames(tatemono)
+
+  // Split each stripped components-block source into per-declaration chunks
+  const declarationsByName = new Map<string, string>()
+  for (const stripped of strippedSources) {
+    for (const [name, code] of splitComponentDeclarations(stripped, extractedComponents)) {
+      declarationsByName.set(name, code)
     }
   }
 
-  // Generate individual component files that import from _components
+  // Write one real file per component, containing its actual code
   for (const compName of extractedComponents) {
+    const declaration = declarationsByName.get(compName)
+    if (!declaration) {
+      console.log(`[Arkzen Router] ⚠ Could not isolate declaration for ${compName}, skipping file`)
+      continue
+    }
+
     const fileName = `${compName}.tsx`
     const filePath = path.join(componentsDir, fileName)
 
@@ -400,53 +468,46 @@ ${strippedSources.join('\n\n')}
       ? `import styles from '../styles/${compName}.module.css'\n`
       : ''
 
+    // Ensure the declaration is exported so pages can import it by name
+    const exportedDeclaration = /^export\s/.test(declaration)
+      ? declaration
+      : declaration.replace(/^(const|function)\s/, 'export $1 ')
+
     const content = `'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — ${compName}
-// Re-exported from _components.tsx
+// Source: @arkzen:components (${tatemono.meta.name})
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${cssImport}export { ${compName} } from './_components'
+${canonicalBlock}
+${cssImport}
+${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Router] ✓ Component: ${fileName}`)
   }
 
-  // Clean up old loose files
+  // Clean up stale files: old _components.tsx / index.ts barrel, and any
+  // per-component files for components that no longer exist.
   try {
     const files = fs.readdirSync(componentsDir)
     for (const file of files) {
-      if (file.endsWith('.tsx') && !file.startsWith('_') && !extractedComponents.has(file.replace('.tsx', ''))) {
+      const base = file.replace(/\.(tsx|ts)$/, '')
+      if (file === '_components.tsx' || file === 'index.ts') {
         fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen Router] 🧹 Removed stale ${file}`)
+        continue
+      }
+      if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
+        fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen Router] 🧹 Removed stale component: ${file}`)
       }
     }
   } catch (e) {
     // ignore
   }
-}
-
-// ─────────────────────────────────────────────
-// GENERATE COMPONENTS INDEX FILE (for easy imports)
-// ─────────────────────────────────────────────
-
-function generateComponentsIndex(tatemono: ParsedTatemono, baseDir: string): void {
-  if (tatemono.components.length === 0) return
-
-  const componentsDir = path.join(baseDir, 'components')
-  const indexPath = path.join(componentsDir, 'index.ts')
-
-  const content = `// ============================================================
-// ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name}
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-export * from './_components'
-`
-  fs.writeFileSync(indexPath, content, 'utf-8')
-  console.log(`[Arkzen Router] ✓ Components index: index.ts`)
 }
 
 // ─────────────────────────────────────────────
@@ -470,17 +531,15 @@ function generatePageFile(
     (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
   )
 
-  // Collect all sources: all component blocks + this page's raw code
-  const allSources = [
-    ...tatemono.components.map(c => c.raw.trim()),
-    page.raw.trim(),
-  ]
+  // Page sources only — component code no longer gets inlined into pages.
+  const allSources = [page.raw.trim()]
 
-  // Scrape framer-motion named exports from all sources so we don't lose
-  // AnimatePresence, useMotionValue etc. that the tatemono uses
+  // Scrape framer-motion named exports from page + component sources so we
+  // don't lose AnimatePresence, useMotionValue etc. that the tatemono uses
   const framerNeeded = new Set(['motion'])
   const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
-  for (const src of allSources) {
+  const framerSources = [...tatemono.components.map(c => c.raw.trim()), ...allSources]
+  for (const src of framerSources) {
     let m: RegExpMatchArray | null
     while ((m = framerRe.exec(src)) !== null) {
       m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
@@ -491,7 +550,15 @@ function generatePageFile(
     ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine].filter(Boolean).join('\n')
+  // Per-component imports — one import line per file, e.g.
+  //   import { MyButton } from './components/MyButton'
+  const componentNames = extractComponentNames(tatemono)
+  const componentImportLines = [...componentNames]
+    .sort()
+    .map(name => `import { ${name} } from '${componentsImportPath}/${name}'`)
+    .join('\n')
+
+  const extraLines = [layoutImport, animImportLine, componentImportLines].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect'],
@@ -506,9 +573,7 @@ function generatePageFile(
     `from '@/arkzen/generated/$1'`
   )
 
-  // strippedSources: [comp0, comp1, ..., pageRaw]
-  const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
-  const strippedPageCode      = (strippedSources[tatemono.components.length] ?? '')
+  const strippedPageCode = (strippedSources[0] ?? '')
     // FIX: isMounted cleanup-only useEffect breaks under React StrictMode —
     // StrictMode remounts components in dev, firing the cleanup and permanently
     // setting isMounted.current = false before load() runs, leaving the page
@@ -528,9 +593,6 @@ function generatePageFile(
 // ============================================================
 
 ${canonicalBlock}
-
-// Utilities, types, and helper functions from @arkzen:components
-${strippedComponentCode}
 
 // Page component code (from @arkzen:page:${page.name})
 ${strippedPageCode}
@@ -753,7 +815,7 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 ${raw}
 
@@ -773,7 +835,7 @@ function generateErrorFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 ${raw}
 
@@ -1006,7 +1068,6 @@ export function registerPage(tatemono: ParsedTatemono): void {
     fs.mkdirSync(tatemonoDir, { recursive: true })
 
     generateIndividualComponentFiles(tatemono, tatemonoDir)
-    generateComponentsIndex(tatemono, tatemonoDir)
     generateErrorHandlers(tatemono, tatemonoDir)
     generateTatemonoLayout(tatemono, tatemonoDir)
     generateStyleFiles(tatemono, tatemonoDir)
@@ -1039,7 +1100,6 @@ export function registerPage(tatemono: ParsedTatemono): void {
     fs.mkdirSync(tatemonoDir, { recursive: true })
 
     generateIndividualComponentFiles(tatemono, tatemonoDir)
-    generateComponentsIndex(tatemono, tatemonoDir)
     generateErrorHandlers(tatemono, tatemonoDir)
     generateStyleFiles(tatemono, tatemonoDir)
 

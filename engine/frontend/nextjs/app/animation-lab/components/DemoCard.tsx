@@ -1,9 +1,31 @@
 'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — DemoCard
-// Re-exported from _components.tsx
+// Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-30T04:53:11.884Z
+// Generated: 2026-06-12T08:48:06.708Z
 // ============================================================
 
-export { DemoCard } from './_components'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
+import { create } from 'zustand'
+
+// ─── SHARED DEMO WRAPPER ──────────────────────────────────────────────────────
+export const DemoCard = ({
+  title, description, children, className = ''
+}: {
+  title: string; description: string; children: React.ReactNode; className?: string
+}) => (
+  <div className={`demo-card ${className}`}>
+    <div className="demo-card-header">
+      <h3 className="demo-card-title">{title}</h3>
+      <p className="demo-card-desc">{description}</p>
+    </div>
+    <div className="demo-card-stage">{children}</div>
+  </div>
+)
+
+// ─── RESET BUTTON ─────────────────────────────────────────────────────────────

@@ -27,9 +27,9 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
   const currentLabel = NAV_ITEMS.find(n => n.href === pathname)?.label ?? 'J.O Payroll'
 
   return (
-    <div className="flex h-screen bg-[#F4F5F7] overflow-hidden font-['DM_Sans',sans-serif]">
+    <div className="flex h-screen bg-[#F4F5F7] overflow-hidden font-['Inter',sans-serif]">
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap');
         .nav-pill { transition: all 0.2s cubic-bezier(.4,0,.2,1); }
         .nav-pill:hover { transform: translateX(3px); }
         .nav-pill.active { transform: translateX(0); }
@@ -55,7 +55,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
         {/* Logo */}
         <div className="h-16 flex items-center justify-center border-b border-neutral-800 shrink-0">
           <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center">
-            <span className="text-neutral-900 font-['Syne',sans-serif] font-800 text-sm">J.</span>
+            <span className="text-neutral-900 font-['Plus Jakarta Sans',sans-serif] font-800 text-sm">J.</span>
           </div>
         </div>
 
@@ -113,7 +113,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           </button>
           <div className="flex-1">
             <p className="text-xs text-neutral-400 font-medium uppercase tracking-widest">J.O. PAYROLL SYSTEM</p>
-            <h1 className="text-sm font-semibold text-neutral-900 font-['Syne',sans-serif] -mt-0.5">{currentLabel}</h1>
+            <h1 className="text-sm font-semibold text-neutral-900 font-['Plus Jakarta Sans',sans-serif] -mt-0.5">{currentLabel}</h1>
           </div>
           <div className="flex items-center gap-3">
             <button className="relative p-2 rounded-xl hover:bg-neutral-100 transition-colors">
@@ -121,7 +121,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 rounded-full" />
             </button>
             <div className="w-9 h-9 bg-neutral-900 rounded-xl flex items-center justify-center">
-              <span className="text-white text-xs font-semibold font-['Syne',sans-serif]">LGU</span>
+              <span className="text-white text-xs font-semibold font-['Plus Jakarta Sans',sans-serif]">LGU</span>
             </div>
           </div>
         </header>
