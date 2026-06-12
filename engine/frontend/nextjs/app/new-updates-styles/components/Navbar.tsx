@@ -3,13 +3,14 @@
 // ARKZEN GENERATED COMPONENT — Navbar
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:02:47.469Z
+// Generated: 2026-06-12T14:14:49.230Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
+import type { FeatureCardProps } from './types'
 
 // ─── CUSTOM COMPONENTS ───────────────────────────────
 

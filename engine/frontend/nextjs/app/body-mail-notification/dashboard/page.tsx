@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:02:42.424Z
+// Generated: 2026-06-12T14:14:43.899Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,8 @@ import { motion } from 'framer-motion'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { KindBadge } from '../components/KindBadge'
 import { StatusDot } from '../components/StatusDot'
+import { useToast } from '../components/hooks'
+import type { SendLogEntry } from '../components/types'
 import { useRouter } from 'next/navigation'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:02:46.225Z
+// Generated: 2026-06-12T14:14:47.514Z
 // ============================================================
 
 // ─── Constants ──────────────────────────────────────────────────────────────

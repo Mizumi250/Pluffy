@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BurgerMenu
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:02:49.933Z
+// Generated: 2026-06-12T14:14:51.793Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

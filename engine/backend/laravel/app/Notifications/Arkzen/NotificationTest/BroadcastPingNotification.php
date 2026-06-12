@@ -6,7 +6,7 @@
 // Channels: broadcast, database
 // Broadcast channel type: private
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:02:47.717841Z
+// Generated: 2026-06-12T14:14:49.599086Z
 // ============================================================
 
 namespace App\Notifications\Arkzen\NotificationTest;

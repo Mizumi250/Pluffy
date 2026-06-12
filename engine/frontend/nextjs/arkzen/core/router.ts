@@ -389,6 +389,51 @@ function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
 }
 
 /**
+ * Extracts custom React hook names (use[A-Z]...) declared inside
+ * @arkzen:components blocks. Hooks are camelCase starting with 'use'.
+ */
+function extractCustomHookNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    // Match: function useXxx( or const useXxx =
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+(use[A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const constMatches = stripped.match(/(?:export\s+)?const\s+(use[A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+/**
+ * Extracts TypeScript type alias and interface names declared inside
+ * @arkzen:components blocks (e.g. `type ProbeResult = {...}`, `interface Foo {}`).
+ */
+function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const typeMatches = stripped.match(/(?:export\s+)?type\s+([A-Z][A-Za-z0-9_$]*)\s*[=<{]/g) || []
+    for (const match of typeMatches) {
+      const name = match.match(/type\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const interfaceMatches = stripped.match(/(?:export\s+)?interface\s+([A-Z][A-Za-z0-9_$]*)\s*[{<]/g) || []
+    for (const match of interfaceMatches) {
+      const name = match.match(/interface\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+/**
  * Given a set of names (component or constant names) and a stripped source,
  * returns the subset of names that are actually referenced (used, not just
  * declared) somewhere in that source — i.e. they appear as a standalone
@@ -475,7 +520,9 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
 
   const extractedComponents = extractComponentNames(tatemono)
   const sharedConstants = extractSharedConstantNames(tatemono)
-  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants])
+  const customHooks = extractCustomHookNames(tatemono)
+  const sharedTypes = extractSharedTypeNames(tatemono)
+  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes])
 
   // Split each stripped components-block source into per-declaration chunks.
   // Use the combined name set so constant declarations (e.g. CHAPTERS) form
@@ -521,6 +568,58 @@ ${constChunks.join('\n\n')}
     }
   }
 
+  // ── Custom hooks file (components/hooks.ts) ──────────────────────────
+  if (customHooks.size > 0) {
+    const hookChunks = [...customHooks]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${escapedName}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+
+    if (hookChunks.length > 0) {
+      const hooksContent = `'use client'\n// ============================================================\n// ARKZEN GENERATED HOOKS — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${hookChunks.join('\n\n')}\n`
+      fs.writeFileSync(path.join(componentsDir, 'hooks.ts'), hooksContent, 'utf-8')
+      console.log(`[Arkzen Router] ✓ Custom hooks: hooks.ts (${[...customHooks].join(', ')})`)
+    }
+  } else {
+    const hooksPath = path.join(componentsDir, 'hooks.ts')
+    if (fs.existsSync(hooksPath)) {
+      fs.unlinkSync(hooksPath)
+      console.log(`[Arkzen Router] 🧹 Removed stale hooks.ts`)
+    }
+  }
+
+  // ── Shared types file (components/types.ts) ──────────────────────────
+  if (sharedTypes.size > 0) {
+    const typeChunks = [...sharedTypes]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(type|interface)(\\s+${escapedName}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+
+    if (typeChunks.length > 0) {
+      const typesContent = `// ============================================================\n// ARKZEN GENERATED TYPES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${typeChunks.join('\n\n')}\n`
+      fs.writeFileSync(path.join(componentsDir, 'types.ts'), typesContent, 'utf-8')
+      console.log(`[Arkzen Router] ✓ Shared types: types.ts (${[...sharedTypes].join(', ')})`)
+    }
+  } else {
+    const typesPath = path.join(componentsDir, 'types.ts')
+    if (fs.existsSync(typesPath)) {
+      fs.unlinkSync(typesPath)
+      console.log(`[Arkzen Router] 🧹 Removed stale types.ts`)
+    }
+  }
+
 
   // Write one real file per component, containing its actual code
   for (const compName of extractedComponents) {
@@ -554,6 +653,20 @@ ${constChunks.join('\n\n')}
       ? `import { ${referencedConstants.sort().join(', ')} } from './constants'\n`
       : ''
 
+    // If this component references custom hooks (e.g. useToast),
+    // import them from the generated hooks.ts file.
+    const referencedHooks = findReferencedNames(declaration, customHooks)
+    const hooksImport = referencedHooks.length > 0
+      ? `import { ${referencedHooks.sort().join(', ')} } from './hooks'\n`
+      : ''
+
+    // If this component references shared types (e.g. ProbeResult),
+    // import them from the generated types.ts file.
+    const referencedTypes = findReferencedNames(declaration, sharedTypes)
+    const typesImport = referencedTypes.length > 0
+      ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
+      : ''
+
     // If this component references other generated components (e.g. Chapter
     // uses ChapterCover, ChapterHead, ...), import them from their own files.
     const otherComponents = new Set(extractedComponents)
@@ -574,7 +687,7 @@ ${constChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
-${cssImport}${constantsImport}${siblingImportBlock}
+${cssImport}${constantsImport}${hooksImport}${typesImport}${siblingImportBlock}
 ${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
@@ -592,6 +705,8 @@ ${exportedDeclaration}
         console.log(`[Arkzen Router] 🧹 Removed stale ${file}`)
         continue
       }
+      // hooks.ts and types.ts are managed above — skip them here
+      if (file === 'hooks.ts' || file === 'types.ts' || file === 'constants.ts') continue
       if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
         fs.unlinkSync(path.join(componentsDir, file))
         console.log(`[Arkzen Router] 🧹 Removed stale component: ${file}`)
@@ -714,7 +829,21 @@ function generatePageFile(
     ? `import { ${referencedConstants.sort().join(', ')} } from '${componentsImportPath}/constants'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine, forwardedImportLines].filter(Boolean).join('\n')
+  // Custom hooks (e.g. useToast) — only import the ones this page references.
+  const customHooks = extractCustomHookNames(tatemono)
+  const referencedHooks = findReferencedNames(pageStrippedForHooks, customHooks)
+  const hooksImportLine = referencedHooks.length > 0
+    ? `import { ${referencedHooks.sort().join(', ')} } from '${componentsImportPath}/hooks'`
+    : ''
+
+  // Shared types (e.g. ProbeResult, Stats) — only import the ones this page references.
+  const sharedTypes = extractSharedTypeNames(tatemono)
+  const referencedTypes = findReferencedNames(stripTemplateLiterals(page.raw), sharedTypes)
+  const typesImportLine = referencedTypes.length > 0
+    ? `import type { ${referencedTypes.sort().join(', ')} } from '${componentsImportPath}/types'`
+    : ''
+
+  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine, hooksImportLine, typesImportLine, forwardedImportLines].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect', ...usedReactHooks],
