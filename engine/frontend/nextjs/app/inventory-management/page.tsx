@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — inventory-management/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:47.034Z
+// Generated: 2026-06-12T14:36:01.676Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
 import { InventoryRow } from './components/InventoryRow'
 import { StatCard } from './components/StatCard'
+import { emptyForm } from './components/utils'
 import type { FormState, InventoryItem } from './components/types'
 import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
 import { Modal } from '@/arkzen/core/components/Modal'

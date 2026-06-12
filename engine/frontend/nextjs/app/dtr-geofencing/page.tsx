@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:45.912Z
+// Generated: 2026-06-12T14:36:00.506Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -17,6 +17,7 @@ import { LocationWidget } from './components/LocationWidget'
 import { RecordRow } from './components/RecordRow'
 import { Skeleton } from './components/Skeleton'
 import { useDtrStore } from './components/hooks'
+import { a, fmtDuration, fmtTime, map, parseSettings, within } from './components/utils'
 import type { Employee } from './components/types'
 import { MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw, User as UserIcon, Clock, Loader2, Navigation, TrendingUp, ChevronDown, LogIn, LogOut } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'

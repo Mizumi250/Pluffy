@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:45.901Z
+// Generated: 2026-06-12T14:36:00.492Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
+import { fmtDate, fmtTime } from './utils'
 import type { TimeRecord } from './types'
 
 export const RecordRow = ({ rec, geofencingEnabled }: { rec: TimeRecord; geofencingEnabled: boolean }) => (

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:44.533Z
+// Generated: 2026-06-12T14:35:59.068Z
 // ============================================================
 
 export const REVERB_HOST   = process.env.NEXT_PUBLIC_REVERB_HOST    ?? 'localhost'
@@ -25,9 +25,3 @@ interface Message {
   channel_type: string | null
   created_at:   string
 }
-
-const dot = (s: WsStatus) => ({
-  connecting: 'bg-yellow-400',
-  connected:  'bg-green-400',
-  error:      'bg-red-400',
-}[s])

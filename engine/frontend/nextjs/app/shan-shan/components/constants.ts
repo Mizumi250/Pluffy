@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — shan-shan
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:51.789Z
+// Generated: 2026-06-12T14:36:06.403Z
 // ============================================================
 
 // ─── DATA ─────────────────────────────────────────────────────────────────────

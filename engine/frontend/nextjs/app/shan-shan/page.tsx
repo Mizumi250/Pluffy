@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — shan-shan/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:51.811Z
+// Generated: 2026-06-12T14:36:06.428Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -23,6 +23,7 @@ import { MaskBottom } from './components/MaskBottom'
 import { MaskTop } from './components/MaskTop'
 import { ShanHeroLogo } from './components/ShanHeroLogo'
 import { CHAPTERS, PERSONAL_INFO, SKILLS_MARQUEE } from './components/constants'
+import { kvH, onScroll } from './components/utils'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 

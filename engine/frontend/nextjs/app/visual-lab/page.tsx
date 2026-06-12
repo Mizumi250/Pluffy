@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — visual-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.410Z
+// Generated: 2026-06-12T14:36:07.129Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -39,6 +39,7 @@ import { UXSection } from './components/UXSection'
 import { VanillaTilt } from './components/VanillaTilt'
 import { NAV_SECTIONS } from './components/constants'
 import { useVisualLabStore } from './components/hooks'
+import { animate, canvas, curtains, label, lenis, proton, regl } from './components/utils'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

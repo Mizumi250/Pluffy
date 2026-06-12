@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — DemoCard
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.337Z
+// Generated: 2026-06-12T14:36:06.979Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
+import { stage } from './utils'
 
 export const DemoCard = ({ title, children, status, note }: {
   title: string; children: React.ReactNode; status?: 'ok' | 'warn' | 'info'; note?: string

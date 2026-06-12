@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:49.226Z
+// Generated: 2026-06-12T14:36:03.684Z
 // ============================================================
 
 export const FEATURES: Feature[] = [
@@ -35,13 +35,3 @@ export const FEATURES: Feature[] = [
     color: 'orange',
   },
 ]
-
-const getIconComponent = (iconName: string) => {
-  const icons: Record<string, React.ReactNode> = {
-    zap:    <Zap size={32} />,
-    code:   <Code size={32} />,
-    palette: <Palette size={32} />,
-    layers:  <Layers size={32} />,
-  }
-  return icons[iconName] || null
-}

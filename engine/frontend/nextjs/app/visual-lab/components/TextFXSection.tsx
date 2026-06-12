@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TextFXSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.356Z
+// Generated: 2026-06-12T14:36:07.035Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
+import { a1, animate, ch, chars, el, roughRef, splitRef, typedRef } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

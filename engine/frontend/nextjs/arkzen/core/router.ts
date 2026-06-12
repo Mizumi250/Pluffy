@@ -434,6 +434,33 @@ function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
 }
 
 /**
+ * Extracts camelCase utility function/const names from @arkzen:components blocks.
+ * These are exported helpers that aren't React components (PascalCase), custom
+ * hooks (use[A-Z]...), ALL_CAPS constants, or type/interface declarations —
+ * e.g. fmtTime, calcDistance, formatCurrency.
+ * They are written to components/utils.ts so pages can import them.
+ */
+function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    // camelCase const: starts lowercase, not all-caps, not use[A-Z] hook
+    const constMatches = stripped.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+    // camelCase function: starts lowercase
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+  }
+  return names
+}
+
+/**
  * Given a set of names (component or constant names) and a stripped source,
  * returns the subset of names that are actually referenced (used, not just
  * declared) somewhere in that source — i.e. they appear as a standalone
@@ -522,7 +549,8 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
   const sharedConstants = extractSharedConstantNames(tatemono)
   const customHooks = extractCustomHookNames(tatemono)
   const sharedTypes = extractSharedTypeNames(tatemono)
-  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes])
+  const utilityFunctions = extractUtilityFunctionNames(tatemono)
+  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
 
   // Split each stripped components-block source into per-declaration chunks.
   // Use the combined name set so constant declarations (e.g. CHAPTERS) form
@@ -591,6 +619,32 @@ ${constChunks.join('\n\n')}
     if (fs.existsSync(hooksPath)) {
       fs.unlinkSync(hooksPath)
       console.log(`[Arkzen Router] 🧹 Removed stale hooks.ts`)
+    }
+  }
+
+  // ── Utility functions file (components/utils.ts) ─────────────────────
+  if (utilityFunctions.size > 0) {
+    const utilChunks = [...utilityFunctions]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${escapedName}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+
+    if (utilChunks.length > 0) {
+      const utilsContent = `// ============================================================\n// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${utilChunks.join('\n\n')}\n`
+      fs.writeFileSync(path.join(componentsDir, 'utils.ts'), utilsContent, 'utf-8')
+      console.log(`[Arkzen Router] ✓ Utility functions: utils.ts (${[...utilityFunctions].join(', ')})`)
+    }
+  } else {
+    const utilsPath = path.join(componentsDir, 'utils.ts')
+    if (fs.existsSync(utilsPath)) {
+      fs.unlinkSync(utilsPath)
+      console.log(`[Arkzen Router] 🧹 Removed stale utils.ts`)
     }
   }
 
@@ -678,6 +732,13 @@ ${constChunks.join('\n\n')}
       .join('\n')
     const siblingImportBlock = siblingComponentImports ? `${siblingComponentImports}\n` : ''
 
+    // If this component references utility functions (e.g. fmtTime, calcDistance),
+    // import them from the generated utils.ts file.
+    const referencedUtils = findReferencedNames(declaration, utilityFunctions)
+    const utilsImport = referencedUtils.length > 0
+      ? `import { ${referencedUtils.sort().join(', ')} } from './utils'\n`
+      : ''
+
     const content = `'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — ${compName}
@@ -687,7 +748,7 @@ ${constChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
-${cssImport}${constantsImport}${hooksImport}${typesImport}${siblingImportBlock}
+${cssImport}${constantsImport}${hooksImport}${utilsImport}${typesImport}${siblingImportBlock}
 ${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
@@ -705,8 +766,8 @@ ${exportedDeclaration}
         console.log(`[Arkzen Router] 🧹 Removed stale ${file}`)
         continue
       }
-      // hooks.ts and types.ts are managed above — skip them here
-      if (file === 'hooks.ts' || file === 'types.ts' || file === 'constants.ts') continue
+      // hooks.ts, types.ts, utils.ts and constants.ts are managed above — skip them here
+      if (file === 'hooks.ts' || file === 'types.ts' || file === 'constants.ts' || file === 'utils.ts') continue
       if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
         fs.unlinkSync(path.join(componentsDir, file))
         console.log(`[Arkzen Router] 🧹 Removed stale component: ${file}`)
@@ -836,6 +897,13 @@ function generatePageFile(
     ? `import { ${referencedHooks.sort().join(', ')} } from '${componentsImportPath}/hooks'`
     : ''
 
+  // Utility functions (e.g. fmtTime, calcDistance) — only import ones this page references.
+  const utilityFunctions = extractUtilityFunctionNames(tatemono)
+  const referencedUtils = findReferencedNames(pageStrippedForHooks, utilityFunctions)
+  const utilsImportLine = referencedUtils.length > 0
+    ? `import { ${referencedUtils.sort().join(', ')} } from '${componentsImportPath}/utils'`
+    : ''
+
   // Shared types (e.g. ProbeResult, Stats) — only import the ones this page references.
   const sharedTypes = extractSharedTypeNames(tatemono)
   const referencedTypes = findReferencedNames(stripTemplateLiterals(page.raw), sharedTypes)
@@ -843,7 +911,7 @@ function generatePageFile(
     ? `import type { ${referencedTypes.sort().join(', ')} } from '${componentsImportPath}/types'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine, hooksImportLine, typesImportLine, forwardedImportLines].filter(Boolean).join('\n')
+  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine, hooksImportLine, utilsImportLine, typesImportLine, forwardedImportLines].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect', ...usedReactHooks],
@@ -1090,7 +1158,12 @@ ${strippedSources[0]}
 // ─────────────────────────────────────────────
 
 function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
-  const raw = handler.raw.replace(/'use client'[;]?\n?/, '').trim()
+  const { canonicalBlock, strippedSources } = resolveImports([handler.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+    extra: `import { ErrorScreen } from './components/ErrorScreen'`,
+  })
+  const strippedRaw = strippedSources[0].trim()
 
   return `// ============================================================
 // ARKZEN GENERATED — ${tatemono.meta.name}/not-found.tsx
@@ -1099,17 +1172,21 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import React from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
+${canonicalBlock}
 
-${raw}
+${strippedRaw}
 
 export default NotFoundPage
 `
 }
 
 function generateErrorFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
-  const raw = handler.raw.replace(/'use client'[;]?\n?/, '').trim()
+  const { canonicalBlock, strippedSources } = resolveImports([handler.raw], {
+    reactHooks:  [],
+    framerNamed: [],
+    extra: `import { ErrorScreen } from './components/ErrorScreen'`,
+  })
+  const strippedRaw = strippedSources[0].trim()
 
   return `'use client'
 // ============================================================
@@ -1119,10 +1196,9 @@ function generateErrorFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import React from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
+${canonicalBlock}
 
-${raw}
+${strippedRaw}
 
 export default function ArkzenError_${toPascalCase(tatemono.meta.name)}({
   error,

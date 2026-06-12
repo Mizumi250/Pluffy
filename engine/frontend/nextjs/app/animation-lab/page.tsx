@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:42.796Z
+// Generated: 2026-06-12T14:35:56.988Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -33,6 +33,7 @@ import { ScrollTransformDemo } from './components/ScrollTransformDemo'
 import { SectionHeader } from './components/SectionHeader'
 import { NAV_SECTIONS } from './components/constants'
 import { useAnimLabStore } from './components/hooks'
+import { opacity, ref, y } from './components/utils'
 import { gsap } from 'gsap'
 
 // Page component code (from @arkzen:page:index)

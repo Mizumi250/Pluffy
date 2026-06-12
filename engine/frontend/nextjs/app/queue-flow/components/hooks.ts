@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — queue-flow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:50.124Z
+// Generated: 2026-06-12T14:36:04.444Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -24,9 +24,6 @@ export const useQueueStore = create<QueueStore>((set) => ({
 }))
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
-
-export const fmtWait = (mins: number) =>
-  mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
 
 export const useAnnounce = () => {
   const announce = useCallback((text: string) => {

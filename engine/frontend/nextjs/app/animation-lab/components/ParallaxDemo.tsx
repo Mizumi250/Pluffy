@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ParallaxDemo
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:42.752Z
+// Generated: 2026-06-12T14:35:56.921Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
+import { y, y1, y2 } from './utils'
 
 export const ParallaxDemo = () => {
   const { scrollY } = useScroll()

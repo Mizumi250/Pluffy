@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceMap
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:45.902Z
+// Generated: 2026-06-12T14:36:00.496Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
 import { useDtrStore } from './hooks'
+import { avatarUrl, bounds, init, leafletMapRef, map, mapRef, officeIcon, userIcon, within } from './utils'
 
 export const GeofenceMap = () => {
   const { currentPosition, settings, selectedEmployee, distanceToOffice } = useDtrStore()

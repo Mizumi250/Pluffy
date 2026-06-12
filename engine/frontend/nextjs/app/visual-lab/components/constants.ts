@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — visual-lab
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.332Z
+// Generated: 2026-06-12T14:36:06.963Z
 // ============================================================
 
 // ─── NAV SECTIONS ─────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — AnnounceBadge
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:50.143Z
+// Generated: 2026-06-12T14:36:04.456Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
 import { useAnnounce } from './hooks'
+import { announce } from './utils'
 
 export const AnnounceBadge = ({ ticket }: { ticket: { ticket_number: string; customer_name: string | null } | null }) => {
   const announce = useAnnounce()

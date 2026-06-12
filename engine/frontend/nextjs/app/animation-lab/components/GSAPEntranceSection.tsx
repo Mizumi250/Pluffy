@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPEntranceSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:42.732Z
+// Generated: 2026-06-12T14:35:56.901Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { useAnimLabStore } from './hooks'
+import { boxes, ctx, opacity, ref, scale, scaleX, sectionRef, x, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

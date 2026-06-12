@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.342Z
+// Generated: 2026-06-12T14:36:06.994Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
+import { app, appRef, box, boxMat, camera, canvas, canvasRef, el, light, mat, render, scene, sphere } from './utils'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RapierSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:14:52.354Z
+// Generated: 2026-06-12T14:36:07.027Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
+import { ball, balls, canvas, canvasRef, colors, config, ctx, engine, gravity, groundBody, rafRef, rb, render, t, toScreen, wallL, wallR, world } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

@@ -2,14 +2,12 @@
 // ARKZEN GENERATED — jo-payroll/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-06-12T14:14:47.534Z
+// Generated: 2026-06-12T14:36:02.215Z
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
-
-import React from 'react'
 import Link from 'next/link'
+import { ErrorScreen } from './components/ErrorScreen'
 
 const NotFoundPage = () => (
   <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-8 font-['Inter',sans-serif]">
