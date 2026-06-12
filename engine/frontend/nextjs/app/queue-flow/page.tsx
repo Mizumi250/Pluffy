@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:09.110Z
+// Generated: 2026-06-12T14:02:48.127Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -16,6 +16,8 @@ import { CircularRing } from './components/CircularRing'
 import { NowServingCard } from './components/NowServingCard'
 import { StatPill } from './components/StatPill'
 import { TicketRow } from './components/TicketRow'
+import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

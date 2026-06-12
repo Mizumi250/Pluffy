@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ParticlesSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:11.252Z
+// Generated: 2026-06-12T14:02:50.627Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,6 +13,10 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
+import { DemoCard } from './DemoCard'
+import { PackageBadge } from './PackageBadge'
+import { Proton } from './Proton'
+import { SectionHeader } from './SectionHeader'
 
 // ─── SECTION: PARTICLES + PROTON ─────────────────────────────────────────────
 export const ParticlesSection = () => {

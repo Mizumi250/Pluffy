@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Chapter
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:10.701Z
+// Generated: 2026-06-12T14:02:49.941Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,12 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CHAPTERS } from './constants'
+import { ChapterCover } from './ChapterCover'
+import { ChapterHead } from './ChapterHead'
+import { ChapterLookbook } from './ChapterLookbook'
+import { ChapterOutro } from './ChapterOutro'
+import { ChapterOverview } from './ChapterOverview'
+import { ChapterStory } from './ChapterStory'
 
 // ─── FULL CHAPTER ─────────────────────────────────────────────────────────────
 

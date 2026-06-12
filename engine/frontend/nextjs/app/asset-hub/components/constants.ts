@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:02.398Z
+// Generated: 2026-06-12T14:02:41.190Z
 // ============================================================
 
 export const ASSET_REGISTRY: AssetItem[] = [

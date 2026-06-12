@@ -2,8 +2,14 @@
 // ARKZEN GENERATED SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:08.878Z
+// Generated: 2026-06-12T14:02:47.892Z
 // ============================================================
+
+export const PROJECTS = [
+  { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },
+  { id: 2, title: 'Tasks', description: 'Real-time collaboration', image: '✓', url: 'https://example.com', tags: ['React', 'WebSocket'] },
+  { id: 3, title: 'Analytics', description: 'Data dashboard', image: '📊', url: 'https://example.com', tags: ['Chart.js', 'Laravel'] }
+]
 
 export const SKILLS = [
   { name: 'React', category: 'Frontend', proficiency: 95 },

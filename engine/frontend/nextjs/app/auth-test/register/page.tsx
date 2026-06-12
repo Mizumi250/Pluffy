@@ -3,12 +3,14 @@
 // ARKZEN GENERATED PAGE — auth-test/register
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:02.629Z
+// Generated: 2026-06-12T14:02:41.389Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { Lock, ShieldCheck } from 'lucide-react'
+import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {

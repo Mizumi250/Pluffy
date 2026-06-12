@@ -438,7 +438,7 @@ function splitComponentDeclarations(strippedSource: string, names: Set<string>):
         break
       }
     }
-    if (consumed > 0) chunkStart = index - consumed
+    if (consumed > 0) chunkStart = Math.max(0, index - consumed)
 
     const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : strippedSource.length
     out.set(name, strippedSource.slice(chunkStart, chunkEnd).trim())
@@ -554,6 +554,17 @@ ${constChunks.join('\n\n')}
       ? `import { ${referencedConstants.sort().join(', ')} } from './constants'\n`
       : ''
 
+    // If this component references other generated components (e.g. Chapter
+    // uses ChapterCover, ChapterHead, ...), import them from their own files.
+    const otherComponents = new Set(extractedComponents)
+    otherComponents.delete(compName)
+    const referencedComponents = findReferencedNames(declaration, otherComponents)
+    const siblingComponentImports = referencedComponents
+      .sort()
+      .map(name => `import { ${name} } from './${name}'`)
+      .join('\n')
+    const siblingImportBlock = siblingComponentImports ? `${siblingComponentImports}\n` : ''
+
     const content = `'use client'
 // ============================================================
 // ARKZEN GENERATED COMPONENT — ${compName}
@@ -563,7 +574,7 @@ ${constChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
-${cssImport}${constantsImport}
+${cssImport}${constantsImport}${siblingImportBlock}
 ${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')
@@ -652,6 +663,48 @@ function generatePageFile(
     .map(name => `import { ${name} } from '${componentsImportPath}/${name}'`)
     .join('\n')
 
+  // Forward non-react/framer-motion import lines from the components block
+  // (e.g. `import { gsap } from 'gsap'`, `import { ScrollTrigger } from
+  // 'gsap/ScrollTrigger'`) when the page's own code references the imported
+  // identifier(s) but doesn't import them itself. The components block no
+  // longer gets merged into the page, so these would otherwise be lost.
+  const forwardedImportLines = (() => {
+    const seen = new Set<string>()
+    const lines: string[] = []
+    for (const component of tatemono.components) {
+      const flattened = flattenMultilineImports(component.raw.trim())
+      for (const rawLine of flattened.split('\n')) {
+        const line = rawLine.trim()
+        if (!line.startsWith('import ')) continue
+        if (/from\s+['"](react|framer-motion)['"]/.test(line)) continue
+
+        // Extract identifiers this import line brings into scope
+        const idents: string[] = []
+        let m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from/)
+        if (m) {
+          idents.push(m[1], ...m[2].split(',').map(s => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\{([^}]*)\}\s+from/))) {
+          idents.push(...m[1].split(',').map(s => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else if ((m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else {
+          continue // side-effect import — skip forwarding
+        }
+
+        const referenced = idents.some(ident =>
+          new RegExp(`[^\\w$]${ident.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(' ' + pageStrippedForHooks)
+        )
+        if (referenced && !seen.has(line)) {
+          seen.add(line)
+          lines.push(line)
+        }
+      }
+    }
+    return lines.join('\n')
+  })()
+
   // Shared constants (e.g. NAV_LINKS, CHAPTERS) — only import the ones this
   // page's own code actually references.
   const sharedConstants = extractSharedConstantNames(tatemono)
@@ -661,7 +714,7 @@ function generatePageFile(
     ? `import { ${referencedConstants.sort().join(', ')} } from '${componentsImportPath}/constants'`
     : ''
 
-  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine].filter(Boolean).join('\n')
+  const extraLines = [layoutImport, animImportLine, componentImportLines, constantsImportLine, forwardedImportLines].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
     reactHooks:   ['useRef', 'useEffect', ...usedReactHooks],

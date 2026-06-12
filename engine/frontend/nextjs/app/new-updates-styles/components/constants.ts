@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T09:10:08.298Z
+// Generated: 2026-06-12T14:02:47.468Z
 // ============================================================
 
 export const FEATURES: Feature[] = [
