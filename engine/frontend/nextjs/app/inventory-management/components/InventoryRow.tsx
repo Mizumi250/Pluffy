@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:06.122Z
+// Generated: 2026-06-13T01:34:05.541Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,7 +15,6 @@ import { Badge } from '@/arkzen/core/components/utils'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
-import { stockLabel, stockVariant } from './utils'
 import type { InventoryItem } from './types'
 
 iv>

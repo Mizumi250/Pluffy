@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — inventory-management
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:06.118Z
+// Generated: 2026-06-13T01:34:05.533Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

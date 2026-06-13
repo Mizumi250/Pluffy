@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HTMLCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:11.935Z
+// Generated: 2026-06-13T01:34:10.860Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { addLog, angle, canvas, canvasRef, ctx, ctx2d, dpr, el, formEl, formRef, gl, grad, has, hasDrawElement, label, paint, rafRef, render, run2D, shapes, stopDemo, transform } from './utils'
 import { DemoCard } from './DemoCard'
 import { PlayCanvasSection } from './PlayCanvasSection'
 import { SectionHeader } from './SectionHeader'

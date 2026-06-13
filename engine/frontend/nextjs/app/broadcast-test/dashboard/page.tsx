@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:04.176Z
+// Generated: 2026-06-13T01:34:03.644Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { motion } from 'framer-motion'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { ChannelPanel } from '../components/ChannelPanel'
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from '../components/constants'
-import { val } from '../components/utils'
 import type { Message, WsStatus } from '../components/types'
 import { useRouter } from 'next/navigation'
 import { Radio } from 'lucide-react'

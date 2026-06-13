@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BurgerMenu
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:11.309Z
+// Generated: 2026-06-13T01:34:10.241Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { NAV_LINKS } from './constants'
-import { handleOpen, kvH, onScroll } from './utils'
 
 // ─── BURGER ───────────────────────────────────────────────────────────────────
 

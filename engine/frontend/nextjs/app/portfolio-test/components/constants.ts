@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:08.921Z
+// Generated: 2026-06-13T01:34:08.143Z
 // ============================================================
 
 export const PROJECTS = [

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:08.179Z
+// Generated: 2026-06-13T01:34:07.656Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import styles from '../styles/FeatureCard.module.css'
-import { bgColors } from './utils'
 import type { FeatureCardProps, HeroSectionProps } from './types'
 
 'orange'

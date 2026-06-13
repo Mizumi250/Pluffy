@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — upload-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:11.574041Z
+// Generated: 2026-06-13T01:34:10.531695Z
 // Resources: UploadedFile
 // Custom controllers: 
 // ============================================================

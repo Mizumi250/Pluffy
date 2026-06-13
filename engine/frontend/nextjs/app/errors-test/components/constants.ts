@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:05.353Z
+// Generated: 2026-06-13T01:34:04.769Z
 // ============================================================
 
 export const ERRORS: ErrorDef[] = [

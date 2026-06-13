@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CircularRing
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:09.238Z
+// Generated: 2026-06-13T01:34:08.372Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
-import { announce, arcEndX, arcEndY, circumference, id, progress, r, toRad } from './utils'
+import { announce } from './utils'
 
 announce
 }

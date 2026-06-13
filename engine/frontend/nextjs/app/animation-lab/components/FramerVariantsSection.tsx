@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:01.939Z
+// Generated: 2026-06-13T01:34:01.625Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,6 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
-import { containerVariants, fadeSlide, itemVariants, opacity, rotateIn, scale, scaleBounce, x, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

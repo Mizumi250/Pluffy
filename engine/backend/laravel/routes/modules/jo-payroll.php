@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:06.793122Z
+// Generated: 2026-06-13T01:34:06.302551Z
 // Resources: JobOrder
 // Custom controllers: 
 // ============================================================

@@ -458,16 +458,35 @@ function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
+  // Collect component names first so we can strip their bodies before scanning.
+  // Without this, inner declarations like `handleSend`, `inputRef`, `val` defined
+  // inside a memo() body get mistakenly identified as shared utilities and end up
+  // imported from ./utils in every component file that references those names.
+  const componentNames = extractComponentNames(tatemono)
+
   for (const component of tatemono.components) {
     const stripped = stripTemplateLiterals(component.raw)
+
+    // Remove each component's body from the source so only top-level declarations
+    // remain visible to the utility scanner.
+    let src = stripped
+    for (const compName of componentNames) {
+      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      // Match from the component declaration to the end of the string — the
+      // component is always the last (or only) declaration in its chunk, so
+      // trimming from its `const Name =` onward safely removes the body without
+      // touching preceding top-level utilities like `dot`, `formatDate`, etc.
+      src = src.replace(new RegExp(`(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*`), '')
+    }
+
     // camelCase const: starts lowercase, not all-caps, not use[A-Z] hook
-    const constMatches = stripped.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
     for (const match of constMatches) {
       const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
       if (name && !/^use[A-Z]/.test(name)) names.add(name)
     }
     // camelCase function: starts lowercase
-    const fnMatches = stripped.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
     for (const match of fnMatches) {
       const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
       if (name && !/^use[A-Z]/.test(name)) names.add(name)

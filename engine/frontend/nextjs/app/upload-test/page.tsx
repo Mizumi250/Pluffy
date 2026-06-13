@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — upload-test
 // Visiting /upload-test redirects to /upload-test/dashboard
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T00:54:11.508Z
+// Generated: 2026-06-13T01:34:10.457Z
 // ============================================================
 
 import { redirect } from 'next/navigation'
