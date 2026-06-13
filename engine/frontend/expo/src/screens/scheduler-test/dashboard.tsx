@@ -2,10 +2,11 @@
 // ARKZEN GENERATED SCREEN — scheduler-test/dashboard
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react-native'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React from 'react'
+import { BACKEND_URL } from './components/constants'
+import { exitCodeStyle, triggeredStyle } from './components/utils'
+import type { CommandRun } from './components/types'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -13,28 +14,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-interface CommandRun {
-  id:           number
-  command_name: string
-  signature:    string
-  exit_code:    number
-  output:       string | null
-  triggered_by: string
-  duration_ms:  number | null
-  created_at:   string
-}
-
-const exitCodeStyle    = (code: number) => code === 0
-  ? { bg: 'bg-green-100', text: 'text-green-700' }
-  : { bg: 'bg-red-100',   text: 'text-red-600'   }
-
-const triggeredStyle = (t: string) => t === 'manual'
-  ? { bg: 'bg-blue-100',    text: 'text-blue-600'    }
-  : { bg: 'bg-neutral-100', text: 'text-neutral-500' }
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

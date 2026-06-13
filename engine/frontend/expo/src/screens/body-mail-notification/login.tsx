@@ -2,104 +2,21 @@
 // ARKZEN GENERATED SCREEN — body-mail-notification/login
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { ErrorBox } from './components/ErrorBox'
+import { Field } from './components/Field'
+import { KindBadge } from './components/KindBadge'
+import { PrimaryBtn } from './components/PrimaryBtn'
+import { StatusDot } from './components/StatusDot'
+import { ScrollView } from 'react-native'
+
+import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-type SendLogEntry = {
-  id:         number
-  kind:       'mail' | 'notification'
-  subject:    string | null
-  to_email:   string | null
-  mail_class: string | null
-  status:     'sent' | 'failed'
-  error:      string | null
-  created_at: string
-}
-
-// ── Reusable input field ───────────────────────────────────────
-const Field = ({
-  placeholder,
-  value,
-  onChangeText,
-  secureTextEntry = false,
-  keyboardType = 'default',
-}: {
-  placeholder:      string
-  value:            string
-  onChangeText:     (v: string) => void
-  secureTextEntry?: boolean
-  keyboardType?:    'default' | 'email-address'
-}) => (
-  <TextInput
-    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
-    placeholder={placeholder}
-    placeholderTextColor="#a3a3a3"
-    value={value}
-    onChangeText={onChangeText}
-    secureTextEntry={secureTextEntry}
-    keyboardType={keyboardType}
-    autoCapitalize="none"
-    autoCorrect={false}
-  />
-)
-
-// ── Error box ──────────────────────────────────────────────────
-const ErrorBox = ({ message }: { message: string }) => (
-  <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-    <Text className="text-xs text-red-600">{message}</Text>
-  </View>
-)
-
-// ── Primary button ─────────────────────────────────────────────
-const PrimaryBtn = ({
-  label,
-  onPress,
-  loading = false,
-  color = 'bg-neutral-900',
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-  color?:   string
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : color}`}
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#fff" />
-      : <Text className="text-white text-sm font-semibold">{label}</Text>
-    }
-  </TouchableOpacity>
-)
-
-// ── Kind badge ─────────────────────────────────────────────────
-const KindBadge = ({ kind }: { kind: string }) => (
-  <View className={`px-2.5 py-0.5 rounded-full ${kind === 'mail' ? 'bg-blue-100' : 'bg-yellow-100'}`}>
-    <Text className={`text-xs font-bold ${kind === 'mail' ? 'text-blue-700' : 'text-yellow-700'}`}>
-      {kind === 'mail' ? '✉ MAIL' : '🔔 NOTIF'}
-    </Text>
-  </View>
-)
-
-// ── Status dot ─────────────────────────────────────────────────
-const StatusDot = ({ status }: { status: string }) => (
-  <View
-    className={`w-2 h-2 rounded-full mr-1.5 ${status === 'sent' ? 'bg-green-500' : 'bg-red-500'}`}
-    style={{ marginTop: 1 }}
-  />
-)
 
 // User screen (from @arkzen:native:page:login)
 const LoginScreen = () => {

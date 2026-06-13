@@ -2,10 +2,11 @@
 // ARKZEN GENERATED SCREEN — events-test/index
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Flame, RefreshCw, Trash2, Zap } from 'lucide-react-native'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React from 'react'
+import { BACKEND_URL } from './components/constants'
+import { eventColor, statusStyle } from './components/utils'
+import type { EventLogEntry } from './components/types'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -13,31 +14,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-interface EventLogEntry {
-  id:            number
-  event_name:    string
-  listener_name: string
-  status:        string
-  payload:       string | null
-  duration_ms:   number | null
-  created_at:    string
-}
-
-const statusStyle = (s: string) => ({
-  completed: { bg: 'bg-green-100',   text: 'text-green-700'   },
-  running:   { bg: 'bg-yellow-100',  text: 'text-yellow-700'  },
-  failed:    { bg: 'bg-red-100',     text: 'text-red-600'     },
-}[s] ?? { bg: 'bg-neutral-100', text: 'text-neutral-600' })
-
-const eventColor = (key: string) => ({
-  'user-signed-up': { bg: 'bg-blue-50',   text: 'text-blue-600'   },
-  'order-placed':   { bg: 'bg-green-50',  text: 'text-green-600'  },
-  'data-exported':  { bg: 'bg-purple-50', text: 'text-purple-600' },
-}[key] ?? { bg: 'bg-neutral-100', text: 'text-neutral-600' })
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

@@ -2,135 +2,23 @@
 // ARKZEN GENERATED SCREEN — queue-flow/join
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
-import * as Speech from 'expo-speech'
-import { Volume2 } from 'lucide-react-native'
-import { ActivityIndicator, Animated, Easing, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/queue-flow-app'
+import { SpinRing } from './components/SpinRing'
+import { StatCard } from './components/StatCard'
+import { StatusPill } from './components/StatusPill'
+import { TicketRowNative } from './components/TicketRowNative'
+import { BACKEND_URL } from './components/constants'
+import { fmtWait } from './components/utils'
+import type { MyTicketData } from './components/types'
+import { ScrollView } from 'react-native'
+
+import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface NativeQueue {
-  id:               number
-  name:             string
-  description:      string | null
-  prefix:           string
-  is_active:        boolean
-  avg_wait_minutes: number
-}
-
-interface NativeTicket {
-  id:            number
-  queue_id:      number
-  ticket_number: string
-  customer_name: string | null
-  status:        'waiting' | 'serving' | 'done' | 'skipped'
-  position:      number
-  called_at:     string | null
-  served_at:     string | null
-  created_at:    string
-}
-
-interface NativeQueueStatus {
-  queue:         NativeQueue
-  serving:       NativeTicket | null
-  waiting:       NativeTicket[]
-  done_count:    number
-  total_waiting: number
-}
-
-interface MyTicketData {
-  ticket:         NativeTicket
-  position:       number
-  estimated_wait: number
-  is_serving:     boolean
-  is_done:        boolean
-}
-
-// ─── Utilities ────────────────────────────────────────────────────────────────
-
-const fmtWait = (mins: number) =>
-  mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
-
-// ─── Shared UI atoms ──────────────────────────────────────────────────────────
-
-const StatusPill = ({ status }: { status: NativeTicket['status'] }) => {
-  const map: Record<string, { bg: string; text: string; label: string }> = {
-    waiting: { bg: 'bg-blue-50',    text: 'text-blue-600',   label: 'waiting'  },
-    serving: { bg: 'bg-emerald-50', text: 'text-emerald-600', label: 'serving' },
-    done:    { bg: 'bg-neutral-100', text: 'text-neutral-500', label: 'done'   },
-    skipped: { bg: 'bg-amber-50',   text: 'text-amber-600',  label: 'skipped'  },
-  }
-  const s = map[status] ?? map.waiting
-  return (
-    <View className={`px-2.5 py-1 rounded-full ${s.bg}`}>
-      <Text className={`text-xs font-semibold ${s.text}`}>{s.label}</Text>
-    </View>
-  )
-}
-
-const TicketRowNative = ({ ticket, position }: { ticket: NativeTicket; position: number }) => (
-  <View className="flex-row items-center gap-3 px-5 py-3 border-b border-neutral-50">
-    <View className="w-7 h-7 rounded-lg bg-blue-50 items-center justify-center">
-      <Text className="text-xs font-bold text-blue-500">#{position}</Text>
-    </View>
-    <View className="flex-1 min-w-0">
-      <Text className="text-sm font-semibold text-neutral-900">{ticket.ticket_number}</Text>
-      <Text className="text-xs text-neutral-400" numberOfLines={1}>{ticket.customer_name ?? 'Guest'}</Text>
-    </View>
-    <StatusPill status={ticket.status} />
-  </View>
-)
-
-const StatCard = ({ label, value, sub }: { label: string; value: string | number; sub?: string }) => (
-  <View className="flex-1 bg-white rounded-2xl border border-neutral-100 p-4 items-center gap-1">
-    <Text className="text-2xl font-black text-neutral-900">{value}</Text>
-    <Text className="text-xs font-semibold text-neutral-400 uppercase tracking-wide">{label}</Text>
-    {sub ? <Text className="text-xs text-neutral-300">{sub}</Text> : null}
-  </View>
-)
-
-// ─── Spinning ring for Display screen ────────────────────────────────────────
-
-const SpinRing = ({ label, sub }: { label: string; sub: string }) => {
-  const spin = useRef(new Animated.Value(0)).current
-  useEffect(() => {
-    Animated.loop(
-      Animated.timing(spin, { toValue: 1, duration: 6000, easing: Easing.linear, useNativeDriver: true })
-    ).start()
-  }, [])
-  const rotate = spin.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] })
-  return (
-    <View className="items-center py-6">
-      <View className="relative w-36 h-36 items-center justify-center">
-        <Animated.View
-          style={{ transform: [{ rotate }] }}
-          className="absolute inset-0 rounded-full border-4 border-transparent"
-          // We fake the arc with border-t coloured
-        >
-          <View
-            className="w-full h-full rounded-full"
-            style={{ borderWidth: 3, borderColor: 'transparent', borderTopColor: '#a4c5f5' }}
-          />
-        </Animated.View>
-        <View className="items-center">
-          <Text className="text-2xl font-black text-blue-900">{label}</Text>
-          <Text className="text-xs text-blue-400 font-medium mt-0.5">{sub}</Text>
-        </View>
-      </View>
-    </View>
-  )
-}
 
 // User screen (from @arkzen:native:page:join)
 const JoinScreen = () => {

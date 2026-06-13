@@ -2,10 +2,11 @@
 // ARKZEN GENERATED SCREEN — job-test/dashboard
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Cpu, RefreshCw } from 'lucide-react-native'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React from 'react'
+import { BACKEND_URL } from './components/constants'
+import { dotColor, statusStyle } from './components/utils'
+import type { JobResult } from './components/types'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -13,30 +14,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-interface JobResult {
-  id:           number
-  job_name:     string
-  status:       string
-  result:       string | null
-  processed_at: string | null
-  created_at:   string
-}
-
-const statusStyle = (s: string) => ({
-  completed:  { bg: 'bg-green-100',  text: 'text-green-700'  },
-  processing: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
-  failed:     { bg: 'bg-red-100',    text: 'text-red-600'    },
-}[s] ?? { bg: 'bg-neutral-100', text: 'text-neutral-600' })
-
-const dotColor = (color: string) => ({
-  blue:   'bg-blue-500',
-  purple: 'bg-purple-500',
-  red:    'bg-red-500',
-}[color] ?? 'bg-neutral-400')
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

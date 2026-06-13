@@ -20,7 +20,7 @@ import { Route as BroadcastTest_root_redirectRouteImport } from './routes/broadc
 import { Route as BodyMailNotification_root_redirectRouteImport } from './routes/body-mail-notification/__root_redirect'
 import { Route as AuthTest_root_redirectRouteImport } from './routes/auth-test/__root_redirect'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ShanShanIndexRouteImport } from './routes/shan-shan/index'
+import { Route as VisualLabIndexRouteImport } from './routes/visual-lab/index'
 import { Route as QueueFlowIndexRouteImport } from './routes/queue-flow/index'
 import { Route as PortfolioTestIndexRouteImport } from './routes/portfolio-test/index'
 import { Route as NewUpdatesStylesIndexRouteImport } from './routes/new-updates-styles/index'
@@ -140,9 +140,9 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShanShanIndexRoute = ShanShanIndexRouteImport.update({
-  id: '/shan-shan/',
-  path: '/shan-shan/',
+const VisualLabIndexRoute = VisualLabIndexRouteImport.update({
+  id: '/visual-lab/',
+  path: '/visual-lab/',
   getParentRoute: () => rootRouteImport,
 } as any)
 const QueueFlowIndexRoute = QueueFlowIndexRouteImport.update({
@@ -515,7 +515,7 @@ export interface FileRoutesByFullPath {
   '/new-updates-styles/': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test/': typeof PortfolioTestIndexRoute
   '/queue-flow/': typeof QueueFlowIndexRoute
-  '/shan-shan/': typeof ShanShanIndexRoute
+  '/visual-lab/': typeof VisualLabIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -587,7 +587,7 @@ export interface FileRoutesByTo {
   '/new-updates-styles': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test': typeof PortfolioTestIndexRoute
   '/queue-flow': typeof QueueFlowIndexRoute
-  '/shan-shan': typeof ShanShanIndexRoute
+  '/visual-lab': typeof VisualLabIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -660,7 +660,7 @@ export interface FileRoutesById {
   '/new-updates-styles/': typeof NewUpdatesStylesIndexRoute
   '/portfolio-test/': typeof PortfolioTestIndexRoute
   '/queue-flow/': typeof QueueFlowIndexRoute
-  '/shan-shan/': typeof ShanShanIndexRoute
+  '/visual-lab/': typeof VisualLabIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -734,7 +734,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles/'
     | '/portfolio-test/'
     | '/queue-flow/'
-    | '/shan-shan/'
+    | '/visual-lab/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -806,7 +806,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles'
     | '/portfolio-test'
     | '/queue-flow'
-    | '/shan-shan'
+    | '/visual-lab'
   id:
     | '__root__'
     | '/'
@@ -878,7 +878,7 @@ export interface FileRouteTypes {
     | '/new-updates-styles/'
     | '/portfolio-test/'
     | '/queue-flow/'
-    | '/shan-shan/'
+    | '/visual-lab/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -951,7 +951,7 @@ export interface RootRouteChildren {
   NewUpdatesStylesIndexRoute: typeof NewUpdatesStylesIndexRoute
   PortfolioTestIndexRoute: typeof PortfolioTestIndexRoute
   QueueFlowIndexRoute: typeof QueueFlowIndexRoute
-  ShanShanIndexRoute: typeof ShanShanIndexRoute
+  VisualLabIndexRoute: typeof VisualLabIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1033,11 +1033,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/shan-shan/': {
-      id: '/shan-shan/'
-      path: '/shan-shan'
-      fullPath: '/shan-shan/'
-      preLoaderRoute: typeof ShanShanIndexRouteImport
+    '/visual-lab/': {
+      id: '/visual-lab/'
+      path: '/visual-lab'
+      fullPath: '/visual-lab/'
+      preLoaderRoute: typeof VisualLabIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/queue-flow/': {
@@ -1520,7 +1520,7 @@ const rootRouteChildren: RootRouteChildren = {
   NewUpdatesStylesIndexRoute: NewUpdatesStylesIndexRoute,
   PortfolioTestIndexRoute: PortfolioTestIndexRoute,
   QueueFlowIndexRoute: QueueFlowIndexRoute,
-  ShanShanIndexRoute: ShanShanIndexRoute,
+  VisualLabIndexRoute: VisualLabIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

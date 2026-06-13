@@ -2,10 +2,14 @@
 // ARKZEN GENERATED SCREEN — body-endpoint-handler/index
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { InjectedBadge } from './components/InjectedBadge'
+import { NativeBadge } from './components/NativeBadge'
+import { SectionCard } from './components/SectionCard'
+import { apiFetch, sourceColor } from './components/utils'
+import type { ProbeResult, Stats } from './components/types'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -13,70 +17,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-async function apiFetch(path: string, options?: RequestInit) {
-  return fetch(`${BACKEND_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Accept: 'application/json',
-      ...(options?.headers ?? {}),
-    },
-  })
-}
-
-type ProbeResult = {
-  id:         number
-  source:     string
-  probe:      string
-  payload:    string | null
-  result:     string | null
-  ok:         boolean
-  created_at: string
-}
-
-type Stats = {
-  injected: boolean
-  builder:  string
-  method:   string
-  total:    number
-  passed:   number
-  failed:   number
-  sources:  string[]
-}
-
-const sourceColor = (s: string) =>
-  s === 'handler-body'   ? '#7c3aed' :
-  s === 'endpoint-body'  ? '#0891b2' : '#64748b'
-
-const NativeBadge = ({ label, color }: { label: string; color: string }) => (
-  <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: color + '22' }}>
-    <Text style={{ fontSize: 10, fontWeight: '700', color, letterSpacing: 0.5 }}>{label}</Text>
-  </View>
-)
-
-const InjectedBadge = ({ injected }: { injected: boolean }) => (
-  <NativeBadge
-    label={injected ? '✓ BODY INJECTED' : '✗ STUB'}
-    color={injected ? '#16a34a' : '#dc2626'}
-  />
-)
-
-const SectionCard = ({ children }: { children: React.ReactNode }) => (
-  <View style={{
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#f1f1f1',
-  }}>
-    {children}
-  </View>
-)
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

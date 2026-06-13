@@ -2,14 +2,20 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/cash-atm
 // ============================================================
 
-import React, { useEffect, useMemo, useState } from 'react'
-import { AlertCircle, Banknote, Building2, CreditCard, Landmark, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react-native'
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import Animated, { FadeInDown } from 'react-native-reanimated'
-import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
 import { s } from '../../arkzen/generated/jo-payroll.native-styles'
+import { Avatar } from './components/Avatar'
+import { SearchBar } from './components/SearchBar'
+import { StatCard } from './components/StatCard'
+import { TabRow } from './components/TabRow'
+import { WorkerRow } from './components/WorkerRow'
+import { BASE } from './components/constants'
+import { usePayrollStore } from './components/hooks'
+import { color, formatPeso } from './components/utils'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -17,178 +23,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-// ── Types ────────────────────────────────────────────────────
-
-export interface JobOrder {
-  id: number
-  jor_number: number
-  name_of_jo: string
-  job_title: string
-  funding: string
-  basic_pay: number
-  disbursement_type: 'CASH' | 'ATM'
-  jor_pyrl_group?: string
-  hdmf_no?: string
-  sss_number?: string
-  sss_amount?: number
-  calamity_loan?: number
-  hdmf_mpl?: number
-  hdmf_premium?: number
-  cash_card_number?: string
-  appointment_order?: number
-  status: 'active' | 'inactive'
-}
-
-export interface PayrollSummary {
-  total_active: number
-  total_inactive: number
-  total_atm: number
-  total_cash: number
-  total_basic_pay: number
-  total_sss: number
-  total_hdmf_premium: number
-  total_hdmf_mpl: number
-  total_calamity_loan: number
-  total_deductions: number
-  net_pay: number
-  funding_breakdown?: Record<string, { count: number; total_pay: number }>
-  group_breakdown?: Record<string, number>
-}
-
-// ── Store ────────────────────────────────────────────────────
-
-interface PayrollStore {
-  jobOrders: JobOrder[]
-  summary: PayrollSummary | null
-  isLoading: boolean
-  setJobOrders: (o: JobOrder[]) => void
-  setSummary: (s: PayrollSummary) => void
-  setLoading: (v: boolean) => void
-}
-
-export const usePayrollStore = create<PayrollStore>((set) => ({
-  jobOrders: [],
-  summary: null,
-  isLoading: false,
-  setJobOrders: (jobOrders) => set({ jobOrders }),
-  setSummary: (summary) => set({ summary }),
-  setLoading: (isLoading) => set({ isLoading }),
-}))
-
-// ── Utils ────────────────────────────────────────────────────
-
-export const BASE = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-export const formatPeso = (v?: number) =>
-  v == null ? '₱0.00' : `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-
-export const getInitials = (name: string) => {
-  const parts = name.replace(/,/g, '').trim().split(/\s+/)
-  return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase()
-}
-
-const AVATAR_COLORS = [
-  { bg: '#ede9fe', text: '#7c3aed' },
-  { bg: '#dbeafe', text: '#2563eb' },
-  { bg: '#d1fae5', text: '#059669' },
-  { bg: '#fef3c7', text: '#d97706' },
-  { bg: '#ffe4e6', text: '#e11d48' },
-  { bg: '#cffafe', text: '#0891b2' },
-]
-
-export const getAvatarColor = (name: string) => {
-  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return AVATAR_COLORS[hash % AVATAR_COLORS.length]
-}
-
-// ── Avatar ───────────────────────────────────────────────────
-
-export const Avatar = ({ name, size = 36 }: { name: string; size?: number }) => {
-  const color = getAvatarColor(name)
-  return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: color.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: size * 0.33, fontWeight: '700', color: color.text }}>{getInitials(name)}</Text>
-    </View>
-  )
-}
-
-// ── StatCard ─────────────────────────────────────────────────
-
-export const StatCard = ({ value, label, color = '#111827', bg = '#ffffff', borderColor = '#e5e7eb' }: {
-  value: string | number
-  label: string
-  color?: string
-  bg?: string
-  borderColor?: string
-}) => (
-  <View style={{ flex: 1, backgroundColor: bg, borderRadius: 14, borderWidth: 1, borderColor, padding: 14 }}>
-    <Text style={{ fontSize: 22, fontWeight: '700', color }}>{value}</Text>
-    <Text style={{ fontSize: 11, color: '#9ca3af', fontWeight: '500', marginTop: 2 }}>{label}</Text>
-  </View>
-)
-
-// ── WorkerRow ────────────────────────────────────────────────
-
-export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void }) => {
-  const deductions = (jo.sss_amount ?? 0) + (jo.hdmf_premium ?? 0) + (jo.hdmf_mpl ?? 0) + (jo.calamity_loan ?? 0)
-  const netPay = jo.basic_pay - deductions
-
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      activeOpacity={0.7}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}
-    >
-      <Avatar name={jo.name_of_jo} size={38} />
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · {jo.funding}</Text>
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(netPay)}</Text>
-        <View style={{ backgroundColor: jo.disbursement_type === 'ATM' ? '#dbeafe' : '#fef3c7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-          <Text style={{ fontSize: 10, fontWeight: '700', color: jo.disbursement_type === 'ATM' ? '#2563eb' : '#d97706' }}>
-            {jo.disbursement_type}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
-  )
-}
-
-// ── SearchBar ────────────────────────────────────────────────
-
-export const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 10, gap: 8 }}>
-    <Search size={14} color="#9ca3af" />
-    <TextInput
-      value={value}
-      onChangeText={onChange}
-      placeholder={placeholder ?? 'Search…'}
-      placeholderTextColor="#d1d5db"
-      style={{ flex: 1, fontSize: 13, color: '#111827' }}
-    />
-  </View>
-)
-
-// ── TabRow ───────────────────────────────────────────────────
-
-export const TabRow = ({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) => (
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
-    {tabs.map(t => (
-      <TouchableOpacity
-        key={t}
-        onPress={() => onChange(t)}
-        activeOpacity={0.7}
-        style={{ borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active === t ? '#171717' : 'transparent' }}
-      >
-        <Text style={{ fontSize: 12, fontWeight: '600', color: active === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
-      </TouchableOpacity>
-    ))}
-  </View>
-)
 
 // User screen (from @arkzen:native:page:cash-atm)
 const CashAtmScreen = () => {

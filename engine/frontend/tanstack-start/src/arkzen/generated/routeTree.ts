@@ -23,16 +23,6 @@ import { Route as Route_body_mail_notification_dashboard } from '../../routes/bo
 import { Route as Route_broadcast_test_login } from '../../routes/broadcast-test/login'
 import { Route as Route_broadcast_test_register } from '../../routes/broadcast-test/register'
 import { Route as Route_broadcast_test_dashboard } from '../../routes/broadcast-test/dashboard'
-import { Route as Route_certflow_login } from '../../routes/certflow/login'
-import { Route as Route_certflow_dashboard } from '../../routes/certflow/dashboard'
-import { Route as Route_certflow_fill } from '../../routes/certflow/fill'
-import { Route as Route_certflow_verify } from '../../routes/certflow/verify'
-import { Route as Route_church_community_index } from '../../routes/church-community/index'
-import { Route as Route_church_community_members } from '../../routes/church-community/members'
-import { Route as Route_church_community_inventory } from '../../routes/church-community/inventory'
-import { Route as Route_church_community_admin } from '../../routes/church-community/admin'
-import { Route as Route_church_community_login } from '../../routes/church-community/login'
-import { Route as Route_church_community_register } from '../../routes/church-community/register'
 import { Route as Route_crud_test_index } from '../../routes/crud-test/index'
 import { Route as Route_dtr_geofencing_index } from '../../routes/dtr-geofencing/index'
 import { Route as Route_dtr_geofencing_admin } from '../../routes/dtr-geofencing/admin'
@@ -88,16 +78,6 @@ const routeTree = RootRoute.addChildren([
   Route_broadcast_test_login,
   Route_broadcast_test_register,
   Route_broadcast_test_dashboard,
-  Route_certflow_login,
-  Route_certflow_dashboard,
-  Route_certflow_fill,
-  Route_certflow_verify,
-  Route_church_community_index,
-  Route_church_community_members,
-  Route_church_community_inventory,
-  Route_church_community_admin,
-  Route_church_community_login,
-  Route_church_community_register,
   Route_crud_test_index,
   Route_dtr_geofencing_index,
   Route_dtr_geofencing_admin,
@@ -145,8 +125,6 @@ export const AUTH_TATEMONOS: string[] = [
   "auth-test",
   "body-mail-notification",
   "broadcast-test",
-  "certflow",
-  "church-community",
   "mail-test",
   "notification-test",
   "roles-test",

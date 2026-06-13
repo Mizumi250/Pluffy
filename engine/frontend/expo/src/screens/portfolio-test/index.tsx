@@ -2,30 +2,17 @@
 // ARKZEN GENERATED SCREEN — portfolio-test/index
 // ============================================================
 
-import React, { useState } from 'react'
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
-import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
+import { ScrollView } from 'react-native'
+
+import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const PROJECTS = [
-  { id: 1, title: 'E-commerce',  description: 'Full-stack e-commerce',     image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel']   },
-  { id: 2, title: 'Tasks',       description: 'Real-time collaboration',    image: '✓',  url: 'https://example.com', tags: ['React', 'WebSocket']   },
-  { id: 3, title: 'Analytics',   description: 'Data dashboard',             image: '📊', url: 'https://example.com', tags: ['Chart.js', 'Laravel']  },
-]
-
-const SKILLS = [
-  { name: 'React',      category: 'Frontend', proficiency: 95 },
-  { name: 'Next.js',    category: 'Frontend', proficiency: 92 },
-  { name: 'Laravel',    category: 'Backend',  proficiency: 90 },
-  { name: 'PostgreSQL', category: 'Database', proficiency: 85 },
-]
-
-const CATEGORIES = Array.from(new Set(SKILLS.map(s => s.category)))
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

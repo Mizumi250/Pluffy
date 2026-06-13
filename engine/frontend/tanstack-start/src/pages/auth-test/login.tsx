@@ -1,21 +1,15 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — auth-test/login
+// ARKZEN GENERATED PAGE — auth-test/login [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:10.081Z
+// Generated: 2026-06-13T08:08:51.869Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Lock, ShieldCheck } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-// Activate the correct isolated auth context for this Tatemono
-if (typeof window !== 'undefined') {
-  setActiveTatemono('auth-test')
-}
+import { Lock, ShieldCheck } from 'lucide-react'
+import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:login)
 const LoginPage = () => {

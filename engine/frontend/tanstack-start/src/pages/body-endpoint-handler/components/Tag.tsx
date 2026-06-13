@@ -1,8 +1,18 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENT — Tag [TanStack]
-// Re-exported from _components.tsx
+// Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:10.189Z
+// Generated: 2026-06-13T08:08:51.932Z
 // ============================================================
 
-export { Tag } from './_components'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+
+export const Tag = ({ label, color }: { label: string; color: string }) => (
+  <span style={{
+    display: 'inline-block', padding: '2px 9px', borderRadius: 20,
+    fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
+    background: color + '22', color,
+  }}>{label}</span>
+)

@@ -2,93 +2,21 @@
 // ARKZEN GENERATED SCREEN — mail-test/dashboard
 // ============================================================
 
-import React, { useEffect, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
-import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react-native'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
+import { ErrorBox } from './components/ErrorBox'
+import { Field } from './components/Field'
+import { PrimaryBtn } from './components/PrimaryBtn'
+import { BACKEND_URL } from './components/constants'
+import type { MailLog, MailType } from './components/types'
+import { ScrollView } from 'react-native'
+
+import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-interface MailLog {
-  id:         number
-  to_email:   string
-  subject:    string
-  mail_class: string
-  status:     string
-  error:      string | null
-  created_at: string
-}
-
-interface MailType {
-  key:    string
-  label:  string
-  desc:   string
-  fields: Record<string, string>
-}
-
-// ── Input field ───────────────────────────────────────────────
-const Field = ({
-  placeholder,
-  value,
-  onChangeText,
-  secureTextEntry = false,
-  keyboardType = 'default',
-}: {
-  placeholder:      string
-  value:            string
-  onChangeText:     (v: string) => void
-  secureTextEntry?: boolean
-  keyboardType?:    'default' | 'email-address' | 'numeric'
-}) => (
-  <TextInput
-    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
-    placeholder={placeholder}
-    placeholderTextColor="#a3a3a3"
-    value={value}
-    onChangeText={onChangeText}
-    secureTextEntry={secureTextEntry}
-    keyboardType={keyboardType}
-    autoCapitalize="none"
-    autoCorrect={false}
-  />
-)
-
-// ── Error box ─────────────────────────────────────────────────
-const ErrorBox = ({ message }: { message: string }) => (
-  <View className="flex-row items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
-    <XCircle size={14} color="#ef4444" style={{ marginTop: 1 }} />
-    <Text className="text-xs text-red-600 flex-1">{message}</Text>
-  </View>
-)
-
-// ── Primary button ────────────────────────────────────────────
-const PrimaryBtn = ({
-  label,
-  onPress,
-  loading = false,
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#fff" />
-      : <Text className="text-white text-sm font-semibold">{label}</Text>
-    }
-  </TouchableOpacity>
-)
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

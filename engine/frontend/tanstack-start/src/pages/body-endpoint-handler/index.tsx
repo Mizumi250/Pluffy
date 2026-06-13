@@ -1,60 +1,18 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — body-endpoint-handler/index
+// ARKZEN GENERATED PAGE — body-endpoint-handler/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:10.192Z
+// Generated: 2026-06-13T08:08:51.940Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-function useToast() {
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-  const show = useCallback((type: 'success' | 'error', msg: string) => {
-    setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
-  }, [])
-  return {
-    toast,
-    success: (msg: string) => show('success', msg),
-    error:   (msg: string) => show('error', msg),
-  }
-}
-
-type ProbeResult = {
-  id:         number
-  source:     string
-  probe:      string
-  payload:    string | null
-  result:     string | null
-  ok:         boolean
-  created_at: string
-}
-
-type Stats = {
-  injected: boolean
-  builder:  string
-  method:   string
-  total:    number
-  passed:   number
-  failed:   number
-  sources:  string[]
-}
-
-const Tag = ({ label, color }: { label: string; color: string }) => (
-  <span style={{
-    display: 'inline-block', padding: '2px 9px', borderRadius: 20,
-    fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
-    background: color + '22', color,
-  }}>{label}</span>
-)
-
-const InjectedBadge = ({ injected }: { injected: boolean }) => (
-  <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
-)
+import { InjectedBadge } from './components/InjectedBadge'
+import { Tag } from './components/Tag'
+import { useToast } from './components/hooks'
+import type { ProbeResult, Stats } from './components/types'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -65,6 +23,7 @@ const IndexPage = () => {
   const [ping,     setPing]     = useState<Record<string, any> | null>(null)
   const [latest,   setLatest]   = useState<ProbeResult[]>([])
   const [loading,  setLoading]  = useState(false)
+  const [deleting, setDeleting] = useState<number | null>(null)
 
   // Echo form state
   const [echoFields, setEchoFields] = useState([{ key: 'hello', value: 'world' }])
@@ -129,6 +88,16 @@ const IndexPage = () => {
       else        { toastError('Record failed') }
     } catch { toastError('Record request failed') }
     setHRecording(false)
+  }
+
+  const doDelete = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await arkzenFetch(`/api/body-endpoint-handler/probes/${id}`, { method: 'DELETE' })
+      if (res.ok) { toastSuccess('Probe deleted'); loadAll() }
+      else        { toastError('Delete failed') }
+    } catch { toastError('Delete request failed') }
+    setDeleting(null)
   }
 
   useEffect(() => { loadAll() }, [])
@@ -298,7 +267,7 @@ const IndexPage = () => {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }}>
                 <thead>
                   <tr style={{ background: '#f4f4f5' }}>
-                    {['#', 'Source', 'Probe', 'Result', 'Ok', 'Time'].map(h => (
+                    {['#', 'Source', 'Probe', 'Result', 'Ok', 'Time', ''].map(h => (
                       <th key={h} style={{ padding: '8px 10px', textAlign: 'left', fontWeight: 700, color: '#3f3f46' }}>{h}</th>
                     ))}
                   </tr>
@@ -312,6 +281,15 @@ const IndexPage = () => {
                       <td style={{ padding: '8px 10px', color: '#52525b', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{r.result ?? '—'}</td>
                       <td style={{ padding: '8px 10px' }}><Tag label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} /></td>
                       <td style={{ padding: '8px 10px', color: '#a1a1aa' }}>{new Date(r.created_at).toLocaleTimeString()}</td>
+                      <td style={{ padding: '8px 10px' }}>
+                        <button
+                          onClick={() => doDelete(r.id)}
+                          disabled={deleting === r.id}
+                          style={{ ...btn('#ef4444'), padding: '4px 10px', fontSize: 11, opacity: deleting === r.id ? 0.5 : 1 }}
+                        >
+                          {deleting === r.id ? '…' : 'Delete'}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

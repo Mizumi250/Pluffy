@@ -2,108 +2,21 @@
 // ARKZEN GENERATED SCREEN — roles-test/login
 // ============================================================
 
-import React, { useEffect, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { ErrorBox } from './components/ErrorBox'
+import { Field } from './components/Field'
+import { GhostBtn } from './components/GhostBtn'
+import { PrimaryBtn } from './components/PrimaryBtn'
+import { RoleBadge } from './components/RoleBadge'
+import { ScrollView } from 'react-native'
+
+import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
+
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-// ── Input field ───────────────────────────────────────────────
-const Field = ({
-  placeholder,
-  value,
-  onChangeText,
-  secureTextEntry = false,
-  keyboardType = 'default',
-}: {
-  placeholder:      string
-  value:            string
-  onChangeText:     (v: string) => void
-  secureTextEntry?: boolean
-  keyboardType?:    'default' | 'email-address' | 'numeric'
-}) => (
-  <TextInput
-    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
-    placeholder={placeholder}
-    placeholderTextColor="#a3a3a3"
-    value={value}
-    onChangeText={onChangeText}
-    secureTextEntry={secureTextEntry}
-    keyboardType={keyboardType}
-    autoCapitalize="none"
-    autoCorrect={false}
-  />
-)
-
-// ── Error box ─────────────────────────────────────────────────
-const ErrorBox = ({ message }: { message: string }) => (
-  <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-    <Text className="text-xs text-red-600">{message}</Text>
-  </View>
-)
-
-// ── Primary button ─────────────────────────────────────────────
-const PrimaryBtn = ({
-  label,
-  onPress,
-  loading = false,
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#fff" />
-      : <Text className="text-white text-sm font-semibold">{label}</Text>
-    }
-  </TouchableOpacity>
-)
-
-// ── Ghost button ──────────────────────────────────────────────
-const GhostBtn = ({
-  label,
-  onPress,
-  loading = false,
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className="py-3 px-5 rounded-2xl items-center border border-neutral-200"
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#737373" />
-      : <Text className="text-neutral-600 text-sm font-medium">{label}</Text>
-    }
-  </TouchableOpacity>
-)
-
-// ── Role badge ────────────────────────────────────────────────
-const RoleBadge = ({ role }: { role: string }) => (
-  <View className={`px-2.5 py-1 rounded-full self-start ${
-    role === 'admin' ? 'bg-purple-100' : 'bg-blue-100'
-  }`}>
-    <Text className={`text-xs font-bold ${
-      role === 'admin' ? 'text-purple-700' : 'text-blue-700'
-    }`}>
-      {role}
-    </Text>
-  </View>
-)
 
 // User screen (from @arkzen:native:page:login)
 const LoginScreen = () => {

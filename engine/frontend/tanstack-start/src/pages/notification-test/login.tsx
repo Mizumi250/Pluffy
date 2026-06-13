@@ -1,28 +1,15 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — notification-test/login
+// ARKZEN GENERATED PAGE — notification-test/login [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:14.452Z
+// Generated: 2026-06-13T08:08:55.562Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-if (typeof window !== 'undefined') {
-  setActiveTatemono('notification-test')
-}
-
-// ─────────────────────────────────────────────
-// REVERB CONFIG — read from env, same as useWebSocket.ts
-// ─────────────────────────────────────────────
-const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
+import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:login)
 const LoginPage = () => {

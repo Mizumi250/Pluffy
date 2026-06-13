@@ -1,26 +1,16 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — events-test/index
+// ARKZEN GENERATED PAGE — events-test/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:12.834Z
+// Generated: 2026-06-13T08:08:53.609Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Flame, Zap } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-interface EventLogEntry {
-  id:            number
-  event_name:    string
-  listener_name: string
-  status:        string
-  payload:       string | null
-  duration_ms:   number | null
-  created_at:    string
-}
+import type { EventLogEntry } from './components/types'
+import { Flame, Zap } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

@@ -1,18 +1,15 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — job-test/dashboard
+// ARKZEN GENERATED PAGE — job-test/dashboard [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:13.849Z
+// Generated: 2026-06-13T08:08:54.956Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Cpu } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-
+import { Cpu } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {

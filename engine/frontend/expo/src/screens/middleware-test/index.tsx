@@ -2,8 +2,13 @@
 // ARKZEN GENERATED SCREEN — middleware-test/index
 // ============================================================
 
-import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import React from 'react'
+import { GhostBtn } from './components/GhostBtn'
+import { PrimaryBtn } from './components/PrimaryBtn'
+import { ResultBox } from './components/ResultBox'
+import { apiFetch } from './components/utils'
+import type { PingLog, Result } from './components/types'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -11,97 +16,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-type PingLog = {
-  id:         number
-  message:    string
-  headers_ok: boolean
-  created_at: string
-}
-
-type ResultStatus = 'idle' | 'pass' | 'blocked' | 'fail'
-type Result = { status: ResultStatus; text: string }
-
-async function apiFetch(path: string, options?: RequestInit) {
-  return fetch(`${BACKEND_URL}${path}`, {
-    ...options,
-    headers: {
-      Accept: 'application/json',
-      ...(options?.headers ?? {}),
-    },
-  })
-}
-
-// ── Primary button ────────────────────────────────────────────
-const PrimaryBtn = ({
-  label,
-  onPress,
-  loading = false,
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className={`flex-1 py-3 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#fff" />
-      : <Text className="text-white text-xs font-semibold">{label}</Text>
-    }
-  </TouchableOpacity>
-)
-
-// ── Ghost button ──────────────────────────────────────────────
-const GhostBtn = ({
-  label,
-  onPress,
-  loading = false,
-}: {
-  label:    string
-  onPress:  () => void
-  loading?: boolean
-}) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
-    className="flex-1 py-3 rounded-2xl items-center border border-neutral-200"
-  >
-    {loading
-      ? <ActivityIndicator size="small" color="#737373" />
-      : <Text className="text-neutral-600 text-xs font-medium">{label}</Text>
-    }
-  </TouchableOpacity>
-)
-
-// ── Result box ────────────────────────────────────────────────
-const ResultBox = ({ result }: { result: Result }) => {
-  if (!result.text) return null
-  const bgStyles: Record<ResultStatus, string> = {
-    pass:    'bg-green-50 border-green-200',
-    blocked: 'bg-amber-50 border-amber-200',
-    fail:    'bg-red-50 border-red-200',
-    idle:    'bg-neutral-50 border-neutral-200',
-  }
-  const textStyles: Record<ResultStatus, string> = {
-    pass:    'text-green-700',
-    blocked: 'text-amber-700',
-    fail:    'text-red-700',
-    idle:    'text-neutral-500',
-  }
-  return (
-    <View className={`p-3 rounded-xl border ${bgStyles[result.status]}`}>
-      <Text className={`text-xs ${textStyles[result.status]}`}>{result.text}</Text>
-    </View>
-  )
-}
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

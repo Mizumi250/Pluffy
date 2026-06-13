@@ -8,9 +8,7 @@ export const AUTH_TATEMONOS: string[] = [
   "auth-test",
   "body-mail-notification",
   "broadcast-test",
-  "church-community",
   "mail-test",
   "notification-test",
-  "roles-test",
-  "certflow"
+  "roles-test"
 ];

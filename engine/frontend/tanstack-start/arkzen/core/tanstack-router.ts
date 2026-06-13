@@ -1,38 +1,36 @@
 // ============================================================
-// ARKZEN ENGINE — TANSTACK START ROUTER v2.0 [PRODUCTION-GRADE]
+// ARKZEN ENGINE — TANSTACK START ROUTER v3.0
 // arkzen/core/tanstack-router.ts
 //
 // TanStack Start equivalent of vite-router.ts (full feature parity).
 // Reads ParsedTatemono, generates:
 //   src/pages/{tatName}/{pageName}.tsx              ← page components
-//   src/pages/{tatName}/components/_components.tsx  ← barrel
-//   src/pages/{tatName}/components/{Name}.tsx       ← per-component
-//   src/pages/{tatName}/components/index.ts         ← index barrel
+//   src/pages/{tatName}/components/{Name}.tsx       ← per-component (real code)
+//   src/pages/{tatName}/components/constants.tsx    ← shared constants
+//   src/pages/{tatName}/components/hooks.tsx        ← custom hooks
+//   src/pages/{tatName}/components/utils.tsx        ← utility functions
+//   src/pages/{tatName}/components/types.ts         ← shared types
 //   src/pages/{tatName}/not-found.tsx               ← 404 (if declared)
 //   src/pages/{tatName}/error-boundary.tsx          ← 500 (if declared)
 //   src/routes/{tatName}/{pageName}.tsx             ← TanStack file-based routes
 //   src/arkzen/generated/routeTree.ts               ← assembled route tree
 //   src/arkzen/generated/{name}.animations.ts       ← GSAP animations
 //
-// v2.0 — FULL PARITY WITH vite-router.ts v2.0:
-//   • resolveImports() + flattenMultilineImports() — unified import resolver
-//   • ENGINE_OWNED_MODULES — react + framer-motion always seeded by engine
-//   • generateIndividualComponentFiles() — per-component .tsx re-exports
-//   • generateComponentsIndex() — components/index.ts barrel
-//   • generatePageFile() — production-grade with StrictMode isMounted fix
-//   • generateAnimationFile() — with auto-injected pageVariants
-//   • generateErrorPages() — 404 wildcard + 500 error boundary
-//   • generateCustomLayouts() — with full import resolution
-//   • normalizeForTanStack() — converts Next.js/Vite code to TanStack-compatible
-//   • generateTanStackRouteFile() — generates complete route files with imports
-//   • softUnregisterTanStackPages() — preserve pages during rebuild HMR
+// v3.0 — PER-FILE COMPONENT GENERATION (parity with vite-router.ts v2.0):
+//   • generateIndividualComponentFiles() now writes REAL code into each
+//     component file (not re-exports from a _components.tsx barrel).
+//   • splitComponentDeclarations() splits component blocks into one chunk per name.
+//   • extractSharedConstantNames, extractCustomHookNames, extractSharedTypeNames,
+//     extractUtilityFunctionNames, findReferencedNames — all ported from vite-router.
+//   • generatePageFile() no longer inlines component code — imports each component
+//     individually via `import { X } from './components/X'`.
+//   • Stale _components.tsx / index.ts barrels are cleaned up automatically.
 //
 // KEY DIFFERENCE from vite-router.ts:
 //   TanStack Start uses FILE-BASED ROUTING — each page gets its own
 //   route file in src/routes/{tatName}/{pageName}.tsx that wraps the
 //   page component in createFileRoute(). The routeTree.ts then imports
 //   and assembles all routes into the router.
-//   All page components in src/pages/ are identical to Vite stack.
 // ============================================================
 
 import * as fs   from 'fs'
@@ -76,22 +74,18 @@ function ensureDir(dir: string): void {
 // ─── TanStack-specific normalizations ──────────────────────────────────────────
 
 function normalizeForTanStack(raw: string): string {
-  // Remove Next.js imports that don't apply to TanStack
   let out = raw
-    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    .replace(/^[ \t]*import\s+Link\s+from\s+['"]next\/link['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    // Remove 'use client' directive (TanStack handles server/client implicitly)
-    .replace(/^[ \t]*['"]use client['"][ \t]*;?[ \t]*\r?\n?/gm, '')
-    // Normalize router calls for React Router (which TanStack uses)
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/navigation['"]\s*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/router['"]\s*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/link['"]\s*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+Link\s+from\s+['"]next\/link['"]\s*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]next\/image['"]\s*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*['"]use client['"]\s*;?[ \t]*\r?\n?/gm, '')
     .replace(/\buseRouter\(\)/g, 'useNavigate()')
     .replace(/\busePathname\(\)/g, 'useLocation().pathname')
     .replace(/(<Link\b[^>]*?)\bhref=/g, '$1to=')
     .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.VITE_$1')
 
-  // Normalize useRouter().push/replace/refresh to useNavigate()
   const navigateVars = [...out.matchAll(/\bconst\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*useNavigate\(\)/g)]
     .map(m => m[1])
 
@@ -105,7 +99,7 @@ function normalizeForTanStack(raw: string): string {
   return out
 }
 
-// ─── Production-grade import resolver (based on Next.js) ──────────────────────
+// ─── Production-grade import resolver ─────────────────────────────────────────
 
 const ENGINE_OWNED_MODULES = new Set(['react', 'framer-motion'])
 
@@ -172,7 +166,6 @@ function resolveImports(
     extra?: string
   } = {}
 ): ResolvedImports {
-  // module → { defaultImport?: string, named: Set<string> }
   const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
 
   const getEntry = (mod: string) => {
@@ -180,14 +173,12 @@ function resolveImports(
     return importMap.get(mod)!
   }
 
-  // Seed engine-required entries
   const reactEntry = getEntry('react')
   ;(engineRequired.reactHooks ?? ['useRef', 'useEffect']).forEach(h => reactEntry.named.add(h))
 
   const framerEntry = getEntry('framer-motion')
   ;(engineRequired.framerNamed ?? ['motion']).forEach(n => framerEntry.named.add(n))
 
-  // Patterns
   const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
   const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
   const mixedImportRe     = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
@@ -204,7 +195,6 @@ function resolveImports(
 
       let m: RegExpMatchArray | null
 
-      // mixed: import Default, { a, b } from 'mod'
       m = line.match(mixedImportRe)
       if (m) {
         const [, def, namedStr, mod] = m
@@ -216,7 +206,6 @@ function resolveImports(
         continue
       }
 
-      // namespace: import * as Ns from 'mod'
       m = line.match(namespaceImportRe)
       if (m) {
         const [, ns, mod] = m
@@ -224,7 +213,6 @@ function resolveImports(
         continue
       }
 
-      // named: import { a, b } from 'mod'
       m = line.match(namedImportRe)
       if (m) {
         const [, namedStr, mod] = m
@@ -235,7 +223,6 @@ function resolveImports(
         continue
       }
 
-      // default: import Default from 'mod'
       m = line.match(defaultImportRe)
       if (m) {
         const [, def, mod] = m
@@ -244,7 +231,6 @@ function resolveImports(
         continue
       }
 
-      // side-effect: import 'mod'
       m = line.match(sideEffectRe)
       if (m) {
         sideEffects.push(`import '${m[1]}'`)
@@ -253,10 +239,8 @@ function resolveImports(
     }
   }
 
-  // Build canonical import block
   const lines: string[] = []
 
-  // 1. React always first
   const reactNamed = [...(importMap.get('react')?.named ?? [])]
     .filter(h => h !== 'React')
     .sort()
@@ -266,13 +250,11 @@ function resolveImports(
       : `import React from 'react'`
   )
 
-  // 2. framer-motion always second
   const framerNamed = [...(importMap.get('framer-motion')?.named ?? [])].sort()
   if (framerNamed.length > 0) {
     lines.push(`import { ${framerNamed.join(', ')} } from 'framer-motion'`)
   }
 
-  // 3. All other modules — alphabetical
   const otherModules = [...importMap.keys()]
     .filter(m => m !== 'react' && m !== 'framer-motion')
     .sort()
@@ -292,17 +274,14 @@ function resolveImports(
     }
   }
 
-  // 4. Side-effects
   sideEffects.forEach(s => lines.push(s))
 
-  // 5. Extra imports
   if (engineRequired.extra) {
     lines.push(engineRequired.extra)
   }
 
   const canonicalBlock = lines.filter(Boolean).join('\n')
 
-  // Strip all imports + 'use client' from sources
   const stripRaw = (src: string) =>
     src
       .replace(/^\s*['"]use client['"]\s*;?\s*\n?/gm, '')
@@ -315,13 +294,485 @@ function resolveImports(
   return { canonicalBlock, strippedSources }
 }
 
-// ─── Page file generator (production-grade, based on Next.js) ────────────────
+// ─── Template literal stripper ────────────────────────────────────────────────
+// Replaces template literal STATIC content char-for-char with whitespace so
+// character indices are preserved for splitComponentDeclarations slicing.
+// ${...} expression content is kept verbatim so identifiers inside them
+// remain visible to findReferencedNames.
 
-/**
- * Extracts the React component name from raw page code.
- * Looks for "const XxxPage = " or "const XxxPage: " patterns.
- * Falls back to toSafeComponentName(pageName) if not found.
- */
+function stripTemplateLiterals(src: string): string {
+  let result = ''
+  let i = 0
+  while (i < src.length) {
+    if (src[i] === '`') {
+      result += ' '
+      i++
+      while (i < src.length) {
+        if (src[i] === '\\') { result += '  '; i += 2; continue }
+        if (src[i] === '`') { result += ' '; i++; break }
+        if (src[i] === '$' && src[i + 1] === '{') {
+          result += '  '
+          i += 2
+          let depth = 1
+          while (i < src.length && depth > 0) {
+            if (src[i] === '{') depth++
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break }
+            }
+            result += src[i]
+            i++
+          }
+          continue
+        }
+        result += ' '
+        i++
+      }
+    } else {
+      result += src[i]
+      i++
+    }
+  }
+  return result
+}
+
+// ─── Component / declaration name extractors ──────────────────────────────────
+
+function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
+    }
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const matches = stripped.match(/^(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)\s*[=:]/gm) || []
+    for (const match of matches) {
+      const name = match.match(/const\s+([A-Z][A-Z0-9_]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractCustomHookNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+(use[A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const constMatches = stripped.match(/(?:export\s+)?const\s+(use[A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const typeMatches = stripped.match(/(?:export\s+)?type\s+([A-Z][A-Za-z0-9_$]*)\s*[=<{]/g) || []
+    for (const match of typeMatches) {
+      const name = match.match(/type\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const ifaceMatches = stripped.match(/(?:export\s+)?interface\s+([A-Z][A-Za-z0-9_$]*)\s*[{<]/g) || []
+    for (const match of ifaceMatches) {
+      const name = match.match(/interface\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  const componentNames = extractComponentNames(tatemono)
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    let src = stripped
+    for (const compName of componentNames) {
+      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      src = src.replace(
+        new RegExp(
+          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
+          'g'
+        ),
+        ''
+      )
+    }
+    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+  }
+  return names
+}
+
+function findReferencedNames(strippedSource: string, names: Set<string>): string[] {
+  const found: string[] = []
+  for (const name of names) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (new RegExp(`[^\\w$]${escaped}\\b`).test(' ' + strippedSource)) {
+      found.push(name)
+    }
+  }
+  return found
+}
+
+function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<string, string> {
+  const out = new Map<string, string>()
+  if (names.size === 0) return out
+
+  const scanSource = stripTemplateLiterals(rawSource)
+  const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+
+  const starts: { index: number; name: string }[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(scanSource)) !== null) {
+    starts.push({ index: m.index, name: m[2] })
+  }
+  if (starts.length === 0) return out
+
+  for (let i = 0; i < starts.length; i++) {
+    const { index, name } = starts[i]
+    let chunkStart = index
+    const before = scanSource.slice(0, index)
+    const lines = before.split('\n')
+    let li = lines.length - 1
+    let consumed = 0
+    while (li >= 0) {
+      const line = lines[li].trim()
+      if (line === '' || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
+        consumed += lines[li].length + 1
+        li--
+      } else {
+        break
+      }
+    }
+    if (consumed > 0) chunkStart = Math.max(0, index - consumed)
+    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : rawSource.length
+    out.set(name, rawSource.slice(chunkStart, chunkEnd).trim())
+  }
+  return out
+}
+
+// ─── Per-file component generation ────────────────────────────────────────────
+// Full parity with vite-router.ts v2.0 / next.js router.ts v5.1:
+//   • Each component gets its OWN file containing its actual code (not a re-export)
+//   • Shared constants → components/constants.tsx
+//   • Custom hooks     → components/hooks.tsx
+//   • Utility fns      → components/utils.tsx
+//   • Shared types     → components/types.ts
+//   • Stale _components.tsx / index.ts barrels are cleaned up
+
+function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: string): void {
+  const componentsDir = path.join(tatDir, 'components')
+
+  if (tatemono.components.length === 0) {
+    if (fs.existsSync(componentsDir)) {
+      fs.rmSync(componentsDir, { recursive: true })
+      console.log(`[Arkzen TanStack] 🧹 Removed stale components/ (no @arkzen:components)`)
+    }
+    return
+  }
+
+  fs.mkdirSync(componentsDir, { recursive: true })
+
+  // Normalize + resolve imports across ALL component blocks
+  const rawSources = tatemono.components.map(c => normalizeForTanStack(c.raw.trim()))
+
+  // Detect router needs across all component sources
+  const combinedComponentRaw = rawSources.join('\n')
+  const compNeedsNavigate = /\buseNavigate\s*\(/.test(combinedComponentRaw)
+  const compNeedsLocation = /\buseLocation\s*\(/.test(combinedComponentRaw)
+  const compNeedsLink     = /<Link\b/.test(combinedComponentRaw)
+  const routerSpecifiers  = [
+    compNeedsNavigate && 'useNavigate',
+    compNeedsLocation && 'useLocation',
+    compNeedsLink     && 'Link',
+  ].filter(Boolean) as string[]
+  const routerImportExtra = routerSpecifiers.length > 0
+    ? `import { ${routerSpecifiers.join(', ')} } from '@/arkzen/core/adapters/router'`
+    : undefined
+
+  const sourcesWithRouter = routerImportExtra
+    ? [routerImportExtra, ...rawSources]
+    : rawSources
+
+  const { canonicalBlock, strippedSources: allStripped } = resolveImports(sourcesWithRouter)
+  const strippedSources = routerImportExtra ? allStripped.slice(1) : allStripped
+
+  // CSS-module map
+  const stylesByComponent = new Map<string, string>()
+  for (const style of tatemono.styles.filter((s): s is typeof s & { name: string } => !!s.name)) {
+    stylesByComponent.set(style.name, style.name)
+  }
+
+  const extractedComponents = extractComponentNames(tatemono)
+  const sharedConstants     = extractSharedConstantNames(tatemono)
+  const customHooks         = extractCustomHookNames(tatemono)
+  const sharedTypes         = extractSharedTypeNames(tatemono)
+  const utilityFunctions    = extractUtilityFunctionNames(tatemono)
+  const allDeclaredNames    = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
+
+  // Split each stripped source into per-declaration chunks
+  const declarationsByName = new Map<string, string>()
+  for (const stripped of strippedSources) {
+    for (const [name, code] of splitComponentDeclarations(stripped, allDeclaredNames)) {
+      declarationsByName.set(name, code)
+    }
+  }
+
+  // ── Shared constants file ──────────────────────────────────────────────────
+  if (sharedConstants.size > 0) {
+    const constChunks = [...sharedConstants]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const)(\\s+${esc}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+    if (constChunks.length > 0) {
+      const content = `// ============================================================
+// ARKZEN GENERATED SHARED CONSTANTS — ${tatemono.meta.name} [TanStack]
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${constChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'constants.tsx'), content, 'utf-8')
+      console.log(`[Arkzen TanStack] ✓ Shared constants: constants.tsx`)
+    }
+  } else {
+    for (const stale of ['constants.tsx', 'constants.ts']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen TanStack] 🧹 Removed stale ${stale}`) }
+    }
+  }
+
+  // ── Custom hooks file ──────────────────────────────────────────────────────
+  if (customHooks.size > 0) {
+    const hookChunks = [...customHooks]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${esc}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+    if (hookChunks.length > 0) {
+      const content = `// ============================================================
+// ARKZEN GENERATED HOOKS — ${tatemono.meta.name} [TanStack]
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${hookChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'hooks.tsx'), content, 'utf-8')
+      console.log(`[Arkzen TanStack] ✓ Custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
+    }
+  } else {
+    for (const stale of ['hooks.tsx', 'hooks.ts']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen TanStack] 🧹 Removed stale ${stale}`) }
+    }
+  }
+
+  // ── Utility functions file ─────────────────────────────────────────────────
+  if (utilityFunctions.size > 0) {
+    const utilChunks = [...utilityFunctions]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${esc}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+    if (utilChunks.length > 0) {
+      const content = `// ============================================================
+// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name} [TanStack]
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${utilChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
+      console.log(`[Arkzen TanStack] ✓ Utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
+    }
+  } else {
+    for (const stale of ['utils.tsx', 'utils.ts']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen TanStack] 🧹 Removed stale ${stale}`) }
+    }
+  }
+
+  // ── Shared types file ──────────────────────────────────────────────────────
+  if (sharedTypes.size > 0) {
+    const typeChunks = [...sharedTypes]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => {
+        const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+        return chunk.replace(
+          new RegExp(`^(\\s*)(export\\s+)?(type|interface)(\\s+${esc}\\b)`, 'm'),
+          (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+        )
+      })
+    if (typeChunks.length > 0) {
+      const content = `// ============================================================
+// ARKZEN GENERATED TYPES — ${tatemono.meta.name} [TanStack]
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${typeChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'types.ts'), content, 'utf-8')
+      console.log(`[Arkzen TanStack] ✓ Shared types: types.ts (${[...sharedTypes].join(', ')})`)
+    }
+  } else {
+    const p = path.join(componentsDir, 'types.ts')
+    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen TanStack] 🧹 Removed stale types.ts`) }
+  }
+
+  // ── One real file per component containing its actual code ─────────────────
+  for (const compName of extractedComponents) {
+    const declaration = declarationsByName.get(compName)
+    if (!declaration) {
+      console.log(`[Arkzen TanStack] ⚠ Could not isolate declaration for ${compName}, skipping file`)
+      continue
+    }
+
+    const fileName = `${compName}.tsx`
+    const filePath = path.join(componentsDir, fileName)
+
+    const cssImport = stylesByComponent.has(compName)
+      ? `import styles from '../styles/${compName}.module.css'\n`
+      : ''
+
+    const escapedName = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const exportedDeclaration = declaration.replace(
+      new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${escapedName}\\b)`, 'm'),
+      (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+    )
+
+    const referencedConstants = findReferencedNames(declaration, sharedConstants)
+    const constantsImport = referencedConstants.length > 0
+      ? `import { ${referencedConstants.sort().join(', ')} } from './constants'\n`
+      : ''
+
+    const referencedHooks = findReferencedNames(declaration, customHooks)
+    const hooksImport = referencedHooks.length > 0
+      ? `import { ${referencedHooks.sort().join(', ')} } from './hooks'\n`
+      : ''
+
+    const referencedTypes = findReferencedNames(declaration, sharedTypes)
+    const typesImport = referencedTypes.length > 0
+      ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
+      : ''
+
+    const otherComponents = new Set(extractedComponents)
+    otherComponents.delete(compName)
+    const referencedComponents = findReferencedNames(declaration, otherComponents)
+    const siblingImportBlock = referencedComponents.length > 0
+      ? referencedComponents.sort().map(name => `import { ${name} } from './${name}'`).join('\n') + '\n'
+      : ''
+
+    const referencedUtils = findReferencedNames(declaration, utilityFunctions)
+    const utilsImport = referencedUtils.length > 0
+      ? `import { ${referencedUtils.sort().join(', ')} } from './utils'\n`
+      : ''
+
+    const content = `// ============================================================
+// ARKZEN GENERATED COMPONENT — ${compName} [TanStack]
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+${cssImport}${constantsImport}${hooksImport}${utilsImport}${typesImport}${siblingImportBlock}
+${exportedDeclaration}
+`
+    fs.writeFileSync(filePath, content, 'utf-8')
+    console.log(`[Arkzen TanStack] ✓ Component: ${fileName}`)
+  }
+
+  // ── Clean up stale files ───────────────────────────────────────────────────
+  // Remove old _components.tsx / index.ts barrels and any component files
+  // for components that no longer exist.
+  try {
+    const files = fs.readdirSync(componentsDir)
+    for (const file of files) {
+      const base = file.replace(/\.(tsx|ts)$/, '')
+      if (file === '_components.tsx' || file === 'index.ts') {
+        fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen TanStack] 🧹 Removed stale ${file}`)
+        continue
+      }
+      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx'].includes(file)) continue
+      if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
+        fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen TanStack] 🧹 Removed stale component: ${file}`)
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+}
+
+// ─── Page file generator ──────────────────────────────────────────────────────
+// v3.0: page sources ONLY — component code is never inlined.
+// Imports each component individually via `import { X } from './components/X'`.
+
 function extractComponentName(pageName: string, raw: string): string {
   const match = raw.match(/const\s+([A-Za-z_$][A-Za-z0-9_$]*Page)\s*[=:(]/)
   if (match) return match[1]
@@ -362,40 +813,42 @@ function generatePageFile(
     (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
   )
 
-  // Collect all sources: all component blocks + this page's raw code
-  // FIRST: normalize each source to remove Next.js/Vite imports that don't apply
-  const allSources = [
-    ...tatemono.components.map(c => normalizeForTanStack(c.raw.trim())),
-    normalizeForTanStack(page.raw.trim()),
-  ]
+  // Page sources ONLY — no component blocks merged in
+  const allSources = [normalizeForTanStack(page.raw.trim())]
 
-  // Scrape framer-motion named exports from all sources so we don't lose
-  // AnimatePresence, useMotionValue etc. that the tatemono uses
+  // Scrape framer-motion names from BOTH component and page sources
   const framerNeeded = new Set(['motion'])
   const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
-  for (const src of allSources) {
+  const framerSources = [...tatemono.components.map(c => c.raw.trim()), ...allSources]
+  for (const src of framerSources) {
     let m: RegExpMatchArray | null
     while ((m = framerRe.exec(src)) !== null) {
       m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
     }
   }
 
-  // BEFORE resolveImports: detect what TanStack adapter imports are needed
-  // (Vite pattern: scan combined code and add to extraLines)
-  const combinedRaw = allSources.join('\n')
-  const needsNavigate = /\buseNavigate\s*\(/.test(combinedRaw)
-  const needsLocation = /\buseLocation\s*\(/.test(combinedRaw)
-  const needsLink = /<Link\b/.test(combinedRaw)
+  // Detect React hooks actually used in the page's own source
+  const KNOWN_REACT_HOOKS = [
+    'useState', 'useCallback', 'useMemo', 'useContext', 'useReducer',
+    'useLayoutEffect', 'useImperativeHandle', 'useTransition', 'useDeferredValue',
+    'useId', 'useSyncExternalStore', 'useInsertionEffect',
+  ]
+  const pageStrippedForHooks = stripTemplateLiterals(normalizeForTanStack(page.raw))
+  const usedReactHooks = KNOWN_REACT_HOOKS.filter(hook =>
+    new RegExp(`[^\\w$]${hook}\\s*[(<]`).test(pageStrippedForHooks)
+  )
 
+  // Detect TanStack adapter imports needed from page source
+  const needsNavigate = /\buseNavigate\s*\(/.test(pageStrippedForHooks)
+  const needsLocation = /\buseLocation\s*\(/.test(pageStrippedForHooks)
+  const needsLink     = /<Link\b/.test(pageStrippedForHooks)
   const tanstackAdapterSpecifiers = [
     needsNavigate && 'useNavigate',
     needsLocation && 'useLocation',
   ].filter(Boolean).join(', ')
-
   const tanstackAdapterImportLine = tanstackAdapterSpecifiers
     ? `import { ${tanstackAdapterSpecifiers} } from '@/arkzen/core/adapters/router'`
     : ''
-
   const linkImportLine = needsLink
     ? `import { Link } from '@/arkzen/core/adapters/Link'`
     : ''
@@ -406,46 +859,115 @@ function generatePageFile(
 
   const styleImport = hasGlobalStyle ? `import './styles/global.css'` : ''
 
-  const extraLines = [layoutImport, animImportLine, tanstackAdapterImportLine, linkImportLine, styleImport]
-    .filter(Boolean).join('\n')
+  // Per-component imports — one import line per component file
+  const componentNames = extractComponentNames(tatemono)
+  const componentImportLines = [...componentNames]
+    .sort()
+    .map(name => `import { ${name} } from './components/${name}'`)
+    .join('\n')
+
+  // Forward non-react/framer-motion imports from component blocks that the page references
+  const forwardedImportLines = (() => {
+    const seen = new Set<string>()
+    const lines: string[] = []
+    for (const component of tatemono.components) {
+      const flattened = flattenMultilineImports(component.raw.trim())
+      for (const rawLine of flattened.split('\n')) {
+        const line = rawLine.trim()
+        if (!line.startsWith('import ')) continue
+        if (/from\s+['\"](react|framer-motion)['\"]/.test(line)) continue
+
+        const idents: string[] = []
+        let m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from/)
+        if (m) {
+          idents.push(m[1], ...m[2].split(',').map(s => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\{([^}]*)\}\s+from/))) {
+          idents.push(...m[1].split(',').map(s => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else if ((m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else {
+          continue
+        }
+
+        const referenced = idents.some(ident =>
+          new RegExp(`[^\\w$]${ident.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`).test(' ' + pageStrippedForHooks)
+        )
+        if (referenced && !seen.has(line)) {
+          seen.add(line)
+          lines.push(line)
+        }
+      }
+    }
+    return lines.join('\n')
+  })()
+
+  // Smart imports for shared constants / hooks / utils / types
+  const sharedConstants    = extractSharedConstantNames(tatemono)
+  const referencedConstants = findReferencedNames(stripTemplateLiterals(normalizeForTanStack(page.raw)), sharedConstants)
+  const constantsImportLine = referencedConstants.length > 0
+    ? `import { ${referencedConstants.sort().join(', ')} } from './components/constants'`
+    : ''
+
+  const customHooks       = extractCustomHookNames(tatemono)
+  const referencedHooks   = findReferencedNames(pageStrippedForHooks, customHooks)
+  const hooksImportLine   = referencedHooks.length > 0
+    ? `import { ${referencedHooks.sort().join(', ')} } from './components/hooks'`
+    : ''
+
+  const utilityFunctions  = extractUtilityFunctionNames(tatemono)
+  const referencedUtils   = findReferencedNames(pageStrippedForHooks, utilityFunctions)
+  const utilsImportLine   = referencedUtils.length > 0
+    ? `import { ${referencedUtils.sort().join(', ')} } from './components/utils'`
+    : ''
+
+  const sharedTypes       = extractSharedTypeNames(tatemono)
+  const referencedTypes   = findReferencedNames(stripTemplateLiterals(normalizeForTanStack(page.raw)), sharedTypes)
+  const typesImportLine   = referencedTypes.length > 0
+    ? `import type { ${referencedTypes.sort().join(', ')} } from './components/types'`
+    : ''
+
+  const extraLines = [
+    layoutImport,
+    animImportLine,
+    tanstackAdapterImportLine,
+    linkImportLine,
+    styleImport,
+    componentImportLines,
+    constantsImportLine,
+    hooksImportLine,
+    utilsImportLine,
+    typesImportLine,
+    forwardedImportLines,
+  ].filter(Boolean).join('\n')
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
-    reactHooks:   ['useRef', 'useEffect'],
-    framerNamed:  [...framerNeeded],
-    extra:        extraLines,
+    reactHooks:  ['useRef', 'useEffect', ...usedReactHooks],
+    framerNamed: [...framerNeeded],
+    extra:       extraLines,
   })
 
-  // Pages live at src/pages/{tat}/{page}.tsx but .scripts/.script files are at src/arkzen/generated/
-  // Rewrite any './{name}.scripts' or './{name}.*.script' to '@/arkzen/generated/{name}...'
   const canonicalBlock = rawCanonicalBlock.replace(
     /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
     `from '@/arkzen/generated/$1'`
   )
 
-  // strippedSources: [comp0, comp1, ..., pageRaw]
-  const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
-  const strippedPageCode      = (strippedSources[tatemono.components.length] ?? '')
-    // FIX: isMounted cleanup-only useEffect breaks under React StrictMode —
-    // StrictMode remounts components in dev, firing the cleanup and permanently
-    // setting isMounted.current = false before load() runs, leaving the page
-    // stuck on "Loading...". Rewrite to reset isMounted.current = true on mount
-    // so the ref is always correct after a remount.
+  const strippedPageCode = (strippedSources[0] ?? '')
     .replace(
       /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
       `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
     )
+    .trim()
 
   return `// ============================================================
-// ARKZEN GENERATED PAGE — ${tatemono.meta.name}/${page.name}
+// ARKZEN GENERATED PAGE — ${tatemono.meta.name}/${page.name} [TanStack]
 // Layout: ${page.layout} | Auth guard: ${isAuthLayout} | Guest-only: ${isGuestOnly}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
 ${canonicalBlock}
-
-// Utilities, types, and helper functions from @arkzen:components
-${strippedComponentCode}
 
 // Page component code (from @arkzen:page:${page.name})
 ${strippedPageCode}
@@ -538,7 +1060,6 @@ function generateErrorPages(
     )
     const cleanRaw = strippedSources[0].trim()
 
-    // ── 404 ──────────────────────────────────────────────────────────────────
     if (handler.type === '404') {
       has404 = true
 
@@ -551,7 +1072,7 @@ function generateErrorPages(
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 ${cleanRaw}
 
@@ -561,7 +1082,6 @@ export default NotFoundPage
       console.log(`[Arkzen TanStack] ✓ Not-found page: /${tatemono.meta.name}/* → not-found.tsx`)
     }
 
-    // ── 500 ──────────────────────────────────────────────────────────────────
     if (handler.type === '500') {
       has500 = true
       const boundaryClassName = `ArkzenErrorBoundary_${toPascalCase(tatemono.meta.name)}`
@@ -574,7 +1094,7 @@ export default NotFoundPage
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 ${cleanRaw}
 
@@ -614,10 +1134,7 @@ export class ${boundaryClassName} extends Component<
   return { has404, has500 }
 }
 
-
-// ─── GENERATE GLOBAL SCRIPT FILE — v6.5 ─────────────────────────────────────
-// Mirrors generateAnimationFile but for @arkzen:script.
-// Exports whatever the author wrote — no forced pageVariants injection.
+// ─── GENERATE GLOBAL SCRIPT FILE — v6.5 ──────────────────────────────────────
 
 function generateScriptFile(tatemono: ParsedTatemono): string | null {
   if (!tatemono.script) return null
@@ -642,8 +1159,7 @@ ${cleanScript}
 `
 }
 
-// ─── GENERATE NAMED SCRIPT FILES — v6.5 ─────────────────────────────────────
-// Each @arkzen:script:name block → {name}.{scriptName}.script.ts
+// ─── GENERATE NAMED SCRIPT FILES — v6.5 ──────────────────────────────────────
 
 function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string): void {
   for (const section of tatemono.scripts) {
@@ -693,7 +1209,7 @@ ${cleanScript}
   }
 }
 
-// ─── CLEANUP SCRIPT FILES ─────────────────────────────────────────────────────
+// ─── CLEANUP SCRIPT FILES ──────────────────────────────────────────────────────
 
 function cleanScriptFiles(generatedDir: string, tatName: string): void {
   const scriptPath = path.join(generatedDir, `${tatName}.scripts.ts`)
@@ -712,7 +1228,7 @@ function cleanScriptFiles(generatedDir: string, tatName: string): void {
   } catch { /* ignore */ }
 }
 
-// ─── Custom layouts ───────────────────────────────────────────────────────────
+// ─── Custom layouts ────────────────────────────────────────────────────────────
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
   if (tatemono.layouts.length === 0) return
@@ -729,7 +1245,6 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
       { reactHooks: [], framerNamed: [] }
     )
 
-    // Inject adapter import for useNavigate / useLocation if the layout uses them
     const needsNavigate = /\buseNavigate\s*\(/.test(normalizedRaw)
     const needsLocation = /\buseLocation\s*\(/.test(normalizedRaw)
     const adapterSpecifiers = [
@@ -746,7 +1261,7 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
   }
 }
 
-// ─── Root redirect ────────────────────────────────────────────────────────────
+// ─── Root redirect ─────────────────────────────────────────────────────────────
 
 function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string; routePath: string } | null {
   const hasIndex = tatemono.pages.some(p => p.name === 'index')
@@ -756,8 +1271,6 @@ function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string;
   const firstAuth  = tatemono.pages.find(p => p.layout === 'auth')
   const firstPage  = tatemono.pages[0]
 
-  // Auth tatemonos: redirect to login (guest) first
-  // Non-auth tatemonos: redirect to first available page
   const target = tatemono.meta.auth
     ? (firstGuest ?? firstAuth ?? firstPage)
     : (firstGuest ?? firstAuth ?? firstPage)
@@ -768,10 +1281,6 @@ function generateRootRedirectPage(tatemono: ParsedTatemono): { fileName: string;
   const destination = `/${tatName}/${target.name}`
   const fileName    = '__root_redirect'
 
-  // Write the TanStack route file directly into ROUTES_DIR.
-  // Uses beforeLoad: () => redirect() — the correct TanStack pattern.
-  // No page component needed; react-router-dom's <Navigate> does nothing
-  // inside TanStack Router's render tree.
   const routeContent = `// ============================================================
 // ARKZEN GENERATED ROOT REDIRECT — ${tatName} [TanStack]
 // Visiting /${tatName} redirects to ${destination}
@@ -796,13 +1305,13 @@ export const Route = createFileRoute('/${tatName}')({
   return { fileName, routePath: `/${tatName}` }
 }
 
-// ─── Route tree writer ────────────────────────────────────────────────────────
+// ─── Route tree writer ─────────────────────────────────────────────────────────
 
 interface RouteEntry {
   tatName:  string
   page:     ArkzenPage
   routeVar: string
-  filePath: string  // relative to src/routes/
+  filePath: string
 }
 
 interface RouteTree {
@@ -816,9 +1325,8 @@ function readExistingRouteTree(): RouteTree {
   }
 
   const content = fs.readFileSync(ROUTE_TREE, 'utf-8')
-  
-  // Extract auth tatemonos from the file
-  const authMatch = content.match(/export const AUTH_TATEMONOS.*?\[([\s\S]*?)\]/)
+
+  const authMatch = content.match(/export const AUTH_TATEMONOS.*?\[([^\]]*)\]/)
   const authTatemonos = authMatch
     ? authMatch[1]
         .split('\n')
@@ -826,10 +1334,8 @@ function readExistingRouteTree(): RouteTree {
         .filter(Boolean)
     : []
 
-  // For now, we'll rebuild the complete list by scanning generated route files
-  // This ensures consistency even if the file was manually edited
   const routes: RouteEntry[] = []
-  
+
   if (fs.existsSync(ROUTES_DIR)) {
     const tatDirs = fs.readdirSync(ROUTES_DIR)
     for (const tatName of tatDirs) {
@@ -860,10 +1366,9 @@ function writeRouteTree(entries: RouteEntry[], authTatemonos: string[]): void {
     console.error(`[Arkzen TanStack] ✗ Route tree file not found: ${ROUTE_TREE}`)
     throw new Error(`Route tree file not found: ${ROUTE_TREE}`)
   }
-  
+
   let content = fs.readFileSync(ROUTE_TREE, 'utf-8')
 
-  // Build import block
   const importLines = entries.map(e => {
     if (!e.tatName || !e.routeVar || !e.page?.name) {
       throw new Error(`Invalid route entry: tatName=${e.tatName}, routeVar=${e.routeVar}, page.name=${e.page?.name}`)
@@ -871,10 +1376,7 @@ function writeRouteTree(entries: RouteEntry[], authTatemonos: string[]): void {
     return `import { Route as ${e.routeVar} } from '../../routes/${e.tatName}/${e.page.name}'`
   }).join('\n')
 
-  // Build children block
   const childrenLines = entries.map(e => `  ${e.routeVar},`).join('\n')
-
-  // Build auth tatemonos
   const authList = authTatemonos.map(t => `  "${t}",`).join('\n')
 
   content = content
@@ -894,153 +1396,7 @@ function writeRouteTree(entries: RouteEntry[], authTatemonos: string[]): void {
   fs.writeFileSync(ROUTE_TREE, content, 'utf-8')
 }
 
-// ─── Individual component files ───────────────────────────────────────────────
-// Mirrors Next.js/Vite generateIndividualComponentFiles() exactly.
-// Writes src/pages/{tat}/components/_components.tsx + one re-export per component.
-
-// Strips template literal content from source so the component-name extractor
-// doesn't match declarations inside backtick strings (e.g. code-demo strings).
-function stripTemplateLiterals(src: string): string {
-  let result = ''
-  let i = 0
-  while (i < src.length) {
-    if (src[i] === '`') {
-      // Enter template literal — skip until matching unescaped backtick
-      i++ // skip opening backtick
-      while (i < src.length) {
-        if (src[i] === '\\') { i += 2; continue }  // escaped char
-        if (src[i] === '`') { i++; break }           // closing backtick
-        // Skip ${...} expressions (shallow — handles 1 level of nesting)
-        if (src[i] === '$' && src[i + 1] === '{') {
-          let depth = 1; i += 2
-          while (i < src.length && depth > 0) {
-            if (src[i] === '{') depth++
-            else if (src[i] === '}') depth--
-            i++
-          }
-          continue
-        }
-        i++
-      }
-      result += ' ' // replace entire literal with whitespace so line numbers stay roughly intact
-    } else {
-      result += src[i]
-      i++
-    }
-  }
-  return result
-}
-
-function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: string): void {
-  if (tatemono.components.length === 0) return
-
-  const componentsDir = path.join(tatDir, 'components')
-  fs.mkdirSync(componentsDir, { recursive: true })
-
-  // Resolve imports across ALL component blocks into one canonical block
-  const rawSources = tatemono.components.map(c => normalizeForTanStack(c.raw.trim()))
-  const { canonicalBlock, strippedSources } = resolveImports(rawSources)
-
-  // Ensure every top-level const/function/class declaration is exported
-  const ensureExports = (src: string): string =>
-    src.replace(
-      /^(const|function|class|type|interface|enum)\s+([A-Z])/gm,
-      'export $1 $2'
-    )
-
-  const exportedSources = strippedSources.map(ensureExports)
-
-  const componentsFile = path.join(componentsDir, '_components.tsx')
-  const componentsContent = `// ============================================================
-// ARKZEN GENERATED SHARED UTILITIES — ${tatemono.meta.name} [TanStack]
-// All utilities, types, constants from @arkzen:components
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-${canonicalBlock}
-
-${exportedSources.join('\n\n')}
-`
-  fs.writeFileSync(componentsFile, componentsContent, 'utf-8')
-  console.log(`[Arkzen TanStack] ✓ Utilities: _components.tsx`)
-
-  // Build a map of component names that have CSS Modules (from named styles)
-  const stylesByComponent = new Map<string, string>()
-  for (const style of tatemono.styles.filter(s => s.name)) {
-    stylesByComponent.set(style.name, style.name)
-  }
-
-  // Extract PascalCase component names — skip types, ALL_CAPS constants, and
-  // anything inside template literals (e.g. code-demo strings in the tatemono).
-  const extractedComponents = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const componentMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of componentMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) {
-        extractedComponents.add(name)
-      }
-    }
-  }
-
-  // Generate individual component files that re-export from _components
-  for (const compName of extractedComponents) {
-    const fileName = `${compName}.tsx`
-    const filePath = path.join(componentsDir, fileName)
-
-    const cssImport = stylesByComponent.has(compName)
-      ? `import styles from '../styles/${compName}.module.css'\n`
-      : ''
-
-    const content = `// ============================================================
-// ARKZEN GENERATED COMPONENT — ${compName} [TanStack]
-// Re-exported from _components.tsx
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-${cssImport}export { ${compName} } from './_components'
-`
-    fs.writeFileSync(filePath, content, 'utf-8')
-    console.log(`[Arkzen TanStack] ✓ Component: ${fileName}`)
-  }
-
-  // Clean up old loose files
-  try {
-    const files = fs.readdirSync(componentsDir)
-    for (const file of files) {
-      if (file.endsWith('.tsx') && !file.startsWith('_') && !extractedComponents.has(file.replace('.tsx', ''))) {
-        fs.unlinkSync(path.join(componentsDir, file))
-      }
-    }
-  } catch (e) {
-    // ignore
-  }
-}
-
-// ─── Components index file ────────────────────────────────────────────────────
-
-function generateComponentsIndex(tatemono: ParsedTatemono, tatDir: string): void {
-  if (tatemono.components.length === 0) return
-
-  const componentsDir = path.join(tatDir, 'components')
-  const indexPath = path.join(componentsDir, 'index.ts')
-
-  const content = `// ============================================================
-// ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name} [TanStack]
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-export * from './_components'
-`
-  fs.writeFileSync(indexPath, content, 'utf-8')
-  console.log(`[Arkzen TanStack] ✓ Components index: index.ts`)
-}
-
-// ─── Animation file generator ────────────────────────────────────────────────
+// ─── Animation file generator ──────────────────────────────────────────────────
 
 function generateAnimationFile(tatName: string, tatemono: ParsedTatemono): void {
   const fnName = `${toCamelCase(tatName)}Animations`
@@ -1056,9 +1412,7 @@ function generateAnimationFile(tatName: string, tatemono: ParsedTatemono): void 
   fs.writeFileSync(outPath, content, 'utf-8')
 }
 
-// ─── Main exports ─────────────────────────────────────────────────────────────
-
-// ─── Main: register tatemono pages (production-grade) ─────────────────────────
+// ─── Main: register tatemono pages ────────────────────────────────────────────
 
 export function registerTanStackPages(tatemono: ParsedTatemono): RouteEntry[] {
   const tatName = tatemono.meta.name
@@ -1067,20 +1421,19 @@ export function registerTanStackPages(tatemono: ParsedTatemono): RouteEntry[] {
 
   console.log(`[Arkzen TanStack] Registering ${tatemono.pages.length} page(s) for: ${tatName}`)
 
-  // Individual component files (mirrors Next.js/Vite)
+  // Per-file component generation (v3.0 — real code, not re-exports)
   generateIndividualComponentFiles(tatemono, tatDir)
-  generateComponentsIndex(tatemono, tatDir)
   generateCustomLayouts(tatemono)
 
   const { has404, has500 } = generateErrorPages(tatemono, tatDir)
   const styleInfo = emitTatemonoStyles(tatemono, tatDir, { loggerLabel: 'Arkzen TanStack Router' })
 
-  // Generate animation file
+  // Animation file
   const animFnName = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
   if (tatemono.animation && animFnName) {
     ensureDir(GENERATED_DIR)
     const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
-    
+
     const { strippedSources } = resolveImports([tatemono.animation.raw], {
       reactHooks:  [],
       framerNamed: [],
@@ -1136,23 +1489,19 @@ ${clean}${pageVariantsBlock}
 
   const routeEntries: RouteEntry[] = []
 
-  // Derive error boundary class name once (null if no @arkzen:error:500)
   const errorBoundaryClass = has500
     ? `ArkzenErrorBoundary_${toPascalCase(tatName)}`
     : undefined
 
   for (const page of tatemono.pages) {
-    // Generate page component file
     const pageContent = generatePageFile(tatemono, page, animFnName, styleInfo.hasGlobalStyle)
     const pagePath    = path.join(tatDir, `${page.name}.tsx`)
     fs.writeFileSync(pagePath, pageContent, 'utf-8')
 
-    // Generate TanStack route file — wire errorComponent when a 500 boundary exists
     const routeFile = path.join(ROUTES_DIR, tatName, `${page.name}.tsx`)
     ensureDir(path.dirname(routeFile))
     fs.writeFileSync(routeFile, generateTanStackRouteFile(tatName, page, errorBoundaryClass), 'utf-8')
 
-    // Track route entry
     const routeVar = `Route_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
     routeEntries.push({
       tatName,
@@ -1165,7 +1514,6 @@ ${clean}${pageVariantsBlock}
     console.log(`[Arkzen TanStack] ✓ ${routePath} [tanstack]`)
   }
 
-  // Wildcard 404 — route file MUST be named $.tsx (TanStack catch-all file convention)
   if (has404) {
     const wildcardRouteFile = path.join(ROUTES_DIR, tatName, '$.tsx')
     ensureDir(path.dirname(wildcardRouteFile))
@@ -1180,7 +1528,6 @@ ${clean}${pageVariantsBlock}
     console.log(`[Arkzen TanStack] ✓ Wildcard 404 route: /${tatName}/* → $.tsx`)
   }
 
-  // Root redirect
   const rootRedirect = generateRootRedirectPage(tatemono)
   if (rootRedirect) {
     routeEntries.push({
@@ -1191,7 +1538,6 @@ ${clean}${pageVariantsBlock}
     })
   }
 
-  // Asset distribution
   try {
     const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')
     const assetsPath   = path.join(tatemonosDir, tatName, 'assets')
@@ -1206,10 +1552,8 @@ ${clean}${pageVariantsBlock}
 
   console.log(`[Arkzen TanStack] ✓ Generated ${routeEntries.length} route(s)`)
 
-  // v9.0: inject meta:web into __root.tsx head()
   generateTanStackRoot(tatemono)
 
-  // ── Sitemap + robots.txt ──────────────────────────────────────────────────────
   try {
     const registry = getRegistry()
     writeSitemap(registry)
@@ -1221,10 +1565,7 @@ ${clean}${pageVariantsBlock}
   return routeEntries
 }
 
-// ─────────────────────────────────────────────
-// GENERATE TANSTACK __root.tsx — v9.0
-// Rewrites src/routes/__root.tsx to inject head() meta from @arkzen:meta:web
-// ─────────────────────────────────────────────
+// ─── GENERATE TANSTACK __root.tsx — v9.0 ──────────────────────────────────────
 
 function generateTanStackRoot(tatemono: ParsedTatemono): void {
   const rootPath  = path.resolve(process.cwd(), 'src', 'routes', '__root.tsx')
@@ -1237,7 +1578,6 @@ function generateTanStackRoot(tatemono: ParsedTatemono): void {
   const og          = webMeta?.og
   const twitter     = webMeta?.twitter
 
-  // Build meta array entries
   const metaEntries: string[] = [
     `      { charSet: 'utf-8' }`,
     `      { name: 'viewport', content: 'width=device-width, initial-scale=1' }`,
@@ -1246,7 +1586,6 @@ function generateTanStackRoot(tatemono: ParsedTatemono): void {
   if (description) {
     metaEntries.push(`      { name: 'description', content: '${description.replace(/'/g, "\\'")}' }`)
   }
-  // OG
   metaEntries.push(`      { property: 'og:title', content: '${(og?.title ?? title).replace(/'/g, "\\'")}' }`)
   if (description || og?.description) {
     metaEntries.push(`      { property: 'og:description', content: '${((og?.description ?? description) ?? '').replace(/'/g, "\\'")}' }`)
@@ -1254,7 +1593,6 @@ function generateTanStackRoot(tatemono: ParsedTatemono): void {
   if (og?.image) metaEntries.push(`      { property: 'og:image', content: '${og.image}' }`)
   if (og?.url)   metaEntries.push(`      { property: 'og:url', content: '${og.url}' }`)
   metaEntries.push(`      { property: 'og:type', content: '${og?.type ?? 'website'}' }`)
-  // Twitter
   if (twitter) {
     metaEntries.push(`      { name: 'twitter:card', content: '${twitter.card ?? 'summary_large_image'}' }`)
     metaEntries.push(`      { name: 'twitter:title', content: '${(twitter.title ?? title).replace(/'/g, "\\'")}' }`)
@@ -1264,7 +1602,6 @@ function generateTanStackRoot(tatemono: ParsedTatemono): void {
     if (twitter.image) metaEntries.push(`      { name: 'twitter:image', content: '${twitter.image}' }`)
   }
 
-  // Build links array entries
   const linkEntries: string[] = [
     `      { rel: 'stylesheet', href: appCss }`,
     `      { rel: 'preconnect', href: 'https://fonts.bunny.net' }`,
@@ -1328,7 +1665,7 @@ function RootComponent() {
   console.log(`[Arkzen TanStack] ✓ __root.tsx updated — title: "${title}"`)
 }
 
-// ─── Write robots.txt ─────────────────────────────────────────────────────────
+// ─── Write robots.txt ──────────────────────────────────────────────────────────
 
 function writeRobotsTxt(): void {
   const publicDir = path.resolve(process.cwd(), 'public')
@@ -1343,33 +1680,24 @@ Sitemap: ${process.env.VITE_SITE_URL || 'http://localhost:3000'}/sitemap.xml
   console.log(`[Arkzen TanStack] ✓ robots.txt generated`)
 }
 
-// ─── Soft unregister — used during REBUILD ────────────────────────────────────
-// Remove animation file + purge routes only — leave pages dir intact so
-// TanStack dev server doesn't cache a 404 mid-write
+// ─── Soft unregister ───────────────────────────────────────────────────────────
 
 export function softUnregisterTanStackPages(tatName: string): void {
   console.log(`[Arkzen TanStack] Soft-unregistering (rebuild): ${tatName}`)
 
-  // Remove animation file
   const animPath = path.join(GENERATED_DIR, `${tatName}.animations.ts`)
   if (fs.existsSync(animPath)) {
     fs.rmSync(animPath)
     console.log(`[Arkzen TanStack] ✓ Animation file removed`)
   }
 
-  // v6.5: clean up script files
   cleanScriptFiles(GENERATED_DIR, tatName)
 
-  // Remove route files but keep page files for HMR
   const routeDir = path.join(ROUTES_DIR, tatName)
   if (fs.existsSync(routeDir)) {
     fs.rmSync(routeDir, { recursive: true, force: true })
   }
 
-  // Overwrite TanStack's auto-generated routeTree.gen.ts with a minimal valid stub.
-  // Deleting it causes router.tsx to crash at SSR import time ("Does the file exist?").
-  // Writing a stub with only the always-present root + index routes lets the server start,
-  // then TanStack's router plugin regenerates the full file at configResolved.
   const routeTreeGen = path.join(SRC_DIR, 'routeTree.gen.ts')
   const routeTreeStub = `/* eslint-disable */
 // @ts-nocheck

@@ -2,14 +2,12 @@
 // ARKZEN GENERATED SCREEN — upload-test/dashboard
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import * as DocumentPicker from 'expo-document-picker'
-import * as FileSystem from 'expo-file-system/legacy'
-import { Image } from 'expo-image'
-import * as ImagePicker from 'expo-image-picker'
-import * as Sharing from 'expo-sharing'
-import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import React from 'react'
+import { FileMime } from './components/FileMime'
+import { ImageViewerModal } from './components/ImageViewerModal'
+import { BACKEND_URL } from './components/constants'
+import { formatSize } from './components/utils'
+import { ScrollView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
@@ -17,40 +15,6 @@ import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
-
-// Shared components (from @arkzen:native:components:*)
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-const formatSize = (bytes: number) => {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1048576) return `${(bytes / 1024).toFixed(1)} KB`
-  return `${(bytes / 1048576).toFixed(1)} MB`
-}
-
-const FileMime = ({ mime }: { mime: string }) => {
-  const label = mime.startsWith('image/') ? '🖼️'
-    : mime.includes('pdf')               ? '📄'
-    : mime.includes('video')             ? '🎬'
-    : mime.includes('zip') || mime.includes('rar') ? '🗜️'
-    : '📁'
-  return <Text className="text-xl">{label}</Text>
-}
-
-const { width: SW, height: SH } = Dimensions.get('window')
-
-const ImageViewerModal = ({ uri, onClose }: { uri: string; onClose: () => void }) => (
-  <Modal visible animationType="fade" transparent statusBarTranslucent onRequestClose={onClose}>
-    <View style={{ flex: 1, backgroundColor: '#000' }}>
-      <TouchableOpacity
-        onPress={onClose}
-        style={{ position: 'absolute', top: 48, right: 20, zIndex: 10, backgroundColor: 'rgba(0,0,0,0.6)', borderRadius: 20, padding: 8 }}
-      >
-        <Text style={{ color: '#fff', fontSize: 16 }}>✕</Text>
-      </TouchableOpacity>
-      <Image source={{ uri }} style={{ width: SW, height: SH }} contentFit="contain" />
-    </View>
-  </Modal>
-)
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

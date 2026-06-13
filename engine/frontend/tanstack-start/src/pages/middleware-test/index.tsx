@@ -1,17 +1,14 @@
 // ============================================================
-// ARKZEN GENERATED PAGE — middleware-test/index
+// ARKZEN GENERATED PAGE — middleware-test/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T02:10:14.211Z
+// Generated: 2026-06-13T08:08:55.209Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShieldCheck } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-
+import { ShieldCheck } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
