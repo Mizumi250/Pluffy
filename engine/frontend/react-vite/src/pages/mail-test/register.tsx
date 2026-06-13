@@ -2,37 +2,15 @@
 // ARKZEN GENERATED PAGE — mail-test/register [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:13.002Z
+// Generated: 2026-06-13T03:29:35.683Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-if (typeof window !== 'undefined') {
-  setActiveTatemono('mail-test')
-}
-
-interface MailLog {
-  id:         number
-  to_email:   string
-  subject:    string
-  mail_class: string
-  status:     string
-  error:      string | null
-  created_at: string
-}
-
-interface MailType {
-  key:    string
-  label:  string
-  desc:   string
-  fields: Record<string, string>
-}
+import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:register ─────────────────────────────
 const RegisterPage = () => {

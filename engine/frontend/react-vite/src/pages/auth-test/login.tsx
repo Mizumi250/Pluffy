@@ -2,21 +2,15 @@
 // ARKZEN GENERATED PAGE — auth-test/login [React+Vite]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:10.201Z
+// Generated: 2026-06-13T03:29:33.113Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Lock, ShieldCheck } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-// Activate the correct isolated auth context for this Tatemono
-if (typeof window !== 'undefined') {
-  setActiveTatemono('auth-test')
-}
+import { Lock, ShieldCheck } from 'lucide-react'
+import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {

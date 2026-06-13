@@ -2,37 +2,16 @@
 // ARKZEN GENERATED PAGE — mail-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:13.006Z
+// Generated: 2026-06-13T03:29:35.688Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-if (typeof window !== 'undefined') {
-  setActiveTatemono('mail-test')
-}
-
-interface MailLog {
-  id:         number
-  to_email:   string
-  subject:    string
-  mail_class: string
-  status:     string
-  error:      string | null
-  created_at: string
-}
-
-interface MailType {
-  key:    string
-  label:  string
-  desc:   string
-  fields: Record<string, string>
-}
+import type { MailLog, MailType } from './components/types'
+import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {

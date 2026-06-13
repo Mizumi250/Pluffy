@@ -124,14 +124,14 @@ const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/
 const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
 // ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
 const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
+// ROUTE:shan-shan:index:/shan-shan:false
+const ArkzenPage_ShanShan_Index = lazy(() => import('@/pages/shan-shan/index'))
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:false
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:shan-shan:index:/shan-shan:false
-const ArkzenPage_ShanShan_Index = lazy(() => import('@/pages/shan-shan/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -195,8 +195,8 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
   { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
+  { path: '/shan-shan', name: 'index', tatemono: 'shan-shan', component: ArkzenPage_ShanShan_Index, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/shan-shan', name: 'index', tatemono: 'shan-shan', component: ArkzenPage_ShanShan_Index, auth: false },
 ]

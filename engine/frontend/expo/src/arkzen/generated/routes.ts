@@ -72,6 +72,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:middleware-test:index:/middleware-test:default:false
   { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test', layout: 'default', auth: false },
+// ROUTE:new-updates-styles:index:/new-updates-styles:guest:false
+  { tatName: 'new-updates-styles', screenName: 'index', routePath: '/new-updates-styles', layout: 'guest', auth: false },
+// ROUTE:new-updates-styles:about:/new-updates-styles/about:guest:false
+  { tatName: 'new-updates-styles', screenName: 'about', routePath: '/new-updates-styles/about', layout: 'guest', auth: false },
+// ROUTE:new-updates-styles:features:/new-updates-styles/features:guest:false
+  { tatName: 'new-updates-styles', screenName: 'features', routePath: '/new-updates-styles/features', layout: 'guest', auth: false },
 // ROUTE:notification-test:login:/notification-test/login:guest:false
   { tatName: 'notification-test', screenName: 'login', routePath: '/notification-test/login', layout: 'guest', auth: false },
 // ROUTE:notification-test:register:/notification-test/register:guest:false
@@ -98,12 +104,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
-// ROUTE:new-updates-styles:index:/new-updates-styles:guest:false
-  { tatName: 'new-updates-styles', screenName: 'index', routePath: '/new-updates-styles', layout: 'guest', auth: false },
-// ROUTE:new-updates-styles:about:/new-updates-styles/about:guest:false
-  { tatName: 'new-updates-styles', screenName: 'about', routePath: '/new-updates-styles/about', layout: 'guest', auth: false },
-// ROUTE:new-updates-styles:features:/new-updates-styles/features:guest:false
-  { tatName: 'new-updates-styles', screenName: 'features', routePath: '/new-updates-styles/features', layout: 'guest', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

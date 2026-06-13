@@ -3,11 +3,11 @@
 // Class-based React ErrorBoundary wrapping all routes for this tatemono.
 // App.tsx imports it via ARKZEN_ERROR_BOUNDARIES from routes.ts.
 // DO NOT EDIT — edit @arkzen:error:500 in tatemono instead
-// Generated: 2026-06-11T12:58:12.057Z
+// Generated: 2026-06-13T03:29:34.807Z
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 const ServerErrorPage = ({ reset }: { reset: () => void }) => <ErrorScreen code={500} reset={reset} />
 

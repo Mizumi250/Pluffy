@@ -3,11 +3,11 @@
 // Rendered by the wildcard route /jo-payroll/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-06-11T12:58:12.592Z
+// Generated: 2026-06-13T03:29:35.300Z
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components'
+import { ErrorScreen } from './components/ErrorScreen'
 
 const NotFoundPage = () => (
   <div className="min-h-screen bg-[#F4F5F7] flex items-center justify-center p-8 font-['Inter',sans-serif]">

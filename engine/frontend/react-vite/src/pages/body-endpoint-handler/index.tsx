@@ -2,60 +2,18 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:10.268Z
+// Generated: 2026-06-13T03:29:33.189Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-function useToast() {
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-  const show = useCallback((type: 'success' | 'error', msg: string) => {
-    setToast({ type, msg })
-    setTimeout(() => setToast(null), 3000)
-  }, [])
-  return {
-    toast,
-    success: (msg: string) => show('success', msg),
-    error:   (msg: string) => show('error', msg),
-  }
-}
-
-type ProbeResult = {
-  id:         number
-  source:     string
-  probe:      string
-  payload:    string | null
-  result:     string | null
-  ok:         boolean
-  created_at: string
-}
-
-type Stats = {
-  injected: boolean
-  builder:  string
-  method:   string
-  total:    number
-  passed:   number
-  failed:   number
-  sources:  string[]
-}
-
-const Tag = ({ label, color }: { label: string; color: string }) => (
-  <span style={{
-    display: 'inline-block', padding: '2px 9px', borderRadius: 20,
-    fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
-    background: color + '22', color,
-  }}>{label}</span>
-)
-
-const InjectedBadge = ({ injected }: { injected: boolean }) => (
-  <Tag label={injected ? '✓ BODY INJECTED' : '✗ STUB'} color={injected ? '#16a34a' : '#dc2626'} />
-)
+import { InjectedBadge } from './components/InjectedBadge'
+import { Tag } from './components/Tag'
+import { useToast } from './components/hooks'
+import type { ProbeResult, Stats } from './components/types'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {

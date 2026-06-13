@@ -2,17 +2,14 @@
 // ARKZEN GENERATED PAGE — middleware-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:13.123Z
+// Generated: 2026-06-13T03:29:35.780Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShieldCheck } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-
+import { ShieldCheck } from 'lucide-react'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {

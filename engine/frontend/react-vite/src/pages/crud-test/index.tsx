@@ -2,30 +2,17 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-11T12:58:11.487Z
+// Generated: 2026-06-13T03:29:34.224Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Boxes } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-type Item = {
-  id:          number
-  name:        string
-  description: string | null
-  status:      'active' | 'pending' | 'archived'
-  priority:    number
-  tags:        string | null
-  created_at:  string
-  updated_at:  string
-}
-
-type FormData = { name: string; description: string; status: string; priority: number; tags: string }
-const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }
+import { emptyForm } from './components/utils'
+import type { FormData, Item } from './components/types'
+import { Boxes } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {

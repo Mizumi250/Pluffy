@@ -224,18 +224,24 @@ function stripTemplateLiterals(src: string): string {
       while (i < src.length) {
         if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char
         if (src[i] === '`')  { result += ' '; i++; break }          // closing backtick
-        // Skip ${...} expressions — shallow (1 level)
+        // Preserve ${...} expression content verbatim so identifiers remain
+        // visible to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
         if (src[i] === '$' && src[i + 1] === '{') {
+          result += '  ' // placeholders for the consumed '${' so indices stay aligned
+          i += 2 // skip '${'
           let depth = 1
-          result += '  '; i += 2
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') depth--
-            result += ' '; i++
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break } // placeholder for closing '}'
+            }
+            result += src[i]  // emit expression chars so identifiers stay visible
+            i++
           }
           continue
         }
-        result += ' '; i++  // replace literal content with space (preserves length)
+        result += ' '; i++  // replace static literal content with space
       }
     } else {
       result += src[i]
