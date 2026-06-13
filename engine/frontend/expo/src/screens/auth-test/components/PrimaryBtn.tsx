@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PrimaryBtn [Expo]
 // Source: @arkzen:native:components (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:37.463Z
+// Generated: 2026-06-13T08:43:46.430Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

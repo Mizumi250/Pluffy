@@ -91,7 +91,7 @@ export async function startTanStackWatcher(): Promise<void> {
     ignored:          /(^|[\/\\])\../,
     persistent:       true,
     ignoreInitial:    true,
-    awaitWriteFinish: { stabilityThreshold: 300, pollInterval: 100 },
+    awaitWriteFinish: { stabilityThreshold: 500, pollInterval: 100 },
   })
 
   watcher.on('add', (filePath: string) => {

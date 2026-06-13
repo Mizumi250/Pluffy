@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — asset-hub [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:37.413Z
+// Generated: 2026-06-13T08:40:18.929Z
 // ============================================================
 
 import React from 'react'
@@ -20,7 +20,7 @@ import { Image, ScrollView, Text, View } from 'react-native'
 export const NATIVE_ASSET_REQUIRE_MAP: Record<string, any> = {
   // ── Add a require() here for every file you drop ──
   // Metro needs static require() calls — only list files that actually exist
-  'images/baby.jpg': require('../../../assets/tatemonos/asset-hub/images/baby.jpg'),
+  'images/baby.jpg': require('../../../../assets/tatemonos/asset-hub/images/baby.jpg'),
 }
 
 export const NATIVE_ASSET_REGISTRY: NativeAssetItem[] = [

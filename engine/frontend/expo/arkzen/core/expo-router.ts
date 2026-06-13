@@ -385,7 +385,7 @@ function splitNativeComponentDeclarations(rawSource: string, names: Set<string>)
 
   const scanSource = stripTemplateLiterals(rawSource)
   const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+  const re = new RegExp(`^(?:export\\s+)?(?:async\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
 
   const starts: { index: number; name: string }[] = []
   let m: RegExpExecArray | null
@@ -529,6 +529,15 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
         )
       })
     if (constChunks.length > 0) {
+      // constants.ts lives in components/ — one level deeper than the screen dir
+      // where tatemono authors write their require() paths. Prepend one extra ../
+      // to all relative require() calls so asset paths resolve correctly.
+      // e.g. require('../../../assets/...') → require('../../../../assets/...')
+      const fixRequireDepth = (s: string) =>
+        s.replace(/require\(['"](\.\.[\/\\])/g, "require('../$1")
+      const constChunksFixed      = constChunks.map(fixRequireDepth)
+      const canonicalBlockFixed   = fixRequireDepth(normalisedCanonicalBlock)
+
       const content = `// ============================================================
 // ARKZEN GENERATED NATIVE CONSTANTS — ${tatemono.meta.name} [Expo]
 // Source: @arkzen:native:components (${tatemono.meta.name})
@@ -536,16 +545,16 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${normalisedCanonicalBlock}
+${canonicalBlockFixed}
 
-${constChunks.join('\n\n')}
+${constChunksFixed.join('\n\n')}
 `
-      fs.writeFileSync(path.join(componentsDir, 'constants.ts'), content, 'utf-8')
-      console.log(`[Arkzen Expo Router] ✓ Native shared constants: constants.ts`)
+      fs.writeFileSync(path.join(componentsDir, 'constants.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Expo Router] ✓ Native shared constants: constants.tsx`)
     }
   } else {
-    const p = path.join(componentsDir, 'constants.ts')
-    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale constants.ts`) }
+    const p = path.join(componentsDir, 'constants.tsx')
+    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale constants.tsx`) }
   }
 
   // ── Custom hooks file ──────────────────────────────────────────────────────
@@ -606,12 +615,12 @@ ${normalisedCanonicalBlock}
 
 ${utilChunks.join('\n\n')}
 `
-      fs.writeFileSync(path.join(componentsDir, 'utils.ts'), content, 'utf-8')
-      console.log(`[Arkzen Expo Router] ✓ Native utility functions: utils.ts (${[...utilityFunctions].join(', ')})`)
+      fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
+      console.log(`[Arkzen Expo Router] ✓ Native utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
     }
   } else {
-    const p = path.join(componentsDir, 'utils.ts')
-    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale utils.ts`) }
+    const p = path.join(componentsDir, 'utils.tsx')
+    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale utils.tsx`) }
   }
 
   // ── Shared types file ──────────────────────────────────────────────────────
@@ -708,7 +717,7 @@ ${exportedDeclaration}
     const files = fs.readdirSync(componentsDir)
     for (const file of files) {
       const base = file.replace(/\.(tsx|ts)$/, '')
-      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','utils.ts','utils.tsx'].includes(file)) continue
+      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx'].includes(file)) continue
       if ((file.endsWith('.tsx') || file.endsWith('.ts')) && !extractedComponents.has(base)) {
         fs.unlinkSync(path.join(componentsDir, file))
         console.log(`[Arkzen Expo Router] 🧹 Removed stale native component: ${file}`)
@@ -1037,7 +1046,7 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
   const referencedComponents = findReferencedNames(handlerStripped, nativeComponentNames)
   const componentImportLines = referencedComponents.length > 0
     ? referencedComponents.sort()
-        .map(name => `import { ${name} } from '../screens/${tatName}/components/${name}'`)
+        .map(name => `import { ${name} } from '@/screens/${tatName}/components/${name}'`)
         .join('\n') + '\n'
     : ''
 

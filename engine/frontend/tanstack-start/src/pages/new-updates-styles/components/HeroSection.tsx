@@ -2,12 +2,12 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [TanStack]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:55.449Z
+// Generated: 2026-06-13T08:27:09.806Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from '@/arkzen/core/adapters/router'
+import { Link } from '@/arkzen/core/adapters/Link'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import styles from '../styles/HeroSection.module.css'
 import type { HeroSectionProps } from './types'

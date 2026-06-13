@@ -2,12 +2,12 @@
 // ARKZEN GENERATED COMPONENT — Navbar [TanStack]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:55.445Z
+// Generated: 2026-06-13T08:27:09.803Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from '@/arkzen/core/adapters/router'
+import { Link } from '@/arkzen/core/adapters/Link'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { links } from './utils'
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — visual-lab/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:58.140Z
+// Generated: 2026-06-13T08:27:13.961Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

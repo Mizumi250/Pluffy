@@ -7,7 +7,7 @@ import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
-import { NativeErrorScreen } from '../screens/errors-test/components/NativeErrorScreen'
+import { NativeErrorScreen } from '@/screens/errors-test/components/NativeErrorScreen'
 
 const NativeNotFoundScreen = () => <NativeErrorScreen code={404} />
 

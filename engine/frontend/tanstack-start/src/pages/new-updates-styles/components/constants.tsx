@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles [TanStack]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:55.435Z
+// Generated: 2026-06-13T08:27:09.794Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Link } from '@/arkzen/core/adapters/router'
+import { Link } from '@/arkzen/core/adapters/Link'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 
 export const FEATURES: Feature[] = [

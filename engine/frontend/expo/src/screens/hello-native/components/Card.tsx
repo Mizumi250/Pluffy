@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Card [Expo]
 // Source: @arkzen:native:components (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:38.912Z
+// Generated: 2026-06-13T08:43:48.442Z
 // ============================================================
 
 import React, { useState } from 'react'

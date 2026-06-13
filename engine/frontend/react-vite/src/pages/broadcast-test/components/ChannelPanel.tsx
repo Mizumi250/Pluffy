@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel [React+Vite]
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:29:34.049Z
+// Generated: 2026-06-13T08:43:49.140Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

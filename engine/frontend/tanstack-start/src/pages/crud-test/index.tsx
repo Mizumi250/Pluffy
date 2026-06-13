@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — crud-test/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:52.929Z
+// Generated: 2026-06-13T08:27:04.056Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FileMime [Expo]
 // Source: @arkzen:native:components (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:40.941Z
+// Generated: 2026-06-13T08:43:51.103Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

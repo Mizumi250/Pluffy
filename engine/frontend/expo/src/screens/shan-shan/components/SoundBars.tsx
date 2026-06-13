@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SoundBars [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:40.877Z
+// Generated: 2026-06-13T08:43:51.047Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

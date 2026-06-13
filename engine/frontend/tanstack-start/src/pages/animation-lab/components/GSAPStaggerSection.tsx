@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPStaggerSection [TanStack]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:51.698Z
+// Generated: 2026-06-13T08:27:01.628Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

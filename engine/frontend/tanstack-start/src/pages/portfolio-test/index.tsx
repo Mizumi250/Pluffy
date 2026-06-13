@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:55.680Z
+// Generated: 2026-06-13T08:27:10.370Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

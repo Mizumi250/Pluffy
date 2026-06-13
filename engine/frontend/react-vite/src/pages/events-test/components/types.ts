@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — events-test [React+Vite]
 // Source: @arkzen:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:29:34.873Z
+// Generated: 2026-06-13T08:43:49.777Z
 // ============================================================
 
 export interface EventLogEntry {

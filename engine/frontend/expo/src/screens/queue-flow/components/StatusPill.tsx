@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusPill [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:39.817Z
+// Generated: 2026-06-13T08:43:49.882Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

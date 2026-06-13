@@ -151,6 +151,15 @@ export async function rebuildTanStackTatemono(corePath: string): Promise<TanStac
   softUnregisterTanStackPages(tatName)
   _registeredRoutes.delete(tatName)
   rebuildRouteTree()
+
+  // Settle delay — gives Vite + TanStack Router's tsr codegen time to finish
+  // their current HMR/routeTree.gen.ts cycle before new files land.
+  // Without this, the route file deletion triggers tsr → routeTree.gen.ts
+  // regeneration mid-write, causing a cascade of ECONNRESET aborts from the
+  // browser dropping the SSR stream during rapid reloads. Mirrors the 150 ms
+  // settle used in the Next.js builder for the same reason.
+  await new Promise(resolve => setTimeout(resolve, 150))
+
   return buildTanStackTatemono(corePath)
 }
 

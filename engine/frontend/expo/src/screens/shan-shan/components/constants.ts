@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — shan-shan [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:40.871Z
+// Generated: 2026-06-13T08:40:22.285Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -22,11 +22,11 @@ export const CHAPTERS = [
     craft: 'Every layout starts from a single question: what should the eye land on first? From there, hierarchy, contrast, and rhythm carry the rest.',
     sound: 'FORM FOLLOWS FEELING',
     tags: ['Print Design', 'Social Graphics', 'Brand Identity', 'Typography'],
-    img: require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+    img: require('../../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
     gallery: [
-      require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
     ],
     color: '#CC0000',
   },
@@ -40,11 +40,11 @@ export const CHAPTERS = [
     craft: 'A document is architecture in two dimensions. The margins, the headers, the flow from section to section — all of it is intentional.',
     sound: 'STRUCTURE IS THE STORY',
     tags: ['Reports', 'Proposals', 'Templates', 'Formatting'],
-    img: require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+    img: require('../../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
     gallery: [
-      require('../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan2.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
     ],
     color: '#111111',
   },
@@ -58,11 +58,11 @@ export const CHAPTERS = [
     craft: "Good research isn't just gathering data — it's knowing which question to ask next, and having the patience to follow it all the way down.",
     sound: 'DEPTH BEFORE DELIVERY',
     tags: ['Academic Research', 'Market Studies', 'Data Synthesis', 'Analysis'],
-    img: require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+    img: require('../../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
     gallery: [
-      require('../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan3.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
     ],
     color: '#8B0000',
   },
@@ -76,11 +76,11 @@ export const CHAPTERS = [
     craft: 'A great presentation is a rhythm. Breath in: information. Breath out: space. Every slide knows exactly when to speak and when to let silence work.',
     sound: 'ONE SLIDE, ONE TRUTH',
     tags: ['Pitch Decks', 'School Projects', 'Business Proposals', 'Slide Design'],
-    img: require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+    img: require('../../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
     gallery: [
-      require('../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
-      require('../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan4.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan5.jpg'),
+      require('../../../../assets/tatemonos/shan-shan/images/shan1.jpg'),
     ],
     color: '#1a1a2e',
   },

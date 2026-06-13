@@ -452,7 +452,7 @@ function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<
 
   const scanSource = stripTemplateLiterals(rawSource)
   const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+  const re = new RegExp(`^(?:export\\s+)?(?:async\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
 
   const starts: { index: number; name: string }[] = []
   let m: RegExpExecArray | null
@@ -514,21 +514,26 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: stri
   const compNeedsNavigate = /\buseNavigate\s*\(/.test(combinedComponentRaw)
   const compNeedsLocation = /\buseLocation\s*\(/.test(combinedComponentRaw)
   const compNeedsLink     = /<Link\b/.test(combinedComponentRaw)
-  const routerSpecifiers  = [
+  // useNavigate / useLocation → adapters/router  (same as page-level)
+  // Link → adapters/Link  (NOT router — Link is not exported from router.ts)
+  const routerAdapterSpecifiers = [
     compNeedsNavigate && 'useNavigate',
     compNeedsLocation && 'useLocation',
-    compNeedsLink     && 'Link',
   ].filter(Boolean) as string[]
-  const routerImportExtra = routerSpecifiers.length > 0
-    ? `import { ${routerSpecifiers.join(', ')} } from '@/arkzen/core/adapters/router'`
+  const routerImportExtra = routerAdapterSpecifiers.length > 0
+    ? `import { ${routerAdapterSpecifiers.join(', ')} } from '@/arkzen/core/adapters/router'`
+    : undefined
+  const compLinkImportExtra = compNeedsLink
+    ? `import { Link } from '@/arkzen/core/adapters/Link'`
     : undefined
 
-  const sourcesWithRouter = routerImportExtra
-    ? [routerImportExtra, ...rawSources]
+  const extraImports = [routerImportExtra, compLinkImportExtra].filter(Boolean) as string[]
+  const sourcesWithRouter = extraImports.length > 0
+    ? [...extraImports, ...rawSources]
     : rawSources
 
   const { canonicalBlock, strippedSources: allStripped } = resolveImports(sourcesWithRouter)
-  const strippedSources = routerImportExtra ? allStripped.slice(1) : allStripped
+  const strippedSources = allStripped.slice(extraImports.length)
 
   // CSS-module map
   const stylesByComponent = new Map<string, string>()

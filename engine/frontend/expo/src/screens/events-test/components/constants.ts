@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — events-test [Expo]
 // Source: @arkzen:native:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:38.831Z
+// Generated: 2026-06-13T08:40:20.164Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

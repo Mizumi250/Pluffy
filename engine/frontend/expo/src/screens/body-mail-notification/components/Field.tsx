@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Field [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:37.729Z
+// Generated: 2026-06-13T08:43:47.105Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

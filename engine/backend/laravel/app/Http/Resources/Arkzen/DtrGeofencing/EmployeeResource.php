@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — EmployeeResource
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:12:38.698329Z
+// Generated: 2026-06-13T08:43:49.635562Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\DtrGeofencing;

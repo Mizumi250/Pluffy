@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterHead [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:29:38.013Z
+// Generated: 2026-06-13T08:43:52.891Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -464,7 +464,7 @@ function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<
 
   const scanSource = stripTemplateLiterals(rawSource)
   const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+  const re = new RegExp(`^(?:export\\s+)?(?:async\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
 
   const starts: { index: number; name: string }[] = []
   let m: RegExpExecArray | null

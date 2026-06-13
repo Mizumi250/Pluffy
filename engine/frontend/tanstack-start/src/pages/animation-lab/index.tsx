@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [TanStack]
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:08:51.781Z
+// Generated: 2026-06-13T08:27:01.720Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
