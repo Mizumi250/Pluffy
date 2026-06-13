@@ -3,6 +3,11 @@
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Image, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { shanShanNativeAnimations } from '../../arkzen/generated/shan-shan.native-animations'
 import { s } from '../../arkzen/generated/shan-shan.native-styles'
@@ -15,13 +20,6 @@ import { SkillBar } from './components/SkillBar'
 import { SoundBars } from './components/SoundBars'
 import { StaggerReveal } from './components/StaggerReveal'
 import { CHAPTERS, PERSONAL_INFO, SKILLS, SKILLS_MARQUEE } from './components/constants'
-import { Image, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useCallback, useRef, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

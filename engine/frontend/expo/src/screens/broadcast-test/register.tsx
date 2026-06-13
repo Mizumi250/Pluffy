@@ -3,18 +3,15 @@
 // ============================================================
 
 import React, { useState } from 'react'
+import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ChannelCard } from './components/ChannelCard'
 import { StatusDot } from './components/StatusDot'
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { useState } from 'react'
-import { useRouter } from 'expo-router'
-import { useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:register)
 const RegisterScreen = () => {

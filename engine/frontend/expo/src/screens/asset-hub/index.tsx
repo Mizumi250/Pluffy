@@ -3,16 +3,15 @@
 // ============================================================
 
 import React from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { ScrollView, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'
 import { NATIVE_ASSET_REGISTRY } from './components/constants'
-import { ScrollView, Text, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
 const NativeIndexScreen = () => {

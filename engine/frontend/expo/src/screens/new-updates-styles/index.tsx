@@ -3,6 +3,11 @@
 // ============================================================
 
 import React, { useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { ScrollView, Text, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { s } from '../../arkzen/generated/new-updates-styles.native-styles'
 import { Badge } from './components/Badge'
@@ -12,14 +17,6 @@ import { PrimaryButton } from './components/PrimaryButton'
 import { FEATURES, ICON_COLORS } from './components/constants'
 import { getIcon } from './components/utils'
 import type { Feature } from './components/types'
-import { ScrollView, Text, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useState } from 'react'
-import { useRouter } from 'expo-router'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

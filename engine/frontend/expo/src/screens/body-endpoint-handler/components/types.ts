@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — body-endpoint-handler [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:20.493Z
+// Generated: 2026-06-13T14:30:27.617Z
 // ============================================================
 
 export type ProbeResult = {

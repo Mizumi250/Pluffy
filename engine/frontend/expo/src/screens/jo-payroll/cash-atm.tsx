@@ -3,7 +3,12 @@
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
 import { s } from '../../arkzen/generated/jo-payroll.native-styles'
@@ -15,13 +20,6 @@ import { WorkerRow } from './components/WorkerRow'
 import { BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
 import { formatPeso } from './components/utils'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useEffect, useMemo, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:cash-atm)
 const CashAtmScreen = () => {

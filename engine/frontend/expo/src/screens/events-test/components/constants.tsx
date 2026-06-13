@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — events-test [Expo]
 // Source: @arkzen:native:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:22.920Z
+// Generated: 2026-06-13T14:30:30.312Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import { Flame, RefreshCw, Trash2, Zap } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 

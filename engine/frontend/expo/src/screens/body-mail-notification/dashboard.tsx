@@ -3,6 +3,12 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
@@ -11,15 +17,6 @@ import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
 import { BACKEND_URL } from './components/constants'
 import type { SendLogEntry } from './components/types'
-import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono, useAuthStore, arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { useCallback, useEffect, useState } from 'react'
-import { useRouter } from 'expo-router'
-import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

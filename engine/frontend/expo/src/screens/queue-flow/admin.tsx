@@ -3,6 +3,14 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import * as Speech from 'expo-speech'
+import { StatusBar } from 'expo-status-bar'
+import { Volume2 } from 'lucide-react-native'
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/queue-flow-app'
 import { SpinRing } from './components/SpinRing'
 import { StatCard } from './components/StatCard'
@@ -11,16 +19,6 @@ import { TicketRowNative } from './components/TicketRowNative'
 import { BACKEND_URL } from './components/constants'
 import { fmtWait } from './components/utils'
 import type { NativeQueueStatus } from './components/types'
-import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono, arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import * as Speech from 'expo-speech'
-import { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Volume2 } from 'lucide-react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:admin)
 const AdminScreen = () => {

@@ -3,19 +3,17 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { ItemFormModal } from './components/ItemFormModal'
 import { ItemRow } from './components/ItemRow'
 import { StatCard } from './components/StatCard'
 import { StatusBadge } from './components/StatusBadge'
 import { apiFetch } from './components/utils'
 import type { Item } from './components/types'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

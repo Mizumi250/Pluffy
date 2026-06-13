@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — auth-test [Expo]
 // Source: @arkzen:native:components (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:20.343Z
+// Generated: 2026-06-13T14:30:27.487Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 

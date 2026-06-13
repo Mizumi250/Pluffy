@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE UTILITIES — scheduler-test [Expo]
 // Source: @arkzen:native:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:26.378Z
+// Generated: 2026-06-13T14:30:33.911Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 

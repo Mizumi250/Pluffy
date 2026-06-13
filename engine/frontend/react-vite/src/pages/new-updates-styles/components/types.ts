@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — new-updates-styles [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:26.864Z
+// Generated: 2026-06-13T14:30:31.793Z
 // ============================================================
 
 // ─── UTILITIES & TYPES ───────────────────────────────

@@ -3,21 +3,20 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import * as DocumentPicker from 'expo-document-picker'
+import * as FileSystem from 'expo-file-system/legacy'
+import { Image } from 'expo-image'
+import * as ImagePicker from 'expo-image-picker'
+import { useRouter } from 'expo-router'
+import * as Sharing from 'expo-sharing'
+import { StatusBar } from 'expo-status-bar'
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
 import { BACKEND_URL } from './components/constants'
 import { formatSize } from './components/utils'
-import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'import * as ImagePicker from 'expo-image-picker'
-import * as DocumentPicker from 'expo-document-picker'
-import * as FileSystem from 'expo-file-system/legacy'
-import * as Sharing from 'expo-sharing'
-import { useCallback, useEffect, useState } from 'react'
-import { Image } from 'expo-image'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {

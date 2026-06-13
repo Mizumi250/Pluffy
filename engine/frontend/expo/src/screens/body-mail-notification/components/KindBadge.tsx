@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — KindBadge [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:21.173Z
+// Generated: 2026-06-13T14:30:28.373Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 

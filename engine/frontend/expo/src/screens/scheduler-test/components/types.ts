@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — scheduler-test [Expo]
 // Source: @arkzen:native:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:26.379Z
+// Generated: 2026-06-13T14:30:33.912Z
 // ============================================================
 
 export interface CommandRun {

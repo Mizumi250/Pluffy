@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — queue-flow [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T13:54:25.165Z
+// Generated: 2026-06-13T14:30:32.083Z
 // ============================================================
 
 // ─── Types ────────────────────────────────────────────────────────────────────

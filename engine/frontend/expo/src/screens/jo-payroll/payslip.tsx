@@ -3,7 +3,13 @@
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Search } from 'lucide-react-native'
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
 import { s } from '../../arkzen/generated/jo-payroll.native-styles'
@@ -16,14 +22,6 @@ import { BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
 import { formatPeso } from './components/utils'
 import type { JobOrder } from './components/types'
-import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useEffect, useMemo, useState } from 'react'
-import { Search } from 'lucide-react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:payslip)
 const PayslipScreen = () => {

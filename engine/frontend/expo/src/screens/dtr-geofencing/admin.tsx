@@ -3,7 +3,14 @@
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import * as Location from 'expo-location'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { RefreshCw } from 'lucide-react-native'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/dtr-geofencing-app'
 import { usePageFadeIn } from '../../arkzen/generated/dtr-geofencing.native-animations'
 import { s } from '../../arkzen/generated/dtr-geofencing.native-styles'
@@ -15,15 +22,6 @@ import { RecordRow } from './components/RecordRow'
 import { useDtrStore } from './components/hooks'
 import { parseSettings } from './components/utils'
 import type { TimeRecord } from './components/types'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import * as Location from 'expo-location'
-import { useEffect, useState } from 'react'
-import { RefreshCw } from 'lucide-react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:admin)
 const AdminScreen = () => {

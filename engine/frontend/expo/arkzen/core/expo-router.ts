@@ -1,5 +1,18 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.0
+// ARKZEN ENGINE — EXPO ROUTER v4.1
+//
+// v4.1 – UNIFIED IMPORT RESOLUTION (mirrors nextjs/router.ts architecture).
+//        resolveImports() now accepts engineNamed (module→named[]) and
+//        engineNamespaces (alias→module) so ALL engine-required imports
+//        (react-native core, expo-router, expo-status-bar, safe-area,
+//        authStore, namespace imports) flow through the single importMap
+//        dedup pass — eliminating the post-processing ensure*() chain that
+//        produced concatenated import lines (missing newlines) and duplicate
+//        identifiers.
+//        normaliseMod() inside resolveImports() canonicalises @/arkzen/*
+//        paths from tatemono source to ../../../arkzen/* before they hit
+//        importMap, so user-written @/ alias imports and engine-seeded
+//        relative-path imports collapse to the same key and emit one line.
 //
 // v4.0 – PER-FILE NATIVE COMPONENT GENERATION.
 //        generateIndividualNativeComponentFiles(): splits @arkzen:native:components
@@ -110,6 +123,12 @@ function resolveImports(
   sources: string[],
   engineRequired: {
     reactHooks?: string[]
+    // module → named exports that the engine always needs, e.g.
+    //   { 'react-native': ['KeyboardAvoidingView', 'ScrollView', 'View'] }
+    engineNamed?: Record<string, string[]>
+    // namespace alias → module, e.g.
+    //   { DocumentPicker: 'expo-document-picker' }
+    engineNamespaces?: Record<string, string>
     extra?: string
   } = {}
 ): ResolvedImports {
@@ -121,6 +140,27 @@ function resolveImports(
 
   const reactEntry = getEntry('react')
   ;(engineRequired.reactHooks ?? []).forEach(h => reactEntry.named.add(h))
+
+  // Seed engine-required named imports (e.g. react-native core components,
+  // expo-router, expo-status-bar, react-native-safe-area-context).
+  for (const [mod, names] of Object.entries(engineRequired.engineNamed ?? {})) {
+    const entry = getEntry(mod)
+    names.forEach(n => entry.named.add(n))
+  }
+
+  // Seed engine-required namespace imports (e.g. import * as DocumentPicker from '...')
+  for (const [ns, mod] of Object.entries(engineRequired.engineNamespaces ?? {})) {
+    getEntry(mod).defaultImport = `* as ${ns}`
+  }
+
+  // Normalise module specifiers so @/arkzen/* paths (written by tatemono
+  // authors) collapse to the same importMap key as the relative
+  // ../../../arkzen/* paths that engineNamed uses.  Without this, a page
+  // block that writes `import { useAuthStore } from '@/arkzen/core/stores/authStore'`
+  // and the engineNamed entry keyed on '../../../arkzen/core/stores/authStore'
+  // end up as two separate entries → two duplicate import lines.
+  const normaliseMod = (mod: string): string =>
+    mod.replace(/^@\/arkzen\//, '../../../arkzen/')
 
   const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
   const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
@@ -140,7 +180,8 @@ function resolveImports(
 
       m = line.match(mixedImportRe)
       if (m) {
-        const [, def, namedStr, mod] = m
+        const [, def, namedStr, rawMod] = m
+        const mod = normaliseMod(rawMod)
         const entry = getEntry(mod)
         if (mod !== 'react') entry.defaultImport = def
         namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
@@ -151,14 +192,15 @@ function resolveImports(
 
       m = line.match(namespaceImportRe)
       if (m) {
-        const [, ns, mod] = m
-        getEntry(mod).defaultImport = `* as ${ns}`
+        const [, ns, rawMod] = m
+        getEntry(normaliseMod(rawMod)).defaultImport = `* as ${ns}`
         continue
       }
 
       m = line.match(namedImportRe)
       if (m) {
-        const [, namedStr, mod] = m
+        const [, namedStr, rawMod] = m
+        const mod = normaliseMod(rawMod)
         const entry = getEntry(mod)
         namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
           if (n !== 'React') entry.named.add(n)
@@ -168,7 +210,8 @@ function resolveImports(
 
       m = line.match(defaultImportRe)
       if (m) {
-        const [, def, mod] = m
+        const [, def, rawMod] = m
+        const mod = normaliseMod(rawMod)
         if (mod === 'react') continue
         getEntry(mod).defaultImport = def
         continue
@@ -176,7 +219,7 @@ function resolveImports(
 
       m = line.match(sideEffectRe)
       if (m) {
-        sideEffects.push(`import '${m[1]}'`)
+        sideEffects.push(`import '${normaliseMod(m[1])}'`)
         continue
       }
     }
@@ -481,6 +524,9 @@ const REACT_HOOKS = new Set([
   'useImperativeHandle', 'useDeferredValue', 'useTransition',
 ])
 
+// authStore exports a page block may reference without its own import.
+const AUTH_STORE_EXPORTS = new Set(['useAuthStore', 'useAuthStoreHydrated', 'arkzenFetch'])
+
 function findReferencedNames(strippedSource: string, names: Set<string>): string[] {
   const found: string[] = []
   for (const name of names) {
@@ -531,53 +577,6 @@ function splitNativeComponentDeclarations(rawSource: string, names: Set<string>)
 }
 
 // ─── Import merger helpers ─────────────────────────────────────────────────────
-
-function ensureReactNativeImport(canonicalBlock: string, requiredComponents: string[]): string {
-  const importRe = /^import\s+\{([^}]*)\}\s+from\s+['"]react-native['"]\s*;?\n?/m
-  const match = canonicalBlock.match(importRe)
-  if (!match) {
-    return canonicalBlock + `\nimport { ${requiredComponents.join(', ')} } from 'react-native'`
-  }
-  const existing = match[1].split(',').map(s => s.trim()).filter(Boolean)
-  const merged = Array.from(new Set([...existing, ...requiredComponents]))
-  const newLine = `import { ${merged.join(', ')} } from 'react-native'\n`
-  return canonicalBlock.replace(importRe, newLine)
-}
-
-function ensureExpoRouterImport(canonicalBlock: string): string {
-  if (/from ['"]expo-router['"]/.test(canonicalBlock)) return canonicalBlock
-  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
-  return canonicalBlock + `${sep}\nimport { useRouter } from 'expo-router'`
-}
-
-function ensureStatusBarImport(canonicalBlock: string): string {
-  if (/from ['"]expo-status-bar['"]/.test(canonicalBlock)) return canonicalBlock
-  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
-  return canonicalBlock + `${sep}\nimport { StatusBar } from 'expo-status-bar'`
-}
-
-// AuthStore exports a page block may reference without importing them itself
-// (relied on the shared inline scope before per-file generation split the
-// page block out from @arkzen:native:components:shared).
-const AUTH_STORE_EXPORTS = new Set(['useAuthStore', 'useAuthStoreHydrated', 'arkzenFetch'])
-
-function ensureAuthStoreImports(canonicalBlock: string, extraNamed: string[]): string {
-  const authStorePath = `'../../../arkzen/core/stores/authStore'`
-  const required = Array.from(new Set(['setActiveTatemono', ...extraNamed]))
-
-  const existingImportRe = /import\s+\{([^}]*)\}\s+from\s+['"](?:\.\.\/)+arkzen\/core\/stores\/authStore['"]\s*;?/
-  const match = canonicalBlock.match(existingImportRe)
-  if (match) {
-    const named = match[1].split(',').map(s => s.trim()).filter(Boolean)
-    for (const name of required) {
-      if (!named.includes(name)) named.push(name)
-    }
-    return canonicalBlock.replace(existingImportRe, `import { ${named.join(', ')} } from ${authStorePath}`)
-  }
-
-  const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
-  return canonicalBlock + `${sep}\nimport { ${required.join(', ')} } from ${authStorePath}`
-}
 
 function normaliseNativeImports(block: string): string {
   return block.replace(/from\s+'@\/arkzen\//g, `from '../../../arkzen/`)
@@ -1027,53 +1026,54 @@ export default ${wrapperName}
 
   const referencedHookCalls = findReferencedNames(pageStrippedForRefs, REACT_HOOKS)
 
+  // ── Collect all engine-required named imports into one map ─────────────────
+  // react-native core components the page references (ScrollView always included)
+  const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
+  const rnRequired = Array.from(new Set(['ScrollView', ...referencedRNCore]))
+
+  // expo-router: always inject useRouter
+  const expoRouterNamed = ['useRouter']
+
+  // expo-status-bar: always inject StatusBar
+  const expoStatusBarNamed = ['StatusBar']
+
+  // react-native-safe-area-context: always inject SafeAreaView
+  const safeAreaNamed = ['SafeAreaView']
+
+  // authStore named exports
+  const referencedAuthStoreExports = findReferencedNames(pageStrippedForRefs, AUTH_STORE_EXPORTS)
+  const authStoreNamed = Array.from(new Set(['setActiveTatemono', ...referencedAuthStoreExports]))
+
+  // Namespace imports declared only in @arkzen:native:components
+  const namespaceImports    = extractNativeNamespaceImports(tatemono)
+  const referencedNamespaces = findReferencedNames(pageStrippedForRefs, new Set(namespaceImports.keys()))
+  const engineNamespaces: Record<string, string> = {}
+  for (const ns of referencedNamespaces) {
+    engineNamespaces[ns] = namespaceImports.get(ns)!
+  }
+
+  // Named imports from components block (e.g. lucide-react-native icons)
+  const namedImportsByModule  = extractNativeNamedImportsByModule(tatemono)
+  const engineNamed: Record<string, string[]> = {
+    'react-native':                    rnRequired,
+    'expo-router':                     expoRouterNamed,
+    'expo-status-bar':                 expoStatusBarNamed,
+    'react-native-safe-area-context':  safeAreaNamed,
+    '../../../arkzen/core/stores/authStore': authStoreNamed,
+  }
+  for (const [mod, names] of namedImportsByModule) {
+    const referencedNamed = findReferencedNames(pageStrippedForRefs, names)
+    if (referencedNamed.length > 0) {
+      engineNamed[mod] = Array.from(new Set([...(engineNamed[mod] ?? []), ...referencedNamed]))
+    }
+  }
+
   let { canonicalBlock, strippedSources } = resolveImports(pageSources, {
     extra: extraLines,
     reactHooks: referencedHookCalls,
+    engineNamed,
+    engineNamespaces,
   })
-
-  // ── Merge engine-required imports ─────────────────────────────────────────
-  const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
-  canonicalBlock = ensureReactNativeImport(canonicalBlock, Array.from(new Set(['ScrollView', ...referencedRNCore])))
-  canonicalBlock = ensureExpoRouterImport(canonicalBlock)
-  canonicalBlock = ensureStatusBarImport(canonicalBlock)
-  const referencedAuthStoreExports = findReferencedNames(pageStrippedForRefs, AUTH_STORE_EXPORTS)
-  canonicalBlock = ensureAuthStoreImports(canonicalBlock, referencedAuthStoreExports)
-
-  // Namespace imports (DocumentPicker, ImagePicker, FileSystem, Sharing, ...)
-  // declared only in @arkzen:native:components but referenced by this page.
-  const namespaceImports = extractNativeNamespaceImports(tatemono)
-  const referencedNamespaces = findReferencedNames(pageStrippedForRefs, new Set(namespaceImports.keys()))
-  for (const ns of referencedNamespaces) {
-    const mod = namespaceImports.get(ns)!
-    if (!new RegExp(`import\\s+\\*\\s+as\\s+${ns}\\s+from\\s+['"]${mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(canonicalBlock)) {
-      canonicalBlock += `\nimport * as ${ns} from '${mod}'`
-    }
-  }
-
-  // Named imports (e.g. lucide-react-native icons) declared only in
-  // @arkzen:native:components but referenced by this page.
-  const namedImportsByModule = extractNativeNamedImportsByModule(tatemono)
-  for (const [mod, names] of namedImportsByModule) {
-    const referencedNamed = findReferencedNames(pageStrippedForRefs, names)
-    if (referencedNamed.length === 0) continue
-
-    const escapedMod = mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-    const existingImportRe = new RegExp(`^import\\s+\\{([^}]*)\\}\\s+from\\s+['"]${escapedMod}['"]\\s*;?`, 'm')
-    const match = canonicalBlock.match(existingImportRe)
-
-    if (match) {
-      const existingNamed = match[1].split(',').map(s => s.trim()).filter(Boolean)
-      const merged = Array.from(new Set([...existingNamed, ...referencedNamed]))
-      canonicalBlock = canonicalBlock.replace(existingImportRe, `import { ${merged.sort().join(', ')} } from '${mod}'`)
-    } else {
-      canonicalBlock += `\nimport { ${referencedNamed.sort().join(', ')} } from '${mod}'`
-    }
-  }
-
-  if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
-    canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`
-  }
 
   canonicalBlock = normaliseNativeImports(canonicalBlock)
 
@@ -1280,10 +1280,13 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
   const tatName = tatemono.meta.name
 
   // Only handler code — components are now imported per-file
-  const { canonicalBlock, strippedSources } = resolveImports([handler.raw.trim()])
-  let cb = ensureReactNativeImport(canonicalBlock, ['View', 'Text', 'TouchableOpacity'])
-  cb = ensureExpoRouterImport(cb)
-  cb = normaliseNativeImports(cb)
+  const { canonicalBlock: rawCb, strippedSources } = resolveImports([handler.raw.trim()], {
+    engineNamed: {
+      'react-native': ['View', 'Text', 'TouchableOpacity'],
+      'expo-router':  ['useRouter'],
+    },
+  })
+  const cb = normaliseNativeImports(rawCb)
 
   // Build component imports for any native components referenced in the handler
   const nativeComponentNames = extractNativeComponentNames(tatemono)
@@ -1317,10 +1320,13 @@ export default NativeNotFoundScreen
 function generateErrorBoundaryFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
   const tatName = tatemono.meta.name
 
-  const { canonicalBlock, strippedSources } = resolveImports([handler.raw.trim()])
-  let cb = ensureReactNativeImport(canonicalBlock, ['View', 'Text', 'TouchableOpacity'])
-  cb = ensureExpoRouterImport(cb)
-  cb = normaliseNativeImports(cb)
+  const { canonicalBlock: rawCb, strippedSources } = resolveImports([handler.raw.trim()], {
+    engineNamed: {
+      'react-native': ['View', 'Text', 'TouchableOpacity'],
+      'expo-router':  ['useRouter'],
+    },
+  })
+  const cb = normaliseNativeImports(rawCb)
 
   // Build component imports for any native components referenced in the handler
   const nativeComponentNames = extractNativeComponentNames(tatemono)

@@ -3,6 +3,13 @@
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { MotiView } from 'moti'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Easing } from 'react-native-reanimated'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { fadeUpPreset, useFadeIn, useSlideUp, useSlideRight, useScaleBloom, useRotateIn, useElasticScale, useSpin, useBounce, usePulse, useShake, useFloat, useHeartbeat, useWiggle, useColorCycle, useScale, useTimeline, useStaggerItems, usePressBounce, usePressColor, useHoverRotate } from '../../arkzen/generated/animation-lab.native-animations'
 import { s } from '../../arkzen/generated/animation-lab.native-styles'
 import { COLORS_6 } from './components/COLORS_6'
@@ -22,15 +29,6 @@ import { StaggerSection } from './components/StaggerSection'
 import { TimelineSection } from './components/TimelineSection'
 import { TransformsSection } from './components/TransformsSection'
 import { NAV_SECTIONS } from './components/constants'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useCallback, useState } from 'react'
-import { MotiView } from 'moti'
-import { Easing } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
 const AnimationLabNativePage = () => {

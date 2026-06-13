@@ -3,18 +3,16 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react-native'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { BACKEND_URL } from './components/constants'
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
-
-import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono, arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {
