@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — broadcast-test [React+Inertia]
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:03.220Z
+// Generated: 2026-06-13T07:49:31.605Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

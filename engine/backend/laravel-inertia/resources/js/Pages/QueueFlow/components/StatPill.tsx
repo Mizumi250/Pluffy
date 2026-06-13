@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:06.424Z
+// Generated: 2026-06-13T07:49:34.761Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

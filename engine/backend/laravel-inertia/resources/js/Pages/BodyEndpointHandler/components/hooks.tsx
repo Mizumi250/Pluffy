@@ -2,7 +2,7 @@
 // ARKZEN GENERATED HOOKS — body-endpoint-handler [React+Inertia]
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.962Z
+// Generated: 2026-06-13T07:49:29.842Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

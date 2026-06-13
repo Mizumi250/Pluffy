@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ResetBtn [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:11.660Z
+// Generated: 2026-06-13T07:49:37.295Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

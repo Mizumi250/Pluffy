@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerDragSection [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.310Z
+// Generated: 2026-06-13T07:49:29.406Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

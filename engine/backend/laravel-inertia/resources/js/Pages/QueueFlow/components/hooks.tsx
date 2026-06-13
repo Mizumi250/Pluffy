@@ -2,7 +2,7 @@
 // ARKZEN GENERATED HOOKS — queue-flow [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:06.415Z
+// Generated: 2026-06-13T07:49:34.738Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

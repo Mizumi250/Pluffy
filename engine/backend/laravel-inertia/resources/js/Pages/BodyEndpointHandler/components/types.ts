@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-endpoint-handler [React+Inertia]
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.964Z
+// Generated: 2026-06-13T07:49:29.843Z
 // ============================================================
 
 export type ProbeResult = {

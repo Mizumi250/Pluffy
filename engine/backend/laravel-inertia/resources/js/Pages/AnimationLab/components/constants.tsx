@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — animation-lab [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.275Z
+// Generated: 2026-06-13T07:49:29.364Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

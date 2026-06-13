@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — asset-hub [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.446Z
+// Generated: 2026-06-13T07:49:29.552Z
 // Pages: index
 // ============================================================
 

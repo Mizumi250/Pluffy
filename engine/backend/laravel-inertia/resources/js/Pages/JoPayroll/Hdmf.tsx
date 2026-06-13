@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/hdmf [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-13T07:39:04.744Z
+// Generated: 2026-06-13T07:49:33.411Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

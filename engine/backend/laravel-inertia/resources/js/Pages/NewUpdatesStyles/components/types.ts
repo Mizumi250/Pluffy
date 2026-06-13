@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — new-updates-styles [React+Inertia]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:06.104Z
+// Generated: 2026-06-13T07:49:34.352Z
 // ============================================================
 
 // ─── UTILITIES & TYPES ───────────────────────────────

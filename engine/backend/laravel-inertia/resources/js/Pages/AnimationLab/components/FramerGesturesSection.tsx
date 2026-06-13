@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerGesturesSection [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:01.303Z
+// Generated: 2026-06-13T07:49:29.399Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

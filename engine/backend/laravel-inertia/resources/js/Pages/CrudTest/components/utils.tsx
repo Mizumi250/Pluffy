@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — crud-test [React+Inertia]
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:03.495Z
+// Generated: 2026-06-13T07:49:31.941Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

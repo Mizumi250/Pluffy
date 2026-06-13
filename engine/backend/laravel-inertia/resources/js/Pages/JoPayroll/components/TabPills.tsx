@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — TabPills [React+Inertia]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:39:04.665Z
+// Generated: 2026-06-13T07:49:33.311Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
