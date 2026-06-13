@@ -2,17 +2,18 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:19.887Z
+// Generated: 2026-06-13T07:39:06.179Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
+import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type NotificationTestDashboardProps = {
@@ -21,19 +22,6 @@ export type NotificationTestDashboardProps = {
   errors?: Record<string, string>
   [key: string]: unknown
 }
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-if (typeof window !== 'undefined') {
-  setActiveTatemono('notification-test')
-}
-
-// ─────────────────────────────────────────────
-// REVERB CONFIG — read from env, same as useWebSocket.ts
-// ─────────────────────────────────────────────
-const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {

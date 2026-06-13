@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — notification-test/login [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:19.883Z
+// Generated: 2026-06-13T07:39:06.167Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type NotificationTestLoginProps = {
@@ -21,19 +21,6 @@ export type NotificationTestLoginProps = {
   errors?: Record<string, string>
   [key: string]: unknown
 }
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-if (typeof window !== 'undefined') {
-  setActiveTatemono('notification-test')
-}
-
-// ─────────────────────────────────────────────
-// REVERB CONFIG — read from env, same as useWebSocket.ts
-// ─────────────────────────────────────────────
-const REVERB_HOST   = import.meta.env.VITE_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = import.meta.env.VITE_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = import.meta.env.VITE_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = import.meta.env.VITE_REVERB_APP_KEY ?? 'arkzen-key'
 
 // ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {

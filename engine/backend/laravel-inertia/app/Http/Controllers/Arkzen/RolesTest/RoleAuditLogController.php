@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — RoleAuditLogController
 // Tatemono: roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:20.951168Z
+// Generated: 2026-06-13T07:39:06.692112Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\RolesTest;
@@ -32,7 +32,7 @@ class RoleAuditLogController extends Controller
     }
 
     /**
-     * Admin-only route — role check performed in controller body ($user->role === 'admin'). Per-endpoint middleware override is not yet supported by RouteRegistrar; the check lives in the generated method.
+     * Admin-only route — role check performed in controller body ($user->role === 'admin')
      */
     public function adminOnly(Request $request): JsonResponse
     {

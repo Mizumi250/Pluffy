@@ -11,6 +11,26 @@
 export type InertiaPageResolver = Record<string, () => Promise<{ default: React.ComponentType }>>
 
 export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
+  // PAGE:Certflow/Login
+  'Certflow/Login': () => import('../../Pages/Certflow/Login'),
+  // PAGE:Certflow/Dashboard
+  'Certflow/Dashboard': () => import('../../Pages/Certflow/Dashboard'),
+  // PAGE:Certflow/Fill
+  'Certflow/Fill': () => import('../../Pages/Certflow/Fill'),
+  // PAGE:Certflow/Verify
+  'Certflow/Verify': () => import('../../Pages/Certflow/Verify'),
+  // PAGE:ChurchCommunity/Index
+  'ChurchCommunity/Index': () => import('../../Pages/ChurchCommunity/Index'),
+  // PAGE:ChurchCommunity/Members
+  'ChurchCommunity/Members': () => import('../../Pages/ChurchCommunity/Members'),
+  // PAGE:ChurchCommunity/Inventory
+  'ChurchCommunity/Inventory': () => import('../../Pages/ChurchCommunity/Inventory'),
+  // PAGE:ChurchCommunity/Admin
+  'ChurchCommunity/Admin': () => import('../../Pages/ChurchCommunity/Admin'),
+  // PAGE:ChurchCommunity/Login
+  'ChurchCommunity/Login': () => import('../../Pages/ChurchCommunity/Login'),
+  // PAGE:ChurchCommunity/Register
+  'ChurchCommunity/Register': () => import('../../Pages/ChurchCommunity/Register'),
   // PAGE:AnimationLab/Index
   'AnimationLab/Index': () => import('../../Pages/AnimationLab/Index'),
   // PAGE:AssetHub/Index
@@ -35,26 +55,6 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'BroadcastTest/Register': () => import('../../Pages/BroadcastTest/Register'),
   // PAGE:BroadcastTest/Dashboard
   'BroadcastTest/Dashboard': () => import('../../Pages/BroadcastTest/Dashboard'),
-  // PAGE:Certflow/Login
-  'Certflow/Login': () => import('../../Pages/Certflow/Login'),
-  // PAGE:Certflow/Dashboard
-  'Certflow/Dashboard': () => import('../../Pages/Certflow/Dashboard'),
-  // PAGE:Certflow/Fill
-  'Certflow/Fill': () => import('../../Pages/Certflow/Fill'),
-  // PAGE:Certflow/Verify
-  'Certflow/Verify': () => import('../../Pages/Certflow/Verify'),
-  // PAGE:ChurchCommunity/Index
-  'ChurchCommunity/Index': () => import('../../Pages/ChurchCommunity/Index'),
-  // PAGE:ChurchCommunity/Members
-  'ChurchCommunity/Members': () => import('../../Pages/ChurchCommunity/Members'),
-  // PAGE:ChurchCommunity/Inventory
-  'ChurchCommunity/Inventory': () => import('../../Pages/ChurchCommunity/Inventory'),
-  // PAGE:ChurchCommunity/Admin
-  'ChurchCommunity/Admin': () => import('../../Pages/ChurchCommunity/Admin'),
-  // PAGE:ChurchCommunity/Login
-  'ChurchCommunity/Login': () => import('../../Pages/ChurchCommunity/Login'),
-  // PAGE:ChurchCommunity/Register
-  'ChurchCommunity/Register': () => import('../../Pages/ChurchCommunity/Register'),
   // PAGE:CrudTest/Index
   'CrudTest/Index': () => import('../../Pages/CrudTest/Index'),
   // PAGE:DtrGeofencing/Index

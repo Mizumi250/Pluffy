@@ -27,7 +27,7 @@
         <!-- Inertia head (title, meta tags from InertiaHead component) -->
         @inertiaHead
     </head>
-    <body class="font-sans antialiased">
+    <body>
         @inertia
     </body>
 </html>

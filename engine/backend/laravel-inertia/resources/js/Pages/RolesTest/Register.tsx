@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — roles-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:20.833Z
+// Generated: 2026-06-13T07:39:06.617Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Shield } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { Shield } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type RolesTestRegisterProps = {
@@ -20,11 +20,6 @@ export type RolesTestRegisterProps = {
   flash?: { success?: string; error?: string }
   errors?: Record<string, string>
   [key: string]: unknown
-}
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-if (typeof window !== 'undefined') {
-  setActiveTatemono('roles-test')
 }
 
 // ── Page component from @arkzen:page:register ─────────────────────────────

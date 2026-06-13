@@ -2,16 +2,20 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:14.571Z
+// Generated: 2026-06-13T07:39:02.529Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { KindBadge } from './components/KindBadge'
+import { StatusDot } from './components/StatusDot'
+import { useToast } from './components/hooks'
+import type { SendLogEntry } from './components/types'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type BodyMailNotificationDashboardProps = {
@@ -20,61 +24,6 @@ export type BodyMailNotificationDashboardProps = {
   errors?: Record<string, string>
   [key: string]: unknown
 }
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-function useToast() {
-  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
-  const show = useCallback((type: 'success' | 'error', msg: string) => {
-    setToast({ type, msg })
-    setTimeout(() => setToast(null), 4000)
-  }, [])
-  return {
-    toast,
-    success: (msg: string) => show('success', msg),
-    error:   (msg: string) => show('error', msg),
-  }
-}
-
-if (typeof window !== 'undefined') {
-  setActiveTatemono('body-mail-notification')
-}
-
-type SendLogEntry = {
-  id:         number
-  kind:       'mail' | 'notification'
-  subject:    string | null
-  to_email:   string | null
-  mail_class: string | null
-  status:     'sent' | 'failed'
-  error:      string | null
-  created_at: string
-}
-
-const KindBadge = ({ kind }: { kind: string }) => (
-  <span style={{
-    display: 'inline-block',
-    padding: '2px 10px',
-    borderRadius: 20,
-    fontSize: 11,
-    fontWeight: 700,
-    background: kind === 'mail' ? '#dbeafe' : '#fef9c3',
-    color:      kind === 'mail' ? '#1d4ed8' : '#a16207',
-    letterSpacing: 0.5,
-  }}>
-    {kind === 'mail' ? '✉ MAIL' : '🔔 NOTIF'}
-  </span>
-)
-
-const StatusDot = ({ status }: { status: string }) => (
-  <span style={{
-    display: 'inline-block',
-    width: 8, height: 8,
-    borderRadius: '50%',
-    background: status === 'sent' ? '#22c55e' : '#ef4444',
-    marginRight: 6,
-    verticalAlign: 'middle',
-  }} />
-)
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {

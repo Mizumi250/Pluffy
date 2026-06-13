@@ -72,15 +72,17 @@ export function syncSharedCoreToCurrentStack(label: string): void {
     }
   }
 
-  // 2. Sync cross-platform folders (hooks, lib, stores) to ALL stacks
-  if (fs.existsSync(webCoreDir)) {
-    for (const folder of CROSS_PLATFORM_FOLDERS) {
-      const src  = path.join(webCoreDir, folder)
-      const dest = path.join(stackCoreDir, folder)
-      if (!fs.existsSync(src)) continue
-      syncDirectoryIfChanged(src, dest, new Set())
-    }
+// 2. Sync cross-platform folders (hooks, lib, stores) to ALL stacks
+if (fs.existsSync(webCoreDir)) {
+  for (const folder of CROSS_PLATFORM_FOLDERS) {
+    const src  = path.join(webCoreDir, folder)
+    const dest = path.join(stackCoreDir, folder)
+    if (!fs.existsSync(src)) continue
+    // Mobile stacks get stores/ from native-core (step 3), not web-core
+    if (isMobile && folder === 'stores') continue
+    syncDirectoryIfChanged(src, dest, new Set())
   }
+}
 
   // 3. Sync platform-specific shared files
   if (isMobile && fs.existsSync(nativeCoreDir)) {

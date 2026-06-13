@@ -32,17 +32,23 @@
 //          parseAllNativeLayouts()       — @arkzen:native:layout:name
 //          parseAllNativeStyles()        — @arkzen:native:style:name
 //          parseAllNativePages()         — @arkzen:native:page:name
-//          parseGlobalNativeAnimation()  — @arkzen:native:animation
+//          parseNativeAnimationRN()      — @arkzen:native:animation:rn   (Expo + bare RN)
+//          parseNativeAnimationLynx()    — @arkzen:native:animation:lynx (Lynx)
 //          parseGlobalNativeScript()     — @arkzen:native:script
 //          parseAllNamedNativeScripts()  — @arkzen:native:script:name
 //        CODE_BLOCK_TAGS updated: native equivalents added.
 //        YAML_ONLY_TAGS updated: 'meta:native', 'native:config' added.
 //        ParsedTatemono: nativeMeta, nativeConfig, nativePages,
 //          nativeLayouts, nativeComponents, nativeStyles,
-//          nativeAnimation, nativeScript, nativeScripts.
+//          nativeAnimationRN, nativeAnimationLynx, nativeScript, nativeScripts.
 //        validatePages() updated: native-only tatemonos are valid.
 //        hasSections() updated: native checks added.
 //        parseTatemono() logs native blocks.
+//
+// v10.2: @arkzen:native:error:404/500 support.
+//        parseAllNativeErrorHandlers() added.
+//        native:error added to CODE_BLOCK_TAGS.
+//        nativeErrorHandlers added to ParsedTatemono.
 //
 // v10.1: Removed hasNative boolean — builders detect platform from array lengths.
 //        parsed.pages.length === 0 → skip in web builders.
@@ -218,18 +224,24 @@ function stripTemplateLiterals(src: string): string {
       while (i < src.length) {
         if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char
         if (src[i] === '`')  { result += ' '; i++; break }          // closing backtick
-        // Skip ${...} expressions — shallow (1 level)
+        // Preserve ${...} expression content verbatim so identifiers remain
+        // visible to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
         if (src[i] === '$' && src[i + 1] === '{') {
+          result += '  ' // placeholders for the consumed '${' so indices stay aligned
+          i += 2 // skip '${'
           let depth = 1
-          result += '  '; i += 2
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') depth--
-            result += ' '; i++
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break } // placeholder for closing '}'
+            }
+            result += src[i]  // emit expression chars so identifiers stay visible
+            i++
           }
           continue
         }
-        result += ' '; i++  // replace literal content with space (preserves length)
+        result += ' '; i++  // replace static literal content with space
       }
     } else {
       result += src[i]
@@ -282,6 +294,7 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     results.push({
       raw,
+      name:  identifier,   // ← add this
       start: openIdx,
       end:   closeIdx + closeMarker.length,
     })
@@ -427,7 +440,8 @@ function parseConfig(content: string): ArkzenConfigOverride | undefined {
 // @arkzen:native:layout:name      — CODE_BLOCK, Type B
 // @arkzen:native:style:name       — CODE_BLOCK, Type B
 // @arkzen:native:page:name        — CODE_BLOCK, Type B
-// @arkzen:native:animation        — CODE_BLOCK, Type B (global, one per tatemono)
+// @arkzen:native:animation:rn   — CODE_BLOCK, Type B (Expo + bare RN — Reanimated / Moti)
+// @arkzen:native:animation:lynx — CODE_BLOCK, Type B (Lynx — CSS keyframes / lynx.createAnimation)
 // @arkzen:native:script           — CODE_BLOCK, Type B (global)
 // @arkzen:native:script:name      — CODE_BLOCK, Type B (named, multiple)
 // ─────────────────────────────────────────────
@@ -502,8 +516,12 @@ function parseAllNativePages(content: string): ArkzenPage[] {
   })
 }
 
-function parseGlobalNativeAnimation(content: string): ArkzenSection | undefined {
-  return extractSectionWithPosition(content, 'native:animation') ?? undefined
+function parseNativeAnimationRN(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation:rn') ?? undefined
+}
+
+function parseNativeAnimationLynx(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation:lynx') ?? undefined
 }
 
 function parseGlobalNativeScript(content: string): ArkzenSection | undefined {
@@ -1631,8 +1649,46 @@ function parseAllComponents(content: string): ArkzenSection[] {
 function parseAllErrorHandlers(content: string): ArkzenErrorHandler[] {
   const results: ArkzenErrorHandler[] = []
   const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
-  // v7.0: @arkzen:web:error: — strict, no fallback
+  // v7.0: @arkzen:web:error: — strict, no fallback. For native equivalent see parseAllNativeErrorHandlers()
   const prefix = 'web:error'
+
+  for (const type of validTypes) {
+    const openMarker  = `/* @arkzen:${prefix}:${type} */`
+    const closeMarker = `/* @arkzen:${prefix}:${type}:end */`
+
+    const openIdx = content.indexOf(openMarker)
+    if (openIdx === -1) continue
+
+    const closeIdx = content.indexOf(closeMarker, openIdx)
+    if (closeIdx === -1) continue
+
+    const raw = content.slice(openIdx + openMarker.length, closeIdx).trim()
+    if (!raw) continue
+
+    results.push({ type, raw })
+  }
+
+  return results
+}
+
+
+// ─────────────────────────────────────────────
+// PARSE NATIVE ERROR HANDLERS — v10.2
+// Extracts @arkzen:native:error:404 and @arkzen:native:error:500 blocks.
+// These generate Expo Router +not-found.tsx and error-boundary.tsx
+// rather than routed screens. Each has an :end closer.
+//
+// Format:
+//   /* @arkzen:native:error:404 */
+//   const NativeNotFoundScreen = () => <NativeErrorScreen code={404} />
+//   /* @arkzen:native:error:404:end */
+// ─────────────────────────────────────────────
+
+function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
+  const results: ArkzenErrorHandler[] = []
+  const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
+  // v10.2: @arkzen:native:error: — mirrors parseAllErrorHandlers for native platform
+  const prefix = 'native:error'
 
   for (const type of validTypes) {
     const openMarker  = `/* @arkzen:${prefix}:${type} */`
@@ -1676,7 +1732,7 @@ const CODE_BLOCK_TAGS = [
   // web
   'web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error',
   // native — v10.0
-  'native:components', 'native:layout', 'native:animation', 'native:script', 'native:page', 'native:style',
+  'native:components', 'native:layout', 'native:animation:rn', 'native:animation:lynx', 'native:script', 'native:page', 'native:style', 'native:error',
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -1699,6 +1755,8 @@ function validateDslTags(content: string, filePath: string): void {
     if (trimmed.includes(':end */'))        continue
     // v7.0: skip web:page:layout: inline declarations (no :end needed)
     if (trimmed.match(/^\/\* @arkzen:web:page:layout:/)) continue
+    // v10.1: skip native:page:layout: inline declarations (same pattern as web)
+    if (trimmed.match(/^\/\* @arkzen:native:page:layout:/)) continue
 
     // v7.0: capture full type including web: prefix e.g. "web:page", "web:style", "script"
     const tagMatch = trimmed.match(/^\/\* @arkzen:((?:web|native|desktop):)?([a-zA-Z]+)/)
@@ -1920,9 +1978,11 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const nativeLayouts    = parseAllNativeLayouts(content)
   const nativeStyles     = parseAllNativeStyles(content)
   const nativePages      = parseAllNativePages(content)
-  const nativeAnimation  = parseGlobalNativeAnimation(content)
-  const nativeScript     = parseGlobalNativeScript(content)
-  const nativeScripts    = parseAllNamedNativeScripts(content)
+  const nativeAnimationRN         = parseNativeAnimationRN(content)
+  const nativeAnimationLynx       = parseNativeAnimationLynx(content)
+  const nativeScript          = parseGlobalNativeScript(content)
+  const nativeScripts         = parseAllNamedNativeScripts(content)
+  const nativeErrorHandlers   = parseAllNativeErrorHandlers(content)  // v10.2
 
 
 
@@ -1988,9 +2048,11 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeLayouts,
     nativeComponents,
     nativeStyles,
-    nativeAnimation,
+    nativeAnimationRN,
+    nativeAnimationLynx,
     nativeScript,
     nativeScripts,
+    nativeErrorHandlers,   // v10.2
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2007,7 +2069,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     console.log(`[Arkzen Parser]   Web meta: ${webMetaParts.join(', ') || 'present'}`)
   }
   console.log(`[Arkzen Parser]   Pages (${pages.length}): ${pages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
-  if (errorHandlers.length)  console.log(`[Arkzen Parser]   Error handlers (${errorHandlers.length}): ${errorHandlers.map(e => e.type).join(', ')}`)
+  if (errorHandlers.length)       console.log(`[Arkzen Parser]   Error handlers (${errorHandlers.length}): ${errorHandlers.map(e => e.type).join(', ')}`)
+  if (nativeErrorHandlers.length) console.log(`[Arkzen Parser]   Native error handlers (${nativeErrorHandlers.length}): ${nativeErrorHandlers.map(e => e.type).join(', ')}`)
   if (databases.length)      console.log(`[Arkzen Parser]   Tables (${databases.length}): ${databases.map(d => d.table).join(', ')}`)
   if (apis.length)           console.log(`[Arkzen Parser]   Resources (${apis.length}): ${apis.map(a => a.model).join(', ')}`)
   if (customRoutes.length)   console.log(`[Arkzen Parser]   Custom routes (${customRoutes.length}): ${customRoutes.map(c => c.controller).join(', ')}`)
@@ -2031,7 +2094,8 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
     if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
     if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
-    if (nativeAnimation)                 console.log(`[Arkzen Parser]   Native animation: global`)
+    if (nativeAnimationRN)                   console.log(`[Arkzen Parser]   Native animation: :rn block`)
+    if (nativeAnimationLynx)                 console.log(`[Arkzen Parser]   Native animation: :lynx block`)
     if (nativeScript)                    console.log(`[Arkzen Parser]   Native script: global`)
     if (nativeScripts.length)            console.log(`[Arkzen Parser]   Native scripts (${nativeScripts.length}): named blocks`)
   }
@@ -2061,7 +2125,8 @@ export function hasSections(filePath: string) {
     nativeConfig:       content.includes('/* @arkzen:native:config'),
     nativeComponents:   content.includes('/* @arkzen:native:components:'),
     nativePage:         content.includes('/* @arkzen:native:page:'),
-    nativeAnimation:    content.includes('/* @arkzen:native:animation'),
+    nativeAnimationRN:    content.includes('/* @arkzen:native:animation:rn'),
+    nativeAnimationLynx:  content.includes('/* @arkzen:native:animation:lynx'),
     nativeScript:       content.includes('/* @arkzen:native:script'),
     nativeLayout:       content.includes('/* @arkzen:native:layout:'),
     nativeStyle:        content.includes('/* @arkzen:native:style:'),

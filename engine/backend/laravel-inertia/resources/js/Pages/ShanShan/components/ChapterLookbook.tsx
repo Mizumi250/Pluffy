@@ -1,8 +1,30 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENT — ChapterLookbook [React+Inertia]
-// Re-exported from _components.tsx
+// Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:22.384Z
+// Generated: 2026-06-13T07:39:10.058Z
 // ============================================================
 
-export { ChapterLookbook } from './_components'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { CHAPTERS } from './constants'
+
+// ─── CHAPTER LOOKBOOK ─────────────────────────────────────────────────────────
+
+export const ChapterLookbook = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
+  <div className="chapter-lookbook">
+    <div className="chapter-lookbook-inner">
+      <div className="chapter-lookbook-side">
+        <img src={chapter.gallery[0]} alt={`${chapter.coverLabel} secondary`} className="chapter-lookbook-secondary" />
+        <p className="chapter-lookbook-quote">{chapter.desc}</p>
+      </div>
+      <div className="chapter-lookbook-main">
+        <img src={chapter.gallery[1] || chapter.img} alt={`${chapter.coverLabel} main`} className="chapter-lookbook-main-img" />
+      </div>
+    </div>
+  </div>
+)
+
+// ─── CHAPTER STORY ────────────────────────────────────────────────────────────

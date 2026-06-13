@@ -66,32 +66,36 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 // ============================================================
 // ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:20.953749Z
+// Generated: 2026-06-13T07:39:06.693515Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Arkzen\RolesTest\RoleAuditLogController;
-use App\Http\Middleware\Arkzen\RolesTest\CheckRole;
 
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\RolesTest\PersonalAccessToken as RolesTestToken;
 
-Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
-
-// ── Scoped middleware aliases for this tatemono ────────────
-app('router')->aliasMiddleware('role', \App\Http\Middleware\Arkzen\RolesTest\CheckRole::class);
+// v5.1: Scoped per-request — fires only when a route under /api/roles-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/roles-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(RolesTestToken::class);
+    }
+});
 
 // ── RoleAuditLog ─────────────────────────────
-Route::middleware(['api', 'auth:sanctum', 'role:admin'])
+Route::middleware(['api', 'auth:sanctum'])
     ->prefix('/api/roles-test')
     ->group(function () {
 
         // Audit log of all access attempts
         Route::get('/logs', [RoleAuditLogController::class, 'index']);
 
-        // Admin-only route — role check performed in controller body ($user->role === 'admin'). Per-endpoint middleware override is not yet supported by RouteRegistrar; the check lives in the generated method.
+        // Admin-only route — role check performed in controller body ($user->role === 'admin')
         Route::get('/admin-only', [RoleAuditLogController::class, 'adminOnly']);
 
         // Any authenticated user — no role gate

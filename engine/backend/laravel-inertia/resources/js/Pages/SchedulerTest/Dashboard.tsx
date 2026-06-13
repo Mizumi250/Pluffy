@@ -2,19 +2,20 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:22.154Z
+// Generated: 2026-06-13T07:39:07.419Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { useToast } from '@/arkzen/core/components/Toast'
-import { useMutation } from '@/arkzen/core/hooks/useMutation'
-import { useQuery } from '@/arkzen/core/hooks/useQuery'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import type { CommandRun } from './components/types'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useToast } from '@/arkzen/core/components/Toast'
 
 // Props passed from Laravel via Inertia::render()
 export type SchedulerTestDashboardProps = {
@@ -22,18 +23,6 @@ export type SchedulerTestDashboardProps = {
   flash?: { success?: string; error?: string }
   errors?: Record<string, string>
   [key: string]: unknown
-}
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-interface CommandRun {
-  id:           number
-  command_name: string
-  signature:    string
-  exit_code:    number
-  output:       string | null
-  triggered_by: string
-  duration_ms:  number | null
-  created_at:   string
 }
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────

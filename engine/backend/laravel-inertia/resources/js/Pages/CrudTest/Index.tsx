@@ -2,17 +2,19 @@
 // ARKZEN GENERATED PAGE — crud-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:17.728Z
+// Generated: 2026-06-13T07:39:03.501Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Boxes } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { emptyForm } from './components/utils'
+import type { FormData, Item } from './components/types'
+import { Boxes } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type CrudTestIndexProps = {
@@ -21,21 +23,6 @@ export type CrudTestIndexProps = {
   errors?: Record<string, string>
   [key: string]: unknown
 }
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-type Item = {
-  id:          number
-  name:        string
-  description: string | null
-  status:      'active' | 'pending' | 'archived'
-  priority:    number
-  tags:        string | null
-  created_at:  string
-  updated_at:  string
-}
-
-type FormData = { name: string; description: string; status: string; priority: number; tags: string }
-const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -63,7 +50,6 @@ const IndexPage = () => {
       const res = await arkzenFetch('/api/crud-test/items')
       if (!res.ok) throw new Error(`API error: ${res.status} ${res.statusText}`)
       const d = await res.json()
-      // Handle both collection and paginated responses
       const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
       if (isMounted.current) {
         setItems(data)
@@ -112,20 +98,18 @@ const IndexPage = () => {
     } finally { setSaving(false) }
   }
 
-const remove = async (id: number) => {
-  console.log('[DELETE] Attempting to delete ID:', id)  // Debug
-  setDeleting(id)
-  try {
-    const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
-    console.log('[DELETE] Response status:', res.status)  // Debug
-    if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
-    await load()  // ← RELOAD from server instead of manual filter
-  } catch (err) {
-    console.error('[DELETE] Error:', err)
-  } finally { 
-    setDeleting(null)
+  const remove = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await arkzenFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`Delete failed: ${res.status} ${res.statusText}`)
+      await load()
+    } catch (err) {
+      console.error('[DELETE] Error:', err)
+    } finally {
+      setDeleting(null)
+    }
   }
-}
 
   const statusColor = (s: string) => ({
     active:   'bg-green-100 text-green-700',

@@ -2,16 +2,16 @@
 // ARKZEN GENERATED PAGE — middleware-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-05-29T03:31:19.484Z
+// Generated: 2026-06-13T07:39:05.944Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShieldCheck } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { ShieldCheck } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type MiddlewareTestIndexProps = {
@@ -20,9 +20,6 @@ export type MiddlewareTestIndexProps = {
   errors?: Record<string, string>
   [key: string]: unknown
 }
-
-// ── Shared components from @arkzen:components ─────────────────────────────────
-
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {

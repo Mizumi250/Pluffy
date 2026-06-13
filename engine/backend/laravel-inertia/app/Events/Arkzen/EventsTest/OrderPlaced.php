@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — OrderPlaced
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:18.611370Z
+// Generated: 2026-06-13T07:39:04.319629Z
 // ============================================================
 
 namespace App\Events\Arkzen\EventsTest;

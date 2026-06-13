@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/broadcast-test/auth')->
 // ============================================================
 // ARKZEN GENERATED ROUTES — broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:15.802194Z
+// Generated: 2026-06-13T07:39:03.387604Z
 // Resources: Message
 // Custom controllers: 
 // ============================================================
@@ -77,7 +77,15 @@ use App\Http\Controllers\Arkzen\BroadcastTest\MessageController;
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\BroadcastTest\PersonalAccessToken as BroadcastTestToken;
 
-Sanctum::usePersonalAccessTokenModel(BroadcastTestToken::class);
+// v5.1: Scoped per-request — fires only when a route under /api/broadcast-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/broadcast-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(BroadcastTestToken::class);
+    }
+});
 
 // ── Message ─────────────────────────────
 Route::middleware(['api'])

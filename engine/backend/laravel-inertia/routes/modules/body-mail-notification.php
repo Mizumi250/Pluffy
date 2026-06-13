@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/body-mail-notification/
 // ============================================================
 // ARKZEN GENERATED ROUTES — body-mail-notification
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:14.858092Z
+// Generated: 2026-06-13T07:39:02.661986Z
 // Resources: SendLog
 // Custom controllers: 
 // ============================================================
@@ -77,7 +77,15 @@ use App\Http\Controllers\Arkzen\BodyMailNotification\SendLogController;
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\BodyMailNotification\PersonalAccessToken as BodyMailNotificationToken;
 
-Sanctum::usePersonalAccessTokenModel(BodyMailNotificationToken::class);
+// v5.1: Scoped per-request — fires only when a route under /api/body-mail-notification/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/body-mail-notification/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(BodyMailNotificationToken::class);
+    }
+});
 
 // ── SendLog ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])

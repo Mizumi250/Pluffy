@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/notification-test/auth'
 // ============================================================
 // ARKZEN GENERATED ROUTES — notification-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-05-29T03:31:20.035287Z
+// Generated: 2026-06-13T07:39:06.271500Z
 // Resources: Notification
 // Custom controllers: 
 // ============================================================
@@ -77,7 +77,15 @@ use App\Http\Controllers\Arkzen\NotificationTest\NotificationController;
 use Laravel\Sanctum\Sanctum;
 use App\Models\Arkzen\NotificationTest\PersonalAccessToken as NotificationTestToken;
 
-Sanctum::usePersonalAccessTokenModel(NotificationTestToken::class);
+// v5.1: Scoped per-request — fires only when a route under /api/notification-test/ is matched.
+// This prevents the global Sanctum::usePersonalAccessTokenModel() race condition
+// where the last-loaded route file would override all other tatemonos' PAT models.
+\Illuminate\Support\Facades\Route::matched(function (\Illuminate\Routing\Events\RouteMatched $event) {
+    $uri = $event->request->path();
+    if (str_starts_with($uri, 'api/notification-test/')) {
+        \Laravel\Sanctum\Sanctum::usePersonalAccessTokenModel(NotificationTestToken::class);
+    }
+});
 
 // ── Notification ─────────────────────────────
 Route::middleware(['api', 'auth:sanctum'])
