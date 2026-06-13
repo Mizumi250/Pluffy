@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — animation-lab/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { fadeUpPreset, useFadeIn, useSlideUp, useSlideRight, useScaleBloom, useRotateIn, useElasticScale, useSpin, useBounce, usePulse, useShake, useFloat, useHeartbeat, useWiggle, useColorCycle, useScale, useTimeline, useStaggerItems, usePressBounce, usePressColor, useHoverRotate } from '../../arkzen/generated/animation-lab.native-animations'
 import { s } from '../../arkzen/generated/animation-lab.native-styles'
 import { COLORS_6 } from './components/COLORS_6'
@@ -22,8 +22,7 @@ import { StaggerSection } from './components/StaggerSection'
 import { TimelineSection } from './components/TimelineSection'
 import { TransformsSection } from './components/TransformsSection'
 import { NAV_SECTIONS } from './components/constants'
-import { color, style } from './components/utils'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

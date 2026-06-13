@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StaggerSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:46.295Z
+// Generated: 2026-06-13T09:28:02.655Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
 import { MotiView } from 'moti'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
-import { center, color, fromEnd, grid, linear, play, reset, style } from './utils'
 import { COLORS_6 } from './COLORS_6'
 import { COLORS_7 } from './COLORS_7'
 import { DemoCard } from './DemoCard'

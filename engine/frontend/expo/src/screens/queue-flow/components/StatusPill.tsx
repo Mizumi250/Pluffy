@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusPill [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:49.882Z
+// Generated: 2026-06-13T09:28:05.273Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { useRouter } from 'expo-router'
 import * as Speech from 'expo-speech'
 import { Volume2 } from 'lucide-react-native'
 import { ActivityIndicator, Animated, Easing, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { map, s } from './utils'
 import type { NativeTicket } from './types'
 
 // ─── Shared UI atoms ──────────────────────────────────────────────────────────

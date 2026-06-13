@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — inventory-management [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.483Z
+// Generated: 2026-06-13T09:28:04.405Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
@@ -12,7 +12,7 @@ import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, Scroll
 
 export const emptyForm: FormState = { name: '', sku: '', quantity: '', price: '', category: '', description: '' }
 
-async function apiFetch(path: string, options?: RequestInit) {
+export async function apiFetch(path: string, options?: RequestInit) {
   return fetch(`${BACKEND_URL}${path}`, {
     ...options,
     headers: {

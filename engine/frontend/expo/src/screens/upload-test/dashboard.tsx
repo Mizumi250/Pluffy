@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SCREEN — upload-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
 import { BACKEND_URL } from './components/constants'
 import { formatSize } from './components/utils'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

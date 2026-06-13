@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — mail-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { BACKEND_URL } from './components/constants'
 import type { MailLog, MailType } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

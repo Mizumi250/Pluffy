@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — body-mail-notification/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
@@ -11,7 +11,7 @@ import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
 import { BACKEND_URL } from './components/constants'
 import type { SendLogEntry } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

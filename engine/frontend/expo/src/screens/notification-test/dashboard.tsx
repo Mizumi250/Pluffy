@@ -2,16 +2,16 @@
 // ARKZEN GENERATED SCREEN — notification-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
 import { APP_KEY, BACKEND_URL, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
-import { channelDesc, channelEmoji, channelLabel, color } from './components/utils'
+import { channelDesc, channelEmoji, channelLabel } from './components/utils'
 import type { WsStatus } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

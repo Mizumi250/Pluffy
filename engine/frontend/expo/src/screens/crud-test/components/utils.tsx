@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — crud-test [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:47.831Z
+// Generated: 2026-06-13T09:28:03.904Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, Sc
 
 export const emptyForm: FormData = { name: '', description: '', status: 'active', priority: '0', tags: '' }
 
-async function apiFetch(path: string, options?: RequestInit) {
+export async function apiFetch(path: string, options?: RequestInit) {
   return fetch(`${BACKEND_URL}${path}`, {
     ...options,
     headers: {

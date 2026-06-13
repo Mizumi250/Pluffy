@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — crud-test/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ItemFormModal } from './components/ItemFormModal'
 import { ItemRow } from './components/ItemRow'
 import { StatCard } from './components/StatCard'
 import { StatusBadge } from './components/StatusBadge'
-import { apiFetch, d, method, res } from './components/utils'
+import { apiFetch } from './components/utils'
 import type { Item } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

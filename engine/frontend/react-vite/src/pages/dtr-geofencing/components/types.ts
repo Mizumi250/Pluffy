@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — dtr-geofencing [React+Vite]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:49.511Z
+// Generated: 2026-06-13T09:04:56.579Z
 // ============================================================
 
 export interface Employee {

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED SCREEN — portfolio-test/index
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

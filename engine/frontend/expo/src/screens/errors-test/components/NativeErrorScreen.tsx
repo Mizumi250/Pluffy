@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NativeErrorScreen [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.287Z
+// Generated: 2026-06-13T09:28:04.249Z
 // ============================================================
 
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { NATIVE_ERRORS } from './constants'
-import { err, router } from './utils'
 
 // Shared native error screen — used by +not-found.tsx, error-boundary, and index
 export const NativeErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {

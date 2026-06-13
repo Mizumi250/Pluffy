@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SpringSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:46.305Z
+// Generated: 2026-06-13T09:28:02.667Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
 import { MotiView } from 'moti'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
-import { color, makeSpring, play, reset, springConfigs, springs, style, sv } from './utils'
 import { DemoCard } from './DemoCard'
 import { PlayReset } from './PlayReset'
 import { SectionHeader } from './SectionHeader'

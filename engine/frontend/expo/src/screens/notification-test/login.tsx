@@ -2,13 +2,13 @@
 // ARKZEN GENERATED SCREEN — notification-test/login
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

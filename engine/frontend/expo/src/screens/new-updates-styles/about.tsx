@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — new-updates-styles/about
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { s } from '../../arkzen/generated/new-updates-styles.native-styles'
 import { Badge } from './components/Badge'
 import { FeatureCard } from './components/FeatureCard'
 import { GhostButton } from './components/GhostButton'
 import { PrimaryButton } from './components/PrimaryButton'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

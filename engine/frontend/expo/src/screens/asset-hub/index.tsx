@@ -7,7 +7,7 @@ import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'
 import { NATIVE_ASSET_REGISTRY } from './components/constants'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

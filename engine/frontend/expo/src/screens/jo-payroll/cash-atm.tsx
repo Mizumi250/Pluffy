@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/cash-atm
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
@@ -14,8 +14,8 @@ import { TabRow } from './components/TabRow'
 import { WorkerRow } from './components/WorkerRow'
 import { BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
-import { color, formatPeso } from './components/utils'
-import { ScrollView } from 'react-native'
+import { formatPeso } from './components/utils'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

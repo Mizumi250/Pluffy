@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — queue-flow [React+Vite]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:51.641Z
+// Generated: 2026-06-13T09:04:58.364Z
 // ============================================================
 
 // ─── Types ────────────────────────────────────────────────────────────────────

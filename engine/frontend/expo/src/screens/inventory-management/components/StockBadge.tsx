@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StockBadge [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.486Z
+// Generated: 2026-06-13T09:28:04.410Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { AlertTriangle, ChevronRight, DollarSign, Edit2, Package, Plus, Search, Trash2, TrendingUp, X } from 'lucide-react-native'
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { cfg } from './utils'
 import { Field } from './Field'
 
 // ── Stock badge ───────────────────────────────────────────────

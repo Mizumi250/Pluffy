@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — job-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { BACKEND_URL } from './components/constants'
 import { dotColor, statusStyle } from './components/utils'
 import type { JobResult } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

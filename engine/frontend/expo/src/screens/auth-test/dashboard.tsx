@@ -7,7 +7,7 @@ import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

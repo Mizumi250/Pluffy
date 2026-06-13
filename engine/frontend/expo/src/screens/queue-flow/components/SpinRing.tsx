@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SpinRing [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:49.885Z
+// Generated: 2026-06-13T09:28:05.275Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { useRouter } from 'expo-router'
 import * as Speech from 'expo-speech'
 import { Volume2 } from 'lucide-react-native'
 import { ActivityIndicator, Animated, Easing, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { rotate, spin } from './utils'
 
 // ─── Spinning ring for Display screen ────────────────────────────────────────
 

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — roles-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { RoleBadge } from './components/RoleBadge'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

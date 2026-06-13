@@ -2,16 +2,16 @@
 // ARKZEN GENERATED SCREEN — queue-flow/admin
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/queue-flow-app'
 import { SpinRing } from './components/SpinRing'
 import { StatCard } from './components/StatCard'
 import { StatusPill } from './components/StatusPill'
 import { TicketRowNative } from './components/TicketRowNative'
 import { BACKEND_URL } from './components/constants'
-import { fmtWait, map, s } from './components/utils'
+import { fmtWait } from './components/utils'
 import type { NativeQueueStatus } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

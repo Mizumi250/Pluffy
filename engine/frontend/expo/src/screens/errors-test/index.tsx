@@ -2,12 +2,11 @@
 // ARKZEN GENERATED SCREEN — errors-test/index
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { NativeErrorScreen } from './components/NativeErrorScreen'
 import { ResultBanner } from './components/ResultBanner'
 import { BACKEND_URL, NATIVE_ERRORS } from './components/constants'
-import { err, router } from './components/utils'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

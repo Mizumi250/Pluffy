@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — shan-shan/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { shanShanNativeAnimations } from '../../arkzen/generated/shan-shan.native-animations'
 import { s } from '../../arkzen/generated/shan-shan.native-styles'
@@ -15,8 +15,7 @@ import { SkillBar } from './components/SkillBar'
 import { SoundBars } from './components/SoundBars'
 import { StaggerReveal } from './components/StaggerReveal'
 import { CHAPTERS, PERSONAL_INFO, SKILLS, SKILLS_MARQUEE } from './components/constants'
-import { width } from './components/utils'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, Image } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

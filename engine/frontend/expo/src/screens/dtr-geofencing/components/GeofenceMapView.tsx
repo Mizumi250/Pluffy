@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GeofenceMapView [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.041Z
+// Generated: 2026-06-13T09:28:04.095Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { AlertCircle, CheckCircle, ChevronDown, LogIn, LogOut, MapPin, Navigatio
 import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { create } from 'zustand'
 import { useDtrStore } from './hooks'
-import { color, within } from './utils'
 import { RecordRow } from './RecordRow'
 
 // ── GeofenceMap ──────────────────────────────────────────────

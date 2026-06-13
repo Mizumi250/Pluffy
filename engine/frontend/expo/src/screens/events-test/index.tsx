@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — events-test/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { BACKEND_URL } from './components/constants'
 import { eventColor, statusStyle } from './components/utils'
 import type { EventLogEntry } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

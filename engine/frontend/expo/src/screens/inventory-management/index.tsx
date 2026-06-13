@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — inventory-management/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { Field } from './components/Field'
 import { ItemFormModal } from './components/ItemFormModal'
 import { StatCard } from './components/StatCard'
 import { StockBadge } from './components/StockBadge'
-import { apiFetch, d, method, res } from './components/utils'
+import { apiFetch } from './components/utils'
 import type { InventoryItem } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

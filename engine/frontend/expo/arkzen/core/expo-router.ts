@@ -340,26 +340,21 @@ function extractNativeSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
 
 function extractNativeUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  const componentNames = extractNativeComponentNames(tatemono)
   for (const component of (tatemono.nativeComponents ?? [])) {
     const stripped = stripTemplateLiterals(component.raw)
-    let src = stripped
-    for (const compName of componentNames) {
-      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      src = src.replace(
-        new RegExp(
-          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
-          'g'
-        ),
-        ''
-      )
-    }
-    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+
+    // Only match TOP-LEVEL declarations: anchored to line start with zero
+    // leading whitespace. This naturally excludes nested locals like
+    // `const res = await apiFetch(...)` inside a component's event handlers,
+    // which are always indented. The previous approach tried to strip
+    // component bodies via a non-greedy lookahead that stopped at the first
+    // nested const/function and leaked the remainder of the body into scope.
+    const constMatches = stripped.match(/^(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/gm) || []
     for (const match of constMatches) {
       const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
       if (name && !/^use[A-Z]/.test(name)) names.add(name)
     }
-    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    const fnMatches = stripped.match(/^(?:export\s+)?(?:async\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/gm) || []
     for (const match of fnMatches) {
       const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
       if (name && !/^use[A-Z]/.test(name)) names.add(name)
@@ -367,6 +362,23 @@ function extractNativeUtilityFunctionNames(tatemono: ParsedTatemono): Set<string
   }
   return names
 }
+
+// Core react-native components that @arkzen:native:page blocks may reference
+// without their own import (they relied on the shared inline scope before
+// per-file generation split components out of the page block).
+const RN_CORE_COMPONENTS = new Set([
+  'View', 'Text', 'ScrollView', 'TouchableOpacity', 'Pressable',
+  'TextInput', 'Image', 'ImageBackground', 'FlatList', 'SectionList',
+  'Switch', 'ActivityIndicator', 'Modal', 'KeyboardAvoidingView',
+])
+
+// React hooks that @arkzen:native:page blocks may reference without their
+// own 'react' import for the same reason as RN_CORE_COMPONENTS above.
+const REACT_HOOKS = new Set([
+  'useState', 'useEffect', 'useRef', 'useMemo', 'useCallback',
+  'useContext', 'useReducer', 'useLayoutEffect', 'useId',
+  'useImperativeHandle', 'useDeferredValue', 'useTransition',
+])
 
 function findReferencedNames(strippedSource: string, names: Set<string>): string[] {
   const found: string[] = []
@@ -565,7 +577,7 @@ ${constChunksFixed.join('\n\n')}
       .map(({ name, chunk }) => {
         const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         return chunk.replace(
-          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${esc}\\b)`, 'm'),
+          new RegExp(`^(\\s*)(export\\s+)?(const|(?:async\\s+)?function)(\\s+${esc}\\b)`, 'm'),
           (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
         )
       })
@@ -599,7 +611,7 @@ ${hookChunks.join('\n\n')}
       .map(({ name, chunk }) => {
         const esc = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
         return chunk.replace(
-          new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${esc}\\b)`, 'm'),
+          new RegExp(`^(\\s*)(export\\s+)?(const|(?:async\\s+)?function)(\\s+${esc}\\b)`, 'm'),
           (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
         )
       })
@@ -666,7 +678,7 @@ ${typeChunks.join('\n\n')}
 
     const escapedName = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const exportedDeclaration = declaration.replace(
-      new RegExp(`^(\\s*)(export\\s+)?(const|function)(\\s+${escapedName}\\b)`, 'm'),
+      new RegExp(`^(\\s*)(export\\s+)?(const|(?:async\\s+)?function)(\\s+${escapedName}\\b)`, 'm'),
       (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
     )
 
@@ -849,12 +861,16 @@ export default ${wrapperName}
     typesImportLine,
   ].filter(Boolean).join('\n')
 
+  const referencedHookCalls = findReferencedNames(pageStrippedForRefs, REACT_HOOKS)
+
   let { canonicalBlock, strippedSources } = resolveImports(pageSources, {
     extra: extraLines,
+    reactHooks: referencedHookCalls,
   })
 
   // ── Merge engine-required imports ─────────────────────────────────────────
-  canonicalBlock = ensureReactNativeImport(canonicalBlock, ['ScrollView'])
+  const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
+  canonicalBlock = ensureReactNativeImport(canonicalBlock, Array.from(new Set(['ScrollView', ...referencedRNCore])))
   canonicalBlock = ensureExpoRouterImport(canonicalBlock)
   canonicalBlock = ensureStatusBarImport(canonicalBlock)
   canonicalBlock = ensureSetActiveTatemonoImport(canonicalBlock)

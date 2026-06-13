@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Chapter [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:51.053Z
+// Generated: 2026-06-13T09:28:06.380Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { CHAPTERS } from './constants'
-import { bodyOpacity, bodyTranslate, coverScale, nextChapter, opacity, revealBody, transform } from './utils'
 import { GalleryStrip } from './GalleryStrip'
 import { SoundBars } from './SoundBars'
 

@@ -2,12 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ResultBox [Expo]
 // Source: @arkzen:native:components (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:49.491Z
+// Generated: 2026-06-13T09:28:04.957Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { bgStyles, textStyles } from './utils'
 import type { Result, ResultStatus } from './types'
 
 // ── Result box ────────────────────────────────────────────────

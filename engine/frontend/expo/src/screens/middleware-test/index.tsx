@@ -2,13 +2,13 @@
 // ARKZEN GENERATED SCREEN — middleware-test/index
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'
 import { apiFetch } from './components/utils'
 import type { PingLog, Result } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

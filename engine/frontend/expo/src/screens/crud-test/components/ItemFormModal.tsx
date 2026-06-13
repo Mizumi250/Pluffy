@@ -2,12 +2,12 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ItemFormModal [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:47.836Z
+// Generated: 2026-06-13T09:28:03.910Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { apiFetch, d, emptyForm, method, res, save, statusOptions, url } from './utils'
+import { apiFetch, emptyForm } from './utils'
 import type { FormData, Item } from './types'
 
 // ── Item form modal ───────────────────────────────────────────

@@ -2,13 +2,12 @@
 // ARKZEN GENERATED NATIVE COMPONENT — AssetRow [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:46.388Z
+// Generated: 2026-06-13T09:28:02.755Z
 // ============================================================
 
 import React from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 import { NATIVE_ASSET_REQUIRE_MAP, NATIVE_CATEGORY_EMOJI } from './constants'
-import { isImage, source } from './utils'
 import type { NativeAssetItem } from './types'
 
 // ── Asset row ─────────────────────────────────────────────────

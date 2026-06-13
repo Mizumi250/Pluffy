@@ -2,14 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — WorkerRow [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.748Z
+// Generated: 2026-06-13T09:28:04.617Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { AlertCircle, Banknote, Building2, CreditCard, Landmark, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { create } from 'zustand'
-import { color, deductions, formatPeso, netPay } from './utils'
+import { formatPeso } from './utils'
 import type { JobOrder } from './types'
 import { Avatar } from './Avatar'
 import { SearchBar } from './SearchBar'

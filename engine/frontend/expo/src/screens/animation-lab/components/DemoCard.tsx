@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — DemoCard [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:46.284Z
+// Generated: 2026-06-13T09:28:02.648Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
 import { MotiView } from 'moti'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
-import { style } from './utils'
 
 // ─── SHARED CARD COMPONENTS ───────────────────────────────────────────────────
 export const DemoCard = ({ title, desc, full = false, children }: {

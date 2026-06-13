@@ -2,14 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ItemFormModal [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.486Z
+// Generated: 2026-06-13T09:28:04.411Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'expo-router'
 import { AlertTriangle, ChevronRight, DollarSign, Edit2, Package, Plus, Search, Trash2, TrendingUp, X } from 'lucide-react-native'
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { apiFetch, d, emptyForm, handleSave, method, res, url } from './utils'
+import { apiFetch, emptyForm } from './utils'
 import type { FormState, InventoryItem } from './types'
 import { Field } from './Field'
 

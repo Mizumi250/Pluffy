@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — dtr-geofencing/index
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/dtr-geofencing-app'
 import { usePageFadeIn } from '../../arkzen/generated/dtr-geofencing.native-animations'
@@ -13,9 +13,9 @@ import { GeofenceMapView } from './components/GeofenceMapView'
 import { LocationWidget } from './components/LocationWidget'
 import { RecordRow } from './components/RecordRow'
 import { useDtrStore } from './components/hooks'
-import { a, color, fmtDuration, fmtTime, parseSettings, within } from './components/utils'
+import { fmtDuration, fmtTime, parseSettings } from './components/utils'
 import type { Employee } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — new-updates-styles/features
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { s } from '../../arkzen/generated/new-updates-styles.native-styles'
 import { Badge } from './components/Badge'
@@ -12,7 +12,7 @@ import { PrimaryButton } from './components/PrimaryButton'
 import { FEATURES, ICON_COLORS } from './components/constants'
 import { getIcon } from './components/utils'
 import type { NativeColor } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

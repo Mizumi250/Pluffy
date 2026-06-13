@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SCREEN — mail-test/login
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

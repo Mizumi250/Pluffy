@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — scheduler-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { BACKEND_URL } from './components/constants'
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

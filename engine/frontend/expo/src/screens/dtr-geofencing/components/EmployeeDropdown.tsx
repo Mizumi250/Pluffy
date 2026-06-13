@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — EmployeeDropdown [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:48.039Z
+// Generated: 2026-06-13T09:28:04.092Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { AlertCircle, CheckCircle, ChevronDown, LogIn, LogOut, MapPin, Navigatio
 import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { create } from 'zustand'
 import { useDtrStore } from './hooks'
-import { color } from './utils'
 import { LocationWidget } from './LocationWidget'
 
 // ── EmployeeDropdown ─────────────────────────────────────────

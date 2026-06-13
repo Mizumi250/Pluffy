@@ -2,14 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — BurgerNav [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:51.050Z
+// Generated: 2026-06-13T09:28:06.377Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { NAV_LINKS } from './constants'
-import { closeNav, handleLink, line1Rotate, line2Opacity, line3Rotate, lineColor, navItemAnims, opacity, openNav, overlayOpacity, transform, width } from './utils'
 
 // ─── BURGER / NAV ─────────────────────────────────────────────────────────────
 

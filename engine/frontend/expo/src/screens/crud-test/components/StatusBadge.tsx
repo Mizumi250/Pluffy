@@ -2,12 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusBadge [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:47.833Z
+// Generated: 2026-06-13T09:28:03.907Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { styles } from './utils'
 
 // ── Status badge ──────────────────────────────────────────────
 export const StatusBadge = ({ status }: { status: string }) => {

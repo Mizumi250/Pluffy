@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusDot [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:47.720Z
+// Generated: 2026-06-13T09:28:03.777Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
-import { color } from './utils'
 import type { WsStatus } from './types'
 
 export const StatusDot = ({ status }: { status: WsStatus }) => {

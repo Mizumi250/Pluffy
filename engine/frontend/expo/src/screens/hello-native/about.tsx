@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SCREEN — hello-native/about
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { Badge } from './components/Badge'
 import { Card } from './components/Card'
 import { GhostButton } from './components/GhostButton'
 import { PrimaryButton } from './components/PrimaryButton'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

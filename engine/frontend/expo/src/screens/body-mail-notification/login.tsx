@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — body-mail-notification/login
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { KindBadge } from './components/KindBadge'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, KeyboardAvoidingView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

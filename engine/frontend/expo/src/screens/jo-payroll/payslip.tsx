@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/payslip
 // ============================================================
 
-import React from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
@@ -14,9 +14,9 @@ import { TabRow } from './components/TabRow'
 import { WorkerRow } from './components/WorkerRow'
 import { BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
-import { color, deductions, formatPeso } from './components/utils'
+import { formatPeso } from './components/utils'
 import type { JobOrder } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

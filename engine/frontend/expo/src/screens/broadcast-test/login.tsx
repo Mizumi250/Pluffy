@@ -2,12 +2,11 @@
 // ARKZEN GENERATED SCREEN — broadcast-test/login
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ChannelCard } from './components/ChannelCard'
 import { StatusDot } from './components/StatusDot'
-import { color } from './components/utils'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

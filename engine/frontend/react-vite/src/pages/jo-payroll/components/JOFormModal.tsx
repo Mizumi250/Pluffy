@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JOFormModal [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:43:50.532Z
+// Generated: 2026-06-13T09:04:57.246Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

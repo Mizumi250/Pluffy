@@ -2,14 +2,13 @@
 // ARKZEN GENERATED SCREEN — broadcast-test/dashboard
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ChannelCard } from './components/ChannelCard'
 import { StatusDot } from './components/StatusDot'
 import { APP_KEY, BACKEND_URL, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
-import { val } from './components/utils'
 import type { NativeMessage, WsStatus } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

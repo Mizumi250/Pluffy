@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SCREEN — body-endpoint-handler/index
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { InjectedBadge } from './components/InjectedBadge'
 import { NativeBadge } from './components/NativeBadge'
 import { SectionCard } from './components/SectionCard'
 import { apiFetch, sourceColor } from './components/utils'
 import type { ProbeResult, Stats } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

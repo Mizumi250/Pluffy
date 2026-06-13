@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCREEN — queue-flow/join
 // ============================================================
 
-import React from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/queue-flow-app'
 import { SpinRing } from './components/SpinRing'
 import { StatCard } from './components/StatCard'
@@ -11,7 +11,7 @@ import { TicketRowNative } from './components/TicketRowNative'
 import { BACKEND_URL } from './components/constants'
 import { fmtWait } from './components/utils'
 import type { MyTicketData } from './components/types'
-import { ScrollView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
