@@ -1,8 +1,21 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENT — StatusDot
-// Re-exported from _components.tsx
+// Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-01T05:05:51.769Z
+// Generated: 2026-06-13T03:59:28.820Z
 // ============================================================
 
-export { StatusDot } from './_components'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+
+export const StatusDot = ({ status }: { status: string }) => (
+  <span style={{
+    display: 'inline-block',
+    width: 8, height: 8,
+    borderRadius: '50%',
+    background: status === 'sent' ? '#22c55e' : '#ef4444',
+    marginRight: 6,
+    verticalAlign: 'middle',
+  }} />
+)

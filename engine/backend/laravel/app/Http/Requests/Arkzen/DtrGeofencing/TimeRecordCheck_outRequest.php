@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — TimeRecordCheck_outRequest
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:29:34.683503Z
+// Generated: 2026-06-13T03:59:29.825602Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\DtrGeofencing;

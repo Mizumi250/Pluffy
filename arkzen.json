@@ -336,7 +336,7 @@
       "auth": false
     }
   ],
-  "activeStack": "react-vite",
+  "activeStack": "astro",
   "activeAppStack": "expo",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",

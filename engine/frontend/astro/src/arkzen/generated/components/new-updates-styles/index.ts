@@ -1,7 +1,9 @@
 // ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — new-updates-styles
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-01T05:05:55.768Z
+// Generated: 2026-06-13T03:59:30.915Z
 // ============================================================
 
-export * from './_components'
+export { FeatureCard } from './FeatureCard'
+export { HeroSection } from './HeroSection'
+export { Navbar } from './Navbar'

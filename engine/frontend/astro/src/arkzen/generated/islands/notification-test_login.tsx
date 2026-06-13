@@ -3,27 +3,12 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-01T05:05:55.831Z
+// Generated: 2026-06-13T03:59:30.965Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-
-// Utilities, types, and helper functions from @arkzen:components
-if (typeof window !== 'undefined') {
-  setActiveTatemono('notification-test')
-}
-
-// ─────────────────────────────────────────────
-// REVERB CONFIG — read from env, same as useWebSocket.ts
-// ─────────────────────────────────────────────
-const REVERB_HOST   = import.meta.env.PUBLIC_REVERB_HOST    ?? 'localhost'
-const REVERB_PORT   = import.meta.env.PUBLIC_REVERB_PORT    ?? '8080'
-const REVERB_SCHEME = import.meta.env.PUBLIC_REVERB_SCHEME  ?? 'ws'
-const APP_KEY       = import.meta.env.PUBLIC_REVERB_APP_KEY ?? 'arkzen-key'
 
 // Page component code (from @arkzen:page:login)
 const LoginPage = () => {

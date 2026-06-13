@@ -17,7 +17,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
-import { useAuthStore, useAuthStoreHydrated } from '../stores/authStore'
+import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '../stores/authStore'
 import { ToastProvider } from '../components/Toast'
 
 export interface GuestLayoutProps {
@@ -55,6 +55,10 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
     if (!hydrated) return
     if (checked.current) return
     checked.current = true
+
+    const segments = pathname.split('/').filter(Boolean)
+    const tatemono = segments[0] ?? ''
+    if (tatemono) setActiveTatemono(tatemono)
 
     if (!shouldGuard) { setChecking(false); setReady(true); return }
 

@@ -307,31 +307,39 @@ function resolveImports(
 
 // ─── Component files (identical to vite-router) ──────────────────────────────
 
-// Strips template literal content from source so the component-name extractor
-// doesn't match declarations inside backtick strings (e.g. code-demo strings).
+// Replaces template literal STATIC content char-for-char with whitespace so
+// character indices are preserved for splitComponentDeclarations slicing.
+// ${...} expression content is kept verbatim so identifiers inside them
+// remain visible to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
 function stripTemplateLiterals(src: string): string {
   let result = ''
   let i = 0
   while (i < src.length) {
     if (src[i] === '`') {
-      // Enter template literal — skip until matching unescaped backtick
+      result += ' ' // placeholder for opening backtick
       i++ // skip opening backtick
       while (i < src.length) {
-        if (src[i] === '\\') { i += 2; continue }  // escaped char
-        if (src[i] === '`') { i++; break }           // closing backtick
-        // Skip ${...} expressions (shallow — handles 1 level of nesting)
+        if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char — 2 spaces
+        if (src[i] === '`') { result += ' '; i++; break }             // closing backtick
+        // Preserve ${...} expression content verbatim so identifiers stay visible
         if (src[i] === '$' && src[i + 1] === '{') {
-          let depth = 1; i += 2
+          result += '  ' // placeholders for '${'
+          i += 2
+          let depth = 1
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') depth--
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break }
+            }
+            result += src[i]  // emit verbatim so identifiers remain visible
             i++
           }
           continue
         }
+        result += ' ' // replace static text char-for-char with whitespace
         i++
       }
-      result += ' ' // replace entire literal with whitespace so line numbers stay roughly intact
     } else {
       result += src[i]
       i++
@@ -340,10 +348,175 @@ function stripTemplateLiterals(src: string): string {
   return result
 }
 
-function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
-  if (tatemono.components.length === 0) return
+// ─── Component / declaration name extractors (ported from vite-router) ───────
 
+function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
+    }
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const matches = stripped.match(/^(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)\s*[=:]/gm) || []
+    for (const match of matches) {
+      const name = match.match(/const\s+([A-Z][A-Z0-9_]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractCustomHookNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const fnMatches = stripped.match(/(?:export\s+)?function\s+(use[A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const constMatches = stripped.match(/(?:export\s+)?const\s+(use[A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const typeMatches = stripped.match(/(?:export\s+)?type\s+([A-Z][A-Za-z0-9_$]*)\s*[=<{]/g) || []
+    for (const match of typeMatches) {
+      const name = match.match(/type\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+    const ifaceMatches = stripped.match(/(?:export\s+)?interface\s+([A-Z][A-Za-z0-9_$]*)\s*[{<]/g) || []
+    for (const match of ifaceMatches) {
+      const name = match.match(/interface\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+      if (name) names.add(name)
+    }
+  }
+  return names
+}
+
+function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set<string>()
+  const componentNames = extractComponentNames(tatemono)
+  for (const component of tatemono.components) {
+    const stripped = stripTemplateLiterals(component.raw)
+    let src = stripped
+    for (const compName of componentNames) {
+      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+      src = src.replace(
+        new RegExp(
+          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
+          'g'
+        ),
+        ''
+      )
+    }
+    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
+    for (const match of constMatches) {
+      const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
+    for (const match of fnMatches) {
+      const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
+      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+    }
+  }
+  return names
+}
+
+function findReferencedNames(strippedSource: string, names: Set<string>): string[] {
+  const found: string[] = []
+  for (const name of names) {
+    const escaped = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    if (new RegExp(`[^\\w$]${escaped}\\b`).test(' ' + strippedSource)) {
+      found.push(name)
+    }
+  }
+  return found
+}
+
+function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<string, string> {
+  const out = new Map<string, string>()
+  if (names.size === 0) return out
+
+  const scanSource = stripTemplateLiterals(rawSource)
+  const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
+  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+
+  const starts: { index: number; name: string }[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(scanSource)) !== null) {
+    starts.push({ index: m.index, name: m[2] })
+  }
+  if (starts.length === 0) return out
+
+  for (let i = 0; i < starts.length; i++) {
+    const { index, name } = starts[i]
+    let chunkStart = index
+    const before = scanSource.slice(0, index)
+    const lines = before.split('\n')
+    let li = lines.length - 1
+    let consumed = 0
+    while (li >= 0) {
+      const line = lines[li].trim()
+      if (line === '' || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
+        consumed += lines[li].length + 1
+        li--
+      } else {
+        break
+      }
+    }
+    if (consumed > 0) chunkStart = Math.max(0, index - consumed)
+    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : rawSource.length
+    out.set(name, rawSource.slice(chunkStart, chunkEnd).trim())
+  }
+  return out
+}
+
+function ensureExported(declaration: string, name: string, kinds: string): string {
+  const escapedName = name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  return declaration.replace(
+    new RegExp(`^(\\s*)(export\\s+)?(${kinds})(\\s+${escapedName}\\b)`, 'm'),
+    (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
+  )
+}
+
+// ─── Individual component files — real per-component .tsx files ──────────────
+
+function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
   const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
+
+  if (tatemono.components.length === 0) {
+    if (fs.existsSync(componentsDir)) {
+      fs.rmSync(componentsDir, { recursive: true })
+      console.log(`[Arkzen Astro Router] 🧹 Removed stale components/${tatemono.meta.name} (no @arkzen:components)`)
+    }
+    return
+  }
+
   ensureDir(componentsDir)
 
   const rawSources = tatemono.components.map(c => normalizeForAstro(c.raw.trim()))
@@ -352,78 +525,234 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
     extra: adapterImports.join('\n') || undefined,
   })
 
-  const content = `// ============================================================
-// ARKZEN GENERATED SHARED UTILITIES — ${tatemono.meta.name}
-// React island components — rendered with client:load in .astro pages
+  const stylesByComponent = new Map<string, string>()
+  for (const style of tatemono.styles.filter((s): s is typeof s & { name: string } => !!s.name)) {
+    stylesByComponent.set(style.name, style.name)
+  }
+
+  const extractedComponents = extractComponentNames(tatemono)
+  const sharedConstants     = extractSharedConstantNames(tatemono)
+  const customHooks         = extractCustomHookNames(tatemono)
+  const sharedTypes         = extractSharedTypeNames(tatemono)
+  const utilityFunctions    = extractUtilityFunctionNames(tatemono)
+  const allDeclaredNames = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
+
+  const declarationsByName = new Map<string, string>()
+  for (const stripped of strippedSources) {
+    for (const [name, code] of splitComponentDeclarations(stripped, allDeclaredNames)) {
+      declarationsByName.set(name, code)
+    }
+  }
+
+  // ── Shared constants file (components/{tat}/constants.tsx) ───────────────
+  if (sharedConstants.size > 0) {
+    const constChunks = [...sharedConstants]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => ensureExported(chunk, name, 'const'))
+
+    if (constChunks.length > 0) {
+      const constantsContent = `// ============================================================
+// ARKZEN GENERATED SHARED CONSTANTS — ${tatemono.meta.name}
+// Source: @arkzen:components (${tatemono.meta.name})
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
 ${canonicalBlock}
 
-${strippedSources.join('\n\n')}
+${constChunks.join('\n\n')}
 `
-  fs.writeFileSync(path.join(componentsDir, '_components.tsx'), content, 'utf-8')
-  console.log(`[Arkzen Astro Router] ✓ Utilities: _components.tsx`)
-
-  const stylesByComponent = new Map<string, string>()
-  for (const style of tatemono.styles.filter(s => s.name)) {
-    stylesByComponent.set(style.name, style.name)
-  }
-
-  // Extract PascalCase component names — skip types, ALL_CAPS constants, and
-  // anything inside template literals (e.g. code-demo strings in the tatemono).
-  const extractedComponents = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const componentMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of componentMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) extractedComponents.add(name)
+      fs.writeFileSync(path.join(componentsDir, 'constants.tsx'), constantsContent, 'utf-8')
+      console.log(`[Arkzen Astro Router] ✓ Shared constants: constants.tsx`)
+    }
+  } else {
+    for (const stale of ['constants.tsx', 'constants.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) fs.unlinkSync(stalePath)
     }
   }
 
-  for (const compName of extractedComponents) {
-    const fileName = `${compName}.tsx`
-    const filePath = path.join(componentsDir, fileName)
-    const cssImport = stylesByComponent.has(compName)
-      ? `import styles from '../../styles/${compName}.module.css'\n`
-      : ''
-    const fileContent = `// ============================================================
-// ARKZEN GENERATED COMPONENT — ${compName}
-// Re-exported from _components.tsx
+  // ── Custom hooks file (components/{tat}/hooks.tsx) ────────────────────────
+  if (customHooks.size > 0) {
+    const hookChunks = [...customHooks]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => ensureExported(chunk, name, 'const|function'))
+
+    if (hookChunks.length > 0) {
+      const hooksContent = `// ============================================================
+// ARKZEN GENERATED HOOKS — ${tatemono.meta.name}
+// Source: @arkzen:components (${tatemono.meta.name})
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${cssImport}export { ${compName} } from './_components'
+${canonicalBlock}
+
+${hookChunks.join('\n\n')}
 `
-    fs.writeFileSync(filePath, fileContent, 'utf-8')
+      fs.writeFileSync(path.join(componentsDir, 'hooks.tsx'), hooksContent, 'utf-8')
+      console.log(`[Arkzen Astro Router] ✓ Custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
+    }
+  } else {
+    for (const stale of ['hooks.tsx', 'hooks.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) fs.unlinkSync(stalePath)
+    }
+  }
+
+  // ── Utility functions file (components/{tat}/utils.tsx) ───────────────────
+  if (utilityFunctions.size > 0) {
+    const utilChunks = [...utilityFunctions]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => ensureExported(chunk, name, 'const|function'))
+
+    if (utilChunks.length > 0) {
+      const utilsContent = `// ============================================================
+// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${utilChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), utilsContent, 'utf-8')
+      console.log(`[Arkzen Astro Router] ✓ Utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
+    }
+  } else {
+    for (const stale of ['utils.tsx', 'utils.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) fs.unlinkSync(stalePath)
+    }
+  }
+
+  // ── Shared types file (components/{tat}/types.ts) ─────────────────────────
+  if (sharedTypes.size > 0) {
+    const typeChunks = [...sharedTypes]
+      .map(name => ({ name, chunk: declarationsByName.get(name) }))
+      .filter((c): c is { name: string; chunk: string } => !!c.chunk)
+      .map(({ name, chunk }) => ensureExported(chunk, name, 'type|interface'))
+
+    if (typeChunks.length > 0) {
+      const typesContent = `// ============================================================
+// ARKZEN GENERATED TYPES — ${tatemono.meta.name}
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${typeChunks.join('\n\n')}
+`
+      fs.writeFileSync(path.join(componentsDir, 'types.ts'), typesContent, 'utf-8')
+      console.log(`[Arkzen Astro Router] ✓ Shared types: types.ts (${[...sharedTypes].join(', ')})`)
+    }
+  } else {
+    const typesPath = path.join(componentsDir, 'types.ts')
+    if (fs.existsSync(typesPath)) fs.unlinkSync(typesPath)
+  }
+
+  // ── One real file per component (components/{tat}/{Name}.tsx) ────────────
+  for (const compName of extractedComponents) {
+    const declaration = declarationsByName.get(compName)
+    if (!declaration) {
+      console.log(`[Arkzen Astro Router] ⚠ Could not isolate declaration for ${compName}, skipping file`)
+      continue
+    }
+
+    const fileName = `${compName}.tsx`
+    const filePath = path.join(componentsDir, fileName)
+
+    const cssImport = stylesByComponent.has(compName)
+      ? `import styles from '../../styles/${compName}.module.css'\n`
+      : ''
+
+    const exportedDeclaration = ensureExported(declaration, compName, 'const|function')
+
+    const referencedConstants = findReferencedNames(declaration, sharedConstants)
+    const constantsImport = referencedConstants.length > 0
+      ? `import { ${referencedConstants.sort().join(', ')} } from './constants'\n`
+      : ''
+
+    const referencedHooks = findReferencedNames(declaration, customHooks)
+    const hooksImport = referencedHooks.length > 0
+      ? `import { ${referencedHooks.sort().join(', ')} } from './hooks'\n`
+      : ''
+
+    const referencedTypes = findReferencedNames(declaration, sharedTypes)
+    const typesImport = referencedTypes.length > 0
+      ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
+      : ''
+
+    const otherComponents = new Set(extractedComponents)
+    otherComponents.delete(compName)
+    const referencedComponents = findReferencedNames(declaration, otherComponents)
+    const siblingComponentImports = referencedComponents
+      .sort()
+      .map(name => `import { ${name} } from './${name}'`)
+      .join('\n')
+    const siblingImportBlock = siblingComponentImports ? `${siblingComponentImports}\n` : ''
+
+    const referencedUtils = findReferencedNames(declaration, utilityFunctions)
+    const utilsImport = referencedUtils.length > 0
+      ? `import { ${referencedUtils.sort().join(', ')} } from './utils'\n`
+      : ''
+
+    const content = `// ============================================================
+// ARKZEN GENERATED COMPONENT — ${compName}
+// Source: @arkzen:components (${tatemono.meta.name})
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+${cssImport}${constantsImport}${hooksImport}${utilsImport}${typesImport}${siblingImportBlock}
+${exportedDeclaration}
+`
+    fs.writeFileSync(filePath, content, 'utf-8')
     console.log(`[Arkzen Astro Router] ✓ Component: ${fileName}`)
   }
 
-  // Clean stale component files
+  // Clean up stale files: old _components.tsx, and any per-component files
+  // for components that no longer exist.
   try {
     const files = fs.readdirSync(componentsDir)
     for (const file of files) {
-      if (file.endsWith('.tsx') && !file.startsWith('_') && !extractedComponents.has(file.replace('.tsx', ''))) {
+      const base = file.replace(/\.(tsx|ts)$/, '')
+      if (file === '_components.tsx') {
         fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen Astro Router] 🧹 Removed stale _components.tsx`)
+        continue
+      }
+      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx','index.ts'].includes(file)) continue
+      if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
+        fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen Astro Router] 🧹 Removed stale component: ${file}`)
       }
     }
-  } catch (e) { /* ignore */ }
+  } catch (e) {
+    // ignore
+  }
 }
 
 function generateComponentsIndex(tatemono: ParsedTatemono): void {
+  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
   if (tatemono.components.length === 0) return
 
-  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
+  const extractedComponents = extractComponentNames(tatemono)
+  const exportLines = [...extractedComponents].sort().map(name => `export { ${name} } from './${name}'`)
+
   const content = `// ============================================================
 // ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-export * from './_components'
+${exportLines.join('\n')}
 `
   fs.writeFileSync(path.join(componentsDir, 'index.ts'), content, 'utf-8')
   console.log(`[Arkzen Astro Router] ✓ Components index: index.ts`)
@@ -441,18 +770,13 @@ function generateIslandFile(
   const isGuestOnly   = page.layout === 'guest' &&
     (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
 
-  const allSources = [
-    ...tatemono.components.map(c => normalizeForAstro(c.raw.trim())),
-    normalizeForAstro(page.raw.trim()),
-  ]
+  const pageSource = normalizeForAstro(page.raw.trim())
 
   const framerNeeded = new Set(['motion'])
   const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
-  for (const src of allSources) {
-    let m: RegExpMatchArray | null
-    while ((m = framerRe.exec(src)) !== null) {
-      m[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
-    }
+  let fm: RegExpMatchArray | null
+  while ((fm = framerRe.exec(pageSource)) !== null) {
+    fm[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
   }
 
   const animImportLine = animationFnName
@@ -461,10 +785,53 @@ function generateIslandFile(
 
   const layoutImport = getLayoutImport(page.layout, tatemono.meta)
   const layoutComp   = getLayoutComponent(page.layout)
-  const adapterImportLines = getAstroAdapterImportLines(allSources.join('\n'))
-  const extraLines   = [layoutImport, animImportLine, ...adapterImportLines].filter(Boolean).join('\n')
+  const adapterImportLines = getAstroAdapterImportLines(pageSource)
 
-  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
+  // Resolve which declarations from @arkzen:components this page actually uses,
+  // and import them from the per-component generated files rather than inlining.
+  const extractedComponents = extractComponentNames(tatemono)
+  const sharedConstants     = extractSharedConstantNames(tatemono)
+  const customHooks         = extractCustomHookNames(tatemono)
+  const sharedTypes         = extractSharedTypeNames(tatemono)
+  const utilityFunctions    = extractUtilityFunctionNames(tatemono)
+
+  const componentImportLines = [...extractedComponents]
+    .filter(name => findReferencedNames(pageSource, new Set([name])).length > 0)
+    .sort()
+    .map(name => `import { ${name} } from '@/arkzen/generated/components/${tatemono.meta.name}/${name}'`)
+
+  const referencedConstants = findReferencedNames(pageSource, sharedConstants)
+  const constantsImportLine = referencedConstants.length > 0
+    ? `import { ${referencedConstants.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/constants'`
+    : ''
+
+  const referencedHooks = findReferencedNames(pageSource, customHooks)
+  const hooksImportLine = referencedHooks.length > 0
+    ? `import { ${referencedHooks.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/hooks'`
+    : ''
+
+  const referencedTypes = findReferencedNames(pageSource, sharedTypes)
+  const typesImportLine = referencedTypes.length > 0
+    ? `import type { ${referencedTypes.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/types'`
+    : ''
+
+  const referencedUtils = findReferencedNames(pageSource, utilityFunctions)
+  const utilsImportLine = referencedUtils.length > 0
+    ? `import { ${referencedUtils.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/utils'`
+    : ''
+
+  const extraLines = [
+    layoutImport,
+    animImportLine,
+    ...adapterImportLines,
+    ...componentImportLines,
+    constantsImportLine,
+    hooksImportLine,
+    utilsImportLine,
+    typesImportLine,
+  ].filter(Boolean).join('\n')
+
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports([pageSource], {
     reactHooks:  ['useRef', 'useEffect'],
     framerNamed: [...framerNeeded],
     extra:       extraLines,
@@ -477,8 +844,7 @@ function generateIslandFile(
     `from '../$1'`
   )
 
-  const strippedComponentCode = strippedSources.slice(0, tatemono.components.length).join('\n\n')
-  const strippedPageCode      = (strippedSources[tatemono.components.length] ?? '')
+  const strippedPageCode = strippedSources[0]
     .replace(
       /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
       `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
@@ -493,9 +859,6 @@ function generateIslandFile(
 // ============================================================
 
 ${canonicalBlock}
-
-// Utilities, types, and helper functions from @arkzen:components
-${strippedComponentCode}
 
 // Page component code (from @arkzen:page:${page.name})
 ${strippedPageCode}
