@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PlayReset [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:26.102Z
+// Generated: 2026-06-13T13:54:20.042Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

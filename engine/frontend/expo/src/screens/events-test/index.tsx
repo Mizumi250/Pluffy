@@ -6,13 +6,14 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { BACKEND_URL } from './components/constants'
 import { eventColor, statusStyle } from './components/utils'
 import type { EventLogEntry } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { Flame, RefreshCw, Trash2, Zap } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -220,6 +221,9 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_EventsTest_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('events-test')
   const router = useRouter()
   return (

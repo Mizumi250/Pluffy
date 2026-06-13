@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PrimaryButton [Expo]
 // Source: @arkzen:native:components (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:29.160Z
+// Generated: 2026-06-13T13:54:23.101Z
 // ============================================================
 
 import React, { useState } from 'react'

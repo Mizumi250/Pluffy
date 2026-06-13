@@ -1,9 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.1
-//
-// v4.1 – Automatic import of native libraries referenced in page blocks.
-//        Adds missing imports for ImagePicker, DocumentPicker, FileSystem,
-//        Sharing, expo-image, etc. based on usage in the page source.
+// ARKZEN ENGINE — EXPO ROUTER v4.0
 //
 // v4.0 – PER-FILE NATIVE COMPONENT GENERATION.
 //        generateIndividualNativeComponentFiles(): splits @arkzen:native:components
@@ -42,15 +38,6 @@ const APP_DIR            = path.resolve(process.cwd(), 'app')
 const GENERATED_DIR      = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
 const ROUTES_FILE        = path.join(GENERATED_DIR, 'routes.ts')
 const EXPO_ASSETS_DIR    = path.resolve(process.cwd(), 'assets')
-
-// Native library imports that may be referenced in page blocks
-const NATIVE_LIB_IMPORTS: Record<string, string> = {
-  ImagePicker:     "import * as ImagePicker from 'expo-image-picker'",
-  DocumentPicker:  "import * as DocumentPicker from 'expo-document-picker'",
-  FileSystem:      "import * as FileSystem from 'expo-file-system/legacy'",
-  Sharing:         "import * as Sharing from 'expo-sharing'",
-  Image:           "import { Image } from 'expo-image'",
-};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -315,6 +302,105 @@ function extractNativeSharedConstantNames(tatemono: ParsedTatemono): Set<string>
   return names
 }
 
+// Top-level destructured const declarations, e.g.:
+//   const { width: SW, height: SH } = Dimensions.get('window')
+// These bind multiple names from a single statement and don't fit the
+// `const NAME = ...` pattern used by extractNativeSharedConstantNames, so
+// splitNativeComponentDeclarations can't isolate them — they'd otherwise be
+// silently absorbed into whichever chunk happens to follow them in source
+// order. We extract the whole statement verbatim and surface every bound
+// name so per-component import resolution (./constants) can pick them up.
+function extractNativeDestructuredConstants(tatemono: ParsedTatemono): { names: Set<string>; statements: string[] } {
+  const names = new Set<string>()
+  const statements: string[] = []
+  const seen = new Set<string>()
+
+  for (const component of (tatemono.nativeComponents ?? [])) {
+    const stripped = stripTemplateLiterals(component.raw)
+    const lines = stripped.split('\n')
+    const re = /^(?:export\s+)?const\s*\{([^}]*)\}\s*=\s*[^;\n]+;?\s*$/
+
+    lines.forEach((line, idx) => {
+      const m = line.match(re)
+      if (!m) return
+      if (seen.has(line.trim())) return
+      seen.add(line.trim())
+
+      const bindings = m[1].split(',').map(s => s.trim()).filter(Boolean)
+      for (const binding of bindings) {
+        // handle `width: SW` (rename) and plain `SW` shorthand
+        const bound = binding.includes(':') ? binding.split(':')[1].trim() : binding
+        const cleanName = bound.split('=')[0].trim() // drop default values
+        if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cleanName)) names.add(cleanName)
+      }
+
+      statements.push(line.trim())
+    })
+  }
+
+  return { names, statements }
+}
+
+// Namespace imports declared in @arkzen:native:components blocks, e.g.:
+//   import * as DocumentPicker from 'expo-document-picker'
+//   import * as ImagePicker    from 'expo-image-picker'
+//   import * as FileSystem     from 'expo-file-system/legacy'
+//   import * as Sharing        from 'expo-sharing'
+// Pre-v4.0, all generated code shared one scope so @arkzen:native:page blocks
+// could freely call DocumentPicker.getDocumentAsync(...) etc. without their
+// own import. Per-file generation split components out, but page blocks
+// still reference these namespaces — so generateScreenFile must detect such
+// references and inject the matching `import * as X from 'mod'` itself.
+function extractNativeNamespaceImports(tatemono: ParsedTatemono): Map<string, string> {
+  const out = new Map<string, string>() // namespace identifier -> module specifier
+  const re = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/m
+
+  for (const component of (tatemono.nativeComponents ?? [])) {
+    const stripped = stripTemplateLiterals(component.raw)
+    for (const rawLine of stripped.split('\n')) {
+      const line = rawLine.trim()
+      if (!line.startsWith('import ')) continue
+      const m = line.match(re)
+      if (m) out.set(m[1], m[2])
+    }
+  }
+  return out
+}
+
+// Named imports declared in @arkzen:native:components blocks, e.g.:
+//   import { Mail, Send, XCircle } from 'lucide-react-native'
+// Same root cause as namespace imports above: page blocks may reference
+// names (icons, helpers, etc.) that are only imported in the components
+// block. extractNativeComponentNames/extractNative*Names only track local
+// declarations (const/function/type), not re-exported third-party imports —
+// so a name like `Mail` from lucide-react-native falls through every
+// existing check. This maps module -> Set<importedName> so generateScreenFile
+// can detect references and inject `import { Mail } from 'lucide-react-native'`.
+function extractNativeNamedImportsByModule(tatemono: ParsedTatemono): Map<string, Set<string>> {
+  const out = new Map<string, Set<string>>() // module specifier -> named imports
+  const namedImportRe = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const mixedImportRe = /^import\s+[A-Za-z_$][A-Za-z0-9_$]*\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+
+  for (const component of (tatemono.nativeComponents ?? [])) {
+    const flattened = flattenMultilineImports(stripTemplateLiterals(component.raw))
+    for (const rawLine of flattened.split('\n')) {
+      const line = rawLine.trim()
+      if (!line.startsWith('import ')) continue
+
+      let m = line.match(mixedImportRe) ?? line.match(namedImportRe)
+      if (!m) continue
+
+      const [, namedStr, mod] = m
+      if (!out.has(mod)) out.set(mod, new Set())
+      const entry = out.get(mod)!
+      namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+        if (n !== 'React') entry.add(n.split(/\s+as\s+/)[0].trim())
+      })
+    }
+  }
+  return out
+}
+
 function extractNativeCustomHookNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
   for (const component of (tatemono.nativeComponents ?? [])) {
@@ -473,7 +559,7 @@ function ensureStatusBarImport(canonicalBlock: string): string {
 // AuthStore exports a page block may reference without importing them itself
 // (relied on the shared inline scope before per-file generation split the
 // page block out from @arkzen:native:components:shared).
-const AUTH_STORE_EXPORTS = new Set(['useAuthStore', 'useAuthStoreHydrated'])
+const AUTH_STORE_EXPORTS = new Set(['useAuthStore', 'useAuthStoreHydrated', 'arkzenFetch'])
 
 function ensureAuthStoreImports(canonicalBlock: string, extraNamed: string[]): string {
   const authStorePath = `'../../../arkzen/core/stores/authStore'`
@@ -550,8 +636,30 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
     }
   }
 
+  // Top-level destructured consts (e.g. `const { width: SW, height: SH } =
+  // Dimensions.get('window')`) bind names that other components reference,
+  // but aren't captured by the chunk-splitting above and would otherwise be
+  // silently absorbed into whichever chunk happens to follow them in source
+  // order. Extract them separately, register their bound names as shared
+  // constants, and strip any stray copies that leaked into other chunks.
+  const { names: destructuredNames, statements: destructuredStatements } = extractNativeDestructuredConstants(tatemono)
+  for (const name of destructuredNames) sharedConstants.add(name)
+  if (destructuredStatements.length > 0) {
+    for (const [name, code] of declarationsByName) {
+      let cleaned = code
+      for (const stmt of destructuredStatements) {
+        cleaned = cleaned.split(stmt).join('').trim()
+      }
+      if (cleaned !== code) declarationsByName.set(name, cleaned)
+    }
+  }
+
   // ── Shared constants file ──────────────────────────────────────────────────
-  if (sharedConstants.size > 0) {
+  const destructuredChunksFixed = destructuredStatements.map(stmt =>
+    stmt.startsWith('export ') ? stmt : `export ${stmt}`
+  )
+
+  if (sharedConstants.size > 0 || destructuredChunksFixed.length > 0) {
     const constChunks = [...sharedConstants]
       .map(name => ({ name, chunk: declarationsByName.get(name) }))
       .filter((c): c is { name: string; chunk: string } => !!c.chunk)
@@ -562,7 +670,7 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
           (full, indent, exportKw, kw, rest) => exportKw ? full : `${indent}export ${kw}${rest}`
         )
       })
-    if (constChunks.length > 0) {
+    if (constChunks.length > 0 || destructuredChunksFixed.length > 0) {
       // constants.ts lives in components/ — one level deeper than the screen dir
       // where tatemono authors write their require() paths. Prepend one extra ../
       // to all relative require() calls so asset paths resolve correctly.
@@ -571,6 +679,8 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
         s.replace(/require\(['"](\.\.[\/\\])/g, "require('../$1")
       const constChunksFixed      = constChunks.map(fixRequireDepth)
       const canonicalBlockFixed   = fixRequireDepth(normalisedCanonicalBlock)
+
+      const allConstChunks = [...constChunksFixed, ...destructuredChunksFixed]
 
       const content = `// ============================================================
 // ARKZEN GENERATED NATIVE CONSTANTS — ${tatemono.meta.name} [Expo]
@@ -581,7 +691,7 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
 
 ${canonicalBlockFixed}
 
-${constChunksFixed.join('\n\n')}
+${allConstChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'constants.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native shared constants: constants.tsx`)
@@ -795,7 +905,6 @@ ${exportedDeclaration}
 }
 
 // ─── Screen file generator ────────────────────────────────────────────────────
-// v4.1: Automatically adds missing imports for native libraries (expo-image-picker, etc.)
 // v4.0: no longer inlines nativeComponents — imports each component individually.
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
@@ -923,28 +1032,6 @@ export default ${wrapperName}
     reactHooks: referencedHookCalls,
   })
 
-  // ── NEW v4.1: Detect missing native library imports ────────────────────────
-  const libraryRefs = new Set<string>()
-  for (const lib of Object.keys(NATIVE_LIB_IMPORTS)) {
-    // Match "LibraryName." (e.g. ImagePicker.request)
-    const regex = new RegExp(`\\b${lib}\\.`, 'g')
-    if (regex.test(pageStrippedForRefs)) {
-      libraryRefs.add(lib)
-    }
-  }
-
-  let additionalImports = ''
-  for (const lib of libraryRefs) {
-    const importStmt = NATIVE_LIB_IMPORTS[lib]
-    if (importStmt && !canonicalBlock.includes(importStmt)) {
-      additionalImports += importStmt + '\n'
-    }
-  }
-  if (additionalImports) {
-    canonicalBlock = additionalImports + canonicalBlock
-  }
-  // ── End of library detection ──────────────────────────────────────────────
-
   // ── Merge engine-required imports ─────────────────────────────────────────
   const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
   canonicalBlock = ensureReactNativeImport(canonicalBlock, Array.from(new Set(['ScrollView', ...referencedRNCore])))
@@ -952,6 +1039,38 @@ export default ${wrapperName}
   canonicalBlock = ensureStatusBarImport(canonicalBlock)
   const referencedAuthStoreExports = findReferencedNames(pageStrippedForRefs, AUTH_STORE_EXPORTS)
   canonicalBlock = ensureAuthStoreImports(canonicalBlock, referencedAuthStoreExports)
+
+  // Namespace imports (DocumentPicker, ImagePicker, FileSystem, Sharing, ...)
+  // declared only in @arkzen:native:components but referenced by this page.
+  const namespaceImports = extractNativeNamespaceImports(tatemono)
+  const referencedNamespaces = findReferencedNames(pageStrippedForRefs, new Set(namespaceImports.keys()))
+  for (const ns of referencedNamespaces) {
+    const mod = namespaceImports.get(ns)!
+    if (!new RegExp(`import\\s+\\*\\s+as\\s+${ns}\\s+from\\s+['"]${mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}['"]`).test(canonicalBlock)) {
+      canonicalBlock += `\nimport * as ${ns} from '${mod}'`
+    }
+  }
+
+  // Named imports (e.g. lucide-react-native icons) declared only in
+  // @arkzen:native:components but referenced by this page.
+  const namedImportsByModule = extractNativeNamedImportsByModule(tatemono)
+  for (const [mod, names] of namedImportsByModule) {
+    const referencedNamed = findReferencedNames(pageStrippedForRefs, names)
+    if (referencedNamed.length === 0) continue
+
+    const escapedMod = mod.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const existingImportRe = new RegExp(`^import\\s+\\{([^}]*)\\}\\s+from\\s+['"]${escapedMod}['"]\\s*;?`, 'm')
+    const match = canonicalBlock.match(existingImportRe)
+
+    if (match) {
+      const existingNamed = match[1].split(',').map(s => s.trim()).filter(Boolean)
+      const merged = Array.from(new Set([...existingNamed, ...referencedNamed]))
+      canonicalBlock = canonicalBlock.replace(existingImportRe, `import { ${merged.sort().join(', ')} } from '${mod}'`)
+    } else {
+      canonicalBlock += `\nimport { ${referencedNamed.sort().join(', ')} } from '${mod}'`
+    }
+  }
+
   if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
     canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`
   }
@@ -992,6 +1111,9 @@ ${componentDefinition}
 
 // Engine wrapper
 export function ${wrapperName}() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
@@ -1012,6 +1134,38 @@ export function ${wrapperName}() {
 }
 
 export default ${wrapperName}
+`
+}
+
+// ─── Root redirect generator ───────────────────────────────────────────────────
+
+function resolveExpoRootRedirectTarget(tatemono: ParsedTatemono): ArkzenPage | null {
+  const hasIndex = tatemono.nativePages.some(p => p.name === 'index')
+  if (hasIndex) return null
+
+  const firstGuest = tatemono.nativePages.find(p => p.layout === 'guest')
+  const firstAuth  = tatemono.nativePages.find(p => p.layout === 'auth')
+  const firstPage  = tatemono.nativePages[0]
+
+  const target = tatemono.meta.auth
+    ? (firstGuest ?? firstAuth ?? firstPage)
+    : (firstAuth ?? firstGuest ?? firstPage)
+
+  return target ?? null
+}
+
+function generateExpoRootRedirectFile(tatName: string, destination: string): string {
+  return `// ============================================================
+// ARKZEN EXPO ROUTE — ${tatName}/index (root redirect)
+// Visiting /${tatName} redirects to ${destination}
+// DO NOT EDIT — managed by Arkzen engine
+// ============================================================
+
+import { Redirect } from 'expo-router'
+
+export default function ArkzenRootRedirect() {
+  return <Redirect href="${destination}" />
+}
 `
 }
 
@@ -1079,7 +1233,7 @@ function writeRouteRegistry(routes: ExpoRoute[]): void {
   ).join('\n')
 
   const content = `// ============================================================
-// ARKZEN GENERATED — Expo Route Registry v4.1
+// ARKZEN GENERATED — Expo Route Registry v4.0
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
 
@@ -1319,6 +1473,24 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
 
     newRoutes.push({ tatName, screenName, routePath, layout, auth: tatemono.meta.auth && layout === 'auth' })
     console.log(`[Arkzen Expo Router] ✓ ${routePath} [${layout}]`)
+  }
+
+  // v4.1: root redirect — /${tatName} → first page, if no explicit "index" page exists
+  const rootRedirectTarget = resolveExpoRootRedirectTarget(tatemono)
+  if (rootRedirectTarget) {
+    const destination = `/${tatName}/${rootRedirectTarget.name}`
+    const layout      = rootRedirectTarget.layout ?? 'default'
+
+    writeIfChanged(path.join(appDir, 'index.tsx'), generateExpoRootRedirectFile(tatName, destination))
+
+    newRoutes.push({
+      tatName,
+      screenName: 'index',
+      routePath:  `/${tatName}`,
+      layout,
+      auth: tatemono.meta.auth && layout === 'auth',
+    })
+    console.log(`[Arkzen Expo Router] ✓ /${tatName} → ${destination} [root redirect]`)
   }
 
   // v3.3: error handlers

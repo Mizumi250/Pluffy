@@ -8,13 +8,14 @@ import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
-import { ScrollView, View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { useState } from 'react'
+import { useRouter } from 'expo-router'
+import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:login)
@@ -92,6 +93,9 @@ const LoginScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_NotificationTest_Login() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('notification-test')
   const router = useRouter()
   return (

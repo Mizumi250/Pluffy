@@ -15,13 +15,13 @@ import { WorkerRow } from './components/WorkerRow'
 import { BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
 import { formatPeso } from './components/utils'
-import { ScrollView, View, Text, ActivityIndicator } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, ScrollView, Text, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useEffect, useMemo, useState } from 'react'
+import { Search } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:job-database)
@@ -135,6 +135,9 @@ const WorkersScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_JoPayroll_JobDatabase() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('jo-payroll')
   const router = useRouter()
   return (

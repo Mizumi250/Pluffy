@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — TimelineSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:26.110Z
+// Generated: 2026-06-13T13:54:20.048Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

@@ -6,13 +6,13 @@ import React, { useState } from 'react'
 import { NativeErrorScreen } from './components/NativeErrorScreen'
 import { ResultBanner } from './components/ResultBanner'
 import { BACKEND_URL, NATIVE_ERRORS } from './components/constants'
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useState } from 'react'
+import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -153,6 +153,9 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_ErrorsTest_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('errors-test')
   const router = useRouter()
   return (

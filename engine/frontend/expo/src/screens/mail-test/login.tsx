@@ -7,13 +7,15 @@ import { GuestLayout } from '@/layouts/GuestLayout'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
-import { ScrollView, View, Text, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { useState } from 'react'
+import { useRouter } from 'expo-router'
+import { useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { Mail } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:login)
@@ -97,6 +99,9 @@ const LoginScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_MailTest_Login() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('mail-test')
   const router = useRouter()
   return (

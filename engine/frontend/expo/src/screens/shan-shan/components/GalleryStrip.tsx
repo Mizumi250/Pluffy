@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GalleryStrip [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:32.977Z
+// Generated: 2026-06-13T13:54:26.718Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SCREEN_W } from './constants'
 
 // ─── GALLERY STRIP ────────────────────────────────────────────────────────────
 

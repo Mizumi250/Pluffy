@@ -8,13 +8,12 @@ import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'
 import { apiFetch } from './components/utils'
 import type { PingLog, Result } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, TextInput } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -162,6 +161,9 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_MiddlewareTest_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('middleware-test')
   const router = useRouter()
   return (

@@ -22,13 +22,14 @@ import { StaggerSection } from './components/StaggerSection'
 import { TimelineSection } from './components/TimelineSection'
 import { TransformsSection } from './components/TransformsSection'
 import { NAV_SECTIONS } from './components/constants'
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useCallback, useState } from 'react'
+import { MotiView } from 'moti'
+import { Easing } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -103,6 +104,9 @@ const AnimationLabNativePage = () => {
 
 // Engine wrapper
 export function ArkzenScreen_AnimationLab_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('animation-lab')
   const router = useRouter()
   return (

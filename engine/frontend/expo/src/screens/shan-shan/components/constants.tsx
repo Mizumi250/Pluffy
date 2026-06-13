@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — shan-shan [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:32.951Z
+// Generated: 2026-06-13T13:54:26.697Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -122,3 +122,5 @@ export const NAV_LINKS = [
 ]
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
+
+export const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window')

@@ -9,13 +9,12 @@ import { NativeBadge } from './components/NativeBadge'
 import { SectionCard } from './components/SectionCard'
 import { apiFetch, sourceColor } from './components/utils'
 import type { ProbeResult, Stats } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useCallback, useEffect, useState } from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -377,6 +376,9 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_BodyEndpointHandler_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('body-endpoint-handler')
   const router = useRouter()
   return (

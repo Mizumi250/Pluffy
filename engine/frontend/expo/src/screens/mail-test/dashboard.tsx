@@ -9,13 +9,15 @@ import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { BACKEND_URL } from './components/constants'
 import type { MailLog, MailType } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'expo-router'
+import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
@@ -263,6 +265,9 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_MailTest_Dashboard() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('mail-test')
   const router = useRouter()
   return (

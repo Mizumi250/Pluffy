@@ -9,13 +9,14 @@ import { Field } from './components/Field'
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { RoleBadge } from './components/RoleBadge'
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'expo-router'
+import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
@@ -231,6 +232,9 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_RolesTest_Dashboard() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('roles-test')
   const router = useRouter()
   return (

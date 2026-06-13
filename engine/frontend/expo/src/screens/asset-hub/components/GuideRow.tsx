@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GuideRow [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:26.285Z
+// Generated: 2026-06-13T13:54:20.266Z
 // ============================================================
 
 import React from 'react'

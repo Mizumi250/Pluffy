@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — DemoCard [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:26.848Z
+// Generated: 2026-06-13T13:54:22.529Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

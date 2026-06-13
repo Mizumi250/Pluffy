@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PackageBadge [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:33.567Z
+// Generated: 2026-06-13T13:54:28.963Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

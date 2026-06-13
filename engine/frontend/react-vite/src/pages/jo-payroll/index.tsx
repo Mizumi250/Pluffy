@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Vite]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-13T10:20:29.586Z
+// Generated: 2026-06-13T13:54:25.206Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

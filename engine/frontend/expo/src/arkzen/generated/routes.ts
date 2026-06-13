@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN GENERATED — Expo Route Registry v4.1
+// ARKZEN GENERATED — Expo Route Registry v4.0
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
 
@@ -22,6 +22,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
 // ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
   { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:auth-test:index:/auth-test:guest:false
+  { tatName: 'auth-test', screenName: 'index', routePath: '/auth-test', layout: 'guest', auth: false },
 // ROUTE:body-endpoint-handler:index:/body-endpoint-handler:guest:false
   { tatName: 'body-endpoint-handler', screenName: 'index', routePath: '/body-endpoint-handler', layout: 'guest', auth: false },
 // ROUTE:body-mail-notification:login:/body-mail-notification/login:guest:false
@@ -30,12 +32,16 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'body-mail-notification', screenName: 'register', routePath: '/body-mail-notification/register', layout: 'guest', auth: false },
 // ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:auth:true
   { tatName: 'body-mail-notification', screenName: 'dashboard', routePath: '/body-mail-notification/dashboard', layout: 'auth', auth: true },
+// ROUTE:body-mail-notification:index:/body-mail-notification:guest:false
+  { tatName: 'body-mail-notification', screenName: 'index', routePath: '/body-mail-notification', layout: 'guest', auth: false },
 // ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
   { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
 // ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
   { tatName: 'broadcast-test', screenName: 'register', routePath: '/broadcast-test/register', layout: 'guest', auth: false },
 // ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:auth:true
   { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:broadcast-test:index:/broadcast-test:guest:false
+  { tatName: 'broadcast-test', screenName: 'index', routePath: '/broadcast-test', layout: 'guest', auth: false },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
 // ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
@@ -64,12 +70,16 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'jo-payroll', screenName: 'payslip', routePath: '/jo-payroll/payslip', layout: 'app', auth: false },
 // ROUTE:job-test:dashboard:/job-test/dashboard:default:false
   { tatName: 'job-test', screenName: 'dashboard', routePath: '/job-test/dashboard', layout: 'default', auth: false },
+// ROUTE:job-test:index:/job-test:default:false
+  { tatName: 'job-test', screenName: 'index', routePath: '/job-test', layout: 'default', auth: false },
 // ROUTE:mail-test:login:/mail-test/login:guest:false
   { tatName: 'mail-test', screenName: 'login', routePath: '/mail-test/login', layout: 'guest', auth: false },
 // ROUTE:mail-test:register:/mail-test/register:guest:false
   { tatName: 'mail-test', screenName: 'register', routePath: '/mail-test/register', layout: 'guest', auth: false },
 // ROUTE:mail-test:dashboard:/mail-test/dashboard:auth:true
   { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:mail-test:index:/mail-test:guest:false
+  { tatName: 'mail-test', screenName: 'index', routePath: '/mail-test', layout: 'guest', auth: false },
 // ROUTE:middleware-test:index:/middleware-test:default:false
   { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test', layout: 'default', auth: false },
 // ROUTE:new-updates-styles:index:/new-updates-styles:guest:false
@@ -84,6 +94,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
 // ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
   { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:notification-test:index:/notification-test:guest:false
+  { tatName: 'notification-test', screenName: 'index', routePath: '/notification-test', layout: 'guest', auth: false },
 // ROUTE:portfolio-test:index:/portfolio-test:guest:false
   { tatName: 'portfolio-test', screenName: 'index', routePath: '/portfolio-test', layout: 'guest', auth: false },
 // ROUTE:queue-flow:index:/queue-flow:app:false
@@ -98,12 +110,18 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'roles-test', screenName: 'register', routePath: '/roles-test/register', layout: 'guest', auth: false },
 // ROUTE:roles-test:dashboard:/roles-test/dashboard:auth:true
   { tatName: 'roles-test', screenName: 'dashboard', routePath: '/roles-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:roles-test:index:/roles-test:guest:false
+  { tatName: 'roles-test', screenName: 'index', routePath: '/roles-test', layout: 'guest', auth: false },
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:default:false
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
+// ROUTE:scheduler-test:index:/scheduler-test:default:false
+  { tatName: 'scheduler-test', screenName: 'index', routePath: '/scheduler-test', layout: 'default', auth: false },
 // ROUTE:shan-shan:index:/shan-shan:guest:false
   { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
+// ROUTE:upload-test:index:/upload-test:default:false
+  { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

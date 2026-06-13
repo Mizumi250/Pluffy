@@ -12,13 +12,13 @@ import { PrimaryButton } from './components/PrimaryButton'
 import { FEATURES, ICON_COLORS } from './components/constants'
 import { getIcon } from './components/utils'
 import type { NativeColor } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useState } from 'react'
+import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:features)
@@ -84,6 +84,9 @@ const FeaturesScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_NewUpdatesStyles_Features() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('new-updates-styles')
   const router = useRouter()
   return (

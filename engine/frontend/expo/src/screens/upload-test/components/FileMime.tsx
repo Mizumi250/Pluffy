@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FileMime [Expo]
 // Source: @arkzen:native:components (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:33.150Z
+// Generated: 2026-06-13T13:54:26.862Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
@@ -22,5 +22,3 @@ export const FileMime = ({ mime }: { mime: string }) => {
     : '📁'
   return <Text className="text-xl">{label}</Text>
 }
-
-const { width: SW, height: SH } = Dimensions.get('window')

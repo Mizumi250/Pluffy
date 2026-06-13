@@ -7,13 +7,12 @@ import { Badge } from './components/Badge'
 import { Card } from './components/Card'
 import { GhostButton } from './components/GhostButton'
 import { PrimaryButton } from './components/PrimaryButton'
-import { ScrollView, View, Text, StyleSheet } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, StyleSheet, Text, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { useRouter } from 'expo-router'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:index)
@@ -64,6 +63,9 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_HelloNative_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('hello-native')
   const router = useRouter()
   return (

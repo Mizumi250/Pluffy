@@ -7,9 +7,7 @@ import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'
 import { NATIVE_ASSET_REGISTRY } from './components/constants'
-import { ScrollView, View, Text } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ScrollView, Text, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
@@ -62,6 +60,9 @@ const NativeIndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_AssetHub_Index() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('asset-hub')
   const router = useRouter()
   return (

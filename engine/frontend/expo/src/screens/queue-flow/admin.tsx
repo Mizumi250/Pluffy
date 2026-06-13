@@ -11,13 +11,15 @@ import { TicketRowNative } from './components/TicketRowNative'
 import { BACKEND_URL } from './components/constants'
 import { fmtWait } from './components/utils'
 import type { NativeQueueStatus } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, ActivityIndicator, RefreshControl } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import * as Speech from 'expo-speech'
+import { useCallback, useEffect, useState } from 'react'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { Volume2 } from 'lucide-react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:admin)
@@ -217,6 +219,9 @@ const AdminScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_QueueFlow_Admin() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('queue-flow')
   const router = useRouter()
   return (

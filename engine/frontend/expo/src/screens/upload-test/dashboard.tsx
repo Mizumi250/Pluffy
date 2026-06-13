@@ -2,22 +2,21 @@
 // ARKZEN GENERATED SCREEN — upload-test/dashboard
 // ============================================================
 
-import * as ImagePicker from 'expo-image-picker'
-import * as DocumentPicker from 'expo-document-picker'
-import * as FileSystem from 'expo-file-system/legacy'
-import * as Sharing from 'expo-sharing'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
 import { BACKEND_URL } from './components/constants'
 import { formatSize } from './components/utils'
-import { ScrollView, View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { ActivityIndicator, Alert, Image, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'import * as ImagePicker from 'expo-image-picker'
+import * as DocumentPicker from 'expo-document-picker'
+import * as FileSystem from 'expo-file-system/legacy'
+import * as Sharing from 'expo-sharing'
+import { useCallback, useEffect, useState } from 'react'
+import { Image } from 'expo-image'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
@@ -245,6 +244,9 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_UploadTest_Dashboard() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('upload-test')
   const router = useRouter()
   return (

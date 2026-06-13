@@ -11,13 +11,14 @@ import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
 import { BACKEND_URL } from './components/constants'
 import type { SendLogEntry } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, Alert } from 'react-native'
-
-import { useRouter } from 'expo-router'
+import { Alert, ScrollView, Text, TouchableOpacity, View } from 'react-native'import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { useCallback, useEffect, useState } from 'react'
+import { useRouter } from 'expo-router'
+import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)
@@ -278,6 +279,9 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_BodyMailNotification_Dashboard() {
+  // Set slug synchronously on every render — must be first line so
+  // __ARKZEN_TATEMONO__ is correct before any child component or
+  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('body-mail-notification')
   const router = useRouter()
   return (

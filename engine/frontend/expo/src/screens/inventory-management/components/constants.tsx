@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — inventory-management [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T10:20:29.213Z
+// Generated: 2026-06-13T13:54:23.165Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
