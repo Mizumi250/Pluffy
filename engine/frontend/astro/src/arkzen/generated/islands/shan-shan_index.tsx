@@ -3,11 +3,11 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:32.536Z
+// Generated: 2026-06-13T06:20:35.819Z
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import React, { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { shanShanAnimations, pageVariants } from '@/arkzen/generated/shan-shan.animations'
 import { BurgerMenu } from '@/arkzen/generated/components/shan-shan/BurgerMenu'
@@ -17,7 +17,6 @@ import { MaskBottom } from '@/arkzen/generated/components/shan-shan/MaskBottom'
 import { MaskTop } from '@/arkzen/generated/components/shan-shan/MaskTop'
 import { ShanHeroLogo } from '@/arkzen/generated/components/shan-shan/ShanHeroLogo'
 import { CHAPTERS, PERSONAL_INFO, SKILLS_MARQUEE } from '@/arkzen/generated/components/shan-shan/constants'
-import { kvH, onScroll } from '@/arkzen/generated/components/shan-shan/utils'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

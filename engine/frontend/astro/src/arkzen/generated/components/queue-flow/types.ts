@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — queue-flow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:31.133Z
+// Generated: 2026-06-13T06:25:13.136Z
 // ============================================================
 
 // ─── Types ────────────────────────────────────────────────────────────────────

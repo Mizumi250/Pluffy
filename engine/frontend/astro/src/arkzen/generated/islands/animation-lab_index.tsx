@@ -3,11 +3,11 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:28.449Z
+// Generated: 2026-06-13T06:20:29.813Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 import { CSSCustomPropsSection } from '@/arkzen/generated/components/animation-lab/CSSCustomPropsSection'
@@ -27,7 +27,6 @@ import { GSAPStaggerSection } from '@/arkzen/generated/components/animation-lab/
 import { GSAPTimelineSection } from '@/arkzen/generated/components/animation-lab/GSAPTimelineSection'
 import { NAV_SECTIONS } from '@/arkzen/generated/components/animation-lab/constants'
 import { useAnimLabStore } from '@/arkzen/generated/components/animation-lab/hooks'
-import { opacity, ref, y } from '@/arkzen/generated/components/animation-lab/utils'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

@@ -2,7 +2,7 @@
 // DO NOT EDIT DIRECTLY.
 
 import React from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/jo-payroll'
+import { ErrorScreen } from '@/arkzen/generated/components/jo-payroll/ErrorScreen'
 import { Link } from '@/arkzen/core/adapters/Link'
 
 import React from 'react'

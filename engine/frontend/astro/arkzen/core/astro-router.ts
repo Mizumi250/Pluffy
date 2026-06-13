@@ -603,6 +603,11 @@ ${hookChunks.join('\n\n')}
   }
 
   // ── Utility functions file (components/{tat}/utils.tsx) ───────────────────
+  // utilsFileWritten: only emit `import from './utils'` in components when
+  // utils.tsx was actually written — prevents "Could not import ./utils" when
+  // extractUtilityFunctionNames() picks up inner vars (e.g. `const i` inside
+  // a component body) that have no top-level declaration chunk.
+  let utilsFileWritten = false
   if (utilityFunctions.size > 0) {
     const utilChunks = [...utilityFunctions]
       .map(name => ({ name, chunk: declarationsByName.get(name) }))
@@ -622,9 +627,11 @@ ${canonicalBlock}
 ${utilChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), utilsContent, 'utf-8')
+      utilsFileWritten = true
       console.log(`[Arkzen Astro Router] ✓ Utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
     }
-  } else {
+  }
+  if (!utilsFileWritten) {
     for (const stale of ['utils.tsx', 'utils.ts']) {
       const stalePath = path.join(componentsDir, stale)
       if (fs.existsSync(stalePath)) fs.unlinkSync(stalePath)
@@ -697,7 +704,7 @@ ${typeChunks.join('\n\n')}
       .join('\n')
     const siblingImportBlock = siblingComponentImports ? `${siblingComponentImports}\n` : ''
 
-    const referencedUtils = findReferencedNames(declaration, utilityFunctions)
+    const referencedUtils = utilsFileWritten ? findReferencedNames(declaration, utilityFunctions) : []
     const utilsImport = referencedUtils.length > 0
       ? `import { ${referencedUtils.sort().join(', ')} } from './utils'\n`
       : ''
@@ -728,7 +735,13 @@ ${exportedDeclaration}
         console.log(`[Arkzen Astro Router] 🧹 Removed stale _components.tsx`)
         continue
       }
-      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx','index.ts'].includes(file)) continue
+      // index.ts is an old barrel file — delete it (same as Vite router)
+      if (file === 'index.ts') {
+        fs.unlinkSync(path.join(componentsDir, file))
+        console.log(`[Arkzen Astro Router] 🧹 Removed stale index.ts barrel`)
+        continue
+      }
+      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx'].includes(file)) continue
       if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
         fs.unlinkSync(path.join(componentsDir, file))
         console.log(`[Arkzen Astro Router] 🧹 Removed stale component: ${file}`)
@@ -739,24 +752,10 @@ ${exportedDeclaration}
   }
 }
 
-function generateComponentsIndex(tatemono: ParsedTatemono): void {
-  const componentsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name)
-  if (tatemono.components.length === 0) return
-
-  const extractedComponents = extractComponentNames(tatemono)
-  const exportLines = [...extractedComponents].sort().map(name => `export { ${name} } from './${name}'`)
-
-  const content = `// ============================================================
-// ARKZEN GENERATED COMPONENTS INDEX — ${tatemono.meta.name}
-// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: ${new Date().toISOString()}
-// ============================================================
-
-${exportLines.join('\n')}
-`
-  fs.writeFileSync(path.join(componentsDir, 'index.ts'), content, 'utf-8')
-  console.log(`[Arkzen Astro Router] ✓ Components index: index.ts`)
-}
+// generateComponentsIndex() intentionally removed — per-file component system
+// (generateIndividualComponentFiles) replaces barrel index.ts. Each component
+// is imported directly by its filename. Old index.ts files are cleaned up in
+// generateIndividualComponentFiles() stale-file sweep. Mirrors Next.js/Vite behavior.
 
 // ─── React island TSX file (the actual component, no page shell) ──────────────
 
@@ -774,9 +773,15 @@ function generateIslandFile(
 
   const framerNeeded = new Set(['motion'])
   const framerRe = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
-  let fm: RegExpMatchArray | null
-  while ((fm = framerRe.exec(pageSource)) !== null) {
-    fm[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
+  // Scrape framer names from BOTH component blocks AND page source — mirrors Next.js/Vite.
+  // Without this, AnimatePresence / useMotionValue used in components are missed.
+  const framerSources = [...tatemono.components.map(c => c.raw.trim()), pageSource]
+  for (const src of framerSources) {
+    let fm: RegExpMatchArray | null
+    const re = /import\s+\{([^}]*)\}\s+from\s+['"]framer-motion['"]/g
+    while ((fm = re.exec(src)) !== null) {
+      fm[1].split(',').map(s => s.trim()).filter(Boolean).forEach(n => framerNeeded.add(n))
+    }
   }
 
   const animImportLine = animationFnName
@@ -815,10 +820,50 @@ function generateIslandFile(
     ? `import type { ${referencedTypes.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/types'`
     : ''
 
-  const referencedUtils = findReferencedNames(pageSource, utilityFunctions)
+  const utilsPath = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name, 'utils.tsx')
+  const referencedUtils = fs.existsSync(utilsPath) ? findReferencedNames(pageSource, utilityFunctions) : []
   const utilsImportLine = referencedUtils.length > 0
     ? `import { ${referencedUtils.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/utils'`
     : ''
+
+  // Forward non-react/framer-motion imports from component blocks that the page
+  // references but doesn't itself import (e.g. useAuthStore, gsap, ScrollTrigger).
+  // Mirrors Next.js generatePageFile() / Vite generatePageFile() forwardedImportLines.
+  const forwardedImportLines = (() => {
+    const seen = new Set<string>()
+    const lines: string[] = []
+    for (const component of tatemono.components) {
+      const flattened = flattenMultilineImports(component.raw.trim())
+      for (const rawLine of flattened.split('\n')) {
+        const line = rawLine.trim()
+        if (!line.startsWith('import ')) continue
+        if (/from\s+['"](react|framer-motion)['"]/.test(line)) continue
+
+        const idents: string[] = []
+        let m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from/)
+        if (m) {
+          idents.push(m[1], ...m[2].split(',').map((s: string) => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\{([^}]*)\}\s+from/))) {
+          idents.push(...m[1].split(',').map((s: string) => s.trim()).filter(Boolean))
+        } else if ((m = line.match(/^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else if ((m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
+          idents.push(m[1])
+        } else {
+          continue
+        }
+
+        const referenced = idents.some((ident: string) =>
+          new RegExp(`[^\\w$]${ident.replace(/[.*+?^${}()|[\\]\\]/g, '\\$&')}\\b`).test(' ' + pageStrippedForHooks)
+        )
+        if (referenced && !seen.has(line)) {
+          seen.add(line)
+          lines.push(line)
+        }
+      }
+    }
+    return lines.join('\n')
+  })()
 
   const extraLines = [
     layoutImport,
@@ -829,10 +874,22 @@ function generateIslandFile(
     hooksImportLine,
     utilsImportLine,
     typesImportLine,
+    forwardedImportLines,
   ].filter(Boolean).join('\n')
 
+  // Detect React hooks actually used in page source — mirrors Next.js/Vite
+  const KNOWN_REACT_HOOKS = [
+    'useState', 'useCallback', 'useMemo', 'useContext', 'useReducer',
+    'useLayoutEffect', 'useImperativeHandle', 'useTransition', 'useDeferredValue',
+    'useId', 'useSyncExternalStore', 'useInsertionEffect',
+  ]
+  const pageStrippedForHooks = stripTemplateLiterals(pageSource)
+  const usedReactHooks = KNOWN_REACT_HOOKS.filter(hook =>
+    new RegExp(`[^\\w$]${hook}\\s*[(<]`).test(pageStrippedForHooks)
+  )
+
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports([pageSource], {
-    reactHooks:  ['useRef', 'useEffect'],
+    reactHooks:  ['useRef', 'useEffect', ...usedReactHooks],
     framerNamed: [...framerNeeded],
     extra:       extraLines,
   })
@@ -1129,7 +1186,7 @@ function generateNotFoundPage(tatemono: ParsedTatemono, handler: ArkzenErrorHand
 // DO NOT EDIT DIRECTLY.
 
 import React from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}'
+import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'
 ${adapterImports.join('\n')}
 
 ${raw}
@@ -1147,7 +1204,7 @@ import RootLayout from '@/RootLayout.astro'
 import NotFoundIsland from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
-<RootLayout title="Not Found — ${webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
+<RootLayout title="Not Found — ${tatemono.webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
   <NotFoundIsland client:load />
 </RootLayout>
 `
@@ -1180,7 +1237,7 @@ function generateErrorBoundaryPage(tatemono: ParsedTatemono, handler: ArkzenErro
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}'
+import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'
 ${adapterImports.join('\n')}
 
 ${raw}
@@ -1228,7 +1285,7 @@ import RootLayout from '@/RootLayout.astro'
 import ${islandName} from '@/arkzen/generated/islands/${islandFileName.replace('.tsx', '')}'
 ---
 
-<RootLayout title="Error — ${webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
+<RootLayout title="Error — ${tatemono.webMeta?.label ?? toPascalCase(tatemono.meta.name)}"${tatemono.webMeta?.favicon ? ` favicon="${tatemono.webMeta.favicon}"` : ''}>
   <${islandName} client:load />
 </RootLayout>
 `
@@ -1353,7 +1410,7 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
 
   // Component files (same as Vite — .tsx React islands)
   generateIndividualComponentFiles(tatemono)
-  generateComponentsIndex(tatemono)
+  // Note: generateComponentsIndex() removed — per-file imports replace barrel index.ts
 
   // Style files — emit co-located with the .astro shell so the relative import is simple
   const styleInfo = emitTatemonoStyles(tatemono, tatemonoDir, { loggerLabel: 'Arkzen Astro Router' })

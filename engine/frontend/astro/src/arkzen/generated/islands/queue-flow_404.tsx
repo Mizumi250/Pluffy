@@ -2,7 +2,7 @@
 // DO NOT EDIT DIRECTLY.
 
 import React from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/queue-flow'
+import { ErrorScreen } from '@/arkzen/generated/components/queue-flow/ErrorScreen'
 
 
 const NotFoundPage = () => (

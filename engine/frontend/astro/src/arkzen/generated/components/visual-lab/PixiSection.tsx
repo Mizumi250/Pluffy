@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PixiSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:32.787Z
+// Generated: 2026-06-13T06:25:14.600Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { app, appRef, canvas, colors, g, label, mount, mountRef, renderer, shapes, stage, t } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

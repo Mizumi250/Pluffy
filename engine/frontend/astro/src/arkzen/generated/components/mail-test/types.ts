@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — mail-test
 // Source: @arkzen:components (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:30.701Z
+// Generated: 2026-06-13T06:25:11.967Z
 // ============================================================
 
 export interface MailLog {

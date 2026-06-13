@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:28.489Z
+// Generated: 2026-06-13T06:25:08.803Z
 // ============================================================
 
 // ─── ASSET REGISTRY ───────────────────────────────────────────────────────────

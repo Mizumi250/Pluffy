@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MaskTop
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:32.517Z
+// Generated: 2026-06-13T06:25:14.258Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ThreeR3FSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:32.782Z
+// Generated: 2026-06-13T06:25:14.597Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { ambient, animate, app, camera, canvas, canvasRef, geo, mat, mesh, point, point2, rafRef, render, renderer, scene, t, torus, torusGeo, torusMat } from './utils'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'

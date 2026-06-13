@@ -3,11 +3,11 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T03:59:32.882Z
+// Generated: 2026-06-13T06:20:36.367Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
-import { motion } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { visualLabAnimations, pageVariants } from '@/arkzen/generated/visual-lab.animations'
 import { BabylonSection } from '@/arkzen/generated/components/visual-lab/BabylonSection'
@@ -33,7 +33,6 @@ import { ThreeR3FSection } from '@/arkzen/generated/components/visual-lab/ThreeR
 import { UXSection } from '@/arkzen/generated/components/visual-lab/UXSection'
 import { NAV_SECTIONS } from '@/arkzen/generated/components/visual-lab/constants'
 import { useVisualLabStore } from '@/arkzen/generated/components/visual-lab/hooks'
-import { animate, canvas, curtains, label, lenis, proton, regl } from '@/arkzen/generated/components/visual-lab/utils'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
