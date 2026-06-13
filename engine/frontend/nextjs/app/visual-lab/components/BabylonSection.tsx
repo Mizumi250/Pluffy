@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BabylonSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.989Z
+// Generated: 2026-06-13T00:54:11.894Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { box, boxMat, camera, canvas, canvasRef, engine, engineRef, light, mat, mesh, onResize, render, scene, sphere } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: BABYLONJS ───────────────────────────────────────────────────────
 export const BabylonSection = () => {
@@ -94,4 +97,4 @@ export const BabylonSection = () => {
   )
 }
 
-// ─── SECTION: PLAYCANVAS ──────────────────────────────────────────────────────
+// ─── SECTION: PLAYCANVAS ──────────────────────────────────────────────────

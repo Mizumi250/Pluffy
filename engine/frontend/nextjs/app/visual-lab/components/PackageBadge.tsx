@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PackageBadge
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.982Z
+// Generated: 2026-06-13T00:54:11.890Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -18,4 +18,4 @@ export const PackageBadge = ({ name, version }: { name: string; version?: string
   <span className="vl-pkg-badge">{name}{version ? ` ${version}` : ''}</span>
 )
 
-// ─── SECTION: THREE.JS + R3F ──────────────────────────────────────────────────
+// ─── SECTION: THREE.JS + R3F ──────────────────────────────────────────────

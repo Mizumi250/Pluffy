@@ -2,13 +2,17 @@
 // ARKZEN GENERATED UTILITIES — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:03.685Z
+// Generated: 2026-06-13T00:54:08.175Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
+
+orange',
+  },
+]
 
 export const getIconComponent = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {
@@ -17,5 +21,4 @@ export const getIconComponent = (iconName: string) => {
     palette: <Palette size={32} />,
     layers:  <Layers size={32} />,
   }
-  return icons[iconName] || null
-}
+  return icons[iconName] ||

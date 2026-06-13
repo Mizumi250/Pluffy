@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.908Z
+// Generated: 2026-06-13T00:54:01.937Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,12 @@ import { create } from 'zustand'
 import { cardRef, handleFlip, handleMagnet, handleMagnetLeave, handleMorphEnter, handleMorphLeave, handleTilt, handleTiltLeave, magnetRef, morphRef, newFlipped, r, ref, scale, x, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+/DemoCard>
+      </div>
+    </div>
+  )
+}
 
 // ─── GSAP HOVER & 3D ─────────────────────────────────────────────────────────
 export const GSAPHover3DSection = () => {
@@ -148,4 +154,4 @@ export const GSAPHover3DSection = () => {
   )
 }
 
-// ─── FRAMER MOTION VARIANTS ───────────────────────────────────────────────────
+// ─── FRAMER MOTION VARIANTS ────────────

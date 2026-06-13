@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:59.068Z
+// Generated: 2026-06-13T00:54:04.135Z
 // ============================================================
 
 export const REVERB_HOST   = process.env.NEXT_PUBLIC_REVERB_HOST    ?? 'localhost'

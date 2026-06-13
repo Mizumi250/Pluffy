@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FabricSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.008Z
+// Generated: 2026-06-13T00:54:11.902Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { angle, canvas, canvasRef, circle, el, ellipse, fabricRef, itext, rect, shapes, transform } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: FABRIC.JS ───────────────────────────────────────────────────────
 export const FabricSection = () => {
@@ -88,4 +91,4 @@ export const FabricSection = () => {
   )
 }
 
-// ─── SECTION: P5.JS ───────────────────────────────────────────────────────────
+// ─── SECTION: P5.JS ───────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Navbar
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:03.687Z
+// Generated: 2026-06-13T00:54:08.178Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -77,5 +77,4 @@ interface FeatureCardProps {
   icon: React.ReactNode
   title: string
   description: string
-  color: 'blue' | 'purple' | 'green' | 'orange'
-}
+  color: 'blue' | 'purple' | 'green' | 'o

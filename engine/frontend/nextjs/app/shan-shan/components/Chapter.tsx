@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Chapter
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.416Z
+// Generated: 2026-06-13T00:54:11.319Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -18,6 +18,11 @@ import { ChapterOutro } from './ChapterOutro'
 import { ChapterOverview } from './ChapterOverview'
 import { ChapterStory } from './ChapterStory'
 
+</div>
+    </div>
+  </div>
+)
+
 // ─── FULL CHAPTER ─────────────────────────────────────────────────────────────
 
 export const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; index: number }) => (
@@ -27,6 +32,4 @@ export const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; ind
     <ChapterLookbook chapter={chapter} />
     <ChapterOverview chapter={chapter} />
     <ChapterStory chapter={chapter} />
-    <ChapterOutro chapter={chapter} nextChapter={CHAPTERS[index + 1]} />
-  </section>
-)
+    <ChapterOutro chapter={chapter} nextChapter={CHAPTERS[index +

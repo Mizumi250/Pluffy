@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — OGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.014Z
+// Generated: 2026-06-13T00:54:11.907Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { animate, camera, canvas, canvasRef, fragment, geo, gl, light, mesh, prog, rafRef, render, renderer, scene, t, vertex } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: OGL ─────────────────────────────────────────────────────────────
 export const OGLSection = () => {
@@ -95,4 +98,4 @@ export const OGLSection = () => {
   )
 }
 
-// ─── SECTION: REGL ────────────────────────────────────────────────────────────
+// ─── SECTION: REGL ────────────────────────────────────────────────────

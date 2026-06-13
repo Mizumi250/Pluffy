@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — P5Section
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.012Z
+// Generated: 2026-06-13T00:54:11.904Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { angle, mount, mountRef, n, point, pts, sketchRef, t } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: P5.JS ───────────────────────────────────────────────────────────
 export const P5Section = () => {
@@ -81,4 +84,4 @@ export const P5Section = () => {
   )
 }
 
-// ─── SECTION: OGL ─────────────────────────────────────────────────────────────
+// ─── SECTION: OGL ─────────────────────────────────────────────────────────

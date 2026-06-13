@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — animation-lab
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.887Z
+// Generated: 2026-06-13T00:54:01.910Z
 // ============================================================
 
 // ─── NAV SECTIONS ─────────────────────────────────────────────────────────────

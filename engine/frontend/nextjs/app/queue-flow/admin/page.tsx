@@ -3,14 +3,12 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:04.484Z
+// Generated: 2026-06-13T00:54:09.286Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
-import { AdminCallButton } from '../components/AdminCallButton'
-import { AnnounceBadge } from '../components/AnnounceBadge'
 import { BigTicketDisplay } from '../components/BigTicketDisplay'
 import { CircularRing } from '../components/CircularRing'
 import { NowServingCard } from '../components/NowServingCard'

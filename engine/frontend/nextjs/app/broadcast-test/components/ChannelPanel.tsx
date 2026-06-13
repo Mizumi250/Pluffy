@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:59.072Z
+// Generated: 2026-06-13T00:54:04.140Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
@@ -80,4 +80,4 @@ export const ChannelPanel = memo(({
     </div>
   )
 })
-ChannelPanel.displayName = 'ChannelPanel'
+ChannelPanel.displayName = 'ChannelPa

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterStory
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.414Z
+// Generated: 2026-06-13T00:54:11.316Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,6 +11,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CHAPTERS } from './constants'
+
+iv>
+    </div>
+  </div>
+)
 
 // ─── CHAPTER STORY ────────────────────────────────────────────────────────────
 
@@ -41,4 +46,4 @@ export const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => 
   </div>
 )
 
-// ─── CHAPTER TAGS / OVERVIEW ──────────────────────────────────────────────────
+// ─── CHAPTER TAGS / OVERVIEW ──────────────────────

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — queue-flow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:04.445Z
+// Generated: 2026-06-13T00:54:09.234Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,4 +14,4 @@ import { create } from 'zustand'
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
 export const fmtWait = (mins: number) =>
-  mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
+  mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins /

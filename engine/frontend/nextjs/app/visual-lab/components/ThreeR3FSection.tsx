@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ThreeR3FSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.983Z
+// Generated: 2026-06-13T00:54:11.892Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -18,6 +18,9 @@ import { ambient, animate, app, camera, canvas, canvasRef, geo, mat, mesh, point
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'
+
+an>
+)
 
 // ─── SECTION: THREE.JS + R3F ──────────────────────────────────────────────────
 export const ThreeR3FSection = () => {
@@ -109,4 +112,4 @@ export const ThreeR3FSection = () => {
   )
 }
 
-// ─── SECTION: BABYLONJS ───────────────────────────────────────────────────────
+// ─── SECTION: BABYLONJS ───────────────────────────────────────────────────

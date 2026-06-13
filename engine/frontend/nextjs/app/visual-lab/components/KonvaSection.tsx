@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — KonvaSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.004Z
+// Generated: 2026-06-13T00:54:11.900Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { anim, canvas, circle, label, layer, mount, mountRef, rect, shapes, stage, stageRef, star, transform } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: KONVA ───────────────────────────────────────────────────────────
 export const KonvaSection = () => {
@@ -99,4 +102,4 @@ export const KonvaSection = () => {
   )
 }
 
-// ─── SECTION: FABRIC.JS ───────────────────────────────────────────────────────
+// ─── SECTION: FABRIC.JS ───────────────────────────────────────────────────

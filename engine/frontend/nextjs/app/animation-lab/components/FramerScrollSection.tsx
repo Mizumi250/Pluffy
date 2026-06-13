@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.919Z
+// Generated: 2026-06-13T00:54:01.953Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,9 +14,16 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { opacity, scale, scaleX } from './utils'
 import { DemoCard } from './DemoCard'
-import { ParallaxDemo } from './ParallaxDemo'
 import { ScrollTransformDemo } from './ScrollTransformDemo'
 import { SectionHeader } from './SectionHeader'
+
+/>
+          </div>
+        </DemoCard>
+      </div>
+    </div>
+  )
+}
 
 // ─── FRAMER SCROLL ────────────────────────────────────────────────────────────
 export const FramerScrollSection = () => {
@@ -49,9 +56,3 @@ export const FramerScrollSection = () => {
           <ScrollTransformDemo />
         </DemoCard>
         <DemoCard title="Parallax Layers" description="Different layers scroll at different speeds">
-          <ParallaxDemo />
-        </DemoCard>
-      </div>
-    </div>
-  )
-}

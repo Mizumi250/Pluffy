@@ -82,6 +82,18 @@ const ENGINE_OWNED_MODULES = new Set([
   'framer-motion',
 ])
 
+
+/**
+ * Atomic file write: write to a sibling .tmp file then rename into place.
+ * Prevents webpack / Next.js from reading a half-written file when the
+ * watcher regenerates a component while the dev server is compiling it.
+ */
+function atomicWrite(filePath: string, data: string): void {
+  const tmp = filePath + '.tmp'
+  fs.writeFileSync(tmp, data, 'utf-8')
+  fs.renameSync(tmp, filePath)
+}
+
 function resolveImports(
   sources: string[],
   engineRequired: {
@@ -318,24 +330,28 @@ function stripTemplateLiterals(src: string): string {
   let i = 0
   while (i < src.length) {
     if (src[i] === '`') {
-      // Enter template literal — skip until matching unescaped backtick
+      // Enter template literal — strip static string portions but KEEP
+      // ${...} expression content so identifiers inside them remain visible
+      // to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
       i++ // skip opening backtick
       while (i < src.length) {
         if (src[i] === '\\') { i += 2; continue }  // escaped char
         if (src[i] === '`') { i++; break }           // closing backtick
-        // Skip ${...} expressions (shallow — handles 1 level of nesting)
+        // Preserve ${...} expression content verbatim
         if (src[i] === '$' && src[i + 1] === '{') {
-          let depth = 1; i += 2
+          i += 2 // skip '${' 
+          let depth = 1
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') depth--
+            else if (src[i] === '}') { depth--; if (depth === 0) { i++; break } }
+            result += src[i]  // emit so identifiers stay visible
             i++
           }
           continue
         }
+        result += ' ' // replace static text with whitespace
         i++
       }
-      result += ' ' // replace entire literal with whitespace so line numbers stay roughly intact
     } else {
       result += src[i]
       i++
@@ -478,16 +494,22 @@ function findReferencedNames(strippedSource: string, names: Set<string>): string
 }
 
 
-function splitComponentDeclarations(strippedSource: string, names: Set<string>): Map<string, string> {
+function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<string, string> {
   const out = new Map<string, string>()
   if (names.size === 0) return out
+
+  // Scan on the template-literal-stripped version so static string content
+  // (e.g. a displayName assignment or a JSX string) doesn't confuse the
+  // declaration-boundary regex.  But SLICE from rawSource so template literal
+  // expressions are preserved verbatim and chunk lengths are correct.
+  const scanSource = stripTemplateLiterals(rawSource)
 
   const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
   const re = new RegExp(`^(?:export\\s+)?(const|function)\\s+(${nameAlt})\\b`, 'gm')
 
   const starts: { index: number; name: string }[] = []
   let m: RegExpExecArray | null
-  while ((m = re.exec(strippedSource)) !== null) {
+  while ((m = re.exec(scanSource)) !== null) {
     starts.push({ index: m.index, name: m[2] })
   }
   if (starts.length === 0) return out
@@ -495,9 +517,10 @@ function splitComponentDeclarations(strippedSource: string, names: Set<string>):
   for (let i = 0; i < starts.length; i++) {
     const { index, name } = starts[i]
 
-    // Pull in any leading comment/blank lines directly above the declaration
+    // Pull in any leading comment/blank lines directly above the declaration.
+    // Use scanSource for line-boundary maths (same indices as the regex above).
     let chunkStart = index
-    const before = strippedSource.slice(0, index)
+    const before = scanSource.slice(0, index)
     const lines = before.split('\n')
     let li = lines.length - 1
     let consumed = 0
@@ -512,8 +535,11 @@ function splitComponentDeclarations(strippedSource: string, names: Set<string>):
     }
     if (consumed > 0) chunkStart = Math.max(0, index - consumed)
 
-    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : strippedSource.length
-    out.set(name, strippedSource.slice(chunkStart, chunkEnd).trim())
+    // chunkEnd: next declaration's start index in scanSource, or end of rawSource.
+    // scanSource and rawSource share line structure outside template literals so
+    // these indices are valid for slicing rawSource too.
+    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : rawSource.length
+    out.set(name, rawSource.slice(chunkStart, chunkEnd).trim())
   }
 
   return out
@@ -585,7 +611,7 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
 
 ${constChunks.join('\n\n')}
 `
-      fs.writeFileSync(path.join(componentsDir, 'constants.ts'), constantsContent, 'utf-8')
+      atomicWrite(path.join(componentsDir, 'constants.ts'), constantsContent)
       console.log(`[Arkzen Router] ✓ Shared constants: constants.ts`)
     }
   } else {
@@ -611,7 +637,7 @@ ${constChunks.join('\n\n')}
 
     if (hookChunks.length > 0) {
       const hooksContent = `'use client'\n// ============================================================\n// ARKZEN GENERATED HOOKS — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${hookChunks.join('\n\n')}\n`
-      fs.writeFileSync(path.join(componentsDir, 'hooks.ts'), hooksContent, 'utf-8')
+      atomicWrite(path.join(componentsDir, 'hooks.ts'), hooksContent)
       console.log(`[Arkzen Router] ✓ Custom hooks: hooks.ts (${[...customHooks].join(', ')})`)
     }
   } else {
@@ -637,7 +663,7 @@ ${constChunks.join('\n\n')}
 
     if (utilChunks.length > 0) {
       const utilsContent = `// ============================================================\n// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${utilChunks.join('\n\n')}\n`
-      fs.writeFileSync(path.join(componentsDir, 'utils.ts'), utilsContent, 'utf-8')
+      atomicWrite(path.join(componentsDir, 'utils.ts'), utilsContent)
       console.log(`[Arkzen Router] ✓ Utility functions: utils.ts (${[...utilityFunctions].join(', ')})`)
     }
   } else {
@@ -663,7 +689,7 @@ ${constChunks.join('\n\n')}
 
     if (typeChunks.length > 0) {
       const typesContent = `// ============================================================\n// ARKZEN GENERATED TYPES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${typeChunks.join('\n\n')}\n`
-      fs.writeFileSync(path.join(componentsDir, 'types.ts'), typesContent, 'utf-8')
+      atomicWrite(path.join(componentsDir, 'types.ts'), typesContent)
       console.log(`[Arkzen Router] ✓ Shared types: types.ts (${[...sharedTypes].join(', ')})`)
     }
   } else {
@@ -751,7 +777,7 @@ ${canonicalBlock}
 ${cssImport}${constantsImport}${hooksImport}${utilsImport}${typesImport}${siblingImportBlock}
 ${exportedDeclaration}
 `
-    fs.writeFileSync(filePath, content, 'utf-8')
+    atomicWrite(filePath, content)
     console.log(`[Arkzen Router] ✓ Component: ${fileName}`)
   }
 
@@ -1111,7 +1137,7 @@ function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string
 
 ${cleanScript}
 `
-    fs.writeFileSync(filePath, fileOut, 'utf-8')
+    atomicWrite(filePath, fileOut)
     console.log(`[Arkzen Router] ✓ Named script: ${fileName}`)
     written.push(fileName)
   }
@@ -1148,7 +1174,7 @@ ${canonicalBlock}
 
 ${strippedSources[0]}
 `
-    fs.writeFileSync(filePath, content, 'utf-8')
+    atomicWrite(filePath, content)
     console.log(`[Arkzen Router] ✓ Custom layout: ${fileName}`)
   }
 }
@@ -1221,7 +1247,7 @@ export default function CatchAllPage() {
   notFound()
 }
 `
-  fs.writeFileSync(path.join(catchAllDir, 'page.tsx'), content, 'utf-8')
+  atomicWrite(path.join(catchAllDir, 'page.tsx'), content)
   console.log(`[Arkzen Router] ✓ Catch-all route created for ${tatemono.meta.name}`)
 }
 
@@ -1233,11 +1259,11 @@ function generateErrorHandlers(tatemono: ParsedTatemono, tatemonoDir: string): v
     if (handler.type === '404') {
       has404 = true
       const content = generateNotFoundFile(tatemono, handler)
-      fs.writeFileSync(path.join(tatemonoDir, 'not-found.tsx'), content, 'utf-8')
+      atomicWrite(path.join(tatemonoDir, 'not-found.tsx'), content)
       console.log(`[Arkzen Router] ✓ Error handler: not-found.tsx → /${tatemono.meta.name}/**`)
     } else if (handler.type === '500') {
       const content = generateErrorFile(tatemono, handler)
-      fs.writeFileSync(path.join(tatemonoDir, 'error.tsx'), content, 'utf-8')
+      atomicWrite(path.join(tatemonoDir, 'error.tsx'), content)
       console.log(`[Arkzen Router] ✓ Error handler: error.tsx → /${tatemono.meta.name}/**`)
     }
   }
@@ -1330,7 +1356,7 @@ ${hasAnyMeta ? metadataCode + '\n' : ''}export default function ${toPascalCase(m
   return <>{children}</>
 }
 `
-  fs.writeFileSync(path.join(tatemonoDir, 'layout.tsx'), content, 'utf-8')
+  atomicWrite(path.join(tatemonoDir, 'layout.tsx'), content)
   if (hasGlobalStyle)  console.log(`[Arkzen Router] ✓ Global style imported in layout`)
   if (favicon)         console.log(`[Arkzen Router] ✓ Favicon: ${favicon}`)
   if (description)     console.log(`[Arkzen Router] ✓ Description meta injected`)
@@ -1397,7 +1423,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
     const animContent = generateAnimationFile(tatemono)
     if (animContent) {
       const animPath = path.join(generatedDir, `${tatemono.meta.name}.animations.ts`)
-      fs.writeFileSync(animPath, animContent, 'utf-8')
+      atomicWrite(animPath, animContent)
       console.log(`[Arkzen Router] ✓ Animation file generated`)
     }
   }
@@ -1409,7 +1435,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
     const scriptContent = generateScriptFile(tatemono)
     if (scriptContent) {
       const scriptPath = path.join(generatedDir, `${tatemono.meta.name}.scripts.ts`)
-      fs.writeFileSync(scriptPath, scriptContent, 'utf-8')
+      atomicWrite(scriptPath, scriptContent)
       console.log(`[Arkzen Router] ✓ Global script file generated`)
     }
   }
@@ -1435,7 +1461,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
 
     const rootRedirect = generateRootRedirect(tatemono)
     if (rootRedirect) {
-      fs.writeFileSync(path.join(tatemonoDir, 'page.tsx'), rootRedirect, 'utf-8')
+      atomicWrite(path.join(tatemonoDir, 'page.tsx'), rootRedirect)
       const target = tatemono.meta.auth
         ? (tatemono.pages.find(p => p.layout === 'guest') ?? tatemono.pages[0])
         : tatemono.pages[0]
@@ -1446,13 +1472,13 @@ export function registerPage(tatemono: ParsedTatemono): void {
       if (page.name === 'index') {
         const pagePath = path.join(tatemonoDir, 'page.tsx')
         const pageContent = generatePageFile(tatemono, page, animFnName, './components')
-        fs.writeFileSync(pagePath, pageContent, 'utf-8')
+        atomicWrite(pagePath, pageContent)
         console.log(`[Arkzen Router] ✓ /${tatemono.meta.name} [${page.layout}]`)
       } else {
         const pageDir = path.join(tatemonoDir, page.name)
         fs.mkdirSync(pageDir, { recursive: true })
         const pageContent = generatePageFile(tatemono, page, animFnName, '../components')
-        fs.writeFileSync(path.join(pageDir, 'page.tsx'), pageContent, 'utf-8')
+        atomicWrite(path.join(pageDir, 'page.tsx'), pageContent)
         console.log(`[Arkzen Router] ✓ /${tatemono.meta.name}/${page.name} [${page.layout}]`)
       }
     }
@@ -1466,7 +1492,7 @@ export function registerPage(tatemono: ParsedTatemono): void {
 
     const rootRedirectPages = generateRootRedirect(tatemono)
     if (rootRedirectPages) {
-      fs.writeFileSync(path.join(tatemonoDir, 'index.tsx'), rootRedirectPages, 'utf-8')
+      atomicWrite(path.join(tatemonoDir, 'index.tsx'), rootRedirectPages)
       const target = tatemono.meta.auth
         ? (tatemono.pages.find(p => p.layout === 'guest') ?? tatemono.pages[0])
         : tatemono.pages[0]
@@ -1477,13 +1503,13 @@ export function registerPage(tatemono: ParsedTatemono): void {
       if (page.name === 'index') {
         const pagePath = path.join(tatemonoDir, 'index.tsx')
         const pageContent = generatePageFile(tatemono, page, animFnName, './components')
-        fs.writeFileSync(pagePath, pageContent, 'utf-8')
+        atomicWrite(pagePath, pageContent)
         console.log(`[Arkzen Router] ✓ /${tatemono.meta.name} [${page.layout}]`)
       } else {
         const pageDir = path.join(tatemonoDir, page.name)
         fs.mkdirSync(pageDir, { recursive: true })
         const pageContent = generatePageFile(tatemono, page, animFnName, '../components')
-        fs.writeFileSync(path.join(pageDir, 'index.tsx'), pageContent, 'utf-8')
+        atomicWrite(path.join(pageDir, 'index.tsx'), pageContent)
         console.log(`[Arkzen Router] ✓ /${tatemono.meta.name}/${page.name} [${page.layout}]`)
       }
     }
@@ -1527,7 +1553,7 @@ Allow: /
 
 Sitemap: ${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/sitemap.xml
 `
-  fs.writeFileSync(robotsPath, content, 'utf-8')
+  atomicWrite(robotsPath, content)
   console.log(`[Arkzen Router] ✓ robots.txt generated`)
 }
 

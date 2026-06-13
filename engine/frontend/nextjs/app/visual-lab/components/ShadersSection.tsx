@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ShadersSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.054Z
+// Generated: 2026-06-13T00:54:11.930Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,13 @@ import * as THREE from 'three'
 import { create } from 'zustand'
 import { canvas, canvasStyle, curtains, demos, label, renderDemo } from './utils'
 import { SectionHeader } from './SectionHeader'
+
+react…</p>
+        )}
+      </div>
+    </div>
+  )
+}
 
 // ─── SECTION: SHADERS (shaders.com) ──────────────────────────────────────────
 export const ShadersSection = () => {
@@ -120,4 +127,4 @@ export const ShadersSection = () => {
   )
 }
 
-// ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
+// ─── SECTION: CURTAINS ─────

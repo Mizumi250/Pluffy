@@ -2,8 +2,11 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:03.684Z
+// Generated: 2026-06-13T00:54:08.174Z
 // ============================================================
+
+n' | 'orange'
+}
 
 export const FEATURES: Feature[] = [
   {
@@ -32,6 +35,4 @@ export const FEATURES: Feature[] = [
     icon: 'layers',
     title: 'Asset Management',
     description: 'Built-in favicon, image, and static file support',
-    color: 'orange',
-  },
-]
+    color: 'or

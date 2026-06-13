@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — REGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.015Z
+// Generated: 2026-06-13T00:54:11.908Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,10 @@ import { useVisualLabStore } from './hooks'
 import { canvas, canvasRef, drawTriangle, fragment, rafRef, regl, t, vertex } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+iv>
+  )
+}
 
 // ─── SECTION: REGL ────────────────────────────────────────────────────────────
 export const REGLSection = () => {
@@ -92,4 +96,4 @@ export const REGLSection = () => {
   )
 }
 
-// ─── SECTION: TWGL ────────────────────────────────────────────────────────────
+// ─── SECTION: TWGL ────────────────────────────────────────────────

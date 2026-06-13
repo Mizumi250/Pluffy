@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSTransitionsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.924Z
+// Generated: 2026-06-13T00:54:01.960Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,14 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+}
+          </div>
+        </DemoCard>
+      ))}
+    </div>
+  </div>
+)
 
 // ─── CSS TRANSITIONS SECTION ──────────────────────────────────────────────────
 export const CSSTransitionsSection = () => (
@@ -47,4 +55,4 @@ export const CSSTransitionsSection = () => (
   </div>
 )
 
-// ─── CSS TRANSFORMS ───────────────────────────────────────────────────────────
+// ───

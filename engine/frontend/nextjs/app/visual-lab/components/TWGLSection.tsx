@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TWGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.017Z
+// Generated: 2026-06-13T00:54:11.910Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,10 @@ import { useVisualLabStore } from './hooks'
 import { arrays, bufferInfo, canvas, canvasRef, fs, gl, programInfo, rafRef, render, t, vs } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+</div>
+  )
+}
 
 // ─── SECTION: TWGL ────────────────────────────────────────────────────────────
 export const TWGLSection = () => {
@@ -86,4 +90,4 @@ export const TWGLSection = () => {
   )
 }
 
-// ─── SECTION: PHASER ──────────────────────────────────────────────────────────
+// ─── SECTION: PHASER ──────────────────────────────────────────

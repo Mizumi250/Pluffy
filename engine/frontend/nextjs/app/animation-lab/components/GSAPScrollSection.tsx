@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.903Z
+// Generated: 2026-06-13T00:54:01.931Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,10 @@ import { create } from 'zustand'
 import { ctx, hTrack, i, opacity, ref, scale, sectionRef, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+div>
+  )
+}
 
 // ─── GSAP SCROLL TRIGGER ──────────────────────────────────────────────────────
 export const GSAPScrollSection = () => {
@@ -152,4 +156,4 @@ export const GSAPScrollSection = () => {
   )
 }
 
-// ─── GSAP TIMELINE ────────────────────────────────────────────────────────────
+// ─── GSAP TIMELINE ───────────────────────────────────────────────────

@@ -3,12 +3,13 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:03.905Z
+// Generated: 2026-06-13T00:54:08.546Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
+import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from '../components/constants'
 import { useRouter } from 'next/navigation'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'

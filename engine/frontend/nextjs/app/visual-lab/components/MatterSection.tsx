@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — MatterSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.023Z
+// Generated: 2026-06-13T00:54:11.914Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,10 @@ import { useVisualLabStore } from './hooks'
 import { boxes, canvas, canvasRef, colors, engine, gravity, ground, render, runner, wallL, wallR, world } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+</div>
+  )
+}
 
 // ─── SECTION: MATTER.JS ───────────────────────────────────────────────────────
 export const MatterSection = () => {
@@ -81,4 +85,4 @@ export const MatterSection = () => {
   )
 }
 
-// ─── SECTION: RAPIER ─────────────────────────────────────────────────────────
+// ─── SECTION: RAPIER ─────────────────────────────────────────

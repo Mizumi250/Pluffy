@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.058Z
+// Generated: 2026-06-13T00:54:11.932Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,12 @@ import * as THREE from 'three'
 import { create } from 'zustand'
 import { curtains, curtainsRef, fragment, fs, mountRef, planeEl, vertex, vs } from './utils'
 import { SectionHeader } from './SectionHeader'
+
+(falls back to WebGLv2)
+      </p>
+    </div>
+  )
+}
 
 // ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
 export const CurtainsSection = () => {
@@ -103,4 +109,4 @@ export const CurtainsSection = () => {
   )
 }
 
-// ─── SECTION: HTML-IN-CANVAS (Google Chrome 148+) ────────────────────────────
+// ─── SECTION: HTML-IN-CA

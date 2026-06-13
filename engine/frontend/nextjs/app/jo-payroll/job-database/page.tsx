@@ -3,25 +3,13 @@
 // ARKZEN GENERATED PAGE — jo-payroll/job-database
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:02.271Z
+// Generated: 2026-06-13T00:54:06.684Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
 import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
-import { EmptyRow } from '../components/EmptyRow'
-import { FundingBar } from '../components/FundingBar'
-import { JOFormModal } from '../components/JOFormModal'
-import { JORow } from '../components/JORow'
-import { SectionHeader } from '../components/SectionHeader'
-import { Spinner } from '../components/Spinner'
-import { StatChip } from '../components/StatChip'
-import { TabPills } from '../components/TabPills'
-import { usePayrollStore } from '../components/hooks'
-import { colors } from '../components/utils'
-import type { JobOrder } from '../components/types'
-import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
 
 // Page component code (from @arkzen:page:job-database)
 const JobDatabasePage = () => {

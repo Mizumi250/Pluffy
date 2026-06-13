@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HTMLCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.060Z
+// Generated: 2026-06-13T00:54:11.935Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,12 @@ import { addLog, angle, canvas, canvasRef, ctx, ctx2d, dpr, el, formEl, formRef,
 import { DemoCard } from './DemoCard'
 import { PlayCanvasSection } from './PlayCanvasSection'
 import { SectionHeader } from './SectionHeader'
+
+cycle — no textures needed
+      </p>
+    </div>
+  )
+}
 
 // ─── SECTION: HTML-IN-CANVAS (Google Chrome 148+) ────────────────────────────
 export const HTMLCanvasSection = () => {
@@ -279,8 +285,4 @@ export const HTMLCanvasSection = () => {
         <div className="vl-feature-item"><AlertCircle size={12} color="#facc15" /> Cross-origin iframes: not supported (security)</div>
         <div className="vl-feature-item"><AlertCircle size={12} color="#facc15" /> Scrolling is JS-driven — no off-thread scroll like normal DOM</div>
         <div className="vl-feature-item"><Info size={12} color="#60a5fa" /> Only Chrome 148–150 origin trial for now (May 2026)</div>
-        <div className="vl-feature-item"><Info size={12} color="#60a5fa" /> Three.js THREE.HTMLTexture and PlayCanvas htmlTexture already ship support</div>
-      </div>
-    </div>
-  )
-}
+        <div className="vl-feature-item"><Info size={12} color="#60a5fa" /> Three.js THREE.HTMLTexture and PlayCanvas htmlTexture already ship support</div

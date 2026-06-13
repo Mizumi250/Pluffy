@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RapierSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.027Z
+// Generated: 2026-06-13T00:54:11.916Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,10 @@ import { useVisualLabStore } from './hooks'
 import { ball, balls, canvas, canvasRef, colors, config, ctx, engine, gravity, groundBody, rafRef, rb, render, t, toScreen, wallL, wallR, world } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+</div>
+  )
+}
 
 // ─── SECTION: RAPIER ─────────────────────────────────────────────────────────
 export const RapierSection = () => {
@@ -115,4 +119,4 @@ export const RapierSection = () => {
   )
 }
 
-// ─── SECTION: PARTICLES + PROTON ─────────────────────────────────────────────
+// ─── SECTION: PARTICLES + PROTON ─────────────────────────────

@@ -131,6 +131,4 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           {mounted ? children : null}
         </main>
       </div>
-    </div>
-  )
-}
+    </div

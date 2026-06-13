@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PixiSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:06.999Z
+// Generated: 2026-06-13T00:54:11.898Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,6 +17,9 @@ import { useVisualLabStore } from './hooks'
 import { app, appRef, canvas, colors, g, label, mount, mountRef, renderer, shapes, stage, t } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+)
+}
 
 // ─── SECTION: PIXI.JS ─────────────────────────────────────────────────────────
 export const PixiSection = () => {
@@ -101,4 +104,4 @@ export const PixiSection = () => {
   )
 }
 
-// ─── SECTION: KONVA ───────────────────────────────────────────────────────────
+// ─── SECTION: KONVA ───────────────────────────────────────────────────────

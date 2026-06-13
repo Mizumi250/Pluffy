@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerKeyframesSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:56.916Z
+// Generated: 2026-06-13T00:54:01.946Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,13 @@ import { create } from 'zustand'
 import { i, opacity, scale, x, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
+
+</div>
+        </DemoCard>
+      </div>
+    </div>
+  )
+}
 
 // ─── FRAMER KEYFRAMES ─────────────────────────────────────────────────────────
 export const FramerKeyframesSection = () => {
@@ -93,4 +100,4 @@ export const FramerKeyframesSection = () => {
   )
 }
 
-// ─── FRAMER DRAG ──────────────────────────────────────────────────────────────
+// ─── FRAME

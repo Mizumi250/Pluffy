@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LottieLazySection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:07.049Z
+// Generated: 2026-06-13T00:54:11.928Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -15,6 +15,13 @@ import * as THREE from 'three'
 import { create } from 'zustand'
 import { el, lottieRef, shapes, t } from './utils'
 import { SectionHeader } from './SectionHeader'
+
+</div>
+        </div>
+      )}
+    </div>
+  )
+}
 
 // ─── SECTION: LOTTIE ─────────────────────────────────────────────────────────
 export const LottieLazySection = () => {
@@ -84,4 +91,4 @@ export const LottieLazySection = () => {
   )
 }
 
-// ─── SECTION: SHADERS (shaders.com) ──────────────────────────────────────────
+// ─── SECTION: SHADERS (shade

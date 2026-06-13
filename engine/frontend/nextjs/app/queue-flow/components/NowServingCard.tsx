@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — NowServingCard
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:36:04.450Z
+// Generated: 2026-06-13T00:54:09.240Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,10 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
 import type { Queue, Ticket } from './types'
+
+</div>
+  )
+}
 
 // ─── Components ───────────────────────────────────────────────────────────────
 
@@ -32,6 +36,3 @@ export const NowServingCard = ({ ticket, queueName }: { ticket: Ticket | null; q
       </div>
     ) : (
       <div style={{ color: '#a0b8d8', fontSize: 16, fontWeight: 500 }}>Queue is empty</div>
-    )}
-  </div>
-)

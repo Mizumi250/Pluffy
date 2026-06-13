@@ -3,14 +3,14 @@
 // ARKZEN GENERATED PAGE — asset-hub/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-12T14:35:57.188Z
+// Generated: 2026-06-13T00:54:02.215Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { AssetCard } from './components/AssetCard'
-import { ASSET_REGISTRY } from './components/constants'
+import { ASSET_REGISTRY, CATEGORY_EMOJI } from './components/constants'
 import type { AssetCategory } from './components/types'
 
 // Page component code (from @arkzen:page:index)
