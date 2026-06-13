@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JOFormModal
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:25:11.391Z
+// Generated: 2026-06-13T06:43:54.075Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { create } from 'zustand'
 import { FUNDING_OPTIONS, JOB_TITLES, PYRL_GROUPS } from './constants'
-import { colors, inputCls, labelCls, set } from './utils'
 import type { JobOrder } from './types'
 
 // ── Modal / Drawer for add/edit JO ──────────────────────────────────────────

@@ -544,6 +544,15 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
     }
   }
 
+  // resolvedUtilityFunctions: only names that have an actual top-level declaration chunk.
+  // Filters out false positives from extractUtilityFunctionNames() — inner `const` vars
+  // like `const map = L.map(...)` or `const i = parseInt(...)` inside component bodies
+  // that the body-strip regex misses. Without this, findReferencedNames() finds them
+  // referenced in other components and emits broken `import { map } from './utils'`.
+  const resolvedUtilityFunctions = new Set(
+    [...utilityFunctions].filter(name => declarationsByName.has(name))
+  )
+
   // ── Shared constants file (components/{tat}/constants.tsx) ───────────────
   if (sharedConstants.size > 0) {
     const constChunks = [...sharedConstants]
@@ -704,7 +713,7 @@ ${typeChunks.join('\n\n')}
       .join('\n')
     const siblingImportBlock = siblingComponentImports ? `${siblingComponentImports}\n` : ''
 
-    const referencedUtils = utilsFileWritten ? findReferencedNames(declaration, utilityFunctions) : []
+    const referencedUtils = utilsFileWritten ? findReferencedNames(declaration, resolvedUtilityFunctions) : []
     const utilsImport = referencedUtils.length > 0
       ? `import { ${referencedUtils.sort().join(', ')} } from './utils'\n`
       : ''
@@ -821,10 +830,21 @@ function generateIslandFile(
     : ''
 
   const utilsPath = path.join(SRC_DIR, 'arkzen', 'generated', 'components', tatemono.meta.name, 'utils.tsx')
-  const referencedUtils = fs.existsSync(utilsPath) ? findReferencedNames(pageSource, utilityFunctions) : []
+  const referencedUtils = fs.existsSync(utilsPath) ? findReferencedNames(pageSource, resolvedUtilityFunctions) : []
   const utilsImportLine = referencedUtils.length > 0
     ? `import { ${referencedUtils.sort().join(', ')} } from '@/arkzen/generated/components/${tatemono.meta.name}/utils'`
     : ''
+
+  // Detect React hooks actually used in page source — mirrors Next.js/Vite
+  const KNOWN_REACT_HOOKS = [
+    'useState', 'useCallback', 'useMemo', 'useContext', 'useReducer',
+    'useLayoutEffect', 'useImperativeHandle', 'useTransition', 'useDeferredValue',
+    'useId', 'useSyncExternalStore', 'useInsertionEffect',
+  ]
+  const pageStrippedForHooks = stripTemplateLiterals(pageSource)
+  const usedReactHooks = KNOWN_REACT_HOOKS.filter(hook =>
+    new RegExp(`[^\\w$]${hook}\\s*[(<]`).test(pageStrippedForHooks)
+  )
 
   // Forward non-react/framer-motion imports from component blocks that the page
   // references but doesn't itself import (e.g. useAuthStore, gsap, ScrollTrigger).
@@ -876,17 +896,6 @@ function generateIslandFile(
     typesImportLine,
     forwardedImportLines,
   ].filter(Boolean).join('\n')
-
-  // Detect React hooks actually used in page source — mirrors Next.js/Vite
-  const KNOWN_REACT_HOOKS = [
-    'useState', 'useCallback', 'useMemo', 'useContext', 'useReducer',
-    'useLayoutEffect', 'useImperativeHandle', 'useTransition', 'useDeferredValue',
-    'useId', 'useSyncExternalStore', 'useInsertionEffect',
-  ]
-  const pageStrippedForHooks = stripTemplateLiterals(pageSource)
-  const usedReactHooks = KNOWN_REACT_HOOKS.filter(hook =>
-    new RegExp(`[^\\w$]${hook}\\s*[(<]`).test(pageStrippedForHooks)
-  )
 
   const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports([pageSource], {
     reactHooks:  ['useRef', 'useEffect', ...usedReactHooks],
@@ -1431,10 +1440,9 @@ export function registerAstroPages(tatemono: ParsedTatemono): void {
   }
 
   // Remove routes for this tatemono from the in-memory list (rebuild)
-  const existingIdx = _allRoutes.findIndex(r => r.name.startsWith(tatemono.meta.name + '/'))
-  if (existingIdx >= 0) {
-    _allRoutes.splice(existingIdx, 1)
-  }
+  // Remove ALL existing routes for this tatemono before re-adding (handles multi-page rebuild)
+  const toRemove = _allRoutes.filter(r => r.name.startsWith(tatemono.meta.name + '/'))
+  toRemove.forEach(r => _allRoutes.splice(_allRoutes.indexOf(r), 1))
 
   // Generate each page
   const islandsDir = path.join(SRC_DIR, 'arkzen', 'generated', 'islands')
@@ -1564,10 +1572,9 @@ export function unregisterAstroPages(tatName: string): void {
   cleanScriptFiles(GENERATED_DIR, tatName)
 
   // Remove from in-memory routes
-  const idx = _allRoutes.findIndex(r => r.name.startsWith(tatName + '/'))
-  while (idx >= 0) {
-    _allRoutes.splice(idx, 1)
-  }
+  // Remove all routes for this tatemono
+  const toRemove = _allRoutes.filter(r => r.name.startsWith(tatName + '/'))
+  toRemove.forEach(r => _allRoutes.splice(_allRoutes.indexOf(r), 1))
   writeRouteRegistry(_allRoutes)
 }
 

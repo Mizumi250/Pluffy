@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:29.813Z
+// Generated: 2026-06-13T06:43:51.384Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -27,6 +27,7 @@ import { GSAPStaggerSection } from '@/arkzen/generated/components/animation-lab/
 import { GSAPTimelineSection } from '@/arkzen/generated/components/animation-lab/GSAPTimelineSection'
 import { NAV_SECTIONS } from '@/arkzen/generated/components/animation-lab/constants'
 import { useAnimLabStore } from '@/arkzen/generated/components/animation-lab/hooks'
+import { gsap } from 'gsap'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

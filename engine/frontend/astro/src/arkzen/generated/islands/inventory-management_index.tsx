@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:31.703Z
+// Generated: 2026-06-13T06:35:53.015Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,6 +14,12 @@ import { InventoryRow } from '@/arkzen/generated/components/inventory-management
 import { StatCard } from '@/arkzen/generated/components/inventory-management/StatCard'
 import { emptyForm } from '@/arkzen/generated/components/inventory-management/utils'
 import type { FormState, InventoryItem } from '@/arkzen/generated/components/inventory-management/types'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { Dialog } from '@/arkzen/core/components/Dialog'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

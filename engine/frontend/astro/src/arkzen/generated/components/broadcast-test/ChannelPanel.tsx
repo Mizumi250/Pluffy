@@ -2,14 +2,14 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:25:09.962Z
+// Generated: 2026-06-13T06:43:52.686Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Radio } from 'lucide-react'
-import { dot, handleSend, inputRef, val } from './utils'
+import { dot } from './utils'
 import type { Message, WsStatus } from './types'
 
 export const ChannelPanel = memo(({

@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:35.819Z
+// Generated: 2026-06-13T06:43:56.842Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -17,6 +17,8 @@ import { MaskBottom } from '@/arkzen/generated/components/shan-shan/MaskBottom'
 import { MaskTop } from '@/arkzen/generated/components/shan-shan/MaskTop'
 import { ShanHeroLogo } from '@/arkzen/generated/components/shan-shan/ShanHeroLogo'
 import { CHAPTERS, PERSONAL_INFO, SKILLS_MARQUEE } from '@/arkzen/generated/components/shan-shan/constants'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

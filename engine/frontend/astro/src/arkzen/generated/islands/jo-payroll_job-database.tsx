@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:32.004Z
+// Generated: 2026-06-13T06:35:53.405Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -20,6 +20,7 @@ import { API_BASE } from '@/arkzen/generated/components/jo-payroll/constants'
 import { usePayrollStore } from '@/arkzen/generated/components/jo-payroll/hooks'
 import { colors } from '@/arkzen/generated/components/jo-payroll/utils'
 import type { JobOrder } from '@/arkzen/generated/components/jo-payroll/types'
+import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
 
 // Page component code (from @arkzen:page:job-database)
 const JobDatabasePage = () => {

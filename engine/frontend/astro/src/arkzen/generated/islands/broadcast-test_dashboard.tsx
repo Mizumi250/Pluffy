@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:30.793Z
+// Generated: 2026-06-13T06:35:52.282Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,8 @@ import { ChannelPanel } from '@/arkzen/generated/components/broadcast-test/Chann
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from '@/arkzen/generated/components/broadcast-test/constants'
 import { val } from '@/arkzen/generated/components/broadcast-test/utils'
 import type { Message, WsStatus } from '@/arkzen/generated/components/broadcast-test/types'
+import { Radio } from 'lucide-react'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {

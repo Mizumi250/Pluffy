@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — animation-lab
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:25:08.636Z
+// Generated: 2026-06-13T06:43:51.271Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

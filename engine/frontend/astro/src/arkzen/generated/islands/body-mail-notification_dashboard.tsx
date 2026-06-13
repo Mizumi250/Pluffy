@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:30.216Z
+// Generated: 2026-06-13T06:43:51.951Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { KindBadge } from '@/arkzen/generated/components/body-mail-notification/
 import { StatusDot } from '@/arkzen/generated/components/body-mail-notification/StatusDot'
 import { useToast } from '@/arkzen/generated/components/body-mail-notification/hooks'
 import type { SendLogEntry } from '@/arkzen/generated/components/body-mail-notification/types'
+import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {

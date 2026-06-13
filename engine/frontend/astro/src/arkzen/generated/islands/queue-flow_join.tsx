@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:20:34.048Z
+// Generated: 2026-06-13T06:35:54.677Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,8 @@ import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { BigTicketDisplay } from '@/arkzen/generated/components/queue-flow/BigTicketDisplay'
 import { useQueueStore } from '@/arkzen/generated/components/queue-flow/hooks'
 import type { MyTicketResponse, Queue, Ticket } from '@/arkzen/generated/components/queue-flow/types'
+import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:join)
 const JoinPage = () => {
