@@ -120,9 +120,6 @@ const CashAtmScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_JoPayroll_CashAtm() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('jo-payroll')
   const router = useRouter()
   return (

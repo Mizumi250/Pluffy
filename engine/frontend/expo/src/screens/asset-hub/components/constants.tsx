@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — asset-hub [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:40:25.977Z
+// Generated: 2026-06-13T10:20:26.272Z
 // ============================================================
 
 import React from 'react'

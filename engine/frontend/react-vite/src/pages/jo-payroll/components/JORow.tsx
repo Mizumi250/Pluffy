@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — JORow [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:04:57.245Z
+// Generated: 2026-06-13T10:20:29.542Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

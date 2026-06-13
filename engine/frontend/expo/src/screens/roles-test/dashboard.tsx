@@ -231,9 +231,6 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_RolesTest_Dashboard() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('roles-test')
   const router = useRouter()
   return (

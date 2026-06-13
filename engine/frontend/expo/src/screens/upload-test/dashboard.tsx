@@ -2,6 +2,10 @@
 // ARKZEN GENERATED SCREEN — upload-test/dashboard
 // ============================================================
 
+import * as ImagePicker from 'expo-image-picker'
+import * as DocumentPicker from 'expo-document-picker'
+import * as FileSystem from 'expo-file-system/legacy'
+import * as Sharing from 'expo-sharing'
 import React, { useCallback, useEffect, useState } from 'react'
 import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
@@ -241,9 +245,6 @@ const DashboardScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_UploadTest_Dashboard() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('upload-test')
   const router = useRouter()
   return (

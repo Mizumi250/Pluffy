@@ -233,9 +233,6 @@ const IndexScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_InventoryManagement_Index() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('inventory-management')
   const router = useRouter()
   return (

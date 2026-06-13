@@ -89,9 +89,6 @@ const AboutScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_NewUpdatesStyles_About() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('new-updates-styles')
   const router = useRouter()
   return (

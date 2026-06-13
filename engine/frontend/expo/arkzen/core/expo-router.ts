@@ -1,5 +1,9 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.0
+// ARKZEN ENGINE — EXPO ROUTER v4.1
+//
+// v4.1 – Automatic import of native libraries referenced in page blocks.
+//        Adds missing imports for ImagePicker, DocumentPicker, FileSystem,
+//        Sharing, expo-image, etc. based on usage in the page source.
 //
 // v4.0 – PER-FILE NATIVE COMPONENT GENERATION.
 //        generateIndividualNativeComponentFiles(): splits @arkzen:native:components
@@ -38,6 +42,15 @@ const APP_DIR            = path.resolve(process.cwd(), 'app')
 const GENERATED_DIR      = path.resolve(process.cwd(), 'src', 'arkzen', 'generated')
 const ROUTES_FILE        = path.join(GENERATED_DIR, 'routes.ts')
 const EXPO_ASSETS_DIR    = path.resolve(process.cwd(), 'assets')
+
+// Native library imports that may be referenced in page blocks
+const NATIVE_LIB_IMPORTS: Record<string, string> = {
+  ImagePicker:     "import * as ImagePicker from 'expo-image-picker'",
+  DocumentPicker:  "import * as DocumentPicker from 'expo-document-picker'",
+  FileSystem:      "import * as FileSystem from 'expo-file-system/legacy'",
+  Sharing:         "import * as Sharing from 'expo-sharing'",
+  Image:           "import { Image } from 'expo-image'",
+};
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -782,6 +795,7 @@ ${exportedDeclaration}
 }
 
 // ─── Screen file generator ────────────────────────────────────────────────────
+// v4.1: Automatically adds missing imports for native libraries (expo-image-picker, etc.)
 // v4.0: no longer inlines nativeComponents — imports each component individually.
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
@@ -909,6 +923,28 @@ export default ${wrapperName}
     reactHooks: referencedHookCalls,
   })
 
+  // ── NEW v4.1: Detect missing native library imports ────────────────────────
+  const libraryRefs = new Set<string>()
+  for (const lib of Object.keys(NATIVE_LIB_IMPORTS)) {
+    // Match "LibraryName." (e.g. ImagePicker.request)
+    const regex = new RegExp(`\\b${lib}\\.`, 'g')
+    if (regex.test(pageStrippedForRefs)) {
+      libraryRefs.add(lib)
+    }
+  }
+
+  let additionalImports = ''
+  for (const lib of libraryRefs) {
+    const importStmt = NATIVE_LIB_IMPORTS[lib]
+    if (importStmt && !canonicalBlock.includes(importStmt)) {
+      additionalImports += importStmt + '\n'
+    }
+  }
+  if (additionalImports) {
+    canonicalBlock = additionalImports + canonicalBlock
+  }
+  // ── End of library detection ──────────────────────────────────────────────
+
   // ── Merge engine-required imports ─────────────────────────────────────────
   const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
   canonicalBlock = ensureReactNativeImport(canonicalBlock, Array.from(new Set(['ScrollView', ...referencedRNCore])))
@@ -956,9 +992,6 @@ ${componentDefinition}
 
 // Engine wrapper
 export function ${wrapperName}() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
@@ -1046,7 +1079,7 @@ function writeRouteRegistry(routes: ExpoRoute[]): void {
   ).join('\n')
 
   const content = `// ============================================================
-// ARKZEN GENERATED — Expo Route Registry v4.0
+// ARKZEN GENERATED — Expo Route Registry v4.1
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
 

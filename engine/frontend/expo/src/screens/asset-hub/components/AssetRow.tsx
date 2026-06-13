@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — AssetRow [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:40:25.981Z
+// Generated: 2026-06-13T10:20:26.283Z
 // ============================================================
 
 import React from 'react'

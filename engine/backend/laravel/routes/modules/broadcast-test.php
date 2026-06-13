@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/broadcast-test/auth')->
 // ============================================================
 // ARKZEN GENERATED ROUTES — broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:40:27.509137Z
+// Generated: 2026-06-13T10:20:28.511619Z
 // Resources: Message
 // Custom controllers: 
 // ============================================================

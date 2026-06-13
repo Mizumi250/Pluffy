@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN GENERATED — Expo Route Registry v4.0
+// ARKZEN GENERATED — Expo Route Registry v4.1
 // DO NOT EDIT — managed by Arkzen engine
 // ============================================================
 

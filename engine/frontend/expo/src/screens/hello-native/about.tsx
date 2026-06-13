@@ -76,9 +76,6 @@ const AboutScreen = () => {
 
 // Engine wrapper
 export function ArkzenScreen_HelloNative_About() {
-  // Set slug synchronously on every render — must be first line so
-  // __ARKZEN_TATEMONO__ is correct before any child component or
-  // store call (logout, arkzenFetch, fetchMe, getAuthBase) runs.
   setActiveTatemono('hello-native')
   const router = useRouter()
   return (
