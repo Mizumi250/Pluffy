@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceBadge
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:42.552Z
+// Generated: 2026-06-13T02:28:30.335Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
+import { within } from './utils'
 
 export const GeofenceBadge = ({ within, enabled }: { within: boolean; enabled: boolean }) => {
   if (!enabled) return (

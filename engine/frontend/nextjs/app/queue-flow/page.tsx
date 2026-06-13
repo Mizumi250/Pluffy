@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:47.146Z
+// Generated: 2026-06-13T02:28:34.337Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -17,7 +17,7 @@ import { NowServingCard } from './components/NowServingCard'
 import { StatPill } from './components/StatPill'
 import { TicketRow } from './components/TicketRow'
 import { useAnnounce, useQueueStore } from './components/hooks'
-import { announce, fmtWait } from './components/utils'
+import { announce, fmtWait, id } from './components/utils'
 import type { Queue, QueueStatus } from './components/types'
 import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'

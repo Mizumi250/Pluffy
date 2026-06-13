@@ -3,13 +3,14 @@
 // ARKZEN GENERATED COMPONENT — Loader
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:48.773Z
+// Generated: 2026-06-13T02:28:35.975Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { barRef, countRef, fallback, screenRef, tl } from './utils'
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
 

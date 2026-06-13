@@ -3,13 +3,14 @@
 // ARKZEN GENERATED COMPONENT — ShanHeroLogo
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:48.777Z
+// Generated: 2026-06-13T02:28:35.979Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { len, paths, svgRef } from './utils'
 
 // ─── ANIMATED SHAN LOGO ───────────────────────────────────────────────────────
 // Full stroke-draw animation on mount. Letters are meaty, editorial weight.

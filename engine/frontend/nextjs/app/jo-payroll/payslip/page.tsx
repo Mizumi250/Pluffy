@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/payslip
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:44.831Z
+// Generated: 2026-06-13T02:28:32.098Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -20,7 +20,7 @@ import { StatChip } from '../components/StatChip'
 import { TabPills } from '../components/TabPills'
 import { API_BASE } from '../components/constants'
 import { usePayrollStore } from '../components/hooks'
-import { colors, formatPeso, getAvatarColor, getInitials } from '../components/utils'
+import { colors, deductions, formatPeso, getAvatarColor, getInitials } from '../components/utils'
 import type { JobOrder } from '../components/types'
 import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
 

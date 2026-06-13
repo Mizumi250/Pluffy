@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:46.236Z
+// Generated: 2026-06-13T02:30:06.672Z
 // ============================================================
 
 // ─── UTILITIES & TYPES ───────────────────────────────

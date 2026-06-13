@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:47.133Z
+// Generated: 2026-06-13T02:28:34.319Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,6 +11,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
+import { c, colors } from './utils'
 
 export const StatPill = ({ icon: Icon, label, value, color = 'blue' }: {
   icon: React.ElementType

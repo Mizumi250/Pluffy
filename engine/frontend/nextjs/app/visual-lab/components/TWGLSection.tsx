@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TWGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:49.330Z
+// Generated: 2026-06-13T02:28:36.583Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
+import { arrays, bufferInfo, canvas, canvasRef, fs, gl, programInfo, rafRef, render, t, vs } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

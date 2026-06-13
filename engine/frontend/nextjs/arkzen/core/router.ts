@@ -474,14 +474,21 @@ function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
 
     // Remove each component's body from the source so only top-level declarations
     // remain visible to the utility scanner.
+    // IMPORTANT: stop at the next top-level declaration boundary, not EOF — a
+    // greedy [\s\S]* would eat declarations that follow the component in the same
+    // block (e.g. getIconComponent declared after FeatureCard).
     let src = stripped
     for (const compName of componentNames) {
       const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      // Match from the component declaration to the end of the string — the
-      // component is always the last (or only) declaration in its chunk, so
-      // trimming from its `const Name =` onward safely removes the body without
-      // touching preceding top-level utilities like `dot`, `formatDate`, etc.
-      src = src.replace(new RegExp(`(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*`), '')
+      // Match the component declaration header, then consume until the next
+      // top-level `const`, `function`, `type`, or `interface` declaration, or EOF.
+      src = src.replace(
+        new RegExp(
+          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
+          'g'
+        ),
+        ''
+      )
     }
 
     // camelCase const: starts lowercase, not all-caps, not use[A-Z] hook
@@ -633,16 +640,21 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, baseDir: str
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
+${canonicalBlock}
+
 ${constChunks.join('\n\n')}
 `
-      atomicWrite(path.join(componentsDir, 'constants.ts'), constantsContent)
-      console.log(`[Arkzen Router] ✓ Shared constants: constants.ts`)
+      atomicWrite(path.join(componentsDir, 'constants.tsx'), constantsContent)
+      console.log(`[Arkzen Router] ✓ Shared constants: constants.tsx`)
     }
   } else {
-    const constantsPath = path.join(componentsDir, 'constants.ts')
-    if (fs.existsSync(constantsPath)) {
-      fs.unlinkSync(constantsPath)
-      console.log(`[Arkzen Router] 🧹 Removed stale constants.ts`)
+    // Clean up either extension — handle projects that had the old .ts output
+    for (const stale of ['constants.tsx', 'constants.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) {
+        fs.unlinkSync(stalePath)
+        console.log(`[Arkzen Router] 🧹 Removed stale ${stale}`)
+      }
     }
   }
 
@@ -661,14 +673,16 @@ ${constChunks.join('\n\n')}
 
     if (hookChunks.length > 0) {
       const hooksContent = `'use client'\n// ============================================================\n// ARKZEN GENERATED HOOKS — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${hookChunks.join('\n\n')}\n`
-      atomicWrite(path.join(componentsDir, 'hooks.ts'), hooksContent)
-      console.log(`[Arkzen Router] ✓ Custom hooks: hooks.ts (${[...customHooks].join(', ')})`)
+      atomicWrite(path.join(componentsDir, 'hooks.tsx'), hooksContent)
+      console.log(`[Arkzen Router] ✓ Custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
     }
   } else {
-    const hooksPath = path.join(componentsDir, 'hooks.ts')
-    if (fs.existsSync(hooksPath)) {
-      fs.unlinkSync(hooksPath)
-      console.log(`[Arkzen Router] 🧹 Removed stale hooks.ts`)
+    for (const stale of ['hooks.tsx', 'hooks.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) {
+        fs.unlinkSync(stalePath)
+        console.log(`[Arkzen Router] 🧹 Removed stale ${stale}`)
+      }
     }
   }
 
@@ -687,14 +701,16 @@ ${constChunks.join('\n\n')}
 
     if (utilChunks.length > 0) {
       const utilsContent = `// ============================================================\n// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n\n${utilChunks.join('\n\n')}\n`
-      atomicWrite(path.join(componentsDir, 'utils.ts'), utilsContent)
-      console.log(`[Arkzen Router] ✓ Utility functions: utils.ts (${[...utilityFunctions].join(', ')})`)
+      atomicWrite(path.join(componentsDir, 'utils.tsx'), utilsContent)
+      console.log(`[Arkzen Router] ✓ Utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
     }
   } else {
-    const utilsPath = path.join(componentsDir, 'utils.ts')
-    if (fs.existsSync(utilsPath)) {
-      fs.unlinkSync(utilsPath)
-      console.log(`[Arkzen Router] 🧹 Removed stale utils.ts`)
+    for (const stale of ['utils.tsx', 'utils.ts']) {
+      const stalePath = path.join(componentsDir, stale)
+      if (fs.existsSync(stalePath)) {
+        fs.unlinkSync(stalePath)
+        console.log(`[Arkzen Router] 🧹 Removed stale ${stale}`)
+      }
     }
   }
 
@@ -816,8 +832,8 @@ ${exportedDeclaration}
         console.log(`[Arkzen Router] 🧹 Removed stale ${file}`)
         continue
       }
-      // hooks.ts, types.ts, utils.ts and constants.ts are managed above — skip them here
-      if (file === 'hooks.ts' || file === 'types.ts' || file === 'constants.ts' || file === 'utils.ts') continue
+      // shared files managed above — skip both .ts and .tsx variants
+      if (['hooks.ts','hooks.tsx','types.ts','constants.ts','constants.tsx','utils.ts','utils.tsx'].includes(file)) continue
       if (file.endsWith('.tsx') && !extractedComponents.has(base)) {
         fs.unlinkSync(path.join(componentsDir, file))
         console.log(`[Arkzen Router] 🧹 Removed stale component: ${file}`)

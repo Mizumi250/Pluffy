@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:44.725Z
+// Generated: 2026-06-13T02:28:32.015Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef } from 'react'
@@ -20,7 +20,7 @@ import { StatChip } from './components/StatChip'
 import { TabPills } from './components/TabPills'
 import { API_BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
-import { colors, formatPeso } from './components/utils'
+import { colors, deductions, formatPeso } from './components/utils'
 import { useRouter } from 'next/navigation'
 import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
 

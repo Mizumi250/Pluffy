@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:46.256Z
+// Generated: 2026-06-13T02:30:06.684Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -13,6 +13,7 @@ import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
 import { FEATURES } from './components/constants'
+import { getIconComponent } from './components/utils'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

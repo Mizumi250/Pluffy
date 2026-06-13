@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — UXSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:03:49.338Z
+// Generated: 2026-06-13T02:28:36.598Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
+import { angle, canvas, colors, el, fireConfetti, initLenis, lenis, raf, stage, t, tiltRef } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 import { VanillaTilt } from './VanillaTilt'
