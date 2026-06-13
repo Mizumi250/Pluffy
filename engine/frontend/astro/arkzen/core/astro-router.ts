@@ -521,9 +521,20 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono): void {
 
   const rawSources = tatemono.components.map(c => normalizeForAstro(c.raw.trim()))
   const adapterImports = getAstroAdapterImportLines(rawSources.join('\n'))
-  const { canonicalBlock, strippedSources } = resolveImports(rawSources, {
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(rawSources, {
     extra: adapterImports.join('\n') || undefined,
   })
+
+  // Component files live at generated/components/{tat}/*.tsx but .scripts/.script
+  // files are at generated/{tat}.scripts.ts — rewrite relative './{name}.scripts'
+  // imports to the '@/arkzen/generated/{name}...' alias, mirroring the island's
+  // rewrite. Without this, `import { VisualLabColors } from './visual-lab.scripts'`
+  // resolves to a non-existent components/visual-lab/visual-lab.scripts.ts and
+  // crashes with "Could not import './visual-lab.scripts'".
+  const canonicalBlock = rawCanonicalBlock.replace(
+    /from\s+['"]\.\/([\w-]+\.scripts|[\w-]+\.[\w-]+\.script)['"]/g,
+    `from '@/arkzen/generated/$1'`
+  )
 
   const stylesByComponent = new Map<string, string>()
   for (const style of tatemono.styles.filter((s): s is typeof s & { name: string } => !!s.name)) {
@@ -683,8 +694,14 @@ ${typeChunks.join('\n\n')}
     const fileName = `${compName}.tsx`
     const filePath = path.join(componentsDir, fileName)
 
+    // CSS modules are written by emitTatemonoStyles() to src/pages/{tat}/styles/,
+    // not anywhere under generated/components/{tat}/ — use the '@' → src alias
+    // so the import resolves correctly regardless of nesting depth. Without this,
+    // `import styles from '../../styles/FeatureCard.module.css'` (relative to
+    // generated/components/{tat}/) resolves to a non-existent generated/styles/
+    // path and crashes with "Could not import '../../styles/X.module.css'".
     const cssImport = stylesByComponent.has(compName)
-      ? `import styles from '../../styles/${compName}.module.css'\n`
+      ? `import styles from '@/pages/${tatemono.meta.name}/styles/${compName}.module.css'\n`
       : ''
 
     const exportedDeclaration = ensureExported(declaration, compName, 'const|function')
@@ -704,8 +721,17 @@ ${typeChunks.join('\n\n')}
       ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
       : ''
 
-    const otherComponents = new Set(extractedComponents)
-    otherComponents.delete(compName)
+    // otherComponents: only names from extractedComponents that have their own
+    // top-level declaration chunk (i.e. their own generated file). Without this,
+    // PascalCase local consts like `const Proton = (ProtonModule as any).default
+    // || ProtonModule` (declared inside a nested .then() callback) get picked up
+    // by extractComponentNames() as false-positive "components", and since they
+    // have no declaration chunk of their own, findReferencedNames() still matches
+    // their usage inside the real component — emitting a broken
+    // `import { Proton } from './Proton'` to a file that's never generated.
+    const otherComponents = new Set(
+      [...extractedComponents].filter(name => name !== compName && declarationsByName.has(name))
+    )
     const referencedComponents = findReferencedNames(declaration, otherComponents)
     const siblingComponentImports = referencedComponents
       .sort()
@@ -809,7 +835,26 @@ function generateIslandFile(
   const sharedTypes         = extractSharedTypeNames(tatemono)
   const utilityFunctions    = extractUtilityFunctionNames(tatemono)
 
+  // resolvedUtilityFunctions: only names that have an actual top-level declaration
+  // chunk — mirrors the filtering in generateIndividualComponentFiles(). Without
+  // this, extractUtilityFunctionNames() false positives (e.g. `const colors` inside
+  // getAvatarColor(), `const deductions` inside JORow()) get imported from
+  // ./utils in the island even though utils.tsx never exports them, causing
+  // "does not provide an export named 'colors'" hydration crashes.
+  const allDeclaredNamesForUtils = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
+  const utilDeclarationNames = new Set<string>()
+  for (const component of tatemono.components) {
+    const stripped = normalizeForAstro(component.raw.trim())
+    for (const [name] of splitComponentDeclarations(stripped, allDeclaredNamesForUtils)) {
+      utilDeclarationNames.add(name)
+    }
+  }
+  const resolvedUtilityFunctions = new Set(
+    [...utilityFunctions].filter(name => utilDeclarationNames.has(name))
+  )
+
   const componentImportLines = [...extractedComponents]
+    .filter(name => utilDeclarationNames.has(name))
     .filter(name => findReferencedNames(pageSource, new Set([name])).length > 0)
     .sort()
     .map(name => `import { ${name} } from '@/arkzen/generated/components/${tatemono.meta.name}/${name}'`)

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:43:54.057Z
+// Generated: 2026-06-13T07:14:43.745Z
 // ============================================================
 
 // ─── Types ─────────────────────────────────────────────────────────────────

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED COMPONENT — HeroSection
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:43:55.125Z
+// Generated: 2026-06-13T07:14:44.667Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { Link } from '@/arkzen/core/adapters/Link'
-import styles from '../../styles/HeroSection.module.css'
+import styles from '@/pages/new-updates-styles/styles/HeroSection.module.css'
 import type { HeroSectionProps } from './types'
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => {

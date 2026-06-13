@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — animation-lab
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:43:51.276Z
+// Generated: 2026-06-13T07:14:40.495Z
 // ============================================================
 
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────

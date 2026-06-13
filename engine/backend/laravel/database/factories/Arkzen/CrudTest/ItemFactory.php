@@ -4,7 +4,7 @@
 // ARKZEN GENERATED FACTORY — ItemFactory
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T06:43:52.868775Z
+// Generated: 2026-06-13T07:14:42.055824Z
 // ============================================================
 
 namespace Database\Factories\Arkzen\CrudTest;
