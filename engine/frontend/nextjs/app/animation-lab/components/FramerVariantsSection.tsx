@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.625Z
+// Generated: 2026-06-13T02:03:39.748Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,12 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-/DemoCard>
-      </div>
-    </div>
-  )
-}
 
 // ─── FRAMER MOTION VARIANTS ───────────────────────────────────────────────────
 export const FramerVariantsSection = () => {
@@ -130,4 +124,4 @@ export const FramerVariantsSection = () => {
   )
 }
 
-// ─── FRAMER GESTURES ──────────────────
+// ─── FRAMER GESTURES ─────────────────────────────────────────────────────────

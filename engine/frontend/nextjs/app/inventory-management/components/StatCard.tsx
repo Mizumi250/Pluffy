@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatCard
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:05.537Z
+// Generated: 2026-06-13T02:03:44.258Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -23,4 +23,5 @@ export const StatCard = ({ label, value, icon, color }: { label: string; value: 
       <p className="text-xs text-neutral-500 font-medium">{label}</p>
       <p className="text-xl font-bold text-neutral-900">{value}</p>
     </div>
-  </div
+  </div>
+)

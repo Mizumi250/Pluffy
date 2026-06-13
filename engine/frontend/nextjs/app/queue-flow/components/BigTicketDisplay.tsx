@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:08.377Z
+// Generated: 2026-06-13T02:03:47.134Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,11 +13,6 @@ import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, 
 import { create } from 'zustand'
 import { fmtWait } from './utils'
 import type { MyTicketResponse } from './types'
-
-/p>
-    </div>
-  )
-}
 
 // ✅ FIX: Add safe guard for missing ticket
 export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
@@ -46,3 +41,6 @@ export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
           : is_done ? <p style={{ color: '#8aabc8', fontWeight: 500, fontSize: 14 }}>Thank you for your patience</p>
           : <><p style={{ color: '#4a72c8', fontWeight: 600, fontSize: 14, marginBottom: 4 }}>Estimated wait</p><p style={{ color: '#7a9bc4', fontSize: 13 }}>{fmtWait(estimated_wait)}</p></>}
       </div>
+    </div>
+  )
+}

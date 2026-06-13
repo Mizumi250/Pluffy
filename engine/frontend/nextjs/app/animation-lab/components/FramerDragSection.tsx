@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerDragSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.637Z
+// Generated: 2026-06-13T02:03:39.755Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,14 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-/>
-          </div>
-        </DemoCard>
-      </div>
-    </div>
-  )
-}
 
 // ─── FRAMER DRAG ──────────────────────────────────────────────────────────────
 export const FramerDragSection = () => {
@@ -99,4 +91,4 @@ export const FramerDragSection = () => {
   )
 }
 
-// ─── FRAME
+// ─── FRAMER SCROLL ────────────────────────────────────────────────────────────

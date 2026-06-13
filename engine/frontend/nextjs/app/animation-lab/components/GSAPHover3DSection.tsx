@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.622Z
+// Generated: 2026-06-13T02:03:39.747Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,12 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-/DemoCard>
-      </div>
-    </div>
-  )
-}
 
 // ─── GSAP HOVER & 3D ─────────────────────────────────────────────────────────
 export const GSAPHover3DSection = () => {
@@ -153,4 +147,4 @@ export const GSAPHover3DSection = () => {
   )
 }
 
-// ─── FRAMER MOTION VARIANTS ────────────
+// ─── FRAMER MOTION VARIANTS ───────────────────────────────────────────────────

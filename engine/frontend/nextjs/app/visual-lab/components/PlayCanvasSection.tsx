@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.831Z
+// Generated: 2026-06-13T02:03:49.321Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,9 +17,6 @@ import { useVisualLabStore } from './hooks'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'
-
-)
-}
 
 // ─── SECTION: PLAYCANVAS ──────────────────────────────────────────────────────
 export const PlayCanvasSection = () => {
@@ -109,4 +106,4 @@ export const PlayCanvasSection = () => {
   )
 }
 
-// ─── SECTION: PIXI.JS ─────────────────────────────────────────────────────
+// ─── SECTION: PIXI.JS ─────────────────────────────────────────────────────────

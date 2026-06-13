@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.857Z
+// Generated: 2026-06-13T02:03:49.345Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,12 +14,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { SectionHeader } from './SectionHeader'
-
-(falls back to WebGLv2)
-      </p>
-    </div>
-  )
-}
 
 // ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
 export const CurtainsSection = () => {
@@ -108,4 +102,4 @@ export const CurtainsSection = () => {
   )
 }
 
-// ─── SECTION: HTML-IN-CA
+// ─── SECTION: HTML-IN-CANVAS (Google Chrome 148+) ────────────────────────────

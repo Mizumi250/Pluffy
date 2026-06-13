@@ -66,3 +66,4 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       <main className="max-w-5xl mx-auto px-5 py-7">{children}</main>
     </div>
   )
+}

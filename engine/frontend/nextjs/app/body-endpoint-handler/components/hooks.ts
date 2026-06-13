@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — body-endpoint-handler
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:02.417Z
+// Generated: 2026-06-13T02:03:40.685Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -21,24 +21,4 @@ export function useToast() {
     success: (msg: string) => show('success', msg),
     error:   (msg: string) => show('error', msg),
   }
-}
-
-type ProbeResult = {
-  id:         number
-  source:     string
-  probe:      string
-  payload:    string | null
-  result:     string | null
-  ok:         boolean
-  created_at: string
-}
-
-type Stats = {
-  injected: boolean
-  builder:  string
-  method:   string
-  total:    number
-  passed:   number
-  failed:   number
-  sources:  string[]
 }

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerGesturesSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.627Z
+// Generated: 2026-06-13T02:03:39.750Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,12 +15,6 @@ import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { MagneticBtn } from './MagneticBtn'
 import { SectionHeader } from './SectionHeader'
-
-})}
-      </div>
-    </div>
-  )
-}
 
 // ─── FRAMER GESTURES ─────────────────────────────────────────────────────────
 export const FramerGesturesSection = () => {
@@ -93,4 +87,8 @@ export const FramerGesturesSection = () => {
         </DemoCard>
         <DemoCard title="Magnetic Hover" description="Position-aware cursor tracking">
           <MagneticBtn />
-        </D
+        </DemoCard>
+      </div>
+    </div>
+  )
+}

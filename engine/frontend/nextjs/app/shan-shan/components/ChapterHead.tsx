@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterHead
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.247Z
+// Generated: 2026-06-13T02:03:48.779Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,9 +11,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CHAPTERS } from './constants'
-
-</div>
-)
 
 // ─── CHAPTER HEAD ─────────────────────────────────────────────────────────────
 
@@ -47,4 +44,4 @@ export const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
   </div>
 )
 
-// ─── CHAPTER LOOKBOOK ────────────────────────────────────────────
+// ─── CHAPTER LOOKBOOK ─────────────────────────────────────────────────────────

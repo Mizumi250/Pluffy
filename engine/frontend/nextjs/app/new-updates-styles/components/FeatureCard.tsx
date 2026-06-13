@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:07.656Z
+// Generated: 2026-06-13T02:03:46.241Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,10 +11,7 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import styles from '../styles/FeatureCard.module.css'
-import type { FeatureCardProps, HeroSectionProps } from './types'
-
-'orange'
-}
+import type { FeatureCardProps } from './types'
 
 export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, color }) => {
   const bgColors = {
@@ -32,9 +29,3 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
     </div>
   )
 }
-
-interface HeroSectionProps {
-  title: string
-  subtitle: string
-  ctaText: string
-  onCta?:

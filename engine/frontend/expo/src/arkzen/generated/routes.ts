@@ -30,6 +30,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'body-mail-notification', screenName: 'register', routePath: '/body-mail-notification/register', layout: 'guest', auth: false },
 // ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:auth:true
   { tatName: 'body-mail-notification', screenName: 'dashboard', routePath: '/body-mail-notification/dashboard', layout: 'auth', auth: true },
+// ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
+  { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
+  { tatName: 'broadcast-test', screenName: 'register', routePath: '/broadcast-test/register', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:auth:true
+  { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:crud-test:index:/crud-test:default:false
   { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
 // ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
@@ -98,8 +104,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
-// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:default:false
-  { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

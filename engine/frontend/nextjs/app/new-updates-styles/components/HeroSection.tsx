@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:07.656Z
+// Generated: 2026-06-13T02:03:46.243Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,10 +11,7 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import styles from '../styles/HeroSection.module.css'
-import type { Feature, HeroSectionProps } from './types'
-
-?: () => void
-}
+import type { HeroSectionProps } from './types'
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => {
   return (
@@ -34,10 +31,3 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaTe
 }
 
 // ─── UTILITIES & TYPES ───────────────────────────────
-
-type Feature = {
-  id: number
-  icon: 'zap' | 'code' | 'palette' | 'layers'
-  title: string
-  description: string
-  color: 'blue' | 'purple' | 'green'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerLayoutSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.631Z
+// Generated: 2026-06-13T02:03:39.752Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,11 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-</motion.button>
-    </div>
-  )
-}
 
 // ─── FRAMER LAYOUT ────────────────────────────────────────────────────────────
 export const FramerLayoutSection = () => {
@@ -135,4 +130,4 @@ export const FramerLayoutSection = () => {
   )
 }
 
-// ─── FRAMER KEY
+// ─── FRAMER KEYFRAMES ─────────────────────────────────────────────────────────

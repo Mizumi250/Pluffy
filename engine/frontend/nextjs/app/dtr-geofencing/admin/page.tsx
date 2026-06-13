@@ -3,13 +3,24 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:04.365Z
+// Generated: 2026-06-13T02:03:42.580Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { EmployeeDropdown } from '../components/EmployeeDropdown'
+import { GeofenceBadge } from '../components/GeofenceBadge'
+import { GeofenceMap } from '../components/GeofenceMap'
+import { LocationWidget } from '../components/LocationWidget'
+import { RecordRow } from '../components/RecordRow'
+import { Skeleton } from '../components/Skeleton'
+import { useDtrStore } from '../components/hooks'
+import { parseSettings } from '../components/utils'
+import type { Employee, TimeRecord } from '../components/types'
+import { MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw, User as UserIcon, Clock, Loader2, Navigation, TrendingUp, ChevronDown, LogIn, LogOut } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:admin)
 const AdminPage = () => {

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ScriptDSLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.852Z
+// Generated: 2026-06-13T02:03:49.339Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -14,11 +14,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { SectionHeader } from './SectionHeader'
-
-</div>
-    </div>
-  )
-}
 
 // ─── SECTION: SCRIPT DSL ──────────────────────────────────────────────────────
 export const ScriptDSLSection = () => {
@@ -156,4 +151,4 @@ export function getEmitterConfig(origin: { x: number; y: number }) {
   )
 }
 
-// ─── SECTION: LOTTIE ───────
+// ─── SECTION: LOTTIE ─────────────────────────────────────────────────────────

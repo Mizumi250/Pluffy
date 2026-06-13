@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-06-12T14:53:07.241Z"
+      "lastUpdated": "2026-06-13T02:03:40.433Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-06-12T14:53:06.823Z"
+      "lastUpdated": "2026-06-13T02:03:39.623Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-06-12T14:53:05.388Z"
+      "lastUpdated": "2026-06-13T02:03:37.897Z"
     },
     {
       "name": "upload-test",
@@ -51,7 +51,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T07:24:49.161Z",
-      "lastUpdated": "2026-06-12T14:53:09.663Z"
+      "lastUpdated": "2026-06-13T02:03:43.592Z"
     },
     {
       "name": "mail-test",
@@ -65,7 +65,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T13:43:13.671Z",
-      "lastUpdated": "2026-06-12T14:53:07.979Z"
+      "lastUpdated": "2026-06-13T02:03:41.538Z"
     },
     {
       "name": "inventory-management",
@@ -77,7 +77,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T13:54:53.420Z",
-      "lastUpdated": "2026-06-12T14:53:07.341Z"
+      "lastUpdated": "2026-06-13T02:03:40.622Z"
     },
     {
       "name": "events-test",
@@ -89,7 +89,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:20:09.470Z",
-      "lastUpdated": "2026-06-12T14:53:07.207Z"
+      "lastUpdated": "2026-06-13T02:03:40.400Z"
     },
     {
       "name": "job-test",
@@ -101,7 +101,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:41:59.405Z",
-      "lastUpdated": "2026-06-12T14:53:07.820Z"
+      "lastUpdated": "2026-06-13T02:03:41.080Z"
     },
     {
       "name": "scheduler-test",
@@ -113,7 +113,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:56:22.878Z",
-      "lastUpdated": "2026-06-12T14:53:09.474Z"
+      "lastUpdated": "2026-06-13T02:03:43.394Z"
     },
     {
       "name": "broadcast-test",
@@ -121,11 +121,13 @@
       "status": "active",
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/broadcast-test/core.tsx",
       "screens": [
+        "login",
+        "register",
         "dashboard"
       ],
       "auth": true,
       "registered": "2026-05-31T11:11:11.611Z",
-      "lastUpdated": "2026-06-13T01:34:00.130Z"
+      "lastUpdated": "2026-06-13T02:03:39.345Z"
     },
     {
       "name": "roles-test",
@@ -139,7 +141,7 @@
       ],
       "auth": true,
       "registered": "2026-06-05T13:13:33.603Z",
-      "lastUpdated": "2026-06-12T14:53:09.344Z"
+      "lastUpdated": "2026-06-13T02:03:43.232Z"
     },
     {
       "name": "middleware-test",
@@ -151,7 +153,7 @@
       ],
       "auth": false,
       "registered": "2026-06-06T03:52:09.579Z",
-      "lastUpdated": "2026-06-12T14:53:08.090Z"
+      "lastUpdated": "2026-06-13T02:03:41.683Z"
     },
     {
       "name": "errors-test",
@@ -163,7 +165,7 @@
       ],
       "auth": false,
       "registered": "2026-06-06T04:12:10.162Z",
-      "lastUpdated": "2026-06-12T14:53:07.079Z"
+      "lastUpdated": "2026-06-13T02:03:40.248Z"
     },
     {
       "name": "notification-test",
@@ -177,7 +179,7 @@
       ],
       "auth": true,
       "registered": "2026-06-09T02:47:31.378Z",
-      "lastUpdated": "2026-06-12T14:53:08.246Z"
+      "lastUpdated": "2026-06-13T02:03:41.950Z"
     },
     {
       "name": "body-endpoint-handler",
@@ -189,7 +191,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T09:27:00.701Z",
-      "lastUpdated": "2026-06-12T14:53:05.916Z"
+      "lastUpdated": "2026-06-13T02:03:38.547Z"
     },
     {
       "name": "body-mail-notification",
@@ -203,7 +205,7 @@
       ],
       "auth": true,
       "registered": "2026-06-09T10:16:50.282Z",
-      "lastUpdated": "2026-06-12T14:53:06.508Z"
+      "lastUpdated": "2026-06-13T02:03:39.202Z"
     },
     {
       "name": "portfolio-test",
@@ -215,7 +217,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T10:31:21.465Z",
-      "lastUpdated": "2026-06-12T14:53:08.265Z"
+      "lastUpdated": "2026-06-13T02:03:41.976Z"
     },
     {
       "name": "queue-flow",
@@ -229,7 +231,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T11:29:50.908Z",
-      "lastUpdated": "2026-06-12T14:53:08.471Z"
+      "lastUpdated": "2026-06-13T02:03:42.368Z"
     },
     {
       "name": "animation-lab",
@@ -241,7 +243,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T10:31:43.017Z",
-      "lastUpdated": "2026-06-12T14:53:05.282Z"
+      "lastUpdated": "2026-06-13T02:03:37.811Z"
     },
     {
       "name": "new-updates-styles",
@@ -255,7 +257,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T18:08:22.665Z",
-      "lastUpdated": "2026-06-12T14:53:08.137Z"
+      "lastUpdated": "2026-06-13T02:03:41.759Z"
     },
     {
       "name": "dtr-geofencing",
@@ -268,7 +270,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T18:18:17.210Z",
-      "lastUpdated": "2026-06-12T14:53:07.050Z"
+      "lastUpdated": "2026-06-13T02:03:40.164Z"
     },
     {
       "name": "jo-payroll",
@@ -284,7 +286,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T01:13:19.471Z",
-      "lastUpdated": "2026-06-12T14:53:07.672Z"
+      "lastUpdated": "2026-06-13T02:03:40.948Z"
     },
     {
       "name": "asset-hub",
@@ -296,7 +298,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T02:43:24.186Z",
-      "lastUpdated": "2026-06-12T14:53:05.326Z"
+      "lastUpdated": "2026-06-13T02:03:37.843Z"
     },
     {
       "name": "shan-shan",
@@ -308,7 +310,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T07:04:18.295Z",
-      "lastUpdated": "2026-06-12T14:53:09.555Z"
+      "lastUpdated": "2026-06-13T02:03:43.492Z"
     }
   ]
 }

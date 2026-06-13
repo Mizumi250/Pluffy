@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ResetBtn
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.610Z
+// Generated: 2026-06-13T02:03:39.738Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,9 +13,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
 
-iv>
-)
-
 // ─── RESET BUTTON ─────────────────────────────────────────────────────────────
 export const ResetBtn = ({ onClick }: { onClick: () => void }) => (
   <button className="reset-btn" onClick={onClick} title="Reset animation">
@@ -23,4 +20,4 @@ export const ResetBtn = ({ onClick }: { onClick: () => void }) => (
   </button>
 )
 
-// ─── SECTION HEADER ───────────────────────────────────────────────────────
+// ─── SECTION HEADER ───────────────────────────────────────────────────────────

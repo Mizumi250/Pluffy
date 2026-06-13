@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — queue-flow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:08.368Z
+// Generated: 2026-06-13T02:03:47.124Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -25,10 +25,6 @@ export const useQueueStore = create<QueueStore>((set) => ({
 
 // ─── Utilities ────────────────────────────────────────────────────────────────
 
-s / 60)}h`
-
-
-
 export const useAnnounce = () => {
   const announce = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) return
@@ -42,4 +38,4 @@ export const useAnnounce = () => {
   return announce
 }
 
-// ─── Circular Ring ────────────────────────────────────────────────────
+// ─── Circular Ring ────────────────────────────────────────────────────────────

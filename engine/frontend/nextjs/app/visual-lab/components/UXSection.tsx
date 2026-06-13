@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — UXSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.851Z
+// Generated: 2026-06-13T02:03:49.338Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -17,11 +17,6 @@ import { useVisualLabStore } from './hooks'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 import { VanillaTilt } from './VanillaTilt'
-
-</div>
-    </div>
-  )
-}
 
 // ─── SECTION: VANILLA TILT + LENIS + CONFETTI ─────────────────────────────────
 export const UXSection = () => {
@@ -102,4 +97,4 @@ export const UXSection = () => {
   )
 }
 
-// ─── SECTION: SCRIPT DSL ──────────────────────────────
+// ─── SECTION: SCRIPT DSL ──────────────────────────────────────────────────────

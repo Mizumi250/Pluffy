@@ -227,11 +227,15 @@ function stripTemplateLiterals(src: string): string {
         // Preserve ${...} expression content verbatim so identifiers remain
         // visible to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
         if (src[i] === '$' && src[i + 1] === '{') {
+          result += '  ' // placeholders for the consumed '${' so indices stay aligned
           i += 2 // skip '${'
           let depth = 1
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') { depth--; if (depth === 0) { i++; break } }
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break } // placeholder for closing '}'
+            }
             result += src[i]  // emit expression chars so identifiers stay visible
             i++
           }

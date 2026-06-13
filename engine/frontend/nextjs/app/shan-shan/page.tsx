@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — shan-shan/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.273Z
+// Generated: 2026-06-13T02:03:48.796Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

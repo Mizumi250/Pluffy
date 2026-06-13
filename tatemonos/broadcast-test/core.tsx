@@ -202,7 +202,7 @@ const ChannelPanel = memo(({
     </div>
   )
 })
-ChannelPanel.displayName = 'ChannelPanel'
+ChannelPanel.displayName = 'ChannelPanel' 
 
 /* @arkzen:web:components:shared:end */
 /* @arkzen:web:page:login */

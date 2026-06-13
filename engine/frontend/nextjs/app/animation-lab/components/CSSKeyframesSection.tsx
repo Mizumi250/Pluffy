@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSKeyframesSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.646Z
+// Generated: 2026-06-13T02:03:39.760Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,12 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-00, fontSize: 13 }}>Faster</span>
-      </motion.div>
-    </div>
-  )
-}
 
 // ─── CSS KEYFRAMES SECTION ────────────────────────────────────────────────────
 export const CSSKeyframesSection = () => (
@@ -77,4 +71,4 @@ export const CSSKeyframesSection = () => (
   </div>
 )
 
-// ─── CSS T
+// ─── CSS TRANSITIONS SECTION ──────────────────────────────────────────────────

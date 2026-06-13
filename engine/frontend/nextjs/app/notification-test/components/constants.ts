@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — notification-test
 // Source: @arkzen:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:07.873Z
+// Generated: 2026-06-13T02:03:46.472Z
 // ============================================================
 
 // ─────────────────────────────────────────────

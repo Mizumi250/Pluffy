@@ -333,17 +333,22 @@ function stripTemplateLiterals(src: string): string {
       // Enter template literal — strip static string portions but KEEP
       // ${...} expression content so identifiers inside them remain visible
       // to findReferencedNames (e.g. REVERB_SCHEME in `${REVERB_SCHEME}://...`).
+      result += ' ' // placeholder for opening backtick
       i++ // skip opening backtick
       while (i < src.length) {
-        if (src[i] === '\\') { i += 2; continue }  // escaped char
-        if (src[i] === '`') { i++; break }           // closing backtick
+        if (src[i] === '\\') { result += '  '; i += 2; continue }  // escaped char
+        if (src[i] === '`') { result += ' '; i++; break }           // closing backtick
         // Preserve ${...} expression content verbatim
         if (src[i] === '$' && src[i + 1] === '{') {
-          i += 2 // skip '${' 
+          result += '  ' // placeholders for consumed '${'
+          i += 2 // skip '${'
           let depth = 1
           while (i < src.length && depth > 0) {
             if (src[i] === '{') depth++
-            else if (src[i] === '}') { depth--; if (depth === 0) { i++; break } }
+            else if (src[i] === '}') {
+              depth--
+              if (depth === 0) { result += '}'; i++; break } // placeholder for closing '}'
+            }
             result += src[i]  // emit so identifiers stay visible
             i++
           }
@@ -524,7 +529,7 @@ function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<
   const scanSource = stripTemplateLiterals(rawSource)
 
   const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const re = new RegExp(`^(?:export\\s+)?(const|function)\\s+(${nameAlt})\\b`, 'gm')
+  const re = new RegExp(`^(?:export\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
 
   const starts: { index: number; name: string }[] = []
   let m: RegExpExecArray | null

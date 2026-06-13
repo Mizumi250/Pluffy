@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PhaserSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.841Z
+// Generated: 2026-06-13T02:03:49.332Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -16,10 +16,6 @@ import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-</div>
-  )
-}
 
 // ─── SECTION: PHASER ──────────────────────────────────────────────────────────
 export const PhaserSection = () => {
@@ -88,4 +84,4 @@ export const PhaserSection = () => {
   )
 }
 
-// ─── SECTION: MATTER.JS ───────────────────────────────────────
+// ─── SECTION: MATTER.JS ───────────────────────────────────────────────────────

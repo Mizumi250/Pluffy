@@ -2,18 +2,113 @@
 // ARKZEN GENERATED SCREEN — broadcast-test/dashboard
 // ============================================================
 
-import React from 'react'
-import { ScrollView } from 'react-native'
-
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { AuthLayout }  from '@/layouts/AuthLayout'
 
 import { StatusBar } from 'expo-status-bar'
-
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // Shared components (from @arkzen:native:components:*)
+const BACKEND_URL   = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
+const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST          ?? 'localhost'
+const REVERB_PORT   = process.env.EXPO_PUBLIC_REVERB_PORT          ?? '8080'
+const REVERB_SCHEME = process.env.EXPO_PUBLIC_REVERB_SCHEME        ?? 'ws'
+const APP_KEY       = process.env.EXPO_PUBLIC_REVERB_APP_KEY       ?? 'arkzen-key'
 
+type WsStatus = 'connecting' | 'connected' | 'error'
+
+interface NativeMessage {
+  id:           number
+  content:      string
+  channel_type: string | null
+  created_at:   string
+}
+
+const StatusDot = ({ status }: { status: WsStatus }) => {
+  const color = status === 'connected' ? '#4ade80' : status === 'connecting' ? '#facc15' : '#f87171'
+  return <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
+}
+
+const ChannelCard = ({
+  title, badge, badgeColor, description, status, count, msgs, onSend, footer,
+}: {
+  title:       string
+  badge:       string
+  badgeColor:  string
+  description: string
+  status:      WsStatus
+  count:       number
+  msgs:        NativeMessage[]
+  onSend:      (val: string) => void
+  footer?:     React.ReactNode
+}) => {
+  const [input, setInput] = useState('')
+
+  const handleSend = () => {
+    const val = input.trim()
+    if (!val) return
+    onSend(val)
+    setInput('')
+  }
+
+  return (
+    <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden mb-4">
+      <View className="px-4 py-3.5 border-b border-neutral-100">
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center gap-2">
+            <View className={`px-2 py-0.5 rounded-full ${badgeColor}`}>
+              <Text className="text-white text-xs font-semibold">{badge}</Text>
+            </View>
+            <Text className="text-sm font-semibold text-neutral-800">{title}</Text>
+          </View>
+          <View className="flex-row items-center gap-1.5">
+            <StatusDot status={status} />
+            <Text className="text-xs text-neutral-400">{status}</Text>
+            <Text className="text-xs text-neutral-300"> · </Text>
+            <Text className="text-xs text-neutral-400">{count} rx</Text>
+          </View>
+        </View>
+        <Text className="text-xs text-neutral-400 mt-1" numberOfLines={2}>{description}</Text>
+      </View>
+
+      <View className="px-4 py-2.5 border-b border-neutral-50 flex-row gap-2 items-center">
+        <TextInput
+          className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900"
+          placeholder="Type and send…"
+          placeholderTextColor="#a3a3a3"
+          value={input}
+          onChangeText={setInput}
+          onSubmitEditing={handleSend}
+          returnKeyType="send"
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+        <TouchableOpacity onPress={handleSend} activeOpacity={0.8} className="bg-neutral-900 px-4 py-2.5 rounded-xl">
+          <Text className="text-white text-xs font-semibold">Send</Text>
+        </TouchableOpacity>
+      </View>
+
+      {footer && <View className="px-4 py-2.5 border-b border-neutral-50">{footer}</View>}
+
+      {msgs.length === 0 ? (
+        <View className="py-8 items-center">
+          <Text className="text-xs text-neutral-300">No messages yet</Text>
+        </View>
+      ) : (
+        msgs.slice(0, 20).map((m, i) => (
+          <View key={i} className="px-4 py-2.5 border-b border-neutral-50 flex-row items-start gap-2">
+            <Text className="flex-1 text-sm text-neutral-700">{m.content}</Text>
+            <Text className="text-xs text-neutral-300 shrink-0">{m.created_at?.slice(11, 19)}</Text>
+          </View>
+        ))
+      )}
+    </View>
+  )
+}
 
 // User screen (from @arkzen:native:page:dashboard)
 const DashboardScreen = () => {
@@ -225,7 +320,14 @@ const DashboardScreen = () => {
             <Text className="font-semibold">Presence</Text> — like private + live member roster.
           </Text>
           <Text className="text-xs text-neutral-400 font-mono mt-2">
-            php artisan reverb:start{'\n'}
+            php artisan reverb:start{'\n'}php artisan queue:work
+          </Text>
+        </View>
+
+      </ScrollView>
+    </View>
+  )
+}
 
 // Engine wrapper
 export function ArkzenScreen_BroadcastTest_Dashboard() {
@@ -237,7 +339,7 @@ export function ArkzenScreen_BroadcastTest_Dashboard() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
-      
+      <AuthLayout tatSlug="broadcast-test" loginRoute="/broadcast-test/login">
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
@@ -246,7 +348,7 @@ export function ArkzenScreen_BroadcastTest_Dashboard() {
       >
         <DashboardScreen />
       </ScrollView>
-      
+      </AuthLayout>
     </SafeAreaView>
   )
 }

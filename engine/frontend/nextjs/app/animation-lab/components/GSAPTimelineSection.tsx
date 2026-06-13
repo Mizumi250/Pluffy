@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPTimelineSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.618Z
+// Generated: 2026-06-13T02:03:39.744Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,10 +14,6 @@ import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer
 import { create } from 'zustand'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-div>
-  )
-}
 
 // ─── GSAP TIMELINE ────────────────────────────────────────────────────────────
 export const GSAPTimelineSection = () => {
@@ -103,4 +99,4 @@ export const GSAPTimelineSection = () => {
   )
 }
 
-// ─── GSAP STAGGER ──────────────────────────────────────────
+// ─── GSAP STAGGER ─────────────────────────────────────────────────────────────

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ParticlesSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:10.848Z
+// Generated: 2026-06-13T02:03:49.336Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -18,10 +18,6 @@ import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { Proton } from './Proton'
 import { SectionHeader } from './SectionHeader'
-
-</div>
-  )
-}
 
 // ─── SECTION: PARTICLES + PROTON ─────────────────────────────────────────────
 export const ParticlesSection = () => {
@@ -107,4 +103,4 @@ export const ParticlesSection = () => {
   )
 }
 
-// ─── SECTION: TYPED.JS + ROUGH NOTATION + SPLITTING ──────────
+// ─── SECTION: TYPED.JS + ROUGH NOTATION + SPLITTING ──────────────────────────

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPEntranceSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T01:34:01.615Z
+// Generated: 2026-06-13T02:03:39.740Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,9 +15,6 @@ import { create } from 'zustand'
 import { useAnimLabStore } from './hooks'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-
-iv>
-)
 
 // ─── GSAP ENTRANCE DEMOS ──────────────────────────────────────────────────────
 export const GSAPEntranceSection = () => {
@@ -103,4 +100,4 @@ export const GSAPEntranceSection = () => {
   )
 }
 
-// ─── GSAP SCROLL TRIGGER ─────────────────────────────────────────────
+// ─── GSAP SCROLL TRIGGER ──────────────────────────────────────────────────────
