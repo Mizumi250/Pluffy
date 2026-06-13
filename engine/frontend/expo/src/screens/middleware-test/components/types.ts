@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — middleware-test [Expo]
 // Source: @arkzen:native:components (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:04.955Z
+// Generated: 2026-06-13T09:40:29.572Z
 // ============================================================
 
 export type PingLog = {

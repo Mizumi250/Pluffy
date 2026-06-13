@@ -6,13 +6,13 @@ import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ChannelCard } from './components/ChannelCard'
 import { StatusDot } from './components/StatusDot'
-import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, KeyboardAvoidingView, Platform } from 'react-native'
 
 import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:register)

@@ -5,7 +5,7 @@
 import React, { useState } from 'react'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
-import { ScrollView, View, Text, TouchableOpacity, TextInput } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, Linking } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

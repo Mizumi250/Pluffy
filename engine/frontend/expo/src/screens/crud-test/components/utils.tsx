@@ -2,11 +2,13 @@
 // ARKZEN GENERATED NATIVE UTILITIES — crud-test [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:03.904Z
+// Generated: 2026-06-13T09:40:27.659Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { BACKEND_URL } from './constants'
+import type { FormData } from './types'
 
 export const emptyForm: FormData = { name: '', description: '', status: 'active', priority: '0', tags: '' }
 

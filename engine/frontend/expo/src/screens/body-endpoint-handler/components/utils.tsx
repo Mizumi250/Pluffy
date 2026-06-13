@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE UTILITIES — body-endpoint-handler [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:02.912Z
+// Generated: 2026-06-13T09:40:26.113Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import { BACKEND_URL } from './constants'
 
 export const sourceColor = (s: string) =>
   s === 'handler-body'   ? '#7c3aed' :

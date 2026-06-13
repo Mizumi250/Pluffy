@@ -7,7 +7,7 @@ import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
 import { BACKEND_URL } from './components/constants'
 import { formatSize } from './components/utils'
-import { ScrollView, View, Text, TouchableOpacity, Image, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, Image, ActivityIndicator, Alert } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

@@ -370,6 +370,8 @@ const RN_CORE_COMPONENTS = new Set([
   'View', 'Text', 'ScrollView', 'TouchableOpacity', 'Pressable',
   'TextInput', 'Image', 'ImageBackground', 'FlatList', 'SectionList',
   'Switch', 'ActivityIndicator', 'Modal', 'KeyboardAvoidingView',
+  'Platform', 'Dimensions', 'StyleSheet', 'Alert', 'Linking',
+  'Keyboard', 'RefreshControl',
 ])
 
 // React hooks that @arkzen:native:page blocks may reference without their
@@ -455,20 +457,27 @@ function ensureStatusBarImport(canonicalBlock: string): string {
   return canonicalBlock + `${sep}\nimport { StatusBar } from 'expo-status-bar'`
 }
 
-function ensureSetActiveTatemonoImport(canonicalBlock: string): string {
-  const authStorePath = `'../../../arkzen/core/stores/authStore'`
-  if (/setActiveTatemono/.test(canonicalBlock)) return canonicalBlock
+// AuthStore exports a page block may reference without importing them itself
+// (relied on the shared inline scope before per-file generation split the
+// page block out from @arkzen:native:components:shared).
+const AUTH_STORE_EXPORTS = new Set(['useAuthStore', 'useAuthStoreHydrated'])
 
-  const existingImportRe = /import\s+\{([^}]*)\}\s+from\s+['"]\.\.\/\.\.\/\.\.\/\.\.\/\.\.\/arkzen\/core\/stores\/authStore['"]\s*;?/
+function ensureAuthStoreImports(canonicalBlock: string, extraNamed: string[]): string {
+  const authStorePath = `'../../../arkzen/core/stores/authStore'`
+  const required = Array.from(new Set(['setActiveTatemono', ...extraNamed]))
+
+  const existingImportRe = /import\s+\{([^}]*)\}\s+from\s+['"](?:\.\.\/)+arkzen\/core\/stores\/authStore['"]\s*;?/
   const match = canonicalBlock.match(existingImportRe)
   if (match) {
     const named = match[1].split(',').map(s => s.trim()).filter(Boolean)
-    if (!named.includes('setActiveTatemono')) named.push('setActiveTatemono')
+    for (const name of required) {
+      if (!named.includes(name)) named.push(name)
+    }
     return canonicalBlock.replace(existingImportRe, `import { ${named.join(', ')} } from ${authStorePath}`)
   }
 
   const sep = canonicalBlock.endsWith('\n') ? '' : '\n'
-  return canonicalBlock + `${sep}\nimport { setActiveTatemono } from ${authStorePath}`
+  return canonicalBlock + `${sep}\nimport { ${required.join(', ')} } from ${authStorePath}`
 }
 
 function normaliseNativeImports(block: string): string {
@@ -582,6 +591,18 @@ ${constChunksFixed.join('\n\n')}
         )
       })
     if (hookChunks.length > 0) {
+      const hookChunksJoined = hookChunks.join('\n\n')
+
+      const hookReferencedConstants = findReferencedNames(hookChunksJoined, sharedConstants)
+      const hookConstantsImport = hookReferencedConstants.length > 0
+        ? `import { ${hookReferencedConstants.sort().join(', ')} } from './constants'\n`
+        : ''
+
+      const hookReferencedTypes = findReferencedNames(hookChunksJoined, sharedTypes)
+      const hookTypesImport = hookReferencedTypes.length > 0
+        ? `import type { ${hookReferencedTypes.sort().join(', ')} } from './types'\n`
+        : ''
+
       const content = `// ============================================================
 // ARKZEN GENERATED NATIVE HOOKS — ${tatemono.meta.name} [Expo]
 // Source: @arkzen:native:components (${tatemono.meta.name})
@@ -590,8 +611,8 @@ ${constChunksFixed.join('\n\n')}
 // ============================================================
 
 ${normalisedCanonicalBlock}
-
-${hookChunks.join('\n\n')}
+${hookConstantsImport}${hookTypesImport}
+${hookChunksJoined}
 `
       fs.writeFileSync(path.join(componentsDir, 'hooks.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
@@ -616,6 +637,26 @@ ${hookChunks.join('\n\n')}
         )
       })
     if (utilChunks.length > 0) {
+      const utilChunksJoined = utilChunks.join('\n\n')
+
+      // Utility functions may reference shared constants/types/hooks that
+      // were split out into their own files (e.g. apiFetch uses BACKEND_URL
+      // from constants.tsx). Mirror the per-component import resolution.
+      const utilReferencedConstants = findReferencedNames(utilChunksJoined, sharedConstants)
+      const utilConstantsImport = utilReferencedConstants.length > 0
+        ? `import { ${utilReferencedConstants.sort().join(', ')} } from './constants'\n`
+        : ''
+
+      const utilReferencedTypes = findReferencedNames(utilChunksJoined, sharedTypes)
+      const utilTypesImport = utilReferencedTypes.length > 0
+        ? `import type { ${utilReferencedTypes.sort().join(', ')} } from './types'\n`
+        : ''
+
+      const utilReferencedHooks = findReferencedNames(utilChunksJoined, customHooks)
+      const utilHooksImport = utilReferencedHooks.length > 0
+        ? `import { ${utilReferencedHooks.sort().join(', ')} } from './hooks'\n`
+        : ''
+
       const content = `// ============================================================
 // ARKZEN GENERATED NATIVE UTILITIES — ${tatemono.meta.name} [Expo]
 // Source: @arkzen:native:components (${tatemono.meta.name})
@@ -624,8 +665,8 @@ ${hookChunks.join('\n\n')}
 // ============================================================
 
 ${normalisedCanonicalBlock}
-
-${utilChunks.join('\n\n')}
+${utilConstantsImport}${utilTypesImport}${utilHooksImport}
+${utilChunksJoined}
 `
       fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
@@ -873,7 +914,8 @@ export default ${wrapperName}
   canonicalBlock = ensureReactNativeImport(canonicalBlock, Array.from(new Set(['ScrollView', ...referencedRNCore])))
   canonicalBlock = ensureExpoRouterImport(canonicalBlock)
   canonicalBlock = ensureStatusBarImport(canonicalBlock)
-  canonicalBlock = ensureSetActiveTatemonoImport(canonicalBlock)
+  const referencedAuthStoreExports = findReferencedNames(pageStrippedForRefs, AUTH_STORE_EXPORTS)
+  canonicalBlock = ensureAuthStoreImports(canonicalBlock, referencedAuthStoreExports)
   if (!/from ['"]react-native-safe-area-context['"]/.test(canonicalBlock)) {
     canonicalBlock += `\nimport { SafeAreaView } from 'react-native-safe-area-context'`
   }

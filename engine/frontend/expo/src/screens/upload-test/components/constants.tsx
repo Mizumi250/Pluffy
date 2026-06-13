@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — upload-test [Expo]
 // Source: @arkzen:native:components (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:06.426Z
+// Generated: 2026-06-13T09:40:31.715Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

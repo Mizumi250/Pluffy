@@ -11,7 +11,7 @@ import { TicketRowNative } from './components/TicketRowNative'
 import { BACKEND_URL } from './components/constants'
 import { fmtWait } from './components/utils'
 import type { MyTicketData } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, RefreshControl } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

@@ -749,7 +749,7 @@ const IndexScreen = () => {
         onSaved={load}
       />
     </View>
-  )
+  ) 
 }
 
 /* @arkzen:native:page:index:end */

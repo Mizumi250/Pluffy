@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — CombinedTransformDemo [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:02.666Z
+// Generated: 2026-06-13T09:40:25.900Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

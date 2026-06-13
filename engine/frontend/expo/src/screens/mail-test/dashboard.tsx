@@ -15,7 +15,7 @@ import { useRouter } from 'expo-router'
 
 import { StatusBar } from 'expo-status-bar'
 
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 // User screen (from @arkzen:native:page:dashboard)

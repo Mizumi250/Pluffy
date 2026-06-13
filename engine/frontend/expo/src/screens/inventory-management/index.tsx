@@ -9,7 +9,7 @@ import { StatCard } from './components/StatCard'
 import { StockBadge } from './components/StockBadge'
 import { apiFetch } from './components/utils'
 import type { InventoryItem } from './components/types'
-import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, TextInput, ActivityIndicator, Alert } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

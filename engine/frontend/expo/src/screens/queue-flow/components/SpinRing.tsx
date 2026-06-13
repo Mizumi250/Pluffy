@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SpinRing [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:05.275Z
+// Generated: 2026-06-13T09:40:29.978Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

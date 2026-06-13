@@ -15,7 +15,7 @@ import { SkillBar } from './components/SkillBar'
 import { SoundBars } from './components/SoundBars'
 import { StaggerReveal } from './components/StaggerReveal'
 import { CHAPTERS, PERSONAL_INFO, SKILLS, SKILLS_MARQUEE } from './components/constants'
-import { ScrollView, View, Text, TouchableOpacity, Image } from 'react-native'
+import { ScrollView, View, Text, TouchableOpacity, Image, Linking } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

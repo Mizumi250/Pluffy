@@ -7,7 +7,7 @@ import { Badge } from './components/Badge'
 import { Card } from './components/Card'
 import { GhostButton } from './components/GhostButton'
 import { PrimaryButton } from './components/PrimaryButton'
-import { ScrollView, View, Text } from 'react-native'
+import { ScrollView, View, Text, StyleSheet } from 'react-native'
 
 import { useRouter } from 'expo-router'
 

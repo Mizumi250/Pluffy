@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — scheduler-test [Expo]
 // Source: @arkzen:native:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T09:28:06.197Z
+// Generated: 2026-06-13T09:40:31.452Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
