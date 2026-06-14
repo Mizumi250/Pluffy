@@ -800,10 +800,6 @@ function generateIslandFile(
   animationFnName: string | null
 ): string {
   const componentName = extractComponentName(page.name, page.raw)
-  const isAuthLayout  = page.layout === 'auth'
-  const isGuestOnly   = page.layout === 'guest' &&
-    (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
-
   const pageSource = normalizeForAstro(page.raw.trim())
 
   const framerNeeded = new Set(['motion'])
@@ -823,8 +819,12 @@ function generateIslandFile(
     ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
-  const layoutImport = getLayoutImport(page.layout, tatemono.meta)
-  const layoutComp   = getLayoutComponent(page.layout)
+  const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildLayoutJSX(page, tatemono)
+  const decl = parsePageLayoutDecl(page.layout)
+  const isAuthLayout  = decl.guard === 'auth'
+  const isGuestLayout = decl.guard === 'guest'
+  const isGuestOnly   = isGuestLayout && tatemono.meta.auth &&
+    ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name)
   const adapterImportLines = getAstroAdapterImportLines(pageSource)
 
   // Resolve which declarations from @arkzen:components this page actually uses,
@@ -931,7 +931,7 @@ function generateIslandFile(
   })()
 
   const extraLines = [
-    layoutImport,
+    ...layoutImports,
     animImportLine,
     ...adapterImportLines,
     ...componentImportLines,
@@ -984,7 +984,7 @@ const ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)
   }, [])
 
   return (
-    <${layoutComp}${isAuthLayout ? ' requireAuth={true}' : ''}${isGuestOnly ? ' guestOnly={true}' : ''}>
+    ${layoutOpen}
       <motion.div
         ref={pageRef}
         variants={${animationFnName ? 'pageVariants' : '{}'}}
@@ -994,7 +994,7 @@ const ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)
       >
         <${componentName} />
       </motion.div>
-    </${layoutComp}>
+    ${layoutClose}
   )
 }
 
@@ -1388,14 +1388,35 @@ export const ARKZEN_ROUTE_MAP = new Map(
   console.log(`[Arkzen Astro Router] ✓ Route registry written: routes.ts (${allRoutes.length} routes)`)
 }
 
-// ─── Layout helpers ───────────────────────────────────────────────────────────
+// ─── Layout helpers v11.0 ─────────────────────────────────────────────────────
 
-function getLayoutImport(layout: string, meta: { name: string }): string {
+function parsePageLayoutDecl(raw: string): { guard?: 'auth' | 'guest'; layout?: string } {
+  const t = raw.trim()
+  const m = t.match(/^\+?(auth|guest)(?::([a-zA-Z0-9_-]+))?$/)
+  if (m) return { guard: m[1] as 'auth' | 'guest', layout: m[2] ?? undefined }
+  if (t === 'auth')  return { guard: 'auth' }
+  if (t === 'guest') return { guard: 'guest' }
+  return { layout: t || undefined }
+}
+
+function resolveLayoutChain(layoutName: string, allLayouts: ArkzenLayout[]): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | undefined = layoutName
+  while (current) {
+    if (visited.has(current)) throw new Error(`[Arkzen Astro Router] Layout chain cycle at: "${current}"`)
+    visited.add(current)
+    chain.unshift(current)
+    current = allLayouts.find(l => l.name === current)?.parent
+  }
+  return chain
+}
+
+function getLayoutImport(layout: string, tatName: string): string {
   switch (layout) {
     case 'guest': return `import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'`
     case 'auth':  return `import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'`
-    default:
-      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${meta.name}-${layout}'`
+    default:      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${tatName}-${layout}'`
   }
 }
 
@@ -1405,6 +1426,36 @@ function getLayoutComponent(layout: string): string {
     case 'auth':  return 'AuthLayout'
     default:      return `${toPascalCase(layout)}Layout`
   }
+}
+
+function buildLayoutJSX(
+  page: ArkzenPage,
+  tatemono: ParsedTatemono
+): { imports: string[]; openTags: string; closeTags: string } {
+  const decl   = parsePageLayoutDecl(page.layout)
+  const imports: string[] = []
+  const opens:   string[] = []
+  const closes:  string[] = []
+  const tatName  = tatemono.meta.name
+
+  if (decl.layout) {
+    for (const name of resolveLayoutChain(decl.layout, tatemono.layouts)) {
+      imports.push(getLayoutImport(name, tatName))
+      const comp = getLayoutComponent(name)
+      opens.push(`<${comp}>`)
+      closes.unshift(`</${comp}>`)
+    }
+  }
+  if (decl.guard) {
+    const isGuestOnly = decl.guard === 'guest' && tatemono.meta.auth &&
+      ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name)
+    imports.push(getLayoutImport(decl.guard, tatName))
+    const comp  = getLayoutComponent(decl.guard)
+    const props = decl.guard === 'auth' ? ' requireAuth={true}' : isGuestOnly ? ' guestOnly={true}' : ''
+    opens.push(`<${comp}${props}>`)
+    closes.unshift(`</${comp}>`)
+  }
+  return { imports, openTags: opens.join('\n    '), closeTags: closes.join('\n    ') }
 }
 
 function extractComponentName(pageName: string, raw: string): string {

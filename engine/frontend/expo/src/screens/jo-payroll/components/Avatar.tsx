@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Avatar [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:51.020Z
+// Generated: 2026-06-14T03:23:49.385Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

@@ -108,7 +108,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenLayout, ArkzenErrorHandler } from '../types'
 import { emitNativeStyles }                    from './lib/dsl-native-style-emitter'
 import { copyAssetsToExpo, cleanExpoAssets }   from '../../../../shared/arkzen/native-core/assets'
 
@@ -1029,33 +1029,90 @@ ${exportedDeclaration}
   }
 }
 
+// ─── Native layout helpers v11.0 ──────────────────────────────────────────────
+// Native layouts use a separate @arkzen:native:layout chain, parallel to web.
+// Auth/Guest are built-in guards; custom layouts are resolved via parent chain.
+
+function parseNativeLayoutDecl(raw: string): { guard?: 'auth' | 'guest'; layout?: string } {
+  const t = raw.trim()
+  const m = t.match(/^\+?(auth|guest)(?::([a-zA-Z0-9_-]+))?$/)
+  if (m) return { guard: m[1] as 'auth' | 'guest', layout: m[2] ?? undefined }
+  if (t === 'auth')  return { guard: 'auth' }
+  if (t === 'guest') return { guard: 'guest' }
+  if (t === 'default' || t === '') return {}
+  return { layout: t || undefined }
+}
+
+function resolveNativeLayoutChain(layoutName: string, allLayouts: ArkzenLayout[]): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | undefined = layoutName
+  while (current) {
+    if (visited.has(current)) throw new Error(`[Arkzen Expo Router] Native layout chain cycle at: "${current}"`)
+    visited.add(current)
+    chain.unshift(current)
+    current = allLayouts.find(l => l.name === current)?.parent
+  }
+  return chain
+}
+
+function getNativeLayoutImport(layout: string, tatName: string): string {
+  switch (layout) {
+    case 'auth':  return `import { AuthLayout }  from '@/layouts/AuthLayout'`
+    case 'guest': return `import { GuestLayout } from '@/layouts/GuestLayout'`
+    default:      return `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${tatName}-${layout}'`
+  }
+}
+
+function getNativeLayoutComponent(layout: string): string {
+  switch (layout) {
+    case 'auth':  return 'AuthLayout'
+    case 'guest': return 'GuestLayout'
+    default:      return `${toPascalCase(layout)}Layout`
+  }
+}
+
+function buildNativeLayoutJSX(
+  page: ArkzenPage,
+  tatemono: ParsedTatemono
+): { imports: string[]; openTags: string; closeTags: string } {
+  const decl   = parseNativeLayoutDecl(page.layout ?? 'default')
+  const imports: string[] = []
+  const opens:   string[] = []
+  const closes:  string[] = []
+  const tatName  = tatemono.meta.name
+
+  // native layouts use tatemono.nativeLayouts for chain resolution
+  const nativeLayouts = (tatemono as any).nativeLayouts as ArkzenLayout[] ?? []
+
+  if (decl.layout) {
+    for (const name of resolveNativeLayoutChain(decl.layout, nativeLayouts)) {
+      imports.push(getNativeLayoutImport(name, tatName))
+      const comp = getNativeLayoutComponent(name)
+      opens.push(`<${comp} tatSlug="${tatName}">`)
+      closes.unshift(`</${comp}>`)
+    }
+  }
+  if (decl.guard) {
+    imports.push(getNativeLayoutImport(decl.guard, tatName))
+    const comp = getNativeLayoutComponent(decl.guard)
+    if (decl.guard === 'auth') {
+      opens.push(`<${comp} tatSlug="${tatName}" loginRoute="/${tatName}/login">`)
+    } else {
+      opens.push(`<${comp} tatSlug="${tatName}" dashboardRoute="/${tatName}/dashboard">`)
+    }
+    closes.unshift(`</${comp}>`)
+  }
+  return { imports, openTags: opens.join('\n      '), closeTags: closes.join('\n      ') }
+}
+
 // ─── Screen file generator ────────────────────────────────────────────────────
 // v4.0: no longer inlines nativeComponents — imports each component individually.
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const tatName  = tatemono.meta.name
-  const layout   = page.layout ?? 'default'
-  const isAuth   = layout === 'auth'
-  const isGuest  = layout === 'guest'
-  const isApp    = layout === 'app'
-
-  const layoutImport = isAuth
-    ? `import { AuthLayout }  from '@/layouts/AuthLayout'`
-    : isGuest
-    ? `import { GuestLayout } from '@/layouts/GuestLayout'`
-    : isApp
-    ? `import { ${toPascalCase(layout)}Layout } from '@/arkzen/core/layouts/custom/${tatName}-${layout}'`
-    : ''
-
-  const layoutOpen = isAuth
-    ? `<AuthLayout tatSlug="${tatName}" loginRoute="/${tatName}/login">`
-    : isGuest
-    ? `<GuestLayout tatSlug="${tatName}" dashboardRoute="/${tatName}/dashboard">`
-    : isApp
-    ? `<${toPascalCase(layout)}Layout tatSlug="${tatName}">`
-    : ''
-
-  const layoutClose = isAuth ? `</AuthLayout>` : isGuest ? `</GuestLayout>` : isApp ? `</${toPascalCase(layout)}Layout>` : ''
+  const { imports: nativeLayoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildNativeLayoutJSX(page, tatemono)
+  const layoutImport = nativeLayoutImports.join('\n')
 
   const hasNativeContent = page.raw && page.raw.trim().length > 0
 
@@ -1140,7 +1197,7 @@ export default ${wrapperName}
     : ''
 
   const extraLines = [
-    layoutImport,
+    ...nativeLayoutImports,
     animImportLine,
     styleImportLine,
     componentImportLines,

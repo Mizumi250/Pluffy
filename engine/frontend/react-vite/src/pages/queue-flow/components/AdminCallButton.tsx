@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AdminCallButton [React+Vite]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:25:13.119Z
+// Generated: 2026-06-14T03:19:10.371Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

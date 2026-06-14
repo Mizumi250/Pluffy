@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Chapter [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:53.861Z
+// Generated: 2026-06-14T03:19:12.692Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

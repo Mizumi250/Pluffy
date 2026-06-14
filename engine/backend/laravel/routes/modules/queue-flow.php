@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:58.798941Z
+// Generated: 2026-06-14T03:19:10.627327Z
 // Resources: Queue, Ticket
 // Custom controllers: QueueController
 // ============================================================

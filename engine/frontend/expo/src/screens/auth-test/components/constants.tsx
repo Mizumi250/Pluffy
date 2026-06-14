@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — auth-test [Expo]
 // Source: @arkzen:native:components (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:48.452Z
+// Generated: 2026-06-14T03:23:46.157Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

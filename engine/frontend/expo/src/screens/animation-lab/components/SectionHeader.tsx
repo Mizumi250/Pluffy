@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SectionHeader [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:48.281Z
+// Generated: 2026-06-14T03:23:45.878Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

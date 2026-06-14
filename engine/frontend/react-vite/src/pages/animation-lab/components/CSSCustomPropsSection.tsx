@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CSSCustomPropsSection [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:25:07.598Z
+// Generated: 2026-06-14T03:23:47.300Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
