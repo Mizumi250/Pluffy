@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — middleware-test [Expo]
 // Source: @arkzen:native:components (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T08:07:15.405Z
+// Generated: 2026-06-14T14:56:00.511Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T08:15:53.428Z
+// Generated: 2026-06-14T14:55:59.243Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -95,6 +95,11 @@ const IndexPage = () => {
         .fromTo('.hw-hero-cta', { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out' }, '-=0.6')
         .fromTo('.hw-scroll-hint', { opacity: 0 }, { opacity: 1, duration: 0.6 }, '-=0.3')
         .fromTo('.hw-hero-badge', { scale: 0, rotation: -30 }, { scale: 1, rotation: 0, duration: 0.7, ease: 'back.out(1.4)' }, '-=0.8')
+        .fromTo('.hw-hero-cup',
+          { y: 140, x: 40, opacity: 0, scale: 0.75, rotation: 4 },
+          { y: 0, x: 0, opacity: 1, scale: 1, rotation: -8, duration: 1.3, ease: 'power3.out' },
+          '-=0.9'
+        )
 
       // ── Hero parallax ──────────────────────────────────────────────────────
       gsap.to('.hw-hero-img', {
@@ -102,6 +107,13 @@ const IndexPage = () => {
         ease: 'none',
         scrollTrigger: { trigger: '#hw-hero', start: 'top top', end: 'bottom top', scrub: 1.5 },
       })
+
+      // ── Hero cup parallax ────────────────────────────────────────────────────
+      gsap.fromTo('.hw-hero-cup',
+        { yPercent: 0, rotation: -8 },
+        { yPercent: -16, rotation: -3, ease: 'none',
+          scrollTrigger: { trigger: '#hw-hero', start: 'top top', end: 'bottom top', scrub: 1.5 } }
+      )
 
       // ── Nav reveal ────────────────────────────────────────────────────────
       gsap.fromTo('.hw-nav', { y: -80, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: 'power3.out', delay: 0.2 })
@@ -487,6 +499,22 @@ const IndexPage = () => {
             color-mix(in srgb, var(--hw-bg) 20%, transparent) 65%,
             var(--hw-bg) 100%
           );
+        }
+        .hw-hero-cup {
+          position: absolute;
+          right: clamp(-4rem, -5vw, -1rem);
+          bottom: -4%;
+          z-index: 3;
+          width: clamp(360px, 42vw, 680px);
+          max-height: 105%;
+          object-fit: contain;
+          transform-origin: center bottom;
+          pointer-events: none;
+          will-change: transform;
+          opacity: 0;
+        }
+        @media (max-width: 768px) {
+          .hw-hero-cup { width: clamp(240px, 70vw, 440px); right: -2rem; bottom: -2%; opacity: 0.9; }
         }
         .hw-hero-content { position: relative; z-index: 2; max-width: 860px; }
         .hw-hero-tag {
@@ -1088,6 +1116,11 @@ const IndexPage = () => {
       {/* ── Hero ────────────────────────────────────────────────────────── */}
       <section id="hw-hero" ref={heroRef}>
         <div className="hw-hero-img" />
+        <img
+          className="hw-hero-cup"
+          src="/tatemonos/hw-coffee/assets/images/img1.png"
+          alt="H&amp;W Coffee signature cup"
+        />
         <div className="hw-hero-badge">
           <div className="hw-hero-badge-inner">
             <span className="hw-hero-badge-num">4.7</span>

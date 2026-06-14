@@ -44,6 +44,8 @@ const ArkzenPage_BroadcastTest_Register = lazy(() => import('@/pages/broadcast-t
 const ArkzenPage_BroadcastTest_Dashboard = lazy(() => import('@/pages/broadcast-test/dashboard'))
 // ROUTE:broadcast-test:__root_redirect:/broadcast-test:true
 const ArkzenPage_BroadcastTest_RootRedirect = lazy(() => import('@/pages/broadcast-test/__root_redirect'))
+// ROUTE:cafe-teresita:index:/cafe-teresita:false
+const ArkzenPage_CafeTeresita_Index = lazy(() => import('@/pages/cafe-teresita/index'))
 // ROUTE:crud-test:index:/crud-test:false
 const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 // ROUTE:dtr-geofencing:index:/dtr-geofencing:false
@@ -56,6 +58,8 @@ const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index
 const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
+// ROUTE:hw-coffee:index:/hw-coffee:false
+const ArkzenPage_HwCoffee_Index = lazy(() => import('@/pages/hw-coffee/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
 const ArkzenPage_InventoryManagement_Index = lazy(() => import('@/pages/inventory-management/index'))
 // ROUTE:jo-payroll:index:/jo-payroll:false
@@ -148,8 +152,6 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:hw-coffee:index:/hw-coffee:false
-const ArkzenPage_HwCoffee_Index = lazy(() => import('@/pages/hw-coffee/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -173,12 +175,14 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/broadcast-test/register', name: 'register', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Register, auth: true },
   { path: '/broadcast-test/dashboard', name: 'dashboard', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Dashboard, auth: true },
   { path: '/broadcast-test', name: '__root_redirect', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_RootRedirect, auth: true },
+  { path: '/cafe-teresita', name: 'index', tatemono: 'cafe-teresita', component: ArkzenPage_CafeTeresita_Index, auth: false },
   { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
   { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
   { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
+  { path: '/hw-coffee', name: 'index', tatemono: 'hw-coffee', component: ArkzenPage_HwCoffee_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
   { path: '/jo-payroll/job-database', name: 'job-database', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_JobDatabase, auth: false },
@@ -225,5 +229,4 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/hw-coffee', name: 'index', tatemono: 'hw-coffee', component: ArkzenPage_HwCoffee_Index, auth: false },
 ]

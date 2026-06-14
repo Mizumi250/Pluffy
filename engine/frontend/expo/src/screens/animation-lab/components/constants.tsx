@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — animation-lab [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T08:07:10.271Z
+// Generated: 2026-06-14T14:55:55.413Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

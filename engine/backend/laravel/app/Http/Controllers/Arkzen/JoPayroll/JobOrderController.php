@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — JobOrderController
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T08:07:14.644462Z
+// Generated: 2026-06-14T14:56:00.295434Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\JoPayroll;

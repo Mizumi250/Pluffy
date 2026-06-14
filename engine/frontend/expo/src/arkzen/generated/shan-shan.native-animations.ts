@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE ANIMATIONS — shan-shan
 // Source: @arkzen:native:animation:rn
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T08:07:19.234Z
+// Generated: 2026-06-14T14:56:04.108Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,

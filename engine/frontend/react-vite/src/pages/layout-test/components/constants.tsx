@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — layout-test [React+Vite]
 // Source: @arkzen:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T08:07:14.876Z
+// Generated: 2026-06-14T14:56:00.578Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
