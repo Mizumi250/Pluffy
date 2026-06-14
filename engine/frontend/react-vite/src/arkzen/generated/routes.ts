@@ -56,6 +56,8 @@ const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index
 const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
+// ROUTE:hw-coffee:index:/hw-coffee:false
+const ArkzenPage_HwCoffee_Index = lazy(() => import('@/pages/hw-coffee/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
 const ArkzenPage_InventoryManagement_Index = lazy(() => import('@/pages/inventory-management/index'))
 // ROUTE:jo-payroll:index:/jo-payroll:false
@@ -177,6 +179,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
   { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
+  { path: '/hw-coffee', name: 'index', tatemono: 'hw-coffee', component: ArkzenPage_HwCoffee_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
   { path: '/jo-payroll/job-database', name: 'job-database', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_JobDatabase, auth: false },
