@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ItemRow [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:40:58.955Z
+// Generated: 2026-06-14T02:28:49.984Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

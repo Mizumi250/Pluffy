@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AnnounceBadge [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:34.768Z
+// Generated: 2026-06-14T02:27:21.605Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

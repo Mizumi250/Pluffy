@@ -135,7 +135,7 @@ export interface ArkzenPage {
 }
 export type ArkzenErrorHandlerType = '404' | '500'
 export interface ArkzenErrorHandler { type: ArkzenErrorHandlerType; raw: string }
-export interface ArkzenLayout { name: string; raw: string; start: number; end: number }
+export interface ArkzenLayout { name: string; raw: string; parent?: string; start: number; end: number }
 export interface ArkzenStyle { name?: string; raw: string; start: number; end: number }
 
 export interface ParsedTatemono {

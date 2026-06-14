@@ -334,6 +334,7 @@ export interface ArkzenErrorHandler {
 export interface ArkzenLayout {
   name: string
   raw: string
+  parent?: string  // v11.0: optional parent layout name for chain resolution
   start: number
   end: number
 }

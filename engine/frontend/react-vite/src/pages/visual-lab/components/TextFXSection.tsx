@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — TextFXSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:33:08.127Z
+// Generated: 2026-06-14T02:25:16.015Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

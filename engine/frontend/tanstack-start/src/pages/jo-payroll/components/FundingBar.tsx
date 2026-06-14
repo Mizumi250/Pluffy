@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FundingBar [TanStack]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:07.942Z
+// Generated: 2026-06-14T02:28:55.889Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatChip [TanStack]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:07.930Z
+// Generated: 2026-06-14T02:28:55.875Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

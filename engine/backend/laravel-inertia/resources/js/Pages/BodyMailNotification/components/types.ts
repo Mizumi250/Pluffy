@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-mail-notification [React+Inertia]
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:30.652Z
+// Generated: 2026-06-14T02:27:18.180Z
 // ============================================================
 
 export type SendLogEntry = {

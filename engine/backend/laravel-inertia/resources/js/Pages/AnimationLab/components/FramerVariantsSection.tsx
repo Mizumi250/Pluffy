@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:29.397Z
+// Generated: 2026-06-14T02:27:16.869Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

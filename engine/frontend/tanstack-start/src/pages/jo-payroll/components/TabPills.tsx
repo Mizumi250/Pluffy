@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — TabPills [TanStack]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:07.934Z
+// Generated: 2026-06-14T02:28:55.880Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

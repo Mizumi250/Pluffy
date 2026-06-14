@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — broadcast-test [TanStack]
 // Visiting /broadcast-test redirects to /broadcast-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-13T08:27:03.694Z
+// Generated: 2026-06-14T02:28:52.473Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

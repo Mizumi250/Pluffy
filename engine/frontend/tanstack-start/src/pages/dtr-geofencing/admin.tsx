@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [TanStack]
-// Layout: app | Auth guard: false | Guest-only: false
+// Layout: app | Auth guard: false | Guest: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:04.668Z
+// Generated: 2026-06-14T02:28:53.955Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

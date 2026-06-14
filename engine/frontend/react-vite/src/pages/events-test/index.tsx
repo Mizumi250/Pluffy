@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — events-test/index [React+Vite]
-// Layout: guest | Auth: false | Guest-only: false
+// Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T00:33:03.942Z
+// Generated: 2026-06-14T02:25:11.318Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

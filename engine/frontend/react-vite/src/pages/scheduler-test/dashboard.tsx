@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Vite]
-// Layout: guest | Auth: false | Guest-only: false
+// Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T00:33:07.595Z
+// Generated: 2026-06-14T02:25:14.379Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow [React+Vite]
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:33:04.135Z
+// Generated: 2026-06-14T02:25:11.607Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

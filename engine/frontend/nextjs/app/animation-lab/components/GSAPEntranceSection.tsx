@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPEntranceSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:28:27.090Z
+// Generated: 2026-06-14T02:26:40.251Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — inventory-management [React+Vite]
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:33:04.133Z
+// Generated: 2026-06-14T02:25:11.605Z
 // ============================================================
 
 export interface InventoryItem {

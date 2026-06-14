@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
-// Layout: guest | Auth: false | Guest-only: false
+// Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T00:33:01.991Z
+// Generated: 2026-06-14T02:25:08.135Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

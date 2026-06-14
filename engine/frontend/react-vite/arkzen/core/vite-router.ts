@@ -39,7 +39,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenLayout, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
 import { writeSitemap } from './sitemap'
@@ -383,7 +383,29 @@ function extractComponentName(pageName: string, raw: string): string {
   return toPascalCase(pageName) + 'Page'
 }
 
-// ─── Layout helpers ────────────────────────────────────────────────────────────
+// ─── Layout helpers v11.0 ─────────────────────────────────────────────────────
+
+function parsePageLayoutDecl(raw: string): { guard?: 'auth' | 'guest'; layout?: string } {
+  const t = raw.trim()
+  const m = t.match(/^\+?(auth|guest)(?::([a-zA-Z0-9_-]+))?$/)
+  if (m) return { guard: m[1] as 'auth' | 'guest', layout: m[2] ?? undefined }
+  if (t === 'auth')  return { guard: 'auth' }
+  if (t === 'guest') return { guard: 'guest' }
+  return { layout: t || undefined }
+}
+
+function resolveLayoutChain(layoutName: string, allLayouts: ArkzenLayout[]): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | undefined = layoutName
+  while (current) {
+    if (visited.has(current)) throw new Error(`[Arkzen Vite Router] Layout chain cycle at: "${current}"`)
+    visited.add(current)
+    chain.unshift(current)
+    current = allLayouts.find(l => l.name === current)?.parent
+  }
+  return chain
+}
 
 function getLayoutImport(layout: string, tatName: string): string {
   switch (layout) {
@@ -399,6 +421,36 @@ function getLayoutComponent(layout: string): string {
     case 'auth':  return 'AuthLayout'
     default:      return `${toPascalCase(layout)}Layout`
   }
+}
+
+function buildLayoutJSX(
+  page: ArkzenPage,
+  tatemono: ParsedTatemono
+): { imports: string[]; openTags: string; closeTags: string } {
+  const decl    = parsePageLayoutDecl(page.layout)
+  const imports: string[] = []
+  const opens:   string[] = []
+  const closes:  string[] = []
+  const tatName  = tatemono.meta.name
+
+  if (decl.layout) {
+    for (const name of resolveLayoutChain(decl.layout, tatemono.layouts)) {
+      imports.push(getLayoutImport(name, tatName))
+      const comp = getLayoutComponent(name)
+      opens.push(`<${comp}>`)
+      closes.unshift(`</${comp}>`)
+    }
+  }
+  if (decl.guard) {
+    const isGuestOnly = decl.guard === 'guest' && tatemono.meta.auth &&
+      ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name)
+    imports.push(getLayoutImport(decl.guard, tatName))
+    const comp  = getLayoutComponent(decl.guard)
+    const props = decl.guard === 'auth' ? ' requireAuth={true}' : isGuestOnly ? ' guestOnly={true}' : ''
+    opens.push(`<${comp}${props}>`)
+    closes.unshift(`</${comp}>`)
+  }
+  return { imports, openTags: opens.join('\n    '), closeTags: closes.join('\n    ') }
 }
 
 // ─── Template literal stripper ────────────────────────────────────────────────
@@ -928,16 +980,11 @@ ${exportedDeclaration}
 //     etc. aren't lost just because the page itself doesn't import them.
 
 function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalStyle: boolean): string {
-  const tatName       = tatemono.meta.name
-  const layout        = page.layout ?? (tatemono.meta.auth ? 'auth' : 'none')
-  const isAuthLayout  = layout === 'auth'
-  const isGuestLayout = layout === 'guest'
-  const isGuestOnly   = isGuestLayout && (
-    (page as { guestOnly?: boolean }).guestOnly === true ||
-    (tatemono.meta.auth && ['login', 'register', 'forgot-password', 'reset-password'].includes(page.name))
-  )
-  const layoutImport = layout !== 'none' ? getLayoutImport(layout, tatName) : ''
-  const layoutComp   = layout !== 'none' ? getLayoutComponent(layout) : 'React.Fragment'
+  const tatName      = tatemono.meta.name
+  const decl         = parsePageLayoutDecl(page.layout ?? (tatemono.meta.auth ? 'auth' : 'none'))
+  const isAuthLayout = decl.guard === 'auth'
+  const isGuestLayout = decl.guard === 'guest'
+  const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildLayoutJSX(page, tatemono)
   const animFnName   = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
   const animImport   = animFnName
     ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
@@ -1052,7 +1099,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     : ''
 
   const extraLines = [
-    layoutImport,
+    ...layoutImports,
     animImport,
     routerImportLine,
     styleImport,
@@ -1091,7 +1138,7 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
 
   return `// ============================================================
 // ARKZEN GENERATED PAGE — ${tatName}/${page.name} [React+Vite]
-// Layout: ${layout} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
+// Layout: ${page.layout} | Auth: ${isAuthLayout} | Guest: ${isGuestLayout}
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
@@ -1111,7 +1158,7 @@ const ${wrapperName} = () => {
   }, [])
 
   return (
-    <${layoutComp}${isAuthLayout ? ' requireAuth={true}' : ''}${isGuestOnly ? ' guestOnly={true}' : ''}>
+    ${layoutOpen}
       <motion.div
         ref={pageRef}
         variants={${animFnName ? 'pageVariants' : '{}'}}
@@ -1121,7 +1168,7 @@ const ${wrapperName} = () => {
       >
         <${componentName} />
       </motion.div>
-    </${layoutComp}>
+    ${layoutClose}
   )
 }
 

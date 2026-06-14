@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — MotiSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:40:57.038Z
+// Generated: 2026-06-14T02:28:48.292Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — queue-flow [React+Vite]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:33:06.589Z
+// Generated: 2026-06-14T02:25:13.107Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

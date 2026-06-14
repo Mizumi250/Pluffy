@@ -26,7 +26,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono, ArkzenPage, ArkzenErrorHandler } from '../types'
+import type { ParsedTatemono, ArkzenPage, ArkzenLayout, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles }            from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
 import { writeSitemap } from './sitemap'

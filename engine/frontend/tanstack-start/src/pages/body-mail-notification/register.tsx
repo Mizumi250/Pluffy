@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — body-mail-notification/register [TanStack]
-// Layout: guest | Auth guard: false | Guest-only: true
+// Layout: guest | Auth guard: false | Guest: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:02.792Z
+// Generated: 2026-06-14T02:28:51.776Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

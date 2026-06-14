@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — queue-flow [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:34.743Z
+// Generated: 2026-06-14T02:27:21.592Z
 // ============================================================
 
 // ─── Types ────────────────────────────────────────────────────────────────────

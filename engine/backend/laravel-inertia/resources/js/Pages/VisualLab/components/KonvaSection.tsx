@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — KonvaSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:37.306Z
+// Generated: 2026-06-14T02:27:24.436Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

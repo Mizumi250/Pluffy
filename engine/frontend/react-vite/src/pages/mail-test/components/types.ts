@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — mail-test [React+Vite]
 // Source: @arkzen:components (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:33:05.778Z
+// Generated: 2026-06-14T02:25:12.439Z
 // ============================================================
 
 export interface MailLog {

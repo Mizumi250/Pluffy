@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — DemoCard [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:40:57.024Z
+// Generated: 2026-06-14T02:28:48.273Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

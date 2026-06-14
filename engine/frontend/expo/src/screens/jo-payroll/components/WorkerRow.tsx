@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — WorkerRow [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:41:00.380Z
+// Generated: 2026-06-14T02:28:51.024Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

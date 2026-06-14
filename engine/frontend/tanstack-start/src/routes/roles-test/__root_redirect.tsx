@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — roles-test [TanStack]
 // Visiting /roles-test redirects to /roles-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-13T08:27:11.219Z
+// Generated: 2026-06-14T02:28:59.168Z
 // ============================================================
 
 import { createFileRoute, redirect } from '@tanstack/react-router'

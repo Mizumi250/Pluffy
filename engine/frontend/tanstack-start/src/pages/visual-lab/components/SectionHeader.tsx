@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader [TanStack]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T08:27:13.831Z
+// Generated: 2026-06-14T02:29:01.649Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

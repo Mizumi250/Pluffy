@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
-// Layout: auth | Auth: true | Guest-only: false
+// Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T00:33:03.143Z
+// Generated: 2026-06-14T02:25:10.074Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

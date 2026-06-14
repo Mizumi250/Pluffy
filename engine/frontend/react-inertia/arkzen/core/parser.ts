@@ -504,8 +504,9 @@ function parseAllNativeStyles(content: string): ArkzenSection[] {
 function parseAllNativePages(content: string): ArkzenPage[] {
   const sections = extractAllNamedSections(content, 'native:page')
   return sections.map(section => {
-    // Check for layout declaration: /* @arkzen:native:page:layout:name */
-    const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:layout:([a-zA-Z0-9_-]+) \*\//)
+    // v11.0: layout declaration allows + prefix and chained names
+    // e.g. +auth:tab-shell, +guest:app, app, guest, auth
+    const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
     return {
       name:   section.name!,
       raw:    section.raw,
@@ -936,9 +937,20 @@ function parseAllEndpointBodies(content: string): Record<string, string> {
 }
 
 // ─────────────────────────────────────────────
-// PARSE ALL PAGES — v5
-// Extracts @arkzen:page:name blocks with per-page layout
-// Layout declared as: /* @arkzen:page:layout:guest */
+// PARSE ALL PAGES — v11.0
+// Extracts @arkzen:web:page:name blocks with per-page layout.
+//
+// v11.0: Layout declaration now supports full chain syntax:
+//   /* @arkzen:web:page:layout:app */         → custom layout only
+//   /* @arkzen:web:page:layout:guest */        → built-in guard (compat)
+//   /* @arkzen:web:page:layout:auth */         → built-in guard (compat)
+//   /* @arkzen:web:page:layout:+auth */        → guard, no custom layout
+//   /* @arkzen:web:page:layout:+auth:sidebar */→ guard + custom layout chain
+//   /* @arkzen:web:page:layout:+guest:app */   → guest guard + custom layout
+//
+// The `layout` field stored on ArkzenPage is the raw declaration string
+// (e.g. "+auth:sidebar") — routers call parsePageLayoutDecl() to resolve it.
+// Backward compat: plain "guest"/"auth" still work as-is.
 // ─────────────────────────────────────────────
 
 function parseAllPages(content: string): ArkzenPage[] {
@@ -948,6 +960,7 @@ function parseAllPages(content: string): ArkzenPage[] {
   // v7.0: @arkzen:web:page: — strict, no fallback
   const openPattern   = `/* @arkzen:web:page:`
   const closePrefix   = `web:page`
+  // v11.0: layout pattern now allows + prefix and chained names
   const layoutPattern = `@arkzen:web:page:layout:`
 
   while (true) {
@@ -974,12 +987,14 @@ function parseAllPages(content: string): ArkzenPage[] {
 
     let raw = content.slice(openCommentEnd + 2, closeIdx).trim()
 
+    // v11.0: match layout declaration — value after layout: may include + and :
+    // e.g. +auth:sidebar, +guest:app, app, guest, auth
     let layout: string = 'guest'
     const blockContent = content.slice(openCommentEnd + 2, closeIdx)
-    const layoutMatch  = blockContent.match(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}([a-zA-Z0-9_-]+) \\*\\/`))
+    const layoutMatch  = blockContent.match(/\/\* @arkzen:web:page:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
     if (layoutMatch) {
       layout = layoutMatch[1]
-      raw = raw.replace(new RegExp(`\\/\\* ${layoutPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[a-zA-Z0-9_-]+ \\*\\/\\n?`), '').trim()
+      raw = raw.replace(/\/\* @arkzen:web:page:layout:\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)? \*\/\n?/, '').trim()
     }
 
     results.push({
@@ -997,19 +1012,124 @@ function parseAllPages(content: string): ArkzenPage[] {
 }
 
 // ─────────────────────────────────────────────
-// PARSE ALL CUSTOM LAYOUTS — v5
-// @arkzen:layout:name ... @arkzen:layout:name:end
+// PARSE ALL CUSTOM LAYOUTS — v11.0
+// @arkzen:web:layout:name ... :end
+//
+// v11.0: Added `parent` field — optional YAML key inside the opening
+// comment that declares which layout wraps this one.
+//
+// DSL format:
+//   /* @arkzen:web:layout:sidebar
+//   parent: app
+//   */
+//   export const SidebarLayout = ({ children }) => (...)
+//   /* @arkzen:web:layout:sidebar:end */
+//
+// Router resolves the full chain from innermost → outermost by
+// walking parent links. Layouts without `parent` are outermost shells.
+// Cycle detection is enforced in the router (not here).
 // ─────────────────────────────────────────────
 
 function parseAllLayouts(content: string): ArkzenLayout[] {
   // v7.0: @arkzen:web:layout: — strict, no fallback
-  const sections = extractAllNamedSections(content, 'web:layout')
-  return sections.map(s => {
-    const seg = content.slice(s.start)
-    const nameMatch = seg.match(/\/\* @arkzen:web:layout:([a-zA-Z0-9_-]+)/)
-    const name = nameMatch ? nameMatch[1] : 'unknown'
-    return { name, raw: s.raw, start: s.start, end: s.end }
-  })
+  const openPattern = `/* @arkzen:web:layout:`
+  const results: ArkzenLayout[] = []
+  let searchFrom = 0
+
+  while (true) {
+    const openIdx = content.indexOf(openPattern, searchFrom)
+    if (openIdx === -1) break
+
+    const afterOpen = content.slice(openIdx + openPattern.length)
+    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
+    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
+
+    const name = identMatch[1]
+    if (name === 'end') { searchFrom = openIdx + openPattern.length; continue }
+
+    // Find end of opening comment
+    const openCommentEnd = findOpeningCommentEnd(content, openIdx, openIdx + openPattern.length)
+    if (openCommentEnd === -1) break
+
+    // v11.0: extract parent from YAML inside opening comment
+    const yamlSlice = content.slice(openIdx + openPattern.length + name.length, openCommentEnd).trim()
+    let parent: string | undefined
+    const parentMatch = yamlSlice.match(/(?:^|\n)\s*parent\s*:\s*([a-zA-Z0-9_-]+)/)
+    if (parentMatch) parent = parentMatch[1].trim()
+
+    // Find closing :end
+    const closeMarker = `/* @arkzen:web:layout:${name}:end */`
+    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
+    if (closeIdx === -1) { searchFrom = openCommentEnd + 2; continue }
+
+    const raw = content.slice(openCommentEnd + 2, closeIdx).trim()
+    results.push({ name, raw, parent, start: openIdx, end: closeIdx + closeMarker.length })
+
+    searchFrom = closeIdx + closeMarker.length
+  }
+
+  return results
+}
+
+// ─────────────────────────────────────────────
+// RESOLVE LAYOUT CHAIN — v11.0
+// Walks parent links from innermost layout outward.
+// Returns array ordered outermost → innermost (wrap order).
+// Detects cycles — throws if found.
+// Used by all stack routers.
+// ─────────────────────────────────────────────
+
+export function resolveLayoutChain(
+  layoutName: string,
+  allLayouts: ArkzenLayout[]
+): string[] {
+  const chain: string[] = []
+  const visited = new Set<string>()
+  let current: string | undefined = layoutName
+
+  while (current) {
+    if (visited.has(current)) {
+      throw new Error(`[Arkzen Parser] Layout chain cycle detected at: "${current}" (chain: ${chain.join(' → ')})`)
+    }
+    visited.add(current)
+    chain.unshift(current) // prepend so outermost ends up first
+    const layout = allLayouts.find(l => l.name === current)
+    current = layout?.parent
+  }
+
+  return chain // e.g. ['app', 'sidebar', 'modal']
+}
+
+// ─────────────────────────────────────────────
+// PARSE PAGE LAYOUT DECLARATION — v11.0
+// Parses the layout string from a page block.
+// Supports:
+//   layout:app              → { guard: undefined, layout: 'app' }
+//   layout:guest            → { guard: 'guest',   layout: undefined }
+//   layout:auth             → { guard: 'auth',    layout: undefined }
+//   layout:+auth            → { guard: 'auth',    layout: undefined }
+//   layout:+auth:sidebar    → { guard: 'auth',    layout: 'sidebar' }
+//   layout:+guest:app       → { guard: 'guest',   layout: 'app' }
+// ─────────────────────────────────────────────
+
+export function parsePageLayoutDecl(raw: string): { guard?: 'auth' | 'guest'; layout?: string } {
+  const trimmed = raw.trim()
+
+  // +guard prefix: +auth or +guest, optionally followed by :layoutName
+  const guardPrefixMatch = trimmed.match(/^\+?(auth|guest)(?::([a-zA-Z0-9_-]+))?$/)
+  if (guardPrefixMatch) {
+    return {
+      guard:  guardPrefixMatch[1] as 'auth' | 'guest',
+      layout: guardPrefixMatch[2] ?? undefined,
+    }
+  }
+
+  // Plain built-in names without + prefix (backward compat)
+  if (trimmed === 'auth')  return { guard: 'auth' }
+  if (trimmed === 'guest') return { guard: 'guest' }
+
+  // Pure custom layout name (no guard)
+  return { layout: trimmed || undefined }
 }
 
 // ─────────────────────────────────────────────

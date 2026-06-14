@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel [React+Inertia]
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:31.608Z
+// Generated: 2026-06-14T02:27:18.786Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

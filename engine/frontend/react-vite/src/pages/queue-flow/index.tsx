@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED PAGE — queue-flow/index [React+Vite]
-// Layout: app | Auth: false | Guest-only: false
+// Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T00:33:06.614Z
+// Generated: 2026-06-14T02:25:13.140Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — notification-test [React+Inertia]
 // Source: @arkzen:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:34.422Z
+// Generated: 2026-06-14T02:27:21.342Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ParallaxDemo [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T07:49:29.410Z
+// Generated: 2026-06-14T02:27:16.883Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

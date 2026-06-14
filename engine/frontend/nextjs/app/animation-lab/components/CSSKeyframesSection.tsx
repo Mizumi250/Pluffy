@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CSSKeyframesSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T02:28:27.118Z
+// Generated: 2026-06-14T02:26:40.312Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
