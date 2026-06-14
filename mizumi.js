@@ -189,21 +189,52 @@ function cmdSetup() {
   })
 }
 
-async function cmdExport(tatName) {
+async function cmdExport(tatName, stackArg) {
+  const config = readConfig()
+
+  // Step 1 — pick tatemono
   if (!tatName) {
-    const config  = readConfig()
     const modules = (config.modules ?? []).map(m => m.name)
     if (modules.length === 0) { warn('タテモノなし — No tatemonos registered yet.'); return }
     divider()
     const chosen = await picker('どのタテモノ？ Which tatemono to export?', modules.map(m => ({ label: m, value: m })))
     tatName = chosen.value
   }
+
+  // Step 2 — pick platform (web or app), Step 3 — pick stack for that platform
+  // This is purely for export.js's --stack=<name> override — it does NOT
+  // touch arkzen.json, so the live activeStack/activeAppStack used by
+  // `node start.js` / `node mizumi.js start` is left untouched.
+  let stack = stackArg
+  if (!stack) {
+    divider()
+    const platform = await picker('どのプラットフォーム？ Export for which platform?', [
+      { label: 'Web',  sub: `current: ${config.activeStack ?? 'nextjs'}`,     value: 'web' },
+      { label: 'App',  sub: `current: ${config.activeAppStack ?? 'expo'}`,    value: 'app' },
+    ])
+
+    const STACKS = platform.value === 'web' ? WEB_STACKS : APP_STACKS
+    const LABELS = platform.value === 'web' ? WEB_LABELS : APP_LABELS
+    const current = platform.value === 'web' ? (config.activeStack ?? 'nextjs') : (config.activeAppStack ?? 'expo')
+
+    divider()
+    const chosenStack = await picker(
+      `${platform.value === 'web' ? 'Web' : 'App'} スタック — Export with which stack?`,
+      Object.entries(STACKS).map(([key]) => ({
+        label: `${key === current ? '→ ' : '  '}${LABELS[key] ?? key}`,
+        sub:   key === current ? '(active)' : key,
+        value: key,
+      }))
+    )
+    stack = chosenStack.value
+  }
+
   console.log()
-  log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn('node', ['export.js', tatName], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const child = spawn('node', ['export.js', tatName, `--stack=${stack}`], { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', code => {
-    if (code === 0) success(`Exported → projects/${tatName}/`)
+    if (code === 0) success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
     else error(`Export failed with code ${code}`)
   })
 }
@@ -335,7 +366,7 @@ async function interactiveMenu() {
     { label: 'エンジン起動     Start engine',           sub: 'web + app simultaneously',  value: 'start'      },
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
-    { label: 'プロジェクト出力  Export project',          sub: 'node export.js <name>',     value: 'export'     },
+    { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app → stack',value: 'export'     },
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'スタック情報     Stack info',              sub: 'web + app active stacks',    value: 'stacks'     },
@@ -373,7 +404,9 @@ function printHelp() {
 
 
     ['mizumi setup',             '→ Run setup'],
-    ['mizumi export <name>',     '→ Export tatemono'],
+    ['mizumi export',            '→ Export wizard (tatemono → web/app → stack)'],
+    ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
+    ['mizumi export <name> <stack>', '→ Export directly with given stack'],
     ['mizumi web <stack>',       '→ Switch web stack'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi stack',             '→ Show active web + app stack'],
@@ -397,7 +430,7 @@ const arg     = args[1]
 switch (command) {
   case 'start':   cmdStart();     break
   case 'setup':   cmdSetup();                  break
-  case 'export':  cmdExport(arg);              break
+  case 'export':  cmdExport(arg, args[2]);     break
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break
   case 'stack':   cmdStack();                  break

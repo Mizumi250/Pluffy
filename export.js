@@ -31,13 +31,18 @@ const path = require('path')
 const ROOT_DIR   = __dirname
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
 
-// Read active stack from arkzen.json
+// Read active stack from arkzen.json — overridable via --stack=<name>
+// (used by mizumi.js export wizard so exporting doesn't change the
+// live activeStack/activeAppStack used by `node start.js`)
 const arkzenJson  = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'arkzen.json'), 'utf-8'))
-const activeStack = arkzenJson.activeStack ?? 'nextjs'
+const stackFlag   = process.argv.find(a => a.startsWith('--stack='))
+const activeStack = stackFlag
+  ? stackFlag.slice('--stack='.length)
+  : (arkzenJson.activeStack ?? 'nextjs')
 
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
-const isNative  = activeStack === 'native'
+const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native'
 
 // Paths — backend is stack-aware
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', activeStack)
@@ -148,6 +153,8 @@ const BUILDER_MAP = {
   'react-inertia': { file: './arkzen/core/inertia-builder',fn: 'buildInertiaTatemono' },
   'astro':         { file: './arkzen/core/astro-builder',  fn: 'buildAstroTatemono'   },
   'tanstack-start':{ file: './arkzen/core/tanstack-builder',fn:'buildTanstackTatemono'},
+  'expo':          { file: './arkzen/core/expo-builder',   fn: 'buildExpoTatemono'    },
+  'react-native':  { file: './arkzen/core/native-builder', fn: 'buildNativeTatemono'  },
 }
 const builderEntry = BUILDER_MAP[activeStack] ?? BUILDER_MAP['nextjs']
 
@@ -449,7 +456,7 @@ if (isInertia) {
     fs.readdirSync(projGenDir).forEach(f => {
       if (f === 'routes.ts' || f === '.arkzen-ready' || f === 'auth-tatemonos.ts') return
       if (!f.startsWith(`${tatName}.`)) {
-        fs.unlinkSync(path.join(projGenDir, f))
+        fs.rmSync(path.join(projGenDir, f), { recursive: true, force: true })
       }
     })
     success(`generated/ cleaned (kept only ${tatName}.* files)`)
@@ -1266,7 +1273,7 @@ const startLines = [
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
   hasBackend && hasRealtime ? `console.log('  Reverb:   ws://localhost:8081')` : null,
   !isInertia && !isNative ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
-  isNative                ? `console.log('  Expo:     scan QR code in terminal\\n')` : null,
+  isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
   ``,
   // Backend process
   hasBackend && !isInertia ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')` : null,
@@ -1283,7 +1290,9 @@ const startLines = [
   // Frontend process
   isInertia
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], __dirname, 'frontend')` : null,
-  isNative
+  isNative && activeStack === 'react-native'
+    ? `const frontend = run('frontend', 'npx', ['react-native', 'start'], __dirname, 'frontend')` : null,
+  isNative && activeStack !== 'react-native'
     ? `const frontend = run('frontend', 'npx', ['expo', 'start'], __dirname, 'frontend')` : null,
   !isInertia && !isNative
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
