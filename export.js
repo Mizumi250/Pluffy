@@ -319,15 +319,24 @@ if (isInertia) {
       if (rel.startsWith('arkzen/generated/'))                       return false
       // Scope public tatemono assets — exclude other tatemonos' assets entirely
       if (rel.startsWith('public/tatemonos/') && !rel.startsWith(`public/tatemonos/${tatName}`)) return false
-      // Next.js: app/ pages — root layout.tsx kept, only this tatemono's pages kept
+      // app/ pages — scope to this tatemono only
+      // Next.js:    keep app/layout.tsx (root layout)
+      // Expo:       keep app/_layout.tsx (root layout) + app/${tatName}/ routes
+      // Others:     keep app/${tatName}/ only
       if (rel.startsWith('app/') && rel !== 'app/') {
-        if (rel === 'app/layout.tsx')               return true
-        if (rel.startsWith(`app/${tatName}`))       return true
+        if (rel === 'app/layout.tsx')               return true   // Next.js root layout
+        if (rel === 'app/_layout.tsx')              return true   // Expo root layout
+        if (rel.startsWith(`app/${tatName}`))       return true   // this tatemono's routes
         return false
       }
       // React-Vite / others: src/pages/ — only this tatemono's pages kept
       if (rel.startsWith('src/pages/') && rel !== 'src/pages/') {
         if (rel.startsWith(`src/pages/${tatName}`)) return true
+        return false
+      }
+      // Expo: src/screens/ — only this tatemono's screens kept
+      if (rel.startsWith('src/screens/') && rel !== 'src/screens/') {
+        if (rel.startsWith(`src/screens/${tatName}`)) return true
         return false
       }
       return true
@@ -1023,8 +1032,58 @@ module.exports = nextConfig
 // and should not be changed).
 //
 // Skip: Inertia (pages live in resources/js/Pages, not app/)
-//       Native  (no app/ directory)
 // ─────────────────────────────────────────────
+
+// Expo: hoist app/<tatName>/ → app/ and src/screens/<tatName>/ → src/screens/
+// Expo Router uses app/ for file-based routing, screens live in src/screens/
+if (isNative) {
+  log(`Hoisting Expo routes and screens for ${tatName}...`)
+
+  // Hoist app/<tatName>/* → app/*
+  const tatAppDir  = path.join(PROJECT_DIR, 'app', tatName)
+  const rootAppDir = path.join(PROJECT_DIR, 'app')
+  if (fs.existsSync(tatAppDir)) {
+    for (const entry of fs.readdirSync(tatAppDir)) {
+      fs.renameSync(path.join(tatAppDir, entry), path.join(rootAppDir, entry))
+    }
+    fs.rmdirSync(tatAppDir)
+    success(`app/${tatName}/ → app/ (Expo routes hoisted)`)
+  }
+
+  // Hoist src/screens/<tatName>/* → src/screens/*
+  const tatScreensDir  = path.join(PROJECT_DIR, 'src', 'screens', tatName)
+  const rootScreensDir = path.join(PROJECT_DIR, 'src', 'screens')
+  if (fs.existsSync(tatScreensDir)) {
+    for (const entry of fs.readdirSync(tatScreensDir)) {
+      fs.renameSync(path.join(tatScreensDir, entry), path.join(rootScreensDir, entry))
+    }
+    fs.rmdirSync(tatScreensDir)
+    success(`src/screens/${tatName}/ → src/screens/ (Expo screens hoisted)`)
+  }
+
+  // Rewrite /<tatName>/ route refs in all screen/app files
+  function getAllNativeFiles(dir, results = []) {
+    if (!fs.existsSync(dir)) return results
+    for (const entry of fs.readdirSync(dir)) {
+      if (entry === 'node_modules') continue
+      const full = path.join(dir, entry)
+      if (fs.statSync(full).isDirectory()) getAllNativeFiles(full, results)
+      else if (['.tsx', '.ts', '.js', '.jsx'].some(e => full.endsWith(e))) results.push(full)
+    }
+    return results
+  }
+
+  const nativeFiles = getAllNativeFiles(PROJECT_DIR)
+  let nativeReplaced = 0
+  for (const file of nativeFiles) {
+    let src = fs.readFileSync(file, 'utf-8')
+    const before = src
+    src = src.replace(new RegExp(`(/${tatName})/`, 'g'), '/')
+    src = src.replace(new RegExp(`(/${tatName})(['"\`\)])`, 'g'), '/$2')
+    if (src !== before) { fs.writeFileSync(file, src); nativeReplaced++ }
+  }
+  success(`Rewrote /${tatName}/ route refs in ${nativeReplaced} file(s)`)
+}
 
 if (!isInertia && !isNative) {
   log(`Stripping page URL prefix /${tatName} from frontend...`)
