@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StaggerReveal [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:19:12.682Z
+// Generated: 2026-06-14T04:19:54.056Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

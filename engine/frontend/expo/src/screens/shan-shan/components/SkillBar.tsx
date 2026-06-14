@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SkillBar [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:19:12.689Z
+// Generated: 2026-06-14T04:19:54.059Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

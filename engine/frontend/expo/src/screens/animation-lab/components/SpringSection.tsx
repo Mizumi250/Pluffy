@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SpringSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:23:45.919Z
+// Generated: 2026-06-14T04:19:48.396Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

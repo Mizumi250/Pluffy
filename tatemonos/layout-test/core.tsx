@@ -756,3 +756,52 @@ export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => 
 )
 
 /* @arkzen:native:components:shared:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ERROR PAGES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:web:error:404 */
+
+import React from 'react'
+import Link from 'next/link'
+
+const NotFoundPage = () => (
+  <div className="min-h-screen bg-indigo-50 flex items-center justify-center p-8">
+    <div className="text-center max-w-md">
+      <p className="text-[120px] font-black text-indigo-100 leading-none">404</p>
+      <h1 className="text-xl font-bold text-neutral-900 -mt-2 mb-2">Page not found</h1>
+      <p className="text-sm text-neutral-500 mb-6">This route doesn't exist in the layout-test module.</p>
+      <Link href="/layout-test" className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-500 transition-colors">
+        Back to Layout Test
+      </Link>
+    </div>
+  </div>
+)
+
+/* @arkzen:web:error:404:end */
+
+/* @arkzen:native:error:404 */
+
+import React from 'react'
+import { View, Text, TouchableOpacity } from 'react-native'
+import { useRouter } from 'expo-router'
+
+const NativeNotFoundScreen = () => {
+  const router = useRouter()
+  return (
+    <View style={{ flex: 1, backgroundColor: '#eef2ff', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
+      <Text style={{ fontSize: 96, fontWeight: '900', color: '#c7d2fe', lineHeight: 100 }}>404</Text>
+      <Text style={{ fontSize: 18, fontWeight: '800', color: '#1f2937', marginTop: -8, marginBottom: 8 }}>Page not found</Text>
+      <Text style={{ fontSize: 13, color: '#6b7280', textAlign: 'center', marginBottom: 24 }}>This route doesn't exist in the layout-test module.</Text>
+      <TouchableOpacity
+        onPress={() => router.replace('/layout-test')}
+        style={{ backgroundColor: '#6366f1', paddingHorizontal: 20, paddingVertical: 10, borderRadius: 12 }}
+      >
+        <Text style={{ color: '#fff', fontWeight: '700', fontSize: 14 }}>Back to Layout Test</Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+/* @arkzen:native:error:404:end */

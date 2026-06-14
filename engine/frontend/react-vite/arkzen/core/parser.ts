@@ -507,9 +507,12 @@ function parseAllNativePages(content: string): ArkzenPage[] {
     // v11.0: layout declaration allows + prefix and chained names
     // e.g. +auth:tab-shell, +guest:app, app, guest, auth
     const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
+    const raw = layoutMatch
+      ? section.raw.replace(/\/\* @arkzen:native:page:layout:\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)? \*\/\n?/, '').trim()
+      : section.raw
     return {
       name:   section.name!,
-      raw:    section.raw,
+      raw,
       layout: layoutMatch?.[1] ?? 'default',
       start:  section.start,
       end:    section.end,
@@ -1885,8 +1888,13 @@ function validateDslTags(content: string, filePath: string): void {
 
     const hasInlineClose = trimmed.endsWith('*/')
 
-    // Code blocks must have */ on same line
-    if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose) {
+    // v11.0: web:layout and native:layout allow multi-line opening comments
+    // for YAML metadata (e.g. parent: shell). The parser handles these via
+    // findOpeningCommentEnd — skip the inline-close requirement for them.
+    const isLayoutTag = tagType === 'web:layout' || tagType === 'native:layout'
+
+    // Code blocks must have */ on same line (except layout tags with YAML metadata)
+    if (CODE_BLOCK_TAGS.includes(tagType) && !hasInlineClose && !isLayoutTag) {
       const fullTag = trimmed.replace('/* ', '').trim()
       errors.push({
         line:    lineNum,
@@ -1894,6 +1902,24 @@ function validateDslTags(content: string, filePath: string): void {
         problem: `Missing \`*/\` on opening tag`,
         fix:     `Change to: ${trimmed.trimEnd()} */`,
       })
+    }
+
+    // v11.0: layout tags with multi-line comments must still close with */
+    // Scan ahead to ensure the opening comment is properly terminated
+    if (isLayoutTag && !hasInlineClose) {
+      let closed = false
+      for (let j = i + 1; j < Math.min(i + 10, lines.length); j++) {
+        if (lines[j].trim() === '*/') { closed = true; break }
+      }
+      if (!closed) {
+        const fullTag = trimmed.replace('/* ', '').trim()
+        errors.push({
+          line:    lineNum,
+          tag:     fullTag,
+          problem: `Multi-line layout opening comment is missing closing \`*/\``,
+          fix:     `Add \`*/\` on its own line after the YAML metadata`,
+        })
+      }
     }
 
     // Body separator blocks must have */ on the next line

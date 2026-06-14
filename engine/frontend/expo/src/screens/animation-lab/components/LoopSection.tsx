@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LoopSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:23:45.906Z
+// Generated: 2026-06-14T04:19:48.391Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

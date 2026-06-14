@@ -1284,17 +1284,20 @@ export default ${wrapperName}
   let componentName: string
   let componentDefinition: string
 
-  const constMatch = userCode.match(/^(const\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*=\s*(?:\(\))?\s*=>\s*\{[\s\S]*\})/m)
-  const funcMatch  = userCode.match(/^(function\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*\(\s*\)\s*\{[\s\S]*\})/m)
+  // Find the last PascalCase top-level const or function — this is the component to mount.
+  // Always use full userCode as componentDefinition so helper consts (e.g. NATIVE_PAGES,
+  // WEB_PAGES) defined above the component are preserved and in scope.
+  const pascalConstMatches = [...userCode.matchAll(/^(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*(?::[^=]*)?\s*=/gm)]
+  const pascalFuncMatches  = [...userCode.matchAll(/^(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/gm)]
+  const allPascalNames     = [...pascalConstMatches, ...pascalFuncMatches]
+    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+  const lastPascal         = allPascalNames[allPascalNames.length - 1]
 
-  if (constMatch) {
-    componentName = constMatch[2]
-    componentDefinition = constMatch[1]
-  } else if (funcMatch) {
-    componentName = funcMatch[2]
-    componentDefinition = funcMatch[1]
+  if (lastPascal) {
+    componentName       = lastPascal[1]
+    componentDefinition = userCode
   } else {
-    componentName = toPascalCase(page.name) + 'Content'
+    componentName       = toPascalCase(page.name) + 'Content'
     componentDefinition = `const ${componentName} = () => (\n  ${userCode}\n)`
   }
 

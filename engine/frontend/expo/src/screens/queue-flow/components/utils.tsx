@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — queue-flow [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:19:10.467Z
+// Generated: 2026-06-14T04:19:52.765Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

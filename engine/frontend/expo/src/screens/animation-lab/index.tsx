@@ -31,6 +31,7 @@ import { TransformsSection } from './components/TransformsSection'
 import { NAV_SECTIONS } from './components/constants'
 
 // User screen (from @arkzen:native:page:index)
+// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
 const AnimationLabNativePage = () => {
   const [activeSection, setActiveSection] = useState('entrance')
 

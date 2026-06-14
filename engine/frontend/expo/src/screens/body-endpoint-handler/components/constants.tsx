@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — body-endpoint-handler [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:23:46.250Z
+// Generated: 2026-06-14T04:19:48.585Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

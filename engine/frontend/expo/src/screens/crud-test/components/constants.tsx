@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — crud-test [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T03:23:47.798Z
+// Generated: 2026-06-14T04:19:49.955Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
