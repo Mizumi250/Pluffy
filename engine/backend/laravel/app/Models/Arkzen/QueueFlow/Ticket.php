@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Ticket
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T06:15:40.050350Z
+// Generated: 2026-06-14T07:22:19.244421Z
 // ============================================================
 
 namespace App\Models\Arkzen\QueueFlow;

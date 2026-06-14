@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Field [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T06:15:37.936Z
+// Generated: 2026-06-14T07:22:16.668Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

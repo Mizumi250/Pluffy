@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — jo-payroll [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T06:15:38.178Z
+// Generated: 2026-06-14T07:22:16.874Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

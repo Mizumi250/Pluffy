@@ -2,16 +2,16 @@
 // ARKZEN GENERATED SHARED CONSTANTS — hw-coffee [React+Vite]
 // Source: @arkzen:components (hw-coffee)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T06:15:37.871Z
+// Generated: 2026-06-14T07:26:36.277Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, Award, ChevronDown, Clock, Coffee, Facebook, Heart, Instagram, Leaf, Mail, MapPin, Menu, Minus, Moon, Phone, Plus, Star, Sun, Twitter, X, Zap } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Award, Camera, ChevronDown, Clock, Coffee, ExternalLink, Facebook, Heart, Instagram, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Star, Sun, Twitter, Utensils, Wifi, X, Youtube, Zap } from 'lucide-react'
 
-// ─── CONSTANTS ────────────────────────────────────────────────────────────────
+// ─── REAL H&W DATA (Gingoog City) ─────────────────────────────────────────────
 
 export const NAV_LINKS = [
   { label: 'Story', href: '#story' },
@@ -27,43 +27,31 @@ export const MENU_ITEMS = [
     items: [
       {
         name: 'H&W Signature Blend',
-        desc: 'Our house espresso — dark chocolate, toasted hazelnut, lingering sweetness.',
+        desc: 'Our house espresso — deep chocolate, roasted hazelnut, lingering sweetness. The cup that started it all in Gingoog.',
         price: '₱120',
         badge: 'Bestseller',
         img: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=600&q=80',
       },
       {
-        name: 'White Velvet Latte',
-        desc: 'Triple-shot espresso, steamed oat milk, vanilla bean — silky and bold.',
-        price: '₱145',
-        badge: 'New',
-        img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80',
+        name: 'Iced Matcha Latte',
+        desc: 'Ceremonial-grade matcha, cold oat milk, light sweetness — earthy, smooth, and refreshing.',
+        price: '₱130',
+        badge: 'Customer Fave',
+        img: 'https://images.unsplash.com/photo-1515823662972-da6a2e4d3002?w=600&q=80',
       },
       {
-        name: 'Cold Brew Cascade',
-        desc: '18-hour steeped single origin, served over obsidian ice.',
-        price: '₱135',
+        name: 'Cold Brew',
+        desc: '18-hour steeped Mindanao beans, served over obsidian ice. Clean, bold, unapologetic.',
+        price: '₱115',
         badge: null,
         img: 'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=600&q=80',
       },
-    ],
-  },
-  {
-    category: 'Pour-Over',
-    items: [
       {
-        name: 'Ethiopian Yirgacheffe',
-        desc: 'Bright citrus, floral jasmine, with a tea-like clarity.',
-        price: '₱160',
-        badge: 'Single Origin',
-        img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80',
-      },
-      {
-        name: 'Colombian Huila',
-        desc: 'Red apple, caramel, milk chocolate — perfectly balanced.',
-        price: '₱155',
+        name: 'Caramel Frappe',
+        desc: 'Espresso, caramel syrup, milk, blended ice — sweet, rich, perfectly indulgent.',
+        price: '₱135',
         badge: null,
-        img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80',
+        img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80',
       },
     ],
   },
@@ -71,18 +59,65 @@ export const MENU_ITEMS = [
     category: 'Food',
     items: [
       {
-        name: 'Butter Croissant',
-        desc: 'Laminated 72-hour dough, baked golden every morning.',
-        price: '₱85',
-        badge: 'Fresh Daily',
-        img: 'https://images.unsplash.com/photo-1555507036-ab1f4038808a?w=600&q=80',
+        name: 'Chorizo Pasta',
+        desc: 'House-made chorizo, al dente pasta, slow-cooked tomato — bold flavors that keep you coming back.',
+        price: '₱180',
+        badge: 'Must Try',
+        img: 'https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?w=600&q=80',
       },
       {
-        name: 'Ricotta Toast',
-        desc: 'Sourdough, whipped ricotta, honey drizzle, microgreens.',
+        name: 'Chicken Pasta',
+        desc: 'Tender chicken, creamy sauce, herbs — comfort food elevated with care.',
+        price: '₱165',
+        badge: null,
+        img: 'https://images.unsplash.com/photo-1555949258-eb67b1ef0ceb?w=600&q=80',
+      },
+      {
+        name: 'French Toast',
+        desc: 'Thick-cut brioche, maple drizzle, powdered sugar — a breakfast staple elevated.',
+        price: '₱95',
+        badge: 'Morning Pick',
+        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&q=80',
+      },
+      {
+        name: 'Grilled Chicken Sandwich',
+        desc: 'Herb-marinated chicken, toasted brioche bun, greens, aioli — simple, honest, great.',
+        price: '₱150',
+        badge: null,
+        img: 'https://images.unsplash.com/photo-1554520735-0a6b8b6ce8b7?w=600&q=80',
+      },
+    ],
+  },
+  {
+    category: 'Drinks',
+    items: [
+      {
+        name: 'Americano',
+        desc: 'Double shot over hot water. Clean, clear, and powerful — the purist\'s choice.',
+        price: '₱100',
+        badge: null,
+        img: 'https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?w=600&q=80',
+      },
+      {
+        name: 'Cappuccino',
+        desc: 'Equal parts espresso, steamed milk, and microfoam. Balanced and classic.',
+        price: '₱115',
+        badge: null,
+        img: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&q=80',
+      },
+      {
+        name: 'Iced Coffee',
+        desc: 'Double espresso over ice, with your choice of milk. Light, fast, essential.',
         price: '₱110',
         badge: null,
-        img: 'https://images.unsplash.com/photo-1484723091739-30a097e8f929?w=600&q=80',
+        img: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?w=600&q=80',
+      },
+      {
+        name: 'Mango Shake',
+        desc: 'Fresh Philippine mangoes blended with milk — a tropical escape in every sip.',
+        price: '₱120',
+        badge: 'Non-Coffee',
+        img: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&q=80',
       },
     ],
   },
@@ -93,85 +128,108 @@ export const PROCESS_STEPS = [
     num: '01',
     icon: Leaf,
     title: 'Sourced',
-    sub: 'Direct Trade',
-    desc: 'We work directly with farmers across Ethiopia, Colombia, and the Philippines — building relationships that ensure quality at the root.',
+    sub: 'Northern Mindanao',
+    desc: 'We work with local and regional farms across Mindanao — building relationships that ensure quality, sustainability, and pride at the root.',
   },
   {
     num: '02',
     icon: Zap,
     title: 'Roasted',
     sub: 'Small Batch',
-    desc: 'Every batch is roasted in-house to a precise profile — unlocking each bean\'s natural character without masking it.',
+    desc: 'Every batch is roasted to a precise profile — unlocking each bean\'s natural character without masking it behind burnt dark roast.',
   },
   {
     num: '03',
     icon: Heart,
-    title: 'Brewed',
+    title: 'Crafted',
     sub: 'With Intention',
-    desc: 'Our baristas are trained to dial in each brew method — pour-over, espresso, cold brew — with obsessive attention to detail.',
+    desc: 'Our baristas are trained with obsessive care — dialing in each brew method from espresso to cold brew for every single order.',
   },
   {
     num: '04',
     icon: Award,
     title: 'Served',
     sub: 'To You',
-    desc: 'Every cup that leaves our bar is a promise — that what\'s in it was made with care, from source to your hands.',
+    desc: 'Every cup that leaves our bar is a promise: made with care, from Gingoog\'s best ingredients, straight to your hands.',
   },
 ]
 
 export const TESTIMONIALS = [
   {
-    name: 'Mika Reyes',
-    role: 'Regular, 2 years',
-    text: 'The White Velvet Latte is the reason I wake up. H&W feels like home — the kind you never want to leave.',
+    name: 'Mika R.',
+    role: 'Regular, 2+ years',
+    text: 'So far, the classiest coffeeshop in Gingoog. The chorizo pasta was exactly how I like it, and the americano was spot-on.',
     stars: 5,
   },
   {
-    name: 'Carlo Santos',
+    name: 'Carlo V.',
     role: 'Coffee Enthusiast',
-    text: 'Serious specialty coffee without the pretension. The Ethiopian pour-over hits differently every morning.',
+    text: 'Great ambience, great coffee, great food. H&W has set the standard for what a café should feel like in this city.',
     stars: 5,
   },
   {
-    name: 'Leah Tan',
+    name: 'Leah S.',
+    role: 'Architect, CDO',
+    text: 'They have a new branch in CDO now — bringing Gingoog\'s pride into the metropolis. Absolutely worth the visit.',
+    stars: 5,
+  },
+  {
+    name: 'Marco T.',
+    role: 'First Time Visitor',
+    text: 'Walked in expecting a regular café. Left floored by the atmosphere, the food, and the most reliable iced coffee I\'ve ever had.',
+    stars: 5,
+  },
+  {
+    name: 'Ana G.',
     role: 'Remote Worker',
-    text: 'I\'ve tried every café in the city. None of them have the atmosphere, the quality, or the care that H&W does.',
+    text: 'Clean, affordable, and the WiFi never drops. H&W is my second office. The french toast keeps me coming back.',
     stars: 5,
   },
   {
-    name: 'Marco Villanueva',
-    role: 'First Visit',
-    text: 'Walked in on a whim. Left with a new ritual. The Cold Brew Cascade is something else entirely.',
+    name: 'Renz L.',
+    role: 'CDO Branch Regular',
+    text: 'The frappes here are something else. And the staff? Genuinely the friendliest service I\'ve encountered in any café.',
     stars: 5,
   },
 ]
 
 export const MARQUEE_WORDS = [
-  'Specialty Coffee', '·', 'Small Batch Roasting', '·',
-  'Direct Trade', '·', 'Pour-Over', '·', 'Cold Brew', '·',
-  'Single Origin', '·', 'Artisan Brews', '·', 'H&W Coffee', '·',
+  'Specialty Coffee', '·', 'Gingoog City', '·',
+  'Artisan Brews', '·', 'Northern Mindanao', '·',
+  'Chorizo Pasta', '·', 'French Toast', '·',
+  'Cold Brew', '·', 'H&W Coffee', '·',
+  '#1 in Gingoog', '·', 'Cagayan de Oro', '·',
+]
+
+export const FEATURES = [
+  { icon: Wifi, label: 'Free WiFi' },
+  { icon: Music, label: 'Ambient Music' },
+  { icon: Utensils, label: 'Full Food Menu' },
+  { icon: Camera, label: 'Instagrammable' },
+]
+
+export const STATS = [
+  { num: '4.7★', label: 'Google Rating' },
+  { num: '180+', label: 'Reviews' },
+  { num: '#1', label: 'Café in Gingoog' },
+  { num: '2+', label: 'Branches' },
 ]
 
 export const LOCATIONS = [
   {
-    name: 'H&W — Flagship',
-    address: '12 Dela Rosa St., Makati City',
-    hours: 'Mon–Fri 7AM–9PM · Sat–Sun 8AM–10PM',
-    phone: '+63 2 8123 4567',
+    name: 'H&W — Gingoog Flagship',
+    address: 'Gingoog City, Misamis Oriental, Northern Mindanao, Philippines',
+    hours: 'Mon–Sun · 8AM–9PM',
+    phone: 'Available on Facebook',
     img: 'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=800&q=80',
+    tag: 'Original',
   },
   {
-    name: 'H&W — BGC Branch',
-    address: '5th Ave corner 26th St., BGC, Taguig',
-    hours: 'Mon–Sun 7AM–10PM',
-    phone: '+63 2 8765 4321',
+    name: 'H&W — CDO Branch',
+    address: 'Cagayan de Oro City, Misamis Oriental, Philippines',
+    hours: 'Mon–Sun · 9AM–10PM',
+    phone: 'Available on Facebook',
     img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
+    tag: 'New',
   },
-]
-
-export const STATS = [
-  { num: '2016', label: 'Est.' },
-  { num: '8+', label: 'Origins' },
-  { num: '150+', label: 'Farmers' },
-  { num: '4.9★', label: 'Avg Rating' },
 ]
