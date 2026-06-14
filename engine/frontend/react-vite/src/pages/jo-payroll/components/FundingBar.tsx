@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FundingBar [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T07:22:16.885Z
+// Generated: 2026-06-14T08:07:14.006Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

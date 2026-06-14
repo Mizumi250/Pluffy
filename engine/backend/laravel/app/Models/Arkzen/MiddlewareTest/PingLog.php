@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — PingLog
 // Tatemono: middleware-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T07:22:18.326748Z
+// Generated: 2026-06-14T08:07:15.505543Z
 // ============================================================
 
 namespace App\Models\Arkzen\MiddlewareTest;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Loader [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T07:22:21.672Z
+// Generated: 2026-06-14T08:07:19.109Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

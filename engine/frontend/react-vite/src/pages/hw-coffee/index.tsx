@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T07:29:47.871Z
+// Generated: 2026-06-14T08:15:53.428Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -425,7 +425,7 @@ const IndexPage = () => {
           width: 30px; cursor: pointer; background: none; border: none; padding: 4px;
         }
         .hw-hamburger span {
-          display: block; height: 1px; background: var(--hw-fg);
+          display: block; width: 100%; height: 1px; background: var(--hw-fg);
           transition: all 0.45s cubic-bezier(0.77,0,0.175,1);
         }
         .hw-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
@@ -438,7 +438,7 @@ const IndexPage = () => {
 
         /* Mobile menu */
         .hw-mobile-menu {
-          position: fixed; inset: 0; z-index: 400;
+          position: fixed; inset: 0; z-index: 600;
           background: var(--hw-bg); display: flex; flex-direction: column;
           padding: 1.5rem clamp(1.5rem, 5vw, 4rem) 3rem;
           transform: translateX(100%);
@@ -787,9 +787,10 @@ const IndexPage = () => {
           position: relative; height: clamp(280px, 45vh, 480px); overflow: hidden;
         }
         .hw-fullwidth-img {
-          position: absolute; inset: -15%;
-          width: 130%; height: 130%;
-          object-fit: cover; object-position: center;
+          position: absolute; inset: -10%;
+          background-image: url('https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=2000&q=85');
+          background-size: cover; background-position: center;
+          will-change: transform;
         }
         .hw-fullwidth-overlay {
           position: absolute; inset: 0;
@@ -872,7 +873,12 @@ const IndexPage = () => {
         }
         .hw-cta-overlay {
           position: absolute; inset: 0;
-          background: color-mix(in srgb, var(--hw-bg) 82%, transparent);
+          background: linear-gradient(
+            180deg,
+            color-mix(in srgb, var(--hw-bg) 55%, transparent) 0%,
+            color-mix(in srgb, var(--hw-bg) 40%, transparent) 50%,
+            color-mix(in srgb, var(--hw-bg) 55%, transparent) 100%
+          );
         }
         .hw-cta-content { position: relative; z-index: 2; }
         .hw-cta-heading {
@@ -1284,10 +1290,10 @@ const IndexPage = () => {
 
       {/* ── Full-width Image Break ─────────────────────────────────────────── */}
       <div className="hw-fullwidth-wrap">
-        <img
+        <div
           className="hw-fullwidth-img"
-          src="https://images.unsplash.com/photo-1447933601403-0c6688de566e?w=2000&q=85"
-          alt="Coffee brewing"
+          role="img"
+          aria-label="Coffee brewing"
         />
         <div className="hw-fullwidth-overlay" />
         <div className="hw-fullwidth-content">
