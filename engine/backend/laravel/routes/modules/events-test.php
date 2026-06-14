@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:34.774715Z
+// Generated: 2026-06-14T00:40:59.951778Z
 // Resources: EventLog
 // Custom controllers: 
 // ============================================================

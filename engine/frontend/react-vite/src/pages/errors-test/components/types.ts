@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — errors-test [React+Vite]
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T23:41:37.950Z
+// Generated: 2026-06-14T00:33:03.868Z
 // ============================================================
 
 export type ErrorDef = {

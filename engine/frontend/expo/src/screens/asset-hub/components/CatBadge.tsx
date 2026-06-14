@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — CatBadge [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:33.047Z
+// Generated: 2026-06-14T00:40:57.143Z
 // ============================================================
 
 import React from 'react'

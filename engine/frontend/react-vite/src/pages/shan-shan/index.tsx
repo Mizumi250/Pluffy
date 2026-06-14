@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — shan-shan/index [React+Vite]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-13T23:41:41.684Z
+// Generated: 2026-06-14T00:33:07.796Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

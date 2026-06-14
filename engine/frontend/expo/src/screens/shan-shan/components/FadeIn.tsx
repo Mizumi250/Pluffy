@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FadeIn [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:37.743Z
+// Generated: 2026-06-14T00:41:03.324Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

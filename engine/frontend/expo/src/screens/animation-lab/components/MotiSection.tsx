@@ -2,13 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — MotiSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:32.949Z
+// Generated: 2026-06-14T00:40:57.038Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
 import { MotiView } from 'moti'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
+import { s } from '../../../arkzen/generated/animation-lab.native-styles'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

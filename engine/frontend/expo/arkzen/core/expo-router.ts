@@ -1,5 +1,50 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.3
+// ARKZEN ENGINE — EXPO ROUTER v4.6
+//
+// v4.6 – FIX: same class of bug as v4.5, for @arkzen:native:style. The `s`
+//        styles object is exported from
+//        src/arkzen/generated/{tatName}.native-styles.ts and was only
+//        imported into the SCREEN file via styleImportLine. Per-component
+//        files (EntranceSection.tsx, DemoCard.tsx, etc.) reference `s.xxx`
+//        directly with no import — "ReferenceError: Property 's' doesn't
+//        exist". generateIndividualNativeComponentFiles() now checks
+//        whether each component's declaration references the identifier
+//        `s` and, if so, adds
+//        `import { s } from '../../../arkzen/generated/{tatName}.native-styles'`
+//        (same 3-level-up path as the v4.5 animation hooks fix).
+//
+// v4.5 – FIX: per-component files couldn't see hooks declared in
+//        @arkzen:native:animation:rn (e.g. useFadeIn, useSlideUp,
+//        useScaleBloom). Those hooks are exported from
+//        src/arkzen/generated/{tatName}.native-animations.ts and were only
+//        imported into the SCREEN file (index.tsx) via animImportLine.
+//        Per-component files like EntranceSection.tsx call these hooks
+//        directly with no import of their own — in the old single-file
+//        generation they shared module scope with the screen, so this
+//        worked; after the v4.0 per-file split it became
+//        "ReferenceError: Property 'useFadeIn' doesn't exist".
+//        generateIndividualNativeComponentFiles() now extracts animation
+//        hook export names via extractExportNames(nativeAnimationRN.raw),
+//        and any component file referencing one of them gets
+//        `import { useFadeIn, ... } from '../../../arkzen/generated/{tatName}.native-animations'`
+//        (3 levels up from src/screens/{tat}/components/).
+//
+// v4.4 – FIX: stale .ts/.tsx duplicates in components/ no longer survive
+//        regeneration. Earlier versions wrote constants.tsx/utils.tsx/
+//        hooks.tsx/types.ts but never removed a same-named file with the
+//        OTHER extension left behind by an older generation format (e.g.
+//        constants.ts, utils.ts from before per-file splitting switched to
+//        .tsx). The final cleanup loop also explicitly whitelisted both
+//        extensions of these names, so it never removed them either.
+//        Metro resolves .ts before .tsx, so a stale utils.ts would shadow
+//        the correct utils.tsx — serving an apiFetch with no `export`
+//        keyword and missing its BACKEND_URL/FormState imports, causing
+//        screens like inventory-management to fail with
+//        "Failed to load inventory" at runtime (ReferenceError inside
+//        apiFetch, swallowed by the screen's try/catch).
+//        Each of constants/hooks/utils/types now deletes its sibling
+//        extension whenever it writes or determines the file should not
+//        exist.
 //
 // v4.3 – FIX: a name that exists in BOTH RN_CORE_COMPONENTS (e.g. 'Image')
 //        and an explicit @arkzen:native:components import from a different
@@ -653,6 +698,22 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
   const utilityFunctions    = extractNativeUtilityFunctionNames(tatemono)
   const allDeclaredNames    = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
 
+  // Animation hooks (e.g. useFadeIn, useSlideUp) declared in
+  // @arkzen:native:animation:rn live in generated/{tatName}.native-animations.ts,
+  // NOT in the components block — so they're absent from customHooks/
+  // allDeclaredNames above. Per-component files (e.g. EntranceSection.tsx)
+  // call these hooks directly without their own import, relying on the same
+  // module-scope availability the original single-file generation provided.
+  // Track their names so each component file can import what it uses.
+  const animationHookNames = new Set(
+    tatemono.nativeAnimationRN ? extractExportNames(tatemono.nativeAnimationRN.raw) : []
+  )
+
+  // Same issue for @arkzen:native:style — emitted as the `s` export of
+  // generated/{tatName}.native-styles.ts and referenced (e.g. `s.demoGrid`)
+  // directly by components with no import of their own.
+  const hasNativeStyles = !!(tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
+
   // Split each stripped source into per-declaration chunks
   const declarationsByName = new Map<string, string>()
   for (const stripped of strippedSources) {
@@ -720,10 +781,18 @@ ${allConstChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'constants.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native shared constants: constants.tsx`)
+
+      // Remove a stale constants.ts from an earlier generation format —
+      // Metro resolves .ts before .tsx, so a leftover constants.ts would
+      // shadow this constants.tsx and serve outdated exports.
+      const staleTs = path.join(componentsDir, 'constants.ts')
+      if (fs.existsSync(staleTs)) { fs.unlinkSync(staleTs); console.log(`[Arkzen Expo Router] 🧹 Removed stale constants.ts`) }
     }
   } else {
-    const p = path.join(componentsDir, 'constants.tsx')
-    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale constants.tsx`) }
+    for (const stale of ['constants.tsx', 'constants.ts']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale ${stale}`) }
+    }
   }
 
   // ── Custom hooks file ──────────────────────────────────────────────────────
@@ -764,6 +833,9 @@ ${hookChunksJoined}
 `
       fs.writeFileSync(path.join(componentsDir, 'hooks.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
+
+      const staleTs = path.join(componentsDir, 'hooks.ts')
+      if (fs.existsSync(staleTs)) { fs.unlinkSync(staleTs); console.log(`[Arkzen Expo Router] 🧹 Removed stale hooks.ts`) }
     }
   } else {
     for (const stale of ['hooks.tsx', 'hooks.ts']) {
@@ -818,10 +890,19 @@ ${utilChunksJoined}
 `
       fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
+
+      // Remove a stale utils.ts from an earlier generation format — Metro
+      // resolves .ts before .tsx, so a leftover utils.ts would shadow this
+      // utils.tsx and serve outdated/unexported helpers (e.g. apiFetch
+      // missing its `export` and its BACKEND_URL/FormState imports).
+      const staleTs = path.join(componentsDir, 'utils.ts')
+      if (fs.existsSync(staleTs)) { fs.unlinkSync(staleTs); console.log(`[Arkzen Expo Router] 🧹 Removed stale utils.ts`) }
     }
   } else {
-    const p = path.join(componentsDir, 'utils.tsx')
-    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale utils.tsx`) }
+    for (const stale of ['utils.tsx', 'utils.ts']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale ${stale}`) }
+    }
   }
 
   // ── Shared types file ──────────────────────────────────────────────────────
@@ -848,10 +929,15 @@ ${typeChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'types.ts'), content, 'utf-8')
       console.log(`[Arkzen Expo Router] ✓ Native shared types: types.ts (${[...sharedTypes].join(', ')})`)
+
+      const staleTsx = path.join(componentsDir, 'types.tsx')
+      if (fs.existsSync(staleTsx)) { fs.unlinkSync(staleTsx); console.log(`[Arkzen Expo Router] 🧹 Removed stale types.tsx`) }
     }
   } else {
-    const p = path.join(componentsDir, 'types.ts')
-    if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale types.ts`) }
+    for (const stale of ['types.ts', 'types.tsx']) {
+      const p = path.join(componentsDir, stale)
+      if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Expo Router] 🧹 Removed stale ${stale}`) }
+    }
   }
 
   // ── One real file per component containing its actual code ─────────────────
@@ -881,6 +967,20 @@ ${typeChunks.join('\n\n')}
       ? `import { ${referencedHooks.sort().join(', ')} } from './hooks'\n`
       : ''
 
+    // Animation hooks live in src/arkzen/generated/{tatName}.native-animations —
+    // three levels up from src/screens/{tat}/components/{Name}.tsx.
+    const referencedAnimationHooks = findReferencedNames(declaration, animationHookNames)
+    const animationHooksImport = referencedAnimationHooks.length > 0
+      ? `import { ${referencedAnimationHooks.sort().join(', ')} } from '../../../arkzen/generated/${tatemono.meta.name}.native-animations'\n`
+      : ''
+
+    // Native styles object `s` lives in src/arkzen/generated/{tatName}.native-styles —
+    // same 3-level depth as animation hooks above.
+    const referencesStyles = hasNativeStyles && findReferencedNames(declaration, new Set(['s'])).length > 0
+    const stylesImport = referencesStyles
+      ? `import { s } from '../../../arkzen/generated/${tatemono.meta.name}.native-styles'\n`
+      : ''
+
     const referencedTypes = findReferencedNames(declaration, sharedTypes)
     const typesImport = referencedTypes.length > 0
       ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
@@ -906,7 +1006,7 @@ ${typeChunks.join('\n\n')}
 // ============================================================
 
 ${normalisedCanonicalBlock}
-${constantsImport}${hooksImport}${utilsImport}${typesImport}${siblingImportBlock}
+${constantsImport}${hooksImport}${animationHooksImport}${stylesImport}${utilsImport}${typesImport}${siblingImportBlock}
 ${exportedDeclaration}
 `
     fs.writeFileSync(filePath, content, 'utf-8')

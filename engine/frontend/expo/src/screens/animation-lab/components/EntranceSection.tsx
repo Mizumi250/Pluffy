@@ -2,13 +2,15 @@
 // ARKZEN GENERATED NATIVE COMPONENT — EntranceSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:32.943Z
+// Generated: 2026-06-14T00:40:57.031Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'
 import { MotiView } from 'moti'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withSpring, withTiming } from 'react-native-reanimated'
+import { useElasticScale, useFadeIn, useRotateIn, useScaleBloom, useSlideRight, useSlideUp } from '../../../arkzen/generated/animation-lab.native-animations'
+import { s } from '../../../arkzen/generated/animation-lab.native-styles'
 import { DemoCard } from './DemoCard'
 import { PlayReset } from './PlayReset'
 import { SectionHeader } from './SectionHeader'

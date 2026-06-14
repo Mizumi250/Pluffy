@@ -2,13 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Loader [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T00:03:37.740Z
+// Generated: 2026-06-14T00:41:03.317Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SCREEN_H, SCREEN_W } from './constants'
+import { s } from '../../../arkzen/generated/shan-shan.native-styles'
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
 

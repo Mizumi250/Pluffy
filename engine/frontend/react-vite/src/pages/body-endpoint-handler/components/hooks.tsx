@@ -2,7 +2,7 @@
 // ARKZEN GENERATED HOOKS — body-endpoint-handler [React+Vite]
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T23:41:36.562Z
+// Generated: 2026-06-14T00:33:01.981Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

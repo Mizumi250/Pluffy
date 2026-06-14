@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ResetBtn [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T23:41:36.294Z
+// Generated: 2026-06-14T00:33:01.707Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
