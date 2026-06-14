@@ -4,7 +4,6 @@
 
 import React, { useState } from 'react'
 import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'

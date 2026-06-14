@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — KeyframesSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T14:30:27.258Z
+// Generated: 2026-06-14T00:03:32.950Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

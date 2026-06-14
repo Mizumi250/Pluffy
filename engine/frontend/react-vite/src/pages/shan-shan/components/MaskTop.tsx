@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MaskTop [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-13T14:30:34.129Z
+// Generated: 2026-06-13T23:41:41.631Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

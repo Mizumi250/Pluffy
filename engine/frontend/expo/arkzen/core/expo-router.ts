@@ -1,5 +1,27 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.1
+// ARKZEN ENGINE — EXPO ROUTER v4.3
+//
+// v4.3 – FIX: a name that exists in BOTH RN_CORE_COMPONENTS (e.g. 'Image')
+//        and an explicit @arkzen:native:components import from a different
+//        module (e.g. `import { Image } from 'expo-image'`) was being added
+//        to engineNamed['react-native'] AND engineNamed['expo-image'] —
+//        producing two `Image` declarations and a Babel "Identifier has
+//        already been declared" error. Now namedImportsByModule is computed
+//        first; any RN_CORE_COMPONENTS name explicitly claimed by another
+//        module's import is excluded from the react-native engineNamed
+//        entry, so the explicit import wins.
+//
+// v4.2 – FIX: extractNativeNamedImportsByModule() and
+//        extractNativeNamespaceImports() now normalise @/arkzen/* module
+//        specifiers to ../../../arkzen/* at extraction time (and again
+//        defensively where their results are merged into engineNamed).
+//        Previously, the components-block authStore import
+//        ('@/arkzen/core/stores/authStore') and the engineNamed-seeded
+//        authStore entry ('../../../arkzen/core/stores/authStore') were
+//        treated as two distinct importMap keys, producing two duplicate
+//        `import { useAuthStore } from '...'` lines and a Babel
+//        "Identifier has already been declared" error. Now both collapse
+//        to one canonical key before resolveImports ever sees them.
 //
 // v4.1 – UNIFIED IMPORT RESOLUTION (mirrors nextjs/router.ts architecture).
 //        resolveImports() now accepts engineNamed (module→named[]) and
@@ -404,7 +426,7 @@ function extractNativeNamespaceImports(tatemono: ParsedTatemono): Map<string, st
       const line = rawLine.trim()
       if (!line.startsWith('import ')) continue
       const m = line.match(re)
-      if (m) out.set(m[1], m[2])
+      if (m) out.set(m[1], m[2].replace(/^@\/arkzen\//, '../../../arkzen/'))
     }
   }
   return out
@@ -433,7 +455,11 @@ function extractNativeNamedImportsByModule(tatemono: ParsedTatemono): Map<string
       let m = line.match(mixedImportRe) ?? line.match(namedImportRe)
       if (!m) continue
 
-      const [, namedStr, mod] = m
+      const [, namedStr, rawMod] = m
+      // Normalise @/arkzen/ aliases so this map's keys always match the
+      // canonical relative paths used in engineNamed — prevents two separate
+      // entries (and thus two duplicate import lines) for the same module.
+      const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
       if (!out.has(mod)) out.set(mod, new Set())
       const entry = out.get(mod)!
       namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
@@ -1026,9 +1052,25 @@ export default ${wrapperName}
 
   const referencedHookCalls = findReferencedNames(pageStrippedForRefs, REACT_HOOKS)
 
+  // ── Named imports explicitly declared in @arkzen:native:components ─────────
+  // Compute this BEFORE rnRequired: if the tatemono explicitly imports a name
+  // from a non-react-native module (e.g. `import { Image } from 'expo-image'`),
+  // that import wins — the name must NOT also be guessed into react-native's
+  // engineNamed entry, or both modules would declare the same identifier and
+  // Babel throws "Identifier has already been declared".
+  const namedImportsByModule = extractNativeNamedImportsByModule(tatemono)
+  const explicitlyImportedNames = new Set<string>()
+  for (const [mod, names] of namedImportsByModule) {
+    if (mod === 'react-native') continue
+    const referencedNamed = findReferencedNames(pageStrippedForRefs, names)
+    referencedNamed.forEach(n => explicitlyImportedNames.add(n))
+  }
+
   // ── Collect all engine-required named imports into one map ─────────────────
-  // react-native core components the page references (ScrollView always included)
+  // react-native core components the page references (ScrollView always
+  // included), excluding any name an explicit non-RN import already claims.
   const referencedRNCore = findReferencedNames(pageStrippedForRefs, RN_CORE_COMPONENTS)
+    .filter(n => !explicitlyImportedNames.has(n))
   const rnRequired = Array.from(new Set(['ScrollView', ...referencedRNCore]))
 
   // expo-router: always inject useRouter
@@ -1052,8 +1094,8 @@ export default ${wrapperName}
     engineNamespaces[ns] = namespaceImports.get(ns)!
   }
 
-  // Named imports from components block (e.g. lucide-react-native icons)
-  const namedImportsByModule  = extractNativeNamedImportsByModule(tatemono)
+  // Named imports from components block (e.g. lucide-react-native icons,
+  // expo-image's Image, etc.)
   const engineNamed: Record<string, string[]> = {
     'react-native':                    rnRequired,
     'expo-router':                     expoRouterNamed,
@@ -1061,7 +1103,8 @@ export default ${wrapperName}
     'react-native-safe-area-context':  safeAreaNamed,
     '../../../arkzen/core/stores/authStore': authStoreNamed,
   }
-  for (const [mod, names] of namedImportsByModule) {
+  for (const [rawMod, names] of namedImportsByModule) {
+    const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
     const referencedNamed = findReferencedNames(pageStrippedForRefs, names)
     if (referencedNamed.length > 0) {
       engineNamed[mod] = Array.from(new Set([...(engineNamed[mod] ?? []), ...referencedNamed]))

@@ -4,7 +4,6 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'

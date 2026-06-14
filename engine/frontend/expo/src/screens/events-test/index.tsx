@@ -4,7 +4,6 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { Flame, RefreshCw, Trash2, Zap } from 'lucide-react-native'
