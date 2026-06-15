@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ContinuationCard [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T16:01:54.879Z
+// Generated: 2026-06-15T06:17:28.175Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

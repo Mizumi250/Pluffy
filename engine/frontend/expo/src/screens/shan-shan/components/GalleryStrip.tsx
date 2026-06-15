@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GalleryStrip [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T16:02:00.888Z
+// Generated: 2026-06-15T06:14:56.145Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

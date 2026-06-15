@@ -12,54 +12,6 @@ export interface ArkzenExpoRoute {
 }
 
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
-// ROUTE:animation-lab:index:/animation-lab:default:false
-  { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
-// ROUTE:asset-hub:index:/asset-hub:default:false
-  { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
-// ROUTE:atelier:index:/atelier:default:false
-  { tatName: 'atelier', screenName: 'index', routePath: '/atelier', layout: 'default', auth: false },
-// ROUTE:auth-test:login:/auth-test/login:guest:false
-  { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
-// ROUTE:auth-test:register:/auth-test/register:guest:false
-  { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
-// ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
-  { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
-// ROUTE:auth-test:index:/auth-test:guest:false
-  { tatName: 'auth-test', screenName: 'index', routePath: '/auth-test', layout: 'guest', auth: false },
-// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:guest:false
-  { tatName: 'body-endpoint-handler', screenName: 'index', routePath: '/body-endpoint-handler', layout: 'guest', auth: false },
-// ROUTE:body-mail-notification:login:/body-mail-notification/login:guest:false
-  { tatName: 'body-mail-notification', screenName: 'login', routePath: '/body-mail-notification/login', layout: 'guest', auth: false },
-// ROUTE:body-mail-notification:register:/body-mail-notification/register:guest:false
-  { tatName: 'body-mail-notification', screenName: 'register', routePath: '/body-mail-notification/register', layout: 'guest', auth: false },
-// ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:auth:true
-  { tatName: 'body-mail-notification', screenName: 'dashboard', routePath: '/body-mail-notification/dashboard', layout: 'auth', auth: true },
-// ROUTE:body-mail-notification:index:/body-mail-notification:guest:false
-  { tatName: 'body-mail-notification', screenName: 'index', routePath: '/body-mail-notification', layout: 'guest', auth: false },
-// ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
-  { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
-// ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
-  { tatName: 'broadcast-test', screenName: 'register', routePath: '/broadcast-test/register', layout: 'guest', auth: false },
-// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:auth:true
-  { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
-// ROUTE:broadcast-test:index:/broadcast-test:guest:false
-  { tatName: 'broadcast-test', screenName: 'index', routePath: '/broadcast-test', layout: 'guest', auth: false },
-// ROUTE:crud-test:index:/crud-test:default:false
-  { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
-// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
-  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
-// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
-  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
-// ROUTE:errors-test:index:/errors-test:default:false
-  { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
-// ROUTE:events-test:index:/events-test:default:false
-  { tatName: 'events-test', screenName: 'index', routePath: '/events-test', layout: 'default', auth: false },
-// ROUTE:hello-native:index:/hello-native:default:false
-  { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
-// ROUTE:hello-native:about:/hello-native/about:default:false
-  { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
-// ROUTE:inventory-management:index:/inventory-management:default:false
-  { tatName: 'inventory-management', screenName: 'index', routePath: '/inventory-management', layout: 'default', auth: false },
 // ROUTE:jo-payroll:index:/jo-payroll:app:false
   { tatName: 'jo-payroll', screenName: 'index', routePath: '/jo-payroll', layout: 'app', auth: false },
 // ROUTE:jo-payroll:job-database:/jo-payroll/job-database:app:false
@@ -134,6 +86,54 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false
   { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
+// ROUTE:animation-lab:index:/animation-lab:default:false
+  { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
+// ROUTE:asset-hub:index:/asset-hub:default:false
+  { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
+// ROUTE:atelier:index:/atelier:default:false
+  { tatName: 'atelier', screenName: 'index', routePath: '/atelier', layout: 'default', auth: false },
+// ROUTE:auth-test:login:/auth-test/login:guest:false
+  { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
+// ROUTE:auth-test:register:/auth-test/register:guest:false
+  { tatName: 'auth-test', screenName: 'register', routePath: '/auth-test/register', layout: 'guest', auth: false },
+// ROUTE:auth-test:dashboard:/auth-test/dashboard:auth:true
+  { tatName: 'auth-test', screenName: 'dashboard', routePath: '/auth-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:auth-test:index:/auth-test:guest:false
+  { tatName: 'auth-test', screenName: 'index', routePath: '/auth-test', layout: 'guest', auth: false },
+// ROUTE:body-endpoint-handler:index:/body-endpoint-handler:guest:false
+  { tatName: 'body-endpoint-handler', screenName: 'index', routePath: '/body-endpoint-handler', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:login:/body-mail-notification/login:guest:false
+  { tatName: 'body-mail-notification', screenName: 'login', routePath: '/body-mail-notification/login', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:register:/body-mail-notification/register:guest:false
+  { tatName: 'body-mail-notification', screenName: 'register', routePath: '/body-mail-notification/register', layout: 'guest', auth: false },
+// ROUTE:body-mail-notification:dashboard:/body-mail-notification/dashboard:auth:true
+  { tatName: 'body-mail-notification', screenName: 'dashboard', routePath: '/body-mail-notification/dashboard', layout: 'auth', auth: true },
+// ROUTE:body-mail-notification:index:/body-mail-notification:guest:false
+  { tatName: 'body-mail-notification', screenName: 'index', routePath: '/body-mail-notification', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:login:/broadcast-test/login:guest:false
+  { tatName: 'broadcast-test', screenName: 'login', routePath: '/broadcast-test/login', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:register:/broadcast-test/register:guest:false
+  { tatName: 'broadcast-test', screenName: 'register', routePath: '/broadcast-test/register', layout: 'guest', auth: false },
+// ROUTE:broadcast-test:dashboard:/broadcast-test/dashboard:auth:true
+  { tatName: 'broadcast-test', screenName: 'dashboard', routePath: '/broadcast-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:broadcast-test:index:/broadcast-test:guest:false
+  { tatName: 'broadcast-test', screenName: 'index', routePath: '/broadcast-test', layout: 'guest', auth: false },
+// ROUTE:crud-test:index:/crud-test:default:false
+  { tatName: 'crud-test', screenName: 'index', routePath: '/crud-test', layout: 'default', auth: false },
+// ROUTE:dtr-geofencing:index:/dtr-geofencing:app:false
+  { tatName: 'dtr-geofencing', screenName: 'index', routePath: '/dtr-geofencing', layout: 'app', auth: false },
+// ROUTE:dtr-geofencing:admin:/dtr-geofencing/admin:app:false
+  { tatName: 'dtr-geofencing', screenName: 'admin', routePath: '/dtr-geofencing/admin', layout: 'app', auth: false },
+// ROUTE:errors-test:index:/errors-test:default:false
+  { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
+// ROUTE:events-test:index:/events-test:default:false
+  { tatName: 'events-test', screenName: 'index', routePath: '/events-test', layout: 'default', auth: false },
+// ROUTE:hello-native:index:/hello-native:default:false
+  { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
+// ROUTE:hello-native:about:/hello-native/about:default:false
+  { tatName: 'hello-native', screenName: 'about', routePath: '/hello-native/about', layout: 'default', auth: false },
+// ROUTE:inventory-management:index:/inventory-management:default:false
+  { tatName: 'inventory-management', screenName: 'index', routePath: '/inventory-management', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

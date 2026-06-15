@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — auth-test/register [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T16:01:54.968Z
+// Generated: 2026-06-15T06:17:28.264Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE ANIMATIONS — jo-payroll
 // Source: @arkzen:native:animation:rn
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T16:01:57.010Z
+// Generated: 2026-06-15T06:14:53.382Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Navbar [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T16:01:57.862Z
+// Generated: 2026-06-15T06:14:54.761Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

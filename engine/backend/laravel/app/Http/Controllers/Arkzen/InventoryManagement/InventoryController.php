@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — InventoryController
 // Tatemono: inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T16:01:57.030430Z
+// Generated: 2026-06-15T06:14:53.831202Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\InventoryManagement;
