@@ -367,14 +367,14 @@
     },
     {
       "name": "cafe-teresita",
-      "version": "2.0.0",
+      "version": "3.0.0",
       "status": "active",
       "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/cafe-teresita/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-06-14T14:55:57.943Z",
-      "lastUpdated": "2026-06-15T00:53:34.493Z",
+      "lastUpdated": "2026-06-15T01:40:37.364Z",
       "auth": false
     },
     {
