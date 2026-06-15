@@ -16,6 +16,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
 // ROUTE:asset-hub:index:/asset-hub:default:false
   { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
+// ROUTE:atelier:index:/atelier:default:false
+  { tatName: 'atelier', screenName: 'index', routePath: '/atelier', layout: 'default', auth: false },
 // ROUTE:auth-test:login:/auth-test/login:guest:false
   { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
 // ROUTE:auth-test:register:/auth-test/register:guest:false

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED SHARED CONSTANTS — cafe-teresita [React+Vite]
 // Source: @arkzen:components (cafe-teresita)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:55:57.836Z
+// Generated: 2026-06-15T00:53:34.391Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, CalendarCheck, ChevronDown, Clock, Coffee, CupSoda, ExternalLink, Facebook, Instagram, MapPin, Moon, Quote, Soup, Star, Sun, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CalendarCheck, Clock, Coffee, CupSoda, ExternalLink, Facebook, Instagram, MapPin, Menu as MenuIcon, Soup, Star, X } from 'lucide-react'
 
 // ─── REAL DATA — Cafe Teresita (by Guada's), Calubo, Kinoguitan, Misamis Oriental ──
 
@@ -17,8 +17,8 @@ export const NAV_LINKS = [
   { label: 'Home', href: '#ct-hero' },
   { label: 'Menu', href: '#ct-menu' },
   { label: 'Catering', href: '#ct-catering' },
+  { label: 'About', href: '#ct-about' },
   { label: 'Visit', href: '#ct-visit' },
-  { label: 'Contact', href: '#ct-contact' },
 ]
 
 // Menu data — placeholders based on review mentions (chicken + rice meals, coffee, snacks)
@@ -122,6 +122,30 @@ export const MENU_ITEMS: Record<string, { id: string; name: string; desc: string
   ],
 }
 
+// Featured drinks for the homepage "Featured Drink" arch-card row
+
+// Featured drinks for the homepage "Featured Drink" arch-card row
+export const FEATURED_DRINKS = [
+  {
+    id: 'feat-1',
+    name: 'House Blend',
+    sub: 'Hot drip coffee',
+    img: 'https://images.unsplash.com/photo-1572286258217-215cf8e667bd?w=600&q=80',
+  },
+  {
+    id: 'feat-2',
+    name: 'Iced Macchiato',
+    sub: 'Caramel + espresso',
+    img: 'https://images.unsplash.com/photo-1497636577773-f1231844b336?w=600&q=80',
+  },
+  {
+    id: 'feat-3',
+    name: 'Buko Juice',
+    sub: 'Fresh coconut',
+    img: 'https://images.unsplash.com/photo-1546173159-315724a31696?w=600&q=80',
+  },
+]
+
 // Catering packages — informed by review mention of birthday catering service
 
 // Catering packages — informed by review mention of birthday catering service
@@ -153,10 +177,14 @@ export const CATERING_PACKAGES = [
   },
 ]
 
-export const STATS = [
-  { label: 'Google Rating', value: '4.5★', sub: 'from local guests' },
-  { label: 'Open Daily', value: '10AM–10PM', sub: 'every day of the week' },
-  { label: 'Location', value: 'Calubo', sub: 'Kinoguitan, Misamis Oriental' },
+export const VISIT_HOURS = [
+  { day: 'Monday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Tuesday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Wednesday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Thursday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Friday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Saturday', hours: '10:00 AM – 10:00 PM' },
+  { day: 'Sunday', hours: '10:00 AM – 10:00 PM' },
 ]
 
 export const TESTIMONIALS = [
@@ -170,19 +198,4 @@ export const TESTIMONIALS = [
     name: 'Local Guest',
     role: 'Google Review · 4★',
   },
-]
-
-export const MARQUEE_WORDS = [
-  'Coffee', '·', 'Rice Meals', '·', 'Catering', '·', 'Merienda', '·',
-  'Calubo', '·', 'Kinoguitan', '·', 'Open Daily', '·',
-]
-
-export const VISIT_HOURS = [
-  { day: 'Monday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Tuesday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Wednesday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Thursday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Friday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Saturday', hours: '10:00 AM – 10:00 PM' },
-  { day: 'Sunday', hours: '10:00 AM – 10:00 PM' },
 ]

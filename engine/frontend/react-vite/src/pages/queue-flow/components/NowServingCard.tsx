@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — NowServingCard [React+Vite]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:56:01.571Z
+// Generated: 2026-06-14T16:01:58.247Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

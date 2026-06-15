@@ -18,6 +18,8 @@ export interface ArkzenRoute {
 const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
+// ROUTE:atelier:index:/atelier:false
+const ArkzenPage_Atelier_Index = lazy(() => import('@/pages/atelier/index'))
 // ROUTE:auth-test:login:/auth-test/login:true
 const ArkzenPage_AuthTest_Login = lazy(() => import('@/pages/auth-test/login'))
 // ROUTE:auth-test:register:/auth-test/register:true
@@ -44,8 +46,6 @@ const ArkzenPage_BroadcastTest_Register = lazy(() => import('@/pages/broadcast-t
 const ArkzenPage_BroadcastTest_Dashboard = lazy(() => import('@/pages/broadcast-test/dashboard'))
 // ROUTE:broadcast-test:__root_redirect:/broadcast-test:true
 const ArkzenPage_BroadcastTest_RootRedirect = lazy(() => import('@/pages/broadcast-test/__root_redirect'))
-// ROUTE:cafe-teresita:index:/cafe-teresita:false
-const ArkzenPage_CafeTeresita_Index = lazy(() => import('@/pages/cafe-teresita/index'))
 // ROUTE:crud-test:index:/crud-test:false
 const ArkzenPage_CrudTest_Index = lazy(() => import('@/pages/crud-test/index'))
 // ROUTE:dtr-geofencing:index:/dtr-geofencing:false
@@ -152,6 +152,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:cafe-teresita:index:/cafe-teresita:false
+const ArkzenPage_CafeTeresita_Index = lazy(() => import('@/pages/cafe-teresita/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -162,6 +164,7 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
+  { path: '/atelier', name: 'index', tatemono: 'atelier', component: ArkzenPage_Atelier_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
   { path: '/auth-test/register', name: 'register', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Register, auth: true },
   { path: '/auth-test/dashboard', name: 'dashboard', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Dashboard, auth: true },
@@ -175,7 +178,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/broadcast-test/register', name: 'register', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Register, auth: true },
   { path: '/broadcast-test/dashboard', name: 'dashboard', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_Dashboard, auth: true },
   { path: '/broadcast-test', name: '__root_redirect', tatemono: 'broadcast-test', component: ArkzenPage_BroadcastTest_RootRedirect, auth: true },
-  { path: '/cafe-teresita', name: 'index', tatemono: 'cafe-teresita', component: ArkzenPage_CafeTeresita_Index, auth: false },
   { path: '/crud-test', name: 'index', tatemono: 'crud-test', component: ArkzenPage_CrudTest_Index, auth: false },
   { path: '/dtr-geofencing', name: 'index', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Index, auth: false },
   { path: '/dtr-geofencing/admin', name: 'admin', tatemono: 'dtr-geofencing', component: ArkzenPage_DtrGeofencing_Admin, auth: false },
@@ -229,4 +231,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/cafe-teresita', name: 'index', tatemono: 'cafe-teresita', component: ArkzenPage_CafeTeresita_Index, auth: false },
 ]

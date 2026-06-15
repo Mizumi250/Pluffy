@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CSSKeyframesSection [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:55:55.717Z
+// Generated: 2026-06-14T16:01:54.550Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

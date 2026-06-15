@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — BurgerMenu [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:56:04.188Z
+// Generated: 2026-06-14T16:02:00.864Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

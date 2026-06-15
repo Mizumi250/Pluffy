@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ShanHeroLogo [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:56:04.195Z
+// Generated: 2026-06-14T16:02:00.870Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

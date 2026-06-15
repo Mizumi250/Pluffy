@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatCard [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T14:56:01.324Z
+// Generated: 2026-06-14T16:01:58.365Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
