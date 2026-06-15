@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — cafe-teresita/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-15T01:40:37.359Z
+// Generated: 2026-06-15T02:18:48.241Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -42,6 +42,16 @@ const IndexPage = () => {
   }
 
   const activeItems = MENU_ITEMS[activeCategory] ?? []
+
+  // Re-animate menu cards whenever the active tab changes
+  useEffect(() => {
+    const cards = document.querySelectorAll('.ct-menu-card')
+    if (!cards.length) return
+    gsap.fromTo(cards,
+      { y: 55, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.55, stagger: 0.07, ease: 'power3.out' }
+    )
+  }, [activeCategory])
 
   // ── GSAP — exact Couvee motion_fx mappings ────────────────────────────────────
   useEffect(() => {
@@ -155,12 +165,6 @@ const IndexPage = () => {
         { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
           scrollTrigger: { trigger: '#ct-menu', start: 'top 82%' } }
       )
-      gsap.fromTo('.ct-menu-card',
-        { y: 55, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.65, stagger: 0.08, ease: 'power3.out',
-          scrollTrigger: { trigger: '#ct-menu', start: 'top 76%' } }
-      )
-
       // ── FULLWIDTH BREAK — parallax scrub ──────────────────────────────────
       gsap.to('.ct-fullwidth-img', {
         yPercent: 14,
@@ -1107,7 +1111,7 @@ const IndexPage = () => {
         {/* Left floating hand image — fadeInUp delay:200, mouse track negative */}
         <div className="ct-hero-left-img">
           <img
-            src="https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=400&q=80"
+            src="https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=400&q=80"
             alt=""
             aria-hidden="true"
           />
@@ -1444,7 +1448,7 @@ const IndexPage = () => {
         <div className="ct-insta-grid">
           {[
             'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?w=400&q=80',
-            'https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=400&q=80',
+            'https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=400&q=80',
             'https://images.pexels.com/photos/1855214/pexels-photo-1855214.jpeg?w=400&q=80',
             'https://images.pexels.com/photos/1458658/pexels-photo-1458658.jpeg?w=400&q=80',
           ].map((src, i) => (
@@ -1511,7 +1515,7 @@ const IndexPage = () => {
               <span>Concept demo</span>
             </div>
             <div className="ct-footer-disclaimer">
-              <strong style={{ fontStyle: 'normal' }}>Disclaimer:</strong> This is a concept landing page created for demonstration purposes only,
+              <strong style={{ fontStyle: 'normal' }}>Disclaimer:</strong> This is a concept landing page created for demonstration purposes only by <strong style={{ fontStyle: 'normal' }}>James Rafty D. Libago (Mizumi)</strong>,
               using publicly available information (Google Maps listing &amp; reviews) and placeholder imagery from Pexels.
               This page was not commissioned by, and is not an official website of, Cafe Teresita by Guada's.
               Menu items, prices, and catering packages shown are illustrative placeholders pending real information from the business.

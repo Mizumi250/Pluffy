@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — cafe-teresita [React+Vite]
 // Source: @arkzen:components (cafe-teresita)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T01:40:37.303Z
+// Generated: 2026-06-15T02:18:48.145Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -129,7 +129,7 @@ export const FEATURED_DRINKS = [
     id: 'feat-2',
     name: 'Iced Macchiato',
     sub: 'Caramel + espresso',
-    img: 'https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=600&q=80',
+    img: 'https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=600&q=80',
   },
   {
     id: 'feat-3',
@@ -154,7 +154,7 @@ export const CATERING_PACKAGES = [
     guests: 'Good for 20–40 guests',
     price: 'Starts at ₱5,000',
     includes: ['Choice of 3 mains', 'Pancit & dessert', 'Steamed rice', 'Drinks station', 'Basic table setup'],
-    img: 'https://images.pexels.com/photos/1729778/pexels-photo-1729778.jpeg?w=1200&q=80',
+    img: 'https://images.pexels.com/photos/6666644/pexels-photo-6666644.jpeg?w=1200&q=80',
     tag: 'Most Booked',
   },
   {

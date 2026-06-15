@@ -151,7 +151,7 @@ const FEATURED_DRINKS = [
     id: 'feat-2',
     name: 'Iced Macchiato',
     sub: 'Caramel + espresso',
-    img: 'https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=600&q=80',
+    img: 'https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=600&q=80',
   },
   {
     id: 'feat-3',
@@ -176,7 +176,7 @@ const CATERING_PACKAGES = [
     guests: 'Good for 20–40 guests',
     price: 'Starts at ₱5,000',
     includes: ['Choice of 3 mains', 'Pancit & dessert', 'Steamed rice', 'Drinks station', 'Basic table setup'],
-    img: 'https://images.pexels.com/photos/1729778/pexels-photo-1729778.jpeg?w=1200&q=80',
+    img: 'https://images.pexels.com/photos/6666644/pexels-photo-6666644.jpeg?w=1200&q=80',
     tag: 'Most Booked',
   },
   {
@@ -243,6 +243,16 @@ const IndexPage = () => {
   }
 
   const activeItems = MENU_ITEMS[activeCategory] ?? []
+
+  // Re-animate menu cards whenever the active tab changes
+  useEffect(() => {
+    const cards = document.querySelectorAll('.ct-menu-card')
+    if (!cards.length) return
+    gsap.fromTo(cards,
+      { y: 55, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.55, stagger: 0.07, ease: 'power3.out' }
+    )
+  }, [activeCategory])
 
   // ── GSAP — exact Couvee motion_fx mappings ────────────────────────────────────
   useEffect(() => {
@@ -356,12 +366,6 @@ const IndexPage = () => {
         { y: 0, opacity: 1, duration: 0.7, ease: 'power3.out',
           scrollTrigger: { trigger: '#ct-menu', start: 'top 82%' } }
       )
-      gsap.fromTo('.ct-menu-card',
-        { y: 55, opacity: 0 },
-        { y: 0, opacity: 1, duration: 0.65, stagger: 0.08, ease: 'power3.out',
-          scrollTrigger: { trigger: '#ct-menu', start: 'top 76%' } }
-      )
-
       // ── FULLWIDTH BREAK — parallax scrub ──────────────────────────────────
       gsap.to('.ct-fullwidth-img', {
         yPercent: 14,
@@ -1308,7 +1312,7 @@ const IndexPage = () => {
         {/* Left floating hand image — fadeInUp delay:200, mouse track negative */}
         <div className="ct-hero-left-img">
           <img
-            src="https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=400&q=80"
+            src="https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=400&q=80"
             alt=""
             aria-hidden="true"
           />
@@ -1645,7 +1649,7 @@ const IndexPage = () => {
         <div className="ct-insta-grid">
           {[
             'https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?w=400&q=80',
-            'https://images.pexels.com/photos/3551717/pexels-photo-3551717.jpeg?w=400&q=80',
+            'https://images.pexels.com/photos/5305639/pexels-photo-5305639.jpeg?w=400&q=80',
             'https://images.pexels.com/photos/1855214/pexels-photo-1855214.jpeg?w=400&q=80',
             'https://images.pexels.com/photos/1458658/pexels-photo-1458658.jpeg?w=400&q=80',
           ].map((src, i) => (
@@ -1712,7 +1716,7 @@ const IndexPage = () => {
               <span>Concept demo</span>
             </div>
             <div className="ct-footer-disclaimer">
-              <strong style={{ fontStyle: 'normal' }}>Disclaimer:</strong> This is a concept landing page created for demonstration purposes only,
+              <strong style={{ fontStyle: 'normal' }}>Disclaimer:</strong> This is a concept landing page created for demonstration purposes only by <strong style={{ fontStyle: 'normal' }}>James Rafty D. Libago (Mizumi)</strong>,
               using publicly available information (Google Maps listing &amp; reviews) and placeholder imagery from Pexels.
               This page was not commissioned by, and is not an official website of, Cafe Teresita by Guada's.
               Menu items, prices, and catering packages shown are illustrative placeholders pending real information from the business.
