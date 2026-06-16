@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Spinner [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:35.978Z
+// Generated: 2026-06-16T12:12:34.746Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

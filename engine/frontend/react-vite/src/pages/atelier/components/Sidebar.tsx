@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Sidebar [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:32.301Z
+// Generated: 2026-06-16T12:12:30.448Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

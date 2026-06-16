@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — cafe-teresita/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T06:35:34.326Z
+// Generated: 2026-06-16T12:12:32.388Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

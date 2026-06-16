@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — new-updates-styles [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:35.948Z
+// Generated: 2026-06-16T12:12:35.125Z
 // ============================================================
 
 // ── Feature card ─────────────────────────────────────────────

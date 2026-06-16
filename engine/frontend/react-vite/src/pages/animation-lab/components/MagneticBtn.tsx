@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MagneticBtn [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:31.809Z
+// Generated: 2026-06-16T12:12:30.090Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — errors-test [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:33.989Z
+// Generated: 2026-06-16T12:12:32.631Z
 // ============================================================
 
 import React, { useState } from 'react'

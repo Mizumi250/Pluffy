@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — notification-test [Expo]
 // Source: @arkzen:native:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T06:35:36.070Z
+// Generated: 2026-06-16T12:12:35.369Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
