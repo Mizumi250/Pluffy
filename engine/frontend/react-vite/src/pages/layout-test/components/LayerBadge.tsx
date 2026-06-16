@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LayerBadge [React+Vite]
 // Source: @arkzen:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T13:13:38.943Z
+// Generated: 2026-06-16T14:13:45.518Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

@@ -60,8 +60,6 @@ const ArkzenPage_ErrorsTest_Index = lazy(() => import('@/pages/errors-test/index
 const ArkzenPage_ErrorsTest_NotFound = lazy(() => import('@/pages/errors-test/not-found'))
 // ROUTE:ethan-pool:index:/ethan-pool:false
 const ArkzenPage_EthanPool_Index = lazy(() => import('@/pages/ethan-pool/index'))
-// ROUTE:ethereane:index:/ethereane:true
-const ArkzenPage_Ethereane_Index = lazy(() => import('@/pages/ethereane/index'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
 // ROUTE:hw-coffee:index:/hw-coffee:false
@@ -158,6 +156,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:ethereane:index:/ethereane:true
+const ArkzenPage_Ethereane_Index = lazy(() => import('@/pages/ethereane/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -189,7 +189,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/errors-test', name: 'index', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_Index, auth: false },
   { path: '/errors-test/*', name: 'not-found', tatemono: 'errors-test', component: ArkzenPage_ErrorsTest_NotFound, auth: false },
   { path: '/ethan-pool', name: 'index', tatemono: 'ethan-pool', component: ArkzenPage_EthanPool_Index, auth: false },
-  { path: '/ethereane', name: 'index', tatemono: 'ethereane', component: ArkzenPage_Ethereane_Index, auth: true },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
   { path: '/hw-coffee', name: 'index', tatemono: 'hw-coffee', component: ArkzenPage_HwCoffee_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
@@ -238,4 +237,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/ethereane', name: 'index', tatemono: 'ethereane', component: ArkzenPage_Ethereane_Index, auth: true },
 ]

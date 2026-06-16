@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE STYLES — jo-payroll
 // Source: @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T13:13:35.474Z
+// Generated: 2026-06-16T14:13:42.388Z
 // ============================================================
 
 import { StyleSheet } from 'react-native'

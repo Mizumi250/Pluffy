@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — animation-lab [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T13:13:33.789Z
+// Generated: 2026-06-16T14:13:38.597Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

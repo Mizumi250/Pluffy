@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Loader [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T13:13:41.638Z
+// Generated: 2026-06-16T14:13:48.017Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
