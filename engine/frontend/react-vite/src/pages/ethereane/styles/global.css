@@ -1,0 +1,72 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+.eth-root {
+  width: 100dvw;
+  height: 100dvh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-family: monospace;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+@media (orientation: portrait) {
+  .eth-root {
+    align-items: flex-start;
+    justify-content: center;
+  }
+}
+
+.eth-viewport {
+  position: relative;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.eth-canvas {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+.eth-joystick-zone {
+  position: fixed;
+  bottom: 32px;
+  left: 32px;
+  width: 120px;
+  height: 120px;
+  pointer-events: auto;
+  z-index: 10;
+}
+
+.eth-joystick-base {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.eth-joystick-knob {
+  width: 44px;
+  height: 44px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.35);
+  border: 2px solid rgba(255, 255, 255, 0.6);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: background 0.1s;
+}

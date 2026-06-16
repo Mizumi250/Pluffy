@@ -5,7 +5,7 @@
 // Tatemono: events-test
 // Listens to: App\Events\Arkzen\EventsTest\UserSignedUp
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T11:23:27.999790Z
+// Generated: 2026-06-16T06:35:35.521415Z
 // ============================================================
 
 namespace App\Listeners\Arkzen\EventsTest;

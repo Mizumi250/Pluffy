@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NTabBar [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T11:23:22.483Z
+// Generated: 2026-06-16T06:35:30.157Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

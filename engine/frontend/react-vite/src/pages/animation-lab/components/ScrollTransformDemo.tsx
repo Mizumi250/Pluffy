@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ScrollTransformDemo [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T11:23:22.044Z
+// Generated: 2026-06-16T06:35:31.834Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
