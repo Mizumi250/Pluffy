@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — BurgerNav [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:12:38.180Z
+// Generated: 2026-06-16T13:13:38.947Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

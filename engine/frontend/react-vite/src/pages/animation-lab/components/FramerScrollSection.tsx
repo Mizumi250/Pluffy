@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:12:30.108Z
+// Generated: 2026-06-16T13:13:33.837Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

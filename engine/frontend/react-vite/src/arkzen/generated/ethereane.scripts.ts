@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — ethereane
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:43:46.211Z
+// Generated: 2026-06-16T13:13:36.688Z
 // ============================================================
 
 // ─── GAME CONSTANTS ────────────────────────────────────────────────────────────
@@ -19,13 +19,12 @@ export const ZOOM          = 2
 
 // ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
-export const IDLE_FRAME_RATE = 8    // ticks per frame during animation (snappy)
-export const IDLE_PAUSE      = 60   // ~1 second at 60fps
+export const IDLE_FRAME_RATE = 8
+export const IDLE_PAUSE      = 60
 export const WALK_FRAMES     = 6
-export const WALK_FRAME_RATE = 8    // ticks per frame for walk
-export const WALK_ROW_OFFSET = 4    // walk rows start at row 4
+export const WALK_FRAME_RATE = 8
+export const WALK_ROW_OFFSET = 4
 
-// Direction rows in sprite sheet (idle rows 0-3, walk rows 4-7 — not drawn yet)
 export const DIR_DOWN  = 0
 export const DIR_LEFT  = 1
 export const DIR_RIGHT = 2
@@ -52,7 +51,6 @@ export interface Prop {
   collision: boolean
 }
 
-// bush2 collision box — bottom half only so top overlaps character
 export const PROP_DEFS: Record<PropType, { w: number; h: number; collision: boolean; colOffsetY: number; colH: number }> = {
   bush1: { w: 32, h: 32, collision: false, colOffsetY: 0,  colH: 0  },
   bush2: { w: 32, h: 32, collision: true,  colOffsetY: 16, colH: 16 },
@@ -61,13 +59,12 @@ export const PROP_DEFS: Record<PropType, { w: number; h: number; collision: bool
 // ─── WORLD GENERATOR ──────────────────────────────────────────────────────────
 export function generateProps(seed: number = 42): Prop[] {
   const props: Prop[] = []
-  // simple seeded random
   let s = seed
   const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
 
   const COUNT_BUSH1 = 300
   const COUNT_BUSH2 = 150
-  const MARGIN      = 64  // keep away from world edges
+  const MARGIN      = 64
 
   for (let i = 0; i < COUNT_BUSH1; i++) {
     props.push({
@@ -96,7 +93,6 @@ export function resolveCollision(
   nextY:  number,
   props:  Prop[],
 ): { x: number; y: number } {
-  // character feet box
   const cLeft   = nextX + 4
   const cRight  = nextX + CHAR_W - 4
   const cTop    = nextY + CHAR_H - 12
@@ -111,7 +107,6 @@ export function resolveCollision(
     const pBottom = p.y + def.colOffsetY + def.colH
 
     if (cRight > pLeft && cLeft < pRight && cBottom > pTop && cTop < pBottom) {
-      // push back — find smallest overlap axis
       const overlapLeft  = cRight  - pLeft
       const overlapRight = pRight  - cLeft
       const overlapTop   = cBottom - pTop
@@ -136,7 +131,7 @@ export const NPC_SPEED      = 0.8
 export const NPC_WANDER_MIN = 60
 export const NPC_WANDER_MAX = 240
 export const NPC_SPAWN_RANGE = 400
-export const NPC_INTERACT_RADIUS = 36  // pixels — how close to trigger button
+export const NPC_INTERACT_RADIUS = 36
 
 export const NPC_DIALOGUES = [
   ["Hey there, traveler!", "This world is bigger than it looks..."],
@@ -166,23 +161,29 @@ export interface Npc {
   dialogueIndex: number
 }
 
-export function generateNpcs(): Npc[] {
+// ─── FIX: seeded NPC generator — same layout on every client ─────────────────
+export function generateNpcs(seed: number = 99): Npc[] {
   const npcs: Npc[] = []
   const cx = WORLD_W / 2
   const cy = WORLD_H / 2
+
+  // seeded LCG (same as generateProps)
+  let s = seed
+  const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
+
   for (let i = 0; i < NPC_COUNT; i++) {
     const angle = (i / NPC_COUNT) * Math.PI * 2
-    const dist  = 100 + Math.random() * NPC_SPAWN_RANGE
+    const dist  = 100 + rand() * NPC_SPAWN_RANGE
     npcs.push({
       x:           cx + Math.cos(angle) * dist,
       y:           cy + Math.sin(angle) * dist,
       dx:          0,
       dy:          0,
       dirRow:      DIR_DOWN,
-      frameIndex:  Math.floor(Math.random() * WALK_FRAMES),
+      frameIndex:  Math.floor(rand() * WALK_FRAMES),
       frameTick:   0,
       wanderTick:  0,
-      wanderMax:     NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN)),
+      wanderMax:     NPC_WANDER_MIN + Math.floor(rand() * (NPC_WANDER_MAX - NPC_WANDER_MIN)),
       idlePausing:   false,
       idleTick:      0,
       dialogueIndex: i % NPC_DIALOGUES.length,
@@ -207,12 +208,10 @@ export function findNearbyNpc(
   return null
 }
 
-// ─── NPC UPDATE FUNCTION (added to fix parse error) ─────────────────────────
 export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   for (const npc of npcs) {
     npc.wanderTick++
 
-    // Pick new direction only when not paused
     if (!paused && npc.wanderTick >= npc.wanderMax) {
       npc.wanderTick = 0
       npc.wanderMax  = NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN))
@@ -228,7 +227,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
 
     const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1)
 
-    // Move only if not paused
     if (moving) {
       npc.x = Math.max(0, Math.min(npc.x + npc.dx * NPC_SPEED, WORLD_W - CHAR_W))
       npc.y = Math.max(0, Math.min(npc.y + npc.dy * NPC_SPEED, WORLD_H - CHAR_H))
@@ -238,7 +236,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
       else if (npc.dx >  0.3) npc.dirRow = DIR_RIGHT
     }
 
-    // Animation always runs (idle or walk frames)
     npc.frameTick++
     if (moving) {
       if (npc.frameTick >= WALK_FRAME_RATE) {
@@ -302,36 +299,56 @@ export function lerpCam(
 }
 
 // ─── MINIMAP ──────────────────────────────────────────────────────────────────
-export const MINI_W      = 80   // minimap width in pixels
-export const MINI_H      = 45   // minimap height (keeps 16:9 ratio of world)
-export const MINI_PAD    = 8    // padding from corner
+export const MINI_W      = 80
+export const MINI_H      = 45
+export const MINI_PAD    = 8
 export const MINI_BORDER = 1
 
+export interface RemotePlayer {
+  id:         number
+  name:       string
+  x:          number
+  y:          number
+  dirRow:     number
+  isWalking:  boolean
+  // interpolation targets
+  targetX:    number
+  targetY:    number
+}
+
 export function renderMinimap(
-  ctx:   CanvasRenderingContext2D,
-  charX: number,
-  charY: number,
+  ctx:     CanvasRenderingContext2D,
+  charX:   number,
+  charY:   number,
+  remotes: RemotePlayer[],
 ) {
   const x = GAME_W - MINI_W - MINI_PAD
   const y = MINI_PAD
 
-  // ── Background ──
   ctx.save()
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#0a1a0a'
   ctx.fillRect(x - MINI_BORDER, y - MINI_BORDER, MINI_W + MINI_BORDER * 2, MINI_H + MINI_BORDER * 2)
   ctx.globalAlpha = 1
 
-  // ── World fill ──
   ctx.fillStyle = '#2d5a27'
   ctx.fillRect(x, y, MINI_W, MINI_H)
 
-  // ── Border ──
   ctx.strokeStyle = 'rgba(255,255,255,0.4)'
   ctx.lineWidth = 0.5
   ctx.strokeRect(x, y, MINI_W, MINI_H)
 
-  // ── Player dot ──
+  // remote player dots — cyan
+  for (const r of remotes) {
+    const rdx = x + (r.x / WORLD_W) * MINI_W
+    const rdy = y + (r.y / WORLD_H) * MINI_H
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath()
+    ctx.arc(rdx, rdy, 1.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // local player dot — white
   const dotX = x + (charX / WORLD_W) * MINI_W
   const dotY = y + (charY / WORLD_H) * MINI_H
   ctx.fillStyle = '#fff'
@@ -339,7 +356,6 @@ export function renderMinimap(
   ctx.arc(dotX, dotY, 1.5, 0, Math.PI * 2)
   ctx.fill()
 
-  // ── Viewport box — shows what camera sees ──
   const vx = x + ((charX - GAME_W / ZOOM / 2) / WORLD_W) * MINI_W
   const vy = y + ((charY - GAME_H / ZOOM / 2) / WORLD_H) * MINI_H
   const vw = (GAME_W / ZOOM / WORLD_W) * MINI_W
@@ -360,6 +376,7 @@ export function renderFrame(
   images:     Record<string, HTMLImageElement>,
   props:      Prop[],
   npcs:       Npc[],
+  remotes:    RemotePlayer[],
   charX:      number,
   charY:      number,
   camX:       number,
@@ -369,11 +386,9 @@ export function renderFrame(
   dirRow:     number,
   isWalking:  boolean,
 ) {
-  // ── Keep pixels sharp ──
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, GAME_W, GAME_H)
 
-  // floor camera to prevent sub-pixel jitter on all sprites
   camX = Math.floor(camX)
   camY = Math.floor(camY)
 
@@ -383,7 +398,7 @@ export function renderFrame(
   const visW = GAME_W / zoom
   const visH = GAME_H / zoom
 
-  // ── Tiles — patchy distribution using multi-frequency hash ──
+  // ── Tiles ──
   const startCol = Math.floor(camX / TILE_SIZE)
   const startRow = Math.floor(camY / TILE_SIZE)
   const endCol   = Math.ceil((camX + visW) / TILE_SIZE)
@@ -393,7 +408,6 @@ export function renderFrame(
     for (let c = startCol; c <= endCol; c++) {
       const sx = c * TILE_SIZE - camX
       const sy = r * TILE_SIZE - camY
-      // patch noise — large scale + medium blended, more mix visible
       const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
       const medium = Math.sin(c * 0.31 + r * 0.29) * 0.4
       const small  = Math.sin(c * 0.61 + r * 0.53) * 0.2
@@ -403,20 +417,16 @@ export function renderFrame(
     }
   }
 
-  // ── Y-sort: collect visible props + character into one list ──
   const visibleProps = props.filter(p =>
     p.x + p.w > camX - 32 && p.x < camX + visW + 32 &&
     p.y + p.h > camY - 32 && p.y < camY + visH + 32
   )
 
-  // character sort key = bottom of feet
   const charSortY = charY + CHAR_H
 
-  // sort everything by bottom Y
   type Drawable = { sortY: number; draw: () => void }
   const drawables: Drawable[] = []
 
-  // add props
   for (const p of visibleProps) {
     const sx = Math.floor(p.x - camX)
     const sy = Math.floor(p.y - camY)
@@ -425,19 +435,12 @@ export function renderFrame(
     drawables.push({
       sortY: p.y + p.h,
       draw: () => {
-        // shadow under bush2
         if (p.type === 'bush2') {
           ctx.save()
           ctx.globalAlpha = 0.3
           ctx.fillStyle = '#000'
           ctx.beginPath()
-          ctx.ellipse(
-            sx + p.w / 2,
-            sy + p.h,
-            p.w / 2.5,
-            p.h / 5,
-            0, 0, Math.PI * 2,
-          )
+          ctx.ellipse(sx + p.w / 2, sy + p.h, p.w / 2.5, p.h / 5, 0, 0, Math.PI * 2)
           ctx.fill()
           ctx.restore()
         }
@@ -446,18 +449,16 @@ export function renderFrame(
     })
   }
 
-  // add npcs
+  // NPCs
   for (const npc of npcs) {
     const nx = Math.floor(npc.x - camX)
     const ny = Math.floor(npc.y - camY)
-    // skip if off screen
     if (nx + CHAR_W < 0 || nx > visW || ny + CHAR_H < 0 || ny > visH) continue
     const moving   = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1
     const npcRow   = moving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
     drawables.push({
       sortY: npc.y + CHAR_H,
       draw: () => {
-        // shadow
         ctx.save()
         ctx.globalAlpha = 0.25
         ctx.fillStyle = '#000'
@@ -465,48 +466,66 @@ export function renderFrame(
         ctx.ellipse(nx + CHAR_W / 2, ny + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
         ctx.fill()
         ctx.restore()
-        // sprite
         ctx.drawImage(char, npc.frameIndex * CHAR_W, npcRow * CHAR_H, CHAR_W, CHAR_H, nx, ny, CHAR_W, CHAR_H)
       },
     })
   }
 
-  // add character
+  // Remote players — drawn with same sprite (character1 for now), tinted cyan
+  for (const r of remotes) {
+    const rx = Math.floor(r.x - camX)
+    const ry = Math.floor(r.y - camY)
+    if (rx + CHAR_W < 0 || rx > visW || ry + CHAR_H < 0 || ry > visH) continue
+    const rRow = r.isWalking ? WALK_ROW_OFFSET + r.dirRow : r.dirRow
+    drawables.push({
+      sortY: r.y + CHAR_H,
+      draw: () => {
+        // shadow
+        ctx.save()
+        ctx.globalAlpha = 0.25
+        ctx.fillStyle = '#000'
+        ctx.beginPath()
+        ctx.ellipse(rx + CHAR_W / 2, ry + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+        // sprite — light cyan tint to distinguish from local
+        ctx.save()
+        ctx.globalAlpha = 0.85
+        ctx.drawImage(char, 0 * CHAR_W, rRow * CHAR_H, CHAR_W, CHAR_H, rx, ry, CHAR_W, CHAR_H)
+        ctx.restore()
+        // name tag above sprite
+        ctx.save()
+        ctx.font = '5px monospace'
+        ctx.fillStyle = '#67e8f9'
+        ctx.textAlign = 'center'
+        ctx.fillText(r.name.slice(0, 10), rx + CHAR_W / 2, ry - 3)
+        ctx.restore()
+      },
+    })
+  }
+
+  // Local character
   const screenX = Math.floor(charX - camX)
   const screenY = Math.floor(charY - camY)
   const sheetRow = isWalking ? WALK_ROW_OFFSET + dirRow : dirRow
   drawables.push({
     sortY: charSortY,
     draw: () => {
-      // shadow
       ctx.save()
       ctx.globalAlpha = 0.3
       ctx.fillStyle = '#000'
       ctx.beginPath()
-      ctx.ellipse(
-        screenX + CHAR_W / 2, screenY + CHAR_H,
-        CHAR_W / 2.5, CHAR_H / 10,
-        0, 0, Math.PI * 2,
-      )
+      ctx.ellipse(screenX + CHAR_W / 2, screenY + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
       ctx.fill()
       ctx.restore()
-      // sprite
-      ctx.drawImage(
-        char,
-        frameIndex * CHAR_W, sheetRow * CHAR_H,
-        CHAR_W, CHAR_H,
-        screenX, screenY,
-        CHAR_W, CHAR_H,
-      )
+      ctx.drawImage(char, frameIndex * CHAR_W, sheetRow * CHAR_H, CHAR_W, CHAR_H, screenX, screenY, CHAR_W, CHAR_H)
     },
   })
 
-  // draw in Y order
   drawables.sort((a, b) => a.sortY - b.sortY)
   for (const d of drawables) d.draw()
 
   ctx.restore()
 
-  // ── Minimap — outside zoom so it stays fixed size ──
-  renderMinimap(ctx, charX, charY)
+  renderMinimap(ctx, charX, charY, remotes)
 }

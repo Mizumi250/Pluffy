@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:12:39.707Z
+// Generated: 2026-06-16T13:13:42.013Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ImageViewerModal [Expo]
 // Source: @arkzen:native:components (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:12:38.361Z
+// Generated: 2026-06-16T13:13:39.108Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

@@ -1,9 +1,9 @@
 /* @arkzen:meta
 name: ethereane
-version: 1.3.0
+version: 1.4.0
 label: Ethereane
-auth: false
-description: Pixel RPG game — fixed 640x360 viewport, 6400x3600 world, smooth follow camera, virtual joystick + keyboard, simple oval shadow.
+auth: true
+description: Pixel RPG game — fixed 640x360 viewport, 6400x3600 world, smooth follow camera, virtual joystick + keyboard, simple oval shadow. Multiplayer via Reverb presence channel.
 */
 
 /* @arkzen:meta:web
@@ -175,6 +175,40 @@ description: A pixel RPG world.
   color: #fff;
 }
 
+/* Online players HUD */
+.eth-online-hud {
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.eth-online-dot {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(10,10,20,0.7);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 12px;
+  padding: 3px 8px 3px 5px;
+  font-family: monospace;
+  font-size: 10px;
+  color: rgba(255,255,255,0.7);
+}
+
+.eth-online-dot::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
+}
+
 /* @arkzen:web:style:end */
 
 /* @arkzen:web:script */
@@ -193,13 +227,12 @@ export const ZOOM          = 2
 
 // ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
-export const IDLE_FRAME_RATE = 8    // ticks per frame during animation (snappy)
-export const IDLE_PAUSE      = 60   // ~1 second at 60fps
+export const IDLE_FRAME_RATE = 8
+export const IDLE_PAUSE      = 60
 export const WALK_FRAMES     = 6
-export const WALK_FRAME_RATE = 8    // ticks per frame for walk
-export const WALK_ROW_OFFSET = 4    // walk rows start at row 4
+export const WALK_FRAME_RATE = 8
+export const WALK_ROW_OFFSET = 4
 
-// Direction rows in sprite sheet (idle rows 0-3, walk rows 4-7 — not drawn yet)
 export const DIR_DOWN  = 0
 export const DIR_LEFT  = 1
 export const DIR_RIGHT = 2
@@ -226,7 +259,6 @@ export interface Prop {
   collision: boolean
 }
 
-// bush2 collision box — bottom half only so top overlaps character
 export const PROP_DEFS: Record<PropType, { w: number; h: number; collision: boolean; colOffsetY: number; colH: number }> = {
   bush1: { w: 32, h: 32, collision: false, colOffsetY: 0,  colH: 0  },
   bush2: { w: 32, h: 32, collision: true,  colOffsetY: 16, colH: 16 },
@@ -235,13 +267,12 @@ export const PROP_DEFS: Record<PropType, { w: number; h: number; collision: bool
 // ─── WORLD GENERATOR ──────────────────────────────────────────────────────────
 export function generateProps(seed: number = 42): Prop[] {
   const props: Prop[] = []
-  // simple seeded random
   let s = seed
   const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
 
   const COUNT_BUSH1 = 300
   const COUNT_BUSH2 = 150
-  const MARGIN      = 64  // keep away from world edges
+  const MARGIN      = 64
 
   for (let i = 0; i < COUNT_BUSH1; i++) {
     props.push({
@@ -270,7 +301,6 @@ export function resolveCollision(
   nextY:  number,
   props:  Prop[],
 ): { x: number; y: number } {
-  // character feet box
   const cLeft   = nextX + 4
   const cRight  = nextX + CHAR_W - 4
   const cTop    = nextY + CHAR_H - 12
@@ -285,7 +315,6 @@ export function resolveCollision(
     const pBottom = p.y + def.colOffsetY + def.colH
 
     if (cRight > pLeft && cLeft < pRight && cBottom > pTop && cTop < pBottom) {
-      // push back — find smallest overlap axis
       const overlapLeft  = cRight  - pLeft
       const overlapRight = pRight  - cLeft
       const overlapTop   = cBottom - pTop
@@ -310,7 +339,7 @@ export const NPC_SPEED      = 0.8
 export const NPC_WANDER_MIN = 60
 export const NPC_WANDER_MAX = 240
 export const NPC_SPAWN_RANGE = 400
-export const NPC_INTERACT_RADIUS = 36  // pixels — how close to trigger button
+export const NPC_INTERACT_RADIUS = 36
 
 export const NPC_DIALOGUES = [
   ["Hey there, traveler!", "This world is bigger than it looks..."],
@@ -340,23 +369,29 @@ export interface Npc {
   dialogueIndex: number
 }
 
-export function generateNpcs(): Npc[] {
+// ─── FIX: seeded NPC generator — same layout on every client ─────────────────
+export function generateNpcs(seed: number = 99): Npc[] {
   const npcs: Npc[] = []
   const cx = WORLD_W / 2
   const cy = WORLD_H / 2
+
+  // seeded LCG (same as generateProps)
+  let s = seed
+  const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
+
   for (let i = 0; i < NPC_COUNT; i++) {
     const angle = (i / NPC_COUNT) * Math.PI * 2
-    const dist  = 100 + Math.random() * NPC_SPAWN_RANGE
+    const dist  = 100 + rand() * NPC_SPAWN_RANGE
     npcs.push({
       x:           cx + Math.cos(angle) * dist,
       y:           cy + Math.sin(angle) * dist,
       dx:          0,
       dy:          0,
       dirRow:      DIR_DOWN,
-      frameIndex:  Math.floor(Math.random() * WALK_FRAMES),
+      frameIndex:  Math.floor(rand() * WALK_FRAMES),
       frameTick:   0,
       wanderTick:  0,
-      wanderMax:     NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN)),
+      wanderMax:     NPC_WANDER_MIN + Math.floor(rand() * (NPC_WANDER_MAX - NPC_WANDER_MIN)),
       idlePausing:   false,
       idleTick:      0,
       dialogueIndex: i % NPC_DIALOGUES.length,
@@ -381,12 +416,10 @@ export function findNearbyNpc(
   return null
 }
 
-// ─── NPC UPDATE FUNCTION (added to fix parse error) ─────────────────────────
 export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   for (const npc of npcs) {
     npc.wanderTick++
 
-    // Pick new direction only when not paused
     if (!paused && npc.wanderTick >= npc.wanderMax) {
       npc.wanderTick = 0
       npc.wanderMax  = NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN))
@@ -402,7 +435,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
 
     const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1)
 
-    // Move only if not paused
     if (moving) {
       npc.x = Math.max(0, Math.min(npc.x + npc.dx * NPC_SPEED, WORLD_W - CHAR_W))
       npc.y = Math.max(0, Math.min(npc.y + npc.dy * NPC_SPEED, WORLD_H - CHAR_H))
@@ -412,7 +444,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
       else if (npc.dx >  0.3) npc.dirRow = DIR_RIGHT
     }
 
-    // Animation always runs (idle or walk frames)
     npc.frameTick++
     if (moving) {
       if (npc.frameTick >= WALK_FRAME_RATE) {
@@ -476,36 +507,56 @@ export function lerpCam(
 }
 
 // ─── MINIMAP ──────────────────────────────────────────────────────────────────
-export const MINI_W      = 80   // minimap width in pixels
-export const MINI_H      = 45   // minimap height (keeps 16:9 ratio of world)
-export const MINI_PAD    = 8    // padding from corner
+export const MINI_W      = 80
+export const MINI_H      = 45
+export const MINI_PAD    = 8
 export const MINI_BORDER = 1
 
+export interface RemotePlayer {
+  id:         number
+  name:       string
+  x:          number
+  y:          number
+  dirRow:     number
+  isWalking:  boolean
+  // interpolation targets
+  targetX:    number
+  targetY:    number
+}
+
 export function renderMinimap(
-  ctx:   CanvasRenderingContext2D,
-  charX: number,
-  charY: number,
+  ctx:     CanvasRenderingContext2D,
+  charX:   number,
+  charY:   number,
+  remotes: RemotePlayer[],
 ) {
   const x = GAME_W - MINI_W - MINI_PAD
   const y = MINI_PAD
 
-  // ── Background ──
   ctx.save()
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#0a1a0a'
   ctx.fillRect(x - MINI_BORDER, y - MINI_BORDER, MINI_W + MINI_BORDER * 2, MINI_H + MINI_BORDER * 2)
   ctx.globalAlpha = 1
 
-  // ── World fill ──
   ctx.fillStyle = '#2d5a27'
   ctx.fillRect(x, y, MINI_W, MINI_H)
 
-  // ── Border ──
   ctx.strokeStyle = 'rgba(255,255,255,0.4)'
   ctx.lineWidth = 0.5
   ctx.strokeRect(x, y, MINI_W, MINI_H)
 
-  // ── Player dot ──
+  // remote player dots — cyan
+  for (const r of remotes) {
+    const rdx = x + (r.x / WORLD_W) * MINI_W
+    const rdy = y + (r.y / WORLD_H) * MINI_H
+    ctx.fillStyle = '#67e8f9'
+    ctx.beginPath()
+    ctx.arc(rdx, rdy, 1.5, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  // local player dot — white
   const dotX = x + (charX / WORLD_W) * MINI_W
   const dotY = y + (charY / WORLD_H) * MINI_H
   ctx.fillStyle = '#fff'
@@ -513,7 +564,6 @@ export function renderMinimap(
   ctx.arc(dotX, dotY, 1.5, 0, Math.PI * 2)
   ctx.fill()
 
-  // ── Viewport box — shows what camera sees ──
   const vx = x + ((charX - GAME_W / ZOOM / 2) / WORLD_W) * MINI_W
   const vy = y + ((charY - GAME_H / ZOOM / 2) / WORLD_H) * MINI_H
   const vw = (GAME_W / ZOOM / WORLD_W) * MINI_W
@@ -534,6 +584,7 @@ export function renderFrame(
   images:     Record<string, HTMLImageElement>,
   props:      Prop[],
   npcs:       Npc[],
+  remotes:    RemotePlayer[],
   charX:      number,
   charY:      number,
   camX:       number,
@@ -543,11 +594,9 @@ export function renderFrame(
   dirRow:     number,
   isWalking:  boolean,
 ) {
-  // ── Keep pixels sharp ──
   ctx.imageSmoothingEnabled = false
   ctx.clearRect(0, 0, GAME_W, GAME_H)
 
-  // floor camera to prevent sub-pixel jitter on all sprites
   camX = Math.floor(camX)
   camY = Math.floor(camY)
 
@@ -557,7 +606,7 @@ export function renderFrame(
   const visW = GAME_W / zoom
   const visH = GAME_H / zoom
 
-  // ── Tiles — patchy distribution using multi-frequency hash ──
+  // ── Tiles ──
   const startCol = Math.floor(camX / TILE_SIZE)
   const startRow = Math.floor(camY / TILE_SIZE)
   const endCol   = Math.ceil((camX + visW) / TILE_SIZE)
@@ -567,7 +616,6 @@ export function renderFrame(
     for (let c = startCol; c <= endCol; c++) {
       const sx = c * TILE_SIZE - camX
       const sy = r * TILE_SIZE - camY
-      // patch noise — large scale + medium blended, more mix visible
       const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
       const medium = Math.sin(c * 0.31 + r * 0.29) * 0.4
       const small  = Math.sin(c * 0.61 + r * 0.53) * 0.2
@@ -577,20 +625,16 @@ export function renderFrame(
     }
   }
 
-  // ── Y-sort: collect visible props + character into one list ──
   const visibleProps = props.filter(p =>
     p.x + p.w > camX - 32 && p.x < camX + visW + 32 &&
     p.y + p.h > camY - 32 && p.y < camY + visH + 32
   )
 
-  // character sort key = bottom of feet
   const charSortY = charY + CHAR_H
 
-  // sort everything by bottom Y
   type Drawable = { sortY: number; draw: () => void }
   const drawables: Drawable[] = []
 
-  // add props
   for (const p of visibleProps) {
     const sx = Math.floor(p.x - camX)
     const sy = Math.floor(p.y - camY)
@@ -599,19 +643,12 @@ export function renderFrame(
     drawables.push({
       sortY: p.y + p.h,
       draw: () => {
-        // shadow under bush2
         if (p.type === 'bush2') {
           ctx.save()
           ctx.globalAlpha = 0.3
           ctx.fillStyle = '#000'
           ctx.beginPath()
-          ctx.ellipse(
-            sx + p.w / 2,
-            sy + p.h,
-            p.w / 2.5,
-            p.h / 5,
-            0, 0, Math.PI * 2,
-          )
+          ctx.ellipse(sx + p.w / 2, sy + p.h, p.w / 2.5, p.h / 5, 0, 0, Math.PI * 2)
           ctx.fill()
           ctx.restore()
         }
@@ -620,18 +657,16 @@ export function renderFrame(
     })
   }
 
-  // add npcs
+  // NPCs
   for (const npc of npcs) {
     const nx = Math.floor(npc.x - camX)
     const ny = Math.floor(npc.y - camY)
-    // skip if off screen
     if (nx + CHAR_W < 0 || nx > visW || ny + CHAR_H < 0 || ny > visH) continue
     const moving   = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1
     const npcRow   = moving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
     drawables.push({
       sortY: npc.y + CHAR_H,
       draw: () => {
-        // shadow
         ctx.save()
         ctx.globalAlpha = 0.25
         ctx.fillStyle = '#000'
@@ -639,53 +674,76 @@ export function renderFrame(
         ctx.ellipse(nx + CHAR_W / 2, ny + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
         ctx.fill()
         ctx.restore()
-        // sprite
         ctx.drawImage(char, npc.frameIndex * CHAR_W, npcRow * CHAR_H, CHAR_W, CHAR_H, nx, ny, CHAR_W, CHAR_H)
       },
     })
   }
 
-  // add character
+  // Remote players — drawn with same sprite (character1 for now), tinted cyan
+  for (const r of remotes) {
+    const rx = Math.floor(r.x - camX)
+    const ry = Math.floor(r.y - camY)
+    if (rx + CHAR_W < 0 || rx > visW || ry + CHAR_H < 0 || ry > visH) continue
+    const rRow = r.isWalking ? WALK_ROW_OFFSET + r.dirRow : r.dirRow
+    drawables.push({
+      sortY: r.y + CHAR_H,
+      draw: () => {
+        // shadow
+        ctx.save()
+        ctx.globalAlpha = 0.25
+        ctx.fillStyle = '#000'
+        ctx.beginPath()
+        ctx.ellipse(rx + CHAR_W / 2, ry + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.restore()
+        // sprite — light cyan tint to distinguish from local
+        ctx.save()
+        ctx.globalAlpha = 0.85
+        ctx.drawImage(char, 0 * CHAR_W, rRow * CHAR_H, CHAR_W, CHAR_H, rx, ry, CHAR_W, CHAR_H)
+        ctx.restore()
+        // name tag above sprite
+        ctx.save()
+        ctx.font = '5px monospace'
+        ctx.fillStyle = '#67e8f9'
+        ctx.textAlign = 'center'
+        ctx.fillText(r.name.slice(0, 10), rx + CHAR_W / 2, ry - 3)
+        ctx.restore()
+      },
+    })
+  }
+
+  // Local character
   const screenX = Math.floor(charX - camX)
   const screenY = Math.floor(charY - camY)
   const sheetRow = isWalking ? WALK_ROW_OFFSET + dirRow : dirRow
   drawables.push({
     sortY: charSortY,
     draw: () => {
-      // shadow
       ctx.save()
       ctx.globalAlpha = 0.3
       ctx.fillStyle = '#000'
       ctx.beginPath()
-      ctx.ellipse(
-        screenX + CHAR_W / 2, screenY + CHAR_H,
-        CHAR_W / 2.5, CHAR_H / 10,
-        0, 0, Math.PI * 2,
-      )
+      ctx.ellipse(screenX + CHAR_W / 2, screenY + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
       ctx.fill()
       ctx.restore()
-      // sprite
-      ctx.drawImage(
-        char,
-        frameIndex * CHAR_W, sheetRow * CHAR_H,
-        CHAR_W, CHAR_H,
-        screenX, screenY,
-        CHAR_W, CHAR_H,
-      )
+      ctx.drawImage(char, frameIndex * CHAR_W, sheetRow * CHAR_H, CHAR_W, CHAR_H, screenX, screenY, CHAR_W, CHAR_H)
     },
   })
 
-  // draw in Y order
   drawables.sort((a, b) => a.sortY - b.sortY)
   for (const d of drawables) d.draw()
 
   ctx.restore()
 
-  // ── Minimap — outside zoom so it stays fixed size ──
-  renderMinimap(ctx, charX, charY)
+  renderMinimap(ctx, charX, charY, remotes)
 }
 
 /* @arkzen:web:script:end */
+
+/* @arkzen:realtime:ethereane-world
+type: presence
+*/
+/* @arkzen:realtime:ethereane-world:end */
 
 /* @arkzen:web:components:game */
 
@@ -693,71 +751,61 @@ export function renderFrame(
 
 import React, { useEffect, useRef, useCallback, useState } from 'react'
 import {
-  GAME_W,
-  GAME_H,
-  WORLD_W,
-  WORLD_H,
-  CHAR_W,
-  CHAR_H,
-  CHAR_SPEED,
-  CAM_LERP,
-  ZOOM,
-  IDLE_FRAMES,
-  IDLE_FRAME_RATE,
-  IDLE_PAUSE,
-  WALK_FRAMES,
-  WALK_FRAME_RATE,
-  WALK_ROW_OFFSET,
-  DIR_DOWN,
-  DIR_LEFT,
-  DIR_RIGHT,
-  DIR_UP,
-  ASSETS,
-  Prop,
-  Npc,
-  NPC_DIALOGUES,
-  generateProps,
-  generateNpcs,
-  updateNpcs,
-  findNearbyNpc,
-  resolveCollision,
-  loadImage,
-  calcScale,
-  lerpCam,
-  renderFrame,
-  renderMinimap,
+  GAME_W, GAME_H, WORLD_W, WORLD_H,
+  CHAR_W, CHAR_H, CHAR_SPEED, CAM_LERP, ZOOM,
+  IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE,
+  WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET,
+  DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP,
+  ASSETS, Prop, Npc, RemotePlayer, NPC_DIALOGUES,
+  generateProps, generateNpcs, updateNpcs, findNearbyNpc,
+  resolveCollision, loadImage, calcScale, lerpCam, renderFrame,
 } from '@/arkzen/generated/ethereane.scripts'
+import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
+
+const REVERB_HOST   = process.env.NEXT_PUBLIC_REVERB_HOST    ?? 'localhost'
+const REVERB_PORT   = process.env.NEXT_PUBLIC_REVERB_PORT    ?? '8080'
+const REVERB_SCHEME = process.env.NEXT_PUBLIC_REVERB_SCHEME  ?? 'ws'
+const APP_KEY       = process.env.NEXT_PUBLIC_REVERB_APP_KEY ?? 'arkzen-key'
+
+// broadcast player position at ~16Hz (every 4 frames at 60fps → 15/s)
+const MOVE_BROADCAST_INTERVAL = 4
 
 const JOY_RADIUS = 60
 const KNOB_MAX   = 38
 
+// interpolation speed for remote players
+const REMOTE_LERP = 0.18
+
 export const EtheraneGame = () => {
+  const { user } = useAuthStore()
+
   const canvasRef   = useRef<HTMLCanvasElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
   const knobRef     = useRef<HTMLDivElement>(null)
   const joyZoneRef  = useRef<HTMLDivElement>(null)
 
-  const charPos  = useRef({
-    x: WORLD_W / 2 - CHAR_W / 2,
-    y: WORLD_H / 2 - CHAR_H / 2,
-  })
-  const camPos   = useRef({
-    x: WORLD_W / 2 - GAME_W / 2,
-    y: WORLD_H / 2 - GAME_H / 2,
-  })
+  const charPos  = useRef({ x: WORLD_W / 2 - CHAR_W / 2, y: WORLD_H / 2 - CHAR_H / 2 })
+  const camPos   = useRef({ x: WORLD_W / 2 - GAME_W / 2, y: WORLD_H / 2 - GAME_H / 2 })
 
   const joyVec    = useRef({ x: 0, y: 0 })
   const keysHeld  = useRef<Set<string>>(new Set())
   const rafRef    = useRef<number>(0)
   const assetsRef = useRef<{ grass: HTMLImageElement; plainGrass: HTMLImageElement; char: HTMLImageElement; images: Record<string, HTMLImageElement> } | null>(null)
   const propsRef  = useRef<Prop[]>(generateProps(42))
-  const npcsRef   = useRef<Npc[]>(generateNpcs())
+  const npcsRef   = useRef<Npc[]>(generateNpcs(99))       // seeded — same on all clients
+  const remotesRef = useRef<Map<number, RemotePlayer>>(new Map())
+  const broadcastTickRef = useRef(0)
 
   const [nearbyNpc,  setNearbyNpc]  = useState<Npc | null>(null)
   const [dialogue,   setDialogue]   = useState<string[] | null>(null)
+  const [onlineNames, setOnlineNames] = useState<string[]>([])
   const nearbyNpcRef = useRef<Npc | null>(null)
   const joyActive = useRef(false)
   const joyOrigin = useRef({ x: 0, y: 0 })
+
+  // multiplayer WebSocket
+  const wsRef      = useRef<WebSocket | null>(null)
+  const mountedRef = useRef(true)
 
   // ─── ANIMATION STATE ──────────────────────────────────────────────────────
   const frameIndex  = useRef(0)
@@ -825,6 +873,94 @@ export const EtheraneGame = () => {
   }, [handleInteract, closeDialogue])
   const onKeyUp = useCallback((e: KeyboardEvent) => { keysHeld.current.delete(e.key) }, [])
 
+  // ─── MULTIPLAYER: connect to Reverb presence channel ──────────────────────
+  const connectMultiplayer = useCallback(async (userId: number) => {
+    if (wsRef.current?.readyState === WebSocket.OPEN) return
+
+    const ws = new WebSocket(`${REVERB_SCHEME}://${REVERB_HOST}:${REVERB_PORT}/app/${APP_KEY}`)
+    wsRef.current = ws
+
+    ws.onmessage = async (event) => {
+      if (!mountedRef.current) return
+      let msg: { event: string; data: unknown; channel?: string }
+      try { msg = JSON.parse(event.data) } catch { return }
+
+      if (msg.event === 'pusher:connection_established') {
+        const connData = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
+        const socketId = (connData as any).socket_id as string
+
+        try {
+          const res = await arkzenFetch('/api/ethereane/auth/broadcasting/auth', {
+            method: 'POST',
+            body:   JSON.stringify({ socket_id: socketId, channel_name: 'presence-ethereane-world' }),
+          })
+          if (res.ok) {
+            const { auth, channel_data } = await res.json()
+            ws.send(JSON.stringify({
+              event: 'pusher:subscribe',
+              data:  { channel: 'presence-ethereane-world', auth, channel_data },
+            }))
+          }
+        } catch (e) { console.warn('[ethereane] presence auth failed', e) }
+      }
+
+      // initial member list on subscribe
+      if (msg.event === 'pusher_internal:subscription_succeeded' && msg.channel === 'presence-ethereane-world') {
+        const d    = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
+        const hash = (d as any).presence?.hash ?? {}
+        const names = Object.entries(hash)
+          .filter(([id]) => Number(id) !== userId)
+          .map(([, info]: [string, any]) => info?.name ?? 'Unknown')
+        setOnlineNames(names)
+      }
+
+      // player joined
+      if (msg.event === 'pusher_internal:member_added') {
+        const d = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
+        const rid = (d as any).user_id as number
+        const rname = (d as any).user_info?.name ?? 'Unknown'
+        if (rid !== userId) {
+          setOnlineNames(prev => [...prev.filter(n => n !== rname), rname])
+        }
+      }
+
+      // player left — remove from remotes + online list
+      if (msg.event === 'pusher_internal:member_removed') {
+        const d = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
+        const rid = (d as any).user_id as number
+        remotesRef.current.delete(rid)
+        setOnlineNames(prev => {
+          const name = remotesRef.current.get(rid)?.name
+          return name ? prev.filter(n => n !== name) : prev
+        })
+      }
+
+      // remote player moved
+      if (msg.event === 'client-player-moved') {
+        const d = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
+        const { id, name, x, y, dirRow: dr, isWalking: iw } = d as any
+        if (id === userId) return
+        const existing = remotesRef.current.get(id)
+        remotesRef.current.set(id, {
+          id, name,
+          x:  existing?.x  ?? x,
+          y:  existing?.y  ?? y,
+          targetX:   x,
+          targetY:   y,
+          dirRow:    dr,
+          isWalking: iw,
+        })
+      }
+    }
+
+    ws.onerror = () => ws.close()
+    ws.onclose = () => {
+      if (!mountedRef.current) return
+      // simple reconnect after 3s
+      setTimeout(() => { if (mountedRef.current) connectMultiplayer(userId) }, 3000)
+    }
+  }, [])
+
   // ─── GAME LOOP ────────────────────────────────────────────────────────────
   const gameLoop = useCallback(() => {
     const canvas = canvasRef.current
@@ -854,14 +990,12 @@ export const EtheraneGame = () => {
     charPos.current.x = resolved.x
     charPos.current.y = resolved.y
 
-    // ── Direction ──
     const moving = Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1
 
-    // reset to idle start when transitioning from walk to idle
     if (isWalking.current && !moving) {
       frameIndex.current  = 0
       frameTick.current   = 0
-      idlePausing.current = true  // start with pause before first idle cycle
+      idlePausing.current = true
     }
     isWalking.current = moving
 
@@ -872,16 +1006,13 @@ export const EtheraneGame = () => {
       else if (dx >  0.1) dirRow.current = DIR_RIGHT
     }
 
-    // ── Frame cycling ──
     frameTick.current++
     if (moving) {
-      // walk — loop continuously
       if (frameTick.current >= WALK_FRAME_RATE) {
         frameTick.current = 0
         frameIndex.current = (frameIndex.current + 1) % WALK_FRAMES
       }
     } else {
-      // idle — play once, pause 3s, repeat
       const rate = idlePausing.current ? IDLE_PAUSE : IDLE_FRAME_RATE
       if (frameTick.current >= rate) {
         frameTick.current = 0
@@ -900,10 +1031,35 @@ export const EtheraneGame = () => {
 
     camPos.current = lerpCam(camPos.current, charPos.current, CAM_LERP, ZOOM)
 
-    // ── Update NPCs ──
+    // ── Broadcast position at 15-16Hz via client event ──
+    broadcastTickRef.current++
+    if (broadcastTickRef.current >= MOVE_BROADCAST_INTERVAL) {
+      broadcastTickRef.current = 0
+      const ws = wsRef.current
+      if (ws?.readyState === WebSocket.OPEN && user?.id) {
+        ws.send(JSON.stringify({
+          event:   'client-player-moved',
+          channel: 'presence-ethereane-world',
+          data: {
+            id:        user.id,
+            name:      user.name ?? `Player ${user.id}`,
+            x:         Math.round(charPos.current.x),
+            y:         Math.round(charPos.current.y),
+            dirRow:    dirRow.current,
+            isWalking: isWalking.current,
+          },
+        }))
+      }
+    }
+
+    // ── Interpolate remote players ──
+    for (const r of remotesRef.current.values()) {
+      r.x += (r.targetX - r.x) * REMOTE_LERP
+      r.y += (r.targetY - r.y) * REMOTE_LERP
+    }
+
     updateNpcs(npcsRef.current, !!dialogue)
 
-    // ── Nearby NPC detection ──
     const nearby = findNearbyNpc(charPos.current.x, charPos.current.y, npcsRef.current)
     if (nearby !== nearbyNpcRef.current) {
       nearbyNpcRef.current = nearby
@@ -918,6 +1074,7 @@ export const EtheraneGame = () => {
       assets.images,
       propsRef.current,
       npcsRef.current,
+      Array.from(remotesRef.current.values()),
       charPos.current.x,
       charPos.current.y,
       camPos.current.x,
@@ -929,7 +1086,7 @@ export const EtheraneGame = () => {
     )
 
     rafRef.current = requestAnimationFrame(gameLoop)
-  }, [dialogue])
+  }, [dialogue, user?.id, user?.name])
 
   // ─── SETUP ────────────────────────────────────────────────────────────────
   useEffect(() => {
@@ -961,19 +1118,14 @@ export const EtheraneGame = () => {
       loadImage(ASSETS.bush2),
     ]).then(([grass, plainGrass, char, bush1, bush2]) => {
       if (cancelled) return
-      assetsRef.current = {
-        grass, plainGrass, char,
-        images: { bush1, bush2 },
-      }
+      assetsRef.current = { grass, plainGrass, char, images: { bush1, bush2 } }
       rafRef.current = requestAnimationFrame(gameLoop)
     }).catch((err) => {
       if (cancelled) return
       const ctx = canvas.getContext('2d')
       if (!ctx) return
-      ctx.fillStyle = '#111'
-      ctx.fillRect(0, 0, GAME_W, GAME_H)
-      ctx.fillStyle = '#f87171'
-      ctx.font = '8px monospace'
+      ctx.fillStyle = '#111'; ctx.fillRect(0, 0, GAME_W, GAME_H)
+      ctx.fillStyle = '#f87171'; ctx.font = '8px monospace'
       ctx.fillText('Asset load failed. Check console.', 4, 12)
       console.error(err)
     })
@@ -1003,24 +1155,42 @@ export const EtheraneGame = () => {
     }
   }, [onTouchStart, onTouchMove, onTouchEnd])
 
+  // ─── CONNECT MULTIPLAYER when user is ready ────────────────────────────────
+  useEffect(() => {
+    mountedRef.current = true
+    if (user?.id) {
+      connectMultiplayer(user.id)
+    }
+    return () => {
+      mountedRef.current = false
+      wsRef.current?.close()
+    }
+  }, [user?.id, connectMultiplayer])
+
   return (
     <div className="eth-root">
       <div className="eth-viewport" ref={viewportRef}>
         <canvas ref={canvasRef} className="eth-canvas" />
       </div>
+
+      {/* Online players HUD */}
+      {onlineNames.length > 0 && (
+        <div className="eth-online-hud">
+          {onlineNames.map((name, i) => (
+            <div key={i} className="eth-online-dot">{name}</div>
+          ))}
+        </div>
+      )}
+
       <div className="eth-joystick-zone" ref={joyZoneRef}>
         <div className="eth-joystick-base" />
         <div className="eth-joystick-knob" ref={knobRef} />
       </div>
 
-      {/* Interact button — pops up when near NPC */}
       {nearbyNpc && !dialogue && (
-        <button className="eth-interact-btn" onClick={handleInteract}>
-          E
-        </button>
+        <button className="eth-interact-btn" onClick={handleInteract}>E</button>
       )}
 
-      {/* Dialogue box */}
       {dialogue && (
         <div className="eth-dialogue">
           <div className="eth-dialogue-name">Villager</div>

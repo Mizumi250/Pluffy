@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — notification-test [React+Vite]
 // Visiting /notification-test redirects to /notification-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T12:12:35.989Z
+// Generated: 2026-06-16T13:13:39.748Z
 // ============================================================
 
 import React from 'react'

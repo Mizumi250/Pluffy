@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — KindBadge [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T12:12:30.292Z
+// Generated: 2026-06-16T13:13:32.834Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T12:12:34.428Z
+// Generated: 2026-06-16T13:13:37.018Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
