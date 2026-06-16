@@ -3,7 +3,7 @@
 // Rendered by the wildcard route /jo-payroll/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-06-16T14:13:44.040Z
+// Generated: 2026-06-16T14:29:26.984Z
 // ============================================================
 
 import React from 'react'

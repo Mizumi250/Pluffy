@@ -10,6 +10,5 @@ export const AUTH_TATEMONOS: string[] = [
   "broadcast-test",
   "mail-test",
   "notification-test",
-  "roles-test",
-  "ethereane"
+  "roles-test"
 ];

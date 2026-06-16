@@ -156,7 +156,7 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
-// ROUTE:ethereane:index:/ethereane:true
+// ROUTE:ethereane:index:/ethereane:false
 const ArkzenPage_Ethereane_Index = lazy(() => import('@/pages/ethereane/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
@@ -237,5 +237,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
-  { path: '/ethereane', name: 'index', tatemono: 'ethereane', component: ArkzenPage_Ethereane_Index, auth: true },
+  { path: '/ethereane', name: 'index', tatemono: 'ethereane', component: ArkzenPage_Ethereane_Index, auth: false },
 ]

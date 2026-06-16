@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NProgressBar [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:13:38.546Z
+// Generated: 2026-06-16T14:29:21.016Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — ethereane/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T14:16:27.668Z
+// Generated: 2026-06-16T14:32:20.622Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

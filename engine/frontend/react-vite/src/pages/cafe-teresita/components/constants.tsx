@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — cafe-teresita [React+Vite]
 // Source: @arkzen:components (cafe-teresita)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:13:41.274Z
+// Generated: 2026-06-16T14:29:23.989Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

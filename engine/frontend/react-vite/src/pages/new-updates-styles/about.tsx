@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T14:13:46.122Z
+// Generated: 2026-06-16T14:29:28.351Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

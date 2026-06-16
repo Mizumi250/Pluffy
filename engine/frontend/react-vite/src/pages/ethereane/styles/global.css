@@ -158,37 +158,3 @@
 .eth-dialogue-close:active {
   color: #fff;
 }
-
-/* Online players HUD */
-.eth-online-hud {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  z-index: 20;
-  pointer-events: none;
-}
-
-.eth-online-dot {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(10,10,20,0.7);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 12px;
-  padding: 3px 8px 3px 5px;
-  font-family: monospace;
-  font-size: 10px;
-  color: rgba(255,255,255,0.7);
-}
-
-.eth-online-dot::before {
-  content: '';
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: #4ade80;
-  flex-shrink: 0;
-}

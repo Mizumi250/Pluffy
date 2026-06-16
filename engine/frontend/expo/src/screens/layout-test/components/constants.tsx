@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — layout-test [Expo]
 // Source: @arkzen:native:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:13:42.785Z
+// Generated: 2026-06-16T14:29:27.658Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — shan-shan [React+Vite]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:13:48.013Z
+// Generated: 2026-06-16T14:29:31.732Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
