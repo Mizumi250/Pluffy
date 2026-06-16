@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — job-test [Expo]
 // Source: @arkzen:native:components (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:14:53.782Z
+// Generated: 2026-06-15T11:23:28.964Z
 // ============================================================
 
 export interface JobResult {

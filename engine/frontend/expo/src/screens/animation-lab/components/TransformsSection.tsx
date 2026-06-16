@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — TransformsSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:26.821Z
+// Generated: 2026-06-15T11:23:21.907Z
 // ============================================================
 
 import React, { useCallback, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AnnounceBadge [React+Vite]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:14:55.071Z
+// Generated: 2026-06-15T11:23:32.429Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

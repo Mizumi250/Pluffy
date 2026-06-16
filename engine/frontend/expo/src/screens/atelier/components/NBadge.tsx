@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NBadge [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:27.167Z
+// Generated: 2026-06-15T11:23:22.464Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

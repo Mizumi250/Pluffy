@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AssetCard [React+Vite]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:27.963Z
+// Generated: 2026-06-15T11:23:22.253Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

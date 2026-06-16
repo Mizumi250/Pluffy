@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ParallaxDemo [React+Vite]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:27.848Z
+// Generated: 2026-06-15T11:23:22.046Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

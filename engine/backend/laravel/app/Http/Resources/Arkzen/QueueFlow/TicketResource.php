@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — TicketResource
 // Tatemono: queue-flow
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:14:55.857240Z
+// Generated: 2026-06-15T11:23:32.618359Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\QueueFlow;

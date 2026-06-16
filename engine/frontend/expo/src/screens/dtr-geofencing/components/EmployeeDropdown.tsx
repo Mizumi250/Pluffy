@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — EmployeeDropdown [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:29.581Z
+// Generated: 2026-06-15T11:23:26.835Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

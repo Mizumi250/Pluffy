@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — atelier [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-15T06:17:27.163Z
+// Generated: 2026-06-15T11:23:22.458Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

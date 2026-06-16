@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — atelier/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-15T06:17:28.213Z
+// Generated: 2026-06-15T11:23:22.559Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
