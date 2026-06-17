@@ -20,10 +20,10 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from '../../../nextjs/arkzen/core/parser'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { parseTatemono } from './parser'
+import { syncSharedCoreToCurrentStack } from './shared-sync'
 import { registerNativeScreens, unregisterNativeScreens } from './native-router'
-import { triggerBackendBuild, triggerBackendRemove } from '../../../nextjs/arkzen/core/backend-bridge'
+import { triggerBackendBuild, triggerBackendRemove } from './backend-bridge'
 
 export interface NativeBuildResult {
   success:  boolean

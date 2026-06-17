@@ -213,9 +213,17 @@ function startAppStack() {
   })
   pipeLog('app', '[Watcher]', watcher)
 
-  // Process 2: metro bundler
-  log('app', `Starting ${activeAppStack} (Metro bundler) — scan QR with Expo Go`)
-  const metro = spawn('npx', ['expo', 'start', '--clear', '--lan'], {
+  // Process 2: metro bundler — command differs per app stack
+  // Expo:               `npx expo start`     (Expo Go / dev client)
+  // React Native (bare): `npx react-native start` (plain Metro — launch the
+  //                       app separately with `npm run android` / `npm run ios`)
+  const isExpo = activeAppStack === 'expo'
+  log('app', isExpo
+    ? `Starting ${activeAppStack} (Metro bundler) — scan QR with Expo Go`
+    : `Starting ${activeAppStack} (Metro bundler) — run "npm run android" in another shell to launch the app`)
+
+  const metroArgs = isExpo ? ['expo', 'start', '--clear', '--lan'] : ['react-native', 'start']
+  const metro = spawn('npx', metroArgs, {
     cwd: APP_DIR,
     stdio: 'pipe',
     env: { ...process.env, FORCE_COLOR: '1' },

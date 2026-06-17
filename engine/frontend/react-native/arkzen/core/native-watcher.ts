@@ -8,8 +8,8 @@ import * as path from 'path'
 import * as fs   from 'fs'
 import chokidar  from 'chokidar'
 import { buildNativeTatemono, rebuildNativeTatemono, removeNativeTatemono } from './native-builder'
-import { checkBackendHealth } from '../../../nextjs/arkzen/core/backend-bridge'
-import { syncSharedCoreToCurrentStack } from '../../../nextjs/arkzen/core/shared-sync'
+import { checkBackendHealth } from './backend-bridge'
+import { syncSharedCoreToCurrentStack } from './shared-sync'
 
 // Root is 3 levels up from engine/frontend/react-native/arkzen/core/
 const ROOT_DIR    = path.resolve(process.cwd(), '..', '..', '..')
