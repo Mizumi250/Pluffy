@@ -355,6 +355,7 @@ const IndexPage = () => {
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import {
   View,
@@ -368,8 +369,25 @@ import {
   Pressable,
   ScrollView,
 } from 'react-native'
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useRef, useCallback } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+} from 'react-native'
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:rn:end */
 
 type Item = {
   id:          number
@@ -753,3 +771,325 @@ const IndexScreen = () => {
 }
 
 /* @arkzen:native:page:index:end */
+
+/* @arkzen:native:components:lynx:shared */
+
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
+import { useState, useEffect } from '@lynx-js/react'
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+type Item = {
+  id:          number
+  name:        string
+  description: string | null
+  status:      'active' | 'pending' | 'archived'
+  priority:    number
+  tags:        string | null
+  created_at:  string
+  updated_at:  string
+}
+
+type FormData = { name: string; description: string; status: 'active' | 'pending' | 'archived'; priority: string; tags: string }
+const emptyForm: FormData = { name: '', description: '', status: 'active', priority: '0', tags: '' }
+
+async function apiFetch(path: string, options?: RequestInit) {
+  return fetch(`${BACKEND_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(options?.headers ?? {}),
+    },
+  })
+}
+
+// ── Status badge ──────────────────────────────────────────────
+const StatusBadge = ({ status }: { status: string }) => {
+  const color = {
+    active:   { bg: '#dcfce7', text: '#15803d' },
+    pending:  { bg: '#fef9c3', text: '#a16207' },
+    archived: { bg: '#f5f5f5', text: '#737373' },
+  }[status] ?? { bg: '#f5f5f5', text: '#525252' }
+
+  return (
+    <View style={{ backgroundColor: color.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
+      <Text style={{ color: color.text, fontSize: 11, fontWeight: '500' }}>{status}</Text>
+    </View>
+  )
+}
+
+// ── Stat card ─────────────────────────────────────────────────
+const StatCard = ({ label, value, accent }: { label: string; value: number; accent: string }) => (
+  <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', padding: 12, alignItems: 'center' }}>
+    <Text style={{ fontSize: 20, fontWeight: '700', color: accent }}>{value}</Text>
+    <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>{label}</Text>
+  </View>
+)
+
+// ── Item row ──────────────────────────────────────────────────
+const ItemRow = ({
+  item,
+  onEdit,
+  onDelete,
+  deleting,
+}: {
+  item:     Item
+  onEdit:   (item: Item) => void
+  onDelete: (id: number) => void
+  deleting: number | null
+}) => (
+  <View style={{ paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderBottomWidth: 1, borderBottomColor: '#fafafa' }}>
+    <View style={{ flex: 1 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+        <Text style={{ fontSize: 13, fontWeight: '500', color: '#171717' }}>{item.name}</Text>
+        <StatusBadge status={item.status} />
+        {item.priority > 0 && (
+          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>P{item.priority}</Text>
+        )}
+      </View>
+      {item.description ? (
+        <Text style={{ fontSize: 11, color: '#737373', marginTop: 2 }} numberOfLines={1}>{item.description}</Text>
+      ) : null}
+      {item.tags ? (
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+          {item.tags.split(',').map((t, i) => (
+            <View key={i} style={{ backgroundColor: '#f5f5f5', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
+              <Text style={{ fontSize: 11, color: '#737373' }}>{t.trim()}</Text>
+            </View>
+          ))}
+        </View>
+      ) : null}
+    </View>
+    <View style={{ flexDirection: 'row', gap: 12, paddingTop: 2 }}>
+      <TouchableOpacity onPress={() => onEdit(item)}>
+        <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Edit</Text>
+      </TouchableOpacity>
+      <TouchableOpacity onPress={() => onDelete(item.id)} disabled={deleting === item.id}>
+        <Text style={{ fontSize: 11, color: '#f87171' }}>{deleting === item.id ? '…' : 'Delete'}</Text>
+      </TouchableOpacity>
+    </View>
+  </View>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+/* @arkzen:native:page:lynx:index */
+
+const IndexScreen = () => {
+  const [items,    setItems]    = useState<Item[]>([])
+  const [loading,  setLoading]  = useState(true)
+  const [deleting, setDeleting] = useState<number | null>(null)
+  const [showForm, setShowForm] = useState(false)
+  const [editing,  setEditing]  = useState<Item | null>(null)
+  const [form,     setForm]     = useState<FormData>(emptyForm)
+  const [saving,   setSaving]   = useState(false)
+  const [error,    setError]    = useState<string | null>(null)
+  const [stats,    setStats]    = useState({ total: 0, active: 0, pending: 0, archived: 0 })
+
+  const load = async () => {
+    setLoading(true)
+    try {
+      const res  = await apiFetch('/api/crud-test/items')
+      if (!res.ok) throw new Error(`${res.status}`)
+      const d    = await res.json()
+      const data: Item[] = Array.isArray(d.data) ? d.data : Array.isArray(d) ? d : []
+      setItems(data)
+      setStats({
+        total:    data.length,
+        active:   data.filter(i => i.status === 'active').length,
+        pending:  data.filter(i => i.status === 'pending').length,
+        archived: data.filter(i => i.status === 'archived').length,
+      })
+    } catch (e) {
+      console.error('[crud-test] load failed:', e)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => { load() }, [])
+
+  const openCreate = () => { setEditing(null); setForm(emptyForm); setError(null); setShowForm(true) }
+  const openEdit   = (item: Item) => {
+    setEditing(item)
+    setForm({ name: item.name, description: item.description ?? '', status: item.status, priority: String(item.priority), tags: item.tags ?? '' })
+    setError(null)
+    setShowForm(true)
+  }
+
+  const save = async () => {
+    if (!form.name.trim()) { setError('Name is required'); return }
+    setSaving(true)
+    setError(null)
+    try {
+      const url    = editing ? `/api/crud-test/items/${editing.id}` : '/api/crud-test/items'
+      const method = editing ? 'PUT' : 'POST'
+      const res    = await apiFetch(url, {
+        method,
+        body: JSON.stringify({ ...form, priority: Number(form.priority) }),
+      })
+      const d = await res.json()
+      if (!res.ok) throw new Error(d.message ?? 'Save failed')
+      setShowForm(false)
+      load()
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Save failed')
+    } finally { setSaving(false) }
+  }
+
+  const remove = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await apiFetch(`/api/crud-test/items/${id}`, { method: 'DELETE' })
+      if (!res.ok) throw new Error(`${res.status}`)
+      await load()
+    } catch (e) {
+      console.error('[crud-test] delete failed:', e)
+    } finally { setDeleting(null) }
+  }
+
+  const statusOptions: Array<'active' | 'pending' | 'archived'> = ['active', 'pending', 'archived']
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+
+      {/* Header */}
+      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>CRUD Test</Text>
+          <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>Same API as web — cross-platform sync</Text>
+        </View>
+        <TouchableOpacity
+          onPress={openCreate}
+          style={{ backgroundColor: '#171717', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+        >
+          <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>+ Create</Text>
+        </TouchableOpacity>
+      </View>
+
+      {/* Form */}
+      {showForm && (
+        <View style={{ backgroundColor: '#fff', margin: 16, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#f5f5f5' }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: '#171717', marginBottom: 16 }}>
+            {editing ? 'Edit Item' : 'Create Item'}
+          </Text>
+          {error && (
+            <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginBottom: 12 }}>
+              <Text style={{ fontSize: 11, color: '#dc2626' }}>{error}</Text>
+            </View>
+          )}
+          <View style={{ gap: 10 }}>
+            <TextInput
+              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+              placeholder="Name *"
+              value={form.name}
+              onInput={e => setForm(f => ({ ...f, name: e.detail.value }))}
+            />
+            <TextInput
+              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+              placeholder="Description"
+              value={form.description}
+              onInput={e => setForm(f => ({ ...f, description: e.detail.value }))}
+            />
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {statusOptions.map(s => (
+                <TouchableOpacity
+                  key={s}
+                  onPress={() => setForm(f => ({ ...f, status: s }))}
+                  style={{
+                    flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center', borderWidth: 1,
+                    backgroundColor: form.status === s ? '#171717' : '#fff',
+                    borderColor: form.status === s ? '#171717' : '#e5e5e5',
+                  }}
+                >
+                  <Text style={{ fontSize: 11, fontWeight: '500', color: form.status === s ? '#fff' : '#737373' }}>{s}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+            <TextInput
+              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+              placeholder="Priority (0)"
+              value={form.priority}
+              onInput={e => setForm(f => ({ ...f, priority: e.detail.value.replace(/[^0-9]/g, '') }))}
+            />
+            <TextInput
+              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+              placeholder="Tags (comma separated)"
+              value={form.tags}
+              onInput={e => setForm(f => ({ ...f, tags: e.detail.value }))}
+            />
+          </View>
+          <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
+            <TouchableOpacity
+              onPress={save}
+              disabled={saving}
+              style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: saving ? '#d4d4d4' : '#171717' }}
+            >
+              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>
+                {saving ? 'Saving…' : editing ? 'Update' : 'Create'}
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setShowForm(false)}
+              style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#e5e5e5' }}
+            >
+              <Text style={{ fontSize: 13, fontWeight: '500', color: '#737373' }}>Cancel</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      <ScrollView style={{ flex: 1 }}>
+        {/* Stats */}
+        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 16 }}>
+          <StatCard label="Total"    value={stats.total}    accent="#171717" />
+          <StatCard label="Active"   value={stats.active}   accent="#16a34a" />
+          <StatCard label="Pending"  value={stats.pending}  accent="#ca8a04" />
+          <StatCard label="Archived" value={stats.archived} accent="#a3a3a3" />
+        </View>
+
+        {/* List */}
+        <View style={{ marginHorizontal: 16, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', overflow: 'hidden', marginBottom: 24 }}>
+          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f5f5f5', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Text style={{ fontSize: 13, fontWeight: '600', color: '#171717' }}>Items</Text>
+            <TouchableOpacity onPress={load}>
+              <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+
+          {loading ? (
+            <View style={{ paddingVertical: 48, alignItems: 'center' }}>
+              <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
+            </View>
+          ) : items.length === 0 ? (
+            <View style={{ paddingVertical: 48, alignItems: 'center', paddingHorizontal: 24 }}>
+              <Text style={{ fontSize: 13, color: '#a3a3a3', textAlign: 'center' }}>
+                No items yet. Tap + Create or check the seeder ran.
+              </Text>
+            </View>
+          ) : (
+            items.map(item => (
+              <ItemRow
+                key={item.id}
+                item={item}
+                onEdit={openEdit}
+                onDelete={remove}
+                deleting={deleting}
+              />
+            ))
+          )}
+        </View>
+
+        {/* Footer */}
+        <View style={{ marginHorizontal: 16, marginBottom: 32, backgroundColor: '#f5f5f5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
+          <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace', lineHeight: 20 }}>
+            {`endpoint: /api/crud-test/items\nbackend: Laravel · crud-test slug\nsync: web ↔ native shared DB`}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:lynx:index:end */
