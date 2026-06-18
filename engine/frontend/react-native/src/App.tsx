@@ -16,6 +16,7 @@
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
+import '../global.css'
 import {
   StatusBar,
   View,

@@ -1,6 +1,6 @@
 {
-  "name": "TestApp",
-  "displayName": "TestApp",
+  "name": "ArkzenApp",
+  "displayName": "ArkzenApp",
   "extra": {
     "eas": {
       "projectId": "7f093d28-2b3e-4510-9d4c-462896d4f629"
