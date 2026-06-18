@@ -1,30 +1,39 @@
 // ============================================================
-// ARKZEN — useArkzenNativeAuth Hook
-// React Native equivalent of authStore.ts
+// ARKZEN — useArkzenNativeAuth Hook v2.0
+// src/hooks/useArkzenNativeAuth.ts
 //
-// Differences from web authStore:
-//   - Token stored in SecureStore (not cookies/localStorage)
-//   - Uses React Native's SecureStore for secure token persistence
-//   - Same API endpoints as web (Laravel backend is shared)
-//   - Same tatemono-scoped auth (/api/{slug}/auth/*)
+// Bare React Native equivalent of expo's useArkzenExpoAuth.ts.
 //
-// STATUS: Foundation — core structure matches web authStore.
-// SecureStore dependency commented out until Expo is wired up.
+// v2.0 — FULL WIRE-UP.
+//   - Removed placeholder SecureStore stub — uses real
+//     @react-native-async-storage/async-storage (bare RN has
+//     no expo-secure-store; use AsyncStorage + your own
+//     encryption layer or react-native-encrypted-storage for
+//     production hardening)
+//   - Same tatemono-scoped API (/api/{slug}/auth/*)
+//   - Same Laravel Sanctum token-based backend as Expo stack
+//   - Per-tatemono token isolation (arkzen-token-{slug})
+//   - Exports apiFetch() helper for authenticated requests
+//
+// v1.0 — Foundation: stubbed SecureStore, core hook shape only.
+//
+// NOTE on storage:
+//   Bare RN doesn't ship expo-secure-store. AsyncStorage is
+//   cleartext. For production, swap the STORAGE_* helpers below
+//   for react-native-encrypted-storage or react-native-keychain.
+//   The hook API is identical regardless of storage backend.
 // ============================================================
 
 import { useState, useEffect, useCallback } from 'react'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
-// NOTE: In a real Expo project, uncomment this:
-// import * as SecureStore from 'expo-secure-store'
+const BACKEND_URL = (
+  process.env.ARKZEN_BACKEND_URL ??
+  process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ??
+  'http://localhost:8000'
+).replace(/\/$/, '')
 
-// Placeholder until Expo is wired up
-const SecureStore = {
-  getItemAsync:    async (_key: string) => null as string | null,
-  setItemAsync:    async (_key: string, _value: string) => {},
-  deleteItemAsync: async (_key: string) => {},
-}
-
-const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface AuthUser {
   id:    number
@@ -40,17 +49,39 @@ interface AuthState {
   error:     string | null
 }
 
+type LoginResult    = { success: true } | { success: false; error: string }
+type RegisterResult = { success: true } | { success: false; error: string }
+
+// ─── Storage helpers (swap out for encrypted storage in production) ────────────
+
+async function storageGet(key: string): Promise<string | null> {
+  try { return await AsyncStorage.getItem(key) }
+  catch { return null }
+}
+
+async function storageSet(key: string, value: string): Promise<void> {
+  try { await AsyncStorage.setItem(key, value) }
+  catch { /* ignore */ }
+}
+
+async function storageDelete(key: string): Promise<void> {
+  try { await AsyncStorage.removeItem(key) }
+  catch { /* ignore */ }
+}
+
+// ─── Internal fetch helper ────────────────────────────────────────────────────
+
 async function arkzenFetch(
   url: string,
   options: RequestInit = {},
-  token?: string | null
+  token?: string | null,
 ): Promise<Response> {
   return fetch(`${BACKEND_URL}${url}`, {
     ...options,
     headers: {
-      'Content-Type':  'application/json',
-      'Accept':        'application/json',
-      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
+      'Content-Type': 'application/json',
+      'Accept':       'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(options.headers ?? {}),
     },
   })
@@ -60,6 +91,8 @@ async function safeJson(res: Response): Promise<Record<string, unknown>> {
   try { return await res.json() }
   catch { return {} }
 }
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
 
 export function useArkzenNativeAuth(tatSlug: string) {
   const tokenKey = `arkzen-token-${tatSlug}`
@@ -71,45 +104,53 @@ export function useArkzenNativeAuth(tatSlug: string) {
     error:     null,
   })
 
-  // Load token from SecureStore on mount
+  // ── Load token on mount ─────────────────────────────────────────────────────
   useEffect(() => {
-    SecureStore.getItemAsync(tokenKey).then(token => {
-      if (token) {
-        // Token exists — fetch the user
-        arkzenFetch(`/api/${tatSlug}/auth/me`, {}, token)
-          .then(safeJson)
-          .then(data => {
-            setState({
-              user:      (data.user as AuthUser) ?? null,
-              token,
-              isLoading: false,
-              error:     null,
-            })
-          })
-          .catch(() => {
-            // Token invalid — clear it
-            SecureStore.deleteItemAsync(tokenKey)
-            setState({ user: null, token: null, isLoading: false, error: null })
-          })
-      } else {
+    storageGet(tokenKey).then(async token => {
+      if (!token) {
         setState(s => ({ ...s, isLoading: false }))
+        return
+      }
+
+      try {
+        const res  = await arkzenFetch(`/api/${tatSlug}/auth/me`, {}, token)
+        const data = await safeJson(res)
+
+        if (!res.ok) throw new Error('Token invalid')
+
+        setState({
+          user:      data.user as AuthUser,
+          token,
+          isLoading: false,
+          error:     null,
+        })
+      } catch {
+        await storageDelete(tokenKey)
+        setState({ user: null, token: null, isLoading: false, error: null })
       }
     })
   }, [tatSlug])
 
-  const login = useCallback(async (email: string, password: string) => {
+  // ── Login ───────────────────────────────────────────────────────────────────
+  const login = useCallback(async (
+    email: string,
+    password: string,
+  ): Promise<LoginResult> => {
     setState(s => ({ ...s, isLoading: true, error: null }))
+
     try {
       const res  = await arkzenFetch(`/api/${tatSlug}/auth/login`, {
         method: 'POST',
         body:   JSON.stringify({ email, password }),
       })
       const data = await safeJson(res)
+
       if (!res.ok) throw new Error((data.message as string) ?? 'Login failed')
 
       const token = data.token as string
       const user  = data.user  as AuthUser
-      await SecureStore.setItemAsync(tokenKey, token)
+
+      await storageSet(tokenKey, token)
       setState({ user, token, isLoading: false, error: null })
       return { success: true }
     } catch (err) {
@@ -117,41 +158,62 @@ export function useArkzenNativeAuth(tatSlug: string) {
       setState(s => ({ ...s, isLoading: false, error }))
       return { success: false, error }
     }
-  }, [tatSlug])
+  }, [tatSlug, tokenKey])
 
-  const register = useCallback(async (name: string, email: string, password: string) => {
+  // ── Register ────────────────────────────────────────────────────────────────
+  const register = useCallback(async (
+    name: string,
+    email: string,
+    password: string,
+  ): Promise<RegisterResult> => {
     setState(s => ({ ...s, isLoading: true, error: null }))
+
     try {
       const res  = await arkzenFetch(`/api/${tatSlug}/auth/register`, {
         method: 'POST',
-        body:   JSON.stringify({ name, email, password, password_confirmation: password }),
+        body:   JSON.stringify({
+          name,
+          email,
+          password,
+          password_confirmation: password,
+        }),
       })
       const data = await safeJson(res)
-      if (!res.ok) throw new Error((data.message as string) ?? 'Register failed')
+
+      if (!res.ok) throw new Error((data.message as string) ?? 'Registration failed')
 
       const token = data.token as string
       const user  = data.user  as AuthUser
-      await SecureStore.setItemAsync(tokenKey, token)
+
+      await storageSet(tokenKey, token)
       setState({ user, token, isLoading: false, error: null })
       return { success: true }
     } catch (err) {
-      const error = err instanceof Error ? err.message : 'Register failed'
+      const error = err instanceof Error ? err.message : 'Registration failed'
       setState(s => ({ ...s, isLoading: false, error }))
       return { success: false, error }
     }
-  }, [tatSlug])
+  }, [tatSlug, tokenKey])
 
+  // ── Logout ──────────────────────────────────────────────────────────────────
   const logout = useCallback(async () => {
     if (state.token) {
-      await arkzenFetch(`/api/${tatSlug}/auth/logout`, { method: 'POST' }, state.token).catch(() => {})
+      await arkzenFetch(
+        `/api/${tatSlug}/auth/logout`,
+        { method: 'POST' },
+        state.token,
+      ).catch(() => {})
     }
-    await SecureStore.deleteItemAsync(tokenKey)
+    await storageDelete(tokenKey)
     setState({ user: null, token: null, isLoading: false, error: null })
-  }, [state.token, tatSlug])
+  }, [state.token, tatSlug, tokenKey])
 
-  const apiFetch = useCallback(async (url: string, options: RequestInit = {}) => {
-    return arkzenFetch(url, options, state.token)
-  }, [state.token])
+  // ── Authenticated fetch helper ───────────────────────────────────────────────
+  const apiFetch = useCallback(
+    (url: string, options: RequestInit = {}) =>
+      arkzenFetch(url, options, state.token),
+    [state.token],
+  )
 
   return {
     user:      state.user,

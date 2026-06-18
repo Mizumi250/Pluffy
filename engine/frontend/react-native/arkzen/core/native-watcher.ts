@@ -1,7 +1,16 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE WATCHER v1.0
-// Mirrors vite-watcher.ts but calls native-router
-// Watches same tatemonos/ folder — same DSL, different output
+// ARKZEN ENGINE — NATIVE WATCHER v2.0
+// Watches tatemonos/ and calls native-builder on changes.
+//
+// v2.0 — Updated for full wire-up.
+//   - Removed v1.0 stub warnings
+//   - isValidTatemono now also checks for @arkzen:native:page
+//     so web-only tatemonos are recognised but skipped gracefully
+//     by the builder's native guard (no watcher-level exclusion —
+//     same pattern as expo-watcher.ts)
+//   - rebuildAllFromRoot logs are cleaner, no placeholder notes
+//
+// v1.0 — Foundation: basic chokidar watch + placeholder build calls.
 // ============================================================
 
 import * as path from 'path'
@@ -60,13 +69,13 @@ async function rebuildAllFromRoot(): Promise<void> {
 
 export async function startNativeWatcher(): Promise<void> {
   console.log(`\n╔════════════════════════════════════════╗`)
-  console.log(`║    ARKZEN ENGINE v1.0 — REACT NATIVE   ║`)
+  console.log(`║    ARKZEN ENGINE v2.0 — REACT NATIVE   ║`)
   console.log(`╚════════════════════════════════════════╝`)
   console.log(`[Arkzen Native] Watching tatemonos at: ${MODULES_DIR}`)
-  console.log(`[Arkzen Native] Screens output: src/screens/`)
-  console.log(`[Arkzen Native] Navigation: src/arkzen/generated/routes.ts`)
-  console.log(`[Arkzen Native] ⚠ STATUS: v9 foundation — placeholder screens only`)
-  console.log(`[Arkzen Native] ⚠ To run the app: open the generated Expo project separately`)
+  console.log(`[Arkzen Native] Screens output:        src/screens/`)
+  console.log(`[Arkzen Native] Navigation registry:   src/arkzen/generated/routes.ts`)
+  console.log(`[Arkzen Native] Styles/animations:     src/arkzen/generated/`)
+  console.log(`[Arkzen Native] Custom layouts:        src/layouts/custom/`)
 
   fs.mkdirSync(MODULES_DIR, { recursive: true })
   syncSharedCoreToCurrentStack('Arkzen Native')
