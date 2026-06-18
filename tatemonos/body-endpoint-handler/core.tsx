@@ -568,6 +568,7 @@ const IndexPage = () => {
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   View,
@@ -577,9 +578,23 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useCallback } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native'
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:rn:end */
 
 async function apiFetch(path: string, options?: RequestInit) {
   return fetch(`${BACKEND_URL}${path}`, {
@@ -630,14 +645,7 @@ const InjectedBadge = ({ injected }: { injected: boolean }) => (
 )
 
 const SectionCard = ({ children }: { children: React.ReactNode }) => (
-  <View style={{
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#f1f1f1',
-  }}>
+  <View className="bg-white rounded-2xl p-4 mb-3 border border-neutral-100">
     {children}
   </View>
 )
@@ -646,6 +654,16 @@ const SectionCard = ({ children }: { children: React.ReactNode }) => (
 
 /* @arkzen:native:page:index */
 /* @arkzen:native:page:layout:guest */
+
+/* @arkzen:import:expo */
+import React, { useState, useEffect, useCallback } from 'react'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useCallback } from 'react'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, ActivityIndicator } from 'react-native'
+/* @arkzen:import:rn:end */
 
 const IndexScreen = () => {
   const [probes,      setProbes]      = useState<ProbeResult[]>([])
@@ -790,9 +808,9 @@ const IndexScreen = () => {
           <TouchableOpacity
             onPress={loadAll}
             activeOpacity={0.8}
-            style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, paddingVertical: 7, paddingHorizontal: 14, alignSelf: 'flex-start' }}
+            className="mt-3 bg-sky-500 rounded-lg px-4 py-1.5 self-start"
           >
-            <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Refresh Stats</Text>
+            <Text className="text-white text-xs font-bold">Refresh Stats</Text>
           </TouchableOpacity>
         </SectionCard>
 
@@ -809,7 +827,7 @@ const IndexScreen = () => {
                 placeholderTextColor="#a3a3a3"
                 autoCorrect={false}
                 autoCapitalize="none"
-                style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b' }}
+                className="flex-1 bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900"
               />
               <TextInput
                 value={f.value}
@@ -818,14 +836,14 @@ const IndexScreen = () => {
                 placeholderTextColor="#a3a3a3"
                 autoCorrect={false}
                 autoCapitalize="none"
-                style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b' }}
+                className="flex-1 bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900"
               />
               <TouchableOpacity
                 onPress={() => setEchoFields(echoFields.filter((_, j) => j !== i))}
                 activeOpacity={0.8}
-                style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' }}
+                className="bg-red-500 rounded-lg px-3 items-center justify-center"
               >
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</Text>
+                <Text className="text-white font-bold text-sm">×</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -833,24 +851,24 @@ const IndexScreen = () => {
             <TouchableOpacity
               onPress={() => setEchoFields([...echoFields, { key: '', value: '' }])}
               activeOpacity={0.8}
-              style={{ backgroundColor: '#6366f1', borderRadius: 8, paddingVertical: 7, paddingHorizontal: 12 }}
+              className="bg-indigo-500 rounded-lg px-3 py-1.5"
             >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>+ Add Field</Text>
+              <Text className="text-white text-xs font-bold">+ Add Field</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
             onPress={doEcho}
             disabled={echoing}
             activeOpacity={0.8}
-            style={{ backgroundColor: echoing ? '#d4d4d8' : '#18181b', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className={`rounded-lg px-4 py-2 self-start ${echoing ? 'bg-neutral-300' : 'bg-neutral-900'}`}
           >
             {echoing
               ? <ActivityIndicator size="small" color="#737373" />
-              : <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Send Echo</Text>
+              : <Text className="text-white text-sm font-bold">Send Echo</Text>
             }
           </TouchableOpacity>
           {echoResult && (
-            <View style={{ marginTop: 12, backgroundColor: '#f4f4f5', borderRadius: 8, padding: 12 }}>
+            <View className="mt-3 bg-neutral-100 rounded-lg p-3">
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <InjectedBadge injected={echoResult.injected} />
                 <Text style={{ fontSize: 11, color: '#52525b' }}>{echoResult.builder} · {echoResult.field_count} field(s)</Text>
@@ -869,9 +887,9 @@ const IndexScreen = () => {
           <TouchableOpacity
             onPress={doPing}
             activeOpacity={0.8}
-            style={{ backgroundColor: '#059669', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className="bg-emerald-600 rounded-lg px-4 py-2 self-start"
           >
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</Text>
+            <Text className="text-white text-sm font-bold">Ping</Text>
           </TouchableOpacity>
           {ping && (
             <View style={{ marginTop: 12, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#bbf7d0' }}>
@@ -896,7 +914,7 @@ const IndexScreen = () => {
             placeholderTextColor="#a3a3a3"
             autoCorrect={false}
             autoCapitalize="none"
-            style={{ backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b', marginBottom: 8 }}
+            className="bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900 mb-2"
           />
           <TouchableOpacity
             onPress={() => setHOk(v => !v)}
@@ -911,17 +929,17 @@ const IndexScreen = () => {
             }}>
               {hOk && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓</Text>}
             </View>
-            <Text style={{ fontSize: 13, color: '#3f3f46' }}>ok</Text>
+            <Text className="text-sm text-neutral-600">ok</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={doRecord}
             disabled={hRecording}
             activeOpacity={0.8}
-            style={{ backgroundColor: hRecording ? '#d4d4d8' : '#7c3aed', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className={`rounded-lg px-4 py-2 self-start ${hRecording ? 'bg-neutral-300' : 'bg-violet-700'}`}
           >
             {hRecording
               ? <ActivityIndicator size="small" color="#737373" />
-              : <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Record via Handler</Text>
+              : <Text className="text-white text-sm font-bold">Record via Handler</Text>
             }
           </TouchableOpacity>
         </SectionCard>
@@ -936,31 +954,31 @@ const IndexScreen = () => {
             <TouchableOpacity onPress={loadAll} activeOpacity={0.8} style={{ padding: 6 }}>
               {loading
                 ? <ActivityIndicator size="small" color="#a3a3a3" />
-                : <Text style={{ fontSize: 11, color: '#0ea5e9', fontWeight: '700' }}>Refresh</Text>
+                : <Text className="text-xs text-sky-500 font-bold">Refresh</Text>
               }
             </TouchableOpacity>
           </View>
           {latest.length === 0 ? (
-            <Text style={{ color: '#a1a1aa', fontSize: 13 }}>No results yet.</Text>
+            <Text className="text-sm text-neutral-400">No results yet.</Text>
           ) : (
             latest.map(r => (
               <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f4f4f5' }}>
                 <NativeBadge label={r.source} color={sourceColor(r.source)} />
-                <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#18181b' }} numberOfLines={1}>{r.probe}</Text>
+                <Text className="flex-1 text-xs font-semibold text-neutral-900" numberOfLines={1}>{r.probe}</Text>
                 <NativeBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
-                <Text style={{ fontSize: 10, color: '#a1a1aa' }}>{new Date(r.created_at).toLocaleTimeString()}</Text>
+                <Text className="text-xs text-neutral-400">{new Date(r.created_at).toLocaleTimeString()}</Text>
               </View>
             ))
           )}
         </SectionCard>
 
-        {/* All probe results + delete */}
+        {/* All probes */}
         <SectionCard>
           <Text className="text-sm font-bold text-neutral-900 mb-3">All Probe Results</Text>
           {loading ? (
             <ActivityIndicator size="small" color="#a3a3a3" />
           ) : probes.length === 0 ? (
-            <Text style={{ color: '#a1a1aa', fontSize: 13 }}>No probes yet.</Text>
+            <Text className="text-sm text-neutral-400">No probes yet.</Text>
           ) : (
             probes.map((r, i) => (
               <View
@@ -973,7 +991,7 @@ const IndexScreen = () => {
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   <NativeBadge label={r.source} color={sourceColor(r.source)} />
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#18181b', flex: 1 }} numberOfLines={1}>{r.probe}</Text>
+                  <Text className="flex-1 text-xs font-bold text-neutral-900" numberOfLines={1}>{r.probe}</Text>
                   <NativeBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
                   <TouchableOpacity
                     onPress={() => doDelete(r.id)}
@@ -988,9 +1006,9 @@ const IndexScreen = () => {
                   </TouchableOpacity>
                 </View>
                 {r.result && (
-                  <Text style={{ fontSize: 11, color: '#71717a', marginLeft: 2 }} numberOfLines={2}>{r.result}</Text>
+                  <Text className="text-xs text-neutral-500 ml-0.5" numberOfLines={2}>{r.result}</Text>
                 )}
-                <Text style={{ fontSize: 10, color: '#a1a1aa', marginTop: 2, marginLeft: 2 }}>
+                <Text className="text-xs text-neutral-400 mt-0.5 ml-0.5">
                   {new Date(r.created_at).toLocaleTimeString()}
                 </Text>
               </View>
@@ -1004,3 +1022,408 @@ const IndexScreen = () => {
 }
 
 /* @arkzen:native:page:index:end */
+
+/* @arkzen:native:components:lynx:shared */
+
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
+import { useState, useEffect, useCallback } from '@lynx-js/react'
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+async function apiFetch(path: string, options?: RequestInit) {
+  return fetch(`${BACKEND_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Accept: 'application/json',
+      ...(options?.headers ?? {}),
+    },
+  })
+}
+
+type ProbeResult = {
+  id:         number
+  source:     string
+  probe:      string
+  payload:    string | null
+  result:     string | null
+  ok:         boolean
+  created_at: string
+}
+
+type Stats = {
+  injected: boolean
+  builder:  string
+  method:   string
+  total:    number
+  passed:   number
+  failed:   number
+  sources:  string[]
+}
+
+const sourceColor = (s: string) =>
+  s === 'handler-body'   ? '#7c3aed' :
+  s === 'endpoint-body'  ? '#0891b2' : '#64748b'
+
+// ── Badge ─────────────────────────────────────────────────────
+const LynxBadge = ({ label, color }: { label: string; color: string }) => (
+  <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: color + '22' }}>
+    <Text style={{ fontSize: 10, fontWeight: '700', color, letterSpacing: 0.5 }}>{label}</Text>
+  </View>
+)
+
+const LynxInjectedBadge = ({ injected }: { injected: boolean }) => (
+  <LynxBadge
+    label={injected ? '✓ BODY INJECTED' : '✗ STUB'}
+    color={injected ? '#16a34a' : '#dc2626'}
+  />
+)
+
+// ── Section card ──────────────────────────────────────────────
+const LynxSectionCard = ({ children }: { children: any }) => (
+  <View style={{
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 16,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f1f1',
+  }}>
+    {children}
+  </View>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+/* @arkzen:native:page:lynx:index */
+
+const IndexScreen = () => {
+  const [probes,      setProbes]      = useState<ProbeResult[]>([])
+  const [stats,       setStats]       = useState<Stats | null>(null)
+  const [ping,        setPing]        = useState<Record<string, any> | null>(null)
+  const [latest,      setLatest]      = useState<ProbeResult[]>([])
+  const [loading,     setLoading]     = useState(false)
+  const [deleting,    setDeleting]    = useState<number | null>(null)
+  const [toast,       setToast]       = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+
+  // Echo form
+  const [echoFields,  setEchoFields]  = useState([{ key: 'hello', value: 'world' }])
+  const [echoing,     setEchoing]     = useState(false)
+  const [echoResult,  setEchoResult]  = useState<Record<string, any> | null>(null)
+
+  // Record handler form
+  const [hProbe,      setHProbe]      = useState('handler-probe')
+  const [hOk,         setHOk]         = useState(true)
+  const [hRecording,  setHRecording]  = useState(false)
+
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const loadAll = async () => {
+    setLoading(true)
+    try {
+      const [probesRes, statsRes, latestRes] = await Promise.all([
+        apiFetch('/api/body-endpoint-handler/probes'),
+        apiFetch('/api/body-endpoint-handler/stats'),
+        apiFetch('/api/body-endpoint-handler/latest'),
+      ])
+      const pd = await probesRes.json(); setProbes(pd.data ?? pd ?? [])
+      const sd = await statsRes.json();  setStats(sd)
+      const ld = await latestRes.json(); setLatest(ld.results ?? [])
+    } catch { showToast('error', 'Failed to load') }
+    setLoading(false)
+  }
+
+  const doPing = async () => {
+    try {
+      const res = await apiFetch('/api/body-endpoint-handler/ping')
+      const d   = await res.json()
+      setPing(d)
+      showToast('success', 'Ping OK — handler body confirmed')
+    } catch { showToast('error', 'Ping failed') }
+  }
+
+  const doEcho = async () => {
+    setEchoing(true)
+    try {
+      const body: Record<string, string> = {}
+      echoFields.forEach((f: { key: string; value: string }) => { if (f.key) body[f.key] = f.value })
+      const res = await apiFetch('/api/body-endpoint-handler/echo', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      })
+      const d = await res.json()
+      setEchoResult(d)
+      showToast('success', 'Echo OK — endpoint body confirmed')
+      loadAll()
+    } catch { showToast('error', 'Echo failed') }
+    setEchoing(false)
+  }
+
+  const doRecord = async () => {
+    setHRecording(true)
+    try {
+      const res = await apiFetch('/api/body-endpoint-handler/record-handler', {
+        method: 'POST',
+        body: JSON.stringify({ probe: hProbe, ok: hOk }),
+      })
+      const d = await res.json()
+      if (res.ok) { showToast('success', `Recorded probe #${d.probe_id} via handler body`); loadAll() }
+      else        { showToast('error', 'Record failed') }
+    } catch { showToast('error', 'Record request failed') }
+    setHRecording(false)
+  }
+
+  const doDelete = async (id: number) => {
+    setDeleting(id)
+    try {
+      const res = await apiFetch(`/api/body-endpoint-handler/probes/${id}`, { method: 'DELETE' })
+      if (res.ok) { showToast('success', 'Probe deleted'); loadAll() }
+      else        { showToast('error', 'Delete failed') }
+    } catch { showToast('error', 'Delete request failed') }
+    setDeleting(null)
+  }
+
+  useEffect(() => { loadAll() }, [])
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+
+      {/* Toast */}
+      {toast && (
+        <View style={{
+          position: 'absolute', top: 52, left: 16, right: 16, zIndex: 999,
+          backgroundColor: toast.type === 'success' ? '#22c55e' : '#ef4444',
+          borderRadius: 10, padding: 12,
+        }}>
+          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>{toast.msg}</Text>
+        </View>
+      )}
+
+      {/* Header */}
+      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16 }}>
+        <Text style={{ fontSize: 17, fontWeight: '700', color: '#171717' }}>Body Injection Tester</Text>
+        <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>
+          ControllerBuilder v7.0 · CustomRouteBuilder v2.0
+        </Text>
+      </View>
+
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+
+        {/* Stats */}
+        <LynxSectionCard>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <View style={{ flex: 1 }}>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>📊 Stats Endpoint</Text>
+              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /stats · @arkzen:endpoint:stats</Text>
+            </View>
+            {stats && <LynxInjectedBadge injected={stats.injected} />}
+          </View>
+          {loading ? (
+            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
+          ) : stats ? (
+            <View style={{ flexDirection: 'row', gap: 8 }}>
+              {([['Total', stats.total, '#171717'], ['Passed ✓', stats.passed, '#16a34a'], ['Failed ✗', stats.failed, '#dc2626']] as const).map(([label, val, color]) => (
+                <View key={label} style={{ flex: 1, backgroundColor: '#fafafa', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                  <Text style={{ fontSize: 22, fontWeight: '800', color }}>{val}</Text>
+                  <Text style={{ fontSize: 10, color: '#737373', marginTop: 2 }}>{label}</Text>
+                </View>
+              ))}
+            </View>
+          ) : null}
+          <TouchableOpacity
+            onPress={loadAll}
+            style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 14, alignSelf: 'flex-start' }}
+          >
+            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Refresh Stats</Text>
+          </TouchableOpacity>
+        </LynxSectionCard>
+
+        {/* Echo — multi-field */}
+        <LynxSectionCard>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🔁 Echo Endpoint</Text>
+          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /echo · @arkzen:endpoint:echo</Text>
+          {echoFields.map((f: { key: string; value: string }, i: number) => (
+            <View key={i} style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
+              <TextInput
+                value={f.key}
+                onInput={(e: any) => { const n = [...echoFields]; n[i].key = e.detail.value; setEchoFields(n) }}
+                placeholder="key"
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
+              />
+              <TextInput
+                value={f.value}
+                onInput={(e: any) => { const n = [...echoFields]; n[i].value = e.detail.value; setEchoFields(n) }}
+                placeholder="value"
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
+              />
+              <TouchableOpacity
+                onPress={() => setEchoFields(echoFields.filter((_: any, j: number) => j !== i))}
+                style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' }}
+              >
+                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</Text>
+              </TouchableOpacity>
+            </View>
+          ))}
+          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <TouchableOpacity
+              onPress={() => setEchoFields([...echoFields, { key: '', value: '' }])}
+              style={{ backgroundColor: '#6366f1', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 }}
+            >
+              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>+ Add Field</Text>
+            </TouchableOpacity>
+          </View>
+          <TouchableOpacity
+            onPress={doEcho}
+            disabled={echoing}
+            style={{ backgroundColor: echoing ? '#d4d4d4' : '#171717', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+          >
+            <Text style={{ color: echoing ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
+              {echoing ? 'Echoing…' : 'Send Echo'}
+            </Text>
+          </TouchableOpacity>
+          {echoResult && (
+            <View style={{ marginTop: 12, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+                <LynxInjectedBadge injected={echoResult.injected} />
+                <Text style={{ fontSize: 11, color: '#525252' }}>{echoResult.builder} · {echoResult.field_count} field(s)</Text>
+              </View>
+              <Text style={{ fontSize: 11, color: '#262626', fontFamily: 'monospace' }}>
+                {JSON.stringify(echoResult.echo, null, 2)}
+              </Text>
+            </View>
+          )}
+        </LynxSectionCard>
+
+        {/* Ping */}
+        <LynxSectionCard>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🏓 Ping Handler</Text>
+          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>GET /ping · @arkzen:handler:ping</Text>
+          <TouchableOpacity
+            onPress={doPing}
+            style={{ backgroundColor: '#059669', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+          >
+            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</Text>
+          </TouchableOpacity>
+          {ping && (
+            <View style={{ marginTop: 12, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#bbf7d0' }}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+                <LynxInjectedBadge injected={ping.injected} />
+                <Text style={{ fontSize: 11, color: '#166534' }}>{ping.builder} · {ping.handler}</Text>
+              </View>
+              <Text style={{ fontSize: 13, color: '#15803d' }}>{ping.message}</Text>
+              <Text style={{ fontSize: 11, color: '#86efac', marginTop: 2 }}>{ping.timestamp}</Text>
+            </View>
+          )}
+        </LynxSectionCard>
+
+        {/* Record Handler */}
+        <LynxSectionCard>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>📝 Record Handler</Text>
+          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /record-handler · @arkzen:handler:recordHandler</Text>
+          <TextInput
+            value={hProbe}
+            onInput={(e: any) => setHProbe(e.detail.value)}
+            placeholder="probe name"
+            style={{ backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717', marginBottom: 8 }}
+          />
+          <TouchableOpacity
+            onPress={() => setHOk((v: boolean) => !v)}
+            style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}
+          >
+            <View style={{
+              width: 18, height: 18, borderRadius: 4, borderWidth: 1.5,
+              borderColor: hOk ? '#7c3aed' : '#d4d4d8',
+              backgroundColor: hOk ? '#7c3aed' : '#fff',
+              alignItems: 'center', justifyContent: 'center',
+            }}>
+              {hOk && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓</Text>}
+            </View>
+            <Text style={{ fontSize: 13, color: '#525252' }}>ok</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={doRecord}
+            disabled={hRecording}
+            style={{ backgroundColor: hRecording ? '#d4d4d4' : '#7c3aed', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+          >
+            <Text style={{ color: hRecording ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
+              {hRecording ? 'Recording…' : 'Record via Handler'}
+            </Text>
+          </TouchableOpacity>
+        </LynxSectionCard>
+
+        {/* Latest 5 */}
+        <LynxSectionCard>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <View>
+              <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>🕑 Latest Handler</Text>
+              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /latest · @arkzen:handler:latest</Text>
+            </View>
+            <TouchableOpacity onPress={loadAll} style={{ padding: 6 }}>
+              <Text style={{ fontSize: 11, color: '#0ea5e9', fontWeight: '700' }}>Refresh</Text>
+            </TouchableOpacity>
+          </View>
+          {latest.length === 0 ? (
+            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>No results yet.</Text>
+          ) : (
+            latest.map((r: ProbeResult) => (
+              <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
+                <LynxBadge label={r.source} color={sourceColor(r.source)} />
+                <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#171717' }} numberOfLines={1}>{r.probe}</Text>
+                <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
+                <Text style={{ fontSize: 10, color: '#a3a3a3' }}>{new Date(r.created_at).toLocaleTimeString()}</Text>
+              </View>
+            ))
+          )}
+        </LynxSectionCard>
+
+        {/* All probes */}
+        <LynxSectionCard>
+          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 12 }}>All Probe Results</Text>
+          {loading ? (
+            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
+          ) : probes.length === 0 ? (
+            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>No probes yet.</Text>
+          ) : (
+            probes.map((r: ProbeResult, i: number) => (
+              <View
+                key={r.id}
+                style={{
+                  paddingVertical: 10,
+                  borderBottomWidth: i < probes.length - 1 ? 1 : 0,
+                  borderBottomColor: '#f5f5f5',
+                }}
+              >
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                  <LynxBadge label={r.source} color={sourceColor(r.source)} />
+                  <Text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }} numberOfLines={1}>{r.probe}</Text>
+                  <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
+                  <TouchableOpacity
+                    onPress={() => doDelete(r.id)}
+                    disabled={deleting === r.id}
+                    style={{ backgroundColor: '#ef4444', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, opacity: deleting === r.id ? 0.5 : 1 }}
+                  >
+                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>
+                      {deleting === r.id ? '…' : 'Delete'}
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+                {r.result && (
+                  <Text style={{ fontSize: 11, color: '#737373', marginLeft: 2 }} numberOfLines={2}>{r.result}</Text>
+                )}
+                <Text style={{ fontSize: 10, color: '#a3a3a3', marginTop: 2, marginLeft: 2 }}>
+                  {new Date(r.created_at).toLocaleTimeString()}
+                </Text>
+              </View>
+            ))
+          )}
+        </LynxSectionCard>
+
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:lynx:index:end */
