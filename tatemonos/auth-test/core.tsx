@@ -250,6 +250,7 @@ const DashboardPage = () => {
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React, { useState, useEffect, useRef } from 'react'
 import {
   View,
@@ -264,11 +265,30 @@ import {
 import { useRouter } from 'expo-router'
 import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '@/arkzen/core/stores/authStore'
 
-// Set the active tatemono slug so the auth store uses the correct
-// isolated token key and API prefix for auth-test
 setActiveTatemono('auth-test')
 
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useRef } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+} from 'react-native'
+import { useRouter } from '@react-navigation/native'
+import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '@/arkzen/core/stores/authStore'
+
+setActiveTatemono('auth-test')
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:rn:end */
 
 // ── Input field ───────────────────────────────────────────────
 const Field = ({
@@ -549,3 +569,230 @@ const DashboardScreen = () => {
 }
 
 /* @arkzen:native:page:dashboard:end */
+
+/* @arkzen:native:components:lynx:shared */
+
+import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
+import { useState, useEffect } from '@lynx-js/react'
+import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
+
+setActiveTatemono('auth-test')
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+// ── Input field ───────────────────────────────────────────────
+const Field = ({
+  placeholder,
+  value,
+  onInput,
+  secureTextEntry = false,
+}: {
+  placeholder:      string
+  value:            string
+  onInput:          (v: string) => void
+  secureTextEntry?: boolean
+}) => (
+  <TextInput
+    style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+    placeholder={placeholder}
+    value={value}
+    onInput={e => onInput(e.detail.value)}
+    type={secureTextEntry ? 'password' : 'text'}
+  />
+)
+
+// ── Error box ─────────────────────────────────────────────────
+const ErrorBox = ({ message }: { message: string }) => (
+  <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12 }}>
+    <Text style={{ fontSize: 11, color: '#dc2626' }}>{message}</Text>
+  </View>
+)
+
+// ── Primary button ────────────────────────────────────────────
+const PrimaryBtn = ({
+  label,
+  onPress,
+  loading = false,
+}: {
+  label:    string
+  onPress:  () => void
+  loading?: boolean
+}) => (
+  <TouchableOpacity
+    onPress={onPress}
+    disabled={loading}
+    style={{ paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: loading ? '#d4d4d4' : '#171717' }}
+  >
+    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>
+      {loading ? 'Loading…' : label}
+    </Text>
+  </TouchableOpacity>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+/* @arkzen:native:page:lynx:login */
+
+const LoginScreen = () => {
+  const { login, isLoading } = useAuthStore()
+  const [email,    setEmail]    = useState('test@arkzen.local')
+  const [password, setPassword] = useState('password')
+  const [error,    setError]    = useState<string | null>(null)
+
+  const handleLogin = async () => {
+    setError(null)
+    try {
+      await login(email, password)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Login failed')
+    }
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }}>
+      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 48 }}>
+
+        {/* Header */}
+        <View style={{ marginBottom: 32 }}>
+          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Text style={{ color: '#fff', fontSize: 20 }}>🔒</Text>
+          </View>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: '#171717' }}>Auth Test</Text>
+          <Text style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>
+            Sign in to access the protected dashboard
+          </Text>
+        </View>
+
+        {/* Form */}
+        <View style={{ gap: 12 }}>
+          {error && <ErrorBox message={error} />}
+
+          <Field placeholder="Email"    value={email}    onInput={setEmail}    />
+          <Field placeholder="Password" value={password} onInput={setPassword} secureTextEntry />
+
+          <PrimaryBtn label="Sign in" onPress={handleLogin} loading={isLoading} />
+        </View>
+
+        {/* Footer */}
+        <View style={{ marginTop: 24, alignItems: 'center' }}>
+          <View style={{ backgroundColor: '#f5f5f5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
+            <Text style={{ fontSize: 11, color: '#a3a3a3', fontFamily: 'monospace' }}>
+              test@arkzen.local / password
+            </Text>
+          </View>
+        </View>
+      </View>
+    </ScrollView>
+  )
+}
+
+/* @arkzen:native:page:lynx:login:end */
+
+/* @arkzen:native:page:lynx:register */
+
+const RegisterScreen = () => {
+  const { register, isLoading } = useAuthStore()
+  const [name,     setName]     = useState('Test User')
+  const [email,    setEmail]    = useState('test@arkzen.local')
+  const [password, setPassword] = useState('password')
+  const [confirm,  setConfirm]  = useState('password')
+  const [error,    setError]    = useState<string | null>(null)
+
+  const handleRegister = async () => {
+    setError(null)
+    if (password !== confirm) { setError('Passwords do not match'); return }
+    try {
+      await register(name, email, password, confirm)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Registration failed')
+    }
+  }
+
+  return (
+    <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }}>
+      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 48 }}>
+
+        {/* Header */}
+        <View style={{ marginBottom: 32 }}>
+          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+            <Text style={{ color: '#fff', fontSize: 20 }}>🔒</Text>
+          </View>
+          <Text style={{ fontSize: 22, fontWeight: '700', color: '#171717' }}>Auth Test</Text>
+          <Text style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>Create an account</Text>
+        </View>
+
+        {/* Form */}
+        <View style={{ gap: 12 }}>
+          {error && <ErrorBox message={error} />}
+
+          <Field placeholder="Name"             value={name}     onInput={setName}     />
+          <Field placeholder="Email"            value={email}    onInput={setEmail}    />
+          <Field placeholder="Password"         value={password} onInput={setPassword} secureTextEntry />
+          <Field placeholder="Confirm password" value={confirm}  onInput={setConfirm}  secureTextEntry />
+
+          <PrimaryBtn label="Create account" onPress={handleRegister} loading={isLoading} />
+        </View>
+      </View>
+    </ScrollView>
+  )
+}
+
+/* @arkzen:native:page:lynx:register:end */
+
+/* @arkzen:native:page:lynx:dashboard */
+
+const DashboardScreen = () => {
+  const { user, logout } = useAuthStore()
+
+  const handleLogout = async () => {
+    await logout()
+  }
+
+  return (
+    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+
+      {/* Header */}
+      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>✅ Auth Test</Text>
+          <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>{user?.email}</Text>
+        </View>
+        <TouchableOpacity onPress={handleLogout}>
+          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Sign out</Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView style={{ flex: 1 }}>
+        {/* Success card */}
+        <View style={{ margin: 16, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 32, alignItems: 'center' }}>
+          <Text style={{ fontSize: 40, marginBottom: 12 }}>🛡️</Text>
+          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717', marginBottom: 6 }}>
+            Authentication successful
+          </Text>
+          <Text style={{ fontSize: 11, color: '#737373', textAlign: 'center', lineHeight: 20 }}>
+            {`This screen is protected by the auth layout.\nOnly signed-in users can see it.`}
+          </Text>
+        </View>
+
+        {/* User info */}
+        <View style={{ marginHorizontal: 16, marginTop: 4, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 20 }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#171717', marginBottom: 12 }}>User info</Text>
+          <View style={{ backgroundColor: '#fafafa', borderRadius: 12, padding: 16 }}>
+            <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#737373', lineHeight: 20 }}>
+              {JSON.stringify(user, null, 2)}
+            </Text>
+          </View>
+        </View>
+
+        {/* Footer note */}
+        <View style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 32, backgroundColor: '#f5f5f5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
+          <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace', lineHeight: 20 }}>
+            {`token: Sanctum Bearer\nscope: auth-test SQLite\nshared: web ↔ native same token`}
+          </Text>
+        </View>
+      </ScrollView>
+    </View>
+  )
+}
+
+/* @arkzen:native:page:lynx:dashboard:end */
