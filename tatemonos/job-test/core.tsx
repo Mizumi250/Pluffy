@@ -466,6 +466,7 @@ const DashboardScreen = () => {
 import { View, Text, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect, useRef } from '@lynx-js/react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Icon } from '@sigx/lynx-icons'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
@@ -553,9 +554,11 @@ const DashboardScreen = () => {
 
       {/* Header */}
       <View className="bg-white border-b border-neutral-100 px-5 py-4">
-        <Text className="text-lg font-bold text-neutral-900">⚙️ Job Test</Text>
-        {/* fontFamily monospace not standard Tailwind in Lynx, use inline */}
-        <Text className="text-xs text-neutral-500 mt-0.5" style={{ fontFamily: 'monospace' }}>
+        <View className="flex-row items-center gap-2">
+          <Icon set="lucide" name="cpu" size={18} color="#0f172a" />
+          <Text className="text-lg font-bold text-neutral-900">Job Test</Text>
+        </View>
+        <Text className="text-xs text-neutral-500 font-mono mt-0.5">
           php artisan queue:work
         </Text>
       </View>
@@ -594,7 +597,10 @@ const DashboardScreen = () => {
           <View className="px-5 py-3.5 border-b border-neutral-100 flex-row items-center justify-between">
             <Text className="text-sm font-semibold text-neutral-900">Results</Text>
             <TouchableOpacity onPress={loadResults} className="p-1.5">
-              <Text className="text-xs text-neutral-400">{loading ? 'Loading…' : 'Refresh'}</Text>
+              {loading
+                ? <Text className="text-xs text-neutral-400">Loading…</Text>
+                : <Icon set="lucide" name="refresh-cw" size={14} color="#a3a3a3" />
+              }
             </TouchableOpacity>
           </View>
 
@@ -627,7 +633,7 @@ const DashboardScreen = () => {
 
         {/* Info */}
         <View className="bg-neutral-100 rounded-2xl px-4 py-3">
-          <Text className="text-xs text-neutral-500 leading-5" style={{ fontFamily: 'monospace' }}>
+          <Text className="text-xs text-neutral-500 font-mono leading-5">
             {'backend: /api/job-test\nfailed jobs: failed_jobs table'}
           </Text>
         </View>
