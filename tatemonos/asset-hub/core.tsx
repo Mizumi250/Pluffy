@@ -331,6 +331,7 @@ const IndexPage = () => {
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React from 'react'
 import { Image, View, Text, ScrollView } from 'react-native'
 
@@ -348,6 +349,27 @@ export const NATIVE_ASSET_REQUIRE_MAP: Record<string, any> = {
   // Metro needs static require() calls — only list files that actually exist
   'images/baby.jpg': require('../../../assets/tatemonos/asset-hub/images/baby.jpg'),
 }
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React from 'react'
+import { Image, View, Text, ScrollView } from 'react-native'
+
+// ─── NATIVE ASSET REGISTRY ────────────────────────────────────────────────────
+// Metro requires static require() calls — dynamic require() is not supported.
+// Pattern: add a require() entry here when you drop a new file, then reference
+// it by key from NATIVE_ASSET_REGISTRY. The registry stays data-driven;
+// only NATIVE_ASSET_REQUIRE_MAP needs a new line per file.
+//
+// Distributed to: engine/frontend/react-native/assets/tatemonos/asset-hub/
+// require() depth: src/screens/asset-hub/index.tsx → ../../assets/tatemonos/asset-hub/
+
+export const NATIVE_ASSET_REQUIRE_MAP: Record<string, any> = {
+  // ── Add a require() here for every file you drop ──
+  // Metro needs static require() calls — only list files that actually exist
+  'images/baby.jpg': require('../../../assets/tatemonos/asset-hub/images/baby.jpg'),
+}
+/* @arkzen:import:rn:end */
 
 export interface NativeAssetItem {
   name:     string
@@ -459,3 +481,117 @@ const NativeIndexScreen = () => {
 }
 
 /* @arkzen:native:page:index:end */
+
+/* @arkzen:native:components:lynx:shared */
+
+import { View, Text, ScrollView, Image } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
+
+// ─── LYNX ASSET REGISTRY ──────────────────────────────────────────────────────
+// Lynx uses URI-based asset references — no Metro static require() needed.
+// Assets are served from the Lynx dev server or bundled as URI strings.
+// Drop files into tatemonos/asset-hub/assets/<category>/ and register here.
+
+export interface LynxAssetItem {
+  name:     string
+  uri:      string   // relative URI served by Lynx asset pipeline
+  category: string
+  ext:      string
+}
+
+export const LYNX_ASSET_REGISTRY: LynxAssetItem[] = [
+  // ── Add an entry here for every file you drop ──
+  { name: 'baby.jpg', uri: '/assets/tatemonos/asset-hub/images/baby.jpg', category: 'images', ext: 'jpg' },
+]
+
+const LYNX_CATEGORY_EMOJI: Record<string, string> = {
+  images: '🖼', fonts: '🔤', icons: '🔷', svg: '✏️', video: '🎬', audio: '🎵', data: '📄',
+}
+
+// ── Category badge ─────────────────────────────────────────────
+const CatBadge = ({ label }: { label: string }) => (
+  <View style={{ paddingHorizontal: 12, paddingVertical: 4, backgroundColor: '#ede9fe', borderRadius: 99, alignSelf: 'flex-start' }}>
+    <Text style={{ fontSize: 11, fontWeight: '600', color: '#6d28d9', letterSpacing: 1 }}>{label}</Text>
+  </View>
+)
+
+// ── Asset row ──────────────────────────────────────────────────
+const AssetRow = ({ asset }: { asset: LynxAssetItem }) => {
+  const isImage = asset.category === 'images'
+
+  return (
+    <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 8 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+        <Text style={{ fontSize: 20, marginRight: 12 }}>{LYNX_CATEGORY_EMOJI[asset.category] ?? '📁'}</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={{ fontSize: 13, fontWeight: '600', color: '#0f172a' }}>{asset.name}</Text>
+          <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8', marginTop: 2 }}>
+            {asset.uri}
+          </Text>
+        </View>
+        <View style={{ backgroundColor: '#ede9fe', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
+          <Text style={{ fontSize: 11, fontWeight: '600', color: '#6366f1', fontFamily: 'monospace' }}>.{asset.ext}</Text>
+        </View>
+      </View>
+      {isImage && (
+        <Image
+          src={asset.uri}
+          style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 12 }}
+        />
+      )}
+    </View>
+  )
+}
+
+// ── Guide row ──────────────────────────────────────────────────
+const GuideRow = ({ folder, desc }: { folder: string; desc: string }) => (
+  <View style={{ paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: '#f1f5f9' }}>
+    <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#6366f1', marginBottom: 2 }}>{folder}</Text>
+    <Text style={{ fontSize: 11, color: '#94a3b8' }}>{desc}</Text>
+  </View>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+/* @arkzen:native:page:lynx:index */
+
+const IndexScreen = () => (
+  <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }} contentContainerStyle={{ padding: 24, paddingTop: 56, paddingBottom: 48 }}>
+
+    <CatBadge label="📦 Asset Hub" />
+
+    <Text style={{ fontSize: 28, fontWeight: '700', color: '#0f172a', marginTop: 16, marginBottom: 8, lineHeight: 34 }}>
+      Asset Distribution
+    </Text>
+    <Text style={{ fontSize: 13, color: '#64748b', lineHeight: 22, marginBottom: 32 }}>
+      Drop files into{' '}
+      <Text style={{ fontFamily: 'monospace', color: '#6366f1' }}>tatemonos/asset-hub/assets/</Text>
+      {' '}— engine distributes to the Lynx asset pipeline. Registered assets render below.
+    </Text>
+
+    {/* Drop guide */}
+    <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 32 }}>
+      <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 8 }}>
+        Where to drop
+      </Text>
+      <GuideRow folder="assets/images/" desc="jpg, png, webp, gif" />
+      <GuideRow folder="assets/svg/"    desc="svg files" />
+      <GuideRow folder="assets/fonts/"  desc="ttf, otf, woff2" />
+      <GuideRow folder="assets/audio/"  desc="mp3, wav, ogg" />
+      <GuideRow folder="assets/video/"  desc="mp4, webm" />
+      <View style={{ paddingVertical: 10 }}>
+        <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#6366f1', marginBottom: 2 }}>assets/data/</Text>
+        <Text style={{ fontSize: 11, color: '#94a3b8' }}>json, csv, xml</Text>
+      </View>
+    </View>
+
+    {/* Registered assets */}
+    <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1, textTransform: 'uppercase', color: '#94a3b8', marginBottom: 12 }}>
+      Registered assets
+    </Text>
+    {LYNX_ASSET_REGISTRY.map(a => <AssetRow key={a.uri} asset={a} />)}
+
+  </ScrollView>
+)
+
+/* @arkzen:native:page:lynx:index:end */
