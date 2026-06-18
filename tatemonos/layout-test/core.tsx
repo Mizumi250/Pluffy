@@ -730,8 +730,15 @@ const NativeGuestPage = () => (
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React from 'react'
 import { View, Text } from 'react-native'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React from 'react'
+import { View, Text } from 'react-native'
+/* @arkzen:import:rn:end */
 
 const NATIVE_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe']
 
@@ -805,3 +812,243 @@ const NativeNotFoundScreen = () => {
 }
 
 /* @arkzen:native:error:404:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LYNX NATIVE COMPONENTS & PAGES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:components:lynx:shared */
+
+import React from 'react'
+
+const NATIVE_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe']
+
+export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (
+  <div className="flex flex-wrap gap-1.5">
+    {layers.map((layer, i) => (
+      <div
+        key={layer}
+        className={`px-2.5 py-1 rounded-full text-white text-xs font-bold`}
+        style={{ backgroundColor: NATIVE_COLORS[i % NATIVE_COLORS.length] }}
+      >
+        {i + 1}. {layer}
+      </div>
+    ))}
+  </div>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+/* @arkzen:native:page:lynx:index */
+
+import React from 'react'
+
+const IndexLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-4 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Layout Test</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      This test demonstrates nested layout chains in the arkzen native framework. 
+      Each screen declares a layout, which can chain to parent layouts or apply guards.
+    </p>
+    <div className="space-y-3">
+      <button
+        onClick={() => window.location.href = '/layout-test/single'}
+        className="w-full px-4 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-left"
+      >
+        <div className="font-bold">Single Layout</div>
+        <div className="text-xs text-indigo-100">No chain, uses: AppShellLayout</div>
+      </button>
+
+      <button
+        onClick={() => window.location.href = '/layout-test/chain'}
+        className="w-full px-4 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-left"
+      >
+        <div className="font-bold">Layout Chain</div>
+        <div className="text-xs text-indigo-100">Chain: AppShellLayout → TabPanelLayout</div>
+      </button>
+
+      <button
+        onClick={() => window.location.href = '/layout-test/guard-only'}
+        className="w-full px-4 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-left"
+      >
+        <div className="font-bold">Guard Only (+auth)</div>
+        <div className="text-xs text-indigo-100">Uses AuthLayout guard, no custom layout</div>
+      </button>
+
+      <button
+        onClick={() => window.location.href = '/layout-test/guard-chain'}
+        className="w-full px-4 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-left"
+      >
+        <div className="font-bold">Guard + Chain (+auth:tab-panel)</div>
+        <div className="text-xs text-indigo-100">Chain: AppShellLayout → TabPanelLayout → AuthLayout</div>
+      </button>
+
+      <button
+        onClick={() => window.location.href = '/layout-test/native-parity'}
+        className="w-full px-4 py-3 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-500 transition-colors text-left"
+      >
+        <div className="font-bold">Native Parity Test</div>
+        <div className="text-xs text-indigo-100">Demonstrates native + web layout equivalence</div>
+      </button>
+
+      <div className="mt-8 space-y-2">
+        <div className="text-xs font-bold text-gray-700 uppercase tracking-wider">Guide Reference</div>
+        {[
+          { label: 'Single layout (no chain)', combo: 'layout: app-shell', tag: '@arkzen:native:layout:app-shell' },
+          { label: 'Layout chaining', combo: 'layout: tab-panel (with parent: app-shell)', tag: '@arkzen:native:layout:tab-panel' },
+          { label: 'Guard only', combo: 'layout: +auth', tag: 'Guard: AuthLayout' },
+          { label: 'Guard + chain', combo: 'layout: +auth:tab-panel', tag: 'Chain: auth → app-shell' },
+        ].map(({ label, combo, tag }) => (
+          <div
+            key={label}
+            className="border border-opacity-40 border-indigo-300 rounded-lg p-3.5 flex flex-row items-center gap-3 mb-1.5"
+          >
+            <div className="flex-1">
+              <div className="text-xs font-bold text-gray-600">{label}</div>
+              <div className="text-xs text-gray-500 mt-0.5">{combo}</div>
+            </div>
+            <div className="bg-indigo-100 px-2 py-0.75 rounded-md">
+              <div className="text-xs text-indigo-700 font-bold font-mono">
+                {tag}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+)
+
+/* @arkzen:native:page:lynx:index:end */
+
+/* @arkzen:native:page:lynx:single */
+/* @arkzen:native:page:layout:app-shell */
+
+import React from 'react'
+
+const SingleLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-4 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Single Layout</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      Rendered inside <span className="font-mono text-indigo-600">AppShellLayout</span>.
+      {'\n'}Declared as <span className="font-mono text-purple-600">layout: app-shell</span> — no parent chain.
+    </p>
+    <NativeLayerBadge layers={['AppShellLayout']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:single:end */
+
+/* @arkzen:native:page:lynx:chain */
+/* @arkzen:native:page:layout:tab-panel */
+
+import React from 'react'
+
+const ChainLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-4 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Layout Chain</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      Rendered inside <span className="font-mono text-indigo-600">AppShellLayout → TabPanelLayout</span>.
+      {'\n'}TabPanelLayout declared <span className="font-mono text-purple-600">parent: app-shell</span> — chain resolved automatically.
+    </p>
+    <NativeLayerBadge layers={['AppShellLayout', 'TabPanelLayout']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:chain:end */
+
+/* @arkzen:native:page:lynx:native-deep */
+/* @arkzen:native:page:layout:card-modal */
+
+import React from 'react'
+
+const NativeDeepLynxPage = () => (
+  <div className="p-4 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900 mb-2">Deep Page</h1>
+    <p className="text-sm text-gray-600 leading-relaxed mb-3">
+      Three native layouts deep:{'\n'}
+      <span className="font-mono text-indigo-600">AppShellLayout → TabPanelLayout → CardModalLayout</span>.
+      {'\n'}Only <span className="font-mono text-purple-600">layout:card-modal</span> declared.
+    </p>
+    <NativeLayerBadge layers={['AppShellLayout', 'TabPanelLayout', 'CardModalLayout']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:native-deep:end */
+
+/* @arkzen:native:page:lynx:native-auth */
+/* @arkzen:native:page:layout:+auth */
+
+import React from 'react'
+
+const NativeAuthLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-5 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Native Auth Guard</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      Guard only — no custom layout chain. Uses <span className="font-mono text-indigo-600">+auth</span>.
+      {'\n'}Equivalent to old <span className="font-mono text-purple-600">layout:auth</span>.
+    </p>
+    <NativeLayerBadge layers={['AuthLayout (guard)']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:native-auth:end */
+
+/* @arkzen:native:page:lynx:native-chain-auth */
+/* @arkzen:native:page:layout:+auth:tab-panel */
+
+import React from 'react'
+
+const NativeChainAuthLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-4 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Native Chain + Auth</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      Auth guard wrapped in full native chain:{'\n'}
+      <span className="font-mono text-indigo-600">AppShellLayout → TabPanelLayout → AuthLayout</span>.
+      {'\n'}Declared as <span className="font-mono text-purple-600">+auth:tab-panel</span>.
+    </p>
+    <NativeLayerBadge layers={['AppShellLayout', 'TabPanelLayout', 'AuthLayout (guard)']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:native-chain-auth:end */
+
+/* @arkzen:native:page:lynx:native-guest */
+/* @arkzen:native:page:layout:+guest */
+
+import React from 'react'
+
+const NativeGuestLynxPage = () => (
+  <div className="flex-1 overflow-y-auto p-5 gap-3 flex flex-col">
+    <h1 className="text-lg font-black text-gray-900">Native Guest Guard</h1>
+    <p className="text-sm text-gray-600 leading-relaxed">
+      Guest guard only. Uses <span className="font-mono text-indigo-600">+guest</span>.
+      {'\n'}Redirects to dashboard if already authenticated.
+    </p>
+    <NativeLayerBadge layers={['GuestLayout (guard)']} />
+  </div>
+)
+
+/* @arkzen:native:page:lynx:native-guest:end */
+
+/* @arkzen:native:error:404:lynx */
+
+import React from 'react'
+
+const NotFoundLynxPage = () => (
+  <div className="min-h-screen bg-indigo-50 flex items-center justify-center p-8">
+    <div className="text-center max-w-md">
+      <p className="text-8xl font-black text-indigo-100 leading-none">404</p>
+      <h1 className="text-xl font-bold text-neutral-900 -mt-2 mb-2">Page not found</h1>
+      <p className="text-sm text-neutral-500 mb-6">This route doesn't exist in the layout-test module.</p>
+      <a 
+        href="/layout-test" 
+        className="inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white text-sm font-semibold rounded-xl hover:bg-indigo-500 transition-colors"
+      >
+        Back to Layout Test
+      </a>
+    </div>
+  </div>
+)
+
+/* @arkzen:native:error:404:lynx:end */
