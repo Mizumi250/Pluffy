@@ -30,7 +30,9 @@ export interface ArkzenPWAMeta {
   orientation?: 'portrait' | 'landscape' | 'any'
   start_url: string
   offline: boolean
-  icons?: { src: string; sizes: string; type: string; purpose?: string }
+  icons?: { src: string; sizes: string; type: string; purpose?: string }[]
+}
+
 // v6.0: Web-only meta — declared via @arkzen:meta:web block
 export interface ArkzenWebMeta {
   title?:       string
@@ -51,8 +53,6 @@ export interface ArkzenWebMeta {
     image?:       string
   }
   pwa?:         ArkzenPWAMeta
-}
-[]
 }
 
 export interface ArkzenMeta {

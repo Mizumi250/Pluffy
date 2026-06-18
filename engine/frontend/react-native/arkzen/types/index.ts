@@ -38,21 +38,22 @@ export interface ArkzenPWAMeta {
   icons?: { src: string; sizes: string; type: string; purpose?: string }[]
 }
 
-// Web-only meta — declared via @arkzen:meta:web block
+// v6.0: Web-only meta — declared via @arkzen:meta:web block
+// Covers everything the browser/SEO layer needs that has no meaning on native/desktop.
 export interface ArkzenWebMeta {
-  title?:       string
-  label?:       string
-  description?: string
-  favicon?:     string
+  title?:       string                    // <title> tag — defaults to label ?? name
+  label?:       string                    // Human-readable app name (used in nav, PWA name fallback)
+  description?: string                    // <meta name="description"> — overrides meta.description for web
+  favicon?:     string                    // <link rel="icon"> — emoji, URL, or path
   og?: {
     title?:       string
     description?: string
     image?:       string
     url?:         string
-    type?:        string
+    type?:        string                  // defaults to 'website'
   }
   twitter?: {
-    card?:        string
+    card?:        string                  // 'summary' | 'summary_large_image'
     title?:       string
     description?: string
     image?:       string
@@ -60,16 +61,16 @@ export interface ArkzenWebMeta {
   pwa?:         ArkzenPWAMeta
 }
 
-// Native-only meta — declared via @arkzen:meta:native block
+// v7.0: Native-only meta — declared via @arkzen:meta:native block
 // Covers app.json / Info.plist / AndroidManifest-level values.
 export interface ArkzenNativeMeta {
-  label?:       string
-  description?: string
+  label?:       string                    // Human-readable app name
+  description?: string                    // App store description
   expo?: {
-    bundle_id?:       string
-    icon?:            string
-    scheme?:          string
-    version?:         string
+    bundle_id?:       string              // iOS bundle ID / Android app ID
+    icon?:            string              // Path to app icon
+    scheme?:          string              // Deep link scheme
+    version?:         string              // App version string
     orientation?:     'portrait' | 'landscape' | 'default'
     status_bar_style?: 'default' | 'light-content' | 'dark-content'
     permissions?:     string[]
@@ -200,6 +201,9 @@ export interface ArkzenEndpoint {
   validation?: ArkzenEndpointValidation
   query?: ArkzenEndpointQuery
   response: ArkzenEndpointResponse
+  // v5.3: optional PHP body for custom endpoints.
+  // Populated by @arkzen:endpoint:name ... :end blocks in the tatemono.
+  // Base64-encoded by parser.ts, decoded by ControllerBuilder.
   body?: string
 }
 
@@ -214,11 +218,33 @@ export interface ArkzenApi {
   factory?: boolean
 }
 
+// ─────────────────────────────────────────────
+// CUSTOM ROUTES — v5.1 / v5.3
+// v5.3: handler bodies declared via @arkzen:handler:name ... :end blocks.
+// Base64-encoded PHP injected into the handler method by CustomRouteBuilder.
+//
+// Example DSL:
+//   /* @arkzen:routes
+//   controller: MyController
+//   middleware: []
+//   routes:
+//     - method: GET
+//       route: /api/my-module/do-thing
+//       handler: doThing
+//   */
+//
+//   /* @arkzen:handler:doThing
+//   */
+//   $result = MyModel::where('active', true)->count();
+//   return response()->json(['count' => $result]);
+//   /* @arkzen:handler:doThing:end */
+// ─────────────────────────────────────────────
+
 export interface ArkzenCustomRouteEntry {
   method: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
   route: string
   handler: string
-  body?: string
+  body?: string  // v5.3: base64-encoded PHP body for this handler
 }
 
 export interface ArkzenCustomRoute {
@@ -227,10 +253,27 @@ export interface ArkzenCustomRoute {
   routes: ArkzenCustomRouteEntry[]
 }
 
+// ─────────────────────────────────────────────
+// MIDDLEWARE SNIPPETS — v5.3
+// Map of middleware name → base64-encoded PHP handle() body.
+// Declared via @arkzen:middleware:name ... :end blocks.
+// MiddlewareBuilder injects the body instead of // TODO stub.
+//
+// Example DSL:
+//   /* @arkzen:middleware:requireJson
+//   */
+//   if (!$request->isJson()) {
+//       return response()->json(['message' => 'Content-Type: application/json required'], 415);
+//   }
+//   return $next($request);
+//   /* @arkzen:middleware:requireJson:end */
+// ─────────────────────────────────────────────
+
 export interface ArkzenMiddlewareSnippets {
-  [middlewareName: string]: string
+  [middlewareName: string]: string  // base64-encoded PHP body
 }
 
+// Interfaces for parsed named sections
 export interface ArkzenStore {
   [key: string]: unknown
 }
@@ -288,13 +331,13 @@ export interface ArkzenErrorHandler {
 export interface ArkzenLayout {
   name: string
   raw: string
-  parent?: string
+  parent?: string  // v11.0: optional parent layout name for chain resolution
   start: number
   end: number
 }
 
 export interface ArkzenStyle {
-  name?: string
+  name?: string  // undefined for global @arkzen:style, defined for @arkzen:style:name
   raw: string
   start: number
   end: number

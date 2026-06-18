@@ -21,7 +21,9 @@ export interface ArkzenPWAMeta {
   orientation?: 'portrait' | 'landscape' | 'any'
   start_url: string
   offline: boolean
-  icons?: { src: string; sizes: string; type: string; purpose?: string }
+  icons?: { src: string; sizes: string; type: string; purpose?: string }[]
+}
+
 // v6.0: Web-only meta — declared via @arkzen:meta:web block
 export interface ArkzenWebMeta {
   title?:       string
@@ -42,8 +44,6 @@ export interface ArkzenWebMeta {
     image?:       string
   }
   pwa?:         ArkzenPWAMeta
-}
-[]
 }
 
 export interface ArkzenMeta {
@@ -139,7 +139,9 @@ export interface ArkzenLayout { name: string; raw: string; parent?: string; star
 export interface ArkzenStyle { name?: string; raw: string; start: number; end: number }
 
 export interface ParsedTatemono {
-  filePath: string; fileName: string; meta: ArkzenMeta; config?: ArkzenConfigOverride
+  filePath: string; fileName: string; meta: ArkzenMeta
+  webMeta?: ArkzenWebMeta  // v6.0: from @arkzen:meta:web block — parser.ts: parseWebMeta()
+  config?: ArkzenConfigOverride
   databases: ArkzenDatabase[]; apis: ArkzenApi[]; customRoutes: ArkzenCustomRoute[]
   pages: ArkzenPage[]; layouts: ArkzenLayout[]; errorHandlers: ArkzenErrorHandler[]
   stores: ArkzenStore[]; realtimes: ArkzenRealtime[]; events: ArkzenEvent[]
