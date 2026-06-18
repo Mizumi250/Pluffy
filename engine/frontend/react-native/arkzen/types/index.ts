@@ -1,17 +1,21 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v7.0 (React Native — bare)
+// ARKZEN ENGINE — TYPE DEFINITIONS v10.4 (React Native — bare)
 //
 // Fully self-contained — no cross-stack import. Every stack
 // (nextjs, react-vite, astro, tanstack-start, react-inertia,
-// expo, react-native) owns its own complete copy of these
+// expo, react-native, lynx) owns its own complete copy of these
 // types, kept in sync by hand whenever the shared parser.ts
 // in engine/shared/arkzen/engine-core/ adds a field.
 //
-// This copy matches the v7.0 schema (same as Expo/Next.js):
-//   - ArkzenNativeMeta / ArkzenNativeConfig: native app config
-//   - ParsedTatemono: native* fields (nativePages, nativeLayouts,
-//     nativeStyles, nativeAnimationRN, etc.) — same shape Expo's
-//     builder already reads from @arkzen:native:* blocks.
+// v10.4: Stack-split animation and script fields.
+//        nativeAnimationRN is now strictly Bare RN (not shared with Expo).
+//        nativeAnimationExpo removed from this file (not relevant to bare RN).
+//        nativeScript / nativeScripts replaced by per-stack variants.
+//        nativeLynx* fields added (parser produces them; bare RN builder ignores them).
+// v10.3: Lynx block fields added to ParsedTatemono.
+//        nativeErrorHandlers added.
+// v7.0:  ArkzenNativeMeta / ArkzenNativeConfig added.
+//        Native platform fields added to ParsedTatemono.
 // ============================================================
 
 export interface ArkzenAuthSeedUser {
@@ -312,7 +316,7 @@ export interface ParsedTatemono {
   layouts:            ArkzenLayout[]
 
   errorHandlers:       ArkzenErrorHandler[]
-  nativeErrorHandlers: ArkzenErrorHandler[]
+  nativeErrorHandlers: ArkzenErrorHandler[]  // @arkzen:native:error:404/500 (Expo + Bare RN)
 
   stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
@@ -326,21 +330,39 @@ export interface ParsedTatemono {
   middlewareSnippets: ArkzenMiddlewareSnippets
   policySnippets:     Record<string, string>
 
-  animation?: ArkzenSection
-  script?:    ArkzenSection
-  scripts:    ArkzenSection[]
+  animation?: ArkzenSection  // web: @arkzen:web:animation
+  script?:    ArkzenSection  // web: global @arkzen:web:script
+  scripts:    ArkzenSection[] // web: named @arkzen:web:script:name
 
-  // Native platform blocks (Expo / React Native) — same shape both
-  // native stacks read from. Bare RN's builder should consume these
-  // exactly like expo-builder.ts does, instead of falling back to `pages`.
-  nativePages:      ArkzenPage[]
-  nativeComponents: ArkzenSection[]
-  nativeLayouts:    ArkzenSection[]
-  nativeStyles:     ArkzenSection[]
-  nativeAnimationRN?:   ArkzenSection
-  nativeAnimationLynx?: ArkzenSection
-  nativeScript?:    ArkzenSection
-  nativeScripts:    ArkzenSection[]
+  // ── Expo + Bare RN shared blocks ──────────────────────────────
+  // @arkzen:native:page:name, layout, components, style carry
+  // an embedded /* @arkzen:import:expo */ or /* @arkzen:import:rn */
+  // line re-emitted by the parser as /* @arkzen:resolved:import expo|rn */
+  nativePages:      ArkzenPage[]     // @arkzen:native:page:name
+  nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
+  nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
+  nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
+
+  // ── Bare RN-specific blocks ────────────────────────────────────
+  nativeAnimationRN?:  ArkzenSection  // @arkzen:native:animation:rn
+  nativeScriptRN?:     ArkzenSection  // @arkzen:native:script:rn (global)
+  nativeScriptsRN:     ArkzenSection[] // @arkzen:native:script:rn:name (named)
+
+  // ── Expo-specific blocks (present in parsed output; RN builder ignores) ──
+  nativeAnimationExpo?:  ArkzenSection  // @arkzen:native:animation:expo
+  nativeScriptExpo?:     ArkzenSection  // @arkzen:native:script:expo (global)
+  nativeScriptsExpo:     ArkzenSection[] // @arkzen:native:script:expo:name (named)
+
+  // ── Lynx blocks (present in parsed output; RN builder ignores) ────────────
+  nativeLynxPages:        ArkzenPage[]    // @arkzen:native:page:lynx:name
+  nativeLynxLayouts:      ArkzenSection[] // @arkzen:native:layout:lynx:name
+  nativeLynxComponents:   ArkzenSection[] // @arkzen:native:components:lynx:name
+  nativeLynxStyleGlobal?: ArkzenSection   // @arkzen:native:style:lynx (global)
+  nativeLynxStyles:       ArkzenSection[] // @arkzen:native:style:lynx:name
+  nativeLynxErrorHandlers: ArkzenErrorHandler[] // @arkzen:native:error:404:lynx / :500:lynx
+  nativeAnimationLynx?:   ArkzenSection   // @arkzen:native:animation:lynx
+  nativeScriptLynx?:      ArkzenSection   // @arkzen:native:script:lynx (global)
+  nativeScriptsLynx:      ArkzenSection[] // @arkzen:native:script:lynx:name (named)
 }
 
 export interface ArkzenRegistry {

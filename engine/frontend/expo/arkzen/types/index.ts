@@ -1,12 +1,17 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v7.0
-// v7.0: Native platform fields added to ParsedTatemono.
-//       - ArkzenNativeMeta: expo app config (bundle_id, icon, splash, etc.)
-//       - ArkzenNativeConfig: NativeWind / theme / font config
-//       - ParsedTatemono: added nativeMeta, nativeConfig, nativeComponents,
-//         nativeLayouts, nativeStyles, nativeAnimationRN, nativeAnimationLynx,
-//         nativeScript, nativeScripts, nativePages, nativeErrorHandlers, script, scripts.
-//         These mirror the web equivalents exactly.
+// ARKZEN ENGINE — TYPE DEFINITIONS v10.4 (Expo)
+// v10.4: Stack-split animation and script fields.
+//        nativeAnimationExpo added (was previously merged into :rn).
+//        nativeScript / nativeScripts replaced by per-stack variants.
+//        nativeLynx* fields added (parser produces them; Expo builder ignores them).
+// v10.3: Lynx block fields added to ParsedTatemono.
+//        nativeErrorHandlers added.
+// v7.0:  Native platform fields added to ParsedTatemono.
+//        - ArkzenNativeMeta: expo app config (bundle_id, icon, splash, etc.)
+//        - ArkzenNativeConfig: NativeWind / theme / font config
+//        - ParsedTatemono: added nativeMeta, nativeConfig, nativeComponents,
+//          nativeLayouts, nativeStyles, nativeAnimationRN, nativeAnimationLynx,
+//          nativeScript, nativeScripts, nativePages, nativeErrorHandlers, script, scripts.
 // v6.0 (kept): @arkzen:meta:web separation.
 //       - ArkzenWebMeta: new interface for web-only meta (favicon, title,
 //         label, og, pwa). Replaces favicon + pwa in ArkzenMeta.
@@ -362,7 +367,7 @@ export interface ParsedTatemono {
   layouts:            ArkzenLayout[]
 
   errorHandlers:       ArkzenErrorHandler[]  // web: @arkzen:web:error:404/500
-  nativeErrorHandlers: ArkzenErrorHandler[]  // native: @arkzen:native:error:404/500
+  nativeErrorHandlers: ArkzenErrorHandler[]  // @arkzen:native:error:404/500 (Expo + Bare RN)
 
   stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
@@ -380,15 +385,35 @@ export interface ParsedTatemono {
   script?:    ArkzenSection  // web: global @arkzen:web:script block
   scripts:    ArkzenSection[] // web: named @arkzen:web:script:name blocks
 
-  // v7.0: native platform blocks (Expo / React Native)
+  // ── Expo + Bare RN shared blocks ──────────────────────────────
+  // @arkzen:native:page:name, layout, components carry an embedded
+  // /* @arkzen:import:expo */ line re-emitted by the parser as
+  // /* @arkzen:resolved:import expo */ at the top of raw.
   nativePages:      ArkzenPage[]     // @arkzen:native:page:name
   nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
   nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
   nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
-  nativeAnimationRN?:   ArkzenSection  // @arkzen:native:animation:rn   — Expo + bare RN (Reanimated / Moti)
-  nativeAnimationLynx?: ArkzenSection  // @arkzen:native:animation:lynx — Lynx (CSS keyframes / lynx.createAnimation)
-  nativeScript?:    ArkzenSection    // @arkzen:native:script — global native utility block
-  nativeScripts:    ArkzenSection[]  // @arkzen:native:script:name — named native utility blocks
+
+  // ── Expo-specific blocks ───────────────────────────────────────
+  nativeAnimationExpo?:  ArkzenSection   // @arkzen:native:animation:expo
+  nativeScriptExpo?:     ArkzenSection   // @arkzen:native:script:expo (global)
+  nativeScriptsExpo:     ArkzenSection[] // @arkzen:native:script:expo:name (named)
+
+  // ── Bare RN-specific blocks (present in parsed output; Expo builder ignores) ──
+  nativeAnimationRN?:  ArkzenSection   // @arkzen:native:animation:rn
+  nativeScriptRN?:     ArkzenSection   // @arkzen:native:script:rn (global)
+  nativeScriptsRN:     ArkzenSection[] // @arkzen:native:script:rn:name (named)
+
+  // ── Lynx blocks (present in parsed output; Expo builder ignores) ──────────
+  nativeLynxPages:         ArkzenPage[]    // @arkzen:native:page:lynx:name
+  nativeLynxLayouts:       ArkzenSection[] // @arkzen:native:layout:lynx:name
+  nativeLynxComponents:    ArkzenSection[] // @arkzen:native:components:lynx:name
+  nativeLynxStyleGlobal?:  ArkzenSection   // @arkzen:native:style:lynx (global)
+  nativeLynxStyles:        ArkzenSection[] // @arkzen:native:style:lynx:name
+  nativeLynxErrorHandlers: ArkzenErrorHandler[] // @arkzen:native:error:404:lynx / :500:lynx
+  nativeAnimationLynx?:    ArkzenSection   // @arkzen:native:animation:lynx
+  nativeScriptLynx?:       ArkzenSection   // @arkzen:native:script:lynx (global)
+  nativeScriptsLynx:       ArkzenSection[] // @arkzen:native:script:lynx:name (named)
 }
 
 export interface ArkzenRegistry {
