@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:52:55.970Z
+// Generated: 2026-06-19T14:24:34.416Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

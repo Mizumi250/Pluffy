@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Tag
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:52:48.663Z
+// Generated: 2026-06-19T14:24:25.821Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

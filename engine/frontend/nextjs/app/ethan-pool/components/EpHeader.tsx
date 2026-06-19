@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — EpHeader
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:52:52.269Z
+// Generated: 2026-06-19T14:24:29.944Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

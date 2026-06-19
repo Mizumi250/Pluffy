@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — SHARED CORE SYNC v3.0
+// ARKZEN ENGINE — SHARED CORE SYNC v3.1
 //
 // Copies cross-platform and platform-specific shared files into
 // each stack's arkzen/core/ so every stack gets identical shared
@@ -8,22 +8,35 @@
 // Source layout (engine/shared/arkzen/):
 //   engine-core/   — cross-platform: parser, backend-bridge, validator, shared-sync
 //   web-core/      — web components/layouts + cross-platform hooks/lib/stores + assets/sitemap
-//   native-core/   — native components/layouts (NativeWind)
+//   native-core/   — Expo-flavored native components/layouts (NativeWind, expo-router,
+//                    @expo/vector-icons, react-native-reanimated). NOT a generic "native"
+//                    layer — it's specifically Expo's dependency surface.
 //
 // Destination (always): <stack>/arkzen/core/
 //   ALL stacks get: engine-core files + hooks/ + lib/ + stores/ (cross-platform)
 //   Web stacks  add: web-core components/ + layouts/ + assets.ts + sitemap.ts
-//   Mobile stacks add: native-core components/ + layouts/
+//   'expo' adds:     native-core components/ + layouts/ (verbatim — deps match 1:1)
+//   'react-native' / 'lynx': own components/ + layouts/ — NOT synced from native-core.
+//     Each mobile framework's component primitives + router are different enough
+//     (RN CLI uses @react-navigation/native + lucide-react-native, no expo-router;
+//     Lynx uses @lynx-js/react, no react-native at all) that a shared implementation
+//     isn't viable. Same treatment web stacks give adapters/router.ts.
 //
 // v3.0: Renamed core/ → web-core/. Split engine files into engine-core/.
 //       Added platform detection (mobile vs web) for native-core sync.
+// v3.1: native-core components/layouts now only sync to stacks listed in
+//       NATIVE_CORE_COMPATIBLE_STACKS (currently just 'expo'). Previously every
+//       MOBILE_STACKS entry got an identical copy, but native-core imports
+//       expo-router/@expo/vector-icons directly — react-native and lynx don't
+//       have those packages, so the synced files didn't compile for either.
 //
 // NEVER synced (each stack owns these):
-//   adapters/router.ts   — framework-specific (next/navigation vs react-router-dom)
-//   adapters/Link.tsx    — framework-specific (next/link vs react-router Link)
-//   pwa-builder.ts       — stack-specific thin wrapper
-//   generated/           — runtime output
+//   adapters/router.ts          — framework-specific (next/navigation vs react-router-dom)
+//   adapters/Link.tsx           — framework-specific (next/link vs react-router Link)
+//   pwa-builder.ts               — stack-specific thin wrapper
+//   generated/                   — runtime output
 //   vite-*/builder/router/watcher — stack engine files
+//   components/ + layouts/ for react-native & lynx — see NATIVE_CORE_COMPATIBLE_STACKS above
 //
 // Skips unchanged files to avoid watch-restart loops.
 // ============================================================
@@ -47,6 +60,16 @@ const ADAPTER_PROTECTED = new Set(['router.ts', 'Link.tsx', 'Link.ts'])
 
 // Mobile stack names (folder names under engine/frontend/)
 const MOBILE_STACKS = new Set(['expo', 'react-native', 'lynx'])
+
+// Of the mobile stacks, only these actually share native-core's dependency surface
+// (react-native primitives + expo-router + @expo/vector-icons + react-native-reanimated).
+// Stacks NOT in this set (react-native CLI, lynx) own components/ + layouts/ themselves —
+// the sync skips those two folders for them entirely, same as adapters/ for web.
+const NATIVE_CORE_COMPATIBLE_STACKS = new Set(['expo'])
+
+// Folders inside native-core that are Expo-specific and must not be force-fed to
+// mobile stacks outside NATIVE_CORE_COMPATIBLE_STACKS
+const NATIVE_CORE_EXPO_ONLY_FOLDERS = new Set(['components', 'layouts'])
 
 export function syncSharedCoreToCurrentStack(label: string): void {
   const rootDir       = path.resolve(process.cwd(), '..', '..', '..')
@@ -86,8 +109,15 @@ if (fs.existsSync(webCoreDir)) {
 
   // 3. Sync platform-specific shared files
   if (isMobile && fs.existsSync(nativeCoreDir)) {
-    // Native stacks: sync native-core/ contents (components, layouts)
+    // Only stacks whose deps actually match native-core (currently just 'expo')
+    // get components/ and layouts/ verbatim. react-native and lynx skip those two
+    // folders and keep whatever they already have under arkzen/core/components|layouts —
+    // hand-written, never touched by this sync, exactly like adapters/ for web stacks.
+    const inheritsExpoUI = NATIVE_CORE_COMPATIBLE_STACKS.has(stackName)
+
     for (const entry of fs.readdirSync(nativeCoreDir, { withFileTypes: true })) {
+      if (!inheritsExpoUI && NATIVE_CORE_EXPO_ONLY_FOLDERS.has(entry.name)) continue
+
       const src  = path.join(nativeCoreDir, entry.name)
       const dest = path.join(stackCoreDir, entry.name)
       if (entry.isDirectory()) {
@@ -96,7 +126,11 @@ if (fs.existsSync(webCoreDir)) {
         copyFileIfChanged(src, dest)
       }
     }
-    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...CROSS_PLATFORM_FOLDERS, 'native-core/*'].join(', ')})`)
+
+    const syncedLabel = inheritsExpoUI
+      ? 'native-core/*'
+      : 'native-core/* (excl. components/, layouts/ — stack-owned)'
+    console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...CROSS_PLATFORM_FOLDERS, syncedLabel].join(', ')})`)
   } else if (!isMobile && fs.existsSync(webCoreDir)) {
     // Web stacks: sync web-only folders (components, layouts)
     for (const folder of WEB_ONLY_FOLDERS) {

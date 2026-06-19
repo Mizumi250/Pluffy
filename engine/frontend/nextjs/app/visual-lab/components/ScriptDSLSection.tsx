@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ScriptDSLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:52:58.461Z
+// Generated: 2026-06-19T14:24:36.898Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
