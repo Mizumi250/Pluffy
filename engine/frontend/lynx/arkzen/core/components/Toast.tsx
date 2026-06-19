@@ -1,19 +1,21 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE TOAST COMPONENT v1.0
-// NativeWind equivalent of web-core/components/Toast.tsx
-// Uses react-native-reanimated instead of framer-motion.
-// Uses @expo/vector-icons instead of lucide-react.
+// ARKZEN ENGINE — LYNX TOAST COMPONENT v2.0
+// Lynx equivalent of native-core/components/Toast.tsx
+//
+// Styling: Tailwind className (rsbuild-plugin-tailwindcss).
+// NO react-native-reanimated, NO @expo/vector-icons,
+// NO Dimensions API.
+// Uses @lynx-js/react: createContext, useState, useCallback,
+// useRef. Position via Tailwind fixed/top/right/etc utilities
+// instead of Dimensions.get('window').
 // ============================================================
 
-import React, { createContext, useContext, useState, useCallback, useRef } from 'react'
-import { View, Text, TouchableOpacity, Dimensions } from 'react-native'
-import Animated, { FadeInUp, FadeOutUp, FadeInDown, FadeOutDown, Layout } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import React, { createContext, useContext, useState, useCallback, useRef } from '@lynx-js/react'
 
-type ToastType = 'success' | 'error' | 'warning' | 'info'
+type ToastType     = 'success' | 'error' | 'warning' | 'info'
 type ToastPosition = 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left'
 
-interface ToastItem {
+interface ToastItemData {
   id:       string
   type:     ToastType
   message:  string
@@ -33,45 +35,40 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 const toastConfig = {
-  success: { icon: 'checkmark-circle' as const, bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', icon_color: '#10b981' },
-  error:   { icon: 'close-circle' as const,     bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-800',     icon_color: '#ef4444' },
-  warning: { icon: 'alert-circle' as const,     bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-800',   icon_color: '#f59e0b' },
-  info:    { icon: 'information-circle' as const, bg: 'bg-blue-50',  border: 'border-blue-200',    text: 'text-blue-800',    icon_color: '#3b82f6' },
+  success: { icon: '✓', bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800' },
+  error:   { icon: '✕', bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-800' },
+  warning: { icon: '⚠', bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-800' },
+  info:    { icon: 'i', bg: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-800' },
 }
 
-const positionStyles: Record<ToastPosition, object> = {
-  'top-right':    { top: 40, right: 16 },
-  'top-left':     { top: 40, left: 16 },
-  'top-center':   { top: 40, left: Dimensions.get('window').width / 2 - 160 },
-  'bottom-right': { bottom: 40, right: 16 },
-  'bottom-left':  { bottom: 40, left: 16 },
+const positionClasses: Record<ToastPosition, string> = {
+  'top-right':    'top-10 right-4',
+  'top-left':     'top-10 left-4',
+  'top-center':   'top-10 left-1/2 -translate-x-1/2',
+  'bottom-right': 'bottom-10 right-4',
+  'bottom-left':  'bottom-10 left-4',
 }
 
-const DefaultToastItem: React.FC<{ toast: ToastItem; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
+const DefaultToastItem: React.FC<{ toast: ToastItemData; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
   const config = toastConfig[toast.type]
   return (
-    <Animated.View
-      entering={FadeInUp.springify().damping(15)}
-      exiting={FadeOutUp.duration(150)}
-      layout={Layout.springify()}
-      className={`flex-row items-start w-80 px-4 py-3.5 rounded-xl border shadow-lg ${config.bg} ${config.border}`}
-    >
-      <Ionicons name={config.icon} size={18} color={config.icon_color} style={{ marginTop: 2 }} />
-      <Text className={`flex-1 text-sm font-medium leading-snug ml-3 ${config.text}`}>{toast.message}</Text>
-      <TouchableOpacity onPress={() => onDismiss(toast.id)} style={{ marginTop: 2 }}>
-        <Ionicons name="close" size={14} color={config.icon_color} style={{ opacity: 0.6 }} />
-      </TouchableOpacity>
-    </Animated.View>
+    <view className={`flex-row items-start w-80 px-4 py-3.5 rounded-xl border shadow-lg mb-2 animate-in fade-in slide-in-from-top-2 duration-200 ${config.bg} ${config.border}`}>
+      <text className={`text-sm font-bold mt-0.5 ${config.text}`}>{config.icon}</text>
+      <text className={`flex-1 text-sm font-medium leading-snug ml-3 ${config.text}`}>{toast.message}</text>
+      <view bindtap={() => onDismiss(toast.id)} className="mt-0.5 ml-2 opacity-60">
+        <text className={`text-xs ${config.text}`}>✕</text>
+      </view>
+    </view>
   )
 }
 
 export const ToastProvider: React.FC<{
-  children:         React.ReactNode
+  children:         any
   position?:        ToastPosition
   defaultDuration?: number
-  renderToast?:     (toast: ToastItem & { onClose: () => void }) => React.ReactNode
+  renderToast?:     (toast: ToastItemData & { onClose: () => void }) => any
 }> = ({ children, position = 'top-right', defaultDuration = 3000, renderToast }) => {
-  const [toasts, setToasts] = useState<ToastItem[]>([])
+  const [toasts, setToasts] = useState<ToastItemData[]>([])
   const timers = useRef<Map<string, ReturnType<typeof setTimeout>>>(new Map())
 
   const dismiss = useCallback((id: string) => {
@@ -100,13 +97,13 @@ export const ToastProvider: React.FC<{
   return (
     <ToastContext.Provider value={{ toast }}>
       {children}
-      <View className="absolute z-50 flex-col gap-2" style={positionStyles[position]}>
+      <view className={`fixed z-50 flex-col ${positionClasses[position]}`}>
         {toasts.map(t =>
           renderToast
             ? <React.Fragment key={t.id}>{renderToast({ ...t, onClose: () => dismiss(t.id) })}</React.Fragment>
             : <DefaultToastItem key={t.id} toast={t} onDismiss={dismiss} />
         )}
-      </View>
+      </view>
     </ToastContext.Provider>
   )
 }

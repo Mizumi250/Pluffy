@@ -1,48 +1,39 @@
 // ============================================================
-// ARKZEN — AuthLayout (Expo) v2.2
-// src/layouts/AuthLayout.tsx
+// ARKZEN — AuthLayout (Lynx) v2.0
+// arkzen/core/layouts/AuthLayout.tsx
 //
-// v2.2: Fixed redirect race condition with fetchMe().
-//       Uses async restore session that waits for token restoration
-//       before deciding to redirect. Also ensures tatemono slug is
-//       set in the global store before mounting.
+// Lynx port of native-core/layouts/AuthLayout.tsx.
+// Styling: Tailwind className (rsbuild-plugin-tailwindcss).
+// NO expo-router, NO SafeAreaView, NO ActivityIndicator,
+// NO react-native primitives.
+//
+// Navigation via useArkzenRouter (adapters/router.ts shim).
+// Primitives: <view>, <text> from @lynx-js/react.
+// Auth: useAuthStore + setActiveTatemono from stores/authStore.
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-import { 
-  useAuthStore, 
-  setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'  // import setActiveTatemono
+import React, { useEffect, useRef } from '@lynx-js/react'
+import { useArkzenRouter }   from '../adapters/router'
+import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
 interface AuthLayoutProps {
-  children:   React.ReactNode
+  children:   any
   tatSlug:    string
   loginRoute: string
 }
 
 export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
-  const router          = useRouter()
+  const router          = useArkzenRouter()
   const isLoading       = useAuthStore(s => s.isLoading)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const user            = useAuthStore(s => s.user)
   const logout          = useAuthStore(s => s.logout)
   const fetchMe         = useAuthStore(s => s.fetchMe)
 
-  // Ensure the global tatemono slug is set before any store operations
-  // Must run before the restore effect
   useEffect(() => {
     setActiveTatemono(tatSlug)
   }, [tatSlug])
 
-  // Restore session + redirect – async, no race condition
   const isRedirectingRef = useRef(false)
 
   useEffect(() => {
@@ -51,15 +42,13 @@ export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
       if (isRedirectingRef.current) return
       isRedirectingRef.current = true
 
-      // 1. Restore user/token from the isolated map into the store
       await fetchMe()
 
       if (!active) return
 
-      // 2. After fetchMe completes, check final auth state
       const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
       if (!finalLoading && !finalAuth) {
-        router.replace(loginRoute as any)
+        router.replace(loginRoute)
       }
 
       isRedirectingRef.current = false
@@ -67,57 +56,53 @@ export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
 
     restoreAndRedirect()
     return () => { active = false }
-  }, [tatSlug, loginRoute]) // re-run if slug or loginRoute changes
+  }, [tatSlug, loginRoute])
 
-  // Show loader while restoring or redirecting
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="small" color="#a3a3a3" />
-      </SafeAreaView>
+      <view className="flex-1 items-center justify-center bg-neutral-50">
+        <text className="text-2xl text-neutral-400">⏳</text>
+      </view>
     )
   }
 
-  // If not authenticated and not loading, redirect already triggered
-  // (but prevent flash of content)
   if (!isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="small" color="#a3a3a3" />
-      </SafeAreaView>
+      <view className="flex-1 items-center justify-center bg-neutral-50">
+        <text className="text-2xl text-neutral-400">⏳</text>
+      </view>
     )
   }
 
-  // Fully authenticated – render content
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
       {/* Top bar */}
-      <View className="h-14 flex-row items-center justify-between px-5 bg-white/90 border-b border-black/5">
-        <Text className="text-sm font-semibold text-neutral-900 tracking-tight">
+      <view className="h-14 flex-row items-center justify-between px-5 bg-white/90 border-b border-black/5">
+        <text className="text-sm font-semibold text-neutral-900 tracking-tight">
           Arkzen
-        </Text>
-        <View className="flex-row items-center gap-3">
+        </text>
+        <view className="flex-row items-center gap-3">
           {user && (
-            <Text className="text-xs text-neutral-400 max-w-36" numberOfLines={1}>
+            <text className="text-xs text-neutral-400 max-w-36" numberOfLines={1}>
               {user.email}
-            </Text>
+            </text>
           )}
-          <TouchableOpacity
-            onPress={logout}
+          <view
+            bindtap={logout}
             className="px-3 py-1.5 rounded-md border border-neutral-200 bg-white active:opacity-70"
           >
-            <Text className="text-xs text-neutral-600">
+            <text className="text-xs text-neutral-600">
               Logout
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+            </text>
+          </view>
+        </view>
+      </view>
 
       {/* Screen content */}
-      <View className="flex-1">
+      <view className="flex-1">
         {children}
-      </View>
-    </SafeAreaView>
+      </view>
+    </view>
   )
 }
 

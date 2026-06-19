@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE LOADING COMPONENT v1.0
+// ARKZEN ENGINE — LYNX LOADING COMPONENT v2.0
 // Re-exports from Form.tsx (contains Loading)
 // ============================================================
 

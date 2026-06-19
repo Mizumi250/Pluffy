@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — ethereane
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T14:24:30.172Z
+// Generated: 2026-06-19T22:51:31.713Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

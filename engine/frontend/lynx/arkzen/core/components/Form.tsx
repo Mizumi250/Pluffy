@@ -1,13 +1,19 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE UTILITY COMPONENTS v1.0
-// NativeWind equivalents of web-core/components/utils.tsx
-// Badge, Avatar, EmptyState, Loading, Pagination, Field, Form
+// ARKZEN ENGINE — LYNX UTILITY COMPONENTS v2.0
+// Lynx equivalents of native-core/components/Form.tsx
+// Badge, Avatar, EmptyState, Loading, Field, Form
+//
+// Styling: Tailwind CSS v3 via rsbuild-plugin-tailwindcss +
+// @lynx-js/tailwind-preset (see config/lynx.config.ts +
+// config/tailwind.config.ts). className works the same way
+// as web/NativeWind once that plugin is wired in.
+//
+// NO react-native, NO expo-router, NO @expo/vector-icons,
+// NO react-native-reanimated.
+// Primitives: <view>, <text> from @lynx-js/react.
 // ============================================================
 
-import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import React from '@lynx-js/react'
 
 // ─────────────────────────────────────────────
 // BADGE
@@ -18,7 +24,7 @@ export interface BadgeProps {
   variant?: 'default' | 'success' | 'error' | 'warning' | 'info' | 'neutral'
   size?:    'sm' | 'md'
   dot?:     boolean
-  renderContent?: (label: string) => React.ReactNode
+  renderContent?: (label: string) => any
 }
 
 const badgeVariants = {
@@ -43,12 +49,12 @@ const dotColors = {
 }
 
 export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', size = 'sm', dot = false, renderContent }) => (
-  <View className={`flex-row items-center gap-1.5 rounded-full ${size === 'sm' ? 'px-2 py-0.5' : 'px-3 py-1'} ${badgeVariants[variant]}`}>
-    {dot && <View className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
+  <view className={`flex-row items-center gap-1.5 rounded-full ${size === 'sm' ? 'px-2 py-0.5' : 'px-3 py-1'} ${badgeVariants[variant]}`}>
+    {dot && <view className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
     {renderContent ? renderContent(label) : (
-      <Text className={`font-medium ${size === 'sm' ? 'text-xs' : 'text-sm'} ${badgeTextVariants[variant]}`}>{label}</Text>
+      <text className={`font-medium ${size === 'sm' ? 'text-xs' : 'text-sm'} ${badgeTextVariants[variant]}`}>{label}</text>
     )}
-  </View>
+  </view>
 )
 
 // ─────────────────────────────────────────────
@@ -57,14 +63,13 @@ export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', size =
 
 export interface AvatarProps {
   name?: string
-  src?:  string
   size?: 'sm' | 'md' | 'lg' | 'xl'
-  renderFallback?: (initials: string) => React.ReactNode
+  renderFallback?: (initials: string) => any
 }
 
-const avatarSizes  = { sm: 'w-7 h-7', md: 'w-9 h-9', lg: 'w-12 h-12', xl: 'w-16 h-16' }
-const avatarTextSizes = { sm: 'text-xs', md: 'text-sm', lg: 'text-base', xl: 'text-lg' }
-const avatarColors = ['bg-violet-100','bg-blue-100','bg-emerald-100','bg-amber-100','bg-rose-100']
+const avatarSizes      = { sm: 'w-7 h-7', md: 'w-9 h-9', lg: 'w-12 h-12', xl: 'w-16 h-16' }
+const avatarTextSizes  = { sm: 'text-xs', md: 'text-sm', lg: 'text-base', xl: 'text-lg' }
+const avatarColors = ['bg-violet-100', 'bg-blue-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100']
 
 export const Avatar: React.FC<AvatarProps> = ({ name, size = 'md', renderFallback }) => {
   const initials = name ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '?'
@@ -73,9 +78,9 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 'md', renderFallbac
   if (renderFallback) return <>{renderFallback(initials)}</>
 
   return (
-    <View className={`${avatarSizes[size]} rounded-full items-center justify-center ${avatarColors[colorIdx]}`}>
-      <Text className={`font-semibold ${avatarTextSizes[size]}`}>{initials}</Text>
-    </View>
+    <view className={`${avatarSizes[size]} rounded-full items-center justify-center ${avatarColors[colorIdx]}`}>
+      <text className={`font-semibold ${avatarTextSizes[size]}`}>{initials}</text>
+    </view>
   )
 }
 
@@ -86,28 +91,28 @@ export const Avatar: React.FC<AvatarProps> = ({ name, size = 'md', renderFallbac
 export interface EmptyStateProps {
   title:        string
   description?: string
-  action?:      React.ReactNode
-  icon?:        React.ReactNode
-  renderIcon?:    () => React.ReactNode
-  renderTitle?:   (title: string) => React.ReactNode
-  renderContent?: (title: string, description?: string) => React.ReactNode
+  action?:      any
+  icon?:        any
+  renderIcon?:    () => any
+  renderTitle?:   (title: string) => any
+  renderContent?: (title: string, description?: string) => any
 }
 
 export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, action, icon, renderIcon, renderTitle, renderContent }) => (
-  <View className="items-center justify-center py-12 px-4">
-    <View className="w-14 h-14 rounded-2xl bg-neutral-100 items-center justify-center mb-4">
-      {renderIcon ? renderIcon() : (icon ?? <Ionicons name="folder-open-outline" size={24} color="#a3a3a3" />)}
-    </View>
+  <view className="items-center justify-center py-12 px-4">
+    <view className="w-14 h-14 rounded-2xl bg-neutral-100 items-center justify-center mb-4">
+      {renderIcon ? renderIcon() : (icon ?? <text className="text-2xl text-neutral-400">📂</text>)}
+    </view>
     {renderContent ? renderContent(title, description) : (
-      <View className="items-center">
+      <view className="items-center">
         {renderTitle ? renderTitle(title) : (
-          <Text className="text-sm font-semibold text-neutral-900 mb-1">{title}</Text>
+          <text className="text-sm font-semibold text-neutral-900 mb-1">{title}</text>
         )}
-        {description && <Text className="text-sm text-neutral-500 text-center max-w-xs">{description}</Text>}
-      </View>
+        {description && <text className="text-sm text-neutral-500 text-center max-w-xs">{description}</text>}
+      </view>
     )}
-    {action && <View className="mt-4">{action}</View>}
-  </View>
+    {action && <view className="mt-4">{action}</view>}
+  </view>
 )
 
 // ─────────────────────────────────────────────
@@ -118,24 +123,24 @@ export interface LoadingProps {
   size?:     'small' | 'large'
   label?:    string
   fullPage?: boolean
-  renderSpinner?: () => React.ReactNode
+  renderSpinner?: () => any
 }
 
-export const Loading: React.FC<LoadingProps> = ({ size = 'large', label, fullPage = false, renderSpinner }) => {
+export const Loading: React.FC<LoadingProps> = ({ label, fullPage = false, renderSpinner }) => {
   const inner = (
-    <View className="items-center gap-3">
-      {renderSpinner ? renderSpinner() : <ActivityIndicator size={size} color="#a3a3a3" />}
-      {label && <Text className="text-sm text-neutral-500">{label}</Text>}
-    </View>
+    <view className="items-center gap-3">
+      {renderSpinner ? renderSpinner() : <text className="text-2xl text-neutral-400">⏳</text>}
+      {label && <text className="text-sm text-neutral-500">{label}</text>}
+    </view>
   )
 
   if (fullPage) return (
-    <View className="absolute inset-0 items-center justify-center bg-white/80 z-50">
+    <view className="absolute inset-0 items-center justify-center bg-white/80 z-50">
       {inner}
-    </View>
+    </view>
   )
 
-  return <View className="items-center justify-center p-8">{inner}</View>
+  return <view className="items-center justify-center p-8">{inner}</view>
 }
 
 // ─────────────────────────────────────────────
@@ -147,34 +152,34 @@ export interface FieldProps {
   error?:    string
   required?: boolean
   hint?:     string
-  children:  React.ReactNode
-  renderLabel?: (label: string, required?: boolean) => React.ReactNode
-  renderError?: (error: string) => React.ReactNode
+  children:  any
+  renderLabel?: (label: string, required?: boolean) => any
+  renderError?: (error: string) => any
 }
 
 export const Field: React.FC<FieldProps> = ({ label, error, required, hint, children, renderLabel, renderError }) => (
-  <View className="gap-1.5">
+  <view className="gap-1.5">
     {renderLabel ? renderLabel(label, required) : (
-      <Text className="text-sm font-medium text-neutral-700">
-        {label}{required && <Text className="text-red-500"> *</Text>}
-      </Text>
+      <text className="text-sm font-medium text-neutral-700">
+        {label}{required && <text className="text-red-500"> *</text>}
+      </text>
     )}
     {children}
-    {hint && !error && <Text className="text-xs text-neutral-400">{hint}</Text>}
-    {error && (renderError ? renderError(error) : <Text className="text-xs text-red-500">{error}</Text>)}
-  </View>
+    {hint && !error && <text className="text-xs text-neutral-400">{hint}</text>}
+    {error && (renderError ? renderError(error) : <text className="text-xs text-red-500">{error}</text>)}
+  </view>
 )
 
 export interface FormProps {
   onSubmit:   () => void
-  children:   React.ReactNode
+  children:   any
   className?: string
-  renderSubmit?: (onSubmit: () => void) => React.ReactNode
+  renderSubmit?: (onSubmit: () => void) => any
 }
 
 export const Form: React.FC<FormProps> = ({ onSubmit, children, className, renderSubmit }) => (
-  <View className={className}>
+  <view className={className}>
     {children}
     {renderSubmit ? renderSubmit(onSubmit) : null}
-  </View>
+  </view>
 )

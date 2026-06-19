@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ShadersSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T14:24:36.901Z
+// Generated: 2026-06-19T22:51:41.888Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

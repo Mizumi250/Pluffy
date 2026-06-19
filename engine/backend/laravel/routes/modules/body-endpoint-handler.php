@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — body-endpoint-handler
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T14:24:26.037183Z
+// Generated: 2026-06-19T23:20:05.556033Z
 // Resources: ProbeResult
 // Custom controllers: ProbeUtilController
 // ============================================================

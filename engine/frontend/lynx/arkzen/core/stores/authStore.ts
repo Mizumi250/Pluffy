@@ -1,40 +1,57 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE AUTH STORE v1.2
-// React Native specific. No window/document/localStorage.
+// ARKZEN ENGINE — LYNX AUTH STORE v1.0
+// arkzen/core/stores/authStore.ts
 //
-// v1.2: Fixed cross-tatemono user/isAuthenticated bleed.
-//       v1.1 persisted { user, isAuthenticated } under the fixed
-//       key 'arkzen-auth-active' — shared by ALL tatemonos.
-//       Logging into broadcast-test would persist isAuthenticated:true
-//       and broadcast-test's user into that key. Navigating to
-//       roles-test or notification-test would rehydrate from the
-//       same key → wrong user shown, wrong auth state.
+// Lynx port of native-core/stores/authStore.ts.
+// Unaffected by the Tailwind/className rework — this file is
+// pure logic with no styling, so it's unchanged from the
+// previous pass. Included here so the whole folder set is
+// copy-paste complete in one place.
 //
-//       Fix: remove zustand persist entirely. Auth state is ephemeral
-//       in the store. Tokens survive restarts via the isolated token
-//       map. Layouts call fetchMe() on mount via tatSlug useEffect.
-//       setActiveTatemono() is now safe to call at module load time —
-//       it only sets the global slug, no setState, no async work.
-//
-// v1.1: Fixed per-tatemono token isolation (token map).
-// v1.0: Initial native auth store.
-//
-// Lives in engine/shared/arkzen/native-core/stores/ and is
-// sync-copied into mobile stacks (expo, bare-rn, lynx) by
-// shared-sync.ts.
+// Key differences from Expo version:
+//  - NO AsyncStorage (@react-native-async-storage)
+//    → Lynx exposes lynx.localStorage (synchronous KV store)
+//      similar to web localStorage. Falls back to in-memory
+//      map when unavailable (SSR / test env).
+//  - NO EXPO_PUBLIC_* env vars
+//    → uses ARKZEN_BACKEND_URL (standard env var for Lynx/rspeedy)
+//      or falls back to http://localhost:8000
+//  - Everything else is identical: per-tatemono token map,
+//    ephemeral zustand store, setActiveTatemono, arkzenFetch.
 // ============================================================
 
-import AsyncStorage   from '@react-native-async-storage/async-storage'
-import { create }     from 'zustand'
-import { useEffect, useState } from 'react'  // ← still needed for useAuthStoreHydrated? No — but we keep useEffect for potential future. Actually v1.2 returns true, so useState is dead. Let's remove it.
+import { create } from 'zustand'
 
-// Actually, let's clean up: useAuthStoreHydrated no longer uses useState/useEffect.
-// So remove those imports entirely.
-// Corrected:
-// import AsyncStorage from '@react-native-async-storage/async-storage'
-// import { create } from 'zustand'
+// ─────────────────────────────────────────────
+// STORAGE SHIM (lynx.localStorage → in-memory fallback)
+// ─────────────────────────────────────────────
 
-// But the user's file had useState imported and unused. We'll remove it.
+const memStore: Record<string, string> = {}
+
+function storageGet(key: string): string | null {
+  try {
+    // @ts-ignore — lynx global
+    return lynx?.localStorage?.getItem?.(key) ?? memStore[key] ?? null
+  } catch {
+    return memStore[key] ?? null
+  }
+}
+
+function storageSet(key: string, value: string): void {
+  try {
+    // @ts-ignore — lynx global
+    lynx?.localStorage?.setItem?.(key, value)
+  } catch {}
+  memStore[key] = value
+}
+
+function storageRemove(key: string): void {
+  try {
+    // @ts-ignore — lynx global
+    lynx?.localStorage?.removeItem?.(key)
+  } catch {}
+  delete memStore[key]
+}
 
 // ─────────────────────────────────────────────
 // TATEMONO SLUG RESOLUTION
@@ -46,50 +63,46 @@ declare global {
 }
 
 function getSlug(): string {
-  const s = global.__ARKZEN_TATEMONO__
+  const s = globalThis.__ARKZEN_TATEMONO__
   if (!s) throw new Error('[Arkzen] __ARKZEN_TATEMONO__ is not set. Did you forget to call setActiveTatemono()?')
   return s
 }
 
 function getAuthBase(): string {
-  const base = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+  // @ts-ignore — rspeedy injects process.env at build time
+  const base = (process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
   return `${base}/api/${getSlug()}/auth`
 }
 
 // ─────────────────────────────────────────────
-// PER-TATEMONO TOKEN MAP
+// PER-TATEMONO TOKEN MAP (synchronous via storage shim)
 // ─────────────────────────────────────────────
 
 const TOKEN_MAP_KEY = 'arkzen-auth-tokens'
 
-async function readTokenMap(): Promise<Record<string, string>> {
+function readTokenMap(): Record<string, string> {
   try {
-    const raw = await AsyncStorage.getItem(TOKEN_MAP_KEY)
+    const raw = storageGet(TOKEN_MAP_KEY)
     return raw ? JSON.parse(raw) : {}
   } catch {
     return {}
   }
 }
 
-async function writeTokenToMap(slug: string, token: string): Promise<void> {
-  try {
-    const map = await readTokenMap()
-    map[slug] = token
-    await AsyncStorage.setItem(TOKEN_MAP_KEY, JSON.stringify(map))
-  } catch {}
+function writeTokenToMap(slug: string, token: string): void {
+  const map = readTokenMap()
+  map[slug] = token
+  storageSet(TOKEN_MAP_KEY, JSON.stringify(map))
 }
 
-async function clearTokenFromMap(slug: string): Promise<void> {
-  try {
-    const map = await readTokenMap()
-    delete map[slug]
-    await AsyncStorage.setItem(TOKEN_MAP_KEY, JSON.stringify(map))
-  } catch {}
+function clearTokenFromMap(slug: string): void {
+  const map = readTokenMap()
+  delete map[slug]
+  storageSet(TOKEN_MAP_KEY, JSON.stringify(map))
 }
 
-export async function getTokenForSlug(slug: string): Promise<string | null> {
-  const map = await readTokenMap()
-  return map[slug] ?? null
+export function getTokenForSlug(slug: string): string | null {
+  return readTokenMap()[slug] ?? null
 }
 
 // ─────────────────────────────────────────────
@@ -138,7 +151,7 @@ interface AuthState {
 }
 
 // ─────────────────────────────────────────────
-// STORE — no persist, fully ephemeral
+// STORE — ephemeral, no persist
 // ─────────────────────────────────────────────
 
 export const useAuthStore = create<AuthState>()(
@@ -160,7 +173,7 @@ export const useAuthStore = create<AuthState>()(
         const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
         if (!res.ok) throw new Error(data.message ?? 'Login failed. Check your credentials.')
         set({ user: data.user, token: data.token, isAuthenticated: true })
-        await writeTokenToMap(slug, data.token)
+        writeTokenToMap(slug, data.token)
       } finally {
         set({ isLoading: false })
       }
@@ -178,7 +191,7 @@ export const useAuthStore = create<AuthState>()(
         const data = await safeJson<{ user: ArkzenUser; token: string; message?: string }>(res)
         if (!res.ok) throw new Error(data.message ?? 'Registration failed.')
         set({ user: data.user, token: data.token, isAuthenticated: true })
-        await writeTokenToMap(slug, data.token)
+        writeTokenToMap(slug, data.token)
       } finally {
         set({ isLoading: false })
       }
@@ -200,21 +213,18 @@ export const useAuthStore = create<AuthState>()(
         // logout locally even if request fails
       } finally {
         set({ user: null, token: null, isAuthenticated: false })
-        await clearTokenFromMap(slug)
+        clearTokenFromMap(slug)
       }
     },
 
     fetchMe: async () => {
-      // v1.1+ fix: Read from the isolated token map — not get().token which is
-      // never persisted and is always null on cold start, causing fetchMe to
-      // immediately wipe isAuthenticated and corrupt the store for the active tatemono.
-      const slug  = global.__ARKZEN_TATEMONO__ ?? ''
-      const token = slug ? await getTokenForSlug(slug) : get().token
+      const slug  = globalThis.__ARKZEN_TATEMONO__ ?? ''
+      const token = slug ? getTokenForSlug(slug) : get().token
       if (!token) { set({ user: null, token: null, isAuthenticated: false }); return }
-      // Sync token into store so the rest of the app can read it
       set({ token, isLoading: true })
       try {
-        const base = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+        // @ts-ignore
+        const base = (process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
         const res  = await fetch(`${base}/api/${slug}/auth/me`, {
           headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
         })
@@ -235,22 +245,21 @@ export const useAuthStore = create<AuthState>()(
     setToken: (token, user) => {
       const slug = getSlug()
       set({ token, user, isAuthenticated: true })
-      void writeTokenToMap(slug, token)
+      writeTokenToMap(slug, token)
     },
 
     clear: () => {
       const slug = getSlug()
       set({ user: null, token: null, isAuthenticated: false })
-      void clearTokenFromMap(slug)
+      clearTokenFromMap(slug)
     },
   })
 )
 
 // ─────────────────────────────────────────────
 // HYDRATION HOOK
-// v1.2: No persist means no async rehydration.
-// Returns true immediately — layouts use fetchMe
-// via useEffect instead.
+// No persist — returns true immediately.
+// Layouts call fetchMe() on mount via tatSlug useEffect.
 // ─────────────────────────────────────────────
 
 export function useAuthStoreHydrated(): boolean {
@@ -262,10 +271,11 @@ export function useAuthStoreHydrated(): boolean {
 // ─────────────────────────────────────────────
 
 export async function arkzenFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const slug  = global.__ARKZEN_TATEMONO__
-  const token = slug ? await getTokenForSlug(slug) : useAuthStore.getState().token
+  const slug  = globalThis.__ARKZEN_TATEMONO__
+  const token = slug ? getTokenForSlug(slug) : useAuthStore.getState().token
 
-  const base        = (process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
+  // @ts-ignore
+  const base        = (process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000').replace(/\/$/, '')
   const resolvedUrl = url.startsWith('/') ? `${base}${url}` : url
 
   return fetch(resolvedUrl, {
@@ -286,18 +296,12 @@ export async function arkzenGet<T = unknown>(url: string): Promise<T> {
 
 // ─────────────────────────────────────────────
 // TATEMONO SLUG HELPER
-// Safe to call at module load time — only sets
-// the global slug. No setState, no async work.
-// Layouts call fetchMe() themselves via useEffect.
 // ─────────────────────────────────────────────
 
 export function setActiveTatemono(slug: string): void {
-  const previous = global.__ARKZEN_TATEMONO__
-  global.__ARKZEN_TATEMONO__ = slug
+  const previous = globalThis.__ARKZEN_TATEMONO__
+  globalThis.__ARKZEN_TATEMONO__ = slug
 
-  // If switching to a different tatemono, wipe in-memory state so the previous
-  // tatemono's user/token don't bleed through. The new tatemono's layout will
-  // call fetchMe() on mount to restore its own session from the token map.
   if (previous !== slug) {
     useAuthStore.setState({
       user:            null,

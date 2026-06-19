@@ -3,6 +3,7 @@ import { defineConfig } from '@lynx-js/rspeedy'
 import { pluginQRCode } from '@lynx-js/qrcode-rsbuild-plugin'
 import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin'
 import { pluginTypeCheck } from '@rsbuild/plugin-type-check'
+import { pluginTailwindCSS } from 'rsbuild-plugin-tailwindcss'
 
 export default defineConfig({
   server: {
@@ -17,5 +18,10 @@ export default defineConfig({
     }),
     pluginReactLynx(),
     pluginTypeCheck(),
+    pluginTailwindCSS({
+      config: './tailwind.config.ts',
+      include: /\.[jt]sx?/,
+      exclude: ['./src/store/**', /[\\/]node_modules[\\/]/],
+    }),
   ],
 })

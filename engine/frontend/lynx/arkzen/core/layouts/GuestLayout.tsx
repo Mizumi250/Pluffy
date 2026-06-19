@@ -1,46 +1,40 @@
 // ============================================================
-// ARKZEN — GuestLayout (Expo) v2.2
-// src/layouts/GuestLayout.tsx
+// ARKZEN — GuestLayout (Lynx) v2.0
+// arkzen/core/layouts/GuestLayout.tsx
 //
-// v2.2: Added setActiveTatemono before fetchMe.
-//       Uses single async restore effect that waits for token
-//       restoration before deciding to redirect to dashboard.
-//       Prevents race conditions and ensures per‑tatemono isolation.
+// Lynx port of native-core/layouts/GuestLayout.tsx.
+// Styling: Tailwind className (rsbuild-plugin-tailwindcss).
+// NO expo-router, NO SafeAreaView, NO KeyboardAvoidingView,
+// NO ScrollView (react-native), NO react-native primitives.
+//
+// Navigation via useArkzenRouter (adapters/router.ts shim).
+// Primitives: <view>, <scroll-view> from @lynx-js/react.
+// Keyboard-avoidance: Lynx's <scroll-view> + flex layout
+// handles this natively on both platforms; no manual
+// KeyboardAvoidingView equivalent needed.
+// Auth: useAuthStore + setActiveTatemono from stores/authStore.
 // ============================================================
 
-import React, { useEffect, useRef } from 'react'
-import {
-  View,
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  ActivityIndicator,
-} from 'react-native'
-import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-import { 
-  useAuthStore, 
-  setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'
+import React, { useEffect, useRef } from '@lynx-js/react'
+import { useArkzenRouter }   from '../adapters/router'
+import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
 interface GuestLayoutProps {
-  children:       React.ReactNode
+  children:       any
   tatSlug:        string
   dashboardRoute: string
 }
 
 export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutProps) {
-  const router          = useRouter()
+  const router          = useArkzenRouter()
   const isLoading       = useAuthStore(s => s.isLoading)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const fetchMe         = useAuthStore(s => s.fetchMe)
 
-  // Ensure the global tatemono slug is set before any store operations
   useEffect(() => {
     setActiveTatemono(tatSlug)
   }, [tatSlug])
 
-  // Restore session + redirect – no race condition
   const isRedirectingRef = useRef(false)
 
   useEffect(() => {
@@ -49,15 +43,13 @@ export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutPr
       if (isRedirectingRef.current) return
       isRedirectingRef.current = true
 
-      // 1. Restore user/token from the isolated map into the store
       await fetchMe()
 
       if (!active) return
 
-      // 2. After fetchMe completes, check final auth state
       const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
       if (!finalLoading && finalAuth) {
-        router.replace(dashboardRoute as any)
+        router.replace(dashboardRoute)
       }
 
       isRedirectingRef.current = false
@@ -67,45 +59,30 @@ export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutPr
     return () => { active = false }
   }, [tatSlug, dashboardRoute])
 
-  // Show loader while restoring or redirecting
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="small" color="#a3a3a3" />
-      </SafeAreaView>
+      <view className="flex-1 items-center justify-center bg-neutral-50">
+        <text className="text-2xl text-neutral-400">⏳</text>
+      </view>
     )
   }
 
-  // If authenticated and not loading, redirect already triggered
-  // (but prevent flash of content – keep loader)
   if (isAuthenticated) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-neutral-50">
-        <ActivityIndicator size="small" color="#a3a3a3" />
-      </SafeAreaView>
+      <view className="flex-1 items-center justify-center bg-neutral-50">
+        <text className="text-2xl text-neutral-400">⏳</text>
+      </view>
     )
   }
 
-  // Not authenticated – render guest content (login/register forms)
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <KeyboardAvoidingView
-        className="flex-1"
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        keyboardVerticalOffset={0}
-      >
-        <ScrollView
-          className="flex-1"
-          contentContainerStyle={{ flexGrow: 1 }}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-        >
-          <View className="flex-1 items-center justify-center px-6 py-12">
-            {children}
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <view className="flex-1 bg-neutral-50">
+      <scroll-view className="flex-1" scroll-y show-scrollbar={false}>
+        <view className="flex-1 items-center justify-center px-6 py-12 min-h-full">
+          {children}
+        </view>
+      </scroll-view>
+    </view>
   )
 }
 

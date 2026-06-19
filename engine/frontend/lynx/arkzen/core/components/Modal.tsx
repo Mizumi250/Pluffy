@@ -1,32 +1,36 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE MODAL COMPONENT v1.0
-// NativeWind equivalent of web-core/components/Modal.tsx
-// Uses react-native-reanimated instead of framer-motion.
-// Uses React Native Modal + NativeWind for styling.
+// ARKZEN ENGINE — LYNX MODAL COMPONENT v2.0
+// Lynx equivalent of native-core/components/Modal.tsx
+//
+// Styling: Tailwind className (rsbuild-plugin-tailwindcss).
+// NO react-native Modal, NO react-native-reanimated,
+// NO @expo/vector-icons.
+// Uses @lynx-js/react primitives: <view>, <text>.
+// Animation: Lynx supports CSS transitions/keyframes via
+// the bundled Tailwind preset — use `animate-*` utility
+// classes (configured in tailwind.config.ts) instead of
+// react-native-reanimated's enter/exit props.
 // ============================================================
 
-import React from 'react'
-import { View, Text, TouchableOpacity, Modal as RNModal, Pressable } from 'react-native'
-import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import React, { useState, useEffect } from '@lynx-js/react'
 
 export interface NativeModalProps {
-  open: boolean
-  onClose: () => void
-  children: React.ReactNode
+  open:            boolean
+  onClose:         () => void
+  children:        any
 
-  title?: string
-  description?: string
-  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
-  showClose?: boolean
+  title?:          string
+  description?:    string
+  size?:           'sm' | 'md' | 'lg' | 'xl' | 'full'
+  showClose?:      boolean
   closeOnBackdrop?: boolean
-  animation?: 'fadeScale' | 'slideUp' | 'slideDown' | 'fade'
+  animation?:      'fadeScale' | 'slideUp' | 'slideDown' | 'fade'
 
-  renderHeader?: (onClose: () => void) => React.ReactNode
-  renderFooter?: (onClose: () => void) => React.ReactNode
+  renderHeader?:   (onClose: () => void) => any
+  renderFooter?:   (onClose: () => void) => any
   panelClassName?: string
   backdropClassName?: string
-  className?: string
+  className?:      string
 }
 
 const sizeMap = {
@@ -35,6 +39,13 @@ const sizeMap = {
   lg:   'max-w-lg',
   xl:   'max-w-2xl',
   full: 'w-full mx-4',
+}
+
+const enterAnimMap = {
+  fadeScale: 'animate-in fade-in zoom-in-95 duration-200',
+  slideUp:   'animate-in slide-in-from-bottom duration-200',
+  slideDown: 'animate-in slide-in-from-top duration-200',
+  fade:      'animate-in fade-in duration-200',
 }
 
 export const NativeModal: React.FC<NativeModalProps> = ({
@@ -53,86 +64,62 @@ export const NativeModal: React.FC<NativeModalProps> = ({
   backdropClassName = '',
   className = '',
 }) => {
-  const enteringAnim = animation === 'slideUp'
-    ? SlideInDown.springify().damping(15)
-    : animation === 'fade'
-    ? FadeIn.duration(200)
-    : FadeIn.duration(200)
+  const [visible, setVisible] = useState(open)
 
-  const exitingAnim = animation === 'slideUp'
-    ? SlideOutDown.duration(200)
-    : animation === 'fade'
-    ? FadeOut.duration(200)
-    : FadeOut.duration(200)
+  useEffect(() => {
+    if (open) setVisible(true)
+  }, [open])
+
+  if (!visible) return null
 
   const defaultHeader = (title || showClose) ? (
-    <View className="flex-row items-start justify-between px-6 pt-6 pb-4">
-      <View className="flex-1">
+    <view className="flex-row items-start justify-between px-6 pt-6 pb-4">
+      <view className="flex-1">
         {title && (
-          <Text className="text-lg font-semibold text-neutral-900 leading-tight">
+          <text className="text-lg font-semibold text-neutral-900 leading-tight">
             {title}
-          </Text>
+          </text>
         )}
         {description && (
-          <Text className="mt-1 text-sm text-neutral-500">
+          <text className="mt-1 text-sm text-neutral-500">
             {description}
-          </Text>
+          </text>
         )}
-      </View>
+      </view>
       {showClose && (
-        <TouchableOpacity
-          onPress={onClose}
-          className="ml-4 p-1.5 rounded-lg"
-        >
-          <Ionicons name="close" size={18} color="#737373" />
-        </TouchableOpacity>
+        <view bindtap={onClose} className="ml-4 p-1.5 rounded-lg">
+          <text className="text-base text-neutral-500">✕</text>
+        </view>
       )}
-    </View>
+    </view>
   ) : null
 
   return (
-    <RNModal
-      visible={open}
-      transparent
-      animationType="none"
-      statusBarTranslucent
-      onRequestClose={onClose}
-    >
-      <View className={`flex-1 items-center justify-center p-4 ${className}`}>
-        {/* Backdrop */}
-        <Animated.View
-          entering={FadeIn.duration(200)}
-          exiting={FadeOut.duration(200)}
-          className={`absolute inset-0 bg-black/40 ${backdropClassName}`}
-        >
-          {closeOnBackdrop && (
-            <Pressable className="flex-1" onPress={onClose} />
-          )}
-        </Animated.View>
+    <view className={`fixed inset-0 z-50 items-center justify-center p-4 ${className}`}>
+      {/* Backdrop */}
+      <view
+        bindtap={closeOnBackdrop ? onClose : undefined}
+        className={`absolute inset-0 bg-black/40 animate-in fade-in duration-200 ${backdropClassName}`}
+      />
 
-        {/* Panel */}
-        <Animated.View
-          entering={enteringAnim}
-          exiting={exitingAnim}
-          className={`relative w-full ${sizeMap[size]} bg-white rounded-2xl shadow-2xl ${panelClassName}`}
-        >
-          {/* Header */}
-          {renderHeader ? renderHeader(onClose) : defaultHeader}
+      {/* Panel */}
+      <view className={`relative w-full ${sizeMap[size]} bg-white rounded-2xl shadow-2xl ${enterAnimMap[animation]} ${panelClassName}`}>
+        {/* Header */}
+        {renderHeader ? renderHeader(onClose) : defaultHeader}
 
-          {/* Body */}
-          <View className={`px-6 ${title || renderHeader ? 'pb-6' : 'py-6'}`}>
-            {children}
-          </View>
+        {/* Body */}
+        <view className={`px-6 ${title || renderHeader ? 'pb-6' : 'py-6'}`}>
+          {children}
+        </view>
 
-          {/* Footer */}
-          {renderFooter && (
-            <View className="px-6 pb-6">
-              {renderFooter(onClose)}
-            </View>
-          )}
-        </Animated.View>
-      </View>
-    </RNModal>
+        {/* Footer */}
+        {renderFooter && (
+          <view className="px-6 pb-6">
+            {renderFooter(onClose)}
+          </view>
+        )}
+      </view>
+    </view>
   )
 }
 
