@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — visual-lab
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:19:38.468Z
+// Generated: 2026-06-19T13:52:58.391Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

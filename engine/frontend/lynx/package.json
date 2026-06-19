@@ -4,7 +4,8 @@
   "type": "module",
   "scripts": {
     "build": "rspeedy build",
-    "dev": "NAPI_RS_NATIVE_LIBRARY_PATH=$(pwd)/node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node rspeedy dev",
+    "sync:shared": "tsx arkzen/sync.ts",
+    "dev": "npm run sync:shared && NAPI_RS_NATIVE_LIBRARY_PATH=$(pwd)/node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node rspeedy dev",
     "postinstall": "cp ~/rspack-src/target/aarch64-linux-android/release/librspack_node.so node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node || true",
     "preview": "rspeedy preview",
     "arkzen": "tsx watch arkzen.ts",

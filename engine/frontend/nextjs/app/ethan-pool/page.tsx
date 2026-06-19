@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — ethan-pool/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T13:38:43.324Z
+// Generated: 2026-06-19T13:52:52.300Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
