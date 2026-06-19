@@ -415,7 +415,7 @@
     }
   ],
   "activeStack": "react-vite",
-  "activeAppStack": "expo",
+  "activeAppStack": "react-native",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",

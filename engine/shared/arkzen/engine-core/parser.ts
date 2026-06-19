@@ -553,16 +553,49 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
 //   /* @arkzen:resolved:import rn */     ← Bare React Native
 // ─────────────────────────────────────────────
 
-const NATIVE_IMPORT_EXPO_MARKER = '/* @arkzen:import:expo */'
-const NATIVE_IMPORT_RN_MARKER   = '/* @arkzen:import:rn */'
+// ─────────────────────────────────────────────
+// NATIVE IMPORT LINE EXTRACTOR — v10.3 / v10.5
+//
+// v10.5: @arkzen:import:expo and @arkzen:import:rn are now proper open+close
+// blocks (with :end tags), not self-closing inline markers.
+//
+// DSL format (inside a page/layout/component/error block body):
+//   /* @arkzen:import:expo */
+//   /* @arkzen:import:expo:end */
+//
+// The content between open and :end is intentionally empty — the block
+// serves only as a stack-targeting flag. The parser strips the entire
+// block (open tag + :end tag) from the raw body and re-embeds a resolved
+// marker at the top so builders can detect the target stack.
+//
+// Self-closing form (v10.3 legacy, no :end) is still accepted as fallback
+// so old tatemonos don't break before migration.
+// ─────────────────────────────────────────────
+
+const NATIVE_IMPORT_EXPO_OPEN  = '/* @arkzen:import:expo */'
+const NATIVE_IMPORT_EXPO_END   = '/* @arkzen:import:expo:end */'
+const NATIVE_IMPORT_RN_OPEN    = '/* @arkzen:import:rn */'
+const NATIVE_IMPORT_RN_END     = '/* @arkzen:import:rn:end */'
 
 function extractNativeImportLine(raw: string): { cleanRaw: string; importStack: 'expo' | 'rn' | null } {
-  if (raw.includes(NATIVE_IMPORT_EXPO_MARKER)) {
-    const cleanRaw = raw.replace(NATIVE_IMPORT_EXPO_MARKER, '').trim()
+  // Expo — try open+close first, then self-closing fallback
+  if (raw.includes(NATIVE_IMPORT_EXPO_OPEN)) {
+    let cleanRaw = raw
+    // Strip :end tag if present
+    if (cleanRaw.includes(NATIVE_IMPORT_EXPO_END)) {
+      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_END, '')
+    }
+    // Strip open tag
+    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_OPEN, '').trim()
     return { cleanRaw: `/* @arkzen:resolved:import expo */\n${cleanRaw}`, importStack: 'expo' }
   }
-  if (raw.includes(NATIVE_IMPORT_RN_MARKER)) {
-    const cleanRaw = raw.replace(NATIVE_IMPORT_RN_MARKER, '').trim()
+  // RN — try open+close first, then self-closing fallback
+  if (raw.includes(NATIVE_IMPORT_RN_OPEN)) {
+    let cleanRaw = raw
+    if (cleanRaw.includes(NATIVE_IMPORT_RN_END)) {
+      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_END, '')
+    }
+    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_OPEN, '').trim()
     return { cleanRaw: `/* @arkzen:resolved:import rn */\n${cleanRaw}`, importStack: 'rn' }
   }
   return { cleanRaw: raw, importStack: null }

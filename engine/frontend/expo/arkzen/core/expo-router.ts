@@ -1,5 +1,36 @@
 // ============================================================
-// ARKZEN ENGINE — EXPO ROUTER v4.6
+// ARKZEN ENGINE — EXPO ROUTER v4.7
+//
+// v4.7 – New Expo-specific DSL syntax support.
+//        The native platform table now uses stack-split DSL markers.
+//        Expo stack:
+//          page      — @arkzen:native:page:name + @arkzen:import:expo  (embedded)
+//          layout    — @arkzen:native:layout:name + @arkzen:import:expo
+//          component — @arkzen:native:components:name + @arkzen:import:expo
+//          error 404 — @arkzen:native:error:404 + @arkzen:import:expo
+//          error 500 — @arkzen:native:error:500 + @arkzen:import:expo
+//          animation — @arkzen:native:animation:expo  (was :rn for Expo too)
+//          script (global) — @arkzen:native:script:expo
+//          script (named)  — @arkzen:native:script:expo:name
+//        The parser already strips @arkzen:import:expo from block bodies and
+//        re-embeds it as /* @arkzen:resolved:import expo */ so builders can
+//        detect the target stack without new type fields.
+//        Changes in v4.7:
+//          • generateNativeAnimationFile() now uses nativeAnimationExpo first,
+//            falling back to nativeAnimationRN for backward compatibility.
+//          • registerExpoScreens() checks nativeAnimationExpo first too.
+//          • generateScreenFile() animImportLine reads nativeAnimationExpo
+//            (fallback nativeAnimationRN) — comment source tag updated.
+//          • isExpoTargeted() helper added — returns true for blocks that carry
+//            /* @arkzen:resolved:import expo */ OR no import marker at all
+//            (backward compat for old tatemonos that predate the import line).
+//          • nativePages / nativeComponents / nativeLayouts / nativeErrorHandlers
+//            now filtered through isExpoTargeted() so RN-only blocks
+//            (/* @arkzen:resolved:import rn */) are skipped by Expo builder.
+//            Blocks with no marker still pass (backward compat).
+//          • generateNativeScriptFile() added — writes nativeScriptExpo to
+//            src/arkzen/generated/{name}.native-script.expo.ts.
+//            registerExpoScreens() writes it when nativeScriptExpo is present.
 //
 // v4.6 – FIX: same class of bug as v4.5, for @arkzen:native:style. The `s`
 //        styles object is exported from
@@ -383,7 +414,8 @@ function stripTemplateLiterals(src: string): string {
 
 function extractNativeComponentNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  const expoComponents = (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))
+  for (const component of expoComponents) {
     const stripped = stripTemplateLiterals(component.raw)
     const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
     for (const match of constMatches) {
@@ -401,7 +433,7 @@ function extractNativeComponentNames(tatemono: ParsedTatemono): Set<string> {
 
 function extractNativeSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
     const matches = stripped.match(/^(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)\s*[=:]/gm) || []
     for (const match of matches) {
@@ -425,7 +457,7 @@ function extractNativeDestructuredConstants(tatemono: ParsedTatemono): { names: 
   const statements: string[] = []
   const seen = new Set<string>()
 
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
     const lines = stripped.split('\n')
     const re = /^(?:export\s+)?const\s*\{([^}]*)\}\s*=\s*[^;\n]+;?\s*$/
@@ -465,7 +497,7 @@ function extractNativeNamespaceImports(tatemono: ParsedTatemono): Map<string, st
   const out = new Map<string, string>() // namespace identifier -> module specifier
   const re = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/m
 
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
     for (const rawLine of stripped.split('\n')) {
       const line = rawLine.trim()
@@ -491,7 +523,7 @@ function extractNativeNamedImportsByModule(tatemono: ParsedTatemono): Map<string
   const namedImportRe = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
   const mixedImportRe = /^import\s+[A-Za-z_$][A-Za-z0-9_$]*\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
 
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const flattened = flattenMultilineImports(stripTemplateLiterals(component.raw))
     for (const rawLine of flattened.split('\n')) {
       const line = rawLine.trim()
@@ -517,7 +549,7 @@ function extractNativeNamedImportsByModule(tatemono: ParsedTatemono): Map<string
 
 function extractNativeCustomHookNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
     const fnMatches = stripped.match(/(?:export\s+)?function\s+(use[A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
     for (const match of fnMatches) {
@@ -535,7 +567,7 @@ function extractNativeCustomHookNames(tatemono: ParsedTatemono): Set<string> {
 
 function extractNativeSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
     const typeMatches = stripped.match(/(?:export\s+)?type\s+([A-Z][A-Za-z0-9_$]*)\s*[=<{]/g) || []
     for (const match of typeMatches) {
@@ -553,7 +585,7 @@ function extractNativeSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
 
 function extractNativeUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of (tatemono.nativeComponents ?? [])) {
+  for (const component of (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))) {
     const stripped = stripTemplateLiterals(component.raw)
 
     // Only match TOP-LEVEL declarations: anchored to line start with zero
@@ -654,6 +686,36 @@ function normaliseNativeImports(block: string): string {
               .replace(/from\s+"@\/arkzen\//g, `from "../../../arkzen/`)
 }
 
+// ─── Stack targeting ───────────────────────────────────────────────────────────
+// v4.7: With the new DSL table, Expo/RN/Lynx blocks are identified by the
+// resolved import marker the parser embeds at the top of each block body:
+//   /* @arkzen:resolved:import expo */  → Expo-only
+//   /* @arkzen:resolved:import rn */    → Bare RN-only
+//   (no marker)                         → legacy / shared (still used by Expo)
+//
+// isExpoTargeted() returns true when a block should be processed by the
+// Expo builder. Blocks with the RN marker are intentionally skipped.
+
+const RESOLVED_EXPO_MARKER = '/* @arkzen:resolved:import expo */'
+const RESOLVED_RN_MARKER   = '/* @arkzen:resolved:import rn */'
+
+function isExpoTargeted(raw: string | undefined): boolean {
+  if (!raw) return false
+  // Explicitly Expo → include
+  if (raw.includes(RESOLVED_EXPO_MARKER)) return true
+  // Explicitly RN-only → exclude from Expo builder
+  if (raw.includes(RESOLVED_RN_MARKER)) return false
+  // No stack marker → legacy block, include for backward compat
+  return true
+}
+
+function stripResolvedImportMarker(raw: string): string {
+  return raw
+    .replace(RESOLVED_EXPO_MARKER, '')
+    .replace(RESOLVED_RN_MARKER, '')
+    .trim()
+}
+
 function extractExportNames(raw: string): string[] {
   const names: string[] = []
   const namedRe = /^\s*export\s+(?:function|const|class|let|var)\s+([A-Za-z_$][\w$]*)/gm
@@ -667,7 +729,8 @@ function extractExportNames(raw: string): string[] {
 // with real code, not re-exports. Mirrors web stack behaviour exactly.
 
 function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screenDir: string): void {
-  const nativeComponents = tatemono.nativeComponents ?? []
+  // v4.7: only process blocks explicitly targeting Expo (or legacy blocks with no stack marker)
+  const nativeComponents = (tatemono.nativeComponents ?? []).filter(c => isExpoTargeted(c.raw))
   const componentsDir = path.join(screenDir, 'components')
 
   if (nativeComponents.length === 0) {
@@ -1154,8 +1217,10 @@ export default ${wrapperName}
   // ── Resolve imports from page source ONLY ─────────────────────────────────
   const pageSources = [page.raw.trim()]
 
-  const animImportLine = tatemono.nativeAnimationRN
-    ? `import { ${extractExportNames(tatemono.nativeAnimationRN.raw).join(', ')} } from '../../arkzen/generated/${tatName}.native-animations'`
+  // v4.7: prefer Expo-specific animation block; fall back to :rn block for legacy tatemonos
+  const animBlock = tatemono.nativeAnimationExpo ?? tatemono.nativeAnimationRN
+  const animImportLine = animBlock
+    ? `import { ${extractExportNames(animBlock.raw).join(', ')} } from '../../arkzen/generated/${tatName}.native-animations'`
     : ''
 
   const styleImportLine = (tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
@@ -1342,13 +1407,16 @@ export default ${wrapperName}
 
 // ─── Root redirect generator ───────────────────────────────────────────────────
 
-function resolveExpoRootRedirectTarget(tatemono: ParsedTatemono): ArkzenPage | null {
-  const hasIndex = tatemono.nativePages.some(p => p.name === 'index')
+// v4.7: accepts expoPages (already filtered to Expo-targeted) instead of reading
+//       tatemono.nativePages directly — avoids showing RN-only pages in Expo routes.
+function resolveExpoRootRedirectTarget(tatemono: ParsedTatemono, expoPages?: ArkzenPage[]): ArkzenPage | null {
+  const pages = expoPages ?? tatemono.nativePages
+  const hasIndex = pages.some(p => p.name === 'index')
   if (hasIndex) return null
 
-  const firstGuest = tatemono.nativePages.find(p => p.layout === 'guest')
-  const firstAuth  = tatemono.nativePages.find(p => p.layout === 'auth')
-  const firstPage  = tatemono.nativePages[0]
+  const firstGuest = pages.find(p => p.layout === 'guest')
+  const firstAuth  = pages.find(p => p.layout === 'auth')
+  const firstPage  = pages[0]
 
   const target = tatemono.meta.auth
     ? (firstGuest ?? firstAuth ?? firstPage)
@@ -1582,22 +1650,31 @@ export default ErrorBoundary
 }
 
 // ─── Native animation file generator ──────────────────────────────────────────
+// v4.7: uses nativeAnimationExpo first (new @arkzen:native:animation:expo tag).
+//       Falls back to nativeAnimationRN for backward compat with old tatemonos
+//       that used :rn for both Expo and Bare RN before the stack split.
 
 function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
-  if (!tatemono.nativeAnimationRN) return null
+  // v4.7: prefer Expo-specific animation block; fall back to :rn block
+  const animBlock = tatemono.nativeAnimationExpo ?? tatemono.nativeAnimationRN
+  if (!animBlock) return null
 
-  const { strippedSources } = resolveImports([tatemono.nativeAnimationRN.raw])
+  const sourceTag = tatemono.nativeAnimationExpo
+    ? '@arkzen:native:animation:expo'
+    : '@arkzen:native:animation:rn (legacy fallback)'
+
+  const { strippedSources } = resolveImports([animBlock.raw])
   const clean = strippedSources[0]
     .replace(/\*\/\s*$/, '')
     .trim()
 
   if (!clean) return null
 
-  const { canonicalBlock } = resolveImports([tatemono.nativeAnimationRN.raw])
+  const { canonicalBlock } = resolveImports([animBlock.raw])
 
   return `// ============================================================
 // ARKZEN GENERATED NATIVE ANIMATIONS — ${tatemono.meta.name}
-// Source: @arkzen:native:animation:rn
+// Source: ${sourceTag}
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 //
@@ -1615,12 +1692,15 @@ ${clean}
 }
 
 // ─── Custom layout generator ───────────────────────────────────────────────────
+// v4.7: only processes layouts targeting Expo (or legacy no-marker layouts)
 
 function generateCustomLayouts(tatemono: ParsedTatemono): void {
-  if (!tatemono.nativeLayouts || tatemono.nativeLayouts.length === 0) return
+  // v4.7: filter to expo-targeted layouts only
+  const expoLayouts = (tatemono.nativeLayouts ?? []).filter(l => isExpoTargeted(l.raw))
+  if (expoLayouts.length === 0) return
   ensureDir(NATIVE_LAYOUTS_DIR)
 
-  for (const layout of tatemono.nativeLayouts) {
+  for (const layout of expoLayouts) {
     const fileName = `${tatemono.meta.name}-${layout.name}.tsx`
     const filePath = path.join(NATIVE_LAYOUTS_DIR, fileName)
 
@@ -1628,6 +1708,64 @@ function generateCustomLayouts(tatemono: ParsedTatemono): void {
     const content = `// ARKZEN CUSTOM LAYOUT — ${tatemono.meta.name}/${layout.name} [Expo]\n\n${canonicalBlock}\n\n${strippedSources[0]}\n`
     writeIfChanged(filePath, content)
     console.log(`[Arkzen Expo Router] ✓ Custom layout: ${fileName}`)
+  }
+}
+
+// ─── Native script file generator ─────────────────────────────────────────────
+// v4.7: @arkzen:native:script:expo — global utility block for Expo stack.
+//       Writes src/arkzen/generated/{name}.native-script.expo.ts.
+//       Named scripts (@arkzen:native:script:expo:name) are written as
+//       {name}.native-script.expo.{scriptName}.ts
+
+function generateNativeScriptFile(tatemono: ParsedTatemono, generatedDir: string): void {
+  const tatName = tatemono.meta.name
+
+  // Global script
+  if (tatemono.nativeScriptExpo) {
+    const { canonicalBlock, strippedSources } = resolveImports([tatemono.nativeScriptExpo.raw])
+    const clean = strippedSources[0].trim()
+    if (clean) {
+      const content = `// ============================================================
+// ARKZEN GENERATED NATIVE SCRIPT (GLOBAL) — ${tatName} [Expo]
+// Source: @arkzen:native:script:expo
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${clean}
+`
+      ensureDir(generatedDir)
+      const filePath = path.join(generatedDir, `${tatName}.native-script.expo.ts`)
+      writeIfChanged(filePath, content)
+      console.log(`[Arkzen Expo Router] ✓ Native script (global): ${tatName}.native-script.expo.ts`)
+    }
+  }
+
+  // Named scripts
+  if (tatemono.nativeScriptsExpo && tatemono.nativeScriptsExpo.length > 0) {
+    ensureDir(generatedDir)
+    for (const script of tatemono.nativeScriptsExpo) {
+      const scriptName = script.name ?? 'unnamed'
+      const { canonicalBlock, strippedSources } = resolveImports([script.raw])
+      const clean = strippedSources[0].trim()
+      if (!clean) continue
+      const content = `// ============================================================
+// ARKZEN GENERATED NATIVE SCRIPT (NAMED) — ${tatName}/${scriptName} [Expo]
+// Source: @arkzen:native:script:expo:${scriptName}
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: ${new Date().toISOString()}
+// ============================================================
+
+${canonicalBlock}
+
+${clean}
+`
+      const filePath = path.join(generatedDir, `${tatName}.native-script.expo.${scriptName}.ts`)
+      writeIfChanged(filePath, content)
+      console.log(`[Arkzen Expo Router] ✓ Native script (named): ${tatName}.native-script.expo.${scriptName}.ts`)
+    }
   }
 }
 
@@ -1655,16 +1793,22 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Expo Router] No assets folder for ${tatName}`)
   }
 
-  // v3.4: generate native animation file if present
-  if (tatemono.nativeAnimationRN) {
+  // v3.4 / v4.7: generate native animation file if present
+  // Uses nativeAnimationExpo first (new DSL); falls back to nativeAnimationRN for legacy tatemonos
+  const hasAnimBlock = tatemono.nativeAnimationExpo ?? tatemono.nativeAnimationRN
+  if (hasAnimBlock) {
     ensureDir(GENERATED_DIR)
     const animContent = generateNativeAnimationFile(tatemono)
     if (animContent) {
       const animPath = path.join(GENERATED_DIR, `${tatName}.native-animations.ts`)
       writeIfChanged(animPath, animContent)
-      console.log(`[Arkzen Expo Router] ✓ Native animation file generated: ${tatName}.native-animations.ts`)
+      const sourceLabel = tatemono.nativeAnimationExpo ? ':expo' : ':rn (legacy)'
+      console.log(`[Arkzen Expo Router] ✓ Native animation file generated: ${tatName}.native-animations.ts (${sourceLabel})`)
     }
   }
+
+  // v4.7: generate native script files (@arkzen:native:script:expo)
+  generateNativeScriptFile(tatemono, GENERATED_DIR)
 
   // v3.5: generate custom native layouts
   generateCustomLayouts(tatemono)
@@ -1672,7 +1816,10 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const existingRoutes = readExistingRoutes().filter(r => r.tatName !== tatName)
   const newRoutes: ExpoRoute[] = []
 
-  for (const page of tatemono.nativePages) {
+  // v4.7: only process pages targeting Expo (or legacy pages with no stack marker)
+  const expoPages = tatemono.nativePages.filter(p => isExpoTargeted(p.raw))
+
+  for (const page of expoPages) {
     const screenName = page.name
     const routePath  = screenName === 'index' ? `/${tatName}` : `/${tatName}/${screenName}`
     const layout     = page.layout ?? 'default'
@@ -1685,7 +1832,7 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   }
 
   // v4.1: root redirect — /${tatName} → first page, if no explicit "index" page exists
-  const rootRedirectTarget = resolveExpoRootRedirectTarget(tatemono)
+  const rootRedirectTarget = resolveExpoRootRedirectTarget(tatemono, expoPages)
   if (rootRedirectTarget) {
     const destination = `/${tatName}/${rootRedirectTarget.name}`
     const layout      = rootRedirectTarget.layout ?? 'default'
@@ -1702,8 +1849,9 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
     console.log(`[Arkzen Expo Router] ✓ /${tatName} → ${destination} [root redirect]`)
   }
 
-  // v3.3: error handlers
-  for (const handler of tatemono.nativeErrorHandlers ?? []) {
+  // v3.3 / v4.7: error handlers — only Expo-targeted ones (or legacy no-marker)
+  const expoErrorHandlers = (tatemono.nativeErrorHandlers ?? []).filter(h => isExpoTargeted(h.raw))
+  for (const handler of expoErrorHandlers) {
     if (handler.type === '404') {
       const notFoundPath = path.join(appDir, '+not-found.tsx')
       writeIfChanged(notFoundPath, generateNotFoundFile(tatemono, handler))
@@ -1739,6 +1887,23 @@ export function unregisterExpoScreens(tatName: string): void {
   if (fs.existsSync(animPath)) {
     fs.unlinkSync(animPath)
     console.log(`[Arkzen Expo Router] ✓ Removed native animation file: ${tatName}.native-animations.ts`)
+  }
+
+  // v4.7: clean up native script files
+  const globalScriptPath = path.join(GENERATED_DIR, `${tatName}.native-script.expo.ts`)
+  if (fs.existsSync(globalScriptPath)) {
+    fs.unlinkSync(globalScriptPath)
+    console.log(`[Arkzen Expo Router] ✓ Removed native script (global): ${tatName}.native-script.expo.ts`)
+  }
+  // Named script cleanup — scan generated dir for matching pattern
+  if (fs.existsSync(GENERATED_DIR)) {
+    const scriptPrefix = `${tatName}.native-script.expo.`
+    for (const entry of fs.readdirSync(GENERATED_DIR)) {
+      if (entry.startsWith(scriptPrefix) && entry.endsWith('.ts') && entry !== `${tatName}.native-script.expo.ts`) {
+        fs.unlinkSync(path.join(GENERATED_DIR, entry))
+        console.log(`[Arkzen Expo Router] ✓ Removed native script (named): ${entry}`)
+      }
+    }
   }
 
   writeRouteRegistry(readExistingRoutes().filter(r => r.tatName !== tatName))
