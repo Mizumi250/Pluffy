@@ -352,10 +352,11 @@ export interface ParsedTatemono {
   scripts:    ArkzenSection[] // web: named @arkzen:web:script:name
 
   // ── Expo + Bare RN shared blocks (present; Lynx builder ignores) ──
-  nativePages:      ArkzenPage[]     // @arkzen:native:page:name
-  nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
-  nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
-  nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
+  nativePages:        ArkzenPage[]     // @arkzen:native:page:name
+  nativeComponents:   ArkzenSection[]  // @arkzen:native:components:name
+  nativeLayouts:      ArkzenSection[]  // @arkzen:native:layout:name
+  nativeStyleGlobal?: ArkzenSection    // @arkzen:native:style (global, unnamed) — v10.6
+  nativeStyles:       ArkzenSection[]  // @arkzen:native:style:name
 
   // ── Expo-specific (present; Lynx builder ignores) ──────────────
   nativeAnimationExpo?:  ArkzenSection

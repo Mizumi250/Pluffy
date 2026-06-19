@@ -213,24 +213,44 @@ function startAppStack() {
   })
   pipeLog('app', '[Watcher]', watcher)
 
-  // Process 2: metro bundler — command differs per app stack
-  // Expo:               `npx expo start`     (Expo Go / dev client)
+  // Process 2: platform bundler / dev server — command differs per app stack
+  // Expo:               `npx expo start`        (Metro — scan QR with Expo Go)
   // React Native (bare): `npx react-native start` (plain Metro — launch the
   //                       app separately with `npm run android` / `npm run ios`)
-  const isExpo = activeAppStack === 'expo'
-  log('app', isExpo
-    ? `Starting ${activeAppStack} (Metro bundler) — scan QR with Expo Go`
-    : `Starting ${activeAppStack} (Metro bundler) — run "npm run android" in another shell to launch the app`)
+  // Lynx:                `npx rspeedy dev`        (Rsbuild dev server — scan QR
+  //                       with the LynxExplorer app)
+  let bundlerArgs
+  let bundlerLabel
+  const bundlerEnv = { ...process.env, FORCE_COLOR: '1' }
 
-  const metroArgs = isExpo ? ['expo', 'start', '--clear', '--lan'] : ['react-native', 'start']
-  const metro = spawn('npx', metroArgs, {
+  if (activeAppStack === 'expo') {
+    bundlerArgs  = ['expo', 'start', '--clear', '--lan']
+    bundlerLabel = 'Metro bundler — scan QR with Expo Go'
+  } else if (activeAppStack === 'lynx') {
+    bundlerArgs  = ['rspeedy', 'dev']
+    bundlerLabel = 'Rspeedy dev server — scan QR with LynxExplorer'
+    // Termux / Android-arm64 host workaround: rspack's native binding has
+    // to be pointed at explicitly on some Android/Termux setups. Only set
+    // this if the binding is actually present — leave untouched on normal
+    // desktop/CI hosts so the default platform binding resolves as usual.
+    const androidBinding = path.join(APP_DIR, 'node_modules', '@rspack', 'binding-android-arm64', 'rspack.android-arm64.node')
+    if (fs.existsSync(androidBinding)) {
+      bundlerEnv.NAPI_RS_NATIVE_LIBRARY_PATH = androidBinding
+    }
+  } else {
+    bundlerArgs  = ['react-native', 'start']
+    bundlerLabel = `run "npm run android" in another shell to launch the app`
+  }
+
+  log('app', `Starting ${activeAppStack} (${bundlerLabel})`)
+  const bundler = spawn('npx', bundlerArgs, {
     cwd: APP_DIR,
     stdio: 'pipe',
-    env: { ...process.env, FORCE_COLOR: '1' },
+    env: bundlerEnv,
   })
-  pipeLog('app', '[Metro]', metro)
+  pipeLog('app', '[Bundler]', bundler)
 
-  return [watcher, metro]
+  return [watcher, bundler]
 }
 
 // ── BOOT ──────────────────────────────────────────────────────

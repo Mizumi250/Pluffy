@@ -69,6 +69,7 @@ const WEB_STACKS = {
 const APP_STACKS = {
   'expo':         'engine/frontend/expo',
   'react-native': 'engine/frontend/react-native',
+  'lynx':         'engine/frontend/lynx',
 }
 const WEB_LABELS = {
   'nextjs':         'Next.js',
@@ -80,6 +81,7 @@ const WEB_LABELS = {
 const APP_LABELS = {
   'expo':         'Expo (SDK 53, Expo Go)',
   'react-native': 'React Native (bare)',
+  'lynx':         'Lynx (Rspeedy / ReactLynx)',
 }
 
 // ─── BANNER ───────────────────────────────────────────────────
@@ -418,7 +420,7 @@ function printHelp() {
   })
   console.log()
   console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
-  console.log(`  ${paint(c.gray, 'App:')} expo, react-native`)
+  console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
   console.log()
 }
 

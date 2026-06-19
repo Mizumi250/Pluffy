@@ -22,16 +22,18 @@ const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 // Read active stack from arkzen.json (default: nextjs)
 let activeStack = 'nextjs'
+let activeAppStack = null
 const arkzenJsonPath = path.join(ROOT_DIR, 'arkzen.json')
 if (fs.existsSync(arkzenJsonPath)) {
   try {
     const json = JSON.parse(fs.readFileSync(arkzenJsonPath, 'utf-8'))
-    activeStack = json.activeStack ?? 'nextjs'
+    activeStack    = json.activeStack    ?? 'nextjs'
+    activeAppStack = json.activeAppStack ?? null
   } catch {}
 }
 
 // Mobile stacks — no backend needed
-const MOBILE_STACKS = ['expo', 'react-native']
+const MOBILE_STACKS = ['expo', 'react-native', 'lynx']
 const isMobile = MOBILE_STACKS.includes(activeStack)
 
 // Stack → backend mapping
@@ -129,6 +131,23 @@ function ensureStructure() {
   success('Folder structure ready')
 }
 
+function ensureExpoPlaceholderAssets(dir) {
+  const assetsDir = path.join(dir, 'assets')
+  fs.mkdirSync(assetsDir, { recursive: true })
+  // minimal 1x1 transparent PNG
+  const png = Buffer.from(
+    'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
+    'base64'
+  )
+  for (const file of ['icon.png', 'splash-icon.png', 'adaptive-icon.png']) {
+    const filePath = path.join(assetsDir, file)
+    if (!fs.existsSync(filePath)) {
+      fs.writeFileSync(filePath, png)
+      success(`Created placeholder: assets/${file}`)
+    }
+  }
+}
+
 // ─────────────────────────────────────────────
 // FRONTEND SETUP — active stack only
 // ─────────────────────────────────────────────
@@ -157,20 +176,7 @@ function setupFrontend() {
 
   // Expo: ensure placeholder assets exist before install
   if (activeStack === 'expo') {
-    const assetsDir = path.join(ACTIVE_FRONTEND_DIR, 'assets')
-    fs.mkdirSync(assetsDir, { recursive: true })
-    // minimal 1x1 transparent PNG
-    const png = Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==',
-      'base64'
-    )
-    for (const file of ['icon.png', 'splash-icon.png', 'adaptive-icon.png']) {
-      const filePath = path.join(assetsDir, file)
-      if (!fs.existsSync(filePath)) {
-        fs.writeFileSync(filePath, png)
-        success(`Created placeholder: assets/${file}`)
-      }
-    }
+    ensureExpoPlaceholderAssets(ACTIVE_FRONTEND_DIR)
   }
 
   log(`Installing npm packages for ${activeStack}...`)
@@ -200,6 +206,54 @@ function setupFrontend() {
       warn('laravel-inertia/package.json not found — skipping')
     }
   }
+}
+
+// ─────────────────────────────────────────────
+// APP STACK SETUP — activeAppStack (expo / react-native / lynx)
+// Separate from the web activeStack — app stacks never need the PHP
+// backend, only their own npm packages installed.
+// ─────────────────────────────────────────────
+
+function setupAppStack() {
+  if (!activeAppStack) return
+  if (activeAppStack === activeStack) return // already installed above (legacy single-stack setups)
+
+  divider()
+  log(`Setting up app stack: ${activeAppStack}...`)
+
+  const appDir = path.join(FRONTEND_DIR, activeAppStack)
+  if (!fs.existsSync(appDir)) {
+    warn(`App stack folder not found: engine/frontend/${activeAppStack} — skipping`)
+    return
+  }
+
+  const pkgPath = path.join(appDir, 'package.json')
+  if (!fs.existsSync(pkgPath)) {
+    warn(`No package.json found in engine/frontend/${activeAppStack} — skipping npm install`)
+    return
+  }
+
+  const nodeModulesPath = path.join(appDir, 'node_modules')
+  if (fs.existsSync(nodeModulesPath)) {
+    log('Cleaning old node_modules...')
+    fs.rmSync(nodeModulesPath, { recursive: true, force: true })
+  }
+
+  if (activeAppStack === 'expo') {
+    ensureExpoPlaceholderAssets(appDir)
+  }
+
+  log(`Installing npm packages for ${activeAppStack}...`)
+  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', appDir)
+  if (!ok) {
+    const ok2 = run('npm install --force --no-fund --no-audit --legacy-peer-deps', appDir)
+    if (!ok2) {
+      error(`npm install failed for ${activeAppStack}. Try manually: cd engine/frontend/${activeAppStack} && npm install --legacy-peer-deps`)
+      return
+    }
+  }
+
+  success(`App stack packages installed for ${activeAppStack}`)
 }
 
 // ─────────────────────────────────────────────
@@ -440,5 +494,6 @@ checkRequirements()
 ensureStructure()
 initRegistry()
 setupFrontend()
+setupAppStack()
 if (!isMobile) setupBackend()
 printDone()
