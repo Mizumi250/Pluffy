@@ -1,5 +1,13 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v10.4
+// ARKZEN ENGINE — PARSER v10.6
+//
+// v10.6: Global (unnamed) native style block for Expo + Bare RN.
+//        New parser: parseGlobalNativeStyle() — @arkzen:native:style
+//        ParsedTatemono: nativeStyleGlobal? added (ArkzenSection | undefined).
+//        emitNativeStyles() in expo-router now merges nativeStyleGlobal into
+//        the generated .native-styles.ts file alongside named blocks.
+//        featureMap: nativeStyleGlobal key added.
+//        Mirrors the existing nativeLynxStyleGlobal pattern introduced in v10.3.
 //
 // v10.4: Stack-split animation and script parsers.
 //        animation was previously split as :rn / :lynx only — Expo lacked its own tag.
@@ -615,6 +623,13 @@ function parseAllNativeLayouts(content: string): ArkzenSection[] {
     const { cleanRaw } = extractNativeImportLine(section.raw)
     return { ...section, raw: cleanRaw }
   })
+}
+
+// v10.6: Global (unnamed) native:style block — @arkzen:native:style
+// Mirrors parseGlobalNativeLynxStyle() for the Expo/Bare RN target.
+// Content is styles-only (no StyleSheet wrapper); the emitter wraps automatically.
+function parseGlobalNativeStyle(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:style') ?? undefined
 }
 
 function parseAllNativeStyles(content: string): ArkzenSection[] {
@@ -2391,6 +2406,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v10.0 / v10.4: native blocks
   const nativeComponents     = parseAllNativeComponents(content)
   const nativeLayouts        = parseAllNativeLayouts(content)
+  const nativeStyleGlobal    = parseGlobalNativeStyle(content)         // v10.6: @arkzen:native:style (global)
   const nativeStyles         = parseAllNativeStyles(content)
   const nativePages          = parseAllNativePages(content)
   const nativeAnimationExpo  = parseNativeAnimationExpo(content)   // v10.4: Expo-specific
@@ -2474,6 +2490,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativePages,
     nativeLayouts,
     nativeComponents,
+    nativeStyleGlobal,        // v10.6: @arkzen:native:style (global)
     nativeStyles,
     nativeAnimationExpo,      // v10.4: @arkzen:native:animation:expo
     nativeAnimationRN,        // v10.4: @arkzen:native:animation:rn
@@ -2532,6 +2549,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativePages.length)              console.log(`[Arkzen Parser]   Native pages (${nativePages.length}): ${nativePages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
     if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
     if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
+    if (nativeStyleGlobal)               console.log(`[Arkzen Parser]   Native style (global)`)
     if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
     if (nativeAnimationExpo)             console.log(`[Arkzen Parser]   Native animation: :expo block`)
     if (nativeAnimationRN)               console.log(`[Arkzen Parser]   Native animation: :rn block`)
@@ -2580,6 +2598,7 @@ export function hasSections(filePath: string) {
     nativePage:              content.includes('/* @arkzen:native:page:') && !content.includes('/* @arkzen:native:page:lynx:'),
     nativeLayout:            content.includes('/* @arkzen:native:layout:') && !content.includes('/* @arkzen:native:layout:lynx:'),
     nativeStyle:             content.includes('/* @arkzen:native:style:') && !content.includes('/* @arkzen:native:style:lynx'),
+    nativeStyleGlobal:       content.includes('/* @arkzen:native:style */'),      // v10.6: global unnamed
     nativeAnimationExpo:     content.includes('/* @arkzen:native:animation:expo'),
     nativeAnimationRN:       content.includes('/* @arkzen:native:animation:rn'),
     nativeScriptExpo:        content.includes('/* @arkzen:native:script:expo'),

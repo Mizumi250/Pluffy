@@ -140,14 +140,21 @@ function cssToStyleSheet(css: string): string {
 // ─── Main emitter ─────────────────────────────────────────────────────────────
 
 export function emitNativeStyles(
-  tatName:      string,
-  nativeStyles: ArkzenSection[],
-  generatedDir: string,
+  tatName:          string,
+  nativeStyles:     ArkzenSection[],
+  generatedDir:     string,
   label = 'Arkzen Native Style',
+  nativeStyleGlobal?: ArkzenSection,  // v10.6: optional global (unnamed) block
 ): void {
   const outPath = path.join(generatedDir, `${tatName}.native-styles.ts`)
 
-  if (!nativeStyles || nativeStyles.length === 0) {
+  // v10.6: merge global block + named blocks into one list for processing
+  const allBlocks: ArkzenSection[] = [
+    ...(nativeStyleGlobal ? [nativeStyleGlobal] : []),
+    ...(nativeStyles ?? []),
+  ]
+
+  if (allBlocks.length === 0) {
     if (fs.existsSync(outPath)) {
       fs.unlinkSync(outPath)
       console.log(`[${label}] ✓ Removed stale: ${tatName}.native-styles.ts`)
@@ -155,10 +162,10 @@ export function emitNativeStyles(
     return
   }
 
-  // Merge all named style blocks into one StyleSheet.create call
+  // Merge all style blocks into one StyleSheet.create call
   const allEntries: string[] = []
 
-  for (const block of nativeStyles) {
+  for (const block of allBlocks) {
     const entries = cssToStyleSheet(block.raw)
     if (entries) allEntries.push(entries)
   }
@@ -169,7 +176,7 @@ export function emitNativeStyles(
 
   const output = `// ============================================================
 // ARKZEN GENERATED NATIVE STYLES — ${tatName}
-// Source: @arkzen:native:style:*
+// Source: @arkzen:native:style / @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================

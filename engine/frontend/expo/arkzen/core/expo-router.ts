@@ -775,7 +775,7 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
   // Same issue for @arkzen:native:style — emitted as the `s` export of
   // generated/{tatName}.native-styles.ts and referenced (e.g. `s.demoGrid`)
   // directly by components with no import of their own.
-  const hasNativeStyles = !!(tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
+  const hasNativeStyles = !!(tatemono.nativeStyleGlobal || (tatemono.nativeStyles && tatemono.nativeStyles.length > 0))
 
   // Split each stripped source into per-declaration chunks
   const declarationsByName = new Map<string, string>()
@@ -1223,7 +1223,7 @@ export default ${wrapperName}
     ? `import { ${extractExportNames(animBlock.raw).join(', ')} } from '../../arkzen/generated/${tatName}.native-animations'`
     : ''
 
-  const styleImportLine = (tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
+  const styleImportLine = (tatemono.nativeStyleGlobal || (tatemono.nativeStyles && tatemono.nativeStyles.length > 0))
     ? `import { s } from '../../arkzen/generated/${tatName}.native-styles'`
     : ''
 
@@ -1783,7 +1783,7 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   generateIndividualNativeComponentFiles(tatemono, screenDir)
 
   // v3.5: emit native styles
-  emitNativeStyles(tatName, tatemono.nativeStyles ?? [], GENERATED_DIR, 'Arkzen Expo Router')
+  emitNativeStyles(tatName, tatemono.nativeStyles ?? [], GENERATED_DIR, 'Arkzen Expo Router', tatemono.nativeStyleGlobal)
 
   // Distribute tatemono assets
   const tatemonosDir = path.resolve(process.cwd(), '..', '..', '..', 'tatemonos')

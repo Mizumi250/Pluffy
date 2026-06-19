@@ -390,9 +390,10 @@ export interface ParsedTatemono {
   // /* @arkzen:import:expo */ line re-emitted by the parser as
   // /* @arkzen:resolved:import expo */ at the top of raw.
   nativePages:      ArkzenPage[]     // @arkzen:native:page:name
-  nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
-  nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
-  nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
+  nativeComponents:   ArkzenSection[]  // @arkzen:native:components:name
+  nativeLayouts:      ArkzenSection[]  // @arkzen:native:layout:name
+  nativeStyleGlobal?: ArkzenSection    // @arkzen:native:style (global, unnamed) — v10.6
+  nativeStyles:       ArkzenSection[]  // @arkzen:native:style:name
 
   // ── Expo-specific blocks ───────────────────────────────────────
   nativeAnimationExpo?:  ArkzenSection   // @arkzen:native:animation:expo
