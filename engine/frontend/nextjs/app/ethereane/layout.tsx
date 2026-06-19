@@ -1,0 +1,21 @@
+// ============================================================
+// ARKZEN GENERATED LAYOUT — ethereane [Next.js]
+// Auto-generated from @arkzen:meta:web — do not edit directly.
+// ============================================================
+import type { Metadata } from 'next'
+import './styles/global.css'
+
+export const metadata: Metadata = {
+  title: 'Ethereane',
+  description: 'A pixel RPG world.',
+  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎮</text></svg>" },
+  openGraph: {
+    type: 'website',
+    title: 'Ethereane',
+    description: 'A pixel RPG world.',
+  },
+}
+
+export default function EthereaneLayout({ children }: { children: React.ReactNode }) {
+  return <>{children}</>
+}

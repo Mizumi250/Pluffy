@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:47.608Z
+// Generated: 2026-06-19T13:19:35.766Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -21,7 +21,6 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
     green:  'bg-green-50 border-green-200 text-green-700',
     orange: 'bg-orange-50 border-orange-200 text-orange-700',
   }
-  
   return (
     <div className={`rounded-xl border-2 p-6 ${bgColors[color]}`}>
       <div className="mb-3 text-3xl">{icon}</div>

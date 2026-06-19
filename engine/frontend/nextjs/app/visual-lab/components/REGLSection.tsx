@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — REGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:50.829Z
+// Generated: 2026-06-19T13:19:38.530Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

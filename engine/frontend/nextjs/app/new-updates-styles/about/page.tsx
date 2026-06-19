@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:47.636Z
+// Generated: 2026-06-19T13:19:35.779Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -40,17 +40,11 @@ const AboutPage = () => {
         <p className="text-xl text-neutral-600">
           This tatemono demonstrates all the new features added to Arkzen v2.0
         </p>
-
         <div className="space-y-4">
           {sections.map(section => (
-            <div
-              key={section.title}
-              className="rounded-lg border-2 border-neutral-200 p-6"
-            >
+            <div key={section.title} className="rounded-lg border-2 border-neutral-200 p-6">
               <button
-                onClick={() => setExpandedSection(
-                  expandedSection === section.title ? null : section.title
-                )}
+                onClick={() => setExpandedSection(expandedSection === section.title ? null : section.title)}
                 className="flex w-full items-center justify-between text-lg font-bold hover:text-blue-600"
               >
                 {section.title}

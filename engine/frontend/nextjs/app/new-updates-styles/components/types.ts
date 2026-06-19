@@ -2,10 +2,8 @@
 // ARKZEN GENERATED TYPES — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:47.605Z
+// Generated: 2026-06-19T13:19:35.762Z
 // ============================================================
-
-// ─── UTILITIES & TYPES ───────────────────────────────
 
 export type Feature = {
   id: number

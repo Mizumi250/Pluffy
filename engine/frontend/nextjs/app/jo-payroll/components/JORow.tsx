@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — JORow
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:45.858Z
+// Generated: 2026-06-19T13:38:45.233Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

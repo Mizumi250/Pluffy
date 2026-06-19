@@ -227,16 +227,11 @@ function startAppStack() {
     bundlerArgs  = ['expo', 'start', '--clear', '--lan']
     bundlerLabel = 'Metro bundler — scan QR with Expo Go'
   } else if (activeAppStack === 'lynx') {
-    bundlerArgs  = ['rspeedy', 'dev']
-    bundlerLabel = 'Rspeedy dev server — scan QR with LynxExplorer'
-    // Termux / Android-arm64 host workaround: rspack's native binding has
-    // to be pointed at explicitly on some Android/Termux setups. Only set
-    // this if the binding is actually present — leave untouched on normal
-    // desktop/CI hosts so the default platform binding resolves as usual.
-    const androidBinding = path.join(APP_DIR, 'node_modules', '@rspack', 'binding-android-arm64', 'rspack.android-arm64.node')
-    if (fs.existsSync(androidBinding)) {
-      bundlerEnv.NAPI_RS_NATIVE_LIBRARY_PATH = androidBinding
-    }
+    // Lynx's `npm run dev` already invokes rspeedy dev and binds the dev
+    // server port — spawning a second `npx rspeedy dev` causes EADDRINUSE.
+    // The watcher process IS the bundler for Lynx; nothing else to start.
+    log('app', 'Lynx (Rspeedy dev server already running via watcher)')
+    return [watcher]
   } else {
     bundlerArgs  = ['react-native', 'start']
     bundlerLabel = `run "npm run android" in another shell to launch the app`
