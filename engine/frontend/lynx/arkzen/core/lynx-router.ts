@@ -375,7 +375,8 @@ function regenerateAppEntry(): void {
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-import { useState } from '@lynx-js/react'
+import { useState, useEffect } from '@lynx-js/react'
+import { setGlobalNavigate } from '../adapters/router'
 ${imports.join('\n')}
 
 // All registered routes
@@ -387,6 +388,8 @@ type RouteKey = { module: string; page: string }
 
 export function App() {
   const [current, setCurrent] = useState<RouteKey>({ module: '${firstTat}', page: '${firstPage}' })
+
+  useEffect(() => { setGlobalNavigate(setCurrent) }, [])
 
   const ActivePage = _routes.find(
     r => r.module === current.module && r.page === current.page

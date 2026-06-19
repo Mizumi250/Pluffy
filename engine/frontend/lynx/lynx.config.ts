@@ -5,6 +5,9 @@ import { pluginReactLynx } from '@lynx-js/react-rsbuild-plugin'
 import { pluginTypeCheck } from '@rsbuild/plugin-type-check'
 
 export default defineConfig({
+  server: {
+    port: 3001, // 3000 is reserved for Next.js (web always owns 3000)
+  },
   plugins: [
     pluginQRCode({
       schema(url) {

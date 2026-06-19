@@ -414,7 +414,7 @@
       "auth": false
     }
   ],
-  "activeStack": "react-vite",
+  "activeStack": "nextjs",
   "activeAppStack": "lynx",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",

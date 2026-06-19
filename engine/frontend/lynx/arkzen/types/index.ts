@@ -420,3 +420,13 @@ export interface ValidationResult {
     resources: string[]
   }
 }
+// ─── Lynx-specific build result type ─────────────────────────────────────────
+export interface LynxBuildResult {
+  success:  boolean
+  tatemono: string
+  steps:    Array<{ name: string; status: 'success' | 'failed' | 'skipped'; message?: string }>
+  errors:   string[]
+}
+
+// ─── Lynx route href type ─────────────────────────────────────────────────────
+export type LynxRouteKey = { module: string; page: string }

@@ -680,19 +680,6 @@ function parseAllNativeLynxPages(content: string): ArkzenPage[] {
   })
 }
 
-// v10.3: Lynx pages — @arkzen:native:page:lynx:name
-// Lynx is a separate renderer (not React Native). Self-contained, no embedded import line.
-function parseAllNativeLynxPages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page:lynx')
-  return sections.map(section => ({
-    name:   section.name!,
-    raw:    section.raw,
-    layout: 'default',
-    start:  section.start,
-    end:    section.end,
-  }))
-}
-
 // v10.3: Lynx layouts — @arkzen:native:layout:lynx:name
 // Self-contained, no embedded import line.
 function parseAllNativeLynxLayouts(content: string): ArkzenSection[] {

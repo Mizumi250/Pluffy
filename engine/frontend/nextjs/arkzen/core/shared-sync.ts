@@ -46,7 +46,7 @@ const WEB_FILES        = ['assets.ts', 'sitemap.ts'] as const
 const ADAPTER_PROTECTED = new Set(['router.ts', 'Link.tsx', 'Link.ts'])
 
 // Mobile stack names (folder names under engine/frontend/)
-const MOBILE_STACKS = new Set(['expo', 'bare-rn', 'lynx'])
+const MOBILE_STACKS = new Set(['expo', 'react-native', 'lynx'])
 
 export function syncSharedCoreToCurrentStack(label: string): void {
   const rootDir       = path.resolve(process.cwd(), '..', '..', '..')
