@@ -404,6 +404,7 @@ export const pageVariants = {
 
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React, { useState, useEffect, useCallback } from 'react'
 import {
   View,
@@ -419,8 +420,26 @@ import {
 } from 'react-native'
 import { useRouter } from 'expo-router'
 import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus, Search, X, ChevronRight } from 'lucide-react-native'
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useCallback } from 'react'
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  ActivityIndicator,
+  ScrollView,
+  Modal,
+  KeyboardAvoidingView,
+  Platform,
+  Alert,
+} from 'react-native'
+import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus, Search, X, ChevronRight } from 'lucide-react-native'
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:rn:end */
 
 interface InventoryItem {
   id:          number

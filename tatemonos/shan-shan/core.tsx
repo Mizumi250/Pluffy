@@ -11,6 +11,17 @@ title: Shan Sabal Cezar
 description: Portfolio of Shan Sabal Cezar — Indigo-lab-inspired scroll experience.
 */
 
+/* @arkzen:meta:native
+label: Shan Sabal Cezar
+description: Portfolio of Shan Sabal Cezar — designer, document specialist, researcher
+expo:
+  bundle_id: com.shanshan.portfolio
+  scheme: shanshan
+  version: 2.0.0
+  orientation: portrait
+  status_bar_style: light
+*/
+
 /* @arkzen:web:config
 toast:
   position: top-right
@@ -19,6 +30,21 @@ layout:
   guest:
     className: "shan-root"
 */
+
+/* @arkzen:native:config
+theme:
+  primary: "#CC0000"
+  secondary: "#1a1a1a"
+  accent: "#8B0000"
+  background: "#f5f0eb"
+  surface: "#ffffff"
+  text: "#1a1a1a"
+  muted: "#888888"
+*/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB SHARED COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:web:components:shared */
 
@@ -147,7 +173,6 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const countRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Safety fallback — if GSAP stalls for any reason, force-complete after 3s
     const fallback = setTimeout(() => onComplete(), 3000)
 
     const tl = gsap.timeline({
@@ -157,7 +182,6 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
       },
     })
 
-    // Count up 0–100
     let count = { val: 0 }
     tl.to(count, {
       val: 100,
@@ -168,21 +192,18 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
       },
     }, 0)
 
-    // Bar sweeps across top
     tl.to(barRef.current, {
       width: '100%',
       duration: 1.4,
       ease: 'power2.inOut',
     }, 0)
 
-    // Bar expands downward
     .to(barRef.current, {
       height: '100vh',
       duration: 0.4,
       ease: 'power3.in',
     })
 
-    // Red flood fades out
     .to(screenRef.current, {
       opacity: 0,
       duration: 0.5,
@@ -288,7 +309,6 @@ const MaskTop = ({ fill = '#CC0000' }: { fill?: string }) => (
 )
 
 // ─── ANIMATED SHAN LOGO ───────────────────────────────────────────────────────
-// Full stroke-draw animation on mount. Letters are meaty, editorial weight.
 
 const ShanHeroLogo = () => {
   const svgRef = useRef<SVGSVGElement>(null)
@@ -300,7 +320,6 @@ const ShanHeroLogo = () => {
       const len = (el as SVGGeometryElement).getTotalLength?.() ?? 400
       gsap.set(el, { strokeDasharray: len, strokeDashoffset: len, opacity: 1 })
     })
-    // Staggered draw-on per letter
     gsap.to(paths, {
       strokeDashoffset: 0,
       duration: 1.2,
@@ -308,10 +327,8 @@ const ShanHeroLogo = () => {
       ease: 'power2.inOut',
       delay: 1.7,
     })
-    // Parent fades in first
     gsap.to('#kv-svg', { opacity: 1, duration: 0.01, delay: 1.65 })
 
-    // After draw: subtle shimmer pulse
     gsap.to(paths, {
       filter: 'drop-shadow(0 0 18px rgba(255,255,255,0.7))',
       duration: 0.6,
@@ -332,27 +349,22 @@ const ShanHeroLogo = () => {
         height="120"
         aria-label="SHAN"
       >
-        {/* ── S ── */}
         <path className="kv-path"
           d="M 78 22 C 60 22 40 30 40 48 C 40 64 56 70 72 76 C 90 82 104 90 104 108 C 104 124 82 130 62 130 C 46 130 30 124 20 116"
           fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
-        {/* ── H ── */}
         <path className="kv-path"
           d="M 128 22 L 128 130 M 128 76 L 184 76 M 184 22 L 184 130"
           fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
-        {/* ── A ── */}
         <path className="kv-path"
           d="M 216 130 L 248 22 L 280 130 M 226 96 L 270 96"
           fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
-        {/* ── N ── */}
         <path className="kv-path"
           d="M 304 130 L 304 22 L 372 130 L 372 22"
           fill="none" stroke="#fff" strokeWidth="9" strokeLinecap="round" strokeLinejoin="round"
         />
-        {/* ── · ── */}
         <circle className="kv-path"
           cx="404" cy="122" r="7"
           fill="none" stroke="#fff" strokeWidth="9"
@@ -389,15 +401,12 @@ const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
         {chapter.headline.split('\n').map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
       </p>
       <div className="chapter-head-content">
-        {/* Side col 1 */}
         <div className="chapter-side-col">
           <img src={chapter.gallery[1]} alt={chapter.coverLabel} className="chapter-side-img" />
         </div>
-        {/* Main image */}
         <div className="chapter-main-img-wrap">
           <img src={chapter.img} alt={chapter.coverLabel} className="chapter-main-img" />
         </div>
-        {/* Side col 2 */}
         <div className="chapter-side-col">
           <img src={chapter.gallery[2] || chapter.gallery[0]} alt="" className="chapter-side-img chapter-side-img--offset" />
         </div>
@@ -437,7 +446,6 @@ const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
           <p>{chapter.craft}</p>
         </div>
       </div>
-      {/* Sound-within strip */}
       <div className="chapter-sound-strip">
         <span className="chapter-sound-label">THE SOUND WITHIN</span>
         <span className="chapter-sound-title">{chapter.sound}</span>
@@ -508,10 +516,13 @@ const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; index: num
 
 /* @arkzen:web:components:shared:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB STYLES
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:style */
 /* shan-shan v2 — Indigo-lab × MIJ merged stylesheet */
 
-/* ─── FONTS + RESET ───────────────── */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;700;900&display=swap');
 
 .shan-root {
@@ -528,7 +539,6 @@ const Chapter = ({ chapter, index }: { chapter: (typeof CHAPTERS)[0]; index: num
 * { box-sizing: border-box; }
 a { text-decoration: none; color: inherit; }
 
-/* ─── CUSTOM CURSOR ───────────────── */
 .shan-cursor {
   position: fixed;
   width: 12px; height: 12px;
@@ -555,7 +565,6 @@ a { text-decoration: none; color: inherit; }
 a:hover ~ .shan-cursor,
 button:hover ~ .shan-cursor { width: 32px; height: 32px; }
 
-/* ─── LOADER ─────────────────────── */
 #shan-loader {
   position: fixed; inset: 0;
   background: #0a0a0a;
@@ -596,7 +605,6 @@ button:hover ~ .shan-cursor { width: 32px; height: 32px; }
   z-index: 1;
 }
 
-/* ─── BURGER ─────────────────────── */
 #shan-burger {
   position: fixed; top: 24px; right: 24px;
   z-index: 1001;
@@ -630,7 +638,6 @@ body.nav-open #shan-burger i { background: #fff; }
 #shan-burger.open i:nth-child(4) { opacity: 0; }
 #shan-burger.open i:nth-child(5) { opacity: 0; }
 
-/* ─── NAV ────────────────────────── */
 .shan-nav {
   position: fixed; inset: 0;
   background: rgba(10,10,10,0.96);
@@ -660,7 +667,6 @@ body.nav-open #shan-burger i { background: #fff; }
 
 .shan-nav ul li a:hover { color: #CC0000; letter-spacing: 0.02em; }
 
-/* ─── SCROLL INDICATOR ────────────── */
 .shan-scrollbar {
   position: fixed;
   right: 6px; top: 0;
@@ -678,7 +684,6 @@ body.nav-open #shan-burger i { background: #fff; }
   transition: opacity 0.3s;
 }
 
-/* ─── MASKS ──────────────────────── */
 .mask-top, .mask-bottom {
   position: absolute; left: 0; right: 0;
   z-index: 2; line-height: 0;
@@ -691,7 +696,6 @@ body.nav-open #shan-burger i { background: #fff; }
   height: 80px;
 }
 
-/* ─── HERO / KV ──────────────────── */
 #kv {
   min-height: 100vh;
   background: #CC0000;
@@ -776,7 +780,6 @@ body.nav-open #shan-burger i { background: #fff; }
   writing-mode: horizontal-tb;
 }
 
-/* ─── INTRO SECTION ──────────────── */
 #shan-intro {
   background: #f5f0eb;
   padding: 160px 0 100px;
@@ -845,7 +848,6 @@ body.nav-open #shan-burger i { background: #fff; }
 .intro-side-img--l { left: 24px; }
 .intro-side-img--r { right: 24px; transform: scaleX(-1); }
 
-/* ─── CHAPTER — HOMEPAGE TALE ────── */
 .homepage-tale { position: relative; }
 
 .homepage-tale::after {
@@ -857,7 +859,6 @@ body.nav-open #shan-burger i { background: #fff; }
   bottom: -100vh; left: 0; right: 0;
 }
 
-/* ─── CHAPTER COVER (sticky) ─────── */
 .chapter-cover {
   height: 100svh; min-height: 500px;
   overflow: hidden;
@@ -907,7 +908,6 @@ body.nav-open #shan-burger i { background: #fff; }
   user-select: none;
 }
 
-/* ─── CHAPTER HEAD ───────────────── */
 .chapter-head {
   position: relative;
   overflow: hidden;
@@ -1003,7 +1003,6 @@ body.nav-open #shan-burger i { background: #fff; }
 
 .chapter-side-img--offset { margin-top: 48px; }
 
-/* ─── CHAPTER LOOKBOOK ───────────── */
 .chapter-lookbook {
   position: relative;
   overflow: hidden;
@@ -1052,7 +1051,6 @@ body.nav-open #shan-burger i { background: #fff; }
   opacity: 0;
 }
 
-/* ─── CHAPTER OVERVIEW ───────────── */
 .chapter-overview {
   position: relative;
   overflow: hidden;
@@ -1131,7 +1129,6 @@ body.nav-open #shan-burger i { background: #fff; }
   transform: translateX(-50%) translateY(-4px);
 }
 
-/* ─── CHAPTER STORY ──────────────── */
 .chapter-story { position: relative; overflow: hidden; }
 
 .chapter-story-inner {
@@ -1166,7 +1163,6 @@ body.nav-open #shan-burger i { background: #fff; }
   margin: 0;
 }
 
-/* Sound strip */
 .chapter-sound-strip {
   display: flex;
   align-items: center;
@@ -1219,7 +1215,6 @@ body.nav-open #shan-burger i { background: #fff; }
 .chapter-sound-bar:nth-child(8)  { animation-delay: 0.11s; }
 .chapter-sound-bar:nth-child(9)  { animation-delay: 0s; }
 
-/* ─── CHAPTER OUTRO ──────────────── */
 .chapter-outro { position: relative; padding-top: max(100svh, 500px); }
 
 .chapter-outro-inner {
@@ -1318,7 +1313,6 @@ body.nav-open #shan-burger i { background: #fff; }
   text-transform: uppercase;
 }
 
-/* ─── SKILLS MARQUEE ─────────────── */
 #skills-marquee {
   background: #CC0000;
   padding: 24px 0;
@@ -1348,7 +1342,6 @@ body.nav-open #shan-burger i { background: #fff; }
   to   { transform: translateX(-50%); }
 }
 
-/* ─── ABOUT ──────────────────────── */
 #about {
   background: #1a1a1a;
   padding: 120px 0 100px;
@@ -1429,7 +1422,6 @@ body.nav-open #shan-burger i { background: #fff; }
   padding-left: 24px;
 }
 
-/* ─── CONTACT ────────────────────── */
 #contact {
   background: #f5f0eb;
   padding: 120px 0 80px;
@@ -1504,7 +1496,6 @@ body.nav-open #shan-burger i { background: #fff; }
   user-select: none;
 }
 
-/* ─── FOOTER ─────────────────────── */
 #shan-footer {
   background: #0a0a0a;
   padding: 60px 48px 32px;
@@ -1562,7 +1553,6 @@ body.nav-open #shan-burger i { background: #fff; }
   text-transform: uppercase;
 }
 
-/* ─── RESPONSIVE ─────────────────── */
 @media (max-width: 900px) {
   #kv .kv-inner { flex-direction: column; }
   .kv-photo-half { flex: 0 0 45vh; }
@@ -1599,6 +1589,10 @@ body.nav-open #shan-burger i { background: #fff; }
 }
 /* @arkzen:web:style:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB ANIMATION
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:animation */
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -1607,7 +1601,6 @@ import React from 'react'
 const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
   gsap.registerPlugin(ScrollTrigger)
   const ctx = gsap.context(() => {
-    // Mask parallax (all sections)
     gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
       gsap.to(el.querySelector('svg'), {
         yPercent: 14, ease: 'none',
@@ -1628,8 +1621,13 @@ export const pageVariants = {
 }
 /* @arkzen:web:animation:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB PAGE
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */
+
 const IndexPage = () => {
   const [loaded, setLoaded] = useState(false)
   const pageRef = useRef<HTMLDivElement>(null)
@@ -1637,7 +1635,6 @@ const IndexPage = () => {
   const cursorRingRef = useRef<HTMLDivElement>(null)
   const scrollThumbRef = useRef<HTMLDivElement>(null)
 
-  // ── custom cursor ───────────────────────────────────────────────────────────
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (cursorRef.current) {
@@ -1645,7 +1642,6 @@ const IndexPage = () => {
         cursorRef.current.style.top  = e.clientY + 'px'
       }
       if (cursorRingRef.current) {
-        // ring lags slightly
         setTimeout(() => {
           if (cursorRingRef.current) {
             cursorRingRef.current.style.left = e.clientX + 'px'
@@ -1658,7 +1654,6 @@ const IndexPage = () => {
     return () => window.removeEventListener('mousemove', onMove)
   }, [])
 
-  // ── scrollbar thumb ─────────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => {
       const ratio = window.scrollY / (document.body.scrollHeight - window.innerHeight)
@@ -1666,7 +1661,6 @@ const IndexPage = () => {
         scrollThumbRef.current.style.height = (ratio * 100) + 'vh'
         scrollThumbRef.current.style.opacity = '1'
       }
-      // burger color
       const kvH = (document.getElementById('kv')?.offsetHeight ?? 0) - 80
       document.body.classList.toggle('scrolled', window.scrollY > kvH)
     }
@@ -1674,14 +1668,11 @@ const IndexPage = () => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // ── scroll animations (after loader) ───────────────────────────────────────
   useEffect(() => {
     if (!loaded) return
     gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
 
-      // ── KV: logo already handled inside ShanHeroLogo on mount
-      // ── KV photo parallax
       gsap.to('.kv-photo-half img', {
         yPercent: 18, ease: 'none',
         scrollTrigger: {
@@ -1690,7 +1681,6 @@ const IndexPage = () => {
         },
       })
 
-      // ── Intro text stagger
       gsap.fromTo('.intro-pre, .intro-title, .intro-abstract, .intro-caption',
         { opacity: 0, y: 40 },
         {
@@ -1700,19 +1690,16 @@ const IndexPage = () => {
         }
       )
 
-      // ── Per-chapter animations
       CHAPTERS.forEach((ch) => {
         const tale = document.getElementById(`tale-${ch.id}`)
         if (!tale) return
 
-        // Cover bg parallax (zoom-in on scroll-to)
         gsap.fromTo(tale.querySelector('.chapter-cover-bg') as HTMLElement,
           { scale: 1.0 },
           {
             scale: 1.12, ease: 'none',
             scrollTrigger: {
               trigger: `.chapter-cover`,
-              containerAnimation: undefined,
               start: 'top top',
               end: 'bottom top',
               scrub: true,
@@ -1720,7 +1707,6 @@ const IndexPage = () => {
           }
         )
 
-        // Chapter title — clip reveal (lines slide up)
         const titleEl = tale.querySelector('.chapter-head-title') as HTMLElement
         if (titleEl) {
           gsap.fromTo(titleEl,
@@ -1732,7 +1718,6 @@ const IndexPage = () => {
           )
         }
 
-        // Head pre + tagline + abstract
         gsap.fromTo(tale.querySelectorAll('.chapter-head-pre, .chapter-head-tagline, .chapter-head-abstract'),
           { opacity: 0, y: 28 },
           {
@@ -1741,7 +1726,6 @@ const IndexPage = () => {
           }
         )
 
-        // Side images — stagger from sides
         const sides = tale.querySelectorAll('.chapter-side-img')
         sides.forEach((el, idx) => {
           gsap.fromTo(el,
@@ -1754,7 +1738,6 @@ const IndexPage = () => {
           )
         })
 
-        // Lookbook images slide-in
         gsap.fromTo(tale.querySelector('.chapter-lookbook-secondary'),
           { opacity: 0, x: -56 },
           {
@@ -1779,7 +1762,6 @@ const IndexPage = () => {
           }
         )
 
-        // Overview tags stagger
         gsap.fromTo(tale.querySelectorAll('.chapter-overview-tags li'),
           { opacity: 0, y: 20 },
           {
@@ -1789,7 +1771,6 @@ const IndexPage = () => {
           }
         )
 
-        // Story columns
         gsap.fromTo(tale.querySelectorAll('.chapter-story-col'),
           { opacity: 0, x: -32 },
           {
@@ -1798,7 +1779,6 @@ const IndexPage = () => {
           }
         )
 
-        // Sound strip
         gsap.fromTo(tale.querySelector('.chapter-sound-strip'),
           { opacity: 0, y: 20 },
           {
@@ -1808,7 +1788,6 @@ const IndexPage = () => {
         )
       })
 
-      // ── Skills marquee reveal
       gsap.fromTo('#skills-marquee',
         { opacity: 0, y: 30 },
         {
@@ -1817,7 +1796,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── About — photo + table
       gsap.fromTo('.about-photo-col',
         { opacity: 0, x: -60 },
         {
@@ -1832,7 +1810,6 @@ const IndexPage = () => {
           scrollTrigger: { trigger: '#about', start: 'top 78%' },
         }
       )
-      // Table rows stagger
       gsap.fromTo('.info-table tr',
         { opacity: 0, y: 12 },
         {
@@ -1841,7 +1818,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Contact
       gsap.fromTo('.contact-label, .contact-headline, .contact-links',
         { opacity: 0, y: 40 },
         {
@@ -1850,7 +1826,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Footer logo
       gsap.fromTo('.footer-logo',
         { opacity: 0, scale: 0.9 },
         {
@@ -1859,7 +1834,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Mask parallax
       gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
         gsap.to(el.querySelector('svg'), {
           yPercent: 14, ease: 'none',
@@ -1875,29 +1849,23 @@ const IndexPage = () => {
     return () => ctx.revert()
   }, [loaded])
 
-  // ── duplicate marquee items so it scrolls seamlessly ───────────────────────
   const marqueeItems = [...SKILLS_MARQUEE, ...SKILLS_MARQUEE]
 
   return (
     <div ref={pageRef}>
-      {/* Custom cursor */}
       <div className="shan-cursor" ref={cursorRef} />
       <div className="shan-cursor-ring" ref={cursorRingRef} />
 
-      {/* Scrollbar */}
       <div className="shan-scrollbar">
         <div className="shan-scrollbar-thumb" ref={scrollThumbRef} />
       </div>
 
-      {/* LOADER */}
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
-      {/* BURGER */}
       <BurgerMenu />
 
       <div id="shan-wrapper">
 
-        {/* ── HERO / KV ── */}
         <div id="kv">
           <MaskBottom fill="#f5f0eb" />
           <div className="kv-inner">
@@ -1915,7 +1883,6 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── INTRO ── */}
         <div id="shan-intro">
           <div className="intro-side-imgs" aria-hidden="true">
             <img src="/tatemonos/shan-shan/assets/images/shan2.jpg" className="intro-side-img intro-side-img--l" alt="" />
@@ -1933,12 +1900,10 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── 4 CHAPTERS ── */}
         {CHAPTERS.map((chapter, index) => (
           <Chapter key={chapter.id} chapter={chapter} index={index} />
         ))}
 
-        {/* ── SKILLS MARQUEE ── */}
         <div id="skills-marquee">
           <div className="marquee-track">
             {marqueeItems.map((s, i) => (
@@ -1947,7 +1912,6 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── ABOUT ── */}
         <div id="about">
           <MaskTop fill="#f5f0eb" />
           <div className="about-inner">
@@ -1972,7 +1936,6 @@ const IndexPage = () => {
           <MaskBottom fill="#f5f0eb" />
         </div>
 
-        {/* ── CONTACT ── */}
         <div id="contact">
           <div className="contact-inner">
             <p className="contact-label">[Contact]</p>
@@ -1994,7 +1957,6 @@ const IndexPage = () => {
           <div className="contact-deco" aria-hidden="true">SHAN</div>
         </div>
 
-        {/* ── FOOTER ── */}
         <div id="shan-footer">
           <div className="footer-inner">
             <div className="footer-logo">SHAN.</div>
@@ -2017,28 +1979,9 @@ const IndexPage = () => {
 }
 /* @arkzen:web:page:index:end */
 
-
-/* @arkzen:meta:native
-label: Shan Sabal Cezar
-description: Portfolio of Shan Sabal Cezar — designer, document specialist, researcher
-expo:
-  bundle_id: com.shanshan.portfolio
-  scheme: shanshan
-  version: 2.0.0
-  orientation: portrait
-  status_bar_style: light
-*/
-
-/* @arkzen:native:config
-theme:
-  primary: "#CC0000"
-  secondary: "#1a1a1a"
-  accent: "#8B0000"
-  background: "#f5f0eb"
-  surface: "#ffffff"
-  text: "#1a1a1a"
-  muted: "#888888"
-*/
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE STYLES
+// ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:style:shared */
 .screen {
@@ -2766,7 +2709,11 @@ theme:
 }
 /* @arkzen:native:style:loader:end */
 
-/* @arkzen:native:components:shared */
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE COMPONENTS (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:components:shared + @arkzen:import:expo */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react'
 import {
@@ -2779,7 +2726,7 @@ import {
   Animated,
   Dimensions,
   Modal,
-  Platform,
+  StatusBar,
 } from 'react-native'
 import { setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
@@ -2908,7 +2855,6 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const opacity   = useRef(new Animated.Value(1)).current
 
   useEffect(() => {
-    // Count 0→100
     let frame = 0
     const total = 60
     const timer = setInterval(() => {
@@ -2917,7 +2863,6 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
       if (frame >= total) clearInterval(timer)
     }, 23)
 
-    // Bar sweep → expand → fade
     Animated.sequence([
       Animated.timing(barWidth, {
         toValue: SCREEN_W,
@@ -2941,9 +2886,7 @@ const Loader = ({ onComplete }: { onComplete: () => void }) => {
 
   return (
     <Animated.View style={[s.loaderWrap, { opacity }]} pointerEvents="none">
-      {/* Bar */}
       <Animated.View style={[s.loaderBar, { width: barWidth, height: barHeight }]} />
-      {/* Count */}
       <Text style={s.loaderCount}>{count}</Text>
       <Text style={s.loaderLabel}>SHAN SABAL CEZAR</Text>
     </Animated.View>
@@ -3032,7 +2975,6 @@ const FadeIn = ({
 }
 
 // ─── STAGGER CONTAINER ────────────────────────────────────────────────────────
-// Wraps children and triggers FadeIn only when onLayout fires (scroll-into-view sim)
 
 const StaggerReveal = ({
   children,
@@ -3115,7 +3057,6 @@ const BurgerNav = ({
     }, 340)
   }
 
-  // Burger lines
   const line1Rotate    = useRef(new Animated.Value(0)).current
   const line2Opacity   = useRef(new Animated.Value(1)).current
   const line3Rotate    = useRef(new Animated.Value(0)).current
@@ -3140,7 +3081,6 @@ const BurgerNav = ({
 
   return (
     <>
-      {/* Burger button */}
       <TouchableOpacity
         style={s.burgerBtn}
         onPress={openNav}
@@ -3169,15 +3109,12 @@ const BurgerNav = ({
         }} />
       </TouchableOpacity>
 
-      {/* Full-screen nav overlay */}
       <Modal visible={open} transparent animationType="none" statusBarTranslucent>
         <Animated.View style={[s.navOverlay, { opacity: overlayOpacity }]}>
-          {/* Close button */}
           <TouchableOpacity style={s.navCloseBtn} onPress={closeNav} activeOpacity={0.7}>
             <Text style={s.navCloseText}>×</Text>
           </TouchableOpacity>
 
-          {/* Nav links */}
           <View style={{ width: '100%', gap: 4 }}>
             {NAV_LINKS.map((link, i) => (
               <Animated.View
@@ -3199,7 +3136,6 @@ const BurgerNav = ({
             ))}
           </View>
 
-          {/* Bottom micro info */}
           <View style={{ position: 'absolute', bottom: 48, left: 40 }}>
             <Text style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.2)' }}>
               SHAN SABAL CEZAR · PORTFOLIO
@@ -3296,7 +3232,6 @@ const Chapter = ({
     ]).start()
   }, [revealed])
 
-  // Subtle cover scale pulse on mount
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -3313,7 +3248,6 @@ const Chapter = ({
       style={s.chapterWrap}
       onLayout={revealBody}
     >
-      {/* ── Cover image ── */}
       <View style={{ overflow: 'hidden', height: 260 }}>
         <Animated.Image
           source={chapter.img}
@@ -3322,35 +3256,29 @@ const Chapter = ({
         />
         <View style={s.chapterCoverOverlay} />
 
-        {/* Num watermark */}
         <View style={{ position: 'absolute', bottom: 8, right: 16 }}>
           <Text style={s.chapterCoverNum}>{chapter.num}</Text>
         </View>
 
-        {/* Chapter label badge */}
         <View style={[s.chapterCoverBadge]}>
           <View style={s.redPill}>
             <Text style={s.redPillText}>[{chapter.coverLabel.toUpperCase()}]</Text>
           </View>
         </View>
 
-        {/* Bottom cover label */}
         <View style={s.chapterCoverLabel}>
           <Text style={s.chapterCoverLabelText}>[{chapter.num}] [CHAPTER]</Text>
         </View>
       </View>
 
-      {/* ── Chapter body (animated in) ── */}
       <Animated.View style={{ opacity: bodyOpacity, transform: [{ translateY: bodyTranslate }] }}>
 
-        {/* Header */}
         <View style={s.chapterBody}>
           <Text style={s.chapterTagline}>{chapter.tagline}</Text>
           <Text style={s.chapterTitle}>{chapter.coverLabel.toUpperCase()}</Text>
           <Text style={s.chapterHeadline}>{chapter.headline}</Text>
           <Text style={s.chapterDesc}>{chapter.desc}</Text>
 
-          {/* Tags row */}
           <View style={s.chapterTagsWrap}>
             {chapter.tags.map((tag) => (
               <View key={tag} style={s.tagPill}>
@@ -3362,14 +3290,12 @@ const Chapter = ({
 
         <View style={s.chapterDivider} />
 
-        {/* Gallery strip */}
         <View style={{ marginVertical: 2 }}>
           <GalleryStrip images={chapter.gallery} />
         </View>
 
         <View style={s.chapterDivider} />
 
-        {/* Craft quote */}
         <View style={s.chapterCraftWrap}>
           <Text style={s.chapterCraftLabel}>[MY APPROACH]</Text>
           <Text style={s.chapterCraftText}>{chapter.craft}</Text>
@@ -3377,14 +3303,12 @@ const Chapter = ({
 
         <View style={s.chapterDivider} />
 
-        {/* Sound strip */}
         <View style={s.chapterSoundStrip}>
           <Text style={s.chapterSoundLabel}>THE SOUND WITHIN</Text>
           <Text style={s.chapterSoundTitle}>{chapter.sound}</Text>
           <SoundBars />
         </View>
 
-        {/* Outro */}
         <View style={s.chapterOutroWrap}>
           <Text style={s.chapterOutroDesc}>{chapter.desc.slice(0, 90)}…</Text>
 
@@ -3407,6 +3331,10 @@ const Chapter = ({
 
 /* @arkzen:native:components:shared:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ANIMATION (RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:native:animation:rn */
 import Animated as RAnimated, {
   useSharedValue,
@@ -3419,7 +3347,6 @@ import Animated as RAnimated, {
 } from 'react-native-reanimated'
 
 export function shanShanNativeAnimations() {
-  // ── Marquee scroll ───────────────────────────────────────────────────────
   const marqueeX = useSharedValue(0)
 
   const startMarquee = (halfWidth: number) => {
@@ -3437,7 +3364,6 @@ export function shanShanNativeAnimations() {
     transform: [{ translateX: marqueeX.value }],
   }))
 
-  // ── Hero SHAN logo pulse ─────────────────────────────────────────────────
   const logoScale   = useSharedValue(0.88)
   const logoOpacity = useSharedValue(0)
 
@@ -3451,7 +3377,6 @@ export function shanShanNativeAnimations() {
     transform: [{ scale: logoScale.value }],
   }))
 
-  // ── Scroll indicator line bounce ─────────────────────────────────────────
   const scrollBounce = useSharedValue(0)
 
   const startScrollBounce = () => {
@@ -3477,15 +3402,21 @@ export function shanShanNativeAnimations() {
 }
 /* @arkzen:native:animation:rn:end */
 
-/* @arkzen:native:page:index */
-/* @arkzen:native:page:layout:guest */
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: INDEX (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
 
-const IndexScreen = () => {
+/* @arkzen:native:page:index + @arkzen:import:expo */
+
+import React, { useCallback, useRef, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, Linking, StatusBar } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const IndexScreenExpo = () => {
   const scrollRef = useRef<ScrollView>(null)
   const [loaded,  setLoaded]  = useState(false)
   const [marqueeWidth, setMarqueeWidth] = useState(0)
 
-  // Section ref Y positions for nav scroll
   const sectionY = useRef<Record<string, number>>({
     work: 0, skills: 0, about: 0, contact: 0,
   }).current
@@ -3503,10 +3434,8 @@ const IndexScreen = () => {
     <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor="#CC0000" />
 
-      {/* Loader */}
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
-      {/* Burger (absolute over everything) */}
       <BurgerNav onNavigate={handleNavigate} darkBg={false} />
 
       <ScrollView
@@ -3517,13 +3446,12 @@ const IndexScreen = () => {
         scrollEventThrottle={16}
       >
 
-        {/* ── HERO ── */}
+        {/* HERO */}
         <View style={s.heroWrap}>
           <FadeIn delay={300}>
             <Text style={s.heroEyebrow}>DESIGNER · DOCUMENT SPECIALIST · RESEARCHER</Text>
           </FadeIn>
 
-          {/* Shan photo half */}
           <FadeIn delay={200} from="none">
             <Image
               source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
@@ -3547,11 +3475,10 @@ const IndexScreen = () => {
             </View>
           </FadeIn>
 
-          {/* Watermark */}
           <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
         </View>
 
-        {/* ── INTRO ── */}
+        {/* INTRO */}
         <View style={s.introWrap}>
           <FadeIn>
             <Text style={s.introPre}>[Intro]</Text>
@@ -3571,7 +3498,7 @@ const IndexScreen = () => {
           </FadeIn>
         </View>
 
-        {/* ── SKILLS MARQUEE STRIP ── */}
+        {/* SKILLS MARQUEE */}
         <View
           style={s.marqueeWrap}
           onLayout={(e) => setMarqueeWidth(e.nativeEvent.layout.width)}
@@ -3588,7 +3515,7 @@ const IndexScreen = () => {
           </ScrollView>
         </View>
 
-        {/* ── CHAPTERS SECTION ── */}
+        {/* CHAPTERS */}
         <View
           onLayout={(e) => { sectionY['work'] = e.nativeEvent.layout.y }}
         >
@@ -3611,7 +3538,7 @@ const IndexScreen = () => {
           ))}
         </View>
 
-        {/* ── SKILLS ── */}
+        {/* SKILLS */}
         <View
           style={s.skillsSection}
           onLayout={(e) => { sectionY['skills'] = e.nativeEvent.layout.y }}
@@ -3633,7 +3560,7 @@ const IndexScreen = () => {
           </View>
         </View>
 
-        {/* ── ABOUT ── */}
+        {/* ABOUT */}
         <View
           style={s.aboutWrap}
           onLayout={(e) => { sectionY['about'] = e.nativeEvent.layout.y }}
@@ -3654,7 +3581,6 @@ const IndexScreen = () => {
               <Text style={s.aboutName}>Shan{'\n'}Sabal{'\n'}Cezar</Text>
             </FadeIn>
 
-            {/* Info rows */}
             {PERSONAL_INFO.map((row, i) => (
               <FadeIn key={row.label} delay={i * 60}>
                 <View style={s.aboutInfoRow}>
@@ -3665,7 +3591,6 @@ const IndexScreen = () => {
               </FadeIn>
             ))}
 
-            {/* About CTA */}
             <View style={{ marginTop: 36, gap: 12 }}>
               <FadeIn delay={360}>
                 <TouchableOpacity
@@ -3689,7 +3614,7 @@ const IndexScreen = () => {
           </View>
         </View>
 
-        {/* ── CONTACT ── */}
+        {/* CONTACT */}
         <View
           style={s.contactWrap}
           onLayout={(e) => { sectionY['contact'] = e.nativeEvent.layout.y }}
@@ -3728,7 +3653,7 @@ const IndexScreen = () => {
           <Text style={s.contactWatermark}>SHAN</Text>
         </View>
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <View style={s.footerWrap}>
           <Text style={s.footerLogo}>SHAN.</Text>
           <View style={s.dividerDark} />
@@ -3756,4 +3681,405 @@ const IndexScreen = () => {
   )
 }
 
+export default IndexScreenExpo
 /* @arkzen:native:page:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: INDEX (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:index + @arkzen:import:rn */
+
+import React, { useCallback, useRef, useState } from 'react'
+import { View, Text, ScrollView, TouchableOpacity, Image, Linking, StatusBar } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const IndexScreenRN = () => {
+  const scrollRef = useRef<ScrollView>(null)
+  const [loaded,  setLoaded]  = useState(false)
+  const [marqueeWidth, setMarqueeWidth] = useState(0)
+
+  const sectionY = useRef<Record<string, number>>({
+    work: 0, skills: 0, about: 0, contact: 0,
+  }).current
+
+  const handleNavigate = useCallback((target: string) => {
+    const y = sectionY[target] ?? 0
+    scrollRef.current?.scrollTo({ y, animated: true })
+  }, [])
+
+  const handleContactPress = useCallback(() => {
+    scrollRef.current?.scrollTo({ y: sectionY['contact'] ?? 9999, animated: true })
+  }, [])
+
+  return (
+    <View style={{ flex: 1 }}>
+      <StatusBar barStyle="light-content" backgroundColor="#CC0000" />
+
+      {!loaded && <Loader onComplete={() => setLoaded(true)} />}
+
+      <BurgerNav onNavigate={handleNavigate} darkBg={false} />
+
+      <ScrollView
+        ref={scrollRef}
+        style={s.screen}
+        contentContainerStyle={{ paddingBottom: 0 }}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+      >
+
+        <View style={s.heroWrap}>
+          <FadeIn delay={300}>
+            <Text style={s.heroEyebrow}>DESIGNER · DOCUMENT SPECIALIST · RESEARCHER</Text>
+          </FadeIn>
+
+          <FadeIn delay={200} from="none">
+            <Image
+              source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
+              style={{ width: '100%', height: 280, marginBottom: 28 }}
+              resizeMode="cover"
+            />
+          </FadeIn>
+
+          <FadeIn delay={400}>
+            <Text style={s.heroLogo}>SHAN.</Text>
+          </FadeIn>
+
+          <FadeIn delay={520}>
+            <Text style={s.heroSubtitle}>Shan Sabal Cezar</Text>
+          </FadeIn>
+
+          <FadeIn delay={640}>
+            <View style={s.heroScrollHint}>
+              <View style={s.heroScrollLine} />
+              <Text style={s.heroScrollText}>SCROLL</Text>
+            </View>
+          </FadeIn>
+
+          <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
+        </View>
+
+        <View style={s.introWrap}>
+          <FadeIn>
+            <Text style={s.introPre}>[Intro]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.introTitle}>The Invisible{'\n'}Echo</Text>
+          </FadeIn>
+          <FadeIn delay={160}>
+            <Text style={s.introAbstract}>
+              Before the gesture, there is an idea. Before the design, a purpose.
+              Shan gathers these invisible intentions and transforms them into work
+              that speaks clearly, lingers beautifully.
+            </Text>
+          </FadeIn>
+          <FadeIn delay={240}>
+            <Text style={s.introCaption}>An invitation to build something worth remembering.</Text>
+          </FadeIn>
+        </View>
+
+        <View
+          style={s.marqueeWrap}
+          onLayout={(e) => setMarqueeWidth(e.nativeEvent.layout.width)}
+        >
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
+            contentContainerStyle={{ flexDirection: 'row', alignItems: 'center' }}
+          >
+            {[...SKILLS_MARQUEE, ...SKILLS_MARQUEE, ...SKILLS_MARQUEE].map((skill, i) => (
+              <Text key={i} style={s.marqueeItem}>{skill}</Text>
+            ))}
+          </ScrollView>
+        </View>
+
+        <View
+          onLayout={(e) => { sectionY['work'] = e.nativeEvent.layout.y }}
+        >
+          <View style={s.chapterSectionHeader}>
+            <FadeIn>
+              <Text style={s.chapterSectionEyebrow}>[Work]</Text>
+            </FadeIn>
+            <FadeIn delay={80}>
+              <Text style={s.chapterSectionTitle}>What I Do.</Text>
+            </FadeIn>
+          </View>
+
+          {CHAPTERS.map((chapter, index) => (
+            <Chapter
+              key={chapter.id}
+              chapter={chapter}
+              index={index}
+              onWorkPress={handleContactPress}
+            />
+          ))}
+        </View>
+
+        <View
+          style={s.skillsSection}
+          onLayout={(e) => { sectionY['skills'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn>
+            <Text style={s.sectionLabel}>[Skills]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.skillsTitle}>Tools of{'\n'}the Trade.</Text>
+          </FadeIn>
+          <FadeIn delay={160}>
+            <Text style={s.skillsSub}>PROFICIENCY · 2026</Text>
+          </FadeIn>
+
+          <View style={{ marginTop: 8 }}>
+            {SKILLS.map((skill, i) => (
+              <SkillBar key={skill.name} name={skill.name} pct={skill.pct} delay={i * 80} />
+            ))}
+          </View>
+        </View>
+
+        <View
+          style={s.aboutWrap}
+          onLayout={(e) => { sectionY['about'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn from="none">
+            <Image
+              source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
+              style={s.aboutPhoto}
+              resizeMode="cover"
+            />
+          </FadeIn>
+
+          <View style={s.aboutBody}>
+            <FadeIn>
+              <Text style={s.sectionLabelLight}>[About Me]</Text>
+            </FadeIn>
+            <FadeIn delay={80}>
+              <Text style={s.aboutName}>Shan{'\n'}Sabal{'\n'}Cezar</Text>
+            </FadeIn>
+
+            {PERSONAL_INFO.map((row, i) => (
+              <FadeIn key={row.label} delay={i * 60}>
+                <View style={s.aboutInfoRow}>
+                  <Text style={s.infoLabel}>{row.label}</Text>
+                  <Text style={s.infoValue}>{row.value}</Text>
+                </View>
+                <View style={s.dividerDark} />
+              </FadeIn>
+            ))}
+
+            <View style={{ marginTop: 36, gap: 12 }}>
+              <FadeIn delay={360}>
+                <TouchableOpacity
+                  style={s.ctaButton}
+                  onPress={handleContactPress}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.ctaButtonText}>LET'S WORK TOGETHER</Text>
+                </TouchableOpacity>
+              </FadeIn>
+              <FadeIn delay={440}>
+                <TouchableOpacity
+                  style={s.outlineButtonLight}
+                  onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+                  activeOpacity={0.8}
+                >
+                  <Text style={s.outlineButtonLightText}>FOLLOW ON FACEBOOK</Text>
+                </TouchableOpacity>
+              </FadeIn>
+            </View>
+          </View>
+        </View>
+
+        <View
+          style={s.contactWrap}
+          onLayout={(e) => { sectionY['contact'] = e.nativeEvent.layout.y }}
+        >
+          <FadeIn>
+            <Text style={s.sectionLabel}>[Contact]</Text>
+          </FadeIn>
+          <FadeIn delay={80}>
+            <Text style={s.contactHeadline}>
+              From Five,{'\n'}Everything{'\n'}Begins.
+            </Text>
+          </FadeIn>
+
+          <FadeIn delay={160}>
+            <TouchableOpacity
+              style={[s.ctaButton, { width: '100%' }]}
+              onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+              activeOpacity={0.8}
+            >
+              <Text style={s.ctaButtonText}>FACEBOOK</Text>
+            </TouchableOpacity>
+          </FadeIn>
+
+          <View style={{ height: 12 }} />
+
+          <FadeIn delay={240}>
+            <TouchableOpacity
+              style={[s.outlineButton, { width: '100%' }]}
+              onPress={() => Linking.openURL('mailto:shan@example.com')}
+              activeOpacity={0.8}
+            >
+              <Text style={s.outlineButtonText}>EMAIL</Text>
+            </TouchableOpacity>
+          </FadeIn>
+
+          <Text style={s.contactWatermark}>SHAN</Text>
+        </View>
+
+        <View style={s.footerWrap}>
+          <Text style={s.footerLogo}>SHAN.</Text>
+          <View style={s.dividerDark} />
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 20, marginBottom: 8, flexWrap: 'wrap' }}>
+            <TouchableOpacity
+              style={s.footerSocialBtn}
+              onPress={() => Linking.openURL('https://www.facebook.com/shan.cezar.71')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.footerSocialText}>FACEBOOK</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={s.footerSocialBtn}
+              onPress={() => Linking.openURL('mailto:shan@example.com')}
+              activeOpacity={0.7}
+            >
+              <Text style={s.footerSocialText}>EMAIL</Text>
+            </TouchableOpacity>
+          </View>
+          <Text style={s.footerCopy}>© 2026 SHAN SABAL CEZAR · ALL RIGHTS RESERVED</Text>
+        </View>
+
+      </ScrollView>
+    </View>
+  )
+}
+
+export default IndexScreenRN
+/* @arkzen:native:page:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404 + @arkzen:import:expo */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const NotFoundExpo = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">404</Text>
+    <Text className="text-xl font-bold text-neutral-900">Page Not Found</Text>
+    <Text className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</Text>
+  </SafeAreaView>
+)
+
+export default NotFoundExpo
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:500 + @arkzen:import:expo */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const ServerErrorExpo = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">500</Text>
+    <Text className="text-xl font-bold text-neutral-900">Server Error</Text>
+    <Text className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</Text>
+  </SafeAreaView>
+)
+
+export default ServerErrorExpo
+/* @arkzen:native:error:500:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404 + @arkzen:import:rn */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const NotFoundRN = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">404</Text>
+    <Text className="text-xl font-bold text-neutral-900">Page Not Found</Text>
+    <Text className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</Text>
+  </SafeAreaView>
+)
+
+export default NotFoundRN
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:500 + @arkzen:import:rn */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const ServerErrorRN = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">500</Text>
+    <Text className="text-xl font-bold text-neutral-900">Server Error</Text>
+    <Text className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</Text>
+  </SafeAreaView>
+)
+
+export default ServerErrorRN
+/* @arkzen:native:error:500:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (LYNX)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404:lynx */
+
+import React from '@lynx-js/react'
+
+const NotFoundLynx = () => (
+  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4 text-neutral-200 font-bold">404</div>
+    <div className="text-xl font-bold">Page Not Found</div>
+    <div className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</div>
+  </div>
+)
+
+export default NotFoundLynx
+/* @arkzen:native:error:404:lynx:end */
+
+/* @arkzen:native:error:500:lynx */
+
+import React from '@lynx-js/react'
+
+const ServerErrorLynx = () => (
+  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4 text-neutral-200 font-bold">500</div>
+    <div className="text-xl font-bold">Server Error</div>
+    <div className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</div>
+  </div>
+)
+
+export default ServerErrorLynx
+/* @arkzen:native:error:500:lynx:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SCRIPTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:script:expo */
+console.log('🌸 Shan Sabal Cezar Portfolio running on Expo')
+/* @arkzen:native:script:expo:end */
+
+/* @arkzen:native:script:rn */
+console.log('🌸 Shan Sabal Cezar Portfolio running on React Native Bare')
+/* @arkzen:native:script:rn:end */
+
+/* @arkzen:native:script:lynx */
+console.log('🌸 Shan Sabal Cezar Portfolio running on Lynx')
+/* @arkzen:native:script:lynx:end */

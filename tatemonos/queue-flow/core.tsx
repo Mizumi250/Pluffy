@@ -21,10 +21,32 @@ pwa:
     - { src: /tatemonos/queue-flow/assets/images/icon-mask.png, sizes: 512x512, type: image/png, purpose: maskable }
 */
 
+/* @arkzen:meta:native
+label: QueueFlow
+description: Real-time queue management system
+expo:
+  bundle_id: com.arkzen.queueflow
+  scheme: queueflow
+  version: 1.0.0
+  orientation: portrait
+  status_bar_style: dark
+*/
+
 /* @arkzen:web:config
 toast:
   position: top-right
   duration: 3000
+*/
+
+/* @arkzen:native:config
+theme:
+  primary: "#4a72d8"
+  secondary: "#3a5fc8"
+  accent: "#10b981"
+  background: "#f8fafc"
+  surface: "#ffffff"
+  text: "#0f2050"
+  muted: "#7a9bc4"
 */
 
 /* @arkzen:database:queues
@@ -342,6 +364,10 @@ type: public
 */
 /* @arkzen:realtime:queue-updated:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB LAYOUT
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:layout:app */
 
 'use client'
@@ -430,6 +456,10 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
 /* @arkzen:web:layout:app:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB SHARED COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:components:shared */
 
 'use client'
@@ -510,8 +540,6 @@ export const useQueueStore = create<QueueStore>((set) => ({
 
 export const fmtWait = (mins: number) =>
   mins <= 0 ? 'Now' : mins < 60 ? `~${mins}m` : `~${Math.round(mins / 60)}h`
-
-
 
 export const useAnnounce = () => {
   const announce = useCallback((text: string) => {
@@ -626,9 +654,7 @@ export const StatPill = ({ icon: Icon, label, value, color = 'blue' }: {
   )
 }
 
-// ✅ FIX: Add safe guard for missing ticket
 export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
-  // If data or data.ticket is missing, show loading fallback
   if (!data || !data.ticket) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>
@@ -659,11 +685,16 @@ export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
 
 /* @arkzen:web:components:shared:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB ADMIN COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
 /* @arkzen:web:components:admin */
 
 'use client'
 
-import React, { useCallback } from 'react'
+import React from 'react'
+
 export const AdminCallButton = ({
   onCallNext,
   loading,
@@ -717,6 +748,10 @@ export const AnnounceBadge = ({ ticket }: { ticket: { ticket_number: string; cus
 }
 
 /* @arkzen:web:components:admin:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB PAGES
+// ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:app */
@@ -846,7 +881,6 @@ const JoinPage = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as MyTicketResponse
-        // ✅ Only set if ticket exists
         if (parsed && parsed.ticket) {
           setMyTicket(parsed)
           setStep('ticket')
@@ -907,7 +941,6 @@ const JoinPage = () => {
     setName('')
   }
 
-  // ✅ Extra safety: only render BigTicketDisplay when ticket exists
   if (step === 'ticket' && myTicket && myTicket.ticket) {
     return (
       <div style={{ maxWidth: 390, margin: '0 auto' }}>
@@ -1057,7 +1090,13 @@ const NotFoundPage = () => (
 )
 
 /* @arkzen:web:error:404:end */
-/* @arkzen:native:layout:app */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE LAYOUT — EXPORTED FOR BOTH EXPO & RN
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:layout:app + @arkzen:import:expo */
+/* @arkzen:native:layout:app + @arkzen:import:rn */
 
 import React, { useState, useEffect, useCallback } from 'react'
 import {
@@ -1106,14 +1145,13 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <View
       style={{
         flex: 1,
-        // @ts-ignore — experimental_backgroundImage supported in Expo SDK 50+
-        experimental_backgroundImage: 'linear-gradient(165deg, #e8f2ff 0%, #d0e5ff 18%, #b8d4f8 36%, #a4c5f5 52%, #b0cef7 68%, #c4daff 84%, #daeeff 100%)',
+        background: 'linear-gradient(165deg, #e8f2ff 0%, #d0e5ff 18%, #b8d4f8 36%, #a4c5f5 52%, #b0cef7 68%, #c4daff 84%, #daeeff 100%)',
       }}
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
 
-        {/* Offline banner — mirrors web WifiOff banner */}
+        {/* Offline banner */}
         {!online && (
           <View style={{
             backgroundColor: 'rgba(251,191,36,0.12)',
@@ -1137,7 +1175,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           {children}
         </View>
 
-        {/* Bottom nav — frosted glass mirroring web */}
+        {/* Bottom nav */}
         <View style={{
           backgroundColor: 'rgba(255,255,255,0.60)',
           borderTopWidth: 1,
@@ -1193,8 +1231,12 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
 /* @arkzen:native:layout:app:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SHARED COMPONENTS — EXPORTED FOR BOTH EXPO & RN
+// ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:components:shared */
+/* @arkzen:native:components:shared + @arkzen:import:expo */
+/* @arkzen:native:components:shared + @arkzen:import:rn */
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
@@ -1205,10 +1247,7 @@ import {
   ActivityIndicator,
   ScrollView,
   RefreshControl,
-  Animated,
-  Easing,
 } from 'react-native'
-import { useRouter } from 'expo-router'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import * as Speech from 'expo-speech'
 import { Volume2 } from 'lucide-react-native'
@@ -1313,7 +1352,6 @@ const SpinRing = ({ label, sub }: { label: string; sub: string }) => {
         <Animated.View
           style={{ transform: [{ rotate }] }}
           className="absolute inset-0 rounded-full border-4 border-transparent"
-          // We fake the arc with border-t coloured
         >
           <View
             className="w-full h-full rounded-full"
@@ -1331,11 +1369,19 @@ const SpinRing = ({ label, sub }: { label: string; sub: string }) => {
 
 /* @arkzen:native:components:shared:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: INDEX (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:page:index */
-/* @arkzen:native:page:layout:app */
+/* @arkzen:native:page:index + @arkzen:import:expo */
 
-const IndexScreen = () => {
+import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import * as Speech from 'expo-speech'
+
+const IndexScreenExpo = () => {
   const [status, setStatus] = useState<NativeQueueStatus | null>(null)
   const [refreshing, setRefreshing] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -1372,10 +1418,8 @@ const IndexScreen = () => {
     : status.total_waiting < 10 ? 'Moderate' : 'High'
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-
-      {/* Header */}
-      <View style={{ backgroundColor: 'rgba(255,255,255,0.75)', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.85)', paddingHorizontal: 20, paddingVertical: 16 }}>
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
         <Text className="text-base font-semibold text-neutral-900">⏳ QueueFlow</Text>
         <Text className="text-xs text-neutral-400 mt-0.5">Live display · auto-refreshes every 5s</Text>
       </View>
@@ -1387,10 +1431,9 @@ const IndexScreen = () => {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerClassName="p-4 gap-3"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
         >
-
           {/* Risk ring card */}
           <View className="bg-white rounded-3xl border border-neutral-100 overflow-hidden">
             <SpinRing label={riskLabel} sub="queue risk level" />
@@ -1453,20 +1496,163 @@ const IndexScreen = () => {
               <Text className="text-xs font-medium text-neutral-500">Live</Text>
             </View>
           </View>
-
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   )
 }
 
+export default IndexScreenExpo
 /* @arkzen:native:page:index:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: INDEX (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:page:join */
-/* @arkzen:native:page:layout:app */
+/* @arkzen:native:page:index + @arkzen:import:rn */
 
-const JoinScreen = () => {
+import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import * as Speech from 'expo-speech'
+
+const IndexScreenRN = () => {
+  const [status, setStatus] = useState<NativeQueueStatus | null>(null)
+  const [refreshing, setRefreshing] = useState(false)
+  const [loading, setLoading] = useState(true)
+  const prevServing = useRef<string | null>(null)
+
+  const QUEUE_ID = 1
+
+  const load = useCallback(async () => {
+    try {
+      const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/status/${QUEUE_ID}`)
+      const data = await res.json() as NativeQueueStatus
+      setStatus(data)
+      if (data.serving && data.serving.ticket_number !== prevServing.current) {
+        prevServing.current = data.serving.ticket_number
+        Speech.speak(`Now serving ${data.serving.ticket_number}`, { rate: 0.85, pitch: 1.0 })
+      }
+    } catch {} finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 5000)
+    return () => clearInterval(interval)
+  }, [load])
+
+  const onRefresh = () => { setRefreshing(true); load() }
+
+  const riskLabel = !status ? '…'
+    : status.total_waiting === 0 ? 'Clear'
+    : status.total_waiting < 5  ? 'Low'
+    : status.total_waiting < 10 ? 'Moderate' : 'High'
+
+  return (
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
+        <Text className="text-base font-semibold text-neutral-900">⏳ QueueFlow</Text>
+        <Text className="text-xs text-neutral-400 mt-0.5">Live display · auto-refreshes every 5s</Text>
+      </View>
+
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#a4c5f5" />
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="p-4 gap-3"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
+        >
+          {/* Risk ring card */}
+          <View className="bg-white rounded-3xl border border-neutral-100 overflow-hidden">
+            <SpinRing label={riskLabel} sub="queue risk level" />
+            <View className="px-5 pb-4">
+              <Text className="text-center text-xs text-neutral-400">
+                {status?.total_waiting === 0
+                  ? 'No one is waiting right now'
+                  : `${status?.total_waiting} waiting · avg ${fmtWait(status?.queue?.avg_wait_minutes ?? 5)}`
+                }
+              </Text>
+            </View>
+          </View>
+
+          {/* Stats row */}
+          <View className="flex-row gap-3">
+            <StatCard label="Waiting" value={status?.total_waiting ?? 0} />
+            <StatCard label="Served"  value={status?.done_count ?? 0} />
+            <StatCard label="Avg Wait" value={fmtWait(status?.queue?.avg_wait_minutes ?? 5)} />
+          </View>
+
+          {/* Now serving */}
+          <View className="bg-white rounded-2xl border border-neutral-100 p-5">
+            <Text className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Now Serving</Text>
+            {status?.serving ? (
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text className="text-4xl font-black text-neutral-900">{status.serving.ticket_number}</Text>
+                  <Text className="text-sm text-neutral-400 mt-1">{status.serving.customer_name ?? 'Guest'}</Text>
+                </View>
+                <View className="w-12 h-12 rounded-2xl bg-emerald-50 items-center justify-center">
+                  <Text className="text-xl">✓</Text>
+                </View>
+              </View>
+            ) : (
+              <Text className="text-neutral-400">Queue is empty</Text>
+            )}
+          </View>
+
+          {/* Waiting list */}
+          {(status?.waiting?.length ?? 0) > 0 && (
+            <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+              <View className="px-5 py-3 border-b border-neutral-100">
+                <Text className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Up Next</Text>
+              </View>
+              {status!.waiting.slice(0, 8).map((t, i) => (
+                <TicketRowNative key={t.id} ticket={t} position={i + 1} />
+              ))}
+              {status!.waiting.length > 8 && (
+                <View className="px-5 py-3">
+                  <Text className="text-xs text-neutral-400 text-center">+{status!.waiting.length - 8} more in queue</Text>
+                </View>
+              )}
+            </View>
+          )}
+
+          {/* Live badge */}
+          <View className="items-center py-2">
+            <View className="flex-row items-center gap-2 bg-white border border-neutral-100 rounded-full px-4 py-2">
+              <View className="w-2 h-2 rounded-full bg-emerald-400" />
+              <Text className="text-xs font-medium text-neutral-500">Live</Text>
+            </View>
+          </View>
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  )
+}
+
+export default IndexScreenRN
+/* @arkzen:native:page:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: JOIN (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:join + @arkzen:import:expo */
+
+import React, { useState, useCallback, useEffect } from 'react'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+
+const JoinScreenExpo = () => {
   const [step,      setStep]      = useState<'form' | 'ticket'>('form')
   const [name,      setName]      = useState('')
   const [loading,   setLoading]   = useState(false)
@@ -1484,7 +1670,6 @@ const JoinScreen = () => {
     } catch {}
   }, [])
 
-  // Poll when on ticket step
   useEffect(() => {
     if (step !== 'ticket' || !myTicket?.ticket) return
     const t        = myTicket.ticket
@@ -1538,20 +1723,17 @@ const JoinScreen = () => {
     const { ticket, position, estimated_wait, is_serving, is_done } = myTicket
 
     return (
-      <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-
-        {/* Header */}
-        <View style={{ backgroundColor: 'rgba(255,255,255,0.75)', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.85)', paddingHorizontal: 20, paddingVertical: 16 }}>
+      <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+        <View className="bg-white/75 border-b border-white/85 px-5 py-4">
           <Text className="text-base font-semibold text-neutral-900">⏳ Your Ticket</Text>
           <Text className="text-xs text-neutral-400 mt-0.5">auto-refreshes every 5s</Text>
         </View>
 
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerClassName="p-4 gap-3"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
         >
-
           {/* Big ticket card */}
           <View className={`rounded-3xl border p-8 items-center gap-4 ${
             is_serving ? 'bg-emerald-50 border-emerald-200' :
@@ -1633,23 +1815,20 @@ const JoinScreen = () => {
               <Text className="text-white font-semibold text-sm">Done</Text>
             </TouchableOpacity>
           )}
-
         </ScrollView>
-      </View>
+      </SafeAreaView>
     )
   }
 
   // ── Join form ─────────────────────────────────────────────────────────────
   return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-
-      {/* Header */}
-      <View style={{ backgroundColor: 'rgba(255,255,255,0.75)', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.85)', paddingHorizontal: 20, paddingVertical: 16 }}>
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
         <Text className="text-base font-semibold text-neutral-900">⏳ Join Queue</Text>
         <Text className="text-xs text-neutral-400 mt-0.5">Enter your name to get a ticket</Text>
       </View>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
 
         {error && (
           <View className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
@@ -1699,17 +1878,271 @@ const JoinScreen = () => {
         </View>
 
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 
+export default JoinScreenExpo
 /* @arkzen:native:page:join:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: JOIN (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:page:admin */
-/* @arkzen:native:page:layout:app */
+/* @arkzen:native:page:join + @arkzen:import:rn */
 
-const AdminScreen = () => {
+import React, { useState, useCallback, useEffect } from 'react'
+import { View, Text, TextInput, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+
+const JoinScreenRN = () => {
+  const [step,      setStep]      = useState<'form' | 'ticket'>('form')
+  const [name,      setName]      = useState('')
+  const [loading,   setLoading]   = useState(false)
+  const [refreshing, setRefreshing] = useState(false)
+  const [error,     setError]     = useState<string | null>(null)
+  const [myTicket,  setMyTicket]  = useState<MyTicketData | null>(null)
+
+  const QUEUE_ID = 1
+
+  const refreshTicket = useCallback(async (queueId: number, ticketNumber: string) => {
+    try {
+      const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/my-ticket/${queueId}/${ticketNumber}`)
+      const data = await res.json() as MyTicketData
+      if (data?.ticket) setMyTicket(data)
+    } catch {}
+  }, [])
+
+  useEffect(() => {
+    if (step !== 'ticket' || !myTicket?.ticket) return
+    const t        = myTicket.ticket
+    const interval = setInterval(() => refreshTicket(t.queue_id, t.ticket_number), 5000)
+    return () => clearInterval(interval)
+  }, [step, myTicket])
+
+  const join = async () => {
+    if (!name.trim()) return
+    setLoading(true)
+    setError(null)
+    try {
+      const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/join`, {
+        method: 'POST',
+        body:   JSON.stringify({ queue_id: QUEUE_ID, customer_name: name }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'Failed to join queue')
+      const ticketData: MyTicketData = {
+        ticket:         data.ticket,
+        position:       data.position,
+        estimated_wait: data.estimated_wait,
+        is_serving:     false,
+        is_done:        false,
+      }
+      setMyTicket(ticketData)
+      setStep('ticket')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to join queue')
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const leave = () => {
+    setMyTicket(null)
+    setStep('form')
+    setName('')
+    setError(null)
+  }
+
+  const onRefresh = () => {
+    if (!myTicket?.ticket) return
+    setRefreshing(true)
+    refreshTicket(myTicket.ticket.queue_id, myTicket.ticket.ticket_number)
+      .finally(() => setRefreshing(false))
+  }
+
+  // ── Ticket view ───────────────────────────────────────────────────────────
+  if (step === 'ticket' && myTicket?.ticket) {
+    const { ticket, position, estimated_wait, is_serving, is_done } = myTicket
+
+    return (
+      <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+        <View className="bg-white/75 border-b border-white/85 px-5 py-4">
+          <Text className="text-base font-semibold text-neutral-900">⏳ Your Ticket</Text>
+          <Text className="text-xs text-neutral-400 mt-0.5">auto-refreshes every 5s</Text>
+        </View>
+
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="p-4 gap-3"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
+        >
+          {/* Big ticket card */}
+          <View className={`rounded-3xl border p-8 items-center gap-4 ${
+            is_serving ? 'bg-emerald-50 border-emerald-200' :
+            is_done    ? 'bg-neutral-100 border-neutral-200' :
+                         'bg-white border-neutral-100'
+          }`}>
+            {/* Position circle */}
+            <View className={`w-32 h-32 rounded-full items-center justify-center ${
+              is_serving ? 'bg-emerald-100' :
+              is_done    ? 'bg-neutral-200' :
+                           'bg-blue-50'
+            }`}>
+              <Text className={`text-5xl font-black ${
+                is_serving ? 'text-emerald-600' :
+                is_done    ? 'text-neutral-400' :
+                             'text-blue-600'
+              }`}>
+                {is_done ? '✓' : position}
+              </Text>
+              <Text className={`text-xs font-bold mt-1 ${
+                is_serving ? 'text-emerald-500' :
+                is_done    ? 'text-neutral-400' :
+                             'text-blue-400'
+              }`}>
+                {is_serving ? 'YOUR TURN' : is_done ? 'SERVED' : 'position'}
+              </Text>
+            </View>
+
+            {/* Ticket number + name */}
+            <View className="items-center gap-1">
+              <Text className="text-3xl font-black text-neutral-900">{ticket.ticket_number}</Text>
+              <Text className="text-sm text-neutral-400">{ticket.customer_name ?? 'Guest'}</Text>
+            </View>
+
+            {/* Status message */}
+            <View className={`w-full rounded-2xl px-4 py-3 items-center ${
+              is_serving ? 'bg-emerald-100' :
+              is_done    ? 'bg-neutral-200' :
+                           'bg-blue-50'
+            }`}>
+              {is_serving ? (
+                <Text className="text-emerald-700 font-semibold text-sm">Please proceed to the counter</Text>
+              ) : is_done ? (
+                <Text className="text-neutral-500 font-medium text-sm">Thank you for your patience</Text>
+              ) : (
+                <>
+                  <Text className="text-blue-600 font-semibold text-sm">Estimated wait</Text>
+                  <Text className="text-blue-400 text-sm mt-0.5">{fmtWait(estimated_wait)}</Text>
+                </>
+              )}
+            </View>
+          </View>
+
+          {/* Info card */}
+          <View className="bg-white rounded-2xl border border-neutral-100 px-5 py-4">
+            <Text className="text-xs text-neutral-400 font-mono leading-5">
+              queue: General{'\n'}
+              ticket: {ticket.ticket_number}{'\n'}
+              status: {ticket.status}
+            </Text>
+          </View>
+
+          {/* Leave / Done button */}
+          {!is_done && !is_serving && (
+            <TouchableOpacity
+              onPress={leave}
+              activeOpacity={0.8}
+              className="py-4 rounded-2xl items-center border border-red-200 bg-white"
+            >
+              <Text className="text-red-500 font-semibold text-sm">Leave Queue</Text>
+            </TouchableOpacity>
+          )}
+          {is_done && (
+            <TouchableOpacity
+              onPress={leave}
+              activeOpacity={0.8}
+              className="py-4 rounded-2xl items-center bg-neutral-900"
+            >
+              <Text className="text-white font-semibold text-sm">Done</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
+      </SafeAreaView>
+    )
+  }
+
+  // ── Join form ─────────────────────────────────────────────────────────────
+  return (
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
+        <Text className="text-base font-semibold text-neutral-900">⏳ Join Queue</Text>
+        <Text className="text-xs text-neutral-400 mt-0.5">Enter your name to get a ticket</Text>
+      </View>
+
+      <ScrollView className="flex-1" contentContainerClassName="p-4 gap-3">
+
+        {error && (
+          <View className="bg-red-50 border border-red-100 rounded-2xl px-4 py-3">
+            <Text className="text-xs text-red-600">{error}</Text>
+          </View>
+        )}
+
+        {/* Name input card */}
+        <View className="bg-white rounded-2xl border border-neutral-100 p-5 gap-3">
+          <Text className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Your Name</Text>
+          <TextInput
+            className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
+            placeholder="e.g. Maria Santos"
+            placeholderTextColor="#a3a3a3"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="words"
+            autoCorrect={false}
+            returnKeyType="done"
+            onSubmitEditing={join}
+          />
+          <Text className="text-xs text-neutral-400">
+            You'll join the General queue (queue #1)
+          </Text>
+        </View>
+
+        {/* Get ticket button */}
+        <TouchableOpacity
+          onPress={join}
+          disabled={!name.trim() || loading}
+          activeOpacity={0.8}
+          className={`py-4 rounded-2xl items-center ${!name.trim() || loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
+        >
+          {loading
+            ? <ActivityIndicator size="small" color="#fff" />
+            : <Text className="text-white font-semibold text-sm">Get My Ticket</Text>
+          }
+        </TouchableOpacity>
+
+        {/* Info note */}
+        <View className="bg-neutral-100 rounded-2xl px-4 py-3">
+          <Text className="text-xs text-neutral-500 font-mono leading-5">
+            backend: /api/queue-flow/join{'\n'}
+            queue: General (prefix G){'\n'}
+            no auth required
+          </Text>
+        </View>
+
+      </ScrollView>
+    </SafeAreaView>
+  )
+}
+
+export default JoinScreenRN
+/* @arkzen:native:page:join:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: ADMIN (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:admin + @arkzen:import:expo */
+
+import React, { useState, useCallback, useEffect } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useRouter } from 'expo-router'
+import * as Speech from 'expo-speech'
+import { Volume2 } from 'lucide-react-native'
+
+const AdminScreenExpo = () => {
   const announce = (text: string) => Speech.speak(text, { rate: 0.85, pitch: 1.0 })
 
   const [status,   setStatus]   = useState<NativeQueueStatus | null>(null)
@@ -1769,10 +2202,8 @@ const AdminScreen = () => {
   const onRefresh = () => { setRefreshing(true); load() }
 
   return (
-    <View style={{ flex: 1, backgroundColor: 'transparent' }}>
-
-      {/* Header */}
-      <View style={{ backgroundColor: 'rgba(255,255,255,0.75)', borderBottomWidth: 1, borderBottomColor: 'rgba(255,255,255,0.85)', paddingHorizontal: 20, paddingVertical: 16 }}>
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
         <Text className="text-base font-semibold text-neutral-900">⚙️ Admin</Text>
         <Text className="text-xs text-neutral-400 mt-0.5">Manage the queue · auto-refreshes every 3s</Text>
       </View>
@@ -1784,7 +2215,7 @@ const AdminScreen = () => {
       ) : (
         <ScrollView
           className="flex-1"
-          contentContainerStyle={{ padding: 16, gap: 12 }}
+          contentContainerClassName="p-4 gap-3"
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
         >
 
@@ -1795,7 +2226,7 @@ const AdminScreen = () => {
                 ? 'bg-white border-emerald-200'
                 : 'bg-white border-red-200'
             }`}>
-              <Text className={`text-lg`}>{toast.type === 'success' ? '✓' : '✗'}</Text>
+              <Text className="text-lg">{toast.type === 'success' ? '✓' : '✗'}</Text>
               <Text className={`text-sm font-medium flex-1 ${
                 toast.type === 'success' ? 'text-emerald-700' : 'text-red-600'
               }`}>{toast.msg}</Text>
@@ -1820,7 +2251,7 @@ const AdminScreen = () => {
             )}
           </View>
 
-          {/* Announce button — mirrors web AnnounceBadge */}
+          {/* Announce button */}
           {status?.serving && (
             <TouchableOpacity
               onPress={() => {
@@ -1828,16 +2259,10 @@ const AdminScreen = () => {
                 announce(`Now serving ${t.ticket_number}, ${t.customer_name ?? 'Guest'}, please proceed to the counter.`)
               }}
               activeOpacity={0.8}
-              style={{
-                flexDirection: 'row', alignItems: 'center', gap: 8,
-                paddingHorizontal: 16, paddingVertical: 10, borderRadius: 12,
-                backgroundColor: 'rgba(255,255,255,0.45)',
-                borderWidth: 1, borderColor: 'rgba(255,255,255,0.70)',
-                alignSelf: 'flex-start',
-              }}
+              className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-white/45 border border-white/70 self-start"
             >
               <Volume2 size={14} color="#4a72c8" />
-              <Text style={{ fontSize: 13, color: '#4a72c8', fontWeight: '500' }}>Announce</Text>
+              <Text className="text-sm font-medium text-blue-600">Announce</Text>
             </TouchableOpacity>
           )}
 
@@ -1899,8 +2324,340 @@ const AdminScreen = () => {
 
         </ScrollView>
       )}
-    </View>
+    </SafeAreaView>
   )
 }
 
+export default AdminScreenExpo
 /* @arkzen:native:page:admin:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGE: ADMIN (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:admin + @arkzen:import:rn */
+
+import React, { useState, useCallback, useEffect } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, RefreshControl, ActivityIndicator } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { useNavigation } from '@react-navigation/native'
+import * as Speech from 'expo-speech'
+import { Volume2 } from 'lucide-react-native'
+
+const AdminScreenRN = () => {
+  const announce = (text: string) => Speech.speak(text, { rate: 0.85, pitch: 1.0 })
+
+  const [status,   setStatus]   = useState<NativeQueueStatus | null>(null)
+  const [calling,  setCalling]  = useState(false)
+  const [loading,  setLoading]  = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [toast,    setToast]    = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
+
+  const QUEUE_ID = 1
+
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg })
+    setTimeout(() => setToast(null), 3000)
+  }
+
+  const load = useCallback(async () => {
+    try {
+      const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/status/${QUEUE_ID}`)
+      const data = await res.json() as NativeQueueStatus
+      setStatus(data)
+    } catch {} finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    load()
+    const interval = setInterval(load, 3000)
+    return () => clearInterval(interval)
+  }, [load])
+
+  const callNext = async () => {
+    setCalling(true)
+    try {
+      const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/call-next`, {
+        method: 'POST',
+        body:   JSON.stringify({ queue_id: QUEUE_ID }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'Failed')
+      if (data.ticket) {
+        const name = data.ticket.customer_name ?? 'Guest'
+        showToast('success', `Now serving ${data.ticket.ticket_number}`)
+        announce(`Now serving ${data.ticket.ticket_number}, ${name}, please proceed to the counter.`)
+      } else {
+        showToast('error', 'No more tickets in queue')
+      }
+      load()
+    } catch (e) {
+      showToast('error', e instanceof Error ? e.message : 'Call failed')
+    } finally {
+      setCalling(false)
+    }
+  }
+
+  const onRefresh = () => { setRefreshing(true); load() }
+
+  return (
+    <SafeAreaView className="flex-1 bg-transparent" edges={['top']}>
+      <View className="bg-white/75 border-b border-white/85 px-5 py-4">
+        <Text className="text-base font-semibold text-neutral-900">⚙️ Admin</Text>
+        <Text className="text-xs text-neutral-400 mt-0.5">Manage the queue · auto-refreshes every 3s</Text>
+      </View>
+
+      {loading ? (
+        <View className="flex-1 items-center justify-center">
+          <ActivityIndicator size="large" color="#a4c5f5" />
+        </View>
+      ) : (
+        <ScrollView
+          className="flex-1"
+          contentContainerClassName="p-4 gap-3"
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#a4c5f5" />}
+        >
+
+          {/* Toast */}
+          {toast && (
+            <View className={`flex-row items-center gap-2 px-4 py-3 rounded-2xl border ${
+              toast.type === 'success'
+                ? 'bg-white border-emerald-200'
+                : 'bg-white border-red-200'
+            }`}>
+              <Text className="text-lg">{toast.type === 'success' ? '✓' : '✗'}</Text>
+              <Text className={`text-sm font-medium flex-1 ${
+                toast.type === 'success' ? 'text-emerald-700' : 'text-red-600'
+              }`}>{toast.msg}</Text>
+            </View>
+          )}
+
+          {/* Now serving card */}
+          <View className="bg-white rounded-2xl border border-neutral-100 p-5">
+            <Text className="text-xs font-bold text-blue-400 uppercase tracking-widest mb-3">Now Serving</Text>
+            {status?.serving ? (
+              <View className="flex-row items-center justify-between">
+                <View>
+                  <Text className="text-4xl font-black text-neutral-900">{status.serving.ticket_number}</Text>
+                  <Text className="text-sm text-neutral-400 mt-1">{status.serving.customer_name ?? 'Guest'}</Text>
+                </View>
+                <View className="w-12 h-12 rounded-2xl bg-emerald-50 items-center justify-center">
+                  <Text className="text-xl">✓</Text>
+                </View>
+              </View>
+            ) : (
+              <Text className="text-neutral-400">No one being served</Text>
+            )}
+          </View>
+
+          {/* Announce button */}
+          {status?.serving && (
+            <TouchableOpacity
+              onPress={() => {
+                const t = status.serving!
+                announce(`Now serving ${t.ticket_number}, ${t.customer_name ?? 'Guest'}, please proceed to the counter.`)
+              }}
+              activeOpacity={0.8}
+              className="flex-row items-center gap-2 px-4 py-2.5 rounded-xl bg-white/45 border border-white/70 self-start"
+            >
+              <Volume2 size={14} color="#4a72c8" />
+              <Text className="text-sm font-medium text-blue-600">Announce</Text>
+            </TouchableOpacity>
+          )}
+
+          {/* Call next button */}
+          <TouchableOpacity
+            onPress={callNext}
+            disabled={calling || status?.total_waiting === 0}
+            activeOpacity={0.8}
+            className={`py-4 rounded-2xl items-center flex-row justify-center gap-2 ${
+              calling || status?.total_waiting === 0
+                ? 'bg-neutral-200'
+                : 'bg-neutral-900'
+            }`}
+          >
+            {calling
+              ? <ActivityIndicator size="small" color="#fff" />
+              : <Text className="text-xl">⏭</Text>
+            }
+            <Text className={`font-bold text-sm ${
+              calling || status?.total_waiting === 0 ? 'text-neutral-400' : 'text-white'
+            }`}>
+              {calling ? 'Calling…' : 'Call Next'}
+            </Text>
+          </TouchableOpacity>
+
+          {/* Stats */}
+          <View className="flex-row gap-3">
+            <StatCard label="Waiting" value={status?.total_waiting ?? 0} />
+            <StatCard label="Served"  value={status?.done_count ?? 0} />
+            <StatCard label="Avg"     value={fmtWait(status?.queue?.avg_wait_minutes ?? 5)} />
+          </View>
+
+          {/* Waiting list */}
+          {(status?.waiting?.length ?? 0) > 0 ? (
+            <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+              <View className="px-5 py-3 border-b border-neutral-100 flex-row items-center justify-between">
+                <Text className="text-xs font-bold text-neutral-400 uppercase tracking-wide">Waiting</Text>
+                <Text className="text-xs text-neutral-300">{status!.waiting.length} ticket{status!.waiting.length !== 1 ? 's' : ''}</Text>
+              </View>
+              {status!.waiting.map((t, i) => (
+                <TicketRowNative key={t.id} ticket={t} position={i + 1} />
+              ))}
+            </View>
+          ) : (
+            <View className="bg-white rounded-2xl border border-neutral-100 p-8 items-center">
+              <Text className="text-3xl mb-3">🎉</Text>
+              <Text className="text-sm text-neutral-400">Queue is clear!</Text>
+            </View>
+          )}
+
+          {/* Info */}
+          <View className="bg-neutral-100 rounded-2xl px-4 py-3">
+            <Text className="text-xs text-neutral-500 font-mono leading-5">
+              backend: /api/queue-flow/call-next{'\n'}
+              queue_id: {QUEUE_ID}{'\n'}
+              no auth required
+            </Text>
+          </View>
+
+        </ScrollView>
+      )}
+    </SafeAreaView>
+  )
+}
+
+export default AdminScreenRN
+/* @arkzen:native:page:admin:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (EXPO)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404 + @arkzen:import:expo */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const NotFoundExpo = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">404</Text>
+    <Text className="text-xl font-bold text-neutral-900">Page Not Found</Text>
+    <Text className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</Text>
+  </SafeAreaView>
+)
+
+export default NotFoundExpo
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:500 + @arkzen:import:expo */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const ServerErrorExpo = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">500</Text>
+    <Text className="text-xl font-bold text-neutral-900">Server Error</Text>
+    <Text className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</Text>
+  </SafeAreaView>
+)
+
+export default ServerErrorExpo
+/* @arkzen:native:error:500:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (BARE RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404 + @arkzen:import:rn */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const NotFoundRN = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">404</Text>
+    <Text className="text-xl font-bold text-neutral-900">Page Not Found</Text>
+    <Text className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</Text>
+  </SafeAreaView>
+)
+
+export default NotFoundRN
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:500 + @arkzen:import:rn */
+
+import React from 'react'
+import { View, Text } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const ServerErrorRN = () => (
+  <SafeAreaView className="flex-1 items-center justify-center bg-white" edges={['top']}>
+    <Text className="text-6xl mb-4 text-neutral-200 font-bold">500</Text>
+    <Text className="text-xl font-bold text-neutral-900">Server Error</Text>
+    <Text className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</Text>
+  </SafeAreaView>
+)
+
+export default ServerErrorRN
+/* @arkzen:native:error:500:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES (LYNX)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404:lynx */
+
+import React from '@lynx-js/react'
+
+const NotFoundLynx = () => (
+  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4 text-neutral-200 font-bold">404</div>
+    <div className="text-xl font-bold">Page Not Found</div>
+    <div className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</div>
+  </div>
+)
+
+export default NotFoundLynx
+/* @arkzen:native:error:404:lynx:end */
+
+/* @arkzen:native:error:500:lynx */
+
+import React from '@lynx-js/react'
+
+const ServerErrorLynx = () => (
+  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4 text-neutral-200 font-bold">500</div>
+    <div className="text-xl font-bold">Server Error</div>
+    <div className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</div>
+  </div>
+)
+
+export default ServerErrorLynx
+/* @arkzen:native:error:500:lynx:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SCRIPTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:script:expo */
+// Expo-specific scripts
+console.log('⏳ QueueFlow running on Expo')
+/* @arkzen:native:script:expo:end */
+
+/* @arkzen:native:script:rn */
+// Bare RN-specific scripts
+console.log('⏳ QueueFlow running on React Native Bare')
+/* @arkzen:native:script:rn:end */
+
+/* @arkzen:native:script:lynx */
+// Lynx-specific scripts
+console.log('⏳ QueueFlow running on Lynx')
+/* @arkzen:native:script:lynx:end */

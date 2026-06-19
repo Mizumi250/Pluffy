@@ -9,6 +9,17 @@ auth: false
 favicon: 🎬
 */
 
+/* @arkzen:meta:native
+label: Animation Lab
+description: Full animation testing lab — Reanimated, Moti, Spring, Easing
+expo:
+  bundle_id: com.arkzen.animationlab
+  scheme: animationlab
+  version: 1.0.0
+  orientation: portrait
+  status_bar_style: light
+*/
+
 /* @arkzen:web:config
 toast:
   position: top-right
@@ -23,6 +34,21 @@ layout:
   auth:
     className: "min-h-screen bg-neutral-950"
 */
+
+/* @arkzen:native:config
+theme:
+  primary: "#6366f1"
+  secondary: "#a855f7"
+  accent: "#10b981"
+  background: "#09090b"
+  surface: "#1e293b"
+  text: "#ffffff"
+  muted: "rgba(255,255,255,0.4)"
+*/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEB SHARED COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:web:components:shared */
 
@@ -124,39 +150,31 @@ export const GSAPEntranceSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // from (entrance from invisible)
       gsap.from('.gsap-from-demo', {
         opacity: 0, y: 60, duration: 0.8, ease: 'power3.out', delay: 0.1
       })
-      // fromTo (full control)
       gsap.fromTo('.gsap-fromto-demo',
         { opacity: 0, scaleX: 0, transformOrigin: 'left center' },
         { opacity: 1, scaleX: 1, duration: 0.7, ease: 'elastic.out(1, 0.5)', delay: 0.3 }
       )
-      // to (animate existing state)
       gsap.to('.gsap-to-demo', {
         x: 80, rotation: 360, duration: 0.9, ease: 'back.out(1.7)', delay: 0.5
       })
-      // blur reveal
       gsap.fromTo('.gsap-blur-demo',
         { opacity: 0, filter: 'blur(20px)' },
         { opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out', delay: 0.6 }
       )
-      // clip reveal
       gsap.fromTo('.gsap-clip-demo',
         { clipPath: 'inset(0 100% 0 0)' },
         { clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'power4.inOut', delay: 0.7 }
       )
-      // scale + fade
       gsap.from('.gsap-scale-demo', {
         opacity: 0, scale: 0.3, duration: 0.7, ease: 'back.out(2)', delay: 0.9
       })
-      // rotate entrance
       gsap.fromTo('.gsap-rotate-demo',
         { opacity: 0, rotation: -90, transformOrigin: 'bottom left' },
         { opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', delay: 1.0 }
       )
-      // slide from right
       gsap.from('.gsap-slide-right-demo', {
         opacity: 0, x: 100, duration: 0.7, ease: 'power2.out', delay: 1.1
       })
@@ -205,7 +223,6 @@ export const GSAPScrollSection = () => {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
-      // Fade + slide on scroll
       gsap.fromTo('.scroll-fade-item',
         { opacity: 0, y: 50 },
         {
@@ -213,7 +230,6 @@ export const GSAPScrollSection = () => {
           scrollTrigger: { trigger: '.scroll-fade-group', start: 'top 85%', toggleActions: 'play none none reset' }
         }
       )
-      // Scrub (parallax)
       gsap.to('.scroll-parallax-bg', {
         yPercent: -30,
         ease: 'none',
@@ -224,7 +240,6 @@ export const GSAPScrollSection = () => {
           scrub: true,
         }
       })
-      // Pin + reveal
       gsap.fromTo('.scroll-pin-text',
         { opacity: 0, letterSpacing: '0.5em' },
         {
@@ -236,7 +251,6 @@ export const GSAPScrollSection = () => {
           }
         }
       )
-      // Scale on scroll
       gsap.fromTo('.scroll-scale-card',
         { scale: 0.6, opacity: 0 },
         {
@@ -244,7 +258,6 @@ export const GSAPScrollSection = () => {
           scrollTrigger: { trigger: '.scroll-scale-group', start: 'top 80%', toggleActions: 'play none none reset' }
         }
       )
-      // Horizontal scrub
       const hTrack = document.querySelector('.scroll-h-track')
       if (hTrack) {
         gsap.to('.scroll-h-inner', {
@@ -270,8 +283,6 @@ export const GSAPScrollSection = () => {
         subtitle="Scroll-driven animations — scrub, pin, stagger reveal, parallax"
         color="#10b981"
       />
-
-      {/* Fade stagger group */}
       <DemoCard title="Scroll Stagger Reveal" description="Elements fade in staggered as they enter viewport">
         <div className="scroll-fade-group" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           {['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'].map(w => (
@@ -279,8 +290,6 @@ export const GSAPScrollSection = () => {
           ))}
         </div>
       </DemoCard>
-
-      {/* Parallax */}
       <DemoCard title="Parallax Scrub" description="Background moves at different speed (scrub:true)">
         <div className="scroll-parallax-wrap" style={{ height: 120, overflow: 'hidden', borderRadius: 12, position: 'relative' }}>
           <div className="scroll-parallax-bg" style={{
@@ -292,8 +301,6 @@ export const GSAPScrollSection = () => {
           </div>
         </div>
       </DemoCard>
-
-      {/* Letter spacing reveal */}
       <DemoCard title="Letter Spacing Reveal" description="Text compresses into view on scroll">
         <div className="scroll-pin-wrap" style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
           <h3 className="scroll-pin-text" style={{ fontSize: 28, fontWeight: 900, color: '#10b981', letterSpacing: '0.5em' }}>
@@ -301,8 +308,6 @@ export const GSAPScrollSection = () => {
           </h3>
         </div>
       </DemoCard>
-
-      {/* Scale group */}
       <DemoCard title="Scale Entrance on Scroll" description="Cards scale + fade in as they enter viewport">
         <div className="scroll-scale-group" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           {['Card 1', 'Card 2', 'Card 3'].map(c => (
@@ -315,8 +320,6 @@ export const GSAPScrollSection = () => {
           ))}
         </div>
       </DemoCard>
-
-      {/* Horizontal scrub */}
       <DemoCard title="Horizontal Scroll (Scrub)" description="Scrubs horizontal slide as user scrolls vertically">
         <div className="scroll-h-track" style={{ overflow: 'hidden', borderRadius: 10 }}>
           <div className="scroll-h-inner" style={{ display: 'flex', gap: 12, width: 'max-content' }}>
@@ -425,19 +428,14 @@ export const GSAPStaggerSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // Linear stagger
       gsap.from('.stagger-linear .stg-item', { opacity: 0, y: 30, duration: 0.5, stagger: 0.08, ease: 'power3.out' })
-      // From center stagger
       gsap.from('.stagger-center .stg-item', { opacity: 0, scale: 0, duration: 0.5, stagger: { each: 0.07, from: 'center' }, ease: 'back.out(2)', delay: 0.3 })
-      // From end stagger
       gsap.from('.stagger-end .stg-item', { opacity: 0, x: 40, duration: 0.5, stagger: { each: 0.06, from: 'end' }, ease: 'power2.out', delay: 0.6 })
-      // Grid stagger
       gsap.from('.stagger-grid .stg-item', {
         opacity: 0, scale: 0.3, rotation: 45, duration: 0.4,
         stagger: { amount: 0.8, grid: [3, 4], from: 'center' },
         ease: 'back.out(2)', delay: 0.9
       })
-      // Yoyo repeat stagger
       gsap.fromTo('.stagger-yoyo .stg-item',
         { opacity: 0.2, scaleY: 0.3 },
         {
@@ -504,7 +502,6 @@ export const GSAPHover3DSection = () => {
   const morphRef = useRef<HTMLDivElement>(null)
   const [flipped, setFlipped] = useState(false)
 
-  // 3D tilt card
   const handleTilt = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientY - r.top) / r.height - 0.5) * 20
@@ -515,7 +512,6 @@ export const GSAPHover3DSection = () => {
     gsap.to(e.currentTarget, { rotationX: 0, rotationY: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' })
   }
 
-  // Magnetic button
   const handleMagnet = (e: React.MouseEvent<HTMLButtonElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const x = (e.clientX - r.left - r.width / 2) * 0.35
@@ -526,7 +522,6 @@ export const GSAPHover3DSection = () => {
     gsap.to(magnetRef.current, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' })
   }
 
-  // Flip card
   const handleFlip = () => {
     const newFlipped = !flipped
     setFlipped(newFlipped)
@@ -536,7 +531,6 @@ export const GSAPHover3DSection = () => {
     })
   }
 
-  // Morph hover
   const handleMorphEnter = () => {
     gsap.to(morphRef.current, { borderRadius: '50%', scale: 1.2, rotation: 45, duration: 0.4, ease: 'power2.inOut' })
   }
@@ -1033,7 +1027,6 @@ export const FramerKeyframesSection = () => {
 
 // ─── FRAMER DRAG ──────────────────────────────────────────────────────────────
 export const FramerDragSection = () => {
-  const [pos, setPos] = useState({ x: 0, y: 0 })
   const constraintsRef = useRef<HTMLDivElement>(null)
 
   return (
@@ -1120,7 +1113,6 @@ export const FramerScrollSection = () => {
         subtitle="useScroll, useTransform, useSpring — scroll-linked animations"
         color="#0ea5e9"
       />
-      {/* Progress bar */}
       <motion.div
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, height: 4,
@@ -1722,17 +1714,14 @@ import React from 'react'
 
 const animationLabAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
   const ctx = gsap.context(() => {
-    // Logo entrance
     gsap.fromTo('.anim-lab-logo',
       { opacity: 0, x: -20 },
       { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out', delay: 0.05 }
     )
-    // Sidebar nav items stagger
     gsap.fromTo('.nav-item',
       { opacity: 0, x: -16 },
       { opacity: 1, x: 0, duration: 0.4, stagger: 0.04, ease: 'power2.out', delay: 0.2 }
     )
-    // Section header
     gsap.fromTo('.section-header',
       { opacity: 0, y: -12 },
       { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.5 }
@@ -1747,1391 +1736,6 @@ export const pageVariants = {
   exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
 }
 /* @arkzen:web:animation:end */
-
-/* @arkzen:native:style:anim-lab */
-
-/* ─── ROOT ───────────────────────────────────────────────── */
-.root {
-  flex: 1;
-  background-color: #09090b;
-}
-
-/* ─── TOP HEADER ─────────────────────────────────────────── */
-.header {
-  padding: 20px 16px 12px;
-  border-bottom-width: 1px;
-  border-bottom-color: rgba(255,255,255,0.07);
-}
-
-.header-title {
-  font-size: 20px;
-  font-weight: 800;
-  color: #a78bfa;
-}
-
-.header-sub {
-  font-size: 12px;
-  color: rgba(255,255,255,0.35);
-  margin-top: 2px;
-}
-
-/* ─── HORIZONTAL NAV TABS ────────────────────────────────── */
-.nav-scroll {
-  border-bottom-width: 1px;
-  border-bottom-color: rgba(255,255,255,0.07);
-}
-
-.nav-scroll-content {
-  flex-direction: row;
-  padding: 0 12px;
-  gap: 4px;
-}
-
-.nav-tab {
-  flex-direction: row;
-  align-items: center;
-  gap: 5px;
-  padding: 10px 14px;
-  border-bottom-width: 2px;
-  border-bottom-color: transparent;
-}
-
-.nav-tab-active {
-  border-bottom-color: #a78bfa;
-}
-
-.nav-tab-icon {
-  font-size: 13px;
-}
-
-.nav-tab-label {
-  font-size: 12px;
-  font-weight: 600;
-  color: rgba(255,255,255,0.4);
-  white-space: nowrap;
-}
-
-.nav-tab-label-active {
-  color: white;
-}
-
-/* ─── SECTION HEADER ─────────────────────────────────────── */
-.section-header {
-  flex-direction: row;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 16px;
-  background-color: rgba(255,255,255,0.03);
-  border-width: 1px;
-  border-color: rgba(255,255,255,0.07);
-  border-radius: 14px;
-  margin: 16px 16px 12px;
-}
-
-.section-header-icon {
-  width: 36px;
-  height: 36px;
-  border-radius: 9px;
-  align-items: center;
-  justify-content: center;
-}
-
-.section-header-title {
-  font-size: 15px;
-  font-weight: 800;
-  color: white;
-  margin-bottom: 2px;
-}
-
-.section-header-sub {
-  font-size: 11px;
-  color: rgba(255,255,255,0.4);
-}
-
-/* ─── SECTION LABEL ──────────────────────────────────────── */
-.section-title {
-  font-size: 11px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.4);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin: 16px 16px 10px;
-}
-
-/* ─── DEMO GRID ──────────────────────────────────────────── */
-.demo-grid {
-  flex-direction: row;
-  flex-wrap: wrap;
-  padding: 0 12px;
-  gap: 10px;
-  margin-bottom: 12px;
-}
-
-.demo-card {
-  background-color: rgba(255,255,255,0.03);
-  border-width: 1px;
-  border-color: rgba(255,255,255,0.07);
-  border-radius: 14px;
-  overflow: hidden;
-  width: 46%;
-}
-
-.demo-card-full {
-  background-color: rgba(255,255,255,0.03);
-  border-width: 1px;
-  border-color: rgba(255,255,255,0.07);
-  border-radius: 14px;
-  overflow: hidden;
-  margin: 0 16px 12px;
-}
-
-.demo-card-header {
-  padding: 12px 14px 8px;
-  border-bottom-width: 1px;
-  border-bottom-color: rgba(255,255,255,0.05);
-}
-
-.demo-card-title {
-  font-size: 12px;
-  font-weight: 700;
-  color: rgba(255,255,255,0.9);
-}
-
-.demo-card-desc {
-  font-size: 10px;
-  color: rgba(255,255,255,0.35);
-  margin-top: 2px;
-}
-
-.demo-card-stage {
-  padding: 18px 14px;
-  min-height: 80px;
-  align-items: center;
-  justify-content: center;
-}
-
-/* ─── ANIMATION PRIMITIVES ───────────────────────────────── */
-.anim-box {
-  width: 56px;
-  height: 38px;
-  border-radius: 8px;
-  align-items: center;
-  justify-content: center;
-}
-
-.anim-box-label {
-  font-weight: 700;
-  font-size: 9px;
-  color: white;
-}
-
-.anim-pill {
-  padding-horizontal: 14px;
-  padding-vertical: 7px;
-  border-radius: 24px;
-}
-
-.anim-pill-label {
-  color: white;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.anim-circle {
-  width: 52px;
-  height: 52px;
-  border-radius: 26px;
-}
-
-/* ─── BUTTONS ────────────────────────────────────────────── */
-.play-btn {
-  flex-direction: row;
-  align-items: center;
-  gap: 6px;
-  padding: 8px 16px;
-  border-radius: 8px;
-  background-color: #6366f1;
-  margin-top: 8px;
-}
-
-.play-btn-label {
-  color: white;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-.reset-btn {
-  flex-direction: row;
-  align-items: center;
-  padding: 6px 12px;
-  border-radius: 8px;
-  background-color: rgba(255,255,255,0.07);
-  border-width: 1px;
-  border-color: rgba(255,255,255,0.1);
-  margin-top: 6px;
-}
-
-.reset-btn-label {
-  color: rgba(255,255,255,0.6);
-  font-size: 11px;
-}
-
-.btn-row {
-  flex-direction: row;
-  gap: 8px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 8px;
-}
-
-/* ─── STAGGER PILLS ROW ──────────────────────────────────── */
-.stagger-row {
-  flex-direction: row;
-  flex-wrap: wrap;
-  gap: 6px;
-  justify-content: center;
-}
-
-/* ─── TIMELINE DEMO ──────────────────────────────────────── */
-.tl-stage {
-  border-radius: 12px;
-  padding: 18px;
-  align-items: center;
-  gap: 12px;
-  background-color: #1e293b;
-}
-
-.tl-title {
-  font-size: 18px;
-  font-weight: 800;
-  color: white;
-}
-
-.tl-dots-row {
-  flex-direction: row;
-  gap: 8px;
-}
-
-.tl-dot {
-  font-size: 18px;
-  color: #a78bfa;
-}
-
-.tl-bar-wrap {
-  width: 100%;
-  height: 8px;
-  background-color: rgba(255,255,255,0.08);
-  border-radius: 4px;
-  overflow: hidden;
-  margin-bottom: 4px;
-}
-
-.tl-bar-fill {
-  height: 8px;
-  border-radius: 4px;
-}
-
-.tl-badge {
-  background-color: #a78bfa;
-  border-radius: 20px;
-  padding: 5px 18px;
-}
-
-.tl-badge-label {
-  color: white;
-  font-weight: 700;
-  font-size: 12px;
-}
-
-/* ─── GESTURE SECTION ────────────────────────────────────── */
-.gesture-target {
-  width: 90px;
-  height: 56px;
-  border-radius: 10px;
-}
-
-/* ─── DRAG SECTION ───────────────────────────────────────── */
-.drag-arena {
-  width: 100%;
-  height: 110px;
-  background-color: rgba(255,255,255,0.04);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-/* ─── SLIDER ROW ─────────────────────────────────────────── */
-.slider-row {
-  flex-direction: row;
-  align-items: center;
-  gap: 10px;
-  padding: 0 4px;
-  margin-bottom: 10px;
-}
-
-.slider-label {
-  font-size: 12px;
-  color: rgba(255,255,255,0.6);
-  width: 70px;
-}
-
-/* ─── WAVE BARS ──────────────────────────────────────────── */
-.wave-row {
-  flex-direction: row;
-  align-items: flex-end;
-  gap: 5px;
-  height: 50px;
-}
-
-/* ─── SCROLL PROGRESS ────────────────────────────────────── */
-.scroll-progress-bar {
-  height: 3px;
-  border-radius: 2px;
-  margin: 0 16px 12px;
-  overflow: hidden;
-  background-color: rgba(255,255,255,0.06);
-}
-
-.scroll-progress-fill {
-  height: 3px;
-  background-color: #0ea5e9;
-  border-radius: 2px;
-}
-
-/* ─── SECTION CONTENT SCROLL ─────────────────────────────── */
-.section-scroll {
-  flex: 1;
-}
-
-.section-bottom-pad {
-  height: 40px;
-}
-/* @arkzen:native:style:anim-lab:end */
-
-/* @arkzen:native:animation:rn */
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withSequence,
-  withRepeat,
-  withDelay,
-  interpolate,
-  Extrapolation,
-  Easing,
-  cancelAnimation,
-  runOnJS,
-} from 'react-native-reanimated'
-import { MotiView } from 'moti'
-
-// ─── PAGE MOUNT PRESET ────────────────────────────────────────────────────────
-export const fadeUpPreset = {
-  from:       { opacity: 0, translateY: 8 },
-  animate:    { opacity: 1, translateY: 0 },
-  exit:       { opacity: 0, translateY: -8 },
-  transition: { type: 'timing' as const, duration: 350 },
-}
-
-// ─── REUSABLE PRIMITIVE HOOKS ─────────────────────────────────────────────────
-
-export function useFadeIn(durationMs = 350) {
-  const opacity = useSharedValue(0)
-  const style   = useAnimatedStyle(() => ({ opacity: opacity.value }))
-  const play    = () => { opacity.value = withTiming(1, { duration: durationMs }) }
-  const reset   = () => { opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useSlideUp(durationMs = 400) {
-  const translateY = useSharedValue(24)
-  const opacity    = useSharedValue(0)
-  const style      = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    translateY.value = withTiming(0, { duration: durationMs, easing: Easing.out(Easing.cubic) })
-    opacity.value    = withTiming(1, { duration: durationMs })
-  }
-  const reset = () => { translateY.value = 24; opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useSlideRight() {
-  const translateX = useSharedValue(60)
-  const opacity    = useSharedValue(0)
-  const style      = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    translateX.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.cubic) })
-    opacity.value    = withTiming(1, { duration: 500 })
-  }
-  const reset = () => { translateX.value = 60; opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useScaleBloom() {
-  const scale   = useSharedValue(0.3)
-  const opacity = useSharedValue(0)
-  const style   = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    scale.value   = withSpring(1, { damping: 8, stiffness: 200 })
-    opacity.value = withTiming(1, { duration: 300 })
-  }
-  const reset = () => { scale.value = 0.3; opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useRotateIn() {
-  const rotate  = useSharedValue(-90)
-  const opacity = useSharedValue(0)
-  const style   = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotate.value}deg` }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    rotate.value  = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) })
-    opacity.value = withTiming(1, { duration: 400 })
-  }
-  const reset = () => { rotate.value = -90; opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useElasticScale() {
-  const scaleX  = useSharedValue(0)
-  const opacity = useSharedValue(0)
-  const style   = useAnimatedStyle(() => ({
-    transform: [{ scaleX: scaleX.value }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    scaleX.value  = withSpring(1, { damping: 6, stiffness: 150 })
-    opacity.value = withTiming(1, { duration: 300 })
-  }
-  const reset = () => { scaleX.value = 0; opacity.value = 0 }
-  return { style, play, reset }
-}
-
-export function useSpin() {
-  const rotate = useSharedValue(0)
-  const style  = useAnimatedStyle(() => ({
-    transform: [{ rotate: `${rotate.value}deg` }],
-  }))
-  const play  = () => { rotate.value = withRepeat(withTiming(360, { duration: 1200, easing: Easing.linear }), -1) }
-  const reset = () => { cancelAnimation(rotate); rotate.value = 0 }
-  return { style, play, reset }
-}
-
-export function useBounce() {
-  const translateY = useSharedValue(0)
-  const style      = useAnimatedStyle(() => ({
-    transform: [{ translateY: translateY.value }],
-  }))
-  const play  = () => {
-    translateY.value = withRepeat(
-      withSequence(
-        withTiming(-20, { duration: 400, easing: Easing.out(Easing.quad) }),
-        withTiming(0,  { duration: 400, easing: Easing.in(Easing.quad)  }),
-      ), -1
-    )
-  }
-  const reset = () => { cancelAnimation(translateY); translateY.value = 0 }
-  return { style, play, reset }
-}
-
-export function usePulse() {
-  const scale   = useSharedValue(1)
-  const opacity = useSharedValue(1)
-  const style   = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    opacity: opacity.value,
-  }))
-  const play  = () => {
-    scale.value   = withRepeat(withSequence(withTiming(0.9, { duration: 750 }), withTiming(1, { duration: 750 })), -1)
-    opacity.value = withRepeat(withSequence(withTiming(0.4, { duration: 750 }), withTiming(1, { duration: 750 })), -1)
-  }
-  const reset = () => { cancelAnimation(scale); cancelAnimation(opacity); scale.value = 1; opacity.value = 1 }
-  return { style, play, reset }
-}
-
-export function useShake() {
-  const translateX = useSharedValue(0)
-  const style      = useAnimatedStyle(() => ({
-    transform: [{ translateX: translateX.value }],
-  }))
-  const play  = () => {
-    translateX.value = withRepeat(
-      withSequence(
-        withTiming(-6, { duration: 60 }), withTiming(6, { duration: 60 }),
-        withTiming(-6, { duration: 60 }), withTiming(6, { duration: 60 }),
-        withTiming(0,  { duration: 60 }),
-      ), -1
-    )
-  }
-  const reset = () => { cancelAnimation(translateX); translateX.value = 0 }
-  return { style, play, reset }
-}
-
-export function useFloat() {
-  const translateY = useSharedValue(0)
-  const style      = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }))
-  const play  = () => {
-    translateY.value = withRepeat(
-      withSequence(withTiming(-10, { duration: 1500 }), withTiming(0, { duration: 1500 })), -1
-    )
-  }
-  const reset = () => { cancelAnimation(translateY); translateY.value = 0 }
-  return { style, play, reset }
-}
-
-export function useHeartbeat() {
-  const scale = useSharedValue(1)
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
-  const play  = () => {
-    scale.value = withRepeat(
-      withSequence(
-        withTiming(1.2, { duration: 140 }),
-        withTiming(1,   { duration: 140 }),
-        withTiming(1.15,{ duration: 140 }),
-        withTiming(1,   { duration: 420 }),
-      ), -1
-    )
-  }
-  const reset = () => { cancelAnimation(scale); scale.value = 1 }
-  return { style, play, reset }
-}
-
-export function useWiggle() {
-  const rotate = useSharedValue(0)
-  const style  = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotate.value}deg` }] }))
-  const play  = () => {
-    rotate.value = withRepeat(
-      withSequence(
-        withTiming(-10, { duration: 80 }), withTiming(10, { duration: 80 }),
-        withTiming(-8,  { duration: 80 }), withTiming(8,  { duration: 80 }),
-        withTiming(0,   { duration: 80 }),
-      ), -1
-    )
-  }
-  const reset = () => { cancelAnimation(rotate); rotate.value = 0 }
-  return { style, play, reset }
-}
-
-export function useColorCycle() {
-  // Animates a progress value 0→1 on repeat; JSX reads it and maps to color
-  const progress = useSharedValue(0)
-  const play  = () => { progress.value = withRepeat(withTiming(1, { duration: 3000, easing: Easing.linear }), -1) }
-  const reset = () => { cancelAnimation(progress); progress.value = 0 }
-  return { progress, play, reset }
-}
-
-export function useScale(to = 1.3) {
-  const scale = useSharedValue(1)
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
-  const play  = () => { scale.value = withSpring(to, { damping: 10, stiffness: 120 }) }
-  const reset = () => { scale.value = withSpring(1) }
-  return { style, play, reset }
-}
-
-// ─── TIMELINE HOOK ────────────────────────────────────────────────────────────
-export function useTimeline(onComplete?: () => void) {
-  const bgOpacity   = useSharedValue(0)
-  const titleY      = useSharedValue(30)
-  const titleOp     = useSharedValue(0)
-  const dotsScale   = useSharedValue(0)
-  const bar1        = useSharedValue(0)
-  const bar2        = useSharedValue(0)
-  const bar3        = useSharedValue(0)
-  const bar4        = useSharedValue(0)
-  const badgeOp     = useSharedValue(0)
-  const badgeScale  = useSharedValue(0.5)
-
-  const bgStyle     = useAnimatedStyle(() => ({ opacity: bgOpacity.value }))
-  const titleStyle  = useAnimatedStyle(() => ({ opacity: titleOp.value, transform: [{ translateY: titleY.value }] }))
-  const dotsStyle   = useAnimatedStyle(() => ({ transform: [{ scale: dotsScale.value }] }))
-  const bar1Style   = useAnimatedStyle(() => ({ width: `${bar1.value * 100}%` as any }))
-  const bar2Style   = useAnimatedStyle(() => ({ width: `${bar2.value * 100}%` as any }))
-  const bar3Style   = useAnimatedStyle(() => ({ width: `${bar3.value * 100}%` as any }))
-  const bar4Style   = useAnimatedStyle(() => ({ width: `${bar4.value * 100}%` as any }))
-  const badgeStyle  = useAnimatedStyle(() => ({ opacity: badgeOp.value, transform: [{ scale: badgeScale.value }] }))
-
-  const barStyles = [bar1Style, bar2Style, bar3Style, bar4Style]
-
-  const play = () => {
-    bgOpacity.value  = withTiming(1, { duration: 400 })
-    titleOp.value    = withDelay(450, withTiming(1, { duration: 400 }))
-    titleY.value     = withDelay(450, withSpring(0, { damping: 14 }))
-    dotsScale.value  = withDelay(700, withSpring(1, { damping: 8, stiffness: 200 }))
-    bar1.value       = withDelay(900, withTiming(0.70, { duration: 500 }))
-    bar2.value       = withDelay(1050, withTiming(0.85, { duration: 500 }))
-    bar3.value       = withDelay(1200, withTiming(0.55, { duration: 500 }))
-    bar4.value       = withDelay(1350, withTiming(0.90, { duration: 500 }))
-    badgeOp.value    = withDelay(1900, withTiming(1, { duration: 400 }))
-    badgeScale.value = withDelay(1900, withSpring(1, { damping: 8, stiffness: 150 }))
-    if (onComplete) {
-      badgeOp.value  = withDelay(1900, withTiming(1, { duration: 400 }, (finished) => {
-        if (finished) runOnJS(onComplete)()
-      }))
-    }
-  }
-
-  const reset = () => {
-    bgOpacity.value = 0; titleY.value = 30; titleOp.value = 0
-    dotsScale.value = 0; bar1.value = 0; bar2.value = 0; bar3.value = 0; bar4.value = 0
-    badgeOp.value = 0; badgeScale.value = 0.5
-  }
-
-  return { bgStyle, titleStyle, dotsStyle, barStyles, badgeStyle, play, reset }
-}
-
-// ─── STAGGER HOOK ─────────────────────────────────────────────────────────────
-export function useStaggerItems(count: number, delayPerItem = 80) {
-  const values = Array.from({ length: count }, () => ({
-    op: useSharedValue(0),
-    y:  useSharedValue(20),
-  }))
-  const styles = values.map(v => useAnimatedStyle(() => ({
-    opacity: v.op.value,
-    transform: [{ translateY: v.y.value }],
-  })))
-  const play = () => {
-    values.forEach((v, i) => {
-      v.op.value = withDelay(i * delayPerItem, withTiming(1, { duration: 350 }))
-      v.y.value  = withDelay(i * delayPerItem, withSpring(0, { damping: 14 }))
-    })
-  }
-  const reset = () => { values.forEach(v => { v.op.value = 0; v.y.value = 20 }) }
-  return { styles, play, reset }
-}
-
-// ─── GESTURE PRESS HOOKS ──────────────────────────────────────────────────────
-export function usePressBounce() {
-  const scale = useSharedValue(1)
-  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
-  const onPressIn  = () => { scale.value = withSpring(0.92, { damping: 10 }) }
-  const onPressOut = () => { scale.value = withSpring(1,    { damping: 10 }) }
-  return { style, onPressIn, onPressOut }
-}
-
-export function usePressColor() {
-  const progress = useSharedValue(0)
-  const style    = useAnimatedStyle(() => ({
-    opacity: interpolate(progress.value, [0, 1], [1, 0.6], Extrapolation.CLAMP),
-    transform: [{ scale: interpolate(progress.value, [0, 1], [1, 0.95], Extrapolation.CLAMP) }],
-  }))
-  const onPressIn  = () => { progress.value = withTiming(1, { duration: 100 }) }
-  const onPressOut = () => { progress.value = withTiming(0, { duration: 200 }) }
-  return { style, onPressIn, onPressOut }
-}
-
-export function useHoverRotate() {
-  const rotate = useSharedValue(0)
-  const style  = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotate.value}deg` }] }))
-  const onPressIn  = () => { rotate.value = withTiming(360, { duration: 600 }) }
-  const onPressOut = () => { rotate.value = withTiming(0,   { duration: 0   }) }
-  return { style, onPressIn, onPressOut }
-}
-/* @arkzen:native:animation:rn:end */
-
-/* @arkzen:native:components:helpers */
-import React, { useState, useCallback } from 'react'
-import { MotiView } from 'moti'
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  withSpring,
-  withSequence,
-  withRepeat,
-  withDelay,
-  Easing,
-  cancelAnimation,
-} from 'react-native-reanimated'
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
-
-// ─── NAV CONFIG ───────────────────────────────────────────────────────────────
-const NAV_SECTIONS = [
-  { id: 'entrance',    label: 'Entrance',     icon: '▶', color: '#6366f1' },
-  { id: 'timeline',    label: 'Timeline',     icon: '⏱', color: '#a78bfa' },
-  { id: 'stagger',     label: 'Stagger',      icon: '⠿', color: '#f59e0b' },
-  { id: 'press',       label: 'Press / Tap',  icon: '👆', color: '#0ea5e9' },
-  { id: 'moti',        label: 'Moti Variants',icon: '✦', color: '#f59e0b' },
-  { id: 'keyframes',   label: 'Keyframes',    icon: '◈', color: '#f43f5e' },
-  { id: 'loop',        label: 'Loop / Repeat',icon: '⟳', color: '#10b981' },
-  { id: 'transforms',  label: 'Transforms',   icon: '⬡', color: '#a855f7' },
-  { id: 'spring',      label: 'Spring',       icon: '⟲', color: '#ec4899' },
-  { id: 'easing',      label: 'Easing',       icon: '⇄', color: '#f97316' },
-]
-
-// ─── SHARED CARD COMPONENTS ───────────────────────────────────────────────────
-const DemoCard = ({ title, desc, full = false, children }: {
-  title: string; desc: string; full?: boolean; children: React.ReactNode
-}) => (
-  <View style={full ? s.demoCardFull : s.demoCard}>
-    <View style={s.demoCardHeader}>
-      <Text style={s.demoCardTitle}>{title}</Text>
-      <Text style={s.demoCardDesc}>{desc}</Text>
-    </View>
-    <View style={s.demoCardStage}>{children}</View>
-  </View>
-)
-
-const PlayReset = ({ onPlay, onReset }: { onPlay: () => void; onReset: () => void }) => (
-  <View style={s.btnRow}>
-    <TouchableOpacity style={s.playBtn} onPress={onPlay}>
-      <Text style={s.playBtnLabel}>▶ Play</Text>
-    </TouchableOpacity>
-    <TouchableOpacity style={s.resetBtn} onPress={onReset}>
-      <Text style={s.resetBtnLabel}>↺</Text>
-    </TouchableOpacity>
-  </View>
-)
-
-const SectionHeader = ({ icon, title, subtitle, color }: {
-  icon: string; title: string; subtitle: string; color: string
-}) => (
-  <View style={s.sectionHeader}>
-    <View style={[s.sectionHeaderIcon, { backgroundColor: `${color}22` }]}>
-      <Text style={{ fontSize: 16 }}>{icon}</Text>
-    </View>
-    <View style={{ flex: 1 }}>
-      <Text style={s.sectionHeaderTitle}>{title}</Text>
-      <Text style={s.sectionHeaderSub}>{subtitle}</Text>
-    </View>
-  </View>
-)
-
-// ─── SECTION: ENTRANCE ────────────────────────────────────────────────────────
-const EntranceSection = () => {
-  const fadeIn   = useFadeIn()
-  const slideUp  = useSlideUp()
-  const slideR   = useSlideRight()
-  const bloom    = useScaleBloom()
-  const rotateIn = useRotateIn()
-  const elastic  = useElasticScale()
-
-  const DEMOS = [
-    { label: 'Fade In',      desc: 'withTiming opacity',          hook: fadeIn,  color: '#6366f1' },
-    { label: 'Slide Up',     desc: 'withTiming translateY',       hook: slideUp, color: '#8b5cf6' },
-    { label: 'Slide Right',  desc: 'withTiming translateX',       hook: slideR,  color: '#a855f7' },
-    { label: 'Scale Bloom',  desc: 'withSpring scale from 0.3',   hook: bloom,   color: '#c084fc' },
-    { label: 'Rotate In',    desc: 'withTiming -90° → 0°',        hook: rotateIn,color: '#d946ef' },
-    { label: 'Elastic Scale',desc: 'withSpring scaleX from 0',    hook: elastic, color: '#e879f9' },
-  ]
-
-  return (
-    <>
-      <SectionHeader icon="▶" title="Entrance Animations" subtitle="withTiming, withSpring entrance variants" color="#6366f1" />
-      <View style={s.demoGrid}>
-        {DEMOS.map(({ label, desc, hook, color }) => (
-          <DemoCard key={label} title={label} desc={desc}>
-            <Animated.View style={[s.animBox, { backgroundColor: color }, hook.style]}>
-              <Text style={s.animBoxLabel}>{label.split(' ')[0].toUpperCase()}</Text>
-            </Animated.View>
-            <PlayReset onPlay={hook.play} onReset={hook.reset} />
-          </DemoCard>
-        ))}
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: TIMELINE ────────────────────────────────────────────────────────
-const TimelineSection = () => {
-  const [playing, setPlaying] = useState(false)
-  const tl = useTimeline(() => setPlaying(false))
-  const BAR_WIDTHS = [70, 85, 55, 90]
-  const BAR_COLORS = ['#8b5cf6', '#a78bfa', '#c084fc', '#d946ef']
-
-  const handlePlay = () => {
-    setPlaying(true)
-    tl.reset()
-    // small delay so reset renders before play
-    setTimeout(() => tl.play(), 50)
-  }
-
-  return (
-    <>
-      <SectionHeader icon="⏱" title="Timeline Sequence" subtitle="Chained withDelay — sequential orchestration" color="#a78bfa" />
-      <DemoCard title="Chained Timeline" desc="Multiple animations queued with withDelay" full>
-        <View style={s.btnRow}>
-          <TouchableOpacity style={[s.playBtn, playing && { opacity: 0.5 }]} onPress={handlePlay} disabled={playing}>
-            <Text style={s.playBtnLabel}>{playing ? '⏳ Playing...' : '▶ Play Timeline'}</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={s.resetBtn} onPress={() => { setPlaying(false); tl.reset() }}>
-            <Text style={s.resetBtnLabel}>↺</Text>
-          </TouchableOpacity>
-        </View>
-        <Animated.View style={[s.tlStage, tl.bgStyle]}>
-          <Animated.Text style={[s.tlTitle, tl.titleStyle]}>Timeline Magic ✨</Animated.Text>
-          <Animated.View style={[s.tlDotsRow, tl.dotsStyle]}>
-            {['●','●','●','●','●'].map((d, i) => (
-              <Text key={i} style={s.tlDot}>{d}</Text>
-            ))}
-          </Animated.View>
-          <View style={{ width: '100%', gap: 6 }}>
-            {BAR_WIDTHS.map((w, i) => (
-              <View key={i} style={s.tlBarWrap}>
-                <Animated.View style={[s.tlBarFill, { backgroundColor: BAR_COLORS[i] }, tl.barStyles[i]]} />
-              </View>
-            ))}
-          </View>
-          <Animated.View style={[s.tlBadge, tl.badgeStyle]}>
-            <Text style={s.tlBadgeLabel}>Complete!</Text>
-          </Animated.View>
-        </Animated.View>
-      </DemoCard>
-    </>
-  )
-}
-
-// ─── SECTION: STAGGER ─────────────────────────────────────────────────────────
-const StaggerSection = () => {
-  const linear  = useStaggerItems(6, 80)
-  const center  = useStaggerItems(7, 70)
-  const fromEnd = useStaggerItems(6, 60)
-  const grid    = useStaggerItems(12, 50)
-
-  const COLORS_6  = ['#f59e0b','#f97316','#ef4444','#ec4899','#a855f7','#6366f1']
-  const COLORS_7  = ['#6366f1','#818cf8','#a5b4fc','#c4b5fd','#a5b4fc','#818cf8','#6366f1']
-  const COLORS_E  = ['#10b981','#34d399','#6ee7b7','#a7f3d0','#6ee7b7','#34d399']
-  const GRID_COLS = Array.from({ length: 12 }, (_, i) => `hsl(${i * 25}, 80%, 58%)`)
-
-  return (
-    <>
-      <SectionHeader icon="⠿" title="Stagger Animations" subtitle="withDelay staggered arrays — linear, center, end, grid" color="#f59e0b" />
-      <View style={s.demoGrid}>
-        <DemoCard title="Linear" desc="stagger left-to-right">
-          <View style={s.staggerRow}>
-            {COLORS_6.map((c, i) => (
-              <Animated.View key={i} style={[{ width: 28, height: 28, borderRadius: 6, backgroundColor: c }, linear.styles[i]]} />
-            ))}
-          </View>
-          <PlayReset onPlay={linear.play} onReset={linear.reset} />
-        </DemoCard>
-        <DemoCard title="From Center" desc="stagger outward from middle">
-          <View style={s.staggerRow}>
-            {COLORS_7.map((c, i) => (
-              <Animated.View key={i} style={[{ width: 24, height: 24, borderRadius: 6, backgroundColor: c }, center.styles[i]]} />
-            ))}
-          </View>
-          <PlayReset onPlay={center.play} onReset={center.reset} />
-        </DemoCard>
-        <DemoCard title="From End" desc="stagger right-to-left">
-          <View style={s.staggerRow}>
-            {COLORS_E.map((c, i) => (
-              <Animated.View key={i} style={[{ width: 28, height: 28, borderRadius: 6, backgroundColor: c }, fromEnd.styles[i]]} />
-            ))}
-          </View>
-          <PlayReset onPlay={fromEnd.play} onReset={fromEnd.reset} />
-        </DemoCard>
-        <DemoCard title="Grid (3×4)" desc="2D grid stagger wave">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
-            {GRID_COLS.map((c, i) => (
-              <Animated.View key={i} style={[{ width: 24, height: 24, borderRadius: 5, backgroundColor: c }, grid.styles[i]]} />
-            ))}
-          </View>
-          <PlayReset onPlay={grid.play} onReset={grid.reset} />
-        </DemoCard>
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: PRESS / TAP ─────────────────────────────────────────────────────
-const PressSection = () => {
-  const bounce  = usePressBounce()
-  const color   = usePressColor()
-  const rotator = useHoverRotate()
-  const ripple  = useScale(1.25)
-
-  return (
-    <>
-      <SectionHeader icon="👆" title="Press / Tap Gestures" subtitle="onPressIn/Out driving Reanimated shared values" color="#0ea5e9" />
-      <View style={s.demoGrid}>
-        <DemoCard title="Scale Bounce" desc="withSpring on press in/out">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#0ea5e9' }, bounce.style]}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPressIn={bounce.onPressIn}
-              onPressOut={bounce.onPressOut}
-              activeOpacity={1}
-            >
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>Hold me</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </DemoCard>
-        <DemoCard title="Opacity Dim" desc="interpolate opacity on press">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#6366f1' }, color.style]}>
-            <TouchableOpacity
-              style={{ flex: 1 }}
-              onPressIn={color.onPressIn}
-              onPressOut={color.onPressOut}
-              activeOpacity={1}
-            >
-              <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>Press</Text>
-              </View>
-            </TouchableOpacity>
-          </Animated.View>
-        </DemoCard>
-        <DemoCard title="Icon Rotate" desc="360° spin on press-in">
-          <Animated.View style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(14,165,233,0.15)', alignItems: 'center', justifyContent: 'center' }, rotator.style]}>
-            <TouchableOpacity
-              onPressIn={rotator.onPressIn}
-              onPressOut={rotator.onPressOut}
-              activeOpacity={1}
-              style={{ alignItems: 'center', justifyContent: 'center', width: 52, height: 52 }}
-            >
-              <Text style={{ fontSize: 24 }}>↻</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </DemoCard>
-        <DemoCard title="Ripple Scale" desc="withSpring scale up on tap">
-          <Animated.View style={[s.animCircle, { backgroundColor: '#10b981' }, ripple.style]}>
-            <TouchableOpacity
-              onPress={ripple.play}
-              onLongPress={ripple.reset}
-              activeOpacity={0.9}
-              style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}
-            >
-              <Text style={{ color: 'white', fontWeight: '800', fontSize: 10 }}>TAP</Text>
-            </TouchableOpacity>
-          </Animated.View>
-        </DemoCard>
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: MOTI VARIANTS ───────────────────────────────────────────────────
-const MotiSection = () => {
-  const [visible, setVisible] = useState(false)
-  const [show1, setShow1]     = useState(true)
-  const [show2, setShow2]     = useState(true)
-  const [show3, setShow3]     = useState(true)
-
-  return (
-    <>
-      <SectionHeader icon="✦" title="Moti Variants" subtitle="MotiView from/animate/exit — AnimatePresence equivalent" color="#f59e0b" />
-      <DemoCard title="Stagger Children" desc="MotiView with stagger delay" full>
-        <View style={s.btnRow}>
-          <TouchableOpacity style={s.playBtn} onPress={() => setVisible(v => !v)}>
-            <Text style={s.playBtnLabel}>{visible ? 'Hide' : 'Animate In'}</Text>
-          </TouchableOpacity>
-        </View>
-        {visible && (
-          <View style={[s.staggerRow, { marginTop: 12 }]}>
-            {['Alpha','Beta','Gamma','Delta','Epsilon','Zeta'].map((w, i) => (
-              <MotiView
-                key={w}
-                from={{ opacity: 0, translateY: 20 }}
-                animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'spring', delay: i * 100, damping: 14 }}
-                style={[s.animPill, { backgroundColor: '#f59e0b' }]}
-              >
-                <Text style={s.animPillLabel}>{w}</Text>
-              </MotiView>
-            ))}
-          </View>
-        )}
-      </DemoCard>
-      <View style={s.demoGrid}>
-        <DemoCard title="Fade + Slide" desc="from x:-40 animate x:0">
-          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
-            {show1 && (
-              <MotiView
-                from={{ opacity: 0, translateX: -40 }}
-                animate={{ opacity: 1, translateX: 0 }}
-                exit={{ opacity: 0, translateX: 40 }}
-                style={{ width: 80, height: 40, borderRadius: 8, backgroundColor: '#3b82f6' }}
-              />
-            )}
-          </View>
-          <TouchableOpacity style={s.playBtn} onPress={() => setShow1(v => !v)}>
-            <Text style={s.playBtnLabel}>Toggle</Text>
-          </TouchableOpacity>
-        </DemoCard>
-        <DemoCard title="Scale Bounce" desc="from scale:0 with spring">
-          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
-            {show2 && (
-              <MotiView
-                from={{ opacity: 0, scale: 0 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#10b981' }}
-              />
-            )}
-          </View>
-          <TouchableOpacity style={s.playBtn} onPress={() => setShow2(v => !v)}>
-            <Text style={s.playBtnLabel}>Toggle</Text>
-          </TouchableOpacity>
-        </DemoCard>
-        <DemoCard title="Rotate In" desc="from rotate:-180 with spring">
-          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
-            {show3 && (
-              <MotiView
-                from={{ opacity: 0, rotate: '-180deg' }}
-                animate={{ opacity: 1, rotate: '0deg' }}
-                exit={{ opacity: 0, rotate: '180deg' }}
-                transition={{ type: 'spring', stiffness: 200 }}
-                style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#a855f7' }}
-              />
-            )}
-          </View>
-          <TouchableOpacity style={s.playBtn} onPress={() => setShow3(v => !v)}>
-            <Text style={s.playBtnLabel}>Toggle</Text>
-          </TouchableOpacity>
-        </DemoCard>
-        <DemoCard title="whileInView equiv." desc="MotiView animate on mount">
-          <MotiView
-            from={{ opacity: 0, scale: 0.5 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 18 }}
-            style={{ width: 100, height: 44, borderRadius: 10, backgroundColor: '#0ea5e9', alignItems: 'center', justifyContent: 'center' }}
-          >
-            <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>In View!</Text>
-          </MotiView>
-        </DemoCard>
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: KEYFRAMES ───────────────────────────────────────────────────────
-const KeyframesSection = () => {
-  const bounce   = useBounce()
-  const pulse    = usePulse()
-  const shake    = useShake()
-  const float    = useFloat()
-  const heart    = useHeartbeat()
-  const wiggle   = useWiggle()
-
-  return (
-    <>
-      <SectionHeader icon="◈" title="Keyframe Sequences" subtitle="withSequence multi-step array animations" color="#f43f5e" />
-      <View style={s.demoGrid}>
-        {[
-          { label: 'Bounce',    desc: 'y: 0 → -20 → 0 loop',   hook: bounce, color: '#f43f5e' },
-          { label: 'Pulse',     desc: 'scale+opacity oscillate', hook: pulse,  color: '#f97316' },
-          { label: 'Shake',     desc: 'x: ±6px sequence fast',  hook: shake,  color: '#eab308' },
-          { label: 'Float',     desc: 'y: 0 → -10 → 0 slow',   hook: float,  color: '#22c55e' },
-          { label: 'Heartbeat', desc: 'double scale pulse',     hook: heart,  color: '#ec4899' },
-          { label: 'Wiggle',    desc: 'rotate ±10deg sequence', hook: wiggle, color: '#a855f7' },
-        ].map(({ label, desc, hook, color }) => (
-          <DemoCard key={label} title={label} desc={desc}>
-            <Animated.View style={[s.animBox, { backgroundColor: color }, hook.style]}>
-              <Text style={s.animBoxLabel}>{label.toUpperCase()}</Text>
-            </Animated.View>
-            <PlayReset onPlay={hook.play} onReset={hook.reset} />
-          </DemoCard>
-        ))}
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: LOOP / REPEAT ───────────────────────────────────────────────────
-const LoopSection = () => {
-  const spin1    = useSpin()
-  const pulse2   = usePulse()
-  const wave0    = useBounce()
-  const wave1    = useBounce()
-  const wave2    = useBounce()
-  const wave3    = useBounce()
-  const wave4    = useBounce()
-  const [waveOn, setWaveOn] = useState(false)
-
-  const WAVE_HOOKS = [wave0, wave1, wave2, wave3, wave4]
-  const WAVE_COLORS = ['#0ea5e9','#38bdf8','#7dd3fc','#bae6fd','#e0f2fe']
-
-  const playWave = () => {
-    setWaveOn(true)
-    WAVE_HOOKS.forEach((h, i) => setTimeout(() => h.play(), i * 120))
-  }
-  const resetWave = () => {
-    setWaveOn(false)
-    WAVE_HOOKS.forEach(h => h.reset())
-  }
-
-  return (
-    <>
-      <SectionHeader icon="⟳" title="Loop / Repeat" subtitle="withRepeat(-1) — infinite looping animations" color="#10b981" />
-      <View style={s.demoGrid}>
-        <DemoCard title="Spin (infinite)" desc="withRepeat(-1) Easing.linear">
-          <Animated.View style={[s.animBox, { backgroundColor: '#6366f1' }, spin1.style]}>
-            <Text style={s.animBoxLabel}>SPIN</Text>
-          </Animated.View>
-          <PlayReset onPlay={spin1.play} onReset={spin1.reset} />
-        </DemoCard>
-        <DemoCard title="Pulse (infinite)" desc="withRepeat(-1) scale+opacity">
-          <Animated.View style={[s.animCircle, { backgroundColor: '#f43f5e' }, pulse2.style]} />
-          <PlayReset onPlay={pulse2.play} onReset={pulse2.reset} />
-        </DemoCard>
-        <DemoCard title="Wave Bars" desc="5 bars staggered bounce loop" full>
-          <View style={[s.waveRow, { justifyContent: 'center' }]}>
-            {WAVE_HOOKS.map((h, i) => (
-              <Animated.View
-                key={i}
-                style={[{ width: 10, height: 44, borderRadius: 5, backgroundColor: WAVE_COLORS[i] }, h.style]}
-              />
-            ))}
-          </View>
-          <View style={s.btnRow}>
-            <TouchableOpacity style={s.playBtn} onPress={playWave}>
-              <Text style={s.playBtnLabel}>▶ Wave</Text>
-            </TouchableOpacity>
-            <TouchableOpacity style={s.resetBtn} onPress={resetWave}>
-              <Text style={s.resetBtnLabel}>↺</Text>
-            </TouchableOpacity>
-          </View>
-        </DemoCard>
-        <DemoCard title="Color Cycle (Moti)" desc="MotiView background array loop">
-          <MotiView
-            from={{ backgroundColor: '#f43f5e' }}
-            animate={{ backgroundColor: ['#f43f5e','#f97316','#eab308','#22c55e','#0ea5e9','#a855f7','#f43f5e'] }}
-            transition={{ loop: true, duration: 4000, type: 'timing' }}
-            style={{ width: 72, height: 72, borderRadius: 12 }}
-          />
-        </DemoCard>
-        <DemoCard title="Border Radius Morph" desc="shape morphs via MotiView loop">
-          <MotiView
-            animate={{ borderRadius: [12, 26, 6, 26, 12] }}
-            transition={{ loop: true, duration: 2500, type: 'timing' }}
-            style={{ width: 64, height: 64, backgroundColor: '#a855f7' }}
-          />
-        </DemoCard>
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: TRANSFORMS ─────────────────────────────────────────────────────
-const TransformsSection = () => {
-  const translate = useSlideUp()
-  const scaleAnim = useScaleBloom()
-  const rotAnim   = useRotateIn()
-  const elastic2  = useElasticScale()
-
-  return (
-    <>
-      <SectionHeader icon="⬡" title="Transform Variants" subtitle="translate, rotate, scale, skew, combined — tap to trigger" color="#a855f7" />
-      <View style={s.demoGrid}>
-        <DemoCard title="translateY" desc="withTiming y: 24 → 0">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#a855f7' }, translate.style]}>
-            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12, lineHeight: 56 }}>Y</Text>
-          </Animated.View>
-          <PlayReset onPlay={translate.play} onReset={translate.reset} />
-        </DemoCard>
-        <DemoCard title="scale" desc="withSpring scale 0.3→1">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#8b5cf6' }, scaleAnim.style]}>
-            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12, lineHeight: 56 }}>S</Text>
-          </Animated.View>
-          <PlayReset onPlay={scaleAnim.play} onReset={scaleAnim.reset} />
-        </DemoCard>
-        <DemoCard title="rotate" desc="withTiming -90°→0°">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#6366f1' }, rotAnim.style]}>
-            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12, lineHeight: 56 }}>R</Text>
-          </Animated.View>
-          <PlayReset onPlay={rotAnim.play} onReset={rotAnim.reset} />
-        </DemoCard>
-        <DemoCard title="scaleX elastic" desc="withSpring scaleX 0→1">
-          <Animated.View style={[s.gestureTarget, { backgroundColor: '#c084fc' }, elastic2.style]}>
-            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12, lineHeight: 56 }}>sX</Text>
-          </Animated.View>
-          <PlayReset onPlay={elastic2.play} onReset={elastic2.reset} />
-        </DemoCard>
-        <DemoCard title="Combined" desc="slide + scale + rotate together" full>
-          <CombinedTransformDemo />
-        </DemoCard>
-      </View>
-    </>
-  )
-}
-
-const CombinedTransformDemo = () => {
-  const sv  = useSharedValue(0)
-  const style = useAnimatedStyle(() => ({
-    opacity:   sv.value,
-    transform: [
-      { translateY: (1 - sv.value) * 30 },
-      { scale:      0.4 + sv.value * 0.6 },
-      { rotate:     `${(1 - sv.value) * -45}deg` },
-    ],
-  }))
-  const play  = () => { sv.value = withSpring(1, { damping: 10, stiffness: 120 }) }
-  const reset = () => { sv.value = 0 }
-  return (
-    <View style={{ alignItems: 'center' }}>
-      <Animated.View style={[{ width: 80, height: 50, borderRadius: 10, backgroundColor: '#ec4899', alignItems: 'center', justifyContent: 'center' }, style]}>
-        <Text style={{ color: 'white', fontWeight: '800', fontSize: 12 }}>Combined</Text>
-      </Animated.View>
-      <PlayReset onPlay={play} onReset={reset} />
-    </View>
-  )
-}
-
-// ─── SECTION: SPRING ──────────────────────────────────────────────────────────
-const SpringSection = () => {
-  const makeSpring = (damping: number, stiffness: number) => {
-    const sv    = useSharedValue(0)
-    const style = useAnimatedStyle(() => ({ transform: [{ translateX: sv.value }] }))
-    const play  = () => { sv.value = withSpring(80, { damping, stiffness }) }
-    const reset = () => { sv.value = withSpring(0, { damping: 20, stiffness: 200 }) }
-    return { style, play, reset }
-  }
-
-  const springConfigs = [
-    { label: 'Bouncy',   desc: 'damping:4 stiffness:200',  d: 4,  k: 200, color: '#ec4899' },
-    { label: 'Snappy',   desc: 'damping:10 stiffness:400', d: 10, k: 400, color: '#f97316' },
-    { label: 'Wobbly',   desc: 'damping:2 stiffness:80',   d: 2,  k: 80,  color: '#a855f7' },
-    { label: 'Stiff',    desc: 'damping:20 stiffness:300', d: 20, k: 300, color: '#0ea5e9' },
-    { label: 'Slow',     desc: 'damping:15 stiffness:40',  d: 15, k: 40,  color: '#10b981' },
-    { label: 'Elastic',  desc: 'damping:6 stiffness:150',  d: 6,  k: 150, color: '#6366f1' },
-  ]
-
-  const springs = springConfigs.map(c => makeSpring(c.d, c.k))
-
-  return (
-    <>
-      <SectionHeader icon="⟲" title="Spring Physics" subtitle="withSpring — damping and stiffness variants" color="#ec4899" />
-      <View style={s.demoGrid}>
-        {springConfigs.map(({ label, desc, color }, i) => (
-          <DemoCard key={label} title={label} desc={desc}>
-            <Animated.View style={[s.animBox, { backgroundColor: color }, springs[i].style]}>
-              <Text style={s.animBoxLabel}>{label.toUpperCase()}</Text>
-            </Animated.View>
-            <PlayReset onPlay={springs[i].play} onReset={springs[i].reset} />
-          </DemoCard>
-        ))}
-      </View>
-    </>
-  )
-}
-
-// ─── SECTION: EASING ──────────────────────────────────────────────────────────
-const EasingSection = () => {
-  const makeEasingDemo = (easingFn: any, label: string, color: string) => {
-    const sv    = useSharedValue(0)
-    const style = useAnimatedStyle(() => ({ transform: [{ translateX: sv.value }] }))
-    const play  = () => { sv.value = withTiming(80, { duration: 700, easing: easingFn }) }
-    const reset = () => { sv.value = 0 }
-    return { style, play, reset, label, color }
-  }
-
-  const demos = [
-    makeEasingDemo(Easing.linear,            'linear',      '#6366f1'),
-    makeEasingDemo(Easing.ease,              'ease',        '#8b5cf6'),
-    makeEasingDemo(Easing.in(Easing.quad),   'ease-in',     '#a855f7'),
-    makeEasingDemo(Easing.out(Easing.quad),  'ease-out',    '#c084fc'),
-    makeEasingDemo(Easing.inOut(Easing.quad),'ease-in-out', '#d946ef'),
-    makeEasingDemo(Easing.out(Easing.back(2.5)), 'back.out','#ec4899'),
-    makeEasingDemo(Easing.out(Easing.elastic(1)),'elastic', '#f43f5e'),
-    makeEasingDemo(Easing.out(Easing.bounce),    'bounce',  '#f97316'),
-  ]
-
-  return (
-    <>
-      <SectionHeader icon="⇄" title="Easing Functions" subtitle="withTiming easing variants — slide right to compare" color="#f97316" />
-      <View style={s.demoGrid}>
-        {demos.map(({ style, play, reset, label, color }) => (
-          <DemoCard key={label} title={label} desc="withTiming 700ms">
-            <Animated.View style={[s.animBox, { backgroundColor: color }, style]}>
-              <Text style={s.animBoxLabel}>{label.split('.')[0].toUpperCase()}</Text>
-            </Animated.View>
-            <PlayReset onPlay={play} onReset={reset} />
-          </DemoCard>
-        ))}
-      </View>
-    </>
-  )
-}
-
-/* @arkzen:native:components:helpers:end */
-
-/* @arkzen:native:page:index */
-/* @arkzen:native:page:layout:default */
-
-// ─── MAIN PAGE ────────────────────────────────────────────────────────────────
-const AnimationLabNativePage = () => {
-  const [activeSection, setActiveSection] = useState('entrance')
-
-  const renderSection = useCallback(() => {
-    switch (activeSection) {
-      case 'entrance':   return <EntranceSection />
-      case 'timeline':   return <TimelineSection />
-      case 'stagger':    return <StaggerSection />
-      case 'press':      return <PressSection />
-      case 'moti':       return <MotiSection />
-      case 'keyframes':  return <KeyframesSection />
-      case 'loop':       return <LoopSection />
-      case 'transforms': return <TransformsSection />
-      case 'spring':     return <SpringSection />
-      case 'easing':     return <EasingSection />
-      default:           return <EntranceSection />
-    }
-  }, [activeSection])
-
-  const activeNav = NAV_SECTIONS.find(n => n.id === activeSection)
-
-  return (
-    <MotiView {...fadeUpPreset} style={s.root}>
-      {/* ── Top header ── */}
-      <View style={s.header}>
-        <Text style={s.headerTitle}>🎬 Animation Lab</Text>
-        <Text style={s.headerSub}>Reanimated · Moti · Spring · Easing</Text>
-      </View>
-
-      {/* ── Horizontal nav tabs ── */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={s.navScroll}
-        contentContainerStyle={s.navScrollContent}
-      >
-        {NAV_SECTIONS.map(({ id, label, icon, color }) => {
-          const active = activeSection === id
-          return (
-            <TouchableOpacity
-              key={id}
-              style={[s.navTab, active && s.navTabActive, active && { borderBottomColor: color }]}
-              onPress={() => setActiveSection(id)}
-              activeOpacity={0.7}
-            >
-              <Text style={s.navTabIcon}>{icon}</Text>
-              <Text style={[s.navTabLabel, active && s.navTabLabelActive]}>{label}</Text>
-            </TouchableOpacity>
-          )
-        })}
-      </ScrollView>
-
-      {/* ── Section content ── */}
-      <MotiView
-        key={activeSection}
-        from={{ opacity: 0, translateY: 10 }}
-        animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 220 }}
-        style={s.sectionScroll}
-      >
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {renderSection()}
-          <View style={s.sectionBottomPad} />
-        </ScrollView>
-      </MotiView>
-    </MotiView>
-  )
-}
-
-export default AnimationLabNativePage
-/* @arkzen:native:page:index:end */
 
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */
@@ -3168,7 +1772,6 @@ const IndexPage = () => {
 
   return (
     <div ref={pageRef} className="anim-lab-root">
-      {/* Sidebar */}
       <aside className="anim-lab-sidebar">
         <div className="anim-lab-logo">
           <h1>🎬 Animation Lab</h1>
@@ -3186,7 +1789,6 @@ const IndexPage = () => {
         ))}
       </aside>
 
-      {/* Content */}
       <main className="anim-lab-content">
         <AnimatePresence mode="wait">
           <motion.div
@@ -3205,3 +1807,1919 @@ const IndexPage = () => {
 }
 
 /* @arkzen:web:page:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SHARED COMPONENTS (Expo + RN bare)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:components:shared */
+
+/* @arkzen:import:expo */
+import React, { useState, useCallback, useRef } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { MotiView, MotiText } from 'moti'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withSequence,
+  withRepeat,
+  withDelay,
+  interpolate,
+  Extrapolation,
+  Easing,
+  cancelAnimation,
+  runOnJS,
+} from 'react-native-reanimated'
+import { Play, RotateCcw } from 'lucide-react-native'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useCallback, useRef } from 'react'
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Dimensions } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+import { MotiView, MotiText } from 'moti'
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withSequence,
+  withRepeat,
+  withDelay,
+  interpolate,
+  Extrapolation,
+  Easing,
+  cancelAnimation,
+  runOnJS,
+} from 'react-native-reanimated'
+import { Play, RotateCcw } from 'lucide-react-native'
+/* @arkzen:import:rn:end */
+
+// ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
+interface AnimLabState {
+  activeSection: string
+  setActiveSection: (s: string) => void
+  playingDemo: string | null
+  setPlayingDemo: (id: string | null) => void
+  resetKey: number
+  triggerReset: () => void
+}
+
+export const useAnimLabStore = create<AnimLabState>((set) => ({
+  activeSection: 'entrance',
+  setActiveSection: (s) => set({ activeSection: s }),
+  playingDemo: null,
+  setPlayingDemo: (id) => set({ playingDemo: id }),
+  resetKey: 0,
+  triggerReset: () => set((s) => ({ resetKey: s.resetKey + 1 })),
+}))
+
+// ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
+export const NAV_SECTIONS_NATIVE = [
+  { id: 'entrance',    label: 'Entrance',     icon: '▶', color: '#6366f1' },
+  { id: 'timeline',    label: 'Timeline',     icon: '⏱', color: '#a78bfa' },
+  { id: 'stagger',     label: 'Stagger',      icon: '⠿', color: '#f59e0b' },
+  { id: 'press',       label: 'Press / Tap',  icon: '👆', color: '#0ea5e9' },
+  { id: 'moti',        label: 'Moti Variants',icon: '✦', color: '#f59e0b' },
+  { id: 'keyframes',   label: 'Keyframes',    icon: '◈', color: '#f43f5e' },
+  { id: 'loop',        label: 'Loop / Repeat',icon: '⟳', color: '#10b981' },
+  { id: 'transforms',  label: 'Transforms',   icon: '⬡', color: '#a855f7' },
+  { id: 'spring',      label: 'Spring',       icon: '⟲', color: '#ec4899' },
+  { id: 'easing',      label: 'Easing',       icon: '⇄', color: '#f97316' },
+]
+
+// ─── SHARED STYLES ────────────────────────────────────────────────────────────
+export const nativeStyles = StyleSheet.create({
+  root: {
+    flex: 1,
+    backgroundColor: '#09090b',
+  },
+  header: {
+    padding: 20,
+    paddingBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.07)',
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#a78bfa',
+  },
+  headerSub: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.35)',
+    marginTop: 2,
+  },
+  navScroll: {
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.07)',
+  },
+  navScrollContent: {
+    flexDirection: 'row',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+  },
+  navTab: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderBottomWidth: 2,
+    borderBottomColor: 'transparent',
+    marginRight: 4,
+  },
+  navTabActive: {
+    borderBottomColor: '#a78bfa',
+  },
+  navTabIcon: {
+    fontSize: 13,
+    marginRight: 5,
+  },
+  navTabLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.4)',
+  },
+  navTabLabelActive: {
+    color: 'white',
+  },
+  sectionScroll: {
+    flex: 1,
+  },
+  sectionBottomPad: {
+    height: 40,
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 16,
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 14,
+    margin: 16,
+    marginBottom: 12,
+  },
+  sectionHeaderIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 9,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 12,
+  },
+  sectionHeaderTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: 'white',
+    marginBottom: 2,
+  },
+  sectionHeaderSub: {
+    fontSize: 11,
+    color: 'rgba(255,255,255,0.4)',
+  },
+  demoGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    paddingHorizontal: 12,
+    marginBottom: 12,
+  },
+  demoCard: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 14,
+    overflow: 'hidden',
+    width: '46%',
+    margin: '2%',
+  },
+  demoCardFull: {
+    backgroundColor: 'rgba(255,255,255,0.03)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.07)',
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginHorizontal: 16,
+    marginBottom: 12,
+  },
+  demoCardHeader: {
+    padding: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  demoCardTitle: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: 'rgba(255,255,255,0.9)',
+  },
+  demoCardDesc: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.35)',
+    marginTop: 2,
+  },
+  demoCardStage: {
+    padding: 18,
+    paddingVertical: 14,
+    minHeight: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  animBox: {
+    width: 56,
+    height: 38,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  animBoxLabel: {
+    fontWeight: '700',
+    fontSize: 9,
+    color: 'white',
+  },
+  animPill: {
+    paddingHorizontal: 14,
+    paddingVertical: 7,
+    borderRadius: 24,
+  },
+  animPillLabel: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  animCircle: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+  },
+  gestureTarget: {
+    width: 90,
+    height: 56,
+    borderRadius: 10,
+  },
+  playBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    backgroundColor: '#6366f1',
+  },
+  playBtnLabel: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
+    marginLeft: 6,
+  },
+  resetBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    backgroundColor: 'rgba(255,255,255,0.07)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  resetBtnLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: 11,
+  },
+  btnRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 8,
+  },
+  staggerRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  tlStage: {
+    borderRadius: 12,
+    padding: 18,
+    alignItems: 'center',
+    backgroundColor: '#1e293b',
+    width: '100%',
+  },
+  tlTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: 'white',
+  },
+  tlDotsRow: {
+    flexDirection: 'row',
+  },
+  tlDot: {
+    fontSize: 18,
+    color: '#a78bfa',
+    marginHorizontal: 4,
+  },
+  tlBarWrap: {
+    width: '100%',
+    height: 8,
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 4,
+    overflow: 'hidden',
+    marginBottom: 4,
+  },
+  tlBarFill: {
+    height: 8,
+    borderRadius: 4,
+  },
+  tlBadge: {
+    backgroundColor: '#a78bfa',
+    borderRadius: 20,
+    paddingHorizontal: 18,
+    paddingVertical: 5,
+  },
+  tlBadgeLabel: {
+    color: 'white',
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  waveRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    height: 50,
+  },
+})
+
+/* @arkzen:native:components:shared:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ANIMATION HOOKS (Expo)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:animation:expo */
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withSequence,
+  withRepeat,
+  withDelay,
+  interpolate,
+  Extrapolation,
+  Easing,
+  cancelAnimation,
+  runOnJS,
+} from 'react-native-reanimated'
+
+// ─── ENTRANCE HOOKS ───────────────────────────────────────────────────────────
+
+export function useFadeIn(durationMs = 350) {
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({ opacity: opacity.value }))
+  const play = () => { opacity.value = withTiming(1, { duration: durationMs }) }
+  const reset = () => { opacity.value = 0 }
+  return { style, play, reset }
+}
+
+export function useSlideUp(durationMs = 400) {
+  const translateY = useSharedValue(24)
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    translateY.value = withTiming(0, { duration: durationMs, easing: Easing.out(Easing.cubic) })
+    opacity.value = withTiming(1, { duration: durationMs })
+  }
+  const reset = () => { translateY.value = 24; opacity.value = 0 }
+  return { style, play, reset }
+}
+
+export function useSlideRight() {
+  const translateX = useSharedValue(60)
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    translateX.value = withTiming(0, { duration: 500, easing: Easing.out(Easing.cubic) })
+    opacity.value = withTiming(1, { duration: 500 })
+  }
+  const reset = () => { translateX.value = 60; opacity.value = 0 }
+  return { style, play, reset }
+}
+
+export function useScaleBloom() {
+  const scale = useSharedValue(0.3)
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    scale.value = withSpring(1, { damping: 8, stiffness: 200 })
+    opacity.value = withTiming(1, { duration: 300 })
+  }
+  const reset = () => { scale.value = 0.3; opacity.value = 0 }
+  return { style, play, reset }
+}
+
+export function useRotateIn() {
+  const rotate = useSharedValue(-90)
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotate.value}deg` }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    rotate.value = withTiming(0, { duration: 600, easing: Easing.out(Easing.cubic) })
+    opacity.value = withTiming(1, { duration: 400 })
+  }
+  const reset = () => { rotate.value = -90; opacity.value = 0 }
+  return { style, play, reset }
+}
+
+export function useElasticScale() {
+  const scaleX = useSharedValue(0)
+  const opacity = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scaleX: scaleX.value }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    scaleX.value = withSpring(1, { damping: 6, stiffness: 150 })
+    opacity.value = withTiming(1, { duration: 300 })
+  }
+  const reset = () => { scaleX.value = 0; opacity.value = 0 }
+  return { style, play, reset }
+}
+
+// ─── LOOP HOOKS ──────────────────────────────────────────────────────────────
+
+export function useSpin() {
+  const rotate = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${rotate.value}deg` }],
+  }))
+  const play = () => { rotate.value = withRepeat(withTiming(360, { duration: 1200, easing: Easing.linear }), -1) }
+  const reset = () => { cancelAnimation(rotate); rotate.value = 0 }
+  return { style, play, reset }
+}
+
+export function useBounce() {
+  const translateY = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+  }))
+  const play = () => {
+    translateY.value = withRepeat(
+      withSequence(
+        withTiming(-20, { duration: 400, easing: Easing.out(Easing.quad) }),
+        withTiming(0, { duration: 400, easing: Easing.in(Easing.quad) }),
+      ), -1
+    )
+  }
+  const reset = () => { cancelAnimation(translateY); translateY.value = 0 }
+  return { style, play, reset }
+}
+
+export function usePulse() {
+  const scale = useSharedValue(1)
+  const opacity = useSharedValue(1)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ scale: scale.value }],
+    opacity: opacity.value,
+  }))
+  const play = () => {
+    scale.value = withRepeat(withSequence(withTiming(0.9, { duration: 750 }), withTiming(1, { duration: 750 })), -1)
+    opacity.value = withRepeat(withSequence(withTiming(0.4, { duration: 750 }), withTiming(1, { duration: 750 })), -1)
+  }
+  const reset = () => { cancelAnimation(scale); cancelAnimation(opacity); scale.value = 1; opacity.value = 1 }
+  return { style, play, reset }
+}
+
+export function useShake() {
+  const translateX = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    transform: [{ translateX: translateX.value }],
+  }))
+  const play = () => {
+    translateX.value = withRepeat(
+      withSequence(
+        withTiming(-6, { duration: 60 }), withTiming(6, { duration: 60 }),
+        withTiming(-6, { duration: 60 }), withTiming(6, { duration: 60 }),
+        withTiming(0, { duration: 60 }),
+      ), -1
+    )
+  }
+  const reset = () => { cancelAnimation(translateX); translateX.value = 0 }
+  return { style, play, reset }
+}
+
+export function useFloat() {
+  const translateY = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({ transform: [{ translateY: translateY.value }] }))
+  const play = () => {
+    translateY.value = withRepeat(
+      withSequence(withTiming(-10, { duration: 1500 }), withTiming(0, { duration: 1500 })), -1
+    )
+  }
+  const reset = () => { cancelAnimation(translateY); translateY.value = 0 }
+  return { style, play, reset }
+}
+
+export function useHeartbeat() {
+  const scale = useSharedValue(1)
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+  const play = () => {
+    scale.value = withRepeat(
+      withSequence(
+        withTiming(1.2, { duration: 140 }),
+        withTiming(1, { duration: 140 }),
+        withTiming(1.15, { duration: 140 }),
+        withTiming(1, { duration: 420 }),
+      ), -1
+    )
+  }
+  const reset = () => { cancelAnimation(scale); scale.value = 1 }
+  return { style, play, reset }
+}
+
+export function useWiggle() {
+  const rotate = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotate.value}deg` }] }))
+  const play = () => {
+    rotate.value = withRepeat(
+      withSequence(
+        withTiming(-10, { duration: 80 }), withTiming(10, { duration: 80 }),
+        withTiming(-8, { duration: 80 }), withTiming(8, { duration: 80 }),
+        withTiming(0, { duration: 80 }),
+      ), -1
+    )
+  }
+  const reset = () => { cancelAnimation(rotate); rotate.value = 0 }
+  return { style, play, reset }
+}
+
+// ─── TIMELINE HOOK ────────────────────────────────────────────────────────────
+
+export function useTimeline(onComplete?: () => void) {
+  const bgOpacity = useSharedValue(0)
+  const titleY = useSharedValue(30)
+  const titleOp = useSharedValue(0)
+  const dotsScale = useSharedValue(0)
+  const bar1 = useSharedValue(0)
+  const bar2 = useSharedValue(0)
+  const bar3 = useSharedValue(0)
+  const bar4 = useSharedValue(0)
+  const badgeOp = useSharedValue(0)
+  const badgeScale = useSharedValue(0.5)
+
+  const bgStyle = useAnimatedStyle(() => ({ opacity: bgOpacity.value }))
+  const titleStyle = useAnimatedStyle(() => ({ opacity: titleOp.value, transform: [{ translateY: titleY.value }] }))
+  const dotsStyle = useAnimatedStyle(() => ({ transform: [{ scale: dotsScale.value }] }))
+  const bar1Style = useAnimatedStyle(() => ({ width: `${bar1.value * 100}%` }))
+  const bar2Style = useAnimatedStyle(() => ({ width: `${bar2.value * 100}%` }))
+  const bar3Style = useAnimatedStyle(() => ({ width: `${bar3.value * 100}%` }))
+  const bar4Style = useAnimatedStyle(() => ({ width: `${bar4.value * 100}%` }))
+  const badgeStyle = useAnimatedStyle(() => ({ opacity: badgeOp.value, transform: [{ scale: badgeScale.value }] }))
+
+  const barStyles = [bar1Style, bar2Style, bar3Style, bar4Style]
+
+  const play = () => {
+    bgOpacity.value = withTiming(1, { duration: 400 })
+    titleOp.value = withDelay(450, withTiming(1, { duration: 400 }))
+    titleY.value = withDelay(450, withSpring(0, { damping: 14 }))
+    dotsScale.value = withDelay(700, withSpring(1, { damping: 8, stiffness: 200 }))
+    bar1.value = withDelay(900, withTiming(0.70, { duration: 500 }))
+    bar2.value = withDelay(1050, withTiming(0.85, { duration: 500 }))
+    bar3.value = withDelay(1200, withTiming(0.55, { duration: 500 }))
+    bar4.value = withDelay(1350, withTiming(0.90, { duration: 500 }))
+    badgeOp.value = withDelay(1900, withTiming(1, { duration: 400 }))
+    badgeScale.value = withDelay(1900, withSpring(1, { damping: 8, stiffness: 150 }))
+    if (onComplete) {
+      badgeOp.value = withDelay(1900, withTiming(1, { duration: 400 }, (finished) => {
+        if (finished) runOnJS(onComplete)()
+      }))
+    }
+  }
+
+  const reset = () => {
+    bgOpacity.value = 0; titleY.value = 30; titleOp.value = 0
+    dotsScale.value = 0; bar1.value = 0; bar2.value = 0; bar3.value = 0; bar4.value = 0
+    badgeOp.value = 0; badgeScale.value = 0.5
+  }
+
+  return { bgStyle, titleStyle, dotsStyle, barStyles, badgeStyle, play, reset }
+}
+
+// ─── STAGGER HOOK ─────────────────────────────────────────────────────────────
+
+export function useStaggerItems(count: number, delayPerItem = 80) {
+  const values = Array.from({ length: count }, () => ({
+    op: useSharedValue(0),
+    y: useSharedValue(20),
+  }))
+  const styles = values.map(v => useAnimatedStyle(() => ({
+    opacity: v.op.value,
+    transform: [{ translateY: v.y.value }],
+  })))
+  const play = () => {
+    values.forEach((v, i) => {
+      v.op.value = withDelay(i * delayPerItem, withTiming(1, { duration: 350 }))
+      v.y.value = withDelay(i * delayPerItem, withSpring(0, { damping: 14 }))
+    })
+  }
+  const reset = () => { values.forEach(v => { v.op.value = 0; v.y.value = 20 }) }
+  return { styles, play, reset }
+}
+
+// ─── GESTURE HOOKS ────────────────────────────────────────────────────────────
+
+export function usePressBounce() {
+  const scale = useSharedValue(1)
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+  const onPressIn = () => { scale.value = withSpring(0.92, { damping: 10 }) }
+  const onPressOut = () => { scale.value = withSpring(1, { damping: 10 }) }
+  return { style, onPressIn, onPressOut }
+}
+
+export function usePressColor() {
+  const progress = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    opacity: interpolate(progress.value, [0, 1], [1, 0.6], Extrapolation.CLAMP),
+    transform: [{ scale: interpolate(progress.value, [0, 1], [1, 0.95], Extrapolation.CLAMP) }],
+  }))
+  const onPressIn = () => { progress.value = withTiming(1, { duration: 100 }) }
+  const onPressOut = () => { progress.value = withTiming(0, { duration: 200 }) }
+  return { style, onPressIn, onPressOut }
+}
+
+export function useHoverRotate() {
+  const rotate = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({ transform: [{ rotate: `${rotate.value}deg` }] }))
+  const onPressIn = () => { rotate.value = withTiming(360, { duration: 600 }) }
+  const onPressOut = () => { rotate.value = withTiming(0, { duration: 0 }) }
+  return { style, onPressIn, onPressOut }
+}
+
+export function useScale(to = 1.3) {
+  const scale = useSharedValue(1)
+  const style = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }))
+  const play = () => { scale.value = withSpring(to, { damping: 10, stiffness: 120 }) }
+  const reset = () => { scale.value = withSpring(1) }
+  return { style, play, reset }
+}
+
+// ─── EASING DEMO HOOK ─────────────────────────────────────────────────────────
+
+export function useEasingDemo(easingFn: any) {
+  const translateX = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({ transform: [{ translateX: translateX.value }] }))
+  const play = () => { translateX.value = withTiming(80, { duration: 700, easing: easingFn }) }
+  const reset = () => { translateX.value = 0 }
+  return { style, play, reset }
+}
+
+// ─── COMBINED TRANSFORM HOOK ─────────────────────────────────────────────────
+
+export function useCombinedTransform() {
+  const sv = useSharedValue(0)
+  const style = useAnimatedStyle(() => ({
+    opacity: sv.value,
+    transform: [
+      { translateY: (1 - sv.value) * 30 },
+      { scale: 0.4 + sv.value * 0.6 },
+      { rotate: `${(1 - sv.value) * -45}deg` },
+    ],
+  }))
+  const play = () => { sv.value = withSpring(1, { damping: 10, stiffness: 120 }) }
+  const reset = () => { sv.value = 0 }
+  return { style, play, reset }
+}
+
+/* @arkzen:native:animation:expo:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ANIMATION HOOKS (Bare RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:animation:rn */
+
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+  withSequence,
+  withRepeat,
+  withDelay,
+  interpolate,
+  Extrapolation,
+  Easing,
+  cancelAnimation,
+  runOnJS,
+} from 'react-native-reanimated'
+
+// Same hooks as Expo version, re-exported for Bare RN
+// (In a real implementation, these would be the same since both use reanimated)
+
+export {
+  useFadeIn,
+  useSlideUp,
+  useSlideRight,
+  useScaleBloom,
+  useRotateIn,
+  useElasticScale,
+  useSpin,
+  useBounce,
+  usePulse,
+  useShake,
+  useFloat,
+  useHeartbeat,
+  useWiggle,
+  useTimeline,
+  useStaggerItems,
+  usePressBounce,
+  usePressColor,
+  useHoverRotate,
+  useScale,
+  useEasingDemo,
+  useCombinedTransform,
+} from '@arkzen:native:animation:expo'
+
+/* @arkzen:native:animation:rn:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGES (Expo)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:index */
+/* @arkzen:import:expo */
+
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const IndexPageExpo = () => {
+  const { activeSection, setActiveSection } = useAnimLabStore()
+  const [key, setKey] = useState(0)
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'entrance':   return <EntranceSection />
+      case 'timeline':   return <TimelineSection />
+      case 'stagger':    return <StaggerSection />
+      case 'press':      return <PressSection />
+      case 'moti':       return <MotiSection />
+      case 'keyframes':  return <KeyframesSection />
+      case 'loop':       return <LoopSection />
+      case 'transforms': return <TransformsSection />
+      case 'spring':     return <SpringSection />
+      case 'easing':     return <EasingSection />
+      default:           return <EntranceSection />
+    }
+  }
+
+  return (
+    <SafeAreaView style={nativeStyles.root}>
+      <View style={nativeStyles.header}>
+        <Text style={nativeStyles.headerTitle}>🎬 Animation Lab</Text>
+        <Text style={nativeStyles.headerSub}>Reanimated · Moti · Spring · Easing</Text>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={nativeStyles.navScroll}
+        contentContainerStyle={nativeStyles.navScrollContent}
+      >
+        {NAV_SECTIONS_NATIVE.map(({ id, label, icon, color }) => {
+          const active = activeSection === id
+          return (
+            <TouchableOpacity
+              key={id}
+              style={[nativeStyles.navTab, active && nativeStyles.navTabActive]}
+              onPress={() => setActiveSection(id)}
+              activeOpacity={0.7}
+            >
+              <Text style={nativeStyles.navTabIcon}>{icon}</Text>
+              <Text style={[nativeStyles.navTabLabel, active && nativeStyles.navTabLabelActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          )
+        })}
+      </ScrollView>
+
+      <MotiView
+        key={activeSection + key}
+        from={{ opacity: 0, translateY: 10 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 220 }}
+        style={nativeStyles.sectionScroll}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {renderSection()}
+          <View style={nativeStyles.sectionBottomPad} />
+        </ScrollView>
+      </MotiView>
+    </SafeAreaView>
+  )
+}
+
+export default IndexPageExpo
+/* @arkzen:native:page:index:end */
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE PAGES (Bare RN)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:index */
+/* @arkzen:import:rn */
+
+import React, { useState } from 'react'
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
+
+const IndexPageRN = () => {
+  const { activeSection, setActiveSection } = useAnimLabStore()
+  const [key, setKey] = useState(0)
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'entrance':   return <EntranceSection />
+      case 'timeline':   return <TimelineSection />
+      case 'stagger':    return <StaggerSection />
+      case 'press':      return <PressSection />
+      case 'moti':       return <MotiSection />
+      case 'keyframes':  return <KeyframesSection />
+      case 'loop':       return <LoopSection />
+      case 'transforms': return <TransformsSection />
+      case 'spring':     return <SpringSection />
+      case 'easing':     return <EasingSection />
+      default:           return <EntranceSection />
+    }
+  }
+
+  return (
+    <SafeAreaView style={nativeStyles.root}>
+      <View style={nativeStyles.header}>
+        <Text style={nativeStyles.headerTitle}>🎬 Animation Lab</Text>
+        <Text style={nativeStyles.headerSub}>Reanimated · Moti · Spring · Easing</Text>
+      </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={nativeStyles.navScroll}
+        contentContainerStyle={nativeStyles.navScrollContent}
+      >
+        {NAV_SECTIONS_NATIVE.map(({ id, label, icon, color }) => {
+          const active = activeSection === id
+          return (
+            <TouchableOpacity
+              key={id}
+              style={[nativeStyles.navTab, active && nativeStyles.navTabActive]}
+              onPress={() => setActiveSection(id)}
+              activeOpacity={0.7}
+            >
+              <Text style={nativeStyles.navTabIcon}>{icon}</Text>
+              <Text style={[nativeStyles.navTabLabel, active && nativeStyles.navTabLabelActive]}>
+                {label}
+              </Text>
+            </TouchableOpacity>
+          )
+        })}
+      </ScrollView>
+
+      <MotiView
+        key={activeSection + key}
+        from={{ opacity: 0, translateY: 10 }}
+        animate={{ opacity: 1, translateY: 0 }}
+        transition={{ type: 'timing', duration: 220 }}
+        style={nativeStyles.sectionScroll}
+      >
+        <ScrollView showsVerticalScrollIndicator={false}>
+          {renderSection()}
+          <View style={nativeStyles.sectionBottomPad} />
+        </ScrollView>
+      </MotiView>
+    </SafeAreaView>
+  )
+}
+
+export default IndexPageRN
+/* @arkzen:native:page:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SECTION COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:components:sections */
+
+// ─── SECTION HEADER ───────────────────────────────────────────────────────────
+
+const SectionHeaderNative = ({
+  icon, title, subtitle, color
+}: {
+  icon: string; title: string; subtitle: string; color: string
+}) => (
+  <View style={nativeStyles.sectionHeader}>
+    <View style={[nativeStyles.sectionHeaderIcon, { backgroundColor: `${color}22` }]}>
+      <Text style={{ fontSize: 16 }}>{icon}</Text>
+    </View>
+    <View style={{ flex: 1 }}>
+      <Text style={nativeStyles.sectionHeaderTitle}>{title}</Text>
+      <Text style={nativeStyles.sectionHeaderSub}>{subtitle}</Text>
+    </View>
+  </View>
+)
+
+// ─── DEMO CARD ─────────────────────────────────────────────────────────────────
+
+const DemoCardNative = ({ title, desc, full = false, children }: {
+  title: string; desc: string; full?: boolean; children: React.ReactNode
+}) => (
+  <View style={full ? nativeStyles.demoCardFull : nativeStyles.demoCard}>
+    <View style={nativeStyles.demoCardHeader}>
+      <Text style={nativeStyles.demoCardTitle}>{title}</Text>
+      <Text style={nativeStyles.demoCardDesc}>{desc}</Text>
+    </View>
+    <View style={nativeStyles.demoCardStage}>{children}</View>
+  </View>
+)
+
+// ─── PLAY/RESET BUTTONS ───────────────────────────────────────────────────────
+
+const PlayResetNative = ({ onPlay, onReset }: { onPlay: () => void; onReset: () => void }) => (
+  <View style={nativeStyles.btnRow}>
+    <TouchableOpacity style={nativeStyles.playBtn} onPress={onPlay}>
+      <Play size={14} color="white" />
+      <Text style={nativeStyles.playBtnLabel}>Play</Text>
+    </TouchableOpacity>
+    <TouchableOpacity style={nativeStyles.resetBtn} onPress={onReset}>
+      <RotateCcw size={14} color="rgba(255,255,255,0.6)" />
+      <Text style={nativeStyles.resetBtnLabel}>Reset</Text>
+    </TouchableOpacity>
+  </View>
+)
+
+// ─── ENTRANCE SECTION ─────────────────────────────────────────────────────────
+
+const EntranceSection = () => {
+  const fadeIn = useFadeIn()
+  const slideUp = useSlideUp()
+  const slideR = useSlideRight()
+  const bloom = useScaleBloom()
+  const rotateIn = useRotateIn()
+  const elastic = useElasticScale()
+
+  const DEMOS = [
+    { label: 'Fade In',      desc: 'withTiming opacity',          hook: fadeIn,  color: '#6366f1' },
+    { label: 'Slide Up',     desc: 'withTiming translateY',       hook: slideUp, color: '#8b5cf6' },
+    { label: 'Slide Right',  desc: 'withTiming translateX',       hook: slideR,  color: '#a855f7' },
+    { label: 'Scale Bloom',  desc: 'withSpring scale from 0.3',   hook: bloom,   color: '#c084fc' },
+    { label: 'Rotate In',    desc: 'withTiming -90° → 0°',        hook: rotateIn,color: '#d946ef' },
+    { label: 'Elastic Scale',desc: 'withSpring scaleX from 0',    hook: elastic, color: '#e879f9' },
+  ]
+
+  return (
+    <>
+      <SectionHeaderNative icon="▶" title="Entrance Animations" subtitle="withTiming, withSpring entrance variants" color="#6366f1" />
+      <View style={nativeStyles.demoGrid}>
+        {DEMOS.map(({ label, desc, hook, color }) => (
+          <DemoCardNative key={label} title={label} desc={desc}>
+            <Animated.View style={[nativeStyles.animBox, { backgroundColor: color }, hook.style]}>
+              <Text style={nativeStyles.animBoxLabel}>{label.split(' ')[0].toUpperCase()}</Text>
+            </Animated.View>
+            <PlayResetNative onPlay={hook.play} onReset={hook.reset} />
+          </DemoCardNative>
+        ))}
+      </View>
+    </>
+  )
+}
+
+// ─── TIMELINE SECTION ─────────────────────────────────────────────────────────
+
+const TimelineSection = () => {
+  const [playing, setPlaying] = useState(false)
+  const tl = useTimeline(() => setPlaying(false))
+  const BAR_WIDTHS = [70, 85, 55, 90]
+  const BAR_COLORS = ['#8b5cf6', '#a78bfa', '#c084fc', '#d946ef']
+
+  const handlePlay = () => {
+    setPlaying(true)
+    tl.reset()
+    setTimeout(() => tl.play(), 50)
+  }
+
+  return (
+    <>
+      <SectionHeaderNative icon="⏱" title="Timeline Sequence" subtitle="Chained withDelay — sequential orchestration" color="#a78bfa" />
+      <DemoCardNative title="Chained Timeline" desc="Multiple animations queued with withDelay" full>
+        <View style={nativeStyles.btnRow}>
+          <TouchableOpacity style={[nativeStyles.playBtn, playing && { opacity: 0.5 }]} onPress={handlePlay} disabled={playing}>
+            <Play size={14} color="white" />
+            <Text style={nativeStyles.playBtnLabel}>{playing ? 'Playing...' : 'Play Timeline'}</Text>
+          </TouchableOpacity>
+          <TouchableOpacity style={nativeStyles.resetBtn} onPress={() => { setPlaying(false); tl.reset() }}>
+            <RotateCcw size={14} color="rgba(255,255,255,0.6)" />
+            <Text style={nativeStyles.resetBtnLabel}>Reset</Text>
+          </TouchableOpacity>
+        </View>
+        <Animated.View style={[nativeStyles.tlStage, tl.bgStyle]}>
+          <Animated.Text style={nativeStyles.tlTitle}>Timeline Magic ✨</Animated.Text>
+          <Animated.View style={[nativeStyles.tlDotsRow, tl.dotsStyle]}>
+            {['●','●','●','●','●'].map((d, i) => (
+              <Text key={i} style={nativeStyles.tlDot}>{d}</Text>
+            ))}
+          </Animated.View>
+          <View style={{ width: '100%' }}>
+            {BAR_WIDTHS.map((w, i) => (
+              <View key={i} style={nativeStyles.tlBarWrap}>
+                <Animated.View style={[nativeStyles.tlBarFill, { backgroundColor: BAR_COLORS[i] }, tl.barStyles[i]]} />
+              </View>
+            ))}
+          </View>
+          <Animated.View style={[nativeStyles.tlBadge, tl.badgeStyle]}>
+            <Text style={nativeStyles.tlBadgeLabel}>Complete!</Text>
+          </Animated.View>
+        </Animated.View>
+      </DemoCardNative>
+    </>
+  )
+}
+
+// ─── STAGGER SECTION ──────────────────────────────────────────────────────────
+
+const StaggerSection = () => {
+  const linear = useStaggerItems(6, 80)
+  const center = useStaggerItems(7, 70)
+  const fromEnd = useStaggerItems(6, 60)
+  const grid = useStaggerItems(12, 50)
+
+  const COLORS_6 = ['#f59e0b','#f97316','#ef4444','#ec4899','#a855f7','#6366f1']
+  const COLORS_7 = ['#6366f1','#818cf8','#a5b4fc','#c4b5fd','#a5b4fc','#818cf8','#6366f1']
+  const COLORS_E = ['#10b981','#34d399','#6ee7b7','#a7f3d0','#6ee7b7','#34d399']
+  const GRID_COLS = Array.from({ length: 12 }, (_, i) => `hsl(${i * 25}, 80%, 58%)`)
+
+  return (
+    <>
+      <SectionHeaderNative icon="⠿" title="Stagger Animations" subtitle="withDelay staggered arrays — linear, center, end, grid" color="#f59e0b" />
+      <View style={nativeStyles.demoGrid}>
+        <DemoCardNative title="Linear" desc="stagger left-to-right">
+          <View style={nativeStyles.staggerRow}>
+            {COLORS_6.map((c, i) => (
+              <Animated.View key={i} style={[{ width: 28, height: 28, borderRadius: 6, backgroundColor: c }, linear.styles[i]]} />
+            ))}
+          </View>
+          <PlayResetNative onPlay={linear.play} onReset={linear.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="From Center" desc="stagger outward from middle">
+          <View style={nativeStyles.staggerRow}>
+            {COLORS_7.map((c, i) => (
+              <Animated.View key={i} style={[{ width: 24, height: 24, borderRadius: 6, backgroundColor: c }, center.styles[i]]} />
+            ))}
+          </View>
+          <PlayResetNative onPlay={center.play} onReset={center.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="From End" desc="stagger right-to-left">
+          <View style={nativeStyles.staggerRow}>
+            {COLORS_E.map((c, i) => (
+              <Animated.View key={i} style={[{ width: 28, height: 28, borderRadius: 6, backgroundColor: c }, fromEnd.styles[i]]} />
+            ))}
+          </View>
+          <PlayResetNative onPlay={fromEnd.play} onReset={fromEnd.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="Grid (3×4)" desc="2D grid stagger wave">
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, justifyContent: 'center' }}>
+            {GRID_COLS.map((c, i) => (
+              <Animated.View key={i} style={[{ width: 24, height: 24, borderRadius: 5, backgroundColor: c }, grid.styles[i]]} />
+            ))}
+          </View>
+          <PlayResetNative onPlay={grid.play} onReset={grid.reset} />
+        </DemoCardNative>
+      </View>
+    </>
+  )
+}
+
+// ─── PRESS SECTION ────────────────────────────────────────────────────────────
+
+const PressSection = () => {
+  const bounce = usePressBounce()
+  const color = usePressColor()
+  const rotator = useHoverRotate()
+  const ripple = useScale(1.25)
+
+  return (
+    <>
+      <SectionHeaderNative icon="👆" title="Press / Tap Gestures" subtitle="onPressIn/Out driving Reanimated shared values" color="#0ea5e9" />
+      <View style={nativeStyles.demoGrid}>
+        <DemoCardNative title="Scale Bounce" desc="withSpring on press in/out">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#0ea5e9' }, bounce.style]}>
+            <TouchableOpacity
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+              onPressIn={bounce.onPressIn}
+              onPressOut={bounce.onPressOut}
+              activeOpacity={1}
+            >
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>Hold me</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </DemoCardNative>
+        <DemoCardNative title="Opacity Dim" desc="interpolate opacity on press">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#6366f1' }, color.style]}>
+            <TouchableOpacity
+              style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}
+              onPressIn={color.onPressIn}
+              onPressOut={color.onPressOut}
+              activeOpacity={1}
+            >
+              <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>Press</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </DemoCardNative>
+        <DemoCardNative title="Icon Rotate" desc="360° spin on press-in">
+          <Animated.View style={[{ width: 52, height: 52, borderRadius: 26, backgroundColor: 'rgba(14,165,233,0.15)', alignItems: 'center', justifyContent: 'center' }, rotator.style]}>
+            <TouchableOpacity
+              onPressIn={rotator.onPressIn}
+              onPressOut={rotator.onPressOut}
+              activeOpacity={1}
+              style={{ alignItems: 'center', justifyContent: 'center', width: 52, height: 52 }}
+            >
+              <Text style={{ fontSize: 24 }}>↻</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </DemoCardNative>
+        <DemoCardNative title="Ripple Scale" desc="withSpring scale up on tap">
+          <Animated.View style={[nativeStyles.animCircle, { backgroundColor: '#10b981' }, ripple.style]}>
+            <TouchableOpacity
+              onPress={ripple.play}
+              onLongPress={ripple.reset}
+              activeOpacity={0.9}
+              style={{ width: 52, height: 52, alignItems: 'center', justifyContent: 'center' }}
+            >
+              <Text style={{ color: 'white', fontWeight: '800', fontSize: 10 }}>TAP</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </DemoCardNative>
+      </View>
+    </>
+  )
+}
+
+// ─── MOTI SECTION ─────────────────────────────────────────────────────────────
+
+const MotiSection = () => {
+  const [visible, setVisible] = useState(false)
+  const [show1, setShow1] = useState(true)
+  const [show2, setShow2] = useState(true)
+  const [show3, setShow3] = useState(true)
+
+  return (
+    <>
+      <SectionHeaderNative icon="✦" title="Moti Variants" subtitle="MotiView from/animate/exit — AnimatePresence equivalent" color="#f59e0b" />
+      <DemoCardNative title="Stagger Children" desc="MotiView with stagger delay" full>
+        <View style={nativeStyles.btnRow}>
+          <TouchableOpacity style={nativeStyles.playBtn} onPress={() => setVisible(v => !v)}>
+            <Text style={nativeStyles.playBtnLabel}>{visible ? 'Hide' : 'Animate In'}</Text>
+          </TouchableOpacity>
+        </View>
+        {visible && (
+          <View style={[nativeStyles.staggerRow, { marginTop: 12 }]}>
+            {['Alpha','Beta','Gamma','Delta','Epsilon','Zeta'].map((w, i) => (
+              <MotiView
+                key={w}
+                from={{ opacity: 0, translateY: 20 }}
+                animate={{ opacity: 1, translateY: 0 }}
+                transition={{ type: 'spring', delay: i * 100, damping: 14 }}
+                style={[nativeStyles.animPill, { backgroundColor: '#f59e0b' }]}
+              >
+                <Text style={nativeStyles.animPillLabel}>{w}</Text>
+              </MotiView>
+            ))}
+          </View>
+        )}
+      </DemoCardNative>
+      <View style={nativeStyles.demoGrid}>
+        <DemoCardNative title="Fade + Slide" desc="from x:-40 animate x:0">
+          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
+            {show1 && (
+              <MotiView
+                from={{ opacity: 0, translateX: -40 }}
+                animate={{ opacity: 1, translateX: 0 }}
+                exit={{ opacity: 0, translateX: 40 }}
+                style={{ width: 80, height: 40, borderRadius: 8, backgroundColor: '#3b82f6' }}
+              />
+            )}
+          </View>
+          <TouchableOpacity style={nativeStyles.playBtn} onPress={() => setShow1(v => !v)}>
+            <Text style={nativeStyles.playBtnLabel}>Toggle</Text>
+          </TouchableOpacity>
+        </DemoCardNative>
+        <DemoCardNative title="Scale Bounce" desc="from scale:0 with spring">
+          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
+            {show2 && (
+              <MotiView
+                from={{ opacity: 0, scale: 0 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#10b981' }}
+              />
+            )}
+          </View>
+          <TouchableOpacity style={nativeStyles.playBtn} onPress={() => setShow2(v => !v)}>
+            <Text style={nativeStyles.playBtnLabel}>Toggle</Text>
+          </TouchableOpacity>
+        </DemoCardNative>
+        <DemoCardNative title="Rotate In" desc="from rotate:-180 with spring">
+          <View style={{ alignItems: 'center', minHeight: 60, justifyContent: 'center' }}>
+            {show3 && (
+              <MotiView
+                from={{ opacity: 0, rotate: '-180deg' }}
+                animate={{ opacity: 1, rotate: '0deg' }}
+                exit={{ opacity: 0, rotate: '180deg' }}
+                transition={{ type: 'spring', stiffness: 200 }}
+                style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#a855f7' }}
+              />
+            )}
+          </View>
+          <TouchableOpacity style={nativeStyles.playBtn} onPress={() => setShow3(v => !v)}>
+            <Text style={nativeStyles.playBtnLabel}>Toggle</Text>
+          </TouchableOpacity>
+        </DemoCardNative>
+        <DemoCardNative title="whileInView equiv." desc="MotiView animate on mount">
+          <MotiView
+            from={{ opacity: 0, scale: 0.5 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+            style={{ width: 100, height: 44, borderRadius: 10, backgroundColor: '#0ea5e9', alignItems: 'center', justifyContent: 'center' }}
+          >
+            <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>In View!</Text>
+          </MotiView>
+        </DemoCardNative>
+      </View>
+    </>
+  )
+}
+
+// ─── KEYFRAMES SECTION ────────────────────────────────────────────────────────
+
+const KeyframesSection = () => {
+  const bounce = useBounce()
+  const pulse = usePulse()
+  const shake = useShake()
+  const float = useFloat()
+  const heart = useHeartbeat()
+  const wiggle = useWiggle()
+
+  return (
+    <>
+      <SectionHeaderNative icon="◈" title="Keyframe Sequences" subtitle="withSequence multi-step array animations" color="#f43f5e" />
+      <View style={nativeStyles.demoGrid}>
+        {[
+          { label: 'Bounce',    desc: 'y: 0 → -20 → 0 loop',   hook: bounce, color: '#f43f5e' },
+          { label: 'Pulse',     desc: 'scale+opacity oscillate', hook: pulse,  color: '#f97316' },
+          { label: 'Shake',     desc: 'x: ±6px sequence fast',  hook: shake,  color: '#eab308' },
+          { label: 'Float',     desc: 'y: 0 → -10 → 0 slow',   hook: float,  color: '#22c55e' },
+          { label: 'Heartbeat', desc: 'double scale pulse',     hook: heart,  color: '#ec4899' },
+          { label: 'Wiggle',    desc: 'rotate ±10deg sequence', hook: wiggle, color: '#a855f7' },
+        ].map(({ label, desc, hook, color }) => (
+          <DemoCardNative key={label} title={label} desc={desc}>
+            <Animated.View style={[nativeStyles.animBox, { backgroundColor: color }, hook.style]}>
+              <Text style={nativeStyles.animBoxLabel}>{label.toUpperCase()}</Text>
+            </Animated.View>
+            <PlayResetNative onPlay={hook.play} onReset={hook.reset} />
+          </DemoCardNative>
+        ))}
+      </View>
+    </>
+  )
+}
+
+// ─── LOOP SECTION ─────────────────────────────────────────────────────────────
+
+const LoopSection = () => {
+  const spin1 = useSpin()
+  const pulse2 = usePulse()
+  const wave0 = useBounce()
+  const wave1 = useBounce()
+  const wave2 = useBounce()
+  const wave3 = useBounce()
+  const wave4 = useBounce()
+  const [waveOn, setWaveOn] = useState(false)
+
+  const WAVE_HOOKS = [wave0, wave1, wave2, wave3, wave4]
+  const WAVE_COLORS = ['#0ea5e9','#38bdf8','#7dd3fc','#bae6fd','#e0f2fe']
+
+  const playWave = () => {
+    setWaveOn(true)
+    WAVE_HOOKS.forEach((h, i) => setTimeout(() => h.play(), i * 120))
+  }
+  const resetWave = () => {
+    setWaveOn(false)
+    WAVE_HOOKS.forEach(h => h.reset())
+  }
+
+  return (
+    <>
+      <SectionHeaderNative icon="⟳" title="Loop / Repeat" subtitle="withRepeat(-1) — infinite looping animations" color="#10b981" />
+      <View style={nativeStyles.demoGrid}>
+        <DemoCardNative title="Spin (infinite)" desc="withRepeat(-1) Easing.linear">
+          <Animated.View style={[nativeStyles.animBox, { backgroundColor: '#6366f1' }, spin1.style]}>
+            <Text style={nativeStyles.animBoxLabel}>SPIN</Text>
+          </Animated.View>
+          <PlayResetNative onPlay={spin1.play} onReset={spin1.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="Pulse (infinite)" desc="withRepeat(-1) scale+opacity">
+          <Animated.View style={[nativeStyles.animCircle, { backgroundColor: '#f43f5e' }, pulse2.style]} />
+          <PlayResetNative onPlay={pulse2.play} onReset={pulse2.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="Wave Bars" desc="5 bars staggered bounce loop" full>
+          <View style={[nativeStyles.waveRow, { justifyContent: 'center' }]}>
+            {WAVE_HOOKS.map((h, i) => (
+              <Animated.View
+                key={i}
+                style={[{ width: 10, height: 44, borderRadius: 5, backgroundColor: WAVE_COLORS[i] }, h.style]}
+              />
+            ))}
+          </View>
+          <View style={nativeStyles.btnRow}>
+            <TouchableOpacity style={nativeStyles.playBtn} onPress={playWave}>
+              <Play size={14} color="white" />
+              <Text style={nativeStyles.playBtnLabel}>Wave</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={nativeStyles.resetBtn} onPress={resetWave}>
+              <RotateCcw size={14} color="rgba(255,255,255,0.6)" />
+              <Text style={nativeStyles.resetBtnLabel}>Reset</Text>
+            </TouchableOpacity>
+          </View>
+        </DemoCardNative>
+        <DemoCardNative title="Color Cycle (Moti)" desc="MotiView background array loop">
+          <MotiView
+            from={{ backgroundColor: '#f43f5e' }}
+            animate={{ backgroundColor: ['#f43f5e','#f97316','#eab308','#22c55e','#0ea5e9','#a855f7','#f43f5e'] }}
+            transition={{ loop: true, duration: 4000, type: 'timing' }}
+            style={{ width: 72, height: 72, borderRadius: 12 }}
+          />
+        </DemoCardNative>
+        <DemoCardNative title="Border Radius Morph" desc="shape morphs via MotiView loop">
+          <MotiView
+            animate={{ borderRadius: [12, 26, 6, 26, 12] }}
+            transition={{ loop: true, duration: 2500, type: 'timing' }}
+            style={{ width: 64, height: 64, backgroundColor: '#a855f7' }}
+          />
+        </DemoCardNative>
+      </View>
+    </>
+  )
+}
+
+// ─── TRANSFORMS SECTION ───────────────────────────────────────────────────────
+
+const TransformsSection = () => {
+  const translate = useSlideUp()
+  const scaleAnim = useScaleBloom()
+  const rotAnim = useRotateIn()
+  const elastic2 = useElasticScale()
+  const combined = useCombinedTransform()
+
+  return (
+    <>
+      <SectionHeaderNative icon="⬡" title="Transform Variants" subtitle="translate, rotate, scale, skew, combined — tap to trigger" color="#a855f7" />
+      <View style={nativeStyles.demoGrid}>
+        <DemoCardNative title="translateY" desc="withTiming y: 24 → 0">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#a855f7' }, translate.style]}>
+            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12 }}>Y</Text>
+          </Animated.View>
+          <PlayResetNative onPlay={translate.play} onReset={translate.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="scale" desc="withSpring scale 0.3→1">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#8b5cf6' }, scaleAnim.style]}>
+            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12 }}>S</Text>
+          </Animated.View>
+          <PlayResetNative onPlay={scaleAnim.play} onReset={scaleAnim.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="rotate" desc="withTiming -90°→0°">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#6366f1' }, rotAnim.style]}>
+            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12 }}>R</Text>
+          </Animated.View>
+          <PlayResetNative onPlay={rotAnim.play} onReset={rotAnim.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="scaleX elastic" desc="withSpring scaleX 0→1">
+          <Animated.View style={[nativeStyles.gestureTarget, { backgroundColor: '#c084fc' }, elastic2.style]}>
+            <Text style={{ color: 'white', fontWeight: '700', textAlign: 'center', fontSize: 12 }}>sX</Text>
+          </Animated.View>
+          <PlayResetNative onPlay={elastic2.play} onReset={elastic2.reset} />
+        </DemoCardNative>
+        <DemoCardNative title="Combined" desc="slide + scale + rotate together" full>
+          <View style={{ alignItems: 'center' }}>
+            <Animated.View style={[{ width: 80, height: 50, borderRadius: 10, backgroundColor: '#ec4899', alignItems: 'center', justifyContent: 'center' }, combined.style]}>
+              <Text style={{ color: 'white', fontWeight: '800', fontSize: 12 }}>Combined</Text>
+            </Animated.View>
+            <PlayResetNative onPlay={combined.play} onReset={combined.reset} />
+          </View>
+        </DemoCardNative>
+      </View>
+    </>
+  )
+}
+
+// ─── SPRING SECTION ──────────────────────────────────────────────────────────
+
+const SpringSection = () => {
+  const makeSpring = (damping: number, stiffness: number) => {
+    const sv = useSharedValue(0)
+    const style = useAnimatedStyle(() => ({ transform: [{ translateX: sv.value }] }))
+    const play = () => { sv.value = withSpring(80, { damping, stiffness }) }
+    const reset = () => { sv.value = withSpring(0, { damping: 20, stiffness: 200 }) }
+    return { style, play, reset }
+  }
+
+  const springConfigs = [
+    { label: 'Bouncy',   desc: 'damping:4 stiffness:200',  d: 4,  k: 200, color: '#ec4899' },
+    { label: 'Snappy',   desc: 'damping:10 stiffness:400', d: 10, k: 400, color: '#f97316' },
+    { label: 'Wobbly',   desc: 'damping:2 stiffness:80',   d: 2,  k: 80,  color: '#a855f7' },
+    { label: 'Stiff',    desc: 'damping:20 stiffness:300', d: 20, k: 300, color: '#0ea5e9' },
+    { label: 'Slow',     desc: 'damping:15 stiffness:40',  d: 15, k: 40,  color: '#10b981' },
+    { label: 'Elastic',  desc: 'damping:6 stiffness:150',  d: 6,  k: 150, color: '#6366f1' },
+  ]
+
+  const springs = springConfigs.map(c => makeSpring(c.d, c.k))
+
+  return (
+    <>
+      <SectionHeaderNative icon="⟲" title="Spring Physics" subtitle="withSpring — damping and stiffness variants" color="#ec4899" />
+      <View style={nativeStyles.demoGrid}>
+        {springConfigs.map(({ label, desc, color }, i) => (
+          <DemoCardNative key={label} title={label} desc={desc}>
+            <Animated.View style={[nativeStyles.animBox, { backgroundColor: color }, springs[i].style]}>
+              <Text style={nativeStyles.animBoxLabel}>{label.toUpperCase()}</Text>
+            </Animated.View>
+            <PlayResetNative onPlay={springs[i].play} onReset={springs[i].reset} />
+          </DemoCardNative>
+        ))}
+      </View>
+    </>
+  )
+}
+
+// ─── EASING SECTION ──────────────────────────────────────────────────────────
+
+const EasingSection = () => {
+  const demos = [
+    useEasingDemo(Easing.linear),
+    useEasingDemo(Easing.ease),
+    useEasingDemo(Easing.in(Easing.quad)),
+    useEasingDemo(Easing.out(Easing.quad)),
+    useEasingDemo(Easing.inOut(Easing.quad)),
+    useEasingDemo(Easing.out(Easing.back(2.5))),
+    useEasingDemo(Easing.out(Easing.elastic(1))),
+    useEasingDemo(Easing.out(Easing.bounce)),
+  ]
+
+  const LABELS = ['linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out', 'back.out', 'elastic', 'bounce']
+  const COLORS = ['#6366f1', '#8b5cf6', '#a855f7', '#c084fc', '#d946ef', '#ec4899', '#f43f5e', '#f97316']
+
+  return (
+    <>
+      <SectionHeaderNative icon="⇄" title="Easing Functions" subtitle="withTiming easing variants — slide right to compare" color="#f97316" />
+      <View style={nativeStyles.demoGrid}>
+        {demos.map(({ style, play, reset }, i) => (
+          <DemoCardNative key={LABELS[i]} title={LABELS[i]} desc="withTiming 700ms">
+            <Animated.View style={[nativeStyles.animBox, { backgroundColor: COLORS[i] }, style]}>
+              <Text style={nativeStyles.animBoxLabel}>{LABELS[i].split('.')[0].toUpperCase()}</Text>
+            </Animated.View>
+            <PlayResetNative onPlay={play} onReset={reset} />
+          </DemoCardNative>
+        ))}
+      </View>
+    </>
+  )
+}
+
+/* @arkzen:native:components:sections:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LYNX SHARED COMPONENTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:components:lynx:shared */
+
+import React, { useState } from '@lynx-js/react'
+
+// ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
+const LYNX_NAV_SECTIONS = [
+  { id: 'entrance',    label: 'Entrance',     icon: '▶', color: '#6366f1' },
+  { id: 'timeline',    label: 'Timeline',     icon: '⏱', color: '#a78bfa' },
+  { id: 'stagger',     label: 'Stagger',      icon: '⋮',  color: '#8b5cf6' },
+  { id: 'press',       label: 'Press',        icon: '⊙', color: '#ec4899' },
+  { id: 'loop',        label: 'Loop',         icon: '∞',  color: '#f59e0b' },
+  { id: 'transforms',  label: 'Transforms',   icon: '⟳', color: '#10b981' },
+  { id: 'spring',      label: 'Spring',       icon: '⌇', color: '#3b82f6' },
+  { id: 'easing',      label: 'Easing',       icon: '⌗', color: '#ef4444' },
+]
+
+// ─── SECTION HEADER ───────────────────────────────────────────────────────────
+const LynxSectionHeader = ({
+  icon, title, subtitle, color
+}: {
+  icon: string; title: string; subtitle: string; color: string
+}) => (
+  <div className="flex flex-row items-start gap-3 p-4 bg-white/5 border border-white/10 rounded-xl mx-4 mb-3">
+    <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}22` }}>
+      <span className="text-base">{icon}</span>
+    </div>
+    <div className="flex-1">
+      <div className="text-sm font-extrabold text-white">{title}</div>
+      <div className="text-xs text-white/40">{subtitle}</div>
+    </div>
+  </div>
+)
+
+// ─── DEMO CARD ─────────────────────────────────────────────────────────────────
+const LynxDemoCard = ({ title, desc, full = false, children }: {
+  title: string; desc: string; full?: boolean; children: React.ReactNode
+}) => (
+  <div className={`${full ? 'mx-4 mb-3' : 'w-[46%] m-1'} bg-white/5 border border-white/10 rounded-xl overflow-hidden`}>
+    <div className="px-3 py-2 border-b border-white/5">
+      <div className="text-xs font-bold text-white/90">{title}</div>
+      <div className="text-[10px] text-white/35">{desc}</div>
+    </div>
+    <div className="p-4 min-h-[70px] flex flex-col items-center justify-center">
+      {children}
+    </div>
+  </div>
+)
+
+// ─── PLAY/RESET BUTTONS ───────────────────────────────────────────────────────
+const LynxPlayReset = ({ onPlay, onReset }: { onPlay: () => void; onReset: () => void }) => (
+  <div className="flex flex-row gap-2 items-center justify-center mt-2">
+    <button onClick={onPlay} className="flex flex-row items-center gap-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-bold text-xs">
+      <span>▶</span> Play
+    </button>
+    <button onClick={onReset} className="flex flex-row items-center gap-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white/60 text-xs">
+      <span>↺</span> Reset
+    </button>
+  </div>
+)
+
+// ─── ENTRANCE SECTION ────────────────────────────────────────────────────────
+
+const LynxEntranceSection = () => {
+  const [show, setShow] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="▶" title="Entrance Animations" subtitle="Lynx-native transitions" color="#6366f1" />
+      <div className="flex flex-row flex-wrap px-3">
+        {['Fade In', 'Slide Up', 'Slide Right', 'Scale', 'Rotate', 'Elastic'].map((label, i) => (
+          <LynxDemoCard key={label} title={label} desc="Lynx transition">
+            <button
+              onClick={() => setShow(s => !s)}
+              className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold"
+            >
+              {show ? 'Hide' : 'Show'}
+            </button>
+            {show && (
+              <div className="mt-2 w-12 h-8 rounded-lg bg-indigo-400 flex items-center justify-center">
+                <span className="text-white text-[8px] font-bold">{label.split(' ')[0]}</span>
+              </div>
+            )}
+          </LynxDemoCard>
+        ))}
+      </div>
+    </>
+  )
+}
+
+// ─── TIMELINE SECTION ─────────────────────────────────────────────────────────
+
+const LynxTimelineSection = () => {
+  const [step, setStep] = useState(0)
+  return (
+    <>
+      <LynxSectionHeader icon="⏱" title="Timeline Sequence" subtitle="Step-by-step animation" color="#a78bfa" />
+      <LynxDemoCard title="Chained Timeline" desc="Sequential steps" full>
+        <div className="flex flex-row gap-2 mb-3">
+          {[0, 1, 2, 3, 4].map(i => (
+            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+              step >= i ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/30'
+            }`}>
+              {i + 1}
+            </div>
+          ))}
+        </div>
+        <div className="flex flex-row gap-2">
+          <button onClick={() => setStep(s => Math.min(s + 1, 4))} className="px-4 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold">
+            Next Step
+          </button>
+          <button onClick={() => setStep(0)} className="px-3 py-2 rounded-lg bg-white/10 text-white/60 text-xs">
+            Reset
+          </button>
+        </div>
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── STAGGER SECTION ──────────────────────────────────────────────────────────
+
+const LynxStaggerSection = () => {
+  const [show, setShow] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="⋮" title="Stagger" subtitle="Staggered reveal" color="#8b5cf6" />
+      <LynxDemoCard title="Stagger Items" desc="Elements appear one by one" full>
+        <button onClick={() => setShow(s => !s)} className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold mb-3">
+          {show ? 'Hide' : 'Stagger In'}
+        </button>
+        {show && (
+          <div className="flex flex-row flex-wrap gap-2 justify-center">
+            {['A','B','C','D','E','F'].map((w, i) => (
+              <div key={w} className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold"
+                   style={{ transitionDelay: `${i * 80}ms` }}>
+                {w}
+              </div>
+            ))}
+          </div>
+        )}
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── PRESS SECTION ────────────────────────────────────────────────────────────
+
+const LynxPressSection = () => {
+  const [pressed, setPressed] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="⊙" title="Press Feedback" subtitle="Tap interaction" color="#ec4899" />
+      <LynxDemoCard title="Press Me" desc="Touch feedback" full>
+        <button
+          onPress={() => { setPressed(true); setTimeout(() => setPressed(false), 300) }}
+          className={`w-24 h-24 rounded-2xl flex items-center justify-center ${
+            pressed ? 'bg-pink-400' : 'bg-pink-500'
+          }`}
+        >
+          <span className="text-3xl">👆</span>
+        </button>
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── LOOP SECTION ─────────────────────────────────────────────────────────────
+
+const LynxLoopSection = () => {
+  const [spinning, setSpinning] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="∞" title="Loop" subtitle="Infinite animations" color="#f59e0b" />
+      <LynxDemoCard title="Spin" desc="Rotating indicator" full>
+        <button onClick={() => setSpinning(s => !s)} className="px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-bold mb-3">
+          {spinning ? 'Stop' : 'Spin'}
+        </button>
+        <div className={`w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-500 flex items-center justify-center ${
+          spinning ? 'animate-spin' : ''
+        }`}>
+          <span className="text-xs text-amber-500 font-bold">∞</span>
+        </div>
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── TRANSFORMS SECTION ──────────────────────────────────────────────────────
+
+const LynxTransformsSection = () => {
+  const [transformed, setTransformed] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="⟳" title="Transforms" subtitle="CSS transforms" color="#10b981" />
+      <LynxDemoCard title="Transform" desc="Tap to transform" full>
+        <button onClick={() => setTransformed(t => !t)}>
+          <div className={`w-16 h-16 rounded-xl bg-emerald-500 flex items-center justify-center transition-transform duration-300 ${
+            transformed ? 'rotate-45 scale-110 translate-y-[-8px]' : ''
+          }`}>
+            <span className="text-white font-bold">⟳</span>
+          </div>
+        </button>
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── SPRING SECTION ──────────────────────────────────────────────────────────
+
+const LynxSpringSection = () => {
+  const [big, setBig] = useState(false)
+  return (
+    <>
+      <LynxSectionHeader icon="⌇" title="Spring" subtitle="Bouncy transitions" color="#3b82f6" />
+      <LynxDemoCard title="Spring" desc="Tap to bounce" full>
+        <button onClick={() => setBig(b => !b)}>
+          <div className={`rounded-full bg-blue-500 flex items-center justify-center transition-all duration-500 ${
+            big ? 'w-24 h-24' : 'w-12 h-12'
+          }`}>
+            <span className="text-white font-bold text-xs">{big ? '⌇' : ''}</span>
+          </div>
+        </button>
+      </LynxDemoCard>
+    </>
+  )
+}
+
+// ─── EASING SECTION ──────────────────────────────────────────────────────────
+
+const LynxEasingSection = () => (
+  <>
+    <LynxSectionHeader icon="⌗" title="Easing" subtitle="Transition curves" color="#ef4444" />
+    <div className="flex flex-row flex-wrap px-3">
+      {['linear', 'ease-in', 'ease-out', 'ease-in-out'].map(e => (
+        <LynxDemoCard key={e} title={e} desc="Hover to see">
+          <div className="w-24 h-3 rounded-full bg-red-200 overflow-hidden">
+            <div className={`h-full bg-red-500 transition-all duration-500 hover:w-full w-1/2 ${e === 'linear' ? 'ease-linear' : e === 'ease-in' ? 'ease-in' : e === 'ease-out' ? 'ease-out' : 'ease-in-out'}`} />
+          </div>
+        </LynxDemoCard>
+      ))}
+    </div>
+  </>
+)
+
+/* @arkzen:native:components:lynx:shared:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LYNX PAGES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:page:lynx:index */
+
+import React, { useState } from '@lynx-js/react'
+
+const IndexLynxPage = () => {
+  const [activeSection, setActiveSection] = useState('entrance')
+
+  const renderSection = () => {
+    switch (activeSection) {
+      case 'entrance':   return <LynxEntranceSection />
+      case 'timeline':   return <LynxTimelineSection />
+      case 'stagger':    return <LynxStaggerSection />
+      case 'press':      return <LynxPressSection />
+      case 'loop':       return <LynxLoopSection />
+      case 'transforms': return <LynxTransformsSection />
+      case 'spring':     return <LynxSpringSection />
+      case 'easing':     return <LynxEasingSection />
+      default:           return <LynxEntranceSection />
+    }
+  }
+
+  return (
+    <div className="flex-1 min-h-screen bg-neutral-900 text-white">
+      <div className="border-b border-white/10 px-5 py-4">
+        <div className="text-lg font-bold text-purple-400">🎬 Animation Lab</div>
+        <div className="text-xs text-white/35">Lynx runtime</div>
+      </div>
+
+      <div className="flex flex-row overflow-x-auto border-b border-white/10 px-3 py-2 gap-1">
+        {LYNX_NAV_SECTIONS.map(({ id, label, icon, color }) => {
+          const active = activeSection === id
+          return (
+            <button
+              key={id}
+              onClick={() => setActiveSection(id)}
+              className={`flex flex-row items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold ${
+                active ? 'bg-neutral-900 text-white' : 'bg-white/10 text-white/60'
+              }`}
+            >
+              <span>{icon}</span>
+              {label}
+            </button>
+          )
+        })}
+      </div>
+
+      <div className="flex-1 overflow-y-auto">
+        {renderSection()}
+        <div className="h-8" />
+      </div>
+    </div>
+  )
+}
+
+/* @arkzen:native:page:lynx:index:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE ERROR PAGES
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:error:404 */
+/* @arkzen:import:expo */
+import React from 'react'
+import { View, Text } from 'react-native'
+/* @arkzen:import:expo:end */
+
+const NotFoundExpo = () => (
+  <View className="flex-1 items-center justify-center bg-neutral-950">
+    <Text className="text-6xl mb-4">404</Text>
+    <Text className="text-white text-xl font-bold">Page Not Found</Text>
+    <Text className="text-white/40 text-sm mt-2">The page you're looking for doesn't exist.</Text>
+  </View>
+)
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:404 */
+/* @arkzen:import:rn */
+import React from 'react'
+import { View, Text } from 'react-native'
+/* @arkzen:import:rn:end */
+
+const NotFoundRN = () => (
+  <View className="flex-1 items-center justify-center bg-neutral-950">
+    <Text className="text-6xl mb-4">404</Text>
+    <Text className="text-white text-xl font-bold">Page Not Found</Text>
+    <Text className="text-white/40 text-sm mt-2">The page you're looking for doesn't exist.</Text>
+  </View>
+)
+/* @arkzen:native:error:404:end */
+
+/* @arkzen:native:error:404:lynx */
+import React from '@lynx-js/react'
+
+const NotFoundLynx = () => (
+  <div className="flex-1 min-h-screen bg-neutral-950 text-white flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4">404</div>
+    <div className="text-xl font-bold">Page Not Found</div>
+    <div className="text-white/40 text-sm mt-2">The page you're looking for doesn't exist.</div>
+  </div>
+)
+/* @arkzen:native:error:404:lynx:end */
+
+/* @arkzen:native:error:500 */
+/* @arkzen:import:expo */
+import React from 'react'
+import { View, Text } from 'react-native'
+/* @arkzen:import:expo:end */
+
+const ServerErrorExpo = () => (
+  <View className="flex-1 items-center justify-center bg-neutral-950">
+    <Text className="text-6xl mb-4">500</Text>
+    <Text className="text-white text-xl font-bold">Server Error</Text>
+    <Text className="text-white/40 text-sm mt-2">Something went wrong on our end. Please try again later.</Text>
+  </View>
+)
+/* @arkzen:native:error:500:end */
+
+/* @arkzen:native:error:500 */
+/* @arkzen:import:rn */
+import React from 'react'
+import { View, Text } from 'react-native'
+/* @arkzen:import:rn:end */
+
+const ServerErrorRN = () => (
+  <View className="flex-1 items-center justify-center bg-neutral-950">
+    <Text className="text-6xl mb-4">500</Text>
+    <Text className="text-white text-xl font-bold">Server Error</Text>
+    <Text className="text-white/40 text-sm mt-2">Something went wrong on our end. Please try again later.</Text>
+  </View>
+)
+/* @arkzen:native:error:500:end */
+
+/* @arkzen:native:error:500:lynx */
+import React from '@lynx-js/react'
+
+const ServerErrorLynx = () => (
+  <div className="flex-1 min-h-screen bg-neutral-950 text-white flex items-center justify-center flex-col">
+    <div className="text-6xl mb-4">500</div>
+    <div className="text-xl font-bold">Server Error</div>
+    <div className="text-white/40 text-sm mt-2">Something went wrong on our end. Please try again later.</div>
+  </div>
+)
+/* @arkzen:native:error:500:lynx:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// NATIVE SCRIPTS
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:script:expo */
+// Expo-specific scripts
+console.log('🎬 Animation Lab running on Expo')
+/* @arkzen:native:script:expo:end */
+
+/* @arkzen:native:script:rn */
+// Bare RN-specific scripts
+console.log('🎬 Animation Lab running on React Native Bare')
+/* @arkzen:native:script:rn:end */
+
+/* @arkzen:native:script:lynx */
+// Lynx-specific scripts
+console.log('🎬 Animation Lab running on Lynx')
+/* @arkzen:native:script:lynx:end */

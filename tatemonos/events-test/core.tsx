@@ -479,6 +479,7 @@ const IndexPage = () => {
 /* @arkzen:web:page:index:end */
 /* @arkzen:native:components:shared */
 
+/* @arkzen:import:expo */
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
   View,
@@ -489,8 +490,21 @@ import {
 } from 'react-native'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Flame, Zap, RefreshCw, Trash2 } from 'lucide-react-native'
-
 const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState, useEffect, useCallback, useRef } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native'
+import { Flame, Zap, RefreshCw, Trash2 } from 'lucide-react-native'
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:import:rn:end */
 
 interface EventLogEntry {
   id:            number
