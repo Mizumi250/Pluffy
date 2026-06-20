@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.955Z
+// Generated: 2026-06-20T13:59:06.568Z
 import { channelDesc, channelEmoji, channelLabel } from './components/utils'
 import type { WsStatus } from './components/types'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
@@ -176,7 +176,7 @@ const DashboardLynxPage = () => {
                     {!n.read_at && <view className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
                     {n.read_at && <view className="w-1.5 h-1.5" />}
                     <view className="flex-1">
-                      <text className="text-sm text-neutral-700" maxLength={1}>
+                      <text className="text-sm text-neutral-700">
                         {data.message ?? 'Notification'}
                       </text>
                       <text className="text-xs text-neutral-400">

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-endpoint-handler/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:30.307Z
+// Generated: 2026-06-20T13:59:01.921Z
 import { LynxBadge } from './components/LynxBadge'
 import { LynxInjectedBadge } from './components/LynxInjectedBadge'
 import { LynxSectionCard } from './components/LynxSectionCard'
@@ -159,13 +159,11 @@ const IndexScreen = () => {
           {echoFields.map((f: { key: string; value: string }, i: number) => (
             <view key={i} style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
               <input
-                value={f.key}
                 bindinput={(e: any) => { const n = [...echoFields]; n[i].key = e.detail.value; setEchoFields(n) }}
                 placeholder="key"
                 style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
               />
               <input
-                value={f.value}
                 bindinput={(e: any) => { const n = [...echoFields]; n[i].value = e.detail.value; setEchoFields(n) }}
                 placeholder="value"
                 style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
@@ -234,7 +232,6 @@ const IndexScreen = () => {
           <text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>📝 Record Handler</text>
           <text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /record-handler · @arkzen:handler:recordHandler</text>
           <input
-            value={hProbe}
             bindinput={(e: any) => setHProbe(e.detail.value)}
             placeholder="probe name"
             style={{ backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717', marginBottom: 8 }}

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — roles-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:35.568Z
+// Generated: 2026-06-20T13:59:06.994Z
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { RoleBadge } from './components/RoleBadge'

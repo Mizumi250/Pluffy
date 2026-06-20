@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — middleware-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.556Z
+// Generated: 2026-06-20T13:59:06.185Z
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'
@@ -94,7 +94,6 @@ const IndexScreen = () => {
           <input
             className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Optional message"
-            value={message}
             bindinput={e => setMessage(e.detail.value)}
             type="text"
           />

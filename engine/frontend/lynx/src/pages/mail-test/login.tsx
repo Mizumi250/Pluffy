@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — mail-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.277Z
+// Generated: 2026-06-20T13:59:05.713Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -45,13 +45,11 @@ const LoginScreen = () => {
 
           <Field
             placeholder="Email"
-            value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
           <Field
             placeholder="Password"
-            value={password}
             onChangeText={setPassword}
             secureTextEntry
           />

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TextFXSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:42.956Z
+// Generated: 2026-06-20T13:59:15.053Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

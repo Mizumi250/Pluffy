@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:33.485Z
+// Generated: 2026-06-20T13:59:04.218Z
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from '@lynx-js/react'
+import { useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
 // ── Field ─────────────────────────────────────────────────────
@@ -25,7 +25,6 @@ export const Field = ({
           !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
         }`}
         placeholder={placeholder}
-        value={value}
         bindinput={e => onInput(e.detail.value)}
         disabled={!editable}
       />
@@ -35,7 +34,6 @@ export const Field = ({
           !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
         }`}
         placeholder={placeholder}
-        value={value}
         bindinput={e => onInput(e.detail.value)}
         disabled={!editable}
       />

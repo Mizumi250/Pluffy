@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — Badge
 // Source: @arkzen:native:components:lynx:* (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:33.392Z
+// Generated: 2026-06-20T13:59:03.921Z
 // ============================================================
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
 // ── Pill badge ────────────────────────────────────────────────
 export const Badge = ({ label }: { label: string }) => (

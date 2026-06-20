@@ -593,7 +593,7 @@ const triggeredStyle = (t: string) => t === 'manual'
 /* @arkzen:native:page:lynx:dashboard */
 /* @arkzen:native:page:layout:guest */
 
-import { useState, useCallback } from '@lynx-js/react'
+import { useState, useCallback, useEffect } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
   const commands = [
@@ -618,7 +618,7 @@ const DashboardLynxPage = () => {
     finally { setLoading(false) }
   }, [])
 
-  useState(() => { loadRuns() }, [])
+  useEffect(() => { loadRuns() }, [])
 
   const runCommand = async (cmdKey: string) => {
     setRunning(cmdKey)

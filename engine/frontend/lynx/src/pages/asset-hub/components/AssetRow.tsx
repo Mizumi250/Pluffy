@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — AssetRow
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:30.082Z
+// Generated: 2026-06-20T13:59:01.664Z
 // ============================================================
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 import { LYNX_CATEGORY_EMOJI } from './constants'
 import type { LynxAssetItem } from './types'
 

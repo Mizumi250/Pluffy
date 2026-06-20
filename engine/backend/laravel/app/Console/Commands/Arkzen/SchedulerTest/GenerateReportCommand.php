@@ -5,7 +5,7 @@
 // Tatemono: scheduler-test
 // Signature: scheduler-test:generate-report
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:42.001474Z
+// Generated: 2026-06-20T13:59:13.829371Z
 // ============================================================
 
 namespace App\Console\Commands\Arkzen\SchedulerTest;

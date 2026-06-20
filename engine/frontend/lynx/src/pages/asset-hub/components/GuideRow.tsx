@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — GuideRow
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:30.083Z
+// Generated: 2026-06-20T13:59:01.666Z
 // ============================================================
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
 // ── Guide row ──────────────────────────────────────────────────
 export const GuideRow = ({ folder, desc }: { folder: string; desc: string }) => (

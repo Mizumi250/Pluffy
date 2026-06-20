@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — job-test
 // Source: @arkzen:native:components:lynx:* (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.050Z
+// Generated: 2026-06-20T13:59:05.386Z
 // ============================================================
 
-import React, { useEffect, useRef, useState } from '@lynx-js/react'
+import { useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 import { Icon } from '@sigx/lynx-icons'
 

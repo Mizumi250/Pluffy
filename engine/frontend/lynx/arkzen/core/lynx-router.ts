@@ -279,10 +279,11 @@ function flattenMultilineImports(code: string): string {
 
 // ─── resolveImports ───────────────────────────────────────────────────────────
 // Lynx equivalent of expo-router.ts's resolveImports. The one real difference:
-// Lynx components import React itself FROM '@lynx-js/react'
-// (`import React, { useState } from '@lynx-js/react'`), not from 'react' —
-// so the "core module" that hooks/React get merged onto is parameterised
-// instead of hardcoded to 'react'.
+// @lynx-js/react has NO default export (verbatimModuleSyntax in tsconfig
+// forbids faking one via esModuleInterop), and Lynx uses the automatic JSX
+// runtime, so components never need `React` in scope at all. Hooks/named
+// imports merge onto '@lynx-js/react' as named-only — no default import is
+// ever emitted for this module.
 
 const LYNX_CORE_MODULE = '@lynx-js/react'
 
@@ -410,11 +411,9 @@ function resolveImports(
   const coreNamed = [...(importMap.get(LYNX_CORE_MODULE)?.named ?? [])]
     .filter(n => n !== 'React')
     .sort()
-  lines.push(
-    coreNamed.length > 0
-      ? `import React, { ${coreNamed.join(', ')} } from '${LYNX_CORE_MODULE}'`
-      : `import React from '${LYNX_CORE_MODULE}'`
-  )
+  if (coreNamed.length > 0) {
+    lines.push(`import { ${coreNamed.join(', ')} } from '${LYNX_CORE_MODULE}'`)
+  }
 
   const otherModules = [...importMap.keys()]
     .filter(m => m !== LYNX_CORE_MODULE)
@@ -677,10 +676,9 @@ function resolveLynxRouteLayout(
 // DO NOT EDIT DIRECTLY. Synthesised by lynx-router because a route needs more
 // than one layout layer (guard + custom layout, or a resolved parent chain)
 // and app-routes.ts can only reference a single layout component per route.
-import React from '${LYNX_CORE_MODULE}'
 ${imports.join('\n')}
 
-export function ${compositeName}({ children }: { children: React.ReactNode }) {
+export function ${compositeName}({ children }: { children: JSX.Element }) {
   return (
     ${opens.join('\n    ')}
       {children}

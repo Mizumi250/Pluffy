@@ -457,21 +457,18 @@ const IndexLynxPage = () => {
             <input
               type="text"
               placeholder="Name"
-              value={name}
               bindinput={(e) => setName(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
             <input
               type="email"
               placeholder="Email"
-              value={email}
               bindinput={(e) => setEmail(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
             <textarea
               placeholder="Message"
               maxlines={4}
-              value={message}
               bindinput={(e) => setMessage(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />

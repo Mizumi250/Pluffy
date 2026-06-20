@@ -1094,7 +1094,6 @@ const Field = ({
   <input
     className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
     placeholder={placeholder}
-    value={value}
     bindinput={e => onChangeText(e.detail.value)}
     type={secureTextEntry ? 'password' : keyboardType === 'email-address' ? 'email' : 'text'}
   />
@@ -1168,13 +1167,11 @@ const LoginScreen = () => {
 
           <Field
             placeholder="Email"
-            value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
           <Field
             placeholder="Password"
-            value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
@@ -1243,24 +1240,20 @@ const RegisterScreen = () => {
 
           <Field
             placeholder="Name"
-            value={name}
             onChangeText={setName}
           />
           <Field
             placeholder="Email"
-            value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
           <Field
             placeholder="Password"
-            value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
           <Field
             placeholder="Confirm password"
-            value={confirm}
             onChangeText={setConfirm}
             secureTextEntry
           />
@@ -1409,7 +1402,6 @@ const DashboardScreen = () => {
           </text>
           <Field
             placeholder="recipient@example.com"
-            value={toEmail}
             onChangeText={setToEmail}
             keyboardType="email-address"
           />

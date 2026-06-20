@@ -943,7 +943,6 @@ const Field = ({
           !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
         }`}
         placeholder={placeholder}
-        value={value}
         bindinput={e => onInput(e.detail.value)}
         disabled={!editable}
       />
@@ -953,7 +952,6 @@ const Field = ({
           !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
         }`}
         placeholder={placeholder}
-        value={value}
         bindinput={e => onInput(e.detail.value)}
         disabled={!editable}
       />
@@ -1152,7 +1150,6 @@ const IndexScreen = () => {
           <input
             className="flex-1 text-sm text-neutral-900"
             placeholder="Search name or SKU..."
-            value={search}
             bindinput={e => setSearch(e.detail.value)}
           />
           {search.length > 0 && (

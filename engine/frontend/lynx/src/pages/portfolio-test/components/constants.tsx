@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:native:components:lynx:* (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:35.256Z
+// Generated: 2026-06-20T13:59:06.844Z
 // ============================================================
 
-import React from '@lynx-js/react'
+
 
 export const PROJECTS = [
   { id: 1, title: 'E-commerce',  description: 'Full-stack e-commerce',     image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel']   },

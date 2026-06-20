@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — NativeLayerBadge
 // Source: @arkzen:native:components:lynx:* (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.194Z
+// Generated: 2026-06-20T13:59:05.554Z
 // ============================================================
 
-import React from '@lynx-js/react'
+
 import { NATIVE_COLORS } from './constants'
 
 export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (

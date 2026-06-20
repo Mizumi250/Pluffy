@@ -1,13 +1,13 @@
 // ARKZEN GENERATED — scheduler-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:36.664Z
+// Generated: 2026-06-20T13:59:08.190Z
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */
 
-import { useState, useCallback } from '@lynx-js/react'
+import { useState, useCallback, useEffect } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
   const commands = [
@@ -32,7 +32,7 @@ const DashboardLynxPage = () => {
     finally { setLoading(false) }
   }, [])
 
-  useState(() => { loadRuns() }, [])
+  useEffect(() => { loadRuns() }, [])
 
   const runCommand = async (cmdKey: string) => {
     setRunning(cmdKey)

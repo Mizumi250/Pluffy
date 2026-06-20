@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — inventory-management
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:37.573Z
+// Generated: 2026-06-20T13:59:08.972Z
 // ============================================================
 
 export interface InventoryItem {

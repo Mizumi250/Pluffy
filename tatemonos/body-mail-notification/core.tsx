@@ -1251,7 +1251,6 @@ const Field = ({
     className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
     type={type}
     placeholder={placeholder}
-    value={value}
     bindinput={e => onChangeText(e.detail.value)}
   />
 )
@@ -1578,7 +1577,6 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Recipient email"
-            value={mailTo}
             onChangeText={setMailTo}
             type="email"
           />
@@ -1618,7 +1616,6 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Custom message (optional)"
-            value={notifMsg}
             onChangeText={setNotifMsg}
           />
           <view className="mt-2">
@@ -1663,10 +1660,10 @@ const DashboardLynxPage = () => {
                 <view key={entry.id} className="px-5 py-3 flex-row items-center" style={{ gap: 12 }}>
                   <KindBadge kind={entry.kind} />
                   <view className="flex-1 min-w-0">
-                    <text className="text-sm font-semibold text-neutral-900" maxLength={1}>
+                    <text className="text-sm font-semibold text-neutral-900">
                       {entry.subject ?? '—'}
                     </text>
-                    <text className="text-xs text-neutral-400 mt-0.5" maxLength={1}>
+                    <text className="text-xs text-neutral-400 mt-0.5">
                       {entry.to_email ?? '—'}
                     </text>
                   </view>

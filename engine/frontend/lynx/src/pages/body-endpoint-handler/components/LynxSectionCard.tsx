@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxSectionCard
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:30.301Z
+// Generated: 2026-06-20T13:59:01.915Z
 // ============================================================
 
-import React, { useCallback, useEffect, useState } from '@lynx-js/react'
+import { useCallback, useEffect, useState } from '@lynx-js/react'
 
 // ── Section card ──────────────────────────────────────────────
 export const LynxSectionCard = ({ children }: { children: any }) => (

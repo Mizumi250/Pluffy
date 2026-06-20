@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:32.203Z
+// Generated: 2026-06-20T13:59:03.121Z
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
@@ -52,7 +52,6 @@ const RegisterScreen = () => {
               key={f.ph}
               className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder={f.ph}
-              value={f.val}
               bindinput={e => f.set(e.detail.value)}
               type={f.type}
             />

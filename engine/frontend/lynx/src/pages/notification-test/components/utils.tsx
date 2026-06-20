@@ -2,10 +2,9 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — notification-test
 // Source: @arkzen:native:components:lynx:* (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.948Z
+// Generated: 2026-06-20T13:59:06.561Z
 // ============================================================
 
-import React from '@lynx-js/react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 export const channelEmoji: Record<string, string> = {

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:32.200Z
+// Generated: 2026-06-20T13:59:03.119Z
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
@@ -42,14 +42,12 @@ const LoginScreen = () => {
           <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Email"
-            value={email}
             bindinput={e => setEmail(e.detail.value)}
             type="email"
           />
           <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Password"
-            value={password}
             bindinput={e => setPassword(e.detail.value)}
             type="password"
           />

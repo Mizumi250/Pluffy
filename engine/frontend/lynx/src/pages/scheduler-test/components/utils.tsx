@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — scheduler-test
 // Source: @arkzen:native:components:lynx:* (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:36.660Z
+// Generated: 2026-06-20T13:59:08.184Z
 // ============================================================
 
-import React, { useCallback, useState } from '@lynx-js/react'
+import { useCallback, useState } from '@lynx-js/react'
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 
 export const exitCodeStyle = (code: number) => code === 0

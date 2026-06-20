@@ -979,13 +979,11 @@ const IndexScreen = () => {
             <input
               className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Name *"
-              value={form.name}
               bindinput={e => setForm(f => ({ ...f, name: e.detail.value }))}
             />
             <input
               className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Description"
-              value={form.description}
               bindinput={e => setForm(f => ({ ...f, description: e.detail.value }))}
             />
             <view className="flex-row gap-x-2">
@@ -1002,13 +1000,11 @@ const IndexScreen = () => {
             <input
               className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Priority (0)"
-              value={form.priority}
               bindinput={e => setForm(f => ({ ...f, priority: e.detail.value.replace(/[^0-9]/g, '') }))}
             />
             <input
               className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Tags (comma separated)"
-              value={form.tags}
               bindinput={e => setForm(f => ({ ...f, tags: e.detail.value }))}
             />
           </view>

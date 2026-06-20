@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — portfolio-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:35.262Z
+// Generated: 2026-06-20T13:59:06.847Z
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
 
 /* @arkzen:native:page:layout:guest */
@@ -103,21 +103,18 @@ const IndexLynxPage = () => {
             <input
               type="text"
               placeholder="Name"
-              value={name}
               bindinput={(e) => setName(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
             <input
               type="email"
               placeholder="Email"
-              value={email}
               bindinput={(e) => setEmail(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
             <textarea
               placeholder="Message"
               maxlines={4}
-              value={message}
               bindinput={(e) => setMessage(e.detail.value)}
               className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />

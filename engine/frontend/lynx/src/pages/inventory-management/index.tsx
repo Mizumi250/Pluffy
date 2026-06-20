@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — inventory-management/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:33.491Z
+// Generated: 2026-06-20T13:59:04.233Z
 import { ItemFormPanel } from './components/ItemFormPanel'
 import { StatCard } from './components/StatCard'
 import { StockBadge } from './components/StockBadge'
@@ -87,7 +87,6 @@ const IndexScreen = () => {
           <input
             className="flex-1 text-sm text-neutral-900"
             placeholder="Search name or SKU..."
-            value={search}
             bindinput={e => setSearch(e.detail.value)}
           />
           {search.length > 0 && (

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — new-updates-styles
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.762Z
+// Generated: 2026-06-20T13:59:06.446Z
 // ============================================================
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
 export const getLynxIcon = (name: string, color: string) => {

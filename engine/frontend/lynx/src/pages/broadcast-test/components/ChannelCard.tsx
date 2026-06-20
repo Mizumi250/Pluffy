@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — ChannelCard
 // Source: @arkzen:native:components:lynx:* (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:32.197Z
+// Generated: 2026-06-20T13:59:03.116Z
 // ============================================================
 
-import React, { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
+import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 import type { LynxMessage, WsStatus } from './types'
 import { StatusDot } from './StatusDot'
@@ -59,7 +59,6 @@ export const ChannelCard = ({
         <input
           className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900"
           placeholder="Type and send…"
-          value={input}
           bindinput={e => setInput(e.detail.value)}
         />
         <view bindtap={handleSend} className="bg-neutral-900 px-4 py-2.5 rounded-xl">

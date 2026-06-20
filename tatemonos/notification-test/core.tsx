@@ -1325,14 +1325,12 @@ const LoginLynxPage = () => {
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
-            value={email}
             bindinput={e => setEmail(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
-            value={password}
             bindinput={e => setPassword(e.detail.value)}
           />
         </view>
@@ -1401,28 +1399,24 @@ const RegisterLynxPage = () => {
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             placeholder="Name"
-            value={name}
             bindinput={e => setName(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
-            value={email}
             bindinput={e => setEmail(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
-            value={password}
             bindinput={e => setPassword(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Confirm password"
-            value={confirm}
             bindinput={e => setConfirm(e.detail.value)}
           />
         </view>
@@ -1620,7 +1614,7 @@ const DashboardLynxPage = () => {
                     {!n.read_at && <view className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
                     {n.read_at && <view className="w-1.5 h-1.5" />}
                     <view className="flex-1">
-                      <text className="text-sm text-neutral-700" maxLength={1}>
+                      <text className="text-sm text-neutral-700">
                         {data.message ?? 'Notification'}
                       </text>
                       <text className="text-xs text-neutral-400">

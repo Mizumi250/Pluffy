@@ -667,7 +667,6 @@ const IndexScreen = () => {
           <input
             className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Optional message"
-            value={message}
             bindinput={e => setMessage(e.detail.value)}
             type="text"
           />

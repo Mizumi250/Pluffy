@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.953Z
+// Generated: 2026-06-20T13:59:06.566Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */
@@ -45,28 +45,24 @@ const RegisterLynxPage = () => {
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             placeholder="Name"
-            value={name}
             bindinput={e => setName(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
-            value={email}
             bindinput={e => setEmail(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
-            value={password}
             bindinput={e => setPassword(e.detail.value)}
           />
           <input
             className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Confirm password"
-            value={confirm}
             bindinput={e => setConfirm(e.detail.value)}
           />
         </view>

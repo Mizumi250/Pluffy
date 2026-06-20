@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — mail-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:34.282Z
+// Generated: 2026-06-20T13:59:05.718Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -48,24 +48,20 @@ const RegisterScreen = () => {
 
           <Field
             placeholder="Name"
-            value={name}
             onChangeText={setName}
           />
           <Field
             placeholder="Email"
-            value={email}
             onChangeText={setEmail}
             keyboardType="email-address"
           />
           <Field
             placeholder="Password"
-            value={password}
             onChangeText={setPassword}
             secureTextEntry
           />
           <Field
             placeholder="Confirm password"
-            value={confirm}
             onChangeText={setConfirm}
             secureTextEntry
           />

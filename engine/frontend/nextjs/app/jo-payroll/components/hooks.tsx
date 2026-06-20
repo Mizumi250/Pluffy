@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:38.175Z
+// Generated: 2026-06-20T13:59:09.381Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

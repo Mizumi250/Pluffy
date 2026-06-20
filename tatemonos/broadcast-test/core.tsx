@@ -1171,7 +1171,6 @@ const ChannelCard = ({
         <input
           className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900"
           placeholder="Type and send…"
-          value={input}
           bindinput={e => setInput(e.detail.value)}
         />
         <view bindtap={handleSend} className="bg-neutral-900 px-4 py-2.5 rounded-xl">
@@ -1243,14 +1242,12 @@ const LoginScreen = () => {
           <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Email"
-            value={email}
             bindinput={e => setEmail(e.detail.value)}
             type="email"
           />
           <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Password"
-            value={password}
             bindinput={e => setPassword(e.detail.value)}
             type="password"
           />
@@ -1330,7 +1327,6 @@ const RegisterScreen = () => {
               key={f.ph}
               className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder={f.ph}
-              value={f.val}
               bindinput={e => f.set(e.detail.value)}
               type={f.type}
             />

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxErrorScreen
 // Source: @arkzen:native:components:lynx:* (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:27:32.754Z
+// Generated: 2026-06-20T13:59:03.656Z
 // ============================================================
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 import { LYNX_ERRORS } from './constants'
 
 export const LynxErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
