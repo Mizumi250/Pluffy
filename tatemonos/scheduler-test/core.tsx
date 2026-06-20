@@ -566,7 +566,7 @@ const DashboardScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import React from 'react'
+import { useState, useCallback } from '@lynx-js/react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 interface CommandRun {
@@ -593,7 +593,7 @@ const triggeredStyle = (t: string) => t === 'manual'
 /* @arkzen:native:page:lynx:dashboard */
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { useState, useCallback } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
   const commands = [
@@ -603,12 +603,12 @@ const DashboardLynxPage = () => {
     { key: 'sync-data',       label: 'Sync Data',       signature: 'scheduler-test:sync-data',       schedule: 'Every 15 min', icon: '🔄' },
   ]
 
-  const [runs, setRuns] = React.useState<CommandRun[]>([])
-  const [loading, setLoading] = React.useState(false)
-  const [running, setRunning] = React.useState<string | null>(null)
-  const [clearing, setClearing] = React.useState(false)
+  const [runs, setRuns] = useState<CommandRun[]>([])
+  const [loading, setLoading] = useState(false)
+  const [running, setRunning] = useState<string | null>(null)
+  const [clearing, setClearing] = useState(false)
 
-  const loadRuns = React.useCallback(async () => {
+  const loadRuns = useCallback(async () => {
     setLoading(true)
     try {
       const res = await arkzenFetch('/api/scheduler-test/runs?per_page=50')
@@ -618,7 +618,7 @@ const DashboardLynxPage = () => {
     finally { setLoading(false) }
   }, [])
 
-  React.useEffect(() => { loadRuns() }, [loadRuns])
+  useState(() => { loadRuns() }, [])
 
   const runCommand = async (cmdKey: string) => {
     setRunning(cmdKey)
@@ -643,107 +643,116 @@ const DashboardLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="p-8">
+        <view className="max-w-2xl mx-auto" style={{ gap: 24 }}>
 
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">⏰ Scheduler Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">Run commands manually or let the scheduler fire them.</p>
-        </div>
+          <view>
+            <text className="text-2xl font-bold" style={{ gap: 8 }}>
+              ⏰ Scheduler Test
+            </text>
+            <text className="text-sm text-neutral-500 mt-1">Run commands manually or let the scheduler fire them.</text>
+          </view>
 
-        {/* Command cards — 2 column grid */}
-        <div className="grid grid-cols-2 gap-3">
-          {commands.map(cmd => (
-            <div key={cmd.key} className="bg-white rounded-2xl border border-neutral-100 p-4">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{cmd.icon}</span>
-                <span className="font-medium text-sm truncate">{cmd.label}</span>
-              </div>
-              <code className="text-xs text-neutral-400 block mb-1 truncate">{cmd.signature}</code>
-              <div className="text-xs text-neutral-500 mb-3 flex items-center gap-1">🕒 {cmd.schedule}</div>
-              <button
-                className={`w-full py-2 rounded-xl text-sm font-semibold transition-colors ${
-                  running === cmd.key
-                    ? 'bg-neutral-200 text-neutral-700'
-                    : 'bg-neutral-900 text-white hover:bg-neutral-800'
-                }`}
-                onClick={() => runCommand(cmd.key)}
-                disabled={!!running}
-              >
-                {running === cmd.key ? '...' : 'Run now'}
-              </button>
-            </div>
-          ))}
-        </div>
-
-        {/* Execution history */}
-        <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
-            <h2 className="font-semibold">Execution history</h2>
-            <div className="flex gap-3">
-              <button 
-                onClick={loadRuns}
-                className="text-xs text-neutral-400 hover:text-neutral-600 disabled:opacity-50"
-                disabled={loading}
-              >
-                {loading ? '...' : 'Refresh'}
-              </button>
-              {runs.length > 0 && (
-                <button 
-                  onClick={clearRuns}
-                  disabled={clearing}
-                  className="text-xs text-red-400 hover:text-red-600 disabled:opacity-50"
+          {/* Command cards — 2 column grid */}
+          <view className="flex-row flex-wrap" style={{ gap: 12 }}>
+            {commands.map(cmd => (
+              <view key={cmd.key} className="bg-white rounded-2xl border border-neutral-100 p-4" style={{ width: 'calc(50% - 6px)' }}>
+                <view className="flex-row items-center gap-2 mb-1">
+                  <text className="text-lg">{cmd.icon}</text>
+                  <text className="font-medium text-sm">{cmd.label}</text>
+                </view>
+                <text className="text-xs text-neutral-400 font-mono block mb-1">{cmd.signature}</text>
+                <view className="flex-row items-center gap-1 mb-3">
+                  <text className="text-xs">🕒</text>
+                  <text className="text-xs text-neutral-500">{cmd.schedule}</text>
+                </view>
+                <view
+                  bindtap={running === cmd.key ? undefined : () => runCommand(cmd.key)}
+                  className="w-full py-2 rounded-xl items-center"
+                  style={{ backgroundColor: running === cmd.key ? '#e5e5e5' : '#171717' }}
                 >
-                  {clearing ? '...' : 'Clear'}
-                </button>
-              )}
-            </div>
-          </div>
+                  <text className={`text-sm font-semibold ${running === cmd.key ? 'text-neutral-700' : 'text-white'}`}>
+                    {running === cmd.key ? '...' : 'Run now'}
+                  </text>
+                </view>
+              </view>
+            ))}
+          </view>
 
-          {runs.length === 0 ? (
-            <div className="p-8 text-center text-sm text-neutral-400">
-              No runs yet. Click "Run now" on any command above.
-            </div>
-          ) : (
-            <div className="divide-y divide-neutral-50">
-              {runs.map((r) => {
-                const exit = exitCodeStyle(r.exit_code)
-                const trigger = triggeredStyle(r.triggered_by)
-                return (
-                  <div key={r.id} className="px-5 py-3">
-                    <div className="flex items-center justify-between gap-2 mb-1 flex-wrap">
-                      <code className="text-xs font-mono font-medium text-neutral-700 flex-1">{r.signature}</code>
-                      <div className="flex items-center gap-1.5">
-                        {r.duration_ms != null && (
-                          <span className="text-xs text-neutral-400">{r.duration_ms}ms</span>
-                        )}
-                        <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${trigger.bg} ${trigger.text}`}>
-                          {r.triggered_by}
-                        </span>
-                        <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${exit.bg} ${exit.text}`}>
-                          exit {r.exit_code}
-                        </span>
-                      </div>
-                    </div>
-                    {r.output && (
-                      <pre className="text-xs text-neutral-400 bg-neutral-50 rounded-lg p-2 mt-1 overflow-x-auto whitespace-pre-wrap">{r.output}</pre>
-                    )}
-                    <div className="text-xs text-neutral-300 mt-1">{r.created_at}</div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
+          {/* Execution history */}
+          <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+            <view className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
+              <text className="font-semibold">Execution history</text>
+              <view className="flex-row" style={{ gap: 12 }}>
+                <text
+                  className="text-xs text-neutral-400"
+                  bindtap={loading ? undefined : loadRuns}
+                >
+                  {loading ? '...' : 'Refresh'}
+                </text>
+                {runs.length > 0 && (
+                  <text
+                    className="text-xs text-red-400"
+                    bindtap={clearing ? undefined : clearRuns}
+                  >
+                    {clearing ? '...' : 'Clear'}
+                  </text>
+                )}
+              </view>
+            </view>
 
-        <div className="text-xs text-neutral-400 bg-neutral-50 rounded-xl p-4">
-          <strong>Schedule:</strong> Run <code>* * * * * php /path/to/artisan schedule:run</code> via crontab.<br/>
-          <strong>Commands are scoped:</strong> All signatures are prefixed with <code>scheduler-test:</code> so they never collide with other tatemonos.<br/>
-          <strong>Run all now:</strong> <code>php artisan schedule:run</code>
-        </div>
+            {runs.length === 0 ? (
+              <view className="p-8 items-center">
+                <text className="text-sm text-neutral-400 text-center">
+                  No runs yet. Click "Run now" on any command above.
+                </text>
+              </view>
+            ) : (
+              <view>
+                {runs.map((r) => {
+                  const exit = exitCodeStyle(r.exit_code)
+                  const trigger = triggeredStyle(r.triggered_by)
+                  return (
+                    <view key={r.id} className="px-5 py-3 border-b border-neutral-50">
+                      <view className="flex-row items-center justify-between flex-wrap" style={{ gap: 8 }}>
+                        <text className="text-xs font-mono font-medium text-neutral-700 flex-1">{r.signature}</text>
+                        <view className="flex-row" style={{ gap: 6 }}>
+                          {r.duration_ms != null && (
+                            <text className="text-xs text-neutral-400">{r.duration_ms}ms</text>
+                          )}
+                          <view className={`px-1.5 py-0.5 rounded-md ${trigger.bg}`}>
+                            <text className={`text-xs font-medium ${trigger.text}`}>{r.triggered_by}</text>
+                          </view>
+                          <view className={`px-1.5 py-0.5 rounded-md ${exit.bg}`}>
+                            <text className={`text-xs font-medium ${exit.text}`}>exit {r.exit_code}</text>
+                          </view>
+                        </view>
+                      </view>
+                      {r.output && (
+                        <view className="bg-neutral-50 rounded-lg px-3 py-2 mt-1">
+                          <text className="text-xs text-neutral-400">{r.output}</text>
+                        </view>
+                      )}
+                      <text className="text-xs text-neutral-300 mt-1">{r.created_at}</text>
+                    </view>
+                  )
+                })}
+              </view>
+            )}
+          </view>
 
-      </div>
-    </div>
+          {/* Info */}
+          <view className="bg-neutral-100 rounded-2xl px-4 py-3">
+            <text className="text-xs text-neutral-500 font-mono leading-5">
+              backend: /api/scheduler-test{'\n'}
+              cron: * * * * * php artisan schedule:run
+            </text>
+          </view>
+
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 
