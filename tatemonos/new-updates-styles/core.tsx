@@ -9,17 +9,6 @@ auth: false
 favicon: https://cdn-icons-png.flaticon.com/512/1995/1995467.png
 */
 
-/* @arkzen:meta:native
-label: New Updates & Styles
-description: Arkzen v2.0 showcase — features, about, and style demo screens
-expo:
-  bundle_id: com.arkzen.newupdatesstyles
-  scheme: newupdatesstyles
-  version: 2.0.0
-  orientation: portrait
-  status_bar_style: dark
-*/
-
 /* @arkzen:web:config
 toast:
   position: top-right
@@ -32,17 +21,6 @@ layout:
     className: "min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50"
   auth:
     className: "min-h-screen bg-neutral-50"
-*/
-
-/* @arkzen:native:config
-theme:
-  primary: "#2563eb"
-  secondary: "#7c3aed"
-  accent: "#059669"
-  background: "#f8fafc"
-  surface: "#ffffff"
-  text: "#0f172a"
-  muted: "#6b7280"
 */
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -477,8 +455,54 @@ const FeaturesPage = () => {
 }
 /* @arkzen:web:page:features:end */
 
+/* @arkzen:web:error:404 */
+
+import React from 'react'
+import Link from 'next/link'
+
+const NotFoundPage = () => (
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-8">
+    <div className="text-center max-w-md">
+      <p className="text-[120px] font-black text-indigo-100 leading-none">404</p>
+      <h1 className="text-xl font-bold text-neutral-900 -mt-2 mb-2">Page not found</h1>
+      <p className="text-sm text-neutral-500 mb-6">This route doesn't exist in the new-updates-styles module.</p>
+      <Link href="/new-updates-styles" className="inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white text-sm font-semibold rounded-xl hover:bg-blue-500 transition-colors">
+        Back to Home
+      </Link>
+    </div>
+  </div>
+)
+
+/* @arkzen:web:error:404:end */
+
 // ─────────────────────────────────────────────────────────────────────────────
-// NATIVE SHARED COMPONENTS  (Expo + RN bare)
+// NATIVE SIGNAL — everything below is mobile (Expo, RN, Lynx)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:meta:native
+label: New Updates & Styles
+description: Arkzen v2.0 showcase — features, about, and style demo screens
+expo:
+  bundle_id: com.arkzen.newupdatesstyles
+  scheme: newupdatesstyles
+  version: 2.0.0
+  orientation: portrait
+  status_bar_style: dark
+*/
+
+/* @arkzen:native:config
+theme:
+  primary: "#2563eb"
+  secondary: "#7c3aed"
+  accent: "#059669"
+  background: "#f8fafc"
+  surface: "#ffffff"
+  text: "#0f172a"
+  muted: "#6b7280"
+*/
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPO + RN SHARED COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:components:shared */
@@ -607,7 +631,7 @@ const ICON_COLORS: Record<NativeColor, string> = {
 /* @arkzen:native:components:shared:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NATIVE PAGES  (Expo + RN bare)
+// EXPO + RN PAGES
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:page:index */
@@ -702,7 +726,6 @@ const IndexScreen = () => {
     </ScrollView>
   )
 }
-
 /* @arkzen:native:page:index:end */
 
 
@@ -803,7 +826,6 @@ const AboutScreen = () => {
     </ScrollView>
   )
 }
-
 /* @arkzen:native:page:about:end */
 
 
@@ -886,8 +908,90 @@ const FeaturesScreen = () => {
     </ScrollView>
   )
 }
-
 /* @arkzen:native:page:features:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EXPO + RN STYLE BLOCKS (engine wraps in StyleSheet)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:style */
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #7c3aed;
+  --color-accent: #059669;
+  --spacing-unit: 0.25rem;
+  --radius-default: 0.75rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.arkzen-btn {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-default);
+  padding-horizontal: 24px;
+  padding-vertical: 16px;
+  font-weight: 600;
+  color: white;
+  border-width: 0;
+  cursor: pointer;
+}
+
+.arkzen-btn:hover {
+  background-color: var(--color-secondary);
+  box-shadow: var(--shadow-lg);
+}
+
+.arkzen-input {
+  border-width: 2px;
+  border-color: #e5e7eb;
+  border-radius: var(--radius-default);
+  padding-horizontal: 12px;
+  padding-vertical: 10px;
+  font-size: 16px;
+}
+
+.arkzen-input:focus {
+  border-color: var(--color-primary);
+}
+/* @arkzen:native:style:end */
+
+/* @arkzen:native:style:FeatureCard */
+.feature-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.feature-card:hover::before { left: 100%; }
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+/* @arkzen:native:style:FeatureCard:end */
+
+/* @arkzen:native:style:HeroSection */
+.hero-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.8; }
+}
+/* @arkzen:native:style:HeroSection:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LYNX SHARED COMPONENTS
@@ -895,40 +999,41 @@ const FeaturesScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import React, { useState } from '@lynx-js/react'
-import { Zap, Code, Palette, Layers } from 'lucide-react'
+import { useState } from '@lynx-js/react'
+import { Icon } from '@sigx/lynx-icons'
 
 export const LynxBadge = ({ label }: { label: string }) => (
-  <div className="px-3 py-1 bg-blue-100 rounded-full self-start inline-block">
-    <span className="text-xs font-semibold text-blue-600 tracking-wide">{label}</span>
-  </div>
+  <view className="px-3 py-1 bg-blue-100 rounded-full self-start">
+    <text className="text-xs font-semibold text-blue-600 tracking-wide">{label}</text>
+  </view>
 )
 
 export const LynxPrimaryButton = ({
-  label, onPress, disabled = false,
+  label,
+  onPress,
+  disabled = false,
 }: {
   label: string
   onPress: () => void
   disabled?: boolean
 }) => (
-  <button
-    onClick={onPress}
-    disabled={disabled}
-    className={`rounded-2xl py-4 px-6 text-white font-semibold text-base tracking-wide border-none cursor-pointer w-full ${
-      disabled ? 'bg-blue-200' : 'bg-blue-600'
-    }`}
+  <view
+    bindtap={disabled ? undefined : onPress}
+    className={`rounded-2xl py-4 px-6 items-center w-full ${disabled ? 'bg-blue-200' : 'bg-blue-600'}`}
   >
-    {label}
-  </button>
+    <text className={`text-white font-semibold text-base tracking-wide ${disabled ? 'opacity-60' : ''}`}>
+      {label}
+    </text>
+  </view>
 )
 
 export const LynxGhostButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
-  <button
-    onClick={onPress}
-    className="rounded-2xl py-4 px-6 text-neutral-600 font-medium text-base border border-neutral-200 bg-transparent cursor-pointer w-full"
+  <view
+    bindtap={onPress}
+    className="rounded-2xl py-4 px-6 items-center border border-neutral-200 w-full"
   >
-    {label}
-  </button>
+    <text className="text-neutral-600 font-medium text-base">{label}</text>
+  </view>
 )
 
 type LynxColor = 'blue' | 'purple' | 'green' | 'orange'
@@ -941,30 +1046,30 @@ const LYNX_COLOR_MAP: Record<LynxColor, { bg: string; text: string; border: stri
 }
 
 export const LynxFeatureCard = ({
-  icon, title, description, color, onClick, expanded = false,
+  icon, title, description, color, onPress, expanded = false,
 }: {
   icon: React.ReactNode
   title: string
   description: string
   color: LynxColor
-  onClick?: () => void
+  onPress?: () => void
   expanded?: boolean
 }) => {
   const c = LYNX_COLOR_MAP[color]
   return (
-    <div
-      onClick={onClick}
-      className={`rounded-2xl border-2 p-5 mb-3 cursor-pointer ${c.bg} ${c.border}`}
+    <view
+      bindtap={onPress}
+      className={`rounded-2xl border-2 p-5 mb-3 ${c.bg} ${c.border}`}
     >
-      <div className="mb-2 text-2xl">{icon}</div>
-      <div className={`font-bold text-base mb-1 ${c.text}`}>{title}</div>
-      <div className={`text-sm leading-5 opacity-80 ${c.text}`}>{description}</div>
+      <view className="mb-2">{icon}</view>
+      <text className={`font-bold text-base mb-1 ${c.text}`}>{title}</text>
+      <text className={`text-sm leading-5 opacity-80 ${c.text}`}>{description}</text>
       {expanded && (
-        <div className="mt-3 bg-white/60 rounded-xl p-3">
-          <span className="text-xs text-neutral-500">Tap another card to explore more features.</span>
-        </div>
+        <view className="mt-3 bg-white/60 rounded-xl p-3">
+          <text className="text-xs text-neutral-500">Tap another card to explore more features.</text>
+        </view>
       )}
-    </div>
+    </view>
   )
 }
 
@@ -983,14 +1088,14 @@ export const LYNX_FEATURES: LynxFeature[] = [
   { id: 4, icon: 'layers',  title: 'Asset Management',      description: 'Built-in favicon, image, and static file support',          color: 'orange' },
 ]
 
-export const getLynxIcon = (name: string) => {
-  switch (name) {
-    case 'zap':     return <Zap size={24} />
-    case 'code':    return <Code size={24} />
-    case 'palette': return <Palette size={24} />
-    case 'layers':  return <Layers size={24} />
-    default:        return null
+export const getLynxIcon = (name: string, color: string) => {
+  const colorMap: Record<string, string> = {
+    blue: '#2563eb',
+    purple: '#7c3aed',
+    green: '#059669',
+    orange: '#ea580c',
   }
+  return <Icon set="lucide" name={name} size={24} color={colorMap[color] || '#000'} />
 }
 
 /* @arkzen:native:components:lynx:shared:end */
@@ -1001,40 +1106,40 @@ export const getLynxIcon = (name: string) => {
 
 /* @arkzen:native:page:lynx:index */
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
-const IndexLynxPage = () => {
+const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
   const [activeFeature, setActiveFeature] = useState<number | null>(null)
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 px-6 pt-14 pb-12 flex flex-col">
+    <scroll-view className="flex-1 bg-slate-50 px-6 pt-14 pb-12">
 
-      <div className="mb-8">
+      <view className="mb-8">
         <LynxBadge label="Arkzen v2.0" />
-        <h1 className="text-4xl font-bold text-neutral-900 mt-4 leading-tight">
-          What's New<br />in v2.0 ✦
-        </h1>
-        <p className="text-base text-neutral-500 mt-3 leading-6">
+        <text className="text-4xl font-bold text-neutral-900 mt-4 leading-tight">
+          What's New{'\n'}in v2.0 ✦
+        </text>
+        <text className="text-base text-neutral-500 mt-3 leading-6">
           Component separation, CSS DSL, multiple pages, and more — all running natively on Lynx.
-        </p>
-      </div>
+        </text>
+      </view>
 
-      <div className="mb-6">
+      <view className="mb-6">
         {LYNX_FEATURES.map(f => (
           <LynxFeatureCard
             key={f.id}
-            icon={getLynxIcon(f.icon)}
+            icon={getLynxIcon(f.icon, f.color)}
             title={f.title}
             description={f.description}
             color={f.color}
             expanded={activeFeature === f.id}
-            onClick={() => setActiveFeature(activeFeature === f.id ? null : f.id)}
+            onPress={() => setActiveFeature(activeFeature === f.id ? null : f.id)}
           />
         ))}
-      </div>
+      </view>
 
-      <div className="rounded-2xl bg-blue-600 p-6 mb-6">
-        <div className="text-white font-bold text-xl mb-3">What's new?</div>
+      <view className="rounded-2xl bg-blue-600 p-6 mb-6">
+        <text className="text-white font-bold text-xl mb-3">What's new?</text>
         {[
           '✓ Individual component files',
           '✓ Global CSS variables',
@@ -1043,33 +1148,32 @@ const IndexLynxPage = () => {
           '✓ Asset management',
           '✓ Zero hardcoding',
         ].map(item => (
-          <div key={item} className="text-blue-100 text-sm leading-7">{item}</div>
+          <text key={item} className="text-blue-100 text-sm leading-7">{item}</text>
         ))}
-      </div>
+      </view>
 
-      <div className="flex flex-col gap-3">
+      <view className="flex-col" style={{ gap: 12 }}>
         <LynxPrimaryButton
           label="Browse Features →"
-          onPress={() => { window.location.href = '/new-updates-styles/features' }}
+          onPress={() => onNavigate('features')}
         />
         <LynxGhostButton
           label="About this tatemono"
-          onPress={() => { window.location.href = '/new-updates-styles/about' }}
+          onPress={() => onNavigate('about')}
         />
-      </div>
+      </view>
 
-    </div>
+    </scroll-view>
   )
 }
-
 /* @arkzen:native:page:lynx:index:end */
 
 
 /* @arkzen:native:page:lynx:about */
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
-const AboutLynxPage = () => {
+const AboutLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   const sections = [
@@ -1088,100 +1192,187 @@ const AboutLynxPage = () => {
   ]
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 px-6 pt-14 pb-12 flex flex-col">
+    <scroll-view className="flex-1 bg-slate-50 px-6 pt-14 pb-12">
 
-      <LynxGhostButton label="← Back" onPress={() => window.history.back()} />
+      <LynxGhostButton label="← Back" onPress={() => onNavigate('index')} />
 
-      <div className="mt-8 mb-8">
+      <view className="mt-8 mb-8">
         <LynxBadge label="about" />
-        <h1 className="text-3xl font-bold text-neutral-900 mt-4">About this showcase</h1>
-        <p className="text-sm text-neutral-500 mt-2 leading-6">
+        <text className="text-3xl font-bold text-neutral-900 mt-4">About this showcase</text>
+        <text className="text-sm text-neutral-500 mt-2 leading-6">
           This tatemono demonstrates all new features added to Arkzen v2.0.
-        </p>
-      </div>
+        </text>
+      </view>
 
-      <div className="flex flex-col gap-3 mb-8">
+      <view className="flex-col" style={{ gap: 12 }}>
         {sections.map(s => (
-          <div
+          <view
             key={s.title}
-            onClick={() => setExpanded(expanded === s.title ? null : s.title)}
-            className="bg-white rounded-2xl border border-neutral-200 p-5 cursor-pointer"
+            bindtap={() => setExpanded(expanded === s.title ? null : s.title)}
+            className="bg-white rounded-2xl border border-neutral-200 p-5"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-neutral-900 text-base">{s.title}</span>
-              <span className="text-neutral-400 text-lg">{expanded === s.title ? '−' : '+'}</span>
-            </div>
+            <view className="flex-row items-center justify-between">
+              <text className="font-bold text-neutral-900 text-base">{s.title}</text>
+              <text className="text-neutral-400 text-lg">{expanded === s.title ? '−' : '+'}</text>
+            </view>
             {expanded === s.title && (
-              <p className="mt-3 text-sm text-neutral-600 leading-6">{s.content}</p>
+              <text className="mt-3 text-sm text-neutral-600 leading-6">{s.content}</text>
             )}
-          </div>
+          </view>
         ))}
-      </div>
+      </view>
 
-      <div className="bg-neutral-100 rounded-2xl px-5 py-4">
-        <pre className="text-xs font-mono text-neutral-500 leading-6">
-          {`stack: lynx\nengine: arkzen v10.1\ntatemono: new-updates-styles\nscreens: index, about, features`}
-        </pre>
-      </div>
+      <view className="bg-neutral-100 rounded-2xl px-5 py-4 mt-4">
+        <text className="text-xs font-mono text-neutral-500 leading-6">
+          {'stack: lynx\nengine: arkzen v10.1\ntatemono: new-updates-styles\nscreens: index, about, features'}
+        </text>
+      </view>
 
-    </div>
+    </scroll-view>
   )
 }
-
 /* @arkzen:native:page:lynx:about:end */
 
 
 /* @arkzen:native:page:lynx:features */
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
-const FeaturesLynxPage = () => {
+const FeaturesLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
   const [selectedColor, setSelectedColor] = useState<LynxColor>('blue')
   const colors: LynxColor[] = ['blue', 'purple', 'green', 'orange']
   const filtered = LYNX_FEATURES.filter(f => f.color === selectedColor)
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 px-6 pt-14 pb-12 flex flex-col">
+    <scroll-view className="flex-1 bg-slate-50 px-6 pt-14 pb-12">
 
-      <LynxGhostButton label="← Back" onPress={() => window.history.back()} />
+      <LynxGhostButton label="← Back" onPress={() => onNavigate('index')} />
 
-      <div className="mt-8 mb-6">
+      <view className="mt-8 mb-6">
         <LynxBadge label="features" />
-        <h1 className="text-3xl font-bold text-neutral-900 mt-4">All Features</h1>
-      </div>
+        <text className="text-3xl font-bold text-neutral-900 mt-4">All Features</text>
+      </view>
 
-      <div className="flex flex-wrap gap-2 mb-6">
+      <view className="flex-row flex-wrap" style={{ gap: 8 }}>
         {colors.map(color => (
-          <button
+          <view
             key={color}
-            onClick={() => setSelectedColor(color)}
-            className={`px-4 py-2 rounded-xl font-semibold text-sm border-none cursor-pointer ${
-              selectedColor === color ? 'bg-neutral-900 text-white' : 'bg-neutral-200 text-neutral-700'
-            }`}
+            bindtap={() => setSelectedColor(color)}
+            className={`px-4 py-2 rounded-xl ${selectedColor === color ? 'bg-neutral-900' : 'bg-neutral-200'}`}
           >
-            {color.charAt(0).toUpperCase() + color.slice(1)}
-          </button>
+            <text className={`font-semibold text-sm ${selectedColor === color ? 'text-white' : 'text-neutral-700'}`}>
+              {color.charAt(0).toUpperCase() + color.slice(1)}
+            </text>
+          </view>
         ))}
-      </div>
+      </view>
 
-      {filtered.map(f => (
-        <LynxFeatureCard
-          key={f.id}
-          icon={getLynxIcon(f.icon)}
-          title={f.title}
-          description={f.description}
-          color={f.color}
-        />
-      ))}
+      <view className="mt-4">
+        {filtered.map(f => (
+          <LynxFeatureCard
+            key={f.id}
+            icon={getLynxIcon(f.icon, f.color)}
+            title={f.title}
+            description={f.description}
+            color={f.color}
+          />
+        ))}
+      </view>
 
       {filtered.length === 0 && (
-        <div className="flex items-center justify-center py-12">
-          <span className="text-neutral-400 text-sm">No features for this filter.</span>
-        </div>
+        <view className="items-center py-12">
+          <text className="text-neutral-400 text-sm">No features for this filter.</text>
+        </view>
       )}
 
-    </div>
+    </scroll-view>
   )
 }
-
 /* @arkzen:native:page:lynx:features:end */
+
+// ─────────────────────────────────────────────────────────────────────────────
+// LYNX STYLE BLOCKS — pure CSS (used as-is)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:style:lynx */
+:root {
+  --color-primary: #2563eb;
+  --color-secondary: #7c3aed;
+  --color-accent: #059669;
+  --spacing-unit: 0.25rem;
+  --radius-default: 0.75rem;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.arkzen-btn {
+  background-color: var(--color-primary);
+  border-radius: var(--radius-default);
+  padding-left: 24px;
+  padding-right: 24px;
+  padding-top: 16px;
+  padding-bottom: 16px;
+  font-weight: 600;
+  color: white;
+  border-width: 0;
+  cursor: pointer;
+}
+
+.arkzen-btn:hover {
+  background-color: var(--color-secondary);
+  box-shadow: var(--shadow-lg);
+}
+
+.arkzen-input {
+  border-width: 2px;
+  border-color: #e5e7eb;
+  border-radius: var(--radius-default);
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  font-size: 16px;
+}
+
+.arkzen-input:focus {
+  border-color: var(--color-primary);
+}
+/* @arkzen:native:style:lynx:end */
+
+/* @arkzen:native:style:lynx:FeatureCard */
+.feature-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.feature-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -100%;
+  width: 100%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s;
+}
+
+.feature-card:hover::before { left: 100%; }
+.feature-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+/* @arkzen:native:style:lynx:FeatureCard:end */
+
+/* @arkzen:native:style:lynx:HeroSection */
+.hero-gradient {
+  background: linear-gradient(135deg, #2563eb 0%, #7c3aed 50%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.8; }
+}
+/* @arkzen:native:style:lynx:HeroSection:end */

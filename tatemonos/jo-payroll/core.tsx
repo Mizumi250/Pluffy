@@ -2185,28 +2185,6 @@ const NotFoundScreen = () => {
 
 /* @arkzen:native:error:404:end */
 
-/* @arkzen:native:error:404:lynx */
-
-import { useState } from '@lynx-js/react'
-
-const NotFoundScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
-  <view className="flex-1 bg-[#F4F5F7] items-center justify-center p-8">
-    <text className="text-[96px] font-black text-gray-200" style={{ letterSpacing: -4 }}>404</text>
-    <text className="text-lg font-extrabold text-gray-900" style={{ marginTop: -8 }}>Page not found</text>
-    <text className="text-[13px] text-gray-400 text-center mb-6">
-      The page you're looking for doesn't exist in this module.
-    </text>
-    <view
-      bindtap={() => onNavigate('index')}
-      className="bg-[#171717] px-5 py-3 rounded-xl"
-    >
-      <text className="text-white text-[13px] font-semibold">Back to Dashboard</text>
-    </view>
-  </view>
-)
-
-/* @arkzen:native:error:404:lynx:end */
-
 /* @arkzen:meta:native
 label: J.O. Payroll
 description: Job Order payroll viewer for LGU workers — payslip, deductions, and worker directory
@@ -2505,53 +2483,6 @@ export const AppLayout: React.FC<{ children: React.ReactNode; activeScreen?: str
 /* @arkzen:import:rn:end */
 
 /* @arkzen:native:layout:app:end */
-
-/* @arkzen:native:layout:lynx:app */
-
-import { useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
-
-const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-const NAV_LYNX = [
-  { name: 'index',        label: 'Home',     icon: 'layout-dashboard' },
-  { name: 'job-database', label: 'Workers',  icon: 'users'            },
-  { name: 'cash-atm',     label: 'Cash/ATM', icon: 'banknote'         },
-  { name: 'appointments', label: 'Appts',    icon: 'calendar-days'    },
-  { name: 'payslip',      label: 'Payslip',  icon: 'file-text'        },
-]
-
-export const AppLayout = ({ children, activePage, onNavigate }: {
-  children: React.ReactNode
-  activePage: string
-  onNavigate: (page: string) => void
-}) => (
-  <view className="flex-1 bg-[#F4F5F7]">
-    <view className="flex-1">{children}</view>
-
-    {/* Bottom tab bar */}
-    <view className="flex-row bg-white border-t border-gray-100 pb-1 pt-2">
-      {NAV_LYNX.map(({ name, label, icon }) => {
-        const active = activePage === name
-        return (
-          <view
-            key={name}
-            bindtap={() => onNavigate(name)}
-            className="flex-1 items-center"
-            style={{ gap: 3 }}
-          >
-            <Icon set="lucide" name={icon} size={20} color={active ? '#171717' : '#d1d5db'} />
-            <text className={`text-[10px] ${active ? 'font-bold text-[#171717]' : 'font-medium text-gray-300'}`}>
-              {label}
-            </text>
-          </view>
-        )
-      })}
-    </view>
-  </view>
-)
-
-/* @arkzen:native:layout:lynx:app:end */
 
 /* @arkzen:native:components:shared */
 
