@@ -6,7 +6,6 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { Flame, RefreshCw, Trash2, Zap } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { BACKEND_URL } from './components/constants'
@@ -96,7 +95,7 @@ const IndexScreen = () => {
       {/* Header */}
       <View className="bg-white border-b border-neutral-100 px-5 py-4">
         <View className="flex-row items-center gap-2">
-          <Zap size={18} color="#0f172a" />
+          <Icon set="lucide" name="zap" size={18} color="#0f172a" />
           <Text className="text-lg font-bold text-neutral-900">Events Test</Text>
         </View>
         <Text className="text-xs text-neutral-500 mt-0.5">
@@ -149,13 +148,13 @@ const IndexScreen = () => {
             <Text className="text-sm font-semibold text-neutral-900">Listener execution log</Text>
             <View className="flex-row items-center gap-3">
               <TouchableOpacity onPress={loadLog} className="p-1.5">
-                <RefreshCw size={14} color="#a3a3a3" />
+                <Icon set="lucide" name="refresh-cw" size={14} color="#a3a3a3" />
               </TouchableOpacity>
               {log.length > 0 && (
                 <TouchableOpacity onPress={clearLog} disabled={clearing} className="p-1.5">
                   {clearing
                     ? <ActivityIndicator size="small" color="#f87171" />
-                    : <Trash2 size={14} color="#f87171" />
+                    : <Icon set="lucide" name="trash-2" size={14} color="#f87171" />
                   }
                 </TouchableOpacity>
               )}
@@ -172,7 +171,7 @@ const IndexScreen = () => {
               <View key={groupKey} className="px-5 py-3 border-b border-neutral-50">
                 {/* Group header */}
                 <View className="flex-row items-center gap-1.5 mb-2">
-                  <Flame size={13} color="#f59e0b" />
+                  <Icon set="lucide" name="flame" size={13} color="#f59e0b" />
                   <Text className="text-xs font-medium text-neutral-500">
                     {entries[0].event_name} — {entries[0].created_at?.slice(11, 19)}
                   </Text>

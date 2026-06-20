@@ -39,7 +39,7 @@ const IndexScreen = () => {
 
   const triggerCrash = () => setShouldCrash(true)
 
-  const API_CODES  = [400, 401, 403, 409, 422, 429, 503]
+  const API_CODES = [400, 401, 403, 409, 422, 429, 503]
 
   return (
     <View className="flex-1 bg-neutral-50">
@@ -60,11 +60,11 @@ const IndexScreen = () => {
 
         <ResultBanner result={result} />
 
-        {/* Expo Router error handlers */}
+        {/* Router error handlers */}
         <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
           <View className="px-5 py-4 border-b border-neutral-100">
             <Text className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
-              Expo Router Handlers
+              Router Handlers
             </Text>
           </View>
 

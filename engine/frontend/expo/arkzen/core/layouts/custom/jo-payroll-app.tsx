@@ -5,13 +5,22 @@ import { usePathname, useRouter } from 'expo-router'
 import { Banknote, CalendarDays, FileText, LayoutDashboard, Users } from 'lucide-react-native'
 import { SafeAreaView, Text, TouchableOpacity, View } from 'react-native'
 
-const NAV = [
-  { href: '/jo-payroll',              label: 'Home',       icon: LayoutDashboard },
-  { href: '/jo-payroll/job-database',      label: 'Workers',    icon: Users           },
-  { href: '/jo-payroll/cash-atm',     label: 'Cash/ATM',   icon: Banknote        },
-  { href: '/jo-payroll/appointments', label: 'Appts',      icon: CalendarDays    },
-  { href: '/jo-payroll/payslip',      label: 'Payslip',    icon: FileText        },
+/* @arkzen:resolved:import expo */
+const NAV_ITEMS = [
+  { name: 'JoPayrollIndex',       label: 'Home',     icon: LayoutDashboard },
+  { name: 'JoPayrollWorkers',     label: 'Workers',  icon: Users           },
+  { name: 'JoPayrollCashAtm',     label: 'Cash/ATM', icon: Banknote        },
+  { name: 'JoPayrollAppointments',label: 'Appts',    icon: CalendarDays    },
+  { name: 'JoPayrollPayslip',     label: 'Payslip',  icon: FileText        },
 ]
+
+const NAV_HREFS: Record<string, string> = {
+  JoPayrollIndex:        '/jo-payroll',
+  JoPayrollWorkers:      '/jo-payroll/job-database',
+  JoPayrollCashAtm:      '/jo-payroll/cash-atm',
+  JoPayrollAppointments: '/jo-payroll/appointments',
+  JoPayrollPayslip:      '/jo-payroll/payslip',
+}
 
 export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const router   = useRouter()
@@ -23,11 +32,12 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
       {/* Bottom tab bar */}
       <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingBottom: 4, paddingTop: 8 }}>
-        {NAV.map(({ href, label, icon: Icon }) => {
-          const active = pathname === href
+        {NAV_ITEMS.map(({ name, label, icon: Icon }) => {
+          const href   = NAV_HREFS[name]
+          const active = pathname === href || pathname.startsWith(href + '/')
           return (
             <TouchableOpacity
-              key={href}
+              key={name}
               onPress={() => router.push(href as any)}
               activeOpacity={0.7}
               style={{ flex: 1, alignItems: 'center', gap: 3 }}

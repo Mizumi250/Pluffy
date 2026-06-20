@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — jo-payroll [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:26.806Z
+// Generated: 2026-06-20T02:27:39.432Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -10,9 +10,12 @@ import { AlertCircle, Banknote, Building2, CreditCard, Landmark, Search, Trendin
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { create } from 'zustand'
 
-// ── Utils ────────────────────────────────────────────────────
-
+/* @arkzen:resolved:import expo */
 export const BASE = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+
+
+// ── Types ────────────────────────────────────────────────────
 
 export const AVATAR_COLORS = [
   { bg: '#ede9fe', text: '#7c3aed' },

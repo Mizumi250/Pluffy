@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ItemFormModal [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:25.982Z
+// Generated: 2026-06-20T02:27:39.047Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
@@ -78,7 +78,7 @@ export const ItemFormModal = ({
             {editing ? 'Edit Item' : 'Add New Item'}
           </Text>
           <TouchableOpacity onPress={onClose} className="p-1.5 rounded-xl bg-neutral-100">
-            <X size={16} color="#737373" />
+            <Icon set="lucide" name="x" size={16} color="#737373" />
           </TouchableOpacity>
         </View>
 

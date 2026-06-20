@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — body-mail-notification
 // Visiting /body-mail-notification redirects to /body-mail-notification/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T01:50:05.534Z
+// Generated: 2026-06-20T02:27:38.093Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

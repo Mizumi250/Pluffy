@@ -2,10 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GhostBtn [Expo]
 // Source: @arkzen:native:components (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.017Z
+// Generated: 2026-06-20T02:27:40.518Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
+import { useRouter } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import type { Result } from './types'
 

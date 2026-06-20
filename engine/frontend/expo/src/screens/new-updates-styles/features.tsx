@@ -8,8 +8,6 @@ import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { GuestLayout } from '@/layouts/GuestLayout'
-import { s } from '../../arkzen/generated/new-updates-styles.native-styles'
 import { Badge } from './components/Badge'
 import { FeatureCard } from './components/FeatureCard'
 import { GhostButton } from './components/GhostButton'
@@ -19,46 +17,46 @@ import { getIcon } from './components/utils'
 import type { NativeColor } from './components/types'
 
 // User screen (from @arkzen:native:page:features)
+/* @arkzen:resolved:import expo */
 const FeaturesScreen = () => {
   const router = useRouter()
-  const [selectedColor, setSelectedColor] = useState<NativeColor>('blue')
+  
 
+  const [selectedColor, setSelectedColor] = useState<NativeColor>('blue')
   const colors: NativeColor[] = ['blue', 'purple', 'green', 'orange']
   const filtered = FEATURES.filter(f => f.color === selectedColor)
 
   return (
     <ScrollView className="flex-1 bg-slate-50" contentContainerClassName="px-6 pt-14 pb-12">
 
-      <GhostButton label="← Back" onPress={() => router.back()} />
+      <GhostButton
+        label="← Back"
+        onPress={() => {
+          router.back()
+          
+        }}
+      />
 
       <View className="mt-8 mb-6">
         <Badge label="features" />
         <Text className="text-3xl font-bold text-neutral-900 mt-4">All Features</Text>
       </View>
 
-      {/* Color filter */}
       <View className="flex-row flex-wrap gap-2 mb-6">
         {colors.map(color => (
           <TouchableOpacity
             key={color}
             onPress={() => setSelectedColor(color)}
             activeOpacity={0.8}
-            className={`px-4 py-2 rounded-xl ${
-              selectedColor === color
-                ? 'bg-neutral-900'
-                : 'bg-neutral-200'
-            }`}
+            className={`px-4 py-2 rounded-xl ${selectedColor === color ? 'bg-neutral-900' : 'bg-neutral-200'}`}
           >
-            <Text className={`font-semibold text-sm ${
-              selectedColor === color ? 'text-white' : 'text-neutral-700'
-            }`}>
+            <Text className={`font-semibold text-sm ${selectedColor === color ? 'text-white' : 'text-neutral-700'}`}>
               {color.charAt(0).toUpperCase() + color.slice(1)}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      {/* Filtered cards */}
       {filtered.map(f => (
         <FeatureCard
           key={f.id}
@@ -89,7 +87,7 @@ export function ArkzenScreen_NewUpdatesStyles_Features() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
-      <GuestLayout tatSlug="new-updates-styles" dashboardRoute="/new-updates-styles/dashboard">
+      
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
@@ -98,7 +96,7 @@ export function ArkzenScreen_NewUpdatesStyles_Features() {
       >
         <FeaturesScreen />
       </ScrollView>
-      </GuestLayout>
+      
     </SafeAreaView>
   )
 }

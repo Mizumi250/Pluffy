@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — asset-hub [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:20.664Z
+// Generated: 2026-06-20T02:27:36.145Z
 // ============================================================
 
 import React from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
 
+/* @arkzen:resolved:import expo */
 // ─── NATIVE ASSET REGISTRY ────────────────────────────────────────────────────
 // Metro requires static require() calls — dynamic require() is not supported.
 // Pattern: add a require() entry here when you drop a new file, then reference

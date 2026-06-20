@@ -8,16 +8,17 @@ import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { GuestLayout } from '@/layouts/GuestLayout'
-import { s } from '../../arkzen/generated/new-updates-styles.native-styles'
 import { Badge } from './components/Badge'
 import { FeatureCard } from './components/FeatureCard'
 import { GhostButton } from './components/GhostButton'
 import { PrimaryButton } from './components/PrimaryButton'
 
 // User screen (from @arkzen:native:page:about)
+/* @arkzen:resolved:import expo */
 const AboutScreen = () => {
   const router = useRouter()
+  
+
   const [expanded, setExpanded] = useState<string | null>(null)
 
   const sections = [
@@ -38,19 +39,22 @@ const AboutScreen = () => {
   return (
     <ScrollView className="flex-1 bg-slate-50" contentContainerClassName="px-6 pt-14 pb-12">
 
-      <GhostButton label="← Back" onPress={() => router.back()} />
+      <GhostButton
+        label="← Back"
+        onPress={() => {
+          router.back()
+          
+        }}
+      />
 
       <View className="mt-8 mb-8">
         <Badge label="about" />
-        <Text className="text-3xl font-bold text-neutral-900 mt-4">
-          About this showcase
-        </Text>
+        <Text className="text-3xl font-bold text-neutral-900 mt-4">About this showcase</Text>
         <Text className="text-sm text-neutral-500 mt-2 leading-6">
           This tatemono demonstrates all new features added to Arkzen v2.0.
         </Text>
       </View>
 
-      {/* Accordion */}
       <View className="gap-y-3 mb-8">
         {sections.map(s => (
           <TouchableOpacity
@@ -70,10 +74,12 @@ const AboutScreen = () => {
         ))}
       </View>
 
-      {/* Stack info */}
       <View className="bg-neutral-100 rounded-2xl px-5 py-4">
         <Text className="text-xs font-mono text-neutral-500 leading-6">
+          {}
           stack: expo{'\n'}
+          {}
+          {}
           engine: arkzen v10.1{'\n'}
           tatemono: new-updates-styles{'\n'}
           screens: index, about, features
@@ -94,7 +100,7 @@ export function ArkzenScreen_NewUpdatesStyles_About() {
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
       <StatusBar style="dark" />
-      <GuestLayout tatSlug="new-updates-styles" dashboardRoute="/new-updates-styles/dashboard">
+      
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
@@ -103,7 +109,7 @@ export function ArkzenScreen_NewUpdatesStyles_About() {
       >
         <AboutScreen />
       </ScrollView>
-      </GuestLayout>
+      
     </SafeAreaView>
   )
 }

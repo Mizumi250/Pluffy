@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatCard [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:25.973Z
+// Generated: 2026-06-20T02:27:39.040Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
@@ -15,7 +15,7 @@ export const StatCard = ({
   label, value, icon, bg,
 }: {
   label: string; value: string | number
-  icon: React.ReactNode; bg: string
+  icon: JSX.Element; bg: string
 }) => (
   <View className={`flex-1 ${bg} rounded-2xl p-3.5 items-center gap-1.5`}>
     {icon}

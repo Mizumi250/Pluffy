@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ResultBanner [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:25.330Z
+// Generated: 2026-06-20T02:27:38.498Z
 // ============================================================
 
 import React, { useState } from 'react'
@@ -10,7 +10,6 @@ import { useRouter } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { NATIVE_ERRORS } from './constants'
 
-// ── Result banner ─────────────────────────────────────────────
 export const ResultBanner = ({ result }: { result: { code: number; body: string } | null }) => {
   if (!result) return null
   const err = NATIVE_ERRORS.find(e => e.code === result.code)

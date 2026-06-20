@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FeatureCard [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.395Z
+// Generated: 2026-06-20T02:27:41.392Z
 // ============================================================
 
 import React, { useState } from 'react'
@@ -13,12 +13,7 @@ import { COLOR_MAP } from './constants'
 import type { NativeColor } from './types'
 
 export const FeatureCard = ({
-  icon,
-  title,
-  description,
-  color,
-  onPress,
-  expanded = false,
+  icon, title, description, color, onPress, expanded = false,
 }: {
   icon: React.ReactNode
   title: string
@@ -46,4 +41,4 @@ export const FeatureCard = ({
   )
 }
 
-// ── Data ─────────────────────────────────────────────────────
+// ── Data & helpers ─────────────────────────────────────────────

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED NATIVE TYPES — new-updates-styles [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.379Z
+// Generated: 2026-06-20T02:27:41.385Z
 // ============================================================
 
-// ── Feature card ─────────────────────────────────────────────
+// ── Feature card ──────────────────────────────────────────────
 export type NativeColor = 'blue' | 'purple' | 'green' | 'orange'
 
-// ── Data ─────────────────────────────────────────────────────
-export type Feature = {
+// ── Data & helpers ─────────────────────────────────────────────
+export type NativeFeature = {
   id: number
   icon: 'zap' | 'code' | 'palette' | 'layers'
   title: string

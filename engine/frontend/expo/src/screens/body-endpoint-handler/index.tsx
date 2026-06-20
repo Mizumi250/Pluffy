@@ -16,6 +16,7 @@ import { apiFetch, sourceColor } from './components/utils'
 import type { ProbeResult, Stats } from './components/types'
 
 // User screen (from @arkzen:native:page:index)
+/* @arkzen:resolved:import expo */
 const IndexScreen = () => {
   const [probes,      setProbes]      = useState<ProbeResult[]>([])
   const [stats,       setStats]       = useState<Stats | null>(null)
@@ -159,9 +160,9 @@ const IndexScreen = () => {
           <TouchableOpacity
             onPress={loadAll}
             activeOpacity={0.8}
-            style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, paddingVertical: 7, paddingHorizontal: 14, alignSelf: 'flex-start' }}
+            className="mt-3 bg-sky-500 rounded-lg px-4 py-1.5 self-start"
           >
-            <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>Refresh Stats</Text>
+            <Text className="text-white text-xs font-bold">Refresh Stats</Text>
           </TouchableOpacity>
         </SectionCard>
 
@@ -178,7 +179,7 @@ const IndexScreen = () => {
                 placeholderTextColor="#a3a3a3"
                 autoCorrect={false}
                 autoCapitalize="none"
-                style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b' }}
+                className="flex-1 bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900"
               />
               <TextInput
                 value={f.value}
@@ -187,14 +188,14 @@ const IndexScreen = () => {
                 placeholderTextColor="#a3a3a3"
                 autoCorrect={false}
                 autoCapitalize="none"
-                style={{ flex: 1, backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b' }}
+                className="flex-1 bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900"
               />
               <TouchableOpacity
                 onPress={() => setEchoFields(echoFields.filter((_, j) => j !== i))}
                 activeOpacity={0.8}
-                style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' }}
+                className="bg-red-500 rounded-lg px-3 items-center justify-center"
               >
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</Text>
+                <Text className="text-white font-bold text-sm">×</Text>
               </TouchableOpacity>
             </View>
           ))}
@@ -202,24 +203,24 @@ const IndexScreen = () => {
             <TouchableOpacity
               onPress={() => setEchoFields([...echoFields, { key: '', value: '' }])}
               activeOpacity={0.8}
-              style={{ backgroundColor: '#6366f1', borderRadius: 8, paddingVertical: 7, paddingHorizontal: 12 }}
+              className="bg-indigo-500 rounded-lg px-3 py-1.5"
             >
-              <Text style={{ color: '#fff', fontSize: 12, fontWeight: '700' }}>+ Add Field</Text>
+              <Text className="text-white text-xs font-bold">+ Add Field</Text>
             </TouchableOpacity>
           </View>
           <TouchableOpacity
             onPress={doEcho}
             disabled={echoing}
             activeOpacity={0.8}
-            style={{ backgroundColor: echoing ? '#d4d4d8' : '#18181b', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className={`rounded-lg px-4 py-2 self-start ${echoing ? 'bg-neutral-300' : 'bg-neutral-900'}`}
           >
             {echoing
               ? <ActivityIndicator size="small" color="#737373" />
-              : <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Send Echo</Text>
+              : <Text className="text-white text-sm font-bold">Send Echo</Text>
             }
           </TouchableOpacity>
           {echoResult && (
-            <View style={{ marginTop: 12, backgroundColor: '#f4f4f5', borderRadius: 8, padding: 12 }}>
+            <View className="mt-3 bg-neutral-100 rounded-lg p-3">
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <InjectedBadge injected={echoResult.injected} />
                 <Text style={{ fontSize: 11, color: '#52525b' }}>{echoResult.builder} · {echoResult.field_count} field(s)</Text>
@@ -238,9 +239,9 @@ const IndexScreen = () => {
           <TouchableOpacity
             onPress={doPing}
             activeOpacity={0.8}
-            style={{ backgroundColor: '#059669', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className="bg-emerald-600 rounded-lg px-4 py-2 self-start"
           >
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</Text>
+            <Text className="text-white text-sm font-bold">Ping</Text>
           </TouchableOpacity>
           {ping && (
             <View style={{ marginTop: 12, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#bbf7d0' }}>
@@ -265,7 +266,7 @@ const IndexScreen = () => {
             placeholderTextColor="#a3a3a3"
             autoCorrect={false}
             autoCapitalize="none"
-            style={{ backgroundColor: '#f4f4f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#18181b', marginBottom: 8 }}
+            className="bg-neutral-100 rounded-lg px-3 py-2 text-sm text-neutral-900 mb-2"
           />
           <TouchableOpacity
             onPress={() => setHOk(v => !v)}
@@ -280,17 +281,17 @@ const IndexScreen = () => {
             }}>
               {hOk && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓</Text>}
             </View>
-            <Text style={{ fontSize: 13, color: '#3f3f46' }}>ok</Text>
+            <Text className="text-sm text-neutral-600">ok</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={doRecord}
             disabled={hRecording}
             activeOpacity={0.8}
-            style={{ backgroundColor: hRecording ? '#d4d4d8' : '#7c3aed', borderRadius: 8, paddingVertical: 9, paddingHorizontal: 18, alignSelf: 'flex-start' }}
+            className={`rounded-lg px-4 py-2 self-start ${hRecording ? 'bg-neutral-300' : 'bg-violet-700'}`}
           >
             {hRecording
               ? <ActivityIndicator size="small" color="#737373" />
-              : <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Record via Handler</Text>
+              : <Text className="text-white text-sm font-bold">Record via Handler</Text>
             }
           </TouchableOpacity>
         </SectionCard>
@@ -305,31 +306,31 @@ const IndexScreen = () => {
             <TouchableOpacity onPress={loadAll} activeOpacity={0.8} style={{ padding: 6 }}>
               {loading
                 ? <ActivityIndicator size="small" color="#a3a3a3" />
-                : <Text style={{ fontSize: 11, color: '#0ea5e9', fontWeight: '700' }}>Refresh</Text>
+                : <Text className="text-xs text-sky-500 font-bold">Refresh</Text>
               }
             </TouchableOpacity>
           </View>
           {latest.length === 0 ? (
-            <Text style={{ color: '#a1a1aa', fontSize: 13 }}>No results yet.</Text>
+            <Text className="text-sm text-neutral-400">No results yet.</Text>
           ) : (
             latest.map(r => (
               <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f4f4f5' }}>
                 <NativeBadge label={r.source} color={sourceColor(r.source)} />
-                <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#18181b' }} numberOfLines={1}>{r.probe}</Text>
+                <Text className="flex-1 text-xs font-semibold text-neutral-900" numberOfLines={1}>{r.probe}</Text>
                 <NativeBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
-                <Text style={{ fontSize: 10, color: '#a1a1aa' }}>{new Date(r.created_at).toLocaleTimeString()}</Text>
+                <Text className="text-xs text-neutral-400">{new Date(r.created_at).toLocaleTimeString()}</Text>
               </View>
             ))
           )}
         </SectionCard>
 
-        {/* All probe results + delete */}
+        {/* All probes */}
         <SectionCard>
           <Text className="text-sm font-bold text-neutral-900 mb-3">All Probe Results</Text>
           {loading ? (
             <ActivityIndicator size="small" color="#a3a3a3" />
           ) : probes.length === 0 ? (
-            <Text style={{ color: '#a1a1aa', fontSize: 13 }}>No probes yet.</Text>
+            <Text className="text-sm text-neutral-400">No probes yet.</Text>
           ) : (
             probes.map((r, i) => (
               <View
@@ -342,7 +343,7 @@ const IndexScreen = () => {
               >
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   <NativeBadge label={r.source} color={sourceColor(r.source)} />
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: '#18181b', flex: 1 }} numberOfLines={1}>{r.probe}</Text>
+                  <Text className="flex-1 text-xs font-bold text-neutral-900" numberOfLines={1}>{r.probe}</Text>
                   <NativeBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
                   <TouchableOpacity
                     onPress={() => doDelete(r.id)}
@@ -357,9 +358,9 @@ const IndexScreen = () => {
                   </TouchableOpacity>
                 </View>
                 {r.result && (
-                  <Text style={{ fontSize: 11, color: '#71717a', marginLeft: 2 }} numberOfLines={2}>{r.result}</Text>
+                  <Text className="text-xs text-neutral-500 ml-0.5" numberOfLines={2}>{r.result}</Text>
                 )}
-                <Text style={{ fontSize: 10, color: '#a1a1aa', marginTop: 2, marginLeft: 2 }}>
+                <Text className="text-xs text-neutral-400 mt-0.5 ml-0.5">
                   {new Date(r.created_at).toLocaleTimeString()}
                 </Text>
               </View>

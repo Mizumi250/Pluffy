@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — jo-payroll [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:26.810Z
+// Generated: 2026-06-20T02:27:39.437Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -10,6 +10,8 @@ import { AlertCircle, Banknote, Building2, CreditCard, Landmark, Search, Trendin
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { create } from 'zustand'
 import { AVATAR_COLORS } from './constants'
+
+// ── Utils ────────────────────────────────────────────────────
 
 export const formatPeso = (v?: number) =>
   v == null ? '₱0.00' : `₱${v.toLocaleString('en-PH', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`

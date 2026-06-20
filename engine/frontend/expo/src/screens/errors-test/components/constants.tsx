@@ -2,13 +2,14 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — errors-test [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:25.321Z
+// Generated: 2026-06-20T02:27:38.491Z
 // ============================================================
 
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
+/* @arkzen:resolved:import expo */
 export const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
 export const NATIVE_ERRORS: NativeErrorDef[] = [
@@ -22,5 +23,3 @@ export const NATIVE_ERRORS: NativeErrorDef[] = [
   { code: 500, title: 'Server Error',        message: 'Something went wrong on our end.',                            color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-100'     },
   { code: 503, title: 'Service Unavailable', message: 'The service is temporarily offline for maintenance.',         color: 'text-slate-700',   bg: 'bg-slate-50',   border: 'border-slate-100'   },
 ]
-
-// Shared native error screen — used by +not-found.tsx, error-boundary, and index

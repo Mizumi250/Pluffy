@@ -236,6 +236,34 @@ function resolveImports(
     return importMap.get(mod)!
   }
 
+  // v10.7 FIX: a tatemono author can write a literal `import { X } from 'mod'`
+  // directly inside their own page/layout/component/error block body (not
+  // just via @arkzen:native:components). Previously only components-block
+  // imports were checked against engineNamed seeds (see
+  // `explicitlyImportedNames` below) — a name imported by hand inside the
+  // page's own import:expo/import:rn section was invisible to that guard,
+  // so e.g. a user-written `import { StatusBar } from 'react-native'`
+  // could still collide with the engine's hardcoded
+  // `expo-status-bar` → StatusBar seed, producing two import statements
+  // declaring the same identifier ("Identifier has already been declared").
+  // Fix: pre-scan the raw sources for every literal named import BEFORE
+  // engineNamed is seeded, and skip seeding any (name, otherModule) pair
+  // the user has already explicitly claimed for a different module — the
+  // user's own written import always wins.
+  const rawNamedImportRe = /^\s*import\s+(?:[A-Za-z_$][A-Za-z0-9_$]*\s*,\s*)?\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const explicitRawImports = new Map<string, string>() // name → module
+  for (const source of sources) {
+    for (const rawLine of flattenMultilineImports(source).split('\n')) {
+      const m = rawLine.trim().match(rawNamedImportRe)
+      if (!m) continue
+      const [, namedStr, rawMod] = m
+      const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
+      namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => {
+        if (n !== 'React' && !explicitRawImports.has(n)) explicitRawImports.set(n, mod)
+      })
+    }
+  }
+
   const reactEntry = getEntry('react')
   ;(engineRequired.reactHooks ?? []).forEach(h => reactEntry.named.add(h))
 
@@ -243,7 +271,11 @@ function resolveImports(
   // expo-router, expo-status-bar, react-native-safe-area-context).
   for (const [mod, names] of Object.entries(engineRequired.engineNamed ?? {})) {
     const entry = getEntry(mod)
-    names.forEach(n => entry.named.add(n))
+    names.forEach(n => {
+      const claimedBy = explicitRawImports.get(n)
+      if (claimedBy && claimedBy !== mod) return // user's own literal import wins
+      entry.named.add(n)
+    })
   }
 
   // Seed engine-required namespace imports (e.g. import * as DocumentPicker from '...')

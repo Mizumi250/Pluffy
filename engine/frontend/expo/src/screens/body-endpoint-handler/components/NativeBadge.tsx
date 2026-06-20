@@ -2,11 +2,10 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NativeBadge [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:21.201Z
+// Generated: 2026-06-20T02:27:36.560Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 
 export const NativeBadge = ({ label, color }: { label: string; color: string }) => (

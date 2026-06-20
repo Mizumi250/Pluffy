@@ -8,6 +8,7 @@ import { useRouter } from 'expo-router'
 import { Text, TouchableOpacity, View } from 'react-native'
 import { NativeErrorScreen } from './components/NativeErrorScreen'
 
+/* @arkzen:resolved:import expo */
 const NativeServerErrorScreen = ({ reset }: { reset: () => void }) => <NativeErrorScreen code={500} reset={reset} />
 
 export class ErrorBoundary extends React.Component<

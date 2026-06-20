@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PrimaryButton [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.390Z
+// Generated: 2026-06-20T02:27:41.388Z
 // ============================================================
 
 import React, { useState } from 'react'
@@ -10,7 +10,7 @@ import { useRouter } from 'expo-router'
 import { Code, Layers, Palette, Zap } from 'lucide-react-native'
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 
-// ── Primary button ───────────────────────────────────────────
+// ── Primary button ────────────────────────────────────────────
 export const PrimaryButton = ({
   label,
   onPress,
@@ -24,14 +24,10 @@ export const PrimaryButton = ({
     onPress={onPress}
     disabled={disabled}
     activeOpacity={0.82}
-    className={`rounded-2xl py-4 px-6 items-center ${
-      disabled ? 'bg-blue-200' : 'bg-blue-600'
-    }`}
+    className={`rounded-2xl py-4 px-6 items-center ${disabled ? 'bg-blue-200' : 'bg-blue-600'}`}
   >
-    <Text className="text-white font-semibold text-base tracking-wide">
-      {label}
-    </Text>
+    <Text className="text-white font-semibold text-base tracking-wide">{label}</Text>
   </TouchableOpacity>
 )
 
-// ── Ghost button ─────────────────────────────────────────────
+// ── Ghost button ──────────────────────────────────────────────

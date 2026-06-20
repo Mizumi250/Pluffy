@@ -6,7 +6,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { AlertTriangle, DollarSign, Edit2, Package, Plus, Search, Trash2, TrendingUp, X } from 'lucide-react-native'
+import { Search } from 'lucide-react-native'
 import { ActivityIndicator, Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Field } from './components/Field'
@@ -88,14 +88,14 @@ const IndexScreen = () => {
             activeOpacity={0.8}
             className="flex-row items-center gap-1.5 bg-neutral-900 px-3.5 py-2.5 rounded-2xl"
           >
-            <Plus size={14} color="#fff" />
+            <Icon set="lucide" name="plus" size={14} color="#fff" />
             <Text className="text-white text-xs font-semibold">Add Item</Text>
           </TouchableOpacity>
         </View>
 
         {/* Search */}
         <View className="flex-row items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2.5">
-          <Search size={14} color="#a3a3a3" />
+          <Icon set="lucide" name="search" size={14} color="#a3a3a3" />
           <TextInput
             className="flex-1 text-sm text-neutral-900"
             placeholder="Search name or SKU..."
@@ -107,7 +107,7 @@ const IndexScreen = () => {
           />
           {search.length > 0 && (
             <TouchableOpacity onPress={() => setSearch('')}>
-              <X size={14} color="#a3a3a3" />
+              <Icon set="lucide" name="x" size={14} color="#a3a3a3" />
             </TouchableOpacity>
           )}
         </View>
@@ -121,12 +121,12 @@ const IndexScreen = () => {
 
         {/* Stat cards */}
         <View className="flex-row gap-3">
-          <StatCard label="Items"      value={items.length}               icon={<Package      size={18} color="#2563eb" />} bg="bg-blue-50"    />
-          <StatCard label="Low Stock"  value={lowStock}                   icon={<AlertTriangle size={18} color="#d97706" />} bg="bg-amber-50"   />
-          <StatCard label="Out"        value={outOfStock}                 icon={<TrendingUp   size={18} color="#dc2626" />} bg="bg-red-50"     />
+          <StatCard label="Items"      value={items.length}               icon={<Icon set="lucide" name="package" size={18} color="#2563eb" />} bg="bg-blue-50"    />
+          <StatCard label="Low Stock"  value={lowStock}                   icon={<Icon set="lucide" name="alert-triangle" size={18} color="#d97706" />} bg="bg-amber-50"   />
+          <StatCard label="Out"        value={outOfStock}                 icon={<Icon set="lucide" name="trending-up" size={18} color="#dc2626" />} bg="bg-red-50"     />
         </View>
         <View className="bg-emerald-50 rounded-2xl p-3.5 flex-row items-center gap-3">
-          <DollarSign size={20} color="#059669" />
+          <Icon set="lucide" name="dollar-sign" size={20} color="#059669" />
           <View>
             <Text className="text-xs text-neutral-500">Total Inventory Value</Text>
             <Text className="text-lg font-bold text-neutral-900">
@@ -156,7 +156,7 @@ const IndexScreen = () => {
             </View>
           ) : filtered.length === 0 ? (
             <View className="py-12 items-center gap-2">
-              <Package size={28} color="#e5e5e5" />
+              <Icon set="lucide" name="package" size={28} color="#e5e5e5" />
               <Text className="text-sm text-neutral-400">
                 {search ? 'No items match your search' : 'No inventory items yet'}
               </Text>
@@ -194,13 +194,13 @@ const IndexScreen = () => {
                       onPress={() => openEdit(item)}
                       className="p-1.5 rounded-lg bg-neutral-100"
                     >
-                      <Edit2 size={13} color="#525252" />
+                      <Icon set="lucide" name="edit-2" size={13} color="#525252" />
                     </TouchableOpacity>
                     <TouchableOpacity
                       onPress={() => handleDelete(item)}
                       className="p-1.5 rounded-lg bg-red-50"
                     >
-                      <Trash2 size={13} color="#ef4444" />
+                      <Icon set="lucide" name="trash-2" size={13} color="#ef4444" />
                     </TouchableOpacity>
                   </View>
                 </View>
