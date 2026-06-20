@@ -1023,9 +1023,12 @@ const IndexScreen = () => {
 
 /* @arkzen:native:page:index:end */
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   NATIVE — LYNX (FIXED)
+   ───────────────────────────────────────────────────────────────────────────── */
+
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect, useCallback } from '@lynx-js/react'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
@@ -1067,9 +1070,9 @@ const sourceColor = (s: string) =>
 
 // ── Badge ─────────────────────────────────────────────────────
 const LynxBadge = ({ label, color }: { label: string; color: string }) => (
-  <View style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: color + '22' }}>
-    <Text style={{ fontSize: 10, fontWeight: '700', color, letterSpacing: 0.5 }}>{label}</Text>
-  </View>
+  <view style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: color + '22' }}>
+    <text style={{ fontSize: 10, fontWeight: '700', color, letterSpacing: 0.5 }}>{label}</text>
+  </view>
 )
 
 const LynxInjectedBadge = ({ injected }: { injected: boolean }) => (
@@ -1081,7 +1084,7 @@ const LynxInjectedBadge = ({ injected }: { injected: boolean }) => (
 
 // ── Section card ──────────────────────────────────────────────
 const LynxSectionCard = ({ children }: { children: any }) => (
-  <View style={{
+  <view style={{
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
@@ -1090,7 +1093,7 @@ const LynxSectionCard = ({ children }: { children: any }) => (
     borderColor: '#f1f1f1',
   }}>
     {children}
-  </View>
+  </view>
 )
 
 /* @arkzen:native:components:lynx:shared:end */
@@ -1189,206 +1192,204 @@ const IndexScreen = () => {
   useEffect(() => { loadAll() }, [])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <view style={{ flex: 1, backgroundColor: '#fafafa' }}>
 
       {/* Toast */}
       {toast && (
-        <View style={{
+        <view style={{
           position: 'absolute', top: 52, left: 16, right: 16, zIndex: 999,
           backgroundColor: toast.type === 'success' ? '#22c55e' : '#ef4444',
           borderRadius: 10, padding: 12,
         }}>
-          <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>{toast.msg}</Text>
-        </View>
+          <text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>{toast.msg}</text>
+        </view>
       )}
 
       {/* Header */}
-      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16 }}>
-        <Text style={{ fontSize: 17, fontWeight: '700', color: '#171717' }}>Body Injection Tester</Text>
-        <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>
+      <view style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16 }}>
+        <text style={{ fontSize: 17, fontWeight: '700', color: '#171717' }}>Body Injection Tester</text>
+        <text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>
           ControllerBuilder v7.0 · CustomRouteBuilder v2.0
-        </Text>
-      </View>
+        </text>
+      </view>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <scroll-view style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
 
         {/* Stats */}
         <LynxSectionCard>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>📊 Stats Endpoint</Text>
-              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /stats · @arkzen:endpoint:stats</Text>
-            </View>
+          <view style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 10 }}>
+            <view style={{ flex: 1 }}>
+              <text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>📊 Stats Endpoint</text>
+              <text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /stats · @arkzen:endpoint:stats</text>
+            </view>
             {stats && <LynxInjectedBadge injected={stats.injected} />}
-          </View>
+          </view>
           {loading ? (
-            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
+            <text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</text>
           ) : stats ? (
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <view style={{ flexDirection: 'row', gap: 8 }}>
               {([['Total', stats.total, '#171717'], ['Passed ✓', stats.passed, '#16a34a'], ['Failed ✗', stats.failed, '#dc2626']] as const).map(([label, val, color]) => (
-                <View key={label} style={{ flex: 1, backgroundColor: '#fafafa', borderRadius: 10, padding: 10, alignItems: 'center' }}>
-                  <Text style={{ fontSize: 22, fontWeight: '800', color }}>{val}</Text>
-                  <Text style={{ fontSize: 10, color: '#737373', marginTop: 2 }}>{label}</Text>
-                </View>
+                <view key={label} style={{ flex: 1, backgroundColor: '#fafafa', borderRadius: 10, padding: 10, alignItems: 'center' }}>
+                  <text style={{ fontSize: 22, fontWeight: '800', color }}>{val}</text>
+                  <text style={{ fontSize: 10, color: '#737373', marginTop: 2 }}>{label}</text>
+                </view>
               ))}
-            </View>
+            </view>
           ) : null}
-          <TouchableOpacity
-            onPress={loadAll}
+          <view
+            bindtap={loadAll}
             style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 14, alignSelf: 'flex-start' }}
           >
-            <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Refresh Stats</Text>
-          </TouchableOpacity>
+            <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Refresh Stats</text>
+          </view>
         </LynxSectionCard>
 
         {/* Echo — multi-field */}
         <LynxSectionCard>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🔁 Echo Endpoint</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /echo · @arkzen:endpoint:echo</Text>
+          <text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🔁 Echo Endpoint</text>
+          <text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /echo · @arkzen:endpoint:echo</text>
           {echoFields.map((f: { key: string; value: string }, i: number) => (
-            <View key={i} style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
-              <TextInput
+            <view key={i} style={{ flexDirection: 'row', gap: 6, marginBottom: 6 }}>
+              <input
                 value={f.key}
-                onInput={(e: any) => { const n = [...echoFields]; n[i].key = e.detail.value; setEchoFields(n) }}
+                bindinput={(e: any) => { const n = [...echoFields]; n[i].key = e.detail.value; setEchoFields(n) }}
                 placeholder="key"
                 style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
               />
-              <TextInput
+              <input
                 value={f.value}
-                onInput={(e: any) => { const n = [...echoFields]; n[i].value = e.detail.value; setEchoFields(n) }}
+                bindinput={(e: any) => { const n = [...echoFields]; n[i].value = e.detail.value; setEchoFields(n) }}
                 placeholder="value"
                 style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
               />
-              <TouchableOpacity
-                onPress={() => setEchoFields(echoFields.filter((_: any, j: number) => j !== i))}
+              <view
+                bindtap={() => setEchoFields(echoFields.filter((_: any, j: number) => j !== i))}
                 style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' }}
               >
-                <Text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</Text>
-              </TouchableOpacity>
-            </View>
+                <text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</text>
+              </view>
+            </view>
           ))}
-          <View style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
-            <TouchableOpacity
-              onPress={() => setEchoFields([...echoFields, { key: '', value: '' }])}
+          <view style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
+            <view
+              bindtap={() => setEchoFields([...echoFields, { key: '', value: '' }])}
               style={{ backgroundColor: '#6366f1', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 }}
             >
-              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>+ Add Field</Text>
-            </TouchableOpacity>
-          </View>
-          <TouchableOpacity
-            onPress={doEcho}
-            disabled={echoing}
+              <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>+ Add Field</text>
+            </view>
+          </view>
+          <view
+            bindtap={echoing ? undefined : doEcho}
             style={{ backgroundColor: echoing ? '#d4d4d4' : '#171717', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
           >
-            <Text style={{ color: echoing ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
+            <text style={{ color: echoing ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
               {echoing ? 'Echoing…' : 'Send Echo'}
-            </Text>
-          </TouchableOpacity>
+            </text>
+          </view>
           {echoResult && (
-            <View style={{ marginTop: 12, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <view style={{ marginTop: 12, backgroundColor: '#f5f5f5', borderRadius: 8, padding: 12 }}>
+              <view style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 6 }}>
                 <LynxInjectedBadge injected={echoResult.injected} />
-                <Text style={{ fontSize: 11, color: '#525252' }}>{echoResult.builder} · {echoResult.field_count} field(s)</Text>
-              </View>
-              <Text style={{ fontSize: 11, color: '#262626', fontFamily: 'monospace' }}>
+                <text style={{ fontSize: 11, color: '#525252' }}>{echoResult.builder} · {echoResult.field_count} field(s)</text>
+              </view>
+              <text style={{ fontSize: 11, color: '#262626', fontFamily: 'monospace' }}>
                 {JSON.stringify(echoResult.echo, null, 2)}
-              </Text>
-            </View>
+              </text>
+            </view>
           )}
         </LynxSectionCard>
 
         {/* Ping */}
         <LynxSectionCard>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🏓 Ping Handler</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>GET /ping · @arkzen:handler:ping</Text>
-          <TouchableOpacity
-            onPress={doPing}
+          <text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>🏓 Ping Handler</text>
+          <text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>GET /ping · @arkzen:handler:ping</text>
+          <view
+            bindtap={doPing}
             style={{ backgroundColor: '#059669', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
           >
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</Text>
-          </TouchableOpacity>
+            <text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</text>
+          </view>
           {ping && (
-            <View style={{ marginTop: 12, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#bbf7d0' }}>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <view style={{ marginTop: 12, backgroundColor: '#f0fdf4', borderRadius: 8, padding: 12, borderWidth: 1, borderColor: '#bbf7d0' }}>
+              <view style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                 <LynxInjectedBadge injected={ping.injected} />
-                <Text style={{ fontSize: 11, color: '#166534' }}>{ping.builder} · {ping.handler}</Text>
-              </View>
-              <Text style={{ fontSize: 13, color: '#15803d' }}>{ping.message}</Text>
-              <Text style={{ fontSize: 11, color: '#86efac', marginTop: 2 }}>{ping.timestamp}</Text>
-            </View>
+                <text style={{ fontSize: 11, color: '#166534' }}>{ping.builder} · {ping.handler}</text>
+              </view>
+              <text style={{ fontSize: 13, color: '#15803d' }}>{ping.message}</text>
+              <text style={{ fontSize: 11, color: '#86efac', marginTop: 2 }}>{ping.timestamp}</text>
+            </view>
           )}
         </LynxSectionCard>
 
         {/* Record Handler */}
         <LynxSectionCard>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>📝 Record Handler</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /record-handler · @arkzen:handler:recordHandler</Text>
-          <TextInput
+          <text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 2 }}>📝 Record Handler</text>
+          <text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>POST /record-handler · @arkzen:handler:recordHandler</text>
+          <input
             value={hProbe}
-            onInput={(e: any) => setHProbe(e.detail.value)}
+            bindinput={(e: any) => setHProbe(e.detail.value)}
             placeholder="probe name"
             style={{ backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717', marginBottom: 8 }}
           />
-          <TouchableOpacity
-            onPress={() => setHOk((v: boolean) => !v)}
+          <view
+            bindtap={() => setHOk((v: boolean) => !v)}
             style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 12 }}
           >
-            <View style={{
+            <view style={{
               width: 18, height: 18, borderRadius: 4, borderWidth: 1.5,
               borderColor: hOk ? '#7c3aed' : '#d4d4d8',
               backgroundColor: hOk ? '#7c3aed' : '#fff',
               alignItems: 'center', justifyContent: 'center',
             }}>
-              {hOk && <Text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓</Text>}
-            </View>
-            <Text style={{ fontSize: 13, color: '#525252' }}>ok</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={doRecord}
-            disabled={hRecording}
+              {hOk && <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>✓</text>}
+            </view>
+            <text style={{ fontSize: 13, color: '#525252' }}>ok</text>
+          </view>
+          <view
+            bindtap={hRecording ? undefined : doRecord}
             style={{ backgroundColor: hRecording ? '#d4d4d4' : '#7c3aed', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
           >
-            <Text style={{ color: hRecording ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
+            <text style={{ color: hRecording ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
               {hRecording ? 'Recording…' : 'Record via Handler'}
-            </Text>
-          </TouchableOpacity>
+            </text>
+          </view>
         </LynxSectionCard>
 
         {/* Latest 5 */}
         <LynxSectionCard>
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
-            <View>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>🕑 Latest Handler</Text>
-              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /latest · @arkzen:handler:latest</Text>
-            </View>
-            <TouchableOpacity onPress={loadAll} style={{ padding: 6 }}>
-              <Text style={{ fontSize: 11, color: '#0ea5e9', fontWeight: '700' }}>Refresh</Text>
-            </TouchableOpacity>
-          </View>
+          <view style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+            <view>
+              <text style={{ fontSize: 13, fontWeight: '700', color: '#171717' }}>🕑 Latest Handler</text>
+              <text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>GET /latest · @arkzen:handler:latest</text>
+            </view>
+            <view bindtap={loadAll} style={{ padding: 6 }}>
+              <text style={{ fontSize: 11, color: '#0ea5e9', fontWeight: '700' }}>Refresh</text>
+            </view>
+          </view>
           {latest.length === 0 ? (
-            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>No results yet.</Text>
+            <text style={{ fontSize: 13, color: '#a3a3a3' }}>No results yet.</text>
           ) : (
             latest.map((r: ProbeResult) => (
-              <View key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
+              <view key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
                 <LynxBadge label={r.source} color={sourceColor(r.source)} />
-                <Text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#171717' }} numberOfLines={1}>{r.probe}</Text>
+                <text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#171717' }} numberOfLines={1}>{r.probe}</text>
                 <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
-                <Text style={{ fontSize: 10, color: '#a3a3a3' }}>{new Date(r.created_at).toLocaleTimeString()}</Text>
-              </View>
+                <text style={{ fontSize: 10, color: '#a3a3a3' }}>{new Date(r.created_at).toLocaleTimeString()}</text>
+              </view>
             ))
           )}
         </LynxSectionCard>
 
         {/* All probes */}
         <LynxSectionCard>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 12 }}>All Probe Results</Text>
+          <text style={{ fontSize: 13, fontWeight: '700', color: '#171717', marginBottom: 12 }}>All Probe Results</text>
           {loading ? (
-            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
+            <text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</text>
           ) : probes.length === 0 ? (
-            <Text style={{ fontSize: 13, color: '#a3a3a3' }}>No probes yet.</Text>
+            <text style={{ fontSize: 13, color: '#a3a3a3' }}>No probes yet.</text>
           ) : (
             probes.map((r: ProbeResult, i: number) => (
-              <View
+              <view
                 key={r.id}
                 style={{
                   paddingVertical: 10,
@@ -1396,33 +1397,33 @@ const IndexScreen = () => {
                   borderBottomColor: '#f5f5f5',
                 }}
               >
-                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                <view style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   <LynxBadge label={r.source} color={sourceColor(r.source)} />
-                  <Text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }} numberOfLines={1}>{r.probe}</Text>
+                  <text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }} numberOfLines={1}>{r.probe}</text>
                   <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
-                  <TouchableOpacity
-                    onPress={() => doDelete(r.id)}
+                  <view
+                    bindtap={() => doDelete(r.id)}
                     disabled={deleting === r.id}
                     style={{ backgroundColor: '#ef4444', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, opacity: deleting === r.id ? 0.5 : 1 }}
                   >
-                    <Text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>
+                    <text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>
                       {deleting === r.id ? '…' : 'Delete'}
-                    </Text>
-                  </TouchableOpacity>
-                </View>
+                    </text>
+                  </view>
+                </view>
                 {r.result && (
-                  <Text style={{ fontSize: 11, color: '#737373', marginLeft: 2 }} numberOfLines={2}>{r.result}</Text>
+                  <text style={{ fontSize: 11, color: '#737373', marginLeft: 2 }} numberOfLines={2}>{r.result}</text>
                 )}
-                <Text style={{ fontSize: 10, color: '#a3a3a3', marginTop: 2, marginLeft: 2 }}>
+                <text style={{ fontSize: 10, color: '#a3a3a3', marginTop: 2, marginLeft: 2 }}>
                   {new Date(r.created_at).toLocaleTimeString()}
-                </Text>
-              </View>
+                </text>
+              </view>
             ))
           )}
         </LynxSectionCard>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }
 

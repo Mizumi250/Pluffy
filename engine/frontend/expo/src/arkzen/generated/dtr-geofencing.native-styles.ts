@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE STYLES — dtr-geofencing
 // Source: @arkzen:native:style / @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:45.982Z
+// Generated: 2026-06-20T11:32:46.023Z
 // ============================================================
 
 import { StyleSheet } from 'react-native'

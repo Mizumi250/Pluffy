@@ -31,7 +31,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
       <View style={{ flex: 1 }}>{children}</View>
 
       {/* Bottom tab bar */}
-      <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingBottom: 4, paddingTop: 8 }}>
+      <View className="flex-row bg-white border-t border-gray-100 pb-1 pt-2">
         {NAV_ITEMS.map(({ name, label, icon: Icon }) => {
           const href   = NAV_HREFS[name]
           const active = pathname === href || pathname.startsWith(href + '/')
@@ -40,10 +40,11 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
               key={name}
               onPress={() => router.push(href as any)}
               activeOpacity={0.7}
-              style={{ flex: 1, alignItems: 'center', gap: 3 }}
+              className="flex-1 items-center"
+              style={{ gap: 3 }}
             >
               <Icon size={20} color={active ? '#171717' : '#d1d5db'} />
-              <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? '#171717' : '#d1d5db' }}>
+              <Text className={`text-[10px] ${active ? 'font-bold text-[#171717]' : 'font-medium text-gray-300'}`}>
                 {label}
               </Text>
             </TouchableOpacity>

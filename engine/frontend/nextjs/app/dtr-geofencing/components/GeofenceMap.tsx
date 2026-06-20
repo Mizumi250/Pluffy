@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceMap
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.851Z
+// Generated: 2026-06-20T11:32:50.060Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

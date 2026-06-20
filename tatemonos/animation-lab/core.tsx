@@ -3309,12 +3309,13 @@ const EasingSection = () => {
 /* @arkzen:native:components:sections:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LYNX SHARED COMPONENTS
+// LYNX SHARED COMPONENTS (using @lynx-js/motion)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:components:lynx:shared */
 
-import React, { useState } from '@lynx-js/react'
+import React, { useState, useEffect, useRef } from '@lynx-js/react'
+import { animate, useMotionValueRef } from '@lynx-js/motion'
 
 // ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
 const LYNX_NAV_SECTIONS = [
@@ -3354,7 +3355,7 @@ const LynxDemoCard = ({ title, desc, full = false, children }: {
       <div className="text-xs font-bold text-white/90">{title}</div>
       <div className="text-[10px] text-white/35">{desc}</div>
     </div>
-    <div className="p-4 min-h-[70px] flex flex-col items-center justify-center">
+    <div className="p-4 min-h-[70px] flex flex-col items-center justify-center gap-2">
       {children}
     </div>
   </div>
@@ -3363,10 +3364,10 @@ const LynxDemoCard = ({ title, desc, full = false, children }: {
 // ─── PLAY/RESET BUTTONS ───────────────────────────────────────────────────────
 const LynxPlayReset = ({ onPlay, onReset }: { onPlay: () => void; onReset: () => void }) => (
   <div className="flex flex-row gap-2 items-center justify-center mt-2">
-    <button onClick={onPlay} className="flex flex-row items-center gap-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-bold text-xs">
+    <button className="flex flex-row items-center gap-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-bold text-xs" onPress={onPlay}>
       <span>▶</span> Play
     </button>
-    <button onClick={onReset} className="flex flex-row items-center gap-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white/60 text-xs">
+    <button className="flex flex-row items-center gap-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white/60 text-xs" onPress={onReset}>
       <span>↺</span> Reset
     </button>
   </div>
@@ -3375,26 +3376,47 @@ const LynxPlayReset = ({ onPlay, onReset }: { onPlay: () => void; onReset: () =>
 // ─── ENTRANCE SECTION ────────────────────────────────────────────────────────
 
 const LynxEntranceSection = () => {
+  const box1Ref = useMotionValueRef()
+  const box2Ref = useMotionValueRef()
+  const box3Ref = useMotionValueRef()
   const [show, setShow] = useState(false)
+
+  const runEntrance = () => {
+    if (!show) {
+      // Reset first
+      animate(box1Ref.current, { opacity: 1, y: 0 }, { duration: 0, instant: true })
+      animate(box2Ref.current, { opacity: 1, scaleX: 1 }, { duration: 0, instant: true })
+      animate(box3Ref.current, { opacity: 1, x: 0 }, { duration: 0, instant: true })
+      setShow(true)
+      // Then animate them
+      animate(box1Ref.current, { opacity: 1, y: 0 }, { duration: 800, easing: [0.34, 1.56, 0.64, 1] })
+      animate(box2Ref.current, { opacity: 1, scaleX: 1 }, { duration: 700, delay: 100, easing: [0.34, 1.56, 0.64, 1] })
+      animate(box3Ref.current, { opacity: 1, x: 0 }, { duration: 600, delay: 200, easing: 'ease-out' })
+    } else {
+      // Reset
+      animate(box1Ref.current, { opacity: 0, y: 30 }, { duration: 300, easing: 'ease-in' })
+      animate(box2Ref.current, { opacity: 0, scaleX: 0 }, { duration: 300, easing: 'ease-in' })
+      animate(box3Ref.current, { opacity: 0, x: 40 }, { duration: 300, easing: 'ease-in' })
+      setTimeout(() => setShow(false), 400)
+    }
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="▶" title="Entrance Animations" subtitle="Lynx-native transitions" color="#6366f1" />
+      <LynxSectionHeader icon="▶" title="Entrance Animations" subtitle="with @lynx-js/motion" color="#6366f1" />
       <div className="flex flex-row flex-wrap px-3">
-        {['Fade In', 'Slide Up', 'Slide Right', 'Scale', 'Rotate', 'Elastic'].map((label, i) => (
-          <LynxDemoCard key={label} title={label} desc="Lynx transition">
-            <button
-              onClick={() => setShow(s => !s)}
-              className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold"
-            >
-              {show ? 'Hide' : 'Show'}
-            </button>
-            {show && (
-              <div className="mt-2 w-12 h-8 rounded-lg bg-indigo-400 flex items-center justify-center">
-                <span className="text-white text-[8px] font-bold">{label.split(' ')[0]}</span>
-              </div>
-            )}
-          </LynxDemoCard>
-        ))}
+        <LynxDemoCard title="Fade In" desc="opacity 0→1">
+          <div ref={box1Ref} className="w-12 h-8 rounded-lg bg-indigo-500 opacity-0" />
+          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+        </LynxDemoCard>
+        <LynxDemoCard title="Scale X" desc="scaleX 0→1">
+          <div ref={box2Ref} className="w-12 h-8 rounded-lg bg-purple-500 scale-x-0" />
+          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+        </LynxDemoCard>
+        <LynxDemoCard title="Slide Right" desc="x 40→0">
+          <div ref={box3Ref} className="w-12 h-8 rounded-lg bg-pink-500 opacity-0" style={{ transform: 'translateX(40px)' }} />
+          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+        </LynxDemoCard>
       </div>
     </>
   )
@@ -3404,24 +3426,41 @@ const LynxEntranceSection = () => {
 
 const LynxTimelineSection = () => {
   const [step, setStep] = useState(0)
+  const dotRefs = useRef([])
+
+  const runTimeline = () => {
+    setStep(0)
+    // Reset all dots
+    dotRefs.current.forEach((ref, i) => {
+      animate(ref, { scale: 0, opacity: 0 }, { duration: 0, instant: true })
+    })
+    // Animate sequentially
+    dotRefs.current.forEach((ref, i) => {
+      animate(ref, { scale: 1, opacity: 1 }, { duration: 300, delay: i * 200, easing: 'spring' })
+    })
+    // Update step after all done
+    setTimeout(() => setStep(5), dotRefs.current.length * 200 + 200)
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="⏱" title="Timeline Sequence" subtitle="Step-by-step animation" color="#a78bfa" />
+      <LynxSectionHeader icon="⏱" title="Timeline Sequence" subtitle="Sequential animation with delay" color="#a78bfa" />
       <LynxDemoCard title="Chained Timeline" desc="Sequential steps" full>
         <div className="flex flex-row gap-2 mb-3">
           {[0, 1, 2, 3, 4].map(i => (
-            <div key={i} className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
-              step >= i ? 'bg-purple-500 text-white' : 'bg-white/10 text-white/30'
-            }`}>
+            <div key={i}
+                 ref={el => dotRefs.current[i] = el}
+                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-purple-500 text-white scale-0 opacity-0`}
+                 style={{ transform: 'scale(0)', opacity: 0 }}>
               {i + 1}
             </div>
           ))}
         </div>
         <div className="flex flex-row gap-2">
-          <button onClick={() => setStep(s => Math.min(s + 1, 4))} className="px-4 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold">
-            Next Step
+          <button className="px-4 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold" onPress={runTimeline}>
+            Play Timeline
           </button>
-          <button onClick={() => setStep(0)} className="px-3 py-2 rounded-lg bg-white/10 text-white/60 text-xs">
+          <button className="px-3 py-2 rounded-lg bg-white/10 text-white/60 text-xs" onPress={() => { setStep(0); dotRefs.current.forEach(ref => animate(ref, { scale: 0, opacity: 0 }, { duration: 0, instant: true })) }}>
             Reset
           </button>
         </div>
@@ -3434,18 +3473,36 @@ const LynxTimelineSection = () => {
 
 const LynxStaggerSection = () => {
   const [show, setShow] = useState(false)
+  const itemsRef = useRef([])
+  const LETTERS = 'ABCDEF'.split('')
+
+  const runStagger = () => {
+    if (show) {
+      // Reset
+      itemsRef.current.forEach(ref => animate(ref, { scale: 0, opacity: 0 }, { duration: 200, easing: 'ease-in' }))
+      setTimeout(() => setShow(false), 300)
+    } else {
+      // Show with stagger
+      setShow(true)
+      itemsRef.current.forEach((ref, i) => {
+        animate(ref, { scale: 1, opacity: 1 }, { duration: 400, delay: i * 100, easing: 'spring', bounce: 0.3 })
+      })
+    }
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="⋮" title="Stagger" subtitle="Staggered reveal" color="#8b5cf6" />
+      <LynxSectionHeader icon="⋮" title="Stagger" subtitle="Staggered reveal with spring" color="#8b5cf6" />
       <LynxDemoCard title="Stagger Items" desc="Elements appear one by one" full>
-        <button onClick={() => setShow(s => !s)} className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold mb-3">
+        <button className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold mb-3" onPress={runStagger}>
           {show ? 'Hide' : 'Stagger In'}
         </button>
         {show && (
           <div className="flex flex-row flex-wrap gap-2 justify-center">
-            {['A','B','C','D','E','F'].map((w, i) => (
-              <div key={w} className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold"
-                   style={{ transitionDelay: `${i * 80}ms` }}>
+            {LETTERS.map((w, i) => (
+              <div key={w} ref={el => itemsRef.current[i] = el}
+                   className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold scale-0 opacity-0"
+                   style={{ transform: 'scale(0)', opacity: 0 }}>
                 {w}
               </div>
             ))}
@@ -3460,16 +3517,21 @@ const LynxStaggerSection = () => {
 
 const LynxPressSection = () => {
   const [pressed, setPressed] = useState(false)
+  const [scale, setScale] = useState(1)
+
+  const handlePress = () => {
+    setPressed(true)
+    animate(null, { scale: 1.2 }, { duration: 150, easing: 'spring', onComplete: () => {
+      animate(null, { scale: 1 }, { duration: 150, easing: 'spring' })
+      setPressed(false)
+    } })
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="⊙" title="Press Feedback" subtitle="Tap interaction" color="#ec4899" />
-      <LynxDemoCard title="Press Me" desc="Touch feedback" full>
-        <button
-          onPress={() => { setPressed(true); setTimeout(() => setPressed(false), 300) }}
-          className={`w-24 h-24 rounded-2xl flex items-center justify-center ${
-            pressed ? 'bg-pink-400' : 'bg-pink-500'
-          }`}
-        >
+      <LynxSectionHeader icon="⊙" title="Press Feedback" subtitle="Spring on tap" color="#ec4899" />
+      <LynxDemoCard title="Press Me" desc="Spring scale on press" full>
+        <button onPress={handlePress} className="w-24 h-24 rounded-2xl flex items-center justify-center bg-pink-500">
           <span className="text-3xl">👆</span>
         </button>
       </LynxDemoCard>
@@ -3481,16 +3543,26 @@ const LynxPressSection = () => {
 
 const LynxLoopSection = () => {
   const [spinning, setSpinning] = useState(false)
+  const spinRef = useRef()
+
+  const toggleSpin = () => {
+    if (spinning) {
+      animate(spinRef.current, { rotate: 0 }, { duration: 0, instant: true })
+      setSpinning(false)
+    } else {
+      setSpinning(true)
+      animate(spinRef.current, { rotate: 360 }, { duration: 2000, repeat: Infinity, easing: 'linear' })
+    }
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="∞" title="Loop" subtitle="Infinite animations" color="#f59e0b" />
-      <LynxDemoCard title="Spin" desc="Rotating indicator" full>
-        <button onClick={() => setSpinning(s => !s)} className="px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-bold mb-3">
+      <LynxSectionHeader icon="∞" title="Loop" subtitle="Infinite rotate" color="#f59e0b" />
+      <LynxDemoCard title="Spin" desc="Infinite rotation" full>
+        <button className="px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-bold mb-3" onPress={toggleSpin}>
           {spinning ? 'Stop' : 'Spin'}
         </button>
-        <div className={`w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-500 flex items-center justify-center ${
-          spinning ? 'animate-spin' : ''
-        }`}>
+        <div ref={spinRef} className="w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-500 flex items-center justify-center">
           <span className="text-xs text-amber-500 font-bold">∞</span>
         </div>
       </LynxDemoCard>
@@ -3502,14 +3574,24 @@ const LynxLoopSection = () => {
 
 const LynxTransformsSection = () => {
   const [transformed, setTransformed] = useState(false)
+  const boxRef = useRef()
+
+  const toggleTransform = () => {
+    if (transformed) {
+      animate(boxRef.current, { rotate: 0, scale: 1, y: 0 }, { duration: 300, easing: 'ease-in-out' })
+      setTransformed(false)
+    } else {
+      animate(boxRef.current, { rotate: 45, scale: 1.2, y: -8 }, { duration: 400, easing: 'spring' })
+      setTransformed(true)
+    }
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="⟳" title="Transforms" subtitle="CSS transforms" color="#10b981" />
+      <LynxSectionHeader icon="⟳" title="Transforms" subtitle="Translate, rotate, scale" color="#10b981" />
       <LynxDemoCard title="Transform" desc="Tap to transform" full>
-        <button onClick={() => setTransformed(t => !t)}>
-          <div className={`w-16 h-16 rounded-xl bg-emerald-500 flex items-center justify-center transition-transform duration-300 ${
-            transformed ? 'rotate-45 scale-110 translate-y-[-8px]' : ''
-          }`}>
+        <button onPress={toggleTransform}>
+          <div ref={boxRef} className="w-16 h-16 rounded-xl bg-emerald-500 flex items-center justify-center">
             <span className="text-white font-bold">⟳</span>
           </div>
         </button>
@@ -3522,15 +3604,25 @@ const LynxTransformsSection = () => {
 
 const LynxSpringSection = () => {
   const [big, setBig] = useState(false)
+  const ballRef = useRef()
+
+  const toggleSpring = () => {
+    if (big) {
+      animate(ballRef.current, { width: 48, height: 48 }, { duration: 500, easing: 'spring', damping: 15, stiffness: 200 })
+      setBig(false)
+    } else {
+      animate(ballRef.current, { width: 96, height: 96 }, { duration: 500, easing: 'spring', damping: 10, stiffness: 150 })
+      setBig(true)
+    }
+  }
+
   return (
     <>
-      <LynxSectionHeader icon="⌇" title="Spring" subtitle="Bouncy transitions" color="#3b82f6" />
+      <LynxSectionHeader icon="⌇" title="Spring" subtitle="Spring physics" color="#3b82f6" />
       <LynxDemoCard title="Spring" desc="Tap to bounce" full>
-        <button onClick={() => setBig(b => !b)}>
-          <div className={`rounded-full bg-blue-500 flex items-center justify-center transition-all duration-500 ${
-            big ? 'w-24 h-24' : 'w-12 h-12'
-          }`}>
-            <span className="text-white font-bold text-xs">{big ? '⌇' : ''}</span>
+        <button onPress={toggleSpring}>
+          <div ref={ballRef} className="rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs w-12 h-12">
+            {big ? '⌇' : ''}
           </div>
         </button>
       </LynxDemoCard>
@@ -3540,20 +3632,41 @@ const LynxSpringSection = () => {
 
 // ─── EASING SECTION ──────────────────────────────────────────────────────────
 
-const LynxEasingSection = () => (
-  <>
-    <LynxSectionHeader icon="⌗" title="Easing" subtitle="Transition curves" color="#ef4444" />
-    <div className="flex flex-row flex-wrap px-3">
-      {['linear', 'ease-in', 'ease-out', 'ease-in-out'].map(e => (
-        <LynxDemoCard key={e} title={e} desc="Hover to see">
-          <div className="w-24 h-3 rounded-full bg-red-200 overflow-hidden">
-            <div className={`h-full bg-red-500 transition-all duration-500 hover:w-full w-1/2 ${e === 'linear' ? 'ease-linear' : e === 'ease-in' ? 'ease-in' : e === 'ease-out' ? 'ease-out' : 'ease-in-out'}`} />
-          </div>
-        </LynxDemoCard>
-      ))}
-    </div>
-  </>
-)
+const LynxEasingSection = () => {
+  const barRefs = useRef([])
+  const easings = ['linear', 'ease-in', 'ease-out', 'ease-in-out']
+
+  const runEasingDemo = () => {
+    barRefs.current.forEach((ref, i) => {
+      animate(ref, { width: '100%' }, {
+        duration: 800,
+        easing: easings[i] === 'linear' ? 'linear' :
+                easings[i] === 'ease-in' ? [0.42, 0, 1, 1] :
+                easings[i] === 'ease-out' ? [0, 0, 0.58, 1] :
+                [0.42, 0, 0.58, 1],
+        onComplete: () => {
+          setTimeout(() => animate(ref, { width: '50%' }, { duration: 300, easing: 'ease-in' }), 500)
+        }
+      })
+    })
+  }
+
+  return (
+    <>
+      <LynxSectionHeader icon="⌗" title="Easing" subtitle="Transition curves" color="#ef4444" />
+      <div className="flex flex-row flex-wrap px-3">
+        {easings.map((e, i) => (
+          <LynxDemoCard key={e} title={e} desc="Tap to run">
+            <div className="w-24 h-3 rounded-full bg-red-200 overflow-hidden">
+              <div ref={el => barRefs.current[i] = el} className="h-full bg-red-500 w-1/2" />
+            </div>
+            <button className="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded" onPress={runEasingDemo}>Run</button>
+          </LynxDemoCard>
+        ))}
+      </div>
+    </>
+  )
+}
 
 /* @arkzen:native:components:lynx:shared:end */
 
@@ -3586,7 +3699,7 @@ const IndexLynxPage = () => {
     <div className="flex-1 min-h-screen bg-neutral-900 text-white">
       <div className="border-b border-white/10 px-5 py-4">
         <div className="text-lg font-bold text-purple-400">🎬 Animation Lab</div>
-        <div className="text-xs text-white/35">Lynx runtime</div>
+        <div className="text-xs text-white/35">Lynx · @lynx-js/motion</div>
       </div>
 
       <div className="flex flex-row overflow-x-auto border-b border-white/10 px-3 py-2 gap-1">
@@ -3595,10 +3708,10 @@ const IndexLynxPage = () => {
           return (
             <button
               key={id}
-              onClick={() => setActiveSection(id)}
               className={`flex flex-row items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold ${
-                active ? 'bg-neutral-900 text-white' : 'bg-white/10 text-white/60'
+                active ? 'bg-neutral-800 text-white' : 'bg-white/10 text-white/60'
               }`}
+              onPress={() => setActiveSection(id)}
             >
               <span>{icon}</span>
               {label}
@@ -3720,6 +3833,6 @@ console.log('🎬 Animation Lab running on React Native Bare')
 /* @arkzen:native:script:rn:end */
 
 /* @arkzen:native:script:lynx */
-// Lynx-specific scripts
-console.log('🎬 Animation Lab running on Lynx')
+// Lynx-specific scripts — using @lynx-js/motion
+console.log('🎬 Animation Lab running on Lynx with @lynx-js/motion')
 /* @arkzen:native:script:lynx:end */

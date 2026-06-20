@@ -12,7 +12,6 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDel
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
-import { s } from '../../arkzen/generated/jo-payroll.native-styles'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
 import { StatCard } from './components/StatCard'
@@ -54,38 +53,38 @@ const DashboardScreen = () => {
   const recentJOs = useMemo(() => jobOrders.slice(0, 5), [jobOrders])
 
   if (isLoading) return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+    <View className="flex-1 items-center justify-center">
       <ActivityIndicator color="#171717" />
     </View>
   )
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
+    <ScrollView className="flex-1 bg-[#F4F5F7]" contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
 
       {/* Header */}
-      <Animated.View entering={FadeInDown.duration(400)} style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>J.O. PAYROLL SYSTEM</Text>
-        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Dashboard</Text>
+      <Animated.View entering={FadeInDown.duration(400)} className="mb-4">
+        <Text className="text-[11px] text-gray-400 font-semibold tracking-[1.5px]">J.O. PAYROLL SYSTEM</Text>
+        <Text className="text-[22px] font-extrabold text-gray-900 mt-0.5 -tracking-[0.5px]">Dashboard</Text>
       </Animated.View>
 
-      {/* Net pay + deductions hero */}
-      <Animated.View entering={FadeInDown.duration(400).delay(60)} style={{ backgroundColor: '#171717', borderRadius: 20, padding: 20, marginBottom: 12 }}>
-        <Text style={{ fontSize: 11, color: '#6b7280', letterSpacing: 1.5, marginBottom: 8 }}>ACTIVE WORKERS NET PAY</Text>
-        <Text style={{ fontSize: 32, fontWeight: '800', color: '#ffffff', letterSpacing: -1 }}>{formatPeso(summary?.net_pay)}</Text>
-        <View style={{ flexDirection: 'row', gap: 16, marginTop: 12 }}>
+      {/* Net pay hero */}
+      <Animated.View entering={FadeInDown.duration(400).delay(60)} className="bg-[#171717] rounded-[20px] p-5 mb-3">
+        <Text className="text-[11px] text-gray-500 font-semibold tracking-[1.5px] mb-2">ACTIVE WORKERS NET PAY</Text>
+        <Text className="text-[32px] font-extrabold text-white -tracking-[1px]">{formatPeso(summary?.net_pay)}</Text>
+        <View className="flex-row mt-3" style={{ gap: 16 }}>
           <View>
-            <Text style={{ fontSize: 11, color: '#6b7280' }}>Gross Pay</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#ffffff', marginTop: 2 }}>{formatPeso(summary?.total_basic_pay)}</Text>
+            <Text className="text-[11px] text-gray-500">Gross Pay</Text>
+            <Text className="text-[13px] font-semibold text-white mt-0.5">{formatPeso(summary?.total_basic_pay)}</Text>
           </View>
           <View>
-            <Text style={{ fontSize: 11, color: '#6b7280' }}>Total Deductions</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#f87171', marginTop: 2 }}>{formatPeso(summary?.total_deductions)}</Text>
+            <Text className="text-[11px] text-gray-500">Total Deductions</Text>
+            <Text className="text-[13px] font-semibold text-red-400 mt-0.5">{formatPeso(summary?.total_deductions)}</Text>
           </View>
         </View>
       </Animated.View>
 
       {/* Stat row */}
-      <Animated.View entering={FadeInDown.duration(400).delay(120)} style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+      <Animated.View entering={FadeInDown.duration(400).delay(120)} className="flex-row mb-3" style={{ gap: 10 }}>
         <StatCard value={summary?.total_active ?? 0}   label="Active JOs"   color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
         <StatCard value={summary?.total_cash ?? 0}     label="Cash"         color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
         <StatCard value={summary?.total_atm ?? 0}      label="ATM"          color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
@@ -93,33 +92,33 @@ const DashboardScreen = () => {
       </Animated.View>
 
       {/* Deduction breakdown */}
-      <Animated.View entering={FadeInDown.duration(400).delay(180)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Deduction Breakdown</Text>
+      <Animated.View entering={FadeInDown.duration(400).delay(180)} className="bg-white rounded-2xl border border-gray-200 p-4 mb-3">
+        <Text className="text-[13px] font-bold text-gray-900 mb-3">Deduction Breakdown</Text>
         {[
           { label: 'SSS',           value: summary?.total_sss,          color: '#e11d48' },
           { label: 'HDMF Premium',  value: summary?.total_hdmf_premium, color: '#7c3aed' },
           { label: 'HDMF MPL',      value: summary?.total_hdmf_mpl,     color: '#2563eb' },
           { label: 'Calamity Loan', value: summary?.total_calamity_loan, color: '#d97706' },
         ].map(({ label, value, color }) => (
-          <View key={label} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
-            <Text style={{ fontSize: 13, color: '#374151' }}>{label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color }}>{formatPeso(value)}</Text>
+          <View key={label} className="flex-row items-center justify-between py-2 border-b border-gray-50">
+            <Text className="text-[13px] text-gray-700">{label}</Text>
+            <Text className="text-[13px] font-semibold" style={{ color }}>{formatPeso(value)}</Text>
           </View>
         ))}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10 }}>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Total</Text>
-          <Text style={{ fontSize: 14, fontWeight: '800', color: '#e11d48' }}>{formatPeso(summary?.total_deductions)}</Text>
+        <View className="flex-row items-center justify-between pt-2.5">
+          <Text className="text-[13px] font-bold text-gray-900">Total</Text>
+          <Text className="text-sm font-extrabold text-red-600">{formatPeso(summary?.total_deductions)}</Text>
         </View>
       </Animated.View>
 
       {/* Recent JOs */}
-      <Animated.View entering={FadeInDown.duration(400).delay(240)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden', marginBottom: 12 }}>
-        <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Recent Workers</Text>
-          <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Latest 5 entries</Text>
+      <Animated.View entering={FadeInDown.duration(400).delay(240)} className="bg-white rounded-2xl border border-gray-200 overflow-hidden mb-3">
+        <View className="px-4 py-3.5 border-b border-gray-100">
+          <Text className="text-[13px] font-bold text-gray-900">Recent Workers</Text>
+          <Text className="text-[11px] text-gray-400 mt-0.5">Latest 5 entries</Text>
         </View>
         {recentJOs.length === 0
-          ? <View style={{ padding: 32, alignItems: 'center' }}><Text style={{ fontSize: 13, color: '#9ca3af' }}>No data</Text></View>
+          ? <View className="p-8 items-center"><Text className="text-[13px] text-gray-400">No data</Text></View>
           : recentJOs.map(jo => <WorkerRow key={jo.id} jo={jo} />)
         }
       </Animated.View>

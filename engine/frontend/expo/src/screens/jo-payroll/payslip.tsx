@@ -12,7 +12,6 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDel
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
-import { s } from '../../arkzen/generated/jo-payroll.native-styles'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
 import { StatCard } from './components/StatCard'
@@ -67,13 +66,13 @@ const PayslipScreen = () => {
     <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 32 }}>
 
       <Animated.View entering={FadeInDown.duration(350)} style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>GENERATE</Text>
-        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Payslip</Text>
+        <Text className="text-[11px] text-gray-400 font-semibold tracking-[1.5px]">GENERATE</Text>
+        <Text className="text-[22px] font-extrabold text-gray-900 mt-0.5 -tracking-[0.5px]">Payslip</Text>
       </Animated.View>
 
       {/* Worker search */}
-      <Animated.View entering={FadeInDown.duration(350).delay(60)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 10 }}>Select Worker</Text>
+      <Animated.View entering={FadeInDown.duration(350).delay(60)} className="bg-white rounded-2xl border border-gray-200 p-4 mb-3">
+        <Text className="text-[13px] font-bold text-gray-900 mb-2.5">Select Worker</Text>
         <SearchBar value={search} onChange={setSearch} placeholder="Search worker name…" />
 
         <View style={{ marginTop: 10, gap: 4 }}>
@@ -82,16 +81,17 @@ const PayslipScreen = () => {
               key={jo.id}
               onPress={() => setSelected(jo)}
               activeOpacity={0.7}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, backgroundColor: selected?.id === jo.id ? '#171717' : 'transparent' }}
+              className={`flex-row items-center p-2.5 rounded-[10px] ${selected?.id === jo.id ? 'bg-[#171717]' : 'bg-transparent'}`}
+              style={{ gap: 10 }}
             >
               <Avatar name={jo.name_of_jo} size={32} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: selected?.id === jo.id ? '#ffffff' : '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                <Text style={{ fontSize: 11, color: '#9ca3af' }}>{jo.job_title} · {formatPeso(jo.basic_pay)}/day</Text>
+              <View className="flex-1">
+                <Text className={`text-xs font-semibold ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`} numberOfLines={1}>{jo.name_of_jo}</Text>
+                <Text className="text-[11px] text-gray-400">{jo.job_title} · {formatPeso(jo.basic_pay)}/day</Text>
               </View>
               {selected?.id === jo.id && (
-                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 12, color: '#171717' }}>✓</Text>
+                <View className="w-5 h-5 rounded-full bg-white items-center justify-center">
+                  <Text className="text-xs text-[#171717]">✓</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -100,86 +100,85 @@ const PayslipScreen = () => {
 
         {/* Work days input */}
         <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500' }}>Work Days:</Text>
-          <View style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 8 }}>
+          <Text className="text-xs text-gray-500 font-medium">Work Days:</Text>
+          <View className="flex-1 bg-gray-50 rounded-[10px] border border-gray-200 px-3 py-2">
             <TextInput
               value={workDays}
               onChangeText={setWorkDays}
               keyboardType="number-pad"
-              style={{ fontSize: 13, color: '#111827', fontWeight: '600' }}
+              className="text-[13px] text-gray-900 font-semibold"
             />
           </View>
-          <Text style={{ fontSize: 11, color: '#9ca3af' }}>days</Text>
+          <Text className="text-[11px] text-gray-400">days</Text>
         </View>
       </Animated.View>
 
       {/* Payslip preview */}
       {selected && computed ? (
-        <Animated.View entering={FadeInDown.duration(400)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', padding: 18, marginBottom: 12 }}>
-
+        <Animated.View entering={FadeInDown.duration(400)} className="bg-white rounded-2xl border-2 border-gray-200 p-[18px] mb-3" style={{ borderStyle: 'dashed' }}>
           {/* Header */}
-          <View style={{ alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 14, marginBottom: 14 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#111827', letterSpacing: -0.3 }}>LOCAL GOVERNMENT UNIT</Text>
-            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Job Order Payroll System</Text>
-            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Pay Period: {periodLabel}</Text>
+          <View className="items-center border-b border-gray-100 pb-3.5 mb-3.5">
+            <Text className="text-sm font-extrabold text-gray-900 -tracking-[0.3px]">LOCAL GOVERNMENT UNIT</Text>
+            <Text className="text-[11px] text-gray-400 mt-0.5">Job Order Payroll System</Text>
+            <Text className="text-[11px] text-gray-400 mt-0.5">Pay Period: {periodLabel}</Text>
           </View>
 
           {/* Worker info */}
           <View style={{ gap: 6, marginBottom: 14 }}>
             {[
-              { label: 'Name',          value: selected.name_of_jo },
-              { label: 'JOR #',         value: String(selected.jor_number) },
-              { label: 'Title',         value: selected.job_title },
-              { label: 'Funding',       value: selected.funding },
-              { label: 'Disbursement',  value: selected.disbursement_type },
-              { label: 'Days Worked',   value: `${computed.days} days` },
+              { label: 'Name',         value: selected.name_of_jo },
+              { label: 'JOR #',        value: String(selected.jor_number) },
+              { label: 'Title',        value: selected.job_title },
+              { label: 'Funding',      value: selected.funding },
+              { label: 'Disbursement', value: selected.disbursement_type },
+              { label: 'Days Worked',  value: `${computed.days} days` },
             ].map(({ label, value }) => (
-              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>{label}:</Text>
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#111827', fontFamily: 'monospace' }}>{value}</Text>
+              <View key={label} className="flex-row justify-between">
+                <Text className="text-[11px] text-gray-400">{label}:</Text>
+                <Text className="text-[11px] font-semibold text-gray-900">{value}</Text>
               </View>
             ))}
           </View>
 
           {/* Gross pay */}
-          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 12, marginBottom: 4 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>
-                Basic Pay ({formatPeso(selected.basic_pay)}/day × {computed.days})
+          <View className="border-t border-gray-100 pt-3" style={{ marginBottom: 4 }}>
+            <View className="flex-row justify-between">
+              <Text className="text-[11px] text-gray-500">
+                {`Basic Pay (${formatPeso(selected.basic_pay)}/day × ${computed.days})`}
               </Text>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: '#111827', fontFamily: 'monospace' }}>{formatPeso(computed.gross)}</Text>
+              <Text className="text-xs font-bold text-gray-900">{formatPeso(computed.gross)}</Text>
             </View>
           </View>
 
           {/* Deductions */}
-          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, marginTop: 8, gap: 6 }}>
-            <Text style={{ fontSize: 10, color: '#9ca3af', fontFamily: 'monospace', letterSpacing: 1 }}>DEDUCTIONS:</Text>
+          <View className="border-t border-gray-100 pt-2.5 mt-2" style={{ gap: 6 }}>
+            <Text className="text-[10px] text-gray-400 tracking-[1px]">DEDUCTIONS:</Text>
             {[
               { label: 'SSS Contribution', value: computed.sss,      show: computed.sss > 0 },
               { label: 'HDMF Premium',     value: computed.hdmfPrem, show: computed.hdmfPrem > 0 },
               { label: 'HDMF MPL',         value: computed.hdmfMpl,  show: computed.hdmfMpl > 0 },
               { label: 'Calamity Loan',    value: computed.calamity, show: computed.calamity > 0 },
             ].filter(d => d.show).map(({ label, value }) => (
-              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: '#6b7280', fontFamily: 'monospace' }}>{label}</Text>
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#e11d48', fontFamily: 'monospace' }}>({formatPeso(value)})</Text>
+              <View key={label} className="flex-row justify-between">
+                <Text className="text-[11px] text-gray-500">{label}</Text>
+                <Text className="text-[11px] font-semibold text-red-600">({formatPeso(value)})</Text>
               </View>
             ))}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 6 }}>
-              <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>Total Deductions</Text>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#e11d48', fontFamily: 'monospace' }}>({formatPeso(computed.deductions)})</Text>
+            <View className="flex-row justify-between border-t border-gray-100 pt-1.5">
+              <Text className="text-[11px] text-gray-400">Total Deductions</Text>
+              <Text className="text-[11px] font-bold text-red-600">({formatPeso(computed.deductions)})</Text>
             </View>
           </View>
 
           {/* Net pay */}
-          <View style={{ backgroundColor: '#171717', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#ffffff' }}>NET PAY</Text>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: '#ffffff' }}>{formatPeso(computed.net)}</Text>
+          <View className="bg-[#171717] rounded-xl px-4 py-3.5 flex-row justify-between items-center mt-3.5">
+            <Text className="text-sm font-extrabold text-white">NET PAY</Text>
+            <Text className="text-xl font-extrabold text-white">{formatPeso(computed.net)}</Text>
           </View>
         </Animated.View>
       ) : (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 40, alignItems: 'center' }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Select a worker to preview payslip</Text>
+        <View className="bg-white rounded-2xl border border-gray-200 p-10 items-center">
+          <Text className="text-[13px] text-gray-400">Select a worker to preview payslip</Text>
         </View>
       )}
 

@@ -574,7 +574,7 @@ const DashboardScreen = () => {
 /* @arkzen:native:page:dashboard:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LYNX NATIVE COMPONENTS & PAGES
+// LYNX NATIVE COMPONENTS & PAGES — FIXED
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:components:lynx:shared */
@@ -603,33 +603,14 @@ const getMimeIcon = (mime: string) => {
 /* @arkzen:native:page:lynx:dashboard */
 /* @arkzen:native:page:layout:guest */
 
-import { view, text, scrollView, image, input } from '@lynx-js/react'
-import React, { useState, useCallback } from '@lynx-js/react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-
-const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-
-const formatSize = (bytes) => {
-  if (bytes < 1024) return bytes + ' B'
-  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
-  return (bytes / 1048576).toFixed(1) + ' MB'
-}
-
-const getMimeIcon = (mime) => {
-  if (mime.startsWith('image/')) return '🖼️'
-  if (mime.includes('pdf')) return '📄'
-  if (mime.includes('video')) return '🎬'
-  if (mime.includes('zip') || mime.includes('rar')) return '🗜️'
-  return '📁'
-}
+import { useState, useCallback, useEffect } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
-  const [files, setFiles] = useState([])
+  const [files, setFiles] = useState<any[]>([])
   const [uploading, setUploading] = useState(false)
-  const [deleting, setDeleting] = useState(null)
-  const [viewingImage, setViewingImage] = useState(null)
-  const [error, setError] = useState(null)
-  const [progress, setProgress] = useState(0)
+  const [deleting, setDeleting] = useState<number | null>(null)
+  const [viewingImage, setViewingImage] = useState<string | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   const loadFiles = useCallback(async () => {
     try {
@@ -641,48 +622,36 @@ const DashboardLynxPage = () => {
     }
   }, [])
 
-  React.useEffect(() => { loadFiles() }, [])
+  useEffect(() => { loadFiles() }, [])
 
-  const upload = async (fileList) => {
+  // Lynx: use fetch (no progress) instead of XMLHttpRequest
+  const upload = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return
     setUploading(true)
     setError(null)
-    setProgress(0)
 
     const formData = new FormData()
     Array.from(fileList).forEach(f => formData.append('files[]', f))
 
     try {
-      const xhr = new XMLHttpRequest()
-      xhr.open('POST', '/api/upload-test/files')
-      xhr.setRequestHeader('Accept', 'application/json')
-
-      xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100))
-      }
-
-      await new Promise((resolve, reject) => {
-        xhr.onload = () => {
-          if (xhr.status >= 200 && xhr.status < 300) resolve()
-          else {
-            try { reject(new Error(JSON.parse(xhr.responseText)?.message ?? 'Upload failed')) }
-            catch { reject(new Error('Upload failed')) }
-          }
-        }
-        xhr.onerror = () => reject(new Error('Network error'))
-        xhr.send(formData)
+      const res = await fetch('/api/upload-test/files', {
+        method: 'POST',
+        headers: { Accept: 'application/json' },
+        body: formData,
       })
-
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.message ?? 'Upload failed')
+      }
       await loadFiles()
     } catch (e) {
-      setError(e.message)
+      setError(e instanceof Error ? e.message : 'Upload failed')
     } finally {
       setUploading(false)
-      setProgress(0)
     }
   }
 
-  const deleteFile = async (id) => {
+  const deleteFile = async (id: number) => {
     setDeleting(id)
     try {
       await arkzenFetch(`/api/upload-test/files/${id}`, { method: 'DELETE' })
@@ -695,17 +664,17 @@ const DashboardLynxPage = () => {
   return (
     <scroll-view className="min-h-screen bg-neutral-50">
       <view className="p-8">
-        <view className="max-w-2xl mx-auto space-y-6">
+        <view className="max-w-2xl mx-auto" style={{ gap: 24 }}>
 
           {/* Header */}
-          <view className="flex items-center justify-between">
+          <view className="flex-row items-center justify-between">
             <view>
               <text className="text-2xl font-bold">📤 Upload Test</text>
               <text className="text-sm text-neutral-500 mt-1">Run php artisan storage:link</text>
             </view>
           </view>
 
-          {/* Upload button - Lynx uses input with type="file" */}
+          {/* Upload area with file input */}
           <view className="border-2 border-dashed rounded-2xl p-10 text-center border-neutral-200">
             <text className="text-3xl mb-2">☁️</text>
             <text className="text-sm font-medium text-neutral-700">Click to select files</text>
@@ -714,15 +683,11 @@ const DashboardLynxPage = () => {
               type="file"
               multiple
               className="mt-4"
-              onChange={(e) => upload(e.target.files)}
+              bindinput={(e) => upload(e.detail.files)}
             />
-
             {uploading && (
               <view className="mt-4">
-                <view className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                  <view className="h-full bg-neutral-900 rounded-full" style={{ width: progress + '%' }} />
-                </view>
-                <text className="text-xs text-neutral-500 mt-1">{progress}% uploaded</text>
+                <text className="text-xs text-neutral-500">Uploading...</text>
               </view>
             )}
           </view>
@@ -735,7 +700,7 @@ const DashboardLynxPage = () => {
 
           {/* File list */}
           <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-            <view className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
+            <view className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
               <text className="font-semibold">Uploaded files ({files.length})</text>
               <view bindtap={loadFiles}>
                 <text className="text-xs text-neutral-400">Refresh</text>
@@ -743,24 +708,24 @@ const DashboardLynxPage = () => {
             </view>
 
             {files.length === 0 ? (
-              <view className="p-8">
+              <view className="p-8 items-center">
                 <text className="text-sm text-neutral-400">No files uploaded yet.</text>
               </view>
             ) : (
               files.map((f) => (
-                <view key={f.id} className="px-5 py-3 flex items-center gap-3 border-b border-neutral-50">
+                <view key={f.id} className="px-5 py-3 flex-row items-center gap-3 border-b border-neutral-50">
                   <text className="text-xl shrink-0">{getMimeIcon(f.mime_type)}</text>
                   <view className="flex-1 min-w-0">
                     <text className="text-sm font-medium truncate">{f.original_name}</text>
                     <text className="text-xs text-neutral-400">{formatSize(f.size_bytes)} · {f.mime_type}</text>
                   </view>
-                  <view className="flex items-center gap-2 shrink-0">
+                  <view className="flex-row items-center gap-2 shrink-0">
                     {f.is_image && f.url && (
                       <view bindtap={() => setViewingImage(f.url)}>
                         <text className="text-xs text-blue-500">View</text>
                       </view>
                     )}
-                    <view bindtap={() => window.open(`/api/upload-test/files/${f.id}/url`, '_blank')}>
+                    <view bindtap={() => lynx.openSchema(`/api/upload-test/files/${f.id}/url`)}>
                       <text className="text-xs text-neutral-500">Download</text>
                     </view>
                     <view bindtap={() => deleteFile(f.id)}>
@@ -783,7 +748,7 @@ const DashboardLynxPage = () => {
         </view>
       </view>
 
-      {/* Image preview modal */}
+      {/* Image preview modal — simplified for Lynx */}
       {viewingImage && (
         <view className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
           <view className="absolute top-4 right-4" bindtap={() => setViewingImage(null)}>

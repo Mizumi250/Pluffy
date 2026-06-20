@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — UploadedFileStoreRequest
 // Tatemono: upload-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:26:46.100663Z
+// Generated: 2026-06-20T12:10:00.579341Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\UploadTest;

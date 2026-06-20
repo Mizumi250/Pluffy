@@ -12,6 +12,7 @@
     "arkzen:once": "tsx arkzen.ts"
   },
   "dependencies": {
+    "@lynx-js/motion": "^0.0.3",
     "@lynx-js/react": "^0.121.1",
     "zustand": "^4.5.4",
     "js-yaml": "^4.2.0"

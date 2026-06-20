@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — jo-payroll [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:46.588Z
+// Generated: 2026-06-20T11:35:54.044Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

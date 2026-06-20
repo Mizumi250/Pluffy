@@ -12,7 +12,6 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDel
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
-import { s } from '../../arkzen/generated/jo-payroll.native-styles'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
 import { StatCard } from './components/StatCard'
@@ -25,7 +24,7 @@ import { formatPeso } from './components/utils'
 // User screen (from @arkzen:native:page:cash-atm)
 const CashAtmScreen = () => {
   const { jobOrders, setJobOrders, isLoading, setLoading } = usePayrollStore()
-  const [activeTab, setActiveTab] = useState('CASH')
+  const [activeTab, setActiveTab] = useState<'CASH' | 'ATM'>('CASH')
 
   useEffect(() => {
     if (jobOrders.length > 0) return
@@ -54,8 +53,8 @@ const CashAtmScreen = () => {
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
 
         <Animated.View entering={FadeInDown.duration(350)} style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>DISBURSEMENT</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Cash / ATM</Text>
+          <Text className="text-[11px] text-gray-400 font-semibold tracking-[1.5px]">DISBURSEMENT</Text>
+          <Text className="text-[22px] font-extrabold text-gray-900 mt-0.5 -tracking-[0.5px]">Cash / ATM</Text>
         </Animated.View>
 
         {/* Summary cards */}
@@ -75,37 +74,37 @@ const CashAtmScreen = () => {
               key={t}
               onPress={() => setActiveTab(t)}
               activeOpacity={0.8}
-              style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: activeTab === t ? '#171717' : '#ffffff', borderWidth: 1, borderColor: activeTab === t ? '#171717' : '#e5e7eb' }}
+              className={`flex-1 py-3 rounded-xl items-center border ${activeTab === t ? 'bg-[#171717] border-[#171717]' : 'bg-white border-gray-200'}`}
             >
-              <Text style={{ fontSize: 13, fontWeight: '700', color: activeTab === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
-              <Text style={{ fontSize: 11, color: activeTab === t ? '#9ca3af' : '#d1d5db', marginTop: 2 }}>{t === 'CASH' ? cashList.length : atmList.length} workers</Text>
+              <Text className={`text-[13px] font-bold ${activeTab === t ? 'text-white' : 'text-gray-400'}`}>{t}</Text>
+              <Text className={`text-[11px] ${activeTab === t ? 'text-gray-400' : 'text-gray-300'} mt-0.5`}>{t === 'CASH' ? cashList.length : atmList.length} workers</Text>
             </TouchableOpacity>
           ))}
         </Animated.View>
 
         {/* List */}
-        <Animated.View entering={FadeInDown.duration(350).delay(160)} style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' }}>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{activeTab} Disbursement</Text>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: activeTab === 'CASH' ? '#d97706' : '#2563eb' }}>{formatPeso(total)}</Text>
+        <Animated.View entering={FadeInDown.duration(350).delay(160)} className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+          <View className="flex-row justify-between items-center px-4 py-3 border-b border-gray-100">
+            <Text className="text-[13px] font-bold text-gray-900">{activeTab} Disbursement</Text>
+            <Text className={`text-xs font-semibold ${activeTab === 'CASH' ? 'text-amber-600' : 'text-blue-600'}`}>{formatPeso(total)}</Text>
           </View>
 
           {isLoading ? (
             <View style={{ padding: 32, alignItems: 'center' }}><ActivityIndicator color="#171717" /></View>
           ) : list.length === 0 ? (
-            <View style={{ padding: 32, alignItems: 'center' }}><Text style={{ fontSize: 13, color: '#9ca3af' }}>No entries</Text></View>
+            <View style={{ padding: 32, alignItems: 'center' }}><Text className="text-[13px] text-gray-400">No entries</Text></View>
           ) : (
             list.map(jo => (
-              <View key={jo.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
+              <View key={jo.id} className="flex-row items-center px-4 py-3 border-b border-gray-50" style={{ gap: 12 }}>
                 <Avatar name={jo.name_of_jo} size={36} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                  <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</Text>
+                <View className="flex-1">
+                  <Text className="text-[13px] font-semibold text-gray-900" numberOfLines={1}>{jo.name_of_jo}</Text>
+                  <Text className="text-[11px] text-gray-400 mt-0.5">{jo.jor_pyrl_group} · #{jo.jor_number}</Text>
                 </View>
                 {activeTab === 'ATM' && jo.cash_card_number && (
-                  <Text style={{ fontSize: 11, color: '#9ca3af', fontFamily: 'monospace' }}>····{jo.cash_card_number.slice(-4)}</Text>
+                  <Text className="text-[11px] text-gray-400">····{jo.cash_card_number.slice(-4)}</Text>
                 )}
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(jo.basic_pay)}</Text>
+                <Text className="text-[13px] font-bold text-gray-900">{formatPeso(jo.basic_pay)}</Text>
               </View>
             ))
           )}

@@ -12,7 +12,6 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDel
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
-import { s } from '../../arkzen/generated/jo-payroll.native-styles'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
 import { StatCard } from './components/StatCard'
@@ -54,8 +53,8 @@ const AppointmentsScreen = () => {
     <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
       <View style={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, backgroundColor: '#F4F5F7' }}>
         <Animated.View entering={FadeInDown.duration(350)}>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>SEQUENCE</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Appointments</Text>
+          <Text className="text-[11px] text-gray-400 font-semibold tracking-[1.5px]">SEQUENCE</Text>
+          <Text className="text-[22px] font-extrabold text-gray-900 mt-0.5 -tracking-[0.5px]">Appointments</Text>
         </Animated.View>
 
         <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 12 }}>
@@ -71,23 +70,23 @@ const AppointmentsScreen = () => {
           <ActivityIndicator color="#171717" />
         </View>
       ) : sorted.length === 0 ? (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb', marginHorizontal: 16 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>No appointments found</Text>
+        <View className="bg-white rounded-2xl p-10 items-center border border-gray-200 mx-4">
+          <Text className="text-[13px] text-gray-400">No appointments found</Text>
         </View>
       ) : (
         <View style={{ paddingHorizontal: 16, paddingBottom: 24 }}>
           {sorted.map((jo, index) => (
-            <Animated.View key={jo.id} entering={FadeInDown.duration(300).delay(index * 40)} style={{ backgroundColor: '#ffffff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 36, height: 36, backgroundColor: '#f3f4f6', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#374151' }}>#{jo.appointment_order}</Text>
+            <Animated.View key={jo.id} entering={FadeInDown.duration(300).delay(index * 40)} className="bg-white rounded-[14px] border border-gray-200 p-3.5 mb-2 flex-row items-center" style={{ gap: 12 }}>
+              <View className="w-9 h-9 bg-gray-100 rounded-[10px] items-center justify-center">
+                <Text className="text-xs font-extrabold text-gray-700">#{jo.appointment_order}</Text>
               </View>
               <Avatar name={jo.name_of_jo} size={36} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</Text>
+              <View className="flex-1">
+                <Text className="text-[13px] font-semibold text-gray-900" numberOfLines={1}>{jo.name_of_jo}</Text>
+                <Text className="text-[11px] text-gray-400 mt-0.5">{jo.job_title} · JOR #{jo.jor_number}</Text>
               </View>
-              <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <Text style={{ fontSize: 10, fontWeight: '700', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+              <View className={`rounded-lg px-2 py-1 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                <Text className={`text-[10px] font-bold ${jo.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
                   {jo.status.toUpperCase()}
                 </Text>
               </View>

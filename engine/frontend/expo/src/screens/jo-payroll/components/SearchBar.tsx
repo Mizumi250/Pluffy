@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SearchBar [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:46.592Z
+// Generated: 2026-06-20T11:35:54.049Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -14,14 +14,14 @@ import { TabRow } from './TabRow'
 // ── SearchBar ────────────────────────────────────────────────
 
 export const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 10, gap: 8 }}>
+  <View className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200 px-3 py-2.5" style={{ gap: 8 }}>
     <Search size={14} color="#9ca3af" />
     <TextInput
       value={value}
       onChangeText={onChange}
       placeholder={placeholder ?? 'Search…'}
       placeholderTextColor="#d1d5db"
-      style={{ flex: 1, fontSize: 13, color: '#111827' }}
+      className="flex-1 text-[13px] text-gray-900"
     />
   </View>
 )

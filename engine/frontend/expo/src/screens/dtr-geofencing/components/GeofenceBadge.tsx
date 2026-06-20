@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GeofenceBadge [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:45.974Z
+// Generated: 2026-06-20T11:32:46.009Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

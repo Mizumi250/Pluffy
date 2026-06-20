@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatCard [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:46.591Z
+// Generated: 2026-06-20T11:35:54.047Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
@@ -20,9 +20,12 @@ export const StatCard = ({ value, label, color = '#111827', bg = '#ffffff', bord
   bg?: string
   borderColor?: string
 }) => (
-  <View style={{ flex: 1, backgroundColor: bg, borderRadius: 14, borderWidth: 1, borderColor, padding: 14 }}>
-    <Text style={{ fontSize: 22, fontWeight: '700', color }}>{value}</Text>
-    <Text style={{ fontSize: 11, color: '#9ca3af', fontWeight: '500', marginTop: 2 }}>{label}</Text>
+  <View
+    className="flex-1 rounded-2xl border p-3.5"
+    style={{ backgroundColor: bg, borderColor }}
+  >
+    <Text className="text-[22px] font-bold" style={{ color }}>{value}</Text>
+    <Text className="text-[11px] text-gray-400 font-medium mt-0.5">{label}</Text>
   </View>
 )
 

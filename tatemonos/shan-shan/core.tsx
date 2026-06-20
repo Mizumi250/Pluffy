@@ -4035,7 +4035,7 @@ export default ServerErrorRN
 /* @arkzen:native:error:500:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// NATIVE ERROR PAGES (LYNX)
+// NATIVE ERROR PAGES (LYNX) — FIXED
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:error:404:lynx */
@@ -4043,11 +4043,11 @@ export default ServerErrorRN
 import React from '@lynx-js/react'
 
 const NotFoundLynx = () => (
-  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
-    <div className="text-6xl mb-4 text-neutral-200 font-bold">404</div>
-    <div className="text-xl font-bold">Page Not Found</div>
-    <div className="text-sm text-neutral-400 mt-2">The page you're looking for doesn't exist.</div>
-  </div>
+  <view className="flex-1 min-h-screen bg-white items-center justify-center px-4">
+    <text className="text-6xl mb-4 text-neutral-200 font-bold">404</text>
+    <text className="text-xl font-bold text-neutral-900 mb-2">Page Not Found</text>
+    <text className="text-sm text-neutral-400 text-center">The page you're looking for doesn't exist.</text>
+  </view>
 )
 
 export default NotFoundLynx
@@ -4058,11 +4058,11 @@ export default NotFoundLynx
 import React from '@lynx-js/react'
 
 const ServerErrorLynx = () => (
-  <div className="flex-1 min-h-screen bg-white text-neutral-900 flex items-center justify-center flex-col">
-    <div className="text-6xl mb-4 text-neutral-200 font-bold">500</div>
-    <div className="text-xl font-bold">Server Error</div>
-    <div className="text-sm text-neutral-400 mt-2">Something went wrong on our end. Please try again later.</div>
-  </div>
+  <view className="flex-1 min-h-screen bg-white items-center justify-center px-4">
+    <text className="text-6xl mb-4 text-neutral-200 font-bold">500</text>
+    <text className="text-xl font-bold text-neutral-900 mb-2">Server Error</text>
+    <text className="text-sm text-neutral-400 text-center">Something went wrong on our end. Please try again later.</text>
+  </view>
 )
 
 export default ServerErrorLynx

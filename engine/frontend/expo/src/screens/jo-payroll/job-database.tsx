@@ -12,7 +12,6 @@ import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDel
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
-import { s } from '../../arkzen/generated/jo-payroll.native-styles'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
 import { StatCard } from './components/StatCard'
@@ -64,14 +63,14 @@ const WorkersScreen = () => {
       {/* Fixed header */}
       <View style={{ backgroundColor: '#F4F5F7', paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12 }}>
         <Animated.View entering={FadeInDown.duration(350)}>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>JO DATABASE</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Workers</Text>
+          <Text className="text-[11px] text-gray-400 font-semibold tracking-[1.5px]">JO DATABASE</Text>
+          <Text className="text-[22px] font-extrabold text-gray-900 mt-0.5 -tracking-[0.5px]">Workers</Text>
         </Animated.View>
         <View style={{ gap: 8, marginTop: 12 }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search name, funding, SSS…" />
           <TabRow tabs={TABS} active={activeTab} onChange={setActiveTab} />
         </View>
-        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>{filtered.length} records</Text>
+        <Text className="text-[11px] text-gray-400 mt-2">{filtered.length} records</Text>
       </View>
 
       {/* List */}
@@ -80,10 +79,10 @@ const WorkersScreen = () => {
           <ActivityIndicator color="#171717" />
         </View>
       ) : (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, marginHorizontal: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden', paddingBottom: 8 }}>
+        <View className="bg-white rounded-2xl border border-gray-200 mx-4 overflow-hidden pb-2">
           {filtered.length === 0 ? (
             <View style={{ padding: 40, alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: '#9ca3af' }}>No records found</Text>
+              <Text className="text-[13px] text-gray-400">No records found</Text>
             </View>
           ) : filtered.map(jo => (
             <View key={jo.id}>
@@ -101,21 +100,21 @@ const WorkersScreen = () => {
                       { label: 'HDMF MPL',   value: formatPeso(jo.hdmf_mpl) },
                       { label: 'Calamity',   value: formatPeso(jo.calamity_loan) },
                     ].map(({ label, value }) => (
-                      <View key={label} style={{ backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 10, paddingVertical: 8, minWidth: '44%', flex: 1 }}>
-                        <Text style={{ fontSize: 10, color: '#9ca3af', fontWeight: '600', marginBottom: 2 }}>{label}</Text>
-                        <Text style={{ fontSize: 12, fontWeight: '600', color: '#111827' }}>{value}</Text>
+                      <View key={label} className="flex-1 bg-white rounded-[10px] border border-gray-200 px-2.5 py-2" style={{ minWidth: '44%' }}>
+                        <Text className="text-[10px] text-gray-400 font-semibold mb-0.5">{label}</Text>
+                        <Text className="text-xs font-semibold text-gray-900">{value}</Text>
                       </View>
                     ))}
                   </View>
-                  <View style={{ marginTop: 8, flexDirection: 'row', gap: 8 }}>
-                    <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
-                      <Text style={{ fontSize: 11, fontWeight: '600', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+                  <View style={{ flexDirection: 'row', gap: 8, marginTop: 8 }}>
+                    <View className={`rounded-lg px-2.5 py-1.5 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                      <Text className={`text-[11px] font-semibold ${jo.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
                         {jo.status.toUpperCase()}
                       </Text>
                     </View>
                     {jo.cash_card_number && (
-                      <View style={{ backgroundColor: '#eff6ff', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: '#2563eb', fontFamily: 'monospace' }}>
+                      <View className="bg-blue-50 rounded-lg px-2.5 py-1.5">
+                        <Text className="text-[11px] font-semibold text-blue-600">
                           ····{jo.cash_card_number.slice(-4)}
                         </Text>
                       </View>
