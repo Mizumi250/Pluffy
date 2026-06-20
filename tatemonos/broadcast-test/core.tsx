@@ -1096,7 +1096,6 @@ const DashboardScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect, useRef, useCallback } from '@lynx-js/react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -1120,7 +1119,7 @@ interface LynxMessage {
 // ── Status dot — dynamic bg color can't be a static Tailwind class, use inline
 const StatusDot = ({ status }: { status: WsStatus }) => {
   const color = status === 'connected' ? '#4ade80' : status === 'connecting' ? '#facc15' : '#f87171'
-  return <View style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
+  return <view style={{ width: 7, height: 7, borderRadius: 4, backgroundColor: color }} />
 }
 
 // ── Channel card ──────────────────────────────────────────────
@@ -1147,58 +1146,58 @@ const ChannelCard = ({
   }
 
   return (
-    <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden mb-4">
+    <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden mb-4">
       {/* Header */}
-      <View className="px-4 py-3.5 border-b border-neutral-100">
-        <View className="flex-row items-center justify-between">
-          <View className="flex-row items-center gap-2">
-            <View className={`px-2 py-0.5 rounded-full ${badgeColor}`}>
-              <Text className="text-white text-xs font-semibold">{badge}</Text>
-            </View>
-            <Text className="text-sm font-semibold text-neutral-800">{title}</Text>
-          </View>
-          <View className="flex-row items-center gap-1.5">
+      <view className="px-4 py-3.5 border-b border-neutral-100">
+        <view className="flex-row items-center justify-between">
+          <view className="flex-row items-center gap-2">
+            <view className={`px-2 py-0.5 rounded-full ${badgeColor}`}>
+              <text className="text-white text-xs font-semibold">{badge}</text>
+            </view>
+            <text className="text-sm font-semibold text-neutral-800">{title}</text>
+          </view>
+          <view className="flex-row items-center gap-1.5">
             <StatusDot status={status} />
-            <Text className="text-xs text-neutral-400">{status}</Text>
-            <Text className="text-xs text-neutral-300"> · </Text>
-            <Text className="text-xs text-neutral-400">{count} rx</Text>
-          </View>
-        </View>
-        <Text className="text-xs text-neutral-400 mt-1" numberOfLines={2}>{description}</Text>
-      </View>
+            <text className="text-xs text-neutral-400">{status}</text>
+            <text className="text-xs text-neutral-300"> · </text>
+            <text className="text-xs text-neutral-400">{count} rx</text>
+          </view>
+        </view>
+        <text className="text-xs text-neutral-400 mt-1">{description}</text>
+      </view>
 
       {/* Input row */}
-      <View className="px-4 py-2.5 border-b border-neutral-50 flex-row gap-2 items-center">
-        <TextInput
+      <view className="px-4 py-2.5 border-b border-neutral-50 flex-row gap-2 items-center">
+        <input
           className="flex-1 bg-neutral-50 border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900"
           placeholder="Type and send…"
           value={input}
-          onInput={e => setInput(e.detail.value)}
+          bindinput={e => setInput(e.detail.value)}
         />
-        <TouchableOpacity onPress={handleSend} className="bg-neutral-900 px-4 py-2.5 rounded-xl">
-          <Text className="text-white text-xs font-semibold">Send</Text>
-        </TouchableOpacity>
-      </View>
+        <view bindtap={handleSend} className="bg-neutral-900 px-4 py-2.5 rounded-xl">
+          <text className="text-white text-xs font-semibold">Send</text>
+        </view>
+      </view>
 
       {footer && (
-        <View className="px-4 py-2.5 border-b border-neutral-50">
+        <view className="px-4 py-2.5 border-b border-neutral-50">
           {footer}
-        </View>
+        </view>
       )}
 
       {msgs.length === 0 ? (
-        <View className="py-8 items-center">
-          <Text className="text-xs text-neutral-300">No messages yet</Text>
-        </View>
+        <view className="py-8 items-center">
+          <text className="text-xs text-neutral-300">No messages yet</text>
+        </view>
       ) : (
         msgs.slice(0, 20).map((m, i) => (
-          <View key={i} className="px-4 py-2.5 border-b border-neutral-50 flex-row items-start gap-2">
-            <Text className="flex-1 text-sm text-neutral-700">{m.content}</Text>
-            <Text className="text-xs text-neutral-300 shrink-0">{m.created_at?.slice(11, 19)}</Text>
-          </View>
+          <view key={i} className="px-4 py-2.5 border-b border-neutral-50 flex-row items-start gap-2">
+            <text className="flex-1 text-sm text-neutral-700">{m.content}</text>
+            <text className="text-xs text-neutral-300 shrink-0">{m.created_at?.slice(11, 19)}</text>
+          </view>
         ))
       )}
-    </View>
+    </view>
   )
 }
 
@@ -1222,61 +1221,60 @@ const LoginScreen = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-neutral-50">
-      <View className="flex-1 justify-center px-6 py-12">
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="flex-1 justify-center px-6 py-12">
 
         {/* Header */}
-        <View className="mb-8">
-          <View className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Text className="text-white text-lg">📡</Text>
-          </View>
-          <Text className="text-2xl font-bold text-neutral-900">Broadcast Test</Text>
-          <Text className="text-sm text-neutral-500 mt-1">Sign in to test all channel types</Text>
-        </View>
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <text className="text-white text-lg">📡</text>
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Broadcast Test</text>
+          <text className="text-sm text-neutral-500 mt-1">Sign in to test all channel types</text>
+        </view>
 
         {/* Form */}
-        <View className="gap-y-3">
+        <view className="gap-y-3">
           {error && (
-            <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-              <Text className="text-xs text-red-600">{error}</Text>
-            </View>
+            <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+              <text className="text-xs text-red-600">{error}</text>
+            </view>
           )}
-          <TextInput
+          <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Email"
             value={email}
-            onInput={e => setEmail(e.detail.value)}
+            bindinput={e => setEmail(e.detail.value)}
             type="email"
           />
-          <TextInput
+          <input
             className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Password"
             value={password}
-            onInput={e => setPassword(e.detail.value)}
+            bindinput={e => setPassword(e.detail.value)}
             type="password"
           />
           {/* disabled state changes bg — dynamic value, use inline */}
-          <TouchableOpacity
-            onPress={handleLogin}
-            disabled={isLoading}
+          <view
+            bindtap={isLoading ? undefined : handleLogin}
             className="py-3.5 rounded-2xl items-center"
             style={{ backgroundColor: isLoading ? '#d4d4d4' : '#171717' }}
           >
-            <Text className="text-white text-sm font-semibold">
+            <text className="text-white text-sm font-semibold">
               {isLoading ? 'Signing in…' : 'Sign in'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {/* Footer */}
-        <View className="mt-6 items-center">
-          <Text className="text-xs text-neutral-400">
+        <view className="mt-6 items-center">
+          <text className="text-xs text-neutral-400">
             No account?{' '}
-            <Text className="text-neutral-700 font-medium">Register</Text>
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+            <text className="text-neutral-700 font-medium">Register</text>
+          </text>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 
@@ -1303,24 +1301,24 @@ const RegisterScreen = () => {
   }
 
   return (
-    <ScrollView className="flex-1 bg-neutral-50">
-      <View className="flex-1 justify-center px-6 py-12">
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="flex-1 justify-center px-6 py-12">
 
         {/* Header */}
-        <View className="mb-8">
-          <View className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Text className="text-white text-lg">📡</Text>
-          </View>
-          <Text className="text-2xl font-bold text-neutral-900">Broadcast Test</Text>
-          <Text className="text-sm text-neutral-500 mt-1">Create an account to test private + presence channels</Text>
-        </View>
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <text className="text-white text-lg">📡</text>
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Broadcast Test</text>
+          <text className="text-sm text-neutral-500 mt-1">Create an account to test private + presence channels</text>
+        </view>
 
         {/* Form */}
-        <View className="gap-y-3">
+        <view className="gap-y-3">
           {error && (
-            <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-              <Text className="text-xs text-red-600">{error}</Text>
-            </View>
+            <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+              <text className="text-xs text-red-600">{error}</text>
+            </view>
           )}
           {([
             { ph: 'Name',             val: name,     set: setName,     type: 'text'     },
@@ -1328,37 +1326,36 @@ const RegisterScreen = () => {
             { ph: 'Password',         val: password, set: setPassword, type: 'password' },
             { ph: 'Confirm password', val: confirm,  set: setConfirm,  type: 'password' },
           ] as const).map(f => (
-            <TextInput
+            <input
               key={f.ph}
               className="bg-white border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder={f.ph}
               value={f.val}
-              onInput={e => f.set(e.detail.value)}
+              bindinput={e => f.set(e.detail.value)}
               type={f.type}
             />
           ))}
           {/* disabled state changes bg — dynamic value, use inline */}
-          <TouchableOpacity
-            onPress={handleRegister}
-            disabled={isLoading}
+          <view
+            bindtap={isLoading ? undefined : handleRegister}
             className="py-3.5 rounded-2xl items-center"
             style={{ backgroundColor: isLoading ? '#d4d4d4' : '#171717' }}
           >
-            <Text className="text-white text-sm font-semibold">
+            <text className="text-white text-sm font-semibold">
               {isLoading ? 'Creating account…' : 'Create account'}
-            </Text>
-          </TouchableOpacity>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {/* Footer */}
-        <View className="mt-6 items-center">
-          <Text className="text-xs text-neutral-400">
+        <view className="mt-6 items-center">
+          <text className="text-xs text-neutral-400">
             Already have an account?{' '}
-            <Text className="text-neutral-700 font-medium">Sign in</Text>
-          </Text>
-        </View>
-      </View>
-    </ScrollView>
+            <text className="text-neutral-700 font-medium">Sign in</text>
+          </text>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 
@@ -1500,20 +1497,20 @@ const DashboardScreen = () => {
   const sendPresence = useCallback((val: string) => send('presence', val), [send])
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
-        <View>
-          <Text className="text-base font-semibold text-neutral-900">📡 Broadcast Test</Text>
-          <Text className="text-xs text-neutral-400 mt-0.5">{user?.name}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text className="text-xs text-neutral-400">Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">📡 Broadcast Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">{user?.name}</text>
+        </view>
+        <view bindtap={handleLogout}>
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <scroll-view className="flex-1 p-4 pb-8">
 
         <ChannelCard
           title="Public channel" badge="public" badgeColor="bg-blue-500"
@@ -1532,34 +1529,34 @@ const DashboardScreen = () => {
           description="presence-broadcast-test-presence · Auth + member roster."
           status={presenceStatus} count={presenceCount} msgs={presenceMsgs} onSend={sendPresence}
           footer={
-            <View className="flex-row flex-wrap items-center gap-1.5">
-              <Text className="text-xs text-neutral-400">Online:</Text>
+            <view className="flex-row flex-wrap items-center gap-1.5">
+              <text className="text-xs text-neutral-400">Online:</text>
               {members.length === 0
-                ? <Text className="text-xs text-neutral-300">No members yet</Text>
+                ? <text className="text-xs text-neutral-300">No members yet</text>
                 : members.map(m => (
-                    <View key={m.id} className="bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
-                      <Text className="text-xs text-green-700">{m.name}</Text>
-                    </View>
+                    <view key={m.id} className="bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
+                      <text className="text-xs text-green-700">{m.name}</text>
+                    </view>
                   ))
               }
-            </View>
+            </view>
           }
         />
 
         {/* How it works */}
-        <View className="bg-neutral-100 rounded-2xl px-4 py-3 mt-2">
-          <Text className="text-xs text-neutral-500 font-semibold mb-1.5">How each type works</Text>
-          <Text className="text-xs text-neutral-500 leading-5">
+        <view className="bg-neutral-100 rounded-2xl px-4 py-3 mt-2">
+          <text className="text-xs text-neutral-500 font-semibold mb-1.5">How each type works</text>
+          <text className="text-xs text-neutral-500 leading-5">
             {'Public — open channel, no auth handshake.\nPrivate — scoped to your user ID, HMAC-verified.\nPresence — like private + live member roster.'}
-          </Text>
+          </text>
           {/* fontFamily monospace not a Tailwind class in Lynx, use inline */}
-          <Text className="text-xs text-neutral-400 mt-2" style={{ fontFamily: 'monospace' }}>
+          <text className="text-xs text-neutral-400 mt-2" style={{ fontFamily: 'monospace' }}>
             {'php artisan reverb:start\nphp artisan queue:work'}
-          </Text>
-        </View>
+          </text>
+        </view>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }
 

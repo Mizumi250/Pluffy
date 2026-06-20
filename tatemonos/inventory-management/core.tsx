@@ -863,7 +863,6 @@ const IndexScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect, useCallback } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
@@ -906,11 +905,11 @@ const StatCard = ({
   label: string; value: string | number
   icon: React.ReactNode; bg: string
 }) => (
-  <View className={`flex-1 ${bg} rounded-2xl p-3.5 items-center gap-1.5`}>
+  <view className={`flex-1 ${bg} rounded-2xl p-3.5 items-center gap-1.5`}>
     {icon}
-    <Text className="text-lg font-bold text-neutral-900">{value}</Text>
-    <Text className="text-xs text-neutral-500 text-center">{label}</Text>
-  </View>
+    <text className="text-lg font-bold text-neutral-900">{value}</text>
+    <text className="text-xs text-neutral-500 text-center">{label}</text>
+  </view>
 )
 
 // ── Stock badge ───────────────────────────────────────────────
@@ -921,13 +920,14 @@ const StockBadge = ({ quantity }: { quantity: number }) => {
     ? { bg: 'bg-amber-50',   text: 'text-amber-600',   label: 'Low stock'    }
     : { bg: 'bg-emerald-50', text: 'text-emerald-600', label: 'In stock'     }
   return (
-    <View className={`px-2 py-0.5 rounded-full ${cfg.bg}`}>
-      <Text className={`text-xs font-medium ${cfg.text}`}>{cfg.label}</Text>
-    </View>
+    <view className={`px-2 py-0.5 rounded-full ${cfg.bg}`}>
+      <text className={`text-xs font-medium ${cfg.text}`}>{cfg.label}</text>
+    </view>
   )
 }
 
 // ── Field ─────────────────────────────────────────────────────
+// Lynx has no multiline TextInput — multiline renders as <textarea>, single-line as <input>
 const Field = ({
   label, placeholder, value, onInput, multiline = false, editable = true,
 }: {
@@ -935,19 +935,30 @@ const Field = ({
   onInput: (v: string) => void
   multiline?: boolean; editable?: boolean
 }) => (
-  <View className="gap-1.5">
-    <Text className="text-xs font-medium text-neutral-600">{label}</Text>
-    <TextInput
-      className={`border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900 ${
-        !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
-      } ${multiline ? 'min-h-[72px]' : ''}`}
-      placeholder={placeholder}
-      value={value}
-      onInput={e => onInput(e.detail.value)}
-      multiline={multiline}
-      editable={editable}
-    />
-  </View>
+  <view className="gap-1.5">
+    <text className="text-xs font-medium text-neutral-600">{label}</text>
+    {multiline ? (
+      <textarea
+        className={`border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900 min-h-[72px] ${
+          !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
+        }`}
+        placeholder={placeholder}
+        value={value}
+        bindinput={e => onInput(e.detail.value)}
+        disabled={!editable}
+      />
+    ) : (
+      <input
+        className={`border border-neutral-200 rounded-xl px-3 py-2.5 text-sm text-neutral-900 ${
+          !editable ? 'bg-neutral-100 text-neutral-400' : 'bg-neutral-50'
+        }`}
+        placeholder={placeholder}
+        value={value}
+        bindinput={e => onInput(e.detail.value)}
+        disabled={!editable}
+      />
+    )}
+  </view>
 )
 
 // ── Item form panel ───────────────────────────────────────────
@@ -1007,26 +1018,26 @@ const ItemFormPanel = ({
   if (!visible) return null
 
   return (
-    <View className="absolute inset-0 bg-black/40 justify-end z-50">
-      <View className="bg-white rounded-t-3xl">
+    <view className="absolute inset-0 bg-black/40 justify-end z-50">
+      <view className="bg-white rounded-t-3xl">
         {/* Panel header */}
-        <View className="flex-row items-center justify-between px-5 py-4 border-b border-neutral-100">
-          <Text className="text-base font-semibold text-neutral-900">
+        <view className="flex-row items-center justify-between px-5 py-4 border-b border-neutral-100">
+          <text className="text-base font-semibold text-neutral-900">
             {editing ? 'Edit Item' : 'Add New Item'}
-          </Text>
-          <TouchableOpacity
-            onPress={onClose}
+          </text>
+          <view
+            bindtap={onClose}
             className="p-1.5 rounded-xl bg-neutral-100"
           >
             <Icon set="lucide" name="x" size={16} color="#737373" />
-          </TouchableOpacity>
-        </View>
+          </view>
+        </view>
 
-        <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+        <scroll-view className="p-5 gap-y-3.5">
           {error && (
-            <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-              <Text className="text-xs text-red-600">{error}</Text>
-            </View>
+            <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+              <text className="text-xs text-red-600">{error}</text>
+            </view>
           )}
 
           <Field label="Name *"       placeholder="Product name"       value={form.name}        onInput={v => setForm(f => ({...f, name: v}))}        />
@@ -1035,28 +1046,27 @@ const ItemFormPanel = ({
           <Field label="Quantity"     placeholder="0"                   value={form.quantity}    onInput={v => setForm(f => ({...f, quantity: v}))}    />
           <Field label="Price (₱) *"  placeholder="0.00"                value={form.price}       onInput={v => setForm(f => ({...f, price: v}))}       />
           <Field label="Description"  placeholder="Optional description" value={form.description} onInput={v => setForm(f => ({...f, description: v}))} multiline />
-        </ScrollView>
+        </scroll-view>
 
         {/* Footer */}
-        <View className="flex-row gap-3 px-5 py-4 border-t border-neutral-100">
-          <TouchableOpacity
-            onPress={onClose}
+        <view className="flex-row gap-3 px-5 py-4 border-t border-neutral-100">
+          <view
+            bindtap={onClose}
             className="flex-1 py-3 rounded-2xl bg-neutral-100 items-center"
           >
-            <Text className="text-sm font-semibold text-neutral-700">Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={saving}
+            <text className="text-sm font-semibold text-neutral-700">Cancel</text>
+          </view>
+          <view
+            bindtap={saving ? undefined : handleSave}
             className={`flex-1 py-3 rounded-2xl items-center ${saving ? 'bg-neutral-300' : 'bg-neutral-900'}`}
           >
-            <Text className="text-sm font-semibold text-white">
+            <text className="text-sm font-semibold text-white">
               {saving ? 'Saving…' : editing ? 'Update' : 'Create'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
   )
 }
 
@@ -1118,167 +1128,164 @@ const IndexScreen = () => {
   const outOfStock = items.filter(i => i.quantity === 0).length
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View className="bg-white border-b border-neutral-100 px-5 pt-4 pb-3">
-        <View className="flex-row items-center justify-between mb-3">
-          <View>
-            <Text className="text-xl font-bold text-neutral-900">Inventory</Text>
-            <Text className="text-xs text-neutral-400 mt-0.5">Manage products & stock levels</Text>
-          </View>
-          <TouchableOpacity
-            onPress={openCreate}
+      <view className="bg-white border-b border-neutral-100 px-5 pt-4 pb-3">
+        <view className="flex-row items-center justify-between mb-3">
+          <view>
+            <text className="text-xl font-bold text-neutral-900">Inventory</text>
+            <text className="text-xs text-neutral-400 mt-0.5">Manage products & stock levels</text>
+          </view>
+          <view
+            bindtap={openCreate}
             className="flex-row items-center gap-1.5 bg-neutral-900 px-3.5 py-2.5 rounded-2xl"
           >
             <Icon set="lucide" name="plus" size={14} color="#fff" />
-            <Text className="text-white text-xs font-semibold">Add Item</Text>
-          </TouchableOpacity>
-        </View>
+            <text className="text-white text-xs font-semibold">Add Item</text>
+          </view>
+        </view>
 
         {/* Search */}
-        <View className="flex-row items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2.5">
+        <view className="flex-row items-center gap-2 bg-neutral-100 rounded-xl px-3 py-2.5">
           <Icon set="lucide" name="search" size={14} color="#a3a3a3" />
-          <TextInput
+          <input
             className="flex-1 text-sm text-neutral-900"
             placeholder="Search name or SKU..."
             value={search}
-            onInput={e => setSearch(e.detail.value)}
+            bindinput={e => setSearch(e.detail.value)}
           />
           {search.length > 0 && (
-            <TouchableOpacity onPress={() => setSearch('')}>
+            <view bindtap={() => setSearch('')}>
               <Icon set="lucide" name="x" size={14} color="#a3a3a3" />
-            </TouchableOpacity>
+            </view>
           )}
-        </View>
-      </View>
+        </view>
+      </view>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ padding: 16, gap: 12 }}
-      >
+      <scroll-view className="flex-1 p-4 gap-y-3">
 
         {/* Stat cards */}
-        <View className="flex-row gap-3">
+        <view className="flex-row gap-3">
           <StatCard label="Items"     value={items.length} icon={<Icon set="lucide" name="package" size={18} color="#2563eb" />} bg="bg-blue-50"   />
           <StatCard label="Low Stock" value={lowStock}     icon={<Icon set="lucide" name="alert-triangle" size={18} color="#d97706" />} bg="bg-amber-50"  />
           <StatCard label="Out"       value={outOfStock}   icon={<Icon set="lucide" name="trending-up" size={18} color="#dc2626" />} bg="bg-red-50"    />
-        </View>
-        <View className="bg-emerald-50 rounded-2xl p-3.5 flex-row items-center gap-3">
+        </view>
+        <view className="bg-emerald-50 rounded-2xl p-3.5 flex-row items-center gap-3">
           <Icon set="lucide" name="dollar-sign" size={20} color="#059669" />
-          <View>
-            <Text className="text-xs text-neutral-500">Total Inventory Value</Text>
-            <Text className="text-lg font-bold text-neutral-900">
+          <view>
+            <text className="text-xs text-neutral-500">Total Inventory Value</text>
+            <text className="text-lg font-bold text-neutral-900">
               ₱{totalValue.toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-            </Text>
-          </View>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {error && (
-          <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-            <Text className="text-xs text-red-600">{error}</Text>
-          </View>
+          <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+            <text className="text-xs text-red-600">{error}</text>
+          </view>
         )}
 
         {/* Delete confirm inline */}
         {deleting && (
-          <View className="bg-white border border-red-100 rounded-2xl p-4 gap-3">
-            <Text className="text-sm font-semibold text-neutral-900">Delete Item</Text>
-            <Text className="text-xs text-neutral-500">
+          <view className="bg-white border border-red-100 rounded-2xl p-4 gap-3">
+            <text className="text-sm font-semibold text-neutral-900">Delete Item</text>
+            <text className="text-xs text-neutral-500">
               Are you sure you want to delete "{deleting.name}"? This cannot be undone.
-            </Text>
-            <View className="flex-row gap-3">
-              <TouchableOpacity
-                onPress={() => setDeleting(null)}
+            </text>
+            <view className="flex-row gap-3">
+              <view
+                bindtap={() => setDeleting(null)}
                 className="flex-1 py-2.5 rounded-xl bg-neutral-100 items-center"
               >
-                <Text className="text-sm font-medium text-neutral-700">Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={handleDelete}
+                <text className="text-sm font-medium text-neutral-700">Cancel</text>
+              </view>
+              <view
+                bindtap={handleDelete}
                 className="flex-1 py-2.5 rounded-xl bg-red-500 items-center"
               >
-                <Text className="text-sm font-semibold text-white">Delete</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
+                <text className="text-sm font-semibold text-white">Delete</text>
+              </view>
+            </view>
+          </view>
         )}
 
         {/* Items list */}
-        <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <View className="px-5 py-3.5 border-b border-neutral-100">
-            <Text className="text-sm font-semibold text-neutral-900">
-              All Items <Text className="text-neutral-400 font-normal">({filtered.length})</Text>
-            </Text>
-          </View>
+        <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-3.5 border-b border-neutral-100">
+            <text className="text-sm font-semibold text-neutral-900">
+              All Items <text className="text-neutral-400 font-normal">({filtered.length})</text>
+            </text>
+          </view>
 
           {loading ? (
-            <View className="py-12 items-center">
-              <Text className="text-sm text-neutral-400">Loading…</Text>
-            </View>
+            <view className="py-12 items-center">
+              <text className="text-sm text-neutral-400">Loading…</text>
+            </view>
           ) : filtered.length === 0 ? (
-            <View className="py-12 items-center gap-2">
+            <view className="py-12 items-center gap-2">
               <Icon set="lucide" name="package" size={28} color="#e5e5e5" />
-              <Text className="text-sm text-neutral-400">
+              <text className="text-sm text-neutral-400">
                 {search ? 'No items match your search' : 'No inventory items yet'}
-              </Text>
-            </View>
+              </text>
+            </view>
           ) : (
             filtered.map((item, i) => (
-              <View
+              <view
                 key={item.id}
                 className={`px-5 py-3.5 flex-row items-center gap-3 ${
                   i < filtered.length - 1 ? 'border-b border-neutral-50' : ''
                 }`}
               >
                 {/* Info */}
-                <View className="flex-1 min-w-0">
-                  <Text className="text-sm font-semibold text-neutral-900" numberOfLines={1}>
+                <view className="flex-1 min-w-0">
+                  <text className="text-sm font-semibold text-neutral-900">
                     {item.name}
-                  </Text>
-                  <Text className="text-xs font-mono text-neutral-400 mt-0.5">{item.sku}</Text>
-                  <View className="flex-row items-center gap-2 mt-1.5">
+                  </text>
+                  <text className="text-xs font-mono text-neutral-400 mt-0.5">{item.sku}</text>
+                  <view className="flex-row items-center gap-2 mt-1.5">
                     <StockBadge quantity={item.quantity} />
                     {item.category && (
-                      <Text className="text-xs text-neutral-400">{item.category}</Text>
+                      <text className="text-xs text-neutral-400">{item.category}</text>
                     )}
-                  </View>
-                </View>
+                  </view>
+                </view>
 
                 {/* Right side */}
-                <View className="items-end gap-1.5">
-                  <Text className="text-sm font-bold text-neutral-900">
+                <view className="items-end gap-1.5">
+                  <text className="text-sm font-bold text-neutral-900">
                     ₱{Number(item.price).toLocaleString('en-PH', { minimumFractionDigits: 2 })}
-                  </Text>
-                  <Text className="text-xs text-neutral-500">Qty: {item.quantity}</Text>
-                  <View className="flex-row gap-2 mt-1">
-                    <TouchableOpacity
-                      onPress={() => openEdit(item)}
+                  </text>
+                  <text className="text-xs text-neutral-500">Qty: {item.quantity}</text>
+                  <view className="flex-row gap-2 mt-1">
+                    <view
+                      bindtap={() => openEdit(item)}
                       className="p-1.5 rounded-lg bg-neutral-100"
                     >
                       <Icon set="lucide" name="edit-2" size={13} color="#525252" />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                      onPress={() => confirmDelete(item)}
+                    </view>
+                    <view
+                      bindtap={() => confirmDelete(item)}
                       className="p-1.5 rounded-lg bg-red-50"
                     >
                       <Icon set="lucide" name="trash-2" size={13} color="#ef4444" />
-                    </TouchableOpacity>
-                  </View>
-                </View>
-              </View>
+                    </view>
+                  </view>
+                </view>
+              </view>
             ))
           )}
-        </View>
+        </view>
 
         {/* Footer info */}
-        <View className="bg-neutral-100 rounded-2xl px-4 py-3">
-          <Text className="text-xs text-neutral-500 font-mono leading-5">
+        <view className="bg-neutral-100 rounded-2xl px-4 py-3">
+          <text className="text-xs text-neutral-500 font-mono leading-5">
             {`backend: /api/inventories\ndb: inventory-management SQLite`}
-          </Text>
-        </View>
+          </text>
+        </view>
 
-      </ScrollView>
+      </scroll-view>
 
       <ItemFormPanel
         visible={modalOpen}
@@ -1287,7 +1294,7 @@ const IndexScreen = () => {
         onSaved={loadItems}
       />
 
-    </View>
+    </view>
   )
 }
 
