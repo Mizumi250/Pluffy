@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-20T13:08:06.563Z
+// Generated: 2026-06-20T13:27:37.012Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -72,13 +72,16 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'auth-test', page: 'login', component: AuthTestLogin, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'register', component: AuthTestRegister, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'dashboard', component: AuthTestDashboard, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
+  { module: 'auth-test', page: 'index', component: AuthTestLogin, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'body-endpoint-handler', page: 'index', component: BodyEndpointHandlerIndex, layout: null, loginRoute: '/body-endpoint-handler/index', dashboardRoute: '/body-endpoint-handler/index' },
   { module: 'body-mail-notification', page: 'login', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'body-mail-notification', page: 'register', component: BodyMailNotificationRegister, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'body-mail-notification', page: 'dashboard', component: BodyMailNotificationDashboard, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
+  { module: 'body-mail-notification', page: 'index', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'broadcast-test', page: 'login', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'register', component: BroadcastTestRegister, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'dashboard', component: BroadcastTestDashboard, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
+  { module: 'broadcast-test', page: 'index', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'crud-test', page: 'index', component: CrudTestIndex, layout: null, loginRoute: '/crud-test/index', dashboardRoute: '/crud-test/index' },
   { module: 'errors-test', page: 'index', component: ErrorsTestIndex, layout: null, loginRoute: '/errors-test/index', dashboardRoute: '/errors-test/index' },
   { module: 'events-test', page: 'index', component: EventsTestIndex, layout: null, loginRoute: '/events-test/index', dashboardRoute: '/events-test/index' },
@@ -91,6 +94,7 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'jo-payroll', page: 'appointments', component: JoPayrollAppointments, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
   { module: 'jo-payroll', page: 'payslip', component: JoPayrollPayslip, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
   { module: 'job-test', page: 'dashboard', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
+  { module: 'job-test', page: 'index', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
   { module: 'layout-test', page: 'index', component: LayoutTestIndex, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'single', component: LayoutTestSingle, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'chain', component: LayoutTestChain, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
@@ -101,6 +105,7 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'mail-test', page: 'login', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
   { module: 'mail-test', page: 'register', component: MailTestRegister, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
   { module: 'mail-test', page: 'dashboard', component: MailTestDashboard, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
+  { module: 'mail-test', page: 'index', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
   { module: 'middleware-test', page: 'index', component: MiddlewareTestIndex, layout: null, loginRoute: '/middleware-test/index', dashboardRoute: '/middleware-test/index' },
   { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
   { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
@@ -108,12 +113,16 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'notification-test', page: 'login', component: NotificationTestLogin, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
   { module: 'notification-test', page: 'register', component: NotificationTestRegister, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
   { module: 'notification-test', page: 'dashboard', component: NotificationTestDashboard, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
+  { module: 'notification-test', page: 'index', component: NotificationTestLogin, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
   { module: 'portfolio-test', page: 'index', component: PortfolioTestIndex, layout: null, loginRoute: '/portfolio-test/index', dashboardRoute: '/portfolio-test/index' },
   { module: 'roles-test', page: 'login', component: RolesTestLogin, layout: null, loginRoute: '/roles-test/login', dashboardRoute: '/roles-test/dashboard' },
   { module: 'roles-test', page: 'register', component: RolesTestRegister, layout: null, loginRoute: '/roles-test/login', dashboardRoute: '/roles-test/dashboard' },
   { module: 'roles-test', page: 'dashboard', component: RolesTestDashboard, layout: null, loginRoute: '/roles-test/login', dashboardRoute: '/roles-test/dashboard' },
+  { module: 'roles-test', page: 'index', component: RolesTestLogin, layout: null, loginRoute: '/roles-test/login', dashboardRoute: '/roles-test/dashboard' },
   { module: 'scheduler-test', page: 'dashboard', component: SchedulerTestDashboard, layout: null, loginRoute: '/scheduler-test/index', dashboardRoute: '/scheduler-test/dashboard' },
+  { module: 'scheduler-test', page: 'index', component: SchedulerTestDashboard, layout: null, loginRoute: '/scheduler-test/index', dashboardRoute: '/scheduler-test/dashboard' },
   { module: 'upload-test', page: 'dashboard', component: UploadTestDashboard, layout: null, loginRoute: '/upload-test/index', dashboardRoute: '/upload-test/dashboard' },
+  { module: 'upload-test', page: 'index', component: UploadTestDashboard, layout: null, loginRoute: '/upload-test/index', dashboardRoute: '/upload-test/dashboard' },
 ]
 
 export const LYNX_ERROR_404: Record<string, any> = {
@@ -149,4 +158,13 @@ export function getLoginRoute(tatName: string): string {
 export function getDashboardRoute(tatName: string): string {
   const route = LYNX_ROUTES.find(r => r.module === tatName)
   return route?.dashboardRoute ?? `/${tatName}`
+}
+
+// v3.1: programmatic equivalent of visiting bare /${tatName} in Expo —
+// resolves to the literal "index" page if one exists, otherwise the first
+// registered page (which regenerateRoutesFile() above already aliased
+// under page: 'index' for exactly this case).
+export function getDefaultPage(tatName: string): string {
+  const route = LYNX_ROUTES.find(r => r.module === tatName && r.page === 'index')
+  return route?.page ?? LYNX_ROUTES.find(r => r.module === tatName)?.page ?? 'index'
 }

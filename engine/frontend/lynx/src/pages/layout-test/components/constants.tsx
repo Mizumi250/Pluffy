@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — layout-test
 // Source: @arkzen:native:components:lynx:* (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:04.289Z
+// Generated: 2026-06-20T13:27:34.193Z
 // ============================================================
 
 import React from '@lynx-js/react'

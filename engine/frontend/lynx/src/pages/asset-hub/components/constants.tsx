@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — asset-hub
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:07:58.571Z
+// Generated: 2026-06-20T13:27:30.077Z
 // ============================================================
 
 import React, { useState } from '@lynx-js/react'

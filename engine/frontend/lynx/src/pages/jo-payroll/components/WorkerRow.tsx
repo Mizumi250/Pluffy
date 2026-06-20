@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — WorkerRow
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:03.534Z
+// Generated: 2026-06-20T13:27:33.737Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'

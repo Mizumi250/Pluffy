@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — events-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:02.454Z
+// Generated: 2026-06-20T13:27:32.941Z
 import { apiFetch, eventColor, statusStyle } from './components/utils'
 import type { EventLogEntry } from './components/types'
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'

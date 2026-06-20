@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — mail-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:04.353Z
+// Generated: 2026-06-20T13:27:34.291Z
 import { Field } from './components/Field'
 import { BACKEND_URL } from './components/constants'
 import type { MailLog, MailType } from './components/types'

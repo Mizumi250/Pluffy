@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:native:components:lynx:* (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:05.314Z
+// Generated: 2026-06-20T13:27:35.256Z
 // ============================================================
 
 import React from '@lynx-js/react'

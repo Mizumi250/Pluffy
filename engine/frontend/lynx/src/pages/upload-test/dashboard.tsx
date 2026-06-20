@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — upload-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:06.562Z
+// Generated: 2026-06-20T13:27:37.009Z
 import { formatSize, getMimeIcon } from './components/utils'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 

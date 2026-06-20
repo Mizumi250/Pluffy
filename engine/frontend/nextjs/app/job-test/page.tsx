@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — job-test
 // Visiting /job-test redirects to /job-test/dashboard
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:07.349Z
+// Generated: 2026-06-20T13:27:38.795Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

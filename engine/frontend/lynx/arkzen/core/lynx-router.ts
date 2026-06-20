@@ -1,5 +1,24 @@
 // ============================================================
-// ARKZEN ENGINE — LYNX ROUTER v3.0
+// ARKZEN ENGINE — LYNX ROUTER v3.1
+//
+// v3.1 — Two remaining gaps vs expo-router.ts closed:
+//   1. Default/index route guarantee. Expo always makes /${tatName}
+//      resolve (app/{tat}/index.tsx auto-redirects to the first real page
+//      when no literal "index" page is declared). Lynx's LYNX_ROUTES table
+//      had no equivalent — a tatemono with only login/register/dashboard
+//      pages (no "index") had zero route entries for { page: 'index' }.
+//      regenerateRoutesFile() now aliases the first page's already-imported
+//      component under page: 'index' whenever no literal index page exists
+//      — no new files, no new imports, just one extra table row. New
+//      getDefaultPage(tatName) helper exported alongside getLoginRoute /
+//      getDashboardRoute for any caller that wants the resolved page name.
+//   2. Stale dual-extension sidecar files. Expo hit this in v4.4: an older
+//      generator run writes e.g. constants.ts, a newer run switches to
+//      constants.tsx, and the stale .ts sibling never gets removed —
+//      bundler resolution order can let it silently shadow the correct
+//      file. generateIndividualLynxComponentFiles() now calls
+//      removeStaleSiblingExt() next to every constants/hooks/utils/types
+//      write-or-delete decision, the same defensive pattern Expo uses.
 //
 // v3.0 — FULL EXPO PARITY PASS
 // Brings Lynx component/page generation up to the same machinery
@@ -128,6 +147,23 @@ const ROUTES_TS_PATH      = path.join(GENERATED_DIR, 'routes.ts')
 
 function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
+}
+
+// v3.1: defends against the same class of bug Expo hit in v4.4 — an older
+// generator run writing e.g. constants.ts, a newer one switching to
+// constants.tsx, and the stale .ts sibling surviving every regeneration
+// because nothing ever looked for it. TS/bundler resolution order would let
+// the stale file silently shadow the correct one. Call this any time a
+// sidecar file's canonical extension is decided, passing the OTHER
+// extension(s) that must not be allowed to linger.
+function removeStaleSiblingExt(dir: string, baseName: string, staleExts: string[]): void {
+  for (const ext of staleExts) {
+    const p = path.join(dir, `${baseName}${ext}`)
+    if (fs.existsSync(p)) {
+      fs.unlinkSync(p)
+      console.log(`[Arkzen Lynx Router] 🧹 Removed stale sidecar: ${baseName}${ext}`)
+    }
+  }
 }
 
 function writeIfChanged(filePath: string, content: string): void {
@@ -1064,11 +1100,13 @@ ${normalisedCanonicalBlock}
 ${allConstChunks.join('\n\n')}
 `
       writeIfChanged(path.join(componentsDir, 'constants.tsx'), content)
+      removeStaleSiblingExt(componentsDir, 'constants', ['.ts'])
       console.log(`[Arkzen Lynx Router] ✓ Lynx shared constants: constants.tsx`)
     }
   } else {
     const p = path.join(componentsDir, 'constants.tsx')
     if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Lynx Router] 🧹 Removed stale constants.tsx`) }
+    removeStaleSiblingExt(componentsDir, 'constants', ['.ts'])
   }
 
   // ── Custom hooks file ──────────────────────────────────────────────────
@@ -1103,11 +1141,13 @@ ${hookConstantsImport}${hookTypesImport}
 ${hookChunksJoined}
 `
       writeIfChanged(path.join(componentsDir, 'hooks.tsx'), content)
+      removeStaleSiblingExt(componentsDir, 'hooks', ['.ts'])
       console.log(`[Arkzen Lynx Router] ✓ Lynx custom hooks: hooks.tsx (${[...customHooks].join(', ')})`)
     }
   } else {
     const p = path.join(componentsDir, 'hooks.tsx')
     if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Lynx Router] 🧹 Removed stale hooks.tsx`) }
+    removeStaleSiblingExt(componentsDir, 'hooks', ['.ts'])
   }
 
   // ── Utility functions file ──────────────────────────────────────────────
@@ -1147,11 +1187,13 @@ ${utilConstantsImport}${utilTypesImport}${utilHooksImport}
 ${utilChunksJoined}
 `
       writeIfChanged(path.join(componentsDir, 'utils.tsx'), content)
+      removeStaleSiblingExt(componentsDir, 'utils', ['.ts'])
       console.log(`[Arkzen Lynx Router] ✓ Lynx utility functions: utils.tsx (${[...utilityFunctions].join(', ')})`)
     }
   } else {
     const p = path.join(componentsDir, 'utils.tsx')
     if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Lynx Router] 🧹 Removed stale utils.tsx`) }
+    removeStaleSiblingExt(componentsDir, 'utils', ['.ts'])
   }
 
   // ── Shared types file ────────────────────────────────────────────────────
@@ -1172,11 +1214,13 @@ ${utilChunksJoined}
 ${typeChunks.join('\n\n')}
 `
       writeIfChanged(path.join(componentsDir, 'types.ts'), content)
+      removeStaleSiblingExt(componentsDir, 'types', ['.tsx'])
       console.log(`[Arkzen Lynx Router] ✓ Lynx shared types: types.ts (${[...sharedTypes].join(', ')})`)
     }
   } else {
     const p = path.join(componentsDir, 'types.ts')
     if (fs.existsSync(p)) { fs.unlinkSync(p); console.log(`[Arkzen Lynx Router] 🧹 Removed stale types.ts`) }
+    removeStaleSiblingExt(componentsDir, 'types', ['.tsx'])
   }
 
   // ── One real file per component containing its actual code ──────────────
@@ -1536,6 +1580,10 @@ function regenerateRoutesFile(tatemono?: ParsedTatemono): void {
     const loginRoute     = `/${tat}/${loginPage}`
     const dashboardRoute = `/${tat}/${dashboardPage}`
 
+    let firstPageComponentName: string | null = null
+    let firstPageLayoutComponent: string | null = null
+    const hasLiteralIndex = pages.some(p => p.page === 'index')
+
     for (const route of pages) {
       const componentName = `${toPascalCase(tat)}${toPascalCase(route.page)}`
       imports.push(`import { ${componentName} } from '../../pages/${tat}/${route.page}'`)
@@ -1551,8 +1599,28 @@ function regenerateRoutesFile(tatemono?: ParsedTatemono): void {
         }
       }
 
+      if (firstPageComponentName === null) {
+        firstPageComponentName  = componentName
+        firstPageLayoutComponent = layoutComponent
+      }
+
       routeEntries.push(
         `  { module: '${tat}', page: '${route.page}', component: ${componentName}, layout: ${layoutComponent}, loginRoute: '${loginRoute}', dashboardRoute: '${dashboardRoute}' },`
+      )
+    }
+
+    // v3.1: default/index route guarantee — mirrors Expo's root redirect
+    // (app/{tat}/index.tsx → first page when no literal "index" page is
+    // declared). Lynx has no file-based root to redirect FROM, so instead
+    // of generating a new file we just alias the existing first-page
+    // component under page: 'index' in the route table itself — zero extra
+    // imports, zero extra generated files, but any caller that does
+    // LYNX_ROUTES.find(r => r.module === X && r.page === 'index') (the Lynx
+    // equivalent of visiting bare /${tat}) now resolves exactly like Expo's
+    // /${tat} always does, instead of silently finding nothing.
+    if (!hasLiteralIndex && firstPageComponentName) {
+      routeEntries.push(
+        `  { module: '${tat}', page: 'index', component: ${firstPageComponentName}, layout: ${firstPageLayoutComponent}, loginRoute: '${loginRoute}', dashboardRoute: '${dashboardRoute}' },`
       )
     }
 
@@ -1636,6 +1704,15 @@ export function getLoginRoute(tatName: string): string {
 export function getDashboardRoute(tatName: string): string {
   const route = LYNX_ROUTES.find(r => r.module === tatName)
   return route?.dashboardRoute ?? \`/\${tatName}\`
+}
+
+// v3.1: programmatic equivalent of visiting bare /\${tatName} in Expo —
+// resolves to the literal "index" page if one exists, otherwise the first
+// registered page (which regenerateRoutesFile() above already aliased
+// under page: 'index' for exactly this case).
+export function getDefaultPage(tatName: string): string {
+  const route = LYNX_ROUTES.find(r => r.module === tatName && r.page === 'index')
+  return route?.page ?? LYNX_ROUTES.find(r => r.module === tatName)?.page ?? 'index'
 }
 `
 

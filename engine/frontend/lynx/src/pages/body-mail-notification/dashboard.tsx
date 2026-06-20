@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-mail-notification/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:07:59.866Z
+// Generated: 2026-06-20T13:27:31.521Z
 import { Field } from './components/Field'
 import { KindBadge } from './components/KindBadge'
 import { PrimaryBtn } from './components/PrimaryBtn'

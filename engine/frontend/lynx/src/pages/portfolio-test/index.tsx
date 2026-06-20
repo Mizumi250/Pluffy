@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — portfolio-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:05.319Z
+// Generated: 2026-06-20T13:27:35.262Z
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
 
 /* @arkzen:native:page:layout:guest */

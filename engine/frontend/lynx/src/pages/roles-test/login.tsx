@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — roles-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:05.485Z
+// Generated: 2026-06-20T13:27:35.556Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'

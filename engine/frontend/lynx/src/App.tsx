@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from '@lynx-js/react'
+import { LYNX_ROUTES } from './arkzen/generated/app-routes.js'
 
 const BACKEND_URL =
   (typeof process !== 'undefined' && process.env && process.env.ARKZEN_BACKEND_URL) ||
@@ -28,13 +29,16 @@ function formatDate(iso: string): string {
   }
 }
 
-function TatemonoCard({ mod }: { mod: RegistryModule }) {
+function TatemonoCard({ mod, onNavigate }: { mod: RegistryModule; onNavigate: (mod: string, page: string) => void }) {
   const isActive  = mod.status === 'active'
-  const firstPage = mod.pages[0]
-  const routeText = firstPage && firstPage !== 'index' ? '/' + mod.name + '/' + firstPage : '/' + mod.name
+  const firstPage = mod.pages[0] ?? 'index'
+  const routeText = firstPage !== 'index' ? '/' + mod.name + '/' + firstPage : '/' + mod.name
 
   return (
-    <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+    <view
+      bindtap={() => onNavigate(mod.name, firstPage)}
+      className="bg-white rounded-2xl border border-neutral-100 overflow-hidden"
+    >
       <view className="px-4 pt-4 pb-3 flex-row items-start justify-between">
         <view className="flex-1 mr-3">
           <text className="text-sm font-semibold text-neutral-900 mb-0.5">{mod.name}</text>
@@ -87,6 +91,8 @@ export function App() {
   const [registry, setRegistry]       = useState<RegistryData | null>(null)
   const [loading, setLoading]         = useState(true)
   const [engineAlive, setEngineAlive] = useState(false)
+  const [active404, setActive404]     = useState<{ mod: string; page: string } | null>(null)
+  const [currentRoute, setCurrentRoute] = useState<{ mod: string; page: string } | null>(null)
 
   const fetchRegistry = useCallback(() => {
     fetch(BACKEND_URL + '/arkzen/lynx-registry', { headers: { Accept: 'application/json' } })
@@ -110,50 +116,90 @@ export function App() {
   const total   = modules.length
   const removed = modules.filter(m => m.status === 'removed').length
 
+  function handleNavigate(mod: string, page: string) {
+    const exists = LYNX_ROUTES.some(r => r.module === mod && r.page === page)
+    if (exists) {
+      setActive404(null)
+      setCurrentRoute({ mod, page })
+    } else {
+      setActive404({ mod, page })
+    }
+  }
+
+  if (currentRoute) {
+    const route = LYNX_ROUTES.find(r => r.module === currentRoute.mod && r.page === currentRoute.page)
+    const Page  = route?.component
+    return (
+      <page>
+        <view style={{ height: '100%' }} className="bg-neutral-50">
+          <view className="bg-white border-b border-neutral-100 px-5 py-3 flex-row items-center gap-3">
+            <view bindtap={() => setCurrentRoute(null)} className="px-3 py-1.5 rounded-lg bg-neutral-100">
+              <text className="text-xs font-medium text-neutral-700">← Hub</text>
+            </view>
+            <text className="text-xs text-neutral-400">{currentRoute.mod} / {currentRoute.page}</text>
+          </view>
+          {Page ? <Page /> : (
+            <view className="items-center justify-center py-16">
+              <text className="text-xs text-neutral-400">Page not found</text>
+            </view>
+          )}
+        </view>
+      </page>
+    )
+  }
+
   return (
-    <scroll-view className="flex-1 bg-neutral-50" scroll-y show-scrollbar={false}>
-      <view className="bg-white border-b border-neutral-100 px-5 py-4">
-        <view className="flex-row items-center justify-between">
-          <view className="flex-row items-center gap-3">
-            <view className="w-8 h-8 rounded-xl bg-neutral-900 items-center justify-center">
-              <text className="text-white text-xs font-bold">A</text>
+    <page>
+      <scroll-view style={{ height: '100%' }} className="bg-neutral-50" scroll-orientation="vertical" show-scrollbar={false}>
+        <view className="bg-white border-b border-neutral-100 px-5 py-4">
+          <view className="flex-row items-center justify-between">
+            <view className="flex-row items-center gap-3">
+              <view className="w-8 h-8 rounded-xl bg-neutral-900 items-center justify-center">
+                <text className="text-white text-xs font-bold">A</text>
+              </view>
+              <view>
+                <text className="text-sm font-semibold text-neutral-900">Arkzen Engine</text>
+                <text className="text-xs text-neutral-400">v{registry?.engine ?? '1.0.0'} · Lynx</text>
+              </view>
             </view>
-            <view>
-              <text className="text-sm font-semibold text-neutral-900">Arkzen Engine</text>
-              <text className="text-xs text-neutral-400">v{registry?.engine ?? '1.0.0'} · Lynx</text>
+            <view className="flex-row items-center gap-1.5">
+              <view className={'w-1.5 h-1.5 rounded-full ' + (engineAlive ? 'bg-emerald-500' : 'bg-neutral-300')} />
+              <text className="text-xs text-neutral-400">{engineAlive ? 'Engine running' : 'Engine offline'}</text>
             </view>
           </view>
-          <view className="flex-row items-center gap-1.5">
-            <view className={'w-1.5 h-1.5 rounded-full ' + (engineAlive ? 'bg-emerald-500' : 'bg-neutral-300')} />
-            <text className="text-xs text-neutral-400">{engineAlive ? 'Engine running' : 'Engine offline'}</text>
-          </view>
-        </view>
-      </view>
-
-      <view className="px-4 py-5 pb-12">
-        <view className="flex-row gap-2.5 mb-5">
-          <StatCard label="Active" value={active} color="text-blue-600" />
-          <StatCard label="Total" value={total} color="text-neutral-900" />
-          <StatCard label="Removed" value={removed} color="text-red-500" />
         </view>
 
-        <view className="flex-row items-center justify-between mb-3">
-          <text className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">Tatemonos</text>
-          <text className="text-xs text-neutral-400">{registry?.project ?? 'project'}</text>
-        </view>
+        <view className="px-4 py-5 pb-12">
+          <view className="flex-row gap-2.5 mb-5">
+            <StatCard label="Active" value={active} color="text-blue-600" />
+            <StatCard label="Total" value={total} color="text-neutral-900" />
+            <StatCard label="Removed" value={removed} color="text-red-500" />
+          </view>
 
-        {loading ? (
-          <view className="py-16 items-center">
-            <text className="text-xs text-neutral-400">Loading registry…</text>
+          <view className="flex-row items-center justify-between mb-3">
+            <text className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">Tatemonos</text>
+            <text className="text-xs text-neutral-400">{registry?.project ?? 'project'}</text>
           </view>
-        ) : modules.length === 0 ? (
-          <EmptyState />
-        ) : (
-          <view className="flex-col gap-3">
-            {modules.map(mod => <TatemonoCard key={mod.name} mod={mod} />)}
-          </view>
-        )}
-      </view>
-    </scroll-view>
+
+          {active404 && (
+            <view className="mb-3 px-3 py-2 rounded-lg bg-red-50">
+              <text className="text-xs text-red-600">No registered page for {active404.mod}/{active404.page}</text>
+            </view>
+          )}
+
+          {loading ? (
+            <view className="py-16 items-center">
+              <text className="text-xs text-neutral-400">Loading registry…</text>
+            </view>
+          ) : modules.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <view className="flex-col gap-3">
+              {modules.map(mod => <TatemonoCard key={mod.name} mod={mod} onNavigate={handleNavigate} />)}
+            </view>
+          )}
+        </view>
+      </scroll-view>
+    </page>
   )
 }

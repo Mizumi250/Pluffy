@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:08:06.560Z
+// Generated: 2026-06-20T13:27:37.003Z
 // ============================================================
 
 import React from '@lynx-js/react'
