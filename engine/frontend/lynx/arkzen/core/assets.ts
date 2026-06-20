@@ -1,14 +1,23 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE ASSETS
-// Mirrors web-core/assets.ts for the Expo stack.
+// ARKZEN ENGINE — LYNX ASSETS v1.0
+// arkzen/core/assets.ts
 //
-// Web flow:   tatemonos/{name}/assets/ → public/tatemonos/{name}/assets/
-//             referenced as URL: /tatemonos/{name}/assets/images/foo.png
+// Lynx port of native-core/assets.ts.
 //
-// Native flow: tatemonos/{name}/assets/ → engine/frontend/expo/assets/tatemonos/{name}/
-//              referenced via require(): require('../../assets/tatemonos/{name}/images/foo.jpg')
+// Key difference from Expo:
+//   Expo flow:  tatemonos/{name}/assets/ → engine/frontend/expo/assets/tatemonos/{name}/
+//               referenced via require('../../assets/tatemonos/{name}/images/foo.jpg')
 //
-// Called by expo-builder.ts at build time (Step: Distribute Assets).
+//   Lynx flow:  tatemonos/{name}/assets/ → engine/frontend/lynx/src/assets/tatemonos/{name}/
+//               referenced via ES import (Rspeedy/Rsbuild static asset handling):
+//                 import foo from '../../assets/tatemonos/{name}/images/foo.jpg'
+//                 <image src={foo} />
+//               NOT require() — Lynx/Rspack resolves static asset imports to a
+//               URL string at build time, same mechanism as the existing
+//               `import arrow from './assets/arrow.png'` pattern already used
+//               in src/App.tsx.
+//
+// Called by lynx-builder.ts at build time (Step: Distribute Assets).
 // Clean is called at remove time.
 // ============================================================
 
@@ -17,7 +26,7 @@ import * as path from 'path'
 
 // ─────────────────────────────────────────────
 // RECURSIVE COPY — preserves subfolder structure
-// Reuses same logic as web-core/assets.ts
+// Reuses same logic as web-core/assets.ts and native-core/assets.ts
 // ─────────────────────────────────────────────
 
 function copyDirRecursive(src: string, dest: string): number {
@@ -43,7 +52,7 @@ function copyDirRecursive(src: string, dest: string): number {
         fs.copyFileSync(srcPath, destPath)
         count++
       } catch (err) {
-        console.warn(`[Arkzen Native Assets] Failed to copy ${entry}:`, err)
+        console.warn(`[Arkzen Lynx Assets] Failed to copy ${entry}:`, err)
       }
     }
   }
@@ -52,26 +61,26 @@ function copyDirRecursive(src: string, dest: string): number {
 }
 
 // ─────────────────────────────────────────────
-// COPY ASSETS TO EXPO ASSETS FOLDER
+// COPY ASSETS TO LYNX SRC/ASSETS FOLDER
 //
-// Output path: engine/frontend/expo/assets/tatemonos/{tatName}/...
-// require() in screen:
-//   require('../../assets/tatemonos/{tatName}/images/foo.jpg')
+// Output path: engine/frontend/lynx/src/assets/tatemonos/{tatName}/...
+// import in screen:
+//   import foo from '../../assets/tatemonos/{tatName}/images/foo.jpg'
 //
-// expoAssetsPath = absolute path to engine/frontend/expo/assets/
+// lynxAssetsPath = absolute path to engine/frontend/lynx/src/assets/
 // ─────────────────────────────────────────────
 
-export function copyAssetsToExpo(
+export function copyAssetsToLynx(
   tatName:        string,
   assetsPath:     string,
-  expoAssetsPath: string
+  lynxAssetsPath: string
 ): boolean {
   if (!fs.existsSync(assetsPath)) {
     return false
   }
 
   try {
-    const destDir = path.join(expoAssetsPath, 'tatemonos', tatName)
+    const destDir = path.join(lynxAssetsPath, 'tatemonos', tatName)
     fs.mkdirSync(destDir, { recursive: true })
 
     const count = copyDirRecursive(assetsPath, destDir)
@@ -80,34 +89,38 @@ export function copyAssetsToExpo(
       return false
     }
 
-    console.log(`[Arkzen Native Assets] ✓ Copied ${count} file(s) for ${tatName} → assets/tatemonos/${tatName}/`)
+    console.log(`[Arkzen Lynx Assets] ✓ Copied ${count} file(s) for ${tatName} → src/assets/tatemonos/${tatName}/`)
     return true
   } catch (err) {
-    console.error(`[Arkzen Native Assets] Error during asset distribution:`, err)
+    console.error(`[Arkzen Lynx Assets] Error during asset distribution:`, err)
     return false
   }
 }
 
 // ─────────────────────────────────────────────
 // CLEAN OLD ASSETS
-// Called by removeExpoTatemono()
+// Called by removeLynxTatemono()
 // ─────────────────────────────────────────────
 
-export function cleanExpoAssets(
+export function cleanLynxAssets(
   tatName:        string,
-  expoAssetsPath: string
+  lynxAssetsPath: string
 ): boolean {
   try {
-    const destDir = path.join(expoAssetsPath, 'tatemonos', tatName)
+    const destDir = path.join(lynxAssetsPath, 'tatemonos', tatName)
 
     if (fs.existsSync(destDir)) {
       fs.rmSync(destDir, { recursive: true, force: true })
-      console.log(`[Arkzen Native Assets] ✓ Cleaned assets for ${tatName}`)
+      console.log(`[Arkzen Lynx Assets] ✓ Cleaned assets for ${tatName}`)
       return true
     }
   } catch (err) {
-    console.warn(`[Arkzen Native Assets] Failed to clean assets for ${tatName}:`, err)
+    console.warn(`[Arkzen Lynx Assets] Failed to clean assets for ${tatName}:`, err)
   }
 
   return false
 }
+
+
+
+
