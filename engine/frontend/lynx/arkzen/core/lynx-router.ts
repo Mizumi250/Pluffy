@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — LYNX ROUTER v2.0
+// ARKZEN ENGINE — LYNX ROUTER v2.1
 //
 // Generates Lynx pages and supporting files from parsed tatemono.
 // Brings the Lynx stack to functional parity with expo-router.ts:
@@ -14,12 +14,23 @@
 //   - Error handler wiring: error-404 is used as the App.tsx
 //     fallback for unmatched routes; error-500 wraps the active
 //     page in a lightweight error boundary.
-//   - The Arkzen Hub (arkzen/core/components/ArkzenHub.tsx) is now
-//     always the default route, mirroring the Expo/Next.js hub —
-//     previously App.tsx defaulted to the first registered
-//     tatemono's first page, and was left as the stock Lynx
-//     counter/flappy-bird template when no tatemonos were
-//     registered at all.
+//   - The Arkzen Hub is now always the default route, mirroring
+//     Expo/Next.js/Vite/TanStack — previously App.tsx defaulted to
+//     the first registered tatemono's first page, and was left as
+//     the stock Lynx counter/flappy-bird template when no
+//     tatemonos were registered at all.
+//   - v2.1 fix: every other stack (Next.js app/page.tsx, Expo
+//     app/index.tsx, React+Vite App.tsx, TanStack routes/index.tsx)
+//     defines ArkzenHub INLINE in the root entry file — none of them
+//     put it in a separate components/ArkzenHub file. v2.0 broke
+//     that pattern by having App.tsx `import { ArkzenHub } from
+//     '../arkzen/core/components/ArkzenHub'`, a file that was never
+//     generated, so the Lynx build always failed on a missing
+//     module. Fix: ArkzenHub (and its TatemonoCard/StatCard/
+//     EmptyState helpers) is now generated inline inside appContent
+//     below, polling GET /arkzen/lynx-registry exactly like Expo
+//     polls /arkzen/expo-registry, using Lynx primitives (<view>,
+//     <text>, <scroll-view>, bindtap) instead of React Native's.
 //
 // Mirrors expo-router.ts but targets Lynx (ReactLynx / @lynx-js/react).
 // Key differences from Expo (still true in v2.0):
@@ -32,7 +43,7 @@
 //   - Scripts go to: src/arkzen/generated/{tatName}.lynx-utils.ts
 //   - Route metadata (structured, source of truth): written to
 //     src/arkzen/generated/routes.meta.json and consumed directly
-//     by regenerateAppEntry() — far more robust than the v1.0
+//     by regenerateRoutesFile() — far more robust than the v1.0
 //     approach of regex-parsing a hand-rolled object literal back
 //     out of routes.ts.
 //   - routes.ts is still generated (derived from the meta JSON) for
@@ -62,7 +73,7 @@ import { copyAssetsToLynx, cleanLynxAssets } from './assets'
 const SRC_DIR            = path.resolve(process.cwd(), 'src')
 const PAGES_DIR          = path.join(SRC_DIR, 'pages')
 const GENERATED_DIR      = path.join(SRC_DIR, 'arkzen', 'generated')
-const APP_ENTRY          = path.join(SRC_DIR, 'App.tsx')
+// App.tsx is static now — not generated. See regenerateRoutesFile() below.
 const LYNX_ASSETS_DIR    = path.join(SRC_DIR, 'assets')
 const NATIVE_LAYOUTS_DIR = path.join(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
 const ROUTES_META_PATH   = path.join(GENERATED_DIR, 'routes.meta.json')
@@ -96,7 +107,7 @@ function referencesIdentifier(src: string, name: string): boolean {
 
 // ─── Route metadata (JSON source of truth) ────────────────────────────────────
 // Structured per-tatemono route state, persisted to
-// src/arkzen/generated/routes.meta.json. Used by regenerateAppEntry()
+// src/arkzen/generated/routes.meta.json. Used by regenerateRoutesFile()
 // to wire layouts, error fallbacks, and navigation without ever having
 // to regex-parse a TS object literal back out of a generated file.
 
@@ -461,19 +472,22 @@ ${page.raw.trim()}
   console.log(`[Arkzen Lynx Router] ✓ Page: ${tatName}/${pageName}.tsx`)
 }
 
-// ─── App.tsx regeneration ─────────────────────────────────────────────────────
-// Lynx has a single entry point (src/App.tsx). Arkzen owns it and regenerates
-// it to import all registered pages plus the Arkzen Hub, and wires up:
-//   - Hub as the default route (mirrors Expo/Next.js — was previously the
-//     first registered tatemono's first page, or the stock template).
+// ─── App routes regeneration ──────────────────────────────────────────────────
+// Mirrors react-vite's src/arkzen/generated/routes.ts exactly: a pure data
+// file (component imports + a route table), never App.tsx itself. App.tsx
+// is static — written once, never regenerated — same as every other Arkzen
+// stack (Next.js app/page.tsx, Expo app/index.tsx, React+Vite App.tsx,
+// TanStack routes/index.tsx all keep their entry shell + Hub static and
+// only import a generated route table). This file wires up:
 //   - Layout / auth-guard wrapping per route (AuthLayout / GuestLayout /
 //     custom named layouts — previously parsed but never applied).
-//   - error-404 page as the fallback for unmatched module/page targets.
-//   - error-500 page (if present) as a lightweight per-tatemono error
-//     boundary around the active page.
-// Simple stack-based navigation — no external router dep needed.
+//   - error-404 component as the fallback for unmatched module/page targets.
+//   - error-500 component (if present) for a lightweight per-tatemono
+//     error boundary around the active page.
 
-function regenerateAppEntry(): void {
+const APP_ROUTES_PATH = path.join(GENERATED_DIR, 'app-routes.ts')
+
+function regenerateRoutesFile(): void {
   const meta = readRoutesMeta()
   const tatNames = Object.keys(meta)
 
@@ -501,7 +515,8 @@ function regenerateAppEntry(): void {
 
     for (const route of pages) {
       const componentName = `${toPascalCase(tat)}${toPascalCase(route.page)}`
-      imports.push(`import { ${componentName} } from './pages/${tat}/${route.page}'`)
+      // 2 levels up: src/arkzen/generated/ -> src/pages/{tat}/{page}
+      imports.push(`import { ${componentName} } from '../../pages/${tat}/${route.page}'`)
 
       let layoutComponent = 'null'
       if (route.layout === 'auth') {
@@ -515,8 +530,9 @@ function regenerateAppEntry(): void {
         const layoutCompName = `${toPascalCase(tat)}${toPascalCase(route.layout)}Layout`
         if (!layoutImportSeen.has(layoutFileKey)) {
           layoutImportSeen.add(layoutFileKey)
+          // 3 levels up: src/arkzen/generated/ -> arkzen/core/layouts/custom/
           layoutImports.push(
-            `import { ${toPascalCase(route.layout)}Layout as ${layoutCompName} } from '../arkzen/core/layouts/custom/${layoutFileKey}'`
+            `import { ${toPascalCase(route.layout)}Layout as ${layoutCompName} } from '../../../arkzen/core/layouts/custom/${layoutFileKey}'`
           )
         }
         layoutComponent = layoutCompName
@@ -530,17 +546,18 @@ function regenerateAppEntry(): void {
     if (has404 && !errorImportSeen.has(`${tat}:404`)) {
       errorImportSeen.add(`${tat}:404`)
       const errComp = `${toPascalCase(tat)}Error404`
-      errorImports.push(`import { default as ${errComp} } from './pages/${tat}/error-404'`)
+      errorImports.push(`import { default as ${errComp} } from '../../pages/${tat}/error-404'`)
     }
     if (has500 && !errorImportSeen.has(`${tat}:500`)) {
       errorImportSeen.add(`${tat}:500`)
       const errComp = `${toPascalCase(tat)}Error500`
-      errorImports.push(`import { default as ${errComp} } from './pages/${tat}/error-500'`)
+      errorImports.push(`import { default as ${errComp} } from '../../pages/${tat}/error-500'`)
     }
   }
 
-  if (usesAuthLayout)  layoutImports.unshift(`import { AuthLayout }  from '../arkzen/core/layouts/AuthLayout'`)
-  if (usesGuestLayout) layoutImports.unshift(`import { GuestLayout } from '../arkzen/core/layouts/GuestLayout'`)
+  // 3 levels up: src/arkzen/generated/ -> arkzen/core/layouts/
+  if (usesAuthLayout)  layoutImports.unshift(`import { AuthLayout }  from '../../../arkzen/core/layouts/AuthLayout'`)
+  if (usesGuestLayout) layoutImports.unshift(`import { GuestLayout } from '../../../arkzen/core/layouts/GuestLayout'`)
 
   const error404Map = tatNames
     .filter(t => meta[t].has404)
@@ -552,80 +569,55 @@ function regenerateAppEntry(): void {
     .map(t => `  '${t}': ${toPascalCase(t)}Error500,`)
     .join('\n')
 
-  const appContent = `// ============================================================
-// ARKZEN GENERATED — Lynx App Entry (src/App.tsx)
+  const content = `// ============================================================
+// ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
 // Generated: ${new Date().toISOString()}
+//
+// Pure data — component imports + the route table. Mirrors React+Vite's
+// src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
+// this file; the generator never touches App.tsx.
 // ============================================================
-
-import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { setGlobalNavigate } from '../arkzen/core/adapters/router'
-import { ArkzenHub } from '../arkzen/core/components/ArkzenHub'
 ${layoutImports.join('\n')}
 ${imports.join('\n')}
 ${errorImports.join('\n')}
 
-// All registered routes
-const _routes = [
+export interface LynxAppRoute {
+  module:         string
+  page:           string
+  component:      any
+  layout:         any
+  loginRoute:     string
+  dashboardRoute: string
+}
+
+export const LYNX_ROUTES: LynxAppRoute[] = [
 ${routeEntries.join('\n')}
 ]
 
-const _error404: Record<string, any> = {
+export const LYNX_ERROR_404: Record<string, any> = {
 ${error404Map}
 }
 
-const _error500: Record<string, any> = {
+export const LYNX_ERROR_500: Record<string, any> = {
 ${error500Map}
 }
-
-type RouteKey = { module: string; page: string }
 
 // NOTE on error-500 wiring: Lynx renders through a custom dual-thread
 // reconciler (not ReactDOM), so support for class-component error
 // boundaries (componentDidCatch) is unconfirmed for this target — shipping
 // an unverified boundary here would risk silently breaking every route if
-// the renderer doesn't implement that lifecycle. _error500 is exposed below
-// so a tatemono's error-500 page can be rendered manually (e.g. from a
-// try/catch inside the page itself, or wired into a confirmed boundary
+// the renderer doesn't implement that lifecycle. LYNX_ERROR_500 is exposed
+// below so a tatemono's error-500 page can be rendered manually (e.g. from
+// a try/catch inside the page itself, or wired into a confirmed boundary
 // once Lynx error-boundary support is verified against a real build).
-export function getError500Page(tatName: string) {
-  return _error500[tatName] ?? null
-}
-
-export function App() {
-  const [current, setCurrent] = useState<RouteKey>({ module: '__hub__', page: 'index' })
-
-  const navigate = useCallback((target: RouteKey) => setCurrent(target), [])
-
-  useEffect(() => { setGlobalNavigate(setCurrent) }, [])
-
-  if (current.module === '__hub__') {
-    return <ArkzenHub navigate={navigate} />
-  }
-
-  const match = _routes.find(
-    r => r.module === current.module && r.page === current.page
-  )
-
-  if (!match) {
-    const Fallback = _error404[current.module]
-    if (Fallback) return <Fallback />
-    return <ArkzenHub navigate={navigate} />
-  }
-
-  const ActivePage = match.component
-  const Layout      = match.layout
-
-  return Layout
-    ? <Layout tatSlug={match.module} loginRoute={match.loginRoute} dashboardRoute={match.dashboardRoute}>
-        <ActivePage navigate={navigate} />
-      </Layout>
-    : <ActivePage navigate={navigate} />
+export function getLynxError500Page(tatName: string) {
+  return LYNX_ERROR_500[tatName] ?? null
 }
 `
 
-  writeIfChanged(APP_ENTRY, appContent)
-  console.log(`[Arkzen Lynx Router] ✓ App.tsx regenerated (${routeEntries.length} route(s), hub default)`)
+  writeIfChanged(APP_ROUTES_PATH, content)
+  console.log(`[Arkzen Lynx Router] ✓ app-routes.ts regenerated (${routeEntries.length} route(s))`)
 }
 
 // ─── Cleanup ──────────────────────────────────────────────────────────────────
@@ -653,7 +645,7 @@ function cleanupTatemono(tatName: string): void {
   cleanLynxAssets(tatName, LYNX_ASSETS_DIR)
 
   removeFromRoutesRegistry(tatName)
-  regenerateAppEntry()
+  regenerateRoutesFile()
 }
 
 // ─── Main register function ───────────────────────────────────────────────────
@@ -691,7 +683,7 @@ export function registerLynxPages(tatemono: ParsedTatemono): void {
   // Update route registry (with layout metadata) + App.tsx
   const routeEntries: LynxRouteEntry[] = pages.map(p => ({ page: p.name, layout: p.layout ?? 'default' }))
   updateRoutesRegistry(tatName, routeEntries, has404, has500)
-  regenerateAppEntry()
+  regenerateRoutesFile()
 
   console.log(`[Arkzen Lynx Router] ✓ Registered ${pages.length} page(s) for: ${tatName}`)
 }

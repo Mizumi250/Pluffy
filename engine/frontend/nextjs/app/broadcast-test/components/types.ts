@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T23:51:13.086Z
+// Generated: 2026-06-20T01:14:29.994Z
 // ============================================================
 
 // ── ChannelPanel — top-level memo so it never remounts on parent re-render.

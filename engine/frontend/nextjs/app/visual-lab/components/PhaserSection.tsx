@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PhaserSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T23:51:23.996Z
+// Generated: 2026-06-20T01:14:39.890Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

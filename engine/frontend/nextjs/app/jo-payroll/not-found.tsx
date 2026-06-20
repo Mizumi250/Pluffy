@@ -2,7 +2,7 @@
 // ARKZEN GENERATED — jo-payroll/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-06-19T23:51:17.308Z
+// Generated: 2026-06-20T01:14:34.908Z
 // ============================================================
 
 import React from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — mail-test
 // Visiting /mail-test redirects to /mail-test/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-19T23:51:18.640Z
+// Generated: 2026-06-20T01:14:36.121Z
 // ============================================================
 
 import { redirect } from 'next/navigation'
