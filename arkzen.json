@@ -415,7 +415,7 @@
     }
   ],
   "activeStack": "nextjs",
-  "activeAppStack": "expo",
+  "activeAppStack": "lynx",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",

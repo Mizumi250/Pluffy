@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T02:27:39.107Z
+// Generated: 2026-06-20T04:54:15.168Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

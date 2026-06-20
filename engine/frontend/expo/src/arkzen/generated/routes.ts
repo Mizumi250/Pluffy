@@ -24,8 +24,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
 // ROUTE:asset-hub:index:/asset-hub:default:false
   { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
-// ROUTE:atelier:index:/atelier:default:false
-  { tatName: 'atelier', screenName: 'index', routePath: '/atelier', layout: 'default', auth: false },
 // ROUTE:auth-test:login:/auth-test/login:guest:false
   { tatName: 'auth-test', screenName: 'login', routePath: '/auth-test/login', layout: 'guest', auth: false },
 // ROUTE:auth-test:register:/auth-test/register:guest:false
@@ -134,6 +132,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false
   { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
+// ROUTE:atelier:index:/atelier:default:false
+  { tatName: 'atelier', screenName: 'index', routePath: '/atelier', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

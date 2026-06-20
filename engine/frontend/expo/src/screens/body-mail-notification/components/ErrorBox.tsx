@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ErrorBox [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T02:27:36.986Z
+// Generated: 2026-06-20T05:11:45.108Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

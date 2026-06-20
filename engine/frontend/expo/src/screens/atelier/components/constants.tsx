@@ -2,13 +2,17 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — atelier [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T02:27:36.379Z
+// Generated: 2026-06-20T05:24:11.366Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { Dimensions, FlatList, Image, Pressable, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
+export const SCREEN_W = Dimensions.get('window').width
+ 
+// ── Design tokens ─────────────────────────────────────────────────────────────
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 export const C = {
@@ -67,5 +71,3 @@ export const N_MESSAGES = [
 // ── Shared native components ───────────────────────────────────────────────────
  
 // Small pill badge
-
-export const { width: SCREEN_W } = Dimensions.get('window')

@@ -2,18 +2,17 @@
 // ARKZEN GENERATED SCREEN — atelier/index
 // ============================================================
 
-import React, { useCallback, useState } from 'react'
+import React, { useCallback, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
-import { Image, Pressable, RefreshControl, ScrollView, StatusBar, Text, View } from 'react-native'
+import { Dimensions, FlatList, Image, Pressable, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { NBadge } from './components/NBadge'
 import { NContinuationCard } from './components/NContinuationCard'
 import { NProgressBar } from './components/NProgressBar'
 import { NSectionHead } from './components/NSectionHead'
 import { NTabBar } from './components/NTabBar'
-import { C, N_CONTINUATIONS, N_LIVE, N_MESSAGES, N_PEOPLE, N_SPACES, N_USER } from './components/constants'
+import { C, N_CONTINUATIONS, N_LIVE, N_MESSAGES, N_PEOPLE, N_SPACES, N_USER, SCREEN_W } from './components/constants'
 
 // User screen (from @arkzen:native:page:index)
 const IndexScreen = () => {

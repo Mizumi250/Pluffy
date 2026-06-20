@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — roles-test/login
 // ============================================================
 
-import React, { useState } from 'react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useEffect, useState } from 'react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { KeyboardAvoidingView, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { ErrorBox } from './components/ErrorBox'

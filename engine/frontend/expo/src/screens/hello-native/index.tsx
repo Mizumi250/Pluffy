@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — hello-native/index
 // ============================================================
 
-import React from 'react'
+import React, { useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { ScrollView, StyleSheet, Text, View } from 'react-native'
+import { Pressable, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Badge } from './components/Badge'
 import { Card } from './components/Card'

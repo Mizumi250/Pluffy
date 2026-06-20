@@ -678,8 +678,19 @@ export default ${wrapperName}
 `
   }
 
-  // ── Full generation ─────────────────────────────────────────
-  const pageSources = [page.raw.trim()]
+  // ── Full generation ────────────────────────────────────────// ── Resolve imports from ALL RN sources ──────────────────────────────────
+const allSources = [
+  page.raw.trim(),
+  ...(tatemono.nativePages || []).map(p => p.raw.trim()),
+  ...(tatemono.nativeComponents || []).map(c => c.raw.trim()),
+  ...(tatemono.nativeLayouts || []).map(l => l.raw.trim()),
+  ...(tatemono.nativeErrorHandlers || []).map(e => e.raw.trim()),
+  ...(tatemono.nativeStyleGlobal ? [tatemono.nativeStyleGlobal.raw.trim()] : []),
+  ...(tatemono.nativeStyles || []).map(s => s.raw.trim()),
+  ...(tatemono.nativeAnimationRN ? [tatemono.nativeAnimationRN.raw.trim()] : []),
+  ...(tatemono.nativeScriptRN ? [tatemono.nativeScriptRN.raw.trim()] : []),
+  ...(tatemono.nativeScriptsRN || []).map(s => s.raw.trim()),
+].filter(Boolean)
   const pageStripped = stripTemplateLiterals(page.raw)
 
   const animExports = tatemono.nativeAnimationRN
@@ -770,7 +781,7 @@ export default ${wrapperName}
     }
   }
 
-  const { canonicalBlock, strippedSources } = resolveImports(pageSources, {
+  const { canonicalBlock, strippedSources } = resolveImports(allSources, {
     extra:            extraLines,
     reactHooks:       referencedHookCalls,
     engineNamed,

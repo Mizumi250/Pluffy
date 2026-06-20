@@ -2,8 +2,9 @@
 // ARKZEN GENERATED SCREEN — broadcast-test/register
 // ============================================================
 
-import React, { useState } from 'react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'

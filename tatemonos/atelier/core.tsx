@@ -3251,7 +3251,7 @@ import { setActiveTatemono } from '@/arkzen/core/stores/authStore'
  
 setActiveTatemono('atelier')
  
-const { width: SCREEN_W } = Dimensions.get('window')
+export const SCREEN_W = Dimensions.get('window').width
  
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {

@@ -2,11 +2,11 @@
 // ARKZEN GENERATED SCREEN — auth-test/dashboard
 // ============================================================
 
-import React from 'react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useEffect, useRef, useState } from 'react'
+import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { ErrorBox } from './components/ErrorBox'

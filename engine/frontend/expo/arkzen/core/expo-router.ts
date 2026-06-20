@@ -1246,8 +1246,19 @@ export default ${wrapperName}
 `
   }
 
-  // ── Resolve imports from page source ONLY ─────────────────────────────────
-  const pageSources = [page.raw.trim()]
+  // ── Resolve imports from ALL native sources ──────────────────────────────
+const allSources = [
+  page.raw.trim(),
+  ...(tatemono.nativePages || []).map(p => p.raw.trim()),
+  ...(tatemono.nativeComponents || []).map(c => c.raw.trim()),
+  ...(tatemono.nativeLayouts || []).map(l => l.raw.trim()),
+  ...(tatemono.nativeErrorHandlers || []).map(e => e.raw.trim()),
+  ...(tatemono.nativeStyleGlobal ? [tatemono.nativeStyleGlobal.raw.trim()] : []),
+  ...(tatemono.nativeStyles || []).map(s => s.raw.trim()),
+  ...(tatemono.nativeAnimationExpo ? [tatemono.nativeAnimationExpo.raw.trim()] : []),
+  ...(tatemono.nativeScriptExpo ? [tatemono.nativeScriptExpo.raw.trim()] : []),
+  ...(tatemono.nativeScriptsExpo || []).map(s => s.raw.trim()),
+].filter(Boolean)
 
   // v4.7: prefer Expo-specific animation block; fall back to :rn block for legacy tatemonos
   const animBlock = tatemono.nativeAnimationExpo ?? tatemono.nativeAnimationRN
@@ -1365,7 +1376,7 @@ export default ${wrapperName}
     }
   }
 
-  let { canonicalBlock, strippedSources } = resolveImports(pageSources, {
+  let { canonicalBlock, strippedSources } = resolveImports(allSources, {
     extra: extraLines,
     reactHooks: referencedHookCalls,
     engineNamed,

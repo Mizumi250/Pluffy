@@ -2,13 +2,14 @@
 // ARKZEN GENERATED SCREEN — jo-payroll/index
 // ============================================================
 
-import React, { useEffect, useMemo } from 'react'
+import React, { useEffect, useMemo, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
+import { usePathname, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { ActivityIndicator, ScrollView, Text, View } from 'react-native'
-import Animated, { FadeInDown } from 'react-native-reanimated'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import { AlertCircle, Banknote, Building2, CalendarDays, CreditCard, FileText, Landmark, LayoutDashboard, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react-native'
+import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
+import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
 import { s } from '../../arkzen/generated/jo-payroll.native-styles'

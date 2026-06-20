@@ -4,9 +4,9 @@
 
 import React from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { useRouter } from 'expo-router'
+import { usePathname, useRouter } from 'expo-router'
 import { StatusBar } from 'expo-status-bar'
-import { ScrollView, Text, View } from 'react-native'
+import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
 import { NativeLayerBadge } from './components/NativeLayerBadge'

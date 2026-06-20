@@ -8,7 +8,7 @@ import { useRouter } from 'expo-router'
 import { Text, TouchableOpacity, View } from 'react-native'
 
 /* @arkzen:resolved:import expo */
-const NotFoundScreen = () => {
+const NativeNotFoundScreen = () => {
   const router = useRouter()
   return (
     <View style={{ flex: 1, backgroundColor: '#F4F5F7', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
