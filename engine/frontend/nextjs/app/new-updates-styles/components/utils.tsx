@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T01:14:36.998Z
+// Generated: 2026-06-20T01:50:12.971Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
