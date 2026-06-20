@@ -509,7 +509,6 @@ const NativeServerErrorScreen = ({ reset }: { reset: () => void }) => <NativeErr
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState } from '@lynx-js/react'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
@@ -520,18 +519,19 @@ type LynxErrorDef = {
   message: string
   color:   string
   bg:      string
+  border:  string
 }
 
 const LYNX_ERRORS: LynxErrorDef[] = [
-  { code: 400, title: 'Bad Request',         message: 'The server could not understand your request.',               color: '#a16207', bg: '#fefce8' },
-  { code: 401, title: 'Unauthorized',        message: 'You need to be signed in to access this.',                    color: '#1d4ed8', bg: '#eff6ff' },
-  { code: 403, title: 'Forbidden',           message: 'You do not have permission to access this resource.',         color: '#c2410c', bg: '#fff7ed' },
-  { code: 404, title: 'Not Found',           message: 'The resource you are looking for does not exist.',            color: '#404040', bg: '#fafafa' },
-  { code: 409, title: 'Conflict',            message: 'A conflict occurred with the current state of the resource.', color: '#7e22ce', bg: '#faf5ff' },
-  { code: 422, title: 'Validation Error',    message: 'The data you submitted is invalid.',                          color: '#be185d', bg: '#fdf2f8' },
-  { code: 429, title: 'Too Many Requests',   message: 'You have made too many requests. Wait before trying again.',  color: '#b45309', bg: '#fffbeb' },
-  { code: 500, title: 'Server Error',        message: 'Something went wrong on our end.',                            color: '#b91c1c', bg: '#fef2f2' },
-  { code: 503, title: 'Service Unavailable', message: 'The service is temporarily offline for maintenance.',         color: '#334155', bg: '#f8fafc' },
+  { code: 400, title: 'Bad Request',         message: 'The server could not understand your request.',               color: 'text-yellow-700',  bg: 'bg-yellow-50',  border: 'border-yellow-100'  },
+  { code: 401, title: 'Unauthorized',        message: 'You need to be signed in to access this.',                    color: 'text-blue-700',    bg: 'bg-blue-50',    border: 'border-blue-100'    },
+  { code: 403, title: 'Forbidden',           message: 'You do not have permission to access this resource.',         color: 'text-orange-700',  bg: 'bg-orange-50',  border: 'border-orange-100'  },
+  { code: 404, title: 'Not Found',           message: 'The resource you are looking for does not exist.',            color: 'text-neutral-700', bg: 'bg-neutral-50', border: 'border-neutral-100' },
+  { code: 409, title: 'Conflict',            message: 'A conflict occurred with the current state of the resource.', color: 'text-purple-700',  bg: 'bg-purple-50',  border: 'border-purple-100'  },
+  { code: 422, title: 'Validation Error',    message: 'The data you submitted is invalid.',                          color: 'text-pink-700',    bg: 'bg-pink-50',    border: 'border-pink-100'    },
+  { code: 429, title: 'Too Many Requests',   message: 'You have made too many requests. Wait before trying again.',  color: 'text-amber-700',   bg: 'bg-amber-50',   border: 'border-amber-100'   },
+  { code: 500, title: 'Server Error',        message: 'Something went wrong on our end.',                            color: 'text-red-700',     bg: 'bg-red-50',     border: 'border-red-100'     },
+  { code: 503, title: 'Service Unavailable', message: 'The service is temporarily offline for maintenance.',         color: 'text-slate-700',   bg: 'bg-slate-50',   border: 'border-slate-100'   },
 ]
 
 export const LynxErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
@@ -539,32 +539,28 @@ export const LynxErrorScreen = ({ code, reset }: { code: number; reset?: () => v
     code,
     title: 'Error',
     message: 'An unexpected error occurred.',
-    color: '#404040',
-    bg: '#fafafa',
+    color: 'text-neutral-700',
+    bg:    'bg-neutral-50',
+    border: 'border-neutral-100',
   }
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, backgroundColor: err.bg }}>
-      <Text style={{ fontSize: 80, fontWeight: '900', color: err.color, marginBottom: 8 }}>{err.code}</Text>
-      <Text style={{ fontSize: 20, fontWeight: '700', color: '#171717', marginBottom: 12 }}>{err.title}</Text>
-      <Text style={{ fontSize: 13, color: '#737373', textAlign: 'center', lineHeight: 22, marginBottom: 40 }}>{err.message}</Text>
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+    <view className={`flex-1 items-center justify-center px-8 ${err.bg}`}>
+      <text className={`text-8xl font-black mb-2 ${err.color}`}>{err.code}</text>
+      <text className="text-xl font-bold text-neutral-900 mb-3">{err.title}</text>
+      <text className="text-sm text-neutral-500 text-center leading-6 mb-10">{err.message}</text>
+      <view className="flex-row gap-x-3">
         {reset && (
-          <TouchableOpacity
-            onPress={reset}
-            style={{ backgroundColor: '#171717', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
-          >
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Try again</Text>
-          </TouchableOpacity>
+          <view bindtap={reset} className="bg-neutral-900 px-6 py-3 rounded-2xl">
+            <text className="text-white text-sm font-semibold">Try again</text>
+          </view>
         )}
-        <TouchableOpacity
-          style={{ borderWidth: 1, borderColor: '#e5e5e5', backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
-        >
-          <Text style={{ color: '#525252', fontSize: 13, fontWeight: '500' }}>Home</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={{ marginTop: 40, fontSize: 11, color: '#d4d4d4' }}>Error {err.code}</Text>
-    </View>
+        <view className="border border-neutral-200 bg-white px-6 py-3 rounded-2xl">
+          <text className="text-neutral-600 text-sm font-medium">Home</text>
+        </view>
+      </view>
+      <text className="mt-10 text-xs text-neutral-300">Error {err.code}</text>
+    </view>
   )
 }
 
@@ -572,12 +568,12 @@ const LynxResultBanner = ({ result }: { result: { code: number; body: string } |
   if (!result) return null
   const err = LYNX_ERRORS.find(e => e.code === result.code)
   return (
-    <View style={{ marginHorizontal: 16, marginTop: 12, padding: 16, borderRadius: 16, borderWidth: 1, borderColor: '#e5e5e5', backgroundColor: err?.bg ?? '#fafafa' }}>
-      <Text style={{ fontSize: 11, fontWeight: '600', color: err?.color ?? '#525252', marginBottom: 4 }}>
+    <view className={`mx-4 mt-3 p-4 rounded-2xl border ${err ? err.border + ' ' + err.bg : 'bg-neutral-50 border-neutral-100'}`}>
+      <text className={`text-xs font-semibold mb-1 ${err ? err.color : 'text-neutral-600'}`}>
         HTTP {result.code}{err ? ` — ${err.title}` : ''}
-      </Text>
-      <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace' }} numberOfLines={4}>{result.body}</Text>
-    </View>
+      </text>
+      <text className="text-xs text-neutral-500 font-mono">{result.body}</text>
+    </view>
   )
 }
 
@@ -612,78 +608,74 @@ const IndexScreen = () => {
   const API_CODES = [400, 401, 403, 409, 422, 429, 503]
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16 }}>
-        <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>⚠️ Error Handler Test</Text>
-        <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>Simulate all 9 HTTP error codes against the API</Text>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4">
+        <text className="text-base font-semibold text-neutral-900">⚠️ Error Handler Test</text>
+        <text className="text-xs text-neutral-400 mt-0.5">Simulate all 9 HTTP error codes against the API</text>
+      </view>
 
-      <ScrollView style={{ flex: 1 }}>
+      <scroll-view className="flex-1">
 
         <LynxResultBanner result={result} />
 
         {/* Router handlers */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', overflow: 'hidden' }}>
-          <View style={{ paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
-            <Text style={{ fontSize: 10, fontWeight: '600', letterSpacing: 1, color: '#a3a3a3' }}>ROUTER HANDLERS</Text>
-          </View>
+        <view className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-4 border-b border-neutral-100">
+            <text className="text-xs font-semibold uppercase tracking-widest text-neutral-400">ROUTER HANDLERS</text>
+          </view>
 
-          <View style={{ paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#fafafa' }}>
-            <View style={{ flex: 1, marginRight: 16 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#404040' }}>404 — Not Found</Text>
-              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>Navigates to a non-existent route</Text>
-            </View>
-            <TouchableOpacity style={{ backgroundColor: '#171717', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}>
-              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Trigger</Text>
-            </TouchableOpacity>
-          </View>
+          <view className="px-5 py-4 flex-row items-center justify-between border-b border-neutral-50">
+            <view className="flex-1 mr-4">
+              <text className="text-sm font-bold text-neutral-700">404 — Not Found</text>
+              <text className="text-xs text-neutral-400 mt-0.5">Navigates to a non-existent route</text>
+            </view>
+            <view className="px-4 py-2 rounded-xl items-center bg-neutral-900">
+              <text className="text-white text-xs font-semibold">Trigger</text>
+            </view>
+          </view>
 
-          <View style={{ paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View style={{ flex: 1, marginRight: 16 }}>
-              <Text style={{ fontSize: 13, fontWeight: '700', color: '#b91c1c' }}>500 — Server Error</Text>
-              <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>Crashes the component to trigger error boundary</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => setShouldCrash(true)}
-              style={{ backgroundColor: '#dc2626', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
-            >
-              <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>Trigger</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+          <view className="px-5 py-4 flex-row items-center justify-between">
+            <view className="flex-1 mr-4">
+              <text className="text-sm font-bold text-red-700">500 — Server Error</text>
+              <text className="text-xs text-neutral-400 mt-0.5">Crashes the component to trigger error boundary</text>
+            </view>
+            <view bindtap={() => setShouldCrash(true)} className="px-4 py-2 rounded-xl items-center bg-red-600">
+              <text className="text-white text-xs font-semibold">Trigger</text>
+            </view>
+          </view>
+        </view>
 
         {/* API codes */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 32, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', overflow: 'hidden' }}>
-          <View style={{ paddingHorizontal: 20, paddingVertical: 16, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
-            <Text style={{ fontSize: 10, fontWeight: '600', letterSpacing: 1, color: '#a3a3a3' }}>API RESPONSE CODES</Text>
-          </View>
+        <view className="mx-4 mt-4 mb-8 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-4 border-b border-neutral-100">
+            <text className="text-xs font-semibold uppercase tracking-widest text-neutral-400">API RESPONSE CODES</text>
+          </view>
 
           {LYNX_ERRORS.filter(e => API_CODES.includes(e.code)).map((err, i) => (
-            <View
+            <view
               key={err.code}
-              style={{ paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: i < API_CODES.length - 1 ? 1 : 0, borderBottomColor: '#fafafa' }}
+              className={`px-5 py-4 flex-row items-center justify-between ${i < API_CODES.length - 1 ? 'border-b border-neutral-50' : ''}`}
             >
-              <View style={{ flex: 1, marginRight: 16 }}>
-                <Text style={{ fontSize: 13, fontWeight: '700', color: err.color }}>{err.code} — {err.title}</Text>
-                <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }} numberOfLines={1}>{err.message}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => simulate(err.code)}
-                disabled={simulating === err.code}
-                style={{ backgroundColor: simulating === err.code ? '#d4d4d4' : '#171717', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
+              <view className="flex-1 mr-4">
+                <text className={`text-sm font-bold ${err.color}`}>{err.code} — {err.title}</text>
+                <text className="text-xs text-neutral-400 mt-0.5">{err.message}</text>
+              </view>
+              <view
+                bindtap={() => simulating === err.code ? null : simulate(err.code)}
+                className={`px-4 py-2 rounded-xl items-center ${simulating === err.code ? 'bg-neutral-200' : 'bg-neutral-900'}`}
               >
-                <Text style={{ color: simulating === err.code ? '#737373' : '#fff', fontSize: 11, fontWeight: '600' }}>
+                <text className={`text-xs font-semibold ${simulating === err.code ? 'text-neutral-500' : 'text-white'}`}>
                   {simulating === err.code ? '...' : 'Simulate'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                </text>
+              </view>
+            </view>
           ))}
-        </View>
+        </view>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }
 

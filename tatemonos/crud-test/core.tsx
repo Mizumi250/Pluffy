@@ -774,7 +774,6 @@ const IndexScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect } from '@lynx-js/react'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
@@ -806,25 +805,25 @@ async function apiFetch(path: string, options?: RequestInit) {
 
 // ── Status badge ──────────────────────────────────────────────
 const StatusBadge = ({ status }: { status: string }) => {
-  const color = {
-    active:   { bg: '#dcfce7', text: '#15803d' },
-    pending:  { bg: '#fef9c3', text: '#a16207' },
-    archived: { bg: '#f5f5f5', text: '#737373' },
-  }[status] ?? { bg: '#f5f5f5', text: '#525252' }
+  const styles = {
+    active:   { bg: 'bg-green-100',   text: 'text-green-700'   },
+    pending:  { bg: 'bg-yellow-100',  text: 'text-yellow-700'  },
+    archived: { bg: 'bg-neutral-100', text: 'text-neutral-500' },
+  }[status] ?? { bg: 'bg-neutral-100', text: 'text-neutral-600' }
 
   return (
-    <View style={{ backgroundColor: color.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-      <Text style={{ color: color.text, fontSize: 11, fontWeight: '500' }}>{status}</Text>
-    </View>
+    <view className={`px-2 py-0.5 rounded-md ${styles.bg}`}>
+      <text className={`text-xs font-medium ${styles.text}`}>{status}</text>
+    </view>
   )
 }
 
 // ── Stat card ─────────────────────────────────────────────────
 const StatCard = ({ label, value, accent }: { label: string; value: number; accent: string }) => (
-  <View style={{ flex: 1, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', padding: 12, alignItems: 'center' }}>
-    <Text style={{ fontSize: 20, fontWeight: '700', color: accent }}>{value}</Text>
-    <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>{label}</Text>
-  </View>
+  <view className="flex-1 bg-white rounded-2xl border border-neutral-100 p-3 items-center">
+    <text className={`text-xl font-bold ${accent}`}>{value}</text>
+    <text className="text-xs text-neutral-400 mt-0.5">{label}</text>
+  </view>
 )
 
 // ── Item row ──────────────────────────────────────────────────
@@ -839,37 +838,37 @@ const ItemRow = ({
   onDelete: (id: number) => void
   deleting: number | null
 }) => (
-  <View style={{ paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderBottomWidth: 1, borderBottomColor: '#fafafa' }}>
-    <View style={{ flex: 1 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <Text style={{ fontSize: 13, fontWeight: '500', color: '#171717' }}>{item.name}</Text>
+  <view className="px-4 py-3 flex-row items-start gap-3 border-b border-neutral-50">
+    <view className="flex-1">
+      <view className="flex-row items-center gap-2 flex-wrap">
+        <text className="text-sm font-medium text-neutral-900">{item.name}</text>
         <StatusBadge status={item.status} />
         {item.priority > 0 && (
-          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>P{item.priority}</Text>
+          <text className="text-xs text-neutral-400">P{item.priority}</text>
         )}
-      </View>
+      </view>
       {item.description ? (
-        <Text style={{ fontSize: 11, color: '#737373', marginTop: 2 }} numberOfLines={1}>{item.description}</Text>
+        <text className="text-xs text-neutral-500 mt-0.5">{item.description}</text>
       ) : null}
       {item.tags ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+        <view className="flex-row flex-wrap gap-1 mt-1">
           {item.tags.split(',').map((t, i) => (
-            <View key={i} style={{ backgroundColor: '#f5f5f5', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-              <Text style={{ fontSize: 11, color: '#737373' }}>{t.trim()}</Text>
-            </View>
+            <view key={i} className="bg-neutral-100 rounded px-1.5 py-0.5">
+              <text className="text-xs text-neutral-500">{t.trim()}</text>
+            </view>
           ))}
-        </View>
+        </view>
       ) : null}
-    </View>
-    <View style={{ flexDirection: 'row', gap: 12, paddingTop: 2 }}>
-      <TouchableOpacity onPress={() => onEdit(item)}>
-        <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Edit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id)} disabled={deleting === item.id}>
-        <Text style={{ fontSize: 11, color: '#f87171' }}>{deleting === item.id ? '…' : 'Delete'}</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
+    </view>
+    <view className="flex-row gap-3 pt-0.5">
+      <view bindtap={() => onEdit(item)}>
+        <text className="text-xs text-neutral-400">Edit</text>
+      </view>
+      <view bindtap={() => deleting === item.id ? null : onDelete(item.id)}>
+        <text className="text-xs text-red-400">{deleting === item.id ? '…' : 'Delete'}</text>
+      </view>
+    </view>
+  </view>
 )
 
 /* @arkzen:native:components:lynx:shared:end */
@@ -952,122 +951,114 @@ const IndexScreen = () => {
   const statusOptions: Array<'active' | 'pending' | 'archived'> = ['active', 'pending', 'archived']
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>CRUD Test</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>Same API as web — cross-platform sync</Text>
-        </View>
-        <TouchableOpacity
-          onPress={openCreate}
-          style={{ backgroundColor: '#171717', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 12 }}
-        >
-          <Text style={{ color: '#fff', fontSize: 11, fontWeight: '600' }}>+ Create</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">CRUD Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">Same API as web — cross-platform sync</text>
+        </view>
+        <view bindtap={openCreate} className="bg-neutral-900 px-4 py-2 rounded-xl">
+          <text className="text-white text-xs font-semibold">+ Create</text>
+        </view>
+      </view>
 
       {/* Form */}
       {showForm && (
-        <View style={{ backgroundColor: '#fff', margin: 16, borderRadius: 20, padding: 20, borderWidth: 1, borderColor: '#f5f5f5' }}>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: '#171717', marginBottom: 16 }}>
+        <view className="bg-white m-4 rounded-3xl p-5 border border-neutral-100">
+          <text className="text-sm font-semibold text-neutral-900 mb-4">
             {editing ? 'Edit Item' : 'Create Item'}
-          </Text>
+          </text>
           {error && (
-            <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12, marginBottom: 12 }}>
-              <Text style={{ fontSize: 11, color: '#dc2626' }}>{error}</Text>
-            </View>
+            <view className="bg-red-50 rounded-xl p-3 mb-3">
+              <text className="text-xs text-red-600">{error}</text>
+            </view>
           )}
-          <View style={{ gap: 10 }}>
-            <TextInput
-              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+          <view className="gap-y-2.5">
+            <input
+              className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Name *"
               value={form.name}
-              onInput={e => setForm(f => ({ ...f, name: e.detail.value }))}
+              bindinput={e => setForm(f => ({ ...f, name: e.detail.value }))}
             />
-            <TextInput
-              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+            <input
+              className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Description"
               value={form.description}
-              onInput={e => setForm(f => ({ ...f, description: e.detail.value }))}
+              bindinput={e => setForm(f => ({ ...f, description: e.detail.value }))}
             />
-            <View style={{ flexDirection: 'row', gap: 8 }}>
+            <view className="flex-row gap-x-2">
               {statusOptions.map(s => (
-                <TouchableOpacity
+                <view
                   key={s}
-                  onPress={() => setForm(f => ({ ...f, status: s }))}
-                  style={{
-                    flex: 1, paddingVertical: 10, borderRadius: 12, alignItems: 'center', borderWidth: 1,
-                    backgroundColor: form.status === s ? '#171717' : '#fff',
-                    borderColor: form.status === s ? '#171717' : '#e5e5e5',
-                  }}
+                  bindtap={() => setForm(f => ({ ...f, status: s }))}
+                  className={`flex-1 py-2.5 rounded-xl items-center border ${form.status === s ? 'bg-neutral-900 border-neutral-900' : 'bg-white border-neutral-200'}`}
                 >
-                  <Text style={{ fontSize: 11, fontWeight: '500', color: form.status === s ? '#fff' : '#737373' }}>{s}</Text>
-                </TouchableOpacity>
+                  <text className={`text-xs font-medium ${form.status === s ? 'text-white' : 'text-neutral-500'}`}>{s}</text>
+                </view>
               ))}
-            </View>
-            <TextInput
-              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+            </view>
+            <input
+              className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Priority (0)"
               value={form.priority}
-              onInput={e => setForm(f => ({ ...f, priority: e.detail.value.replace(/[^0-9]/g, '') }))}
+              bindinput={e => setForm(f => ({ ...f, priority: e.detail.value.replace(/[^0-9]/g, '') }))}
             />
-            <TextInput
-              style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+            <input
+              className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
               placeholder="Tags (comma separated)"
               value={form.tags}
-              onInput={e => setForm(f => ({ ...f, tags: e.detail.value }))}
+              bindinput={e => setForm(f => ({ ...f, tags: e.detail.value }))}
             />
-          </View>
-          <View style={{ flexDirection: 'row', gap: 12, marginTop: 20 }}>
-            <TouchableOpacity
-              onPress={save}
-              disabled={saving}
-              style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: saving ? '#d4d4d4' : '#171717' }}
+          </view>
+          <view className="flex-row gap-x-3 mt-5">
+            <view
+              bindtap={saving ? undefined : save}
+              className={`flex-1 py-3.5 rounded-2xl items-center ${saving ? 'bg-neutral-300' : 'bg-neutral-900'}`}
             >
-              <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>
+              <text className="text-white text-sm font-semibold">
                 {saving ? 'Saving…' : editing ? 'Update' : 'Create'}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={() => setShowForm(false)}
-              style={{ flex: 1, paddingVertical: 14, borderRadius: 16, alignItems: 'center', borderWidth: 1, borderColor: '#e5e5e5' }}
+              </text>
+            </view>
+            <view
+              bindtap={() => setShowForm(false)}
+              className="flex-1 py-3.5 rounded-2xl items-center border border-neutral-200"
             >
-              <Text style={{ fontSize: 13, fontWeight: '500', color: '#737373' }}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+              <text className="text-neutral-600 text-sm font-medium">Cancel</text>
+            </view>
+          </view>
+        </view>
       )}
 
-      <ScrollView style={{ flex: 1 }}>
+      <scroll-view className="flex-1">
         {/* Stats */}
-        <View style={{ flexDirection: 'row', gap: 8, paddingHorizontal: 16, paddingVertical: 16 }}>
-          <StatCard label="Total"    value={stats.total}    accent="#171717" />
-          <StatCard label="Active"   value={stats.active}   accent="#16a34a" />
-          <StatCard label="Pending"  value={stats.pending}  accent="#ca8a04" />
-          <StatCard label="Archived" value={stats.archived} accent="#a3a3a3" />
-        </View>
+        <view className="flex-row gap-2 px-4 py-4">
+          <StatCard label="Total"    value={stats.total}    accent="text-neutral-900" />
+          <StatCard label="Active"   value={stats.active}   accent="text-green-600"   />
+          <StatCard label="Pending"  value={stats.pending}  accent="text-yellow-600"  />
+          <StatCard label="Archived" value={stats.archived} accent="text-neutral-400" />
+        </view>
 
         {/* List */}
-        <View style={{ marginHorizontal: 16, backgroundColor: '#fff', borderRadius: 16, borderWidth: 1, borderColor: '#f5f5f5', overflow: 'hidden', marginBottom: 24 }}>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f5f5f5', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#171717' }}>Items</Text>
-            <TouchableOpacity onPress={load}>
-              <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Refresh</Text>
-            </TouchableOpacity>
-          </View>
+        <view className="mx-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden mb-6">
+          <view className="px-4 py-3 border-b border-neutral-100 flex-row items-center justify-between">
+            <text className="text-sm font-semibold text-neutral-900">Items</text>
+            <view bindtap={load}>
+              <text className="text-xs text-neutral-400">Refresh</text>
+            </view>
+          </view>
 
           {loading ? (
-            <View style={{ paddingVertical: 48, alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: '#a3a3a3' }}>Loading…</Text>
-            </View>
+            <view className="py-12 items-center">
+              <text className="text-sm text-neutral-400">Loading…</text>
+            </view>
           ) : items.length === 0 ? (
-            <View style={{ paddingVertical: 48, alignItems: 'center', paddingHorizontal: 24 }}>
-              <Text style={{ fontSize: 13, color: '#a3a3a3', textAlign: 'center' }}>
+            <view className="py-12 items-center px-6">
+              <text className="text-sm text-neutral-400 text-center">
                 No items yet. Tap + Create or check the seeder ran.
-              </Text>
-            </View>
+              </text>
+            </view>
           ) : (
             items.map(item => (
               <ItemRow
@@ -1079,16 +1070,16 @@ const IndexScreen = () => {
               />
             ))
           )}
-        </View>
+        </view>
 
         {/* Footer */}
-        <View style={{ marginHorizontal: 16, marginBottom: 32, backgroundColor: '#f5f5f5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
-          <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace', lineHeight: 20 }}>
+        <view className="mx-4 mb-8 bg-neutral-100 rounded-2xl px-4 py-3">
+          <text className="text-xs text-neutral-500 font-mono leading-5">
             {`endpoint: /api/crud-test/items\nbackend: Laravel · crud-test slug\nsync: web ↔ native shared DB`}
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+          </text>
+        </view>
+      </scroll-view>
+    </view>
   )
 }
 

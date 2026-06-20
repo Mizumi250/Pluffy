@@ -737,7 +737,7 @@ const DashboardLynxPage = () => {
           <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
             <view className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
               <text className="font-semibold">Uploaded files ({files.length})</text>
-              <view onTap={loadFiles}>
+              <view bindtap={loadFiles}>
                 <text className="text-xs text-neutral-400">Refresh</text>
               </view>
             </view>
@@ -756,14 +756,14 @@ const DashboardLynxPage = () => {
                   </view>
                   <view className="flex items-center gap-2 shrink-0">
                     {f.is_image && f.url && (
-                      <view onTap={() => setViewingImage(f.url)}>
+                      <view bindtap={() => setViewingImage(f.url)}>
                         <text className="text-xs text-blue-500">View</text>
                       </view>
                     )}
-                    <view onTap={() => window.open(`/api/upload-test/files/${f.id}/url`, '_blank')}>
+                    <view bindtap={() => window.open(`/api/upload-test/files/${f.id}/url`, '_blank')}>
                       <text className="text-xs text-neutral-500">Download</text>
                     </view>
-                    <view onTap={() => deleteFile(f.id)}>
+                    <view bindtap={() => deleteFile(f.id)}>
                       <text className="text-xs text-red-400">{deleting === f.id ? '...' : 'Delete'}</text>
                     </view>
                   </view>
@@ -786,7 +786,7 @@ const DashboardLynxPage = () => {
       {/* Image preview modal */}
       {viewingImage && (
         <view className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-          <view className="absolute top-4 right-4" onTap={() => setViewingImage(null)}>
+          <view className="absolute top-4 right-4" bindtap={() => setViewingImage(null)}>
             <text className="text-white text-2xl">✕</text>
           </view>
           <image src={viewingImage} className="max-w-4xl max-h-screen object-contain" />

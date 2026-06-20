@@ -572,7 +572,6 @@ const DashboardScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect } from '@lynx-js/react'
 import { useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
@@ -592,20 +591,20 @@ const Field = ({
   onInput:          (v: string) => void
   secureTextEntry?: boolean
 }) => (
-  <TextInput
-    style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+  <input
+    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
     placeholder={placeholder}
     value={value}
-    onInput={e => onInput(e.detail.value)}
+    bindinput={e => onInput(e.detail.value)}
     type={secureTextEntry ? 'password' : 'text'}
   />
 )
 
 // ── Error box ─────────────────────────────────────────────────
 const ErrorBox = ({ message }: { message: string }) => (
-  <View style={{ backgroundColor: '#fef2f2', borderRadius: 12, padding: 12 }}>
-    <Text style={{ fontSize: 11, color: '#dc2626' }}>{message}</Text>
-  </View>
+  <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+    <text className="text-xs text-red-600">{message}</text>
+  </view>
 )
 
 // ── Primary button ────────────────────────────────────────────
@@ -618,15 +617,14 @@ const PrimaryBtn = ({
   onPress:  () => void
   loading?: boolean
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    style={{ paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: loading ? '#d4d4d4' : '#171717' }}
+  <view
+    bindtap={loading ? undefined : onPress}
+    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
   >
-    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>
+    <text className="text-white text-sm font-semibold">
       {loading ? 'Loading…' : label}
-    </Text>
-  </TouchableOpacity>
+    </text>
+  </view>
 )
 
 /* @arkzen:native:components:lynx:shared:end */
@@ -649,40 +647,40 @@ const LoginScreen = () => {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }}>
-      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 48 }}>
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="flex-1 justify-center px-6 py-12">
 
         {/* Header */}
-        <View style={{ marginBottom: 32 }}>
-          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Text style={{ color: '#fff', fontSize: 20 }}>🔒</Text>
-          </View>
-          <Text style={{ fontSize: 22, fontWeight: '700', color: '#171717' }}>Auth Test</Text>
-          <Text style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <text className="text-white text-lg font-bold">🔒</text>
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Auth Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             Sign in to access the protected dashboard
-          </Text>
-        </View>
+          </text>
+        </view>
 
         {/* Form */}
-        <View style={{ gap: 12 }}>
+        <view className="gap-y-3">
           {error && <ErrorBox message={error} />}
 
           <Field placeholder="Email"    value={email}    onInput={setEmail}    />
           <Field placeholder="Password" value={password} onInput={setPassword} secureTextEntry />
 
           <PrimaryBtn label="Sign in" onPress={handleLogin} loading={isLoading} />
-        </View>
+        </view>
 
         {/* Footer */}
-        <View style={{ marginTop: 24, alignItems: 'center' }}>
-          <View style={{ backgroundColor: '#f5f5f5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 10 }}>
-            <Text style={{ fontSize: 11, color: '#a3a3a3', fontFamily: 'monospace' }}>
+        <view className="mt-6 items-center">
+          <view className="bg-neutral-100 rounded-xl px-4 py-2.5">
+            <text className="text-xs text-neutral-400 font-mono">
               test@arkzen.local / password
-            </Text>
-          </View>
-        </View>
-      </View>
-    </ScrollView>
+            </text>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 
@@ -709,20 +707,20 @@ const RegisterScreen = () => {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }}>
-      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 48 }}>
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="flex-1 justify-center px-6 py-12">
 
         {/* Header */}
-        <View style={{ marginBottom: 32 }}>
-          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Text style={{ color: '#fff', fontSize: 20 }}>🔒</Text>
-          </View>
-          <Text style={{ fontSize: 22, fontWeight: '700', color: '#171717' }}>Auth Test</Text>
-          <Text style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>Create an account</Text>
-        </View>
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <text className="text-white text-lg font-bold">🔒</text>
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Auth Test</text>
+          <text className="text-sm text-neutral-500 mt-1">Create an account</text>
+        </view>
 
         {/* Form */}
-        <View style={{ gap: 12 }}>
+        <view className="gap-y-3">
           {error && <ErrorBox message={error} />}
 
           <Field placeholder="Name"             value={name}     onInput={setName}     />
@@ -731,9 +729,9 @@ const RegisterScreen = () => {
           <Field placeholder="Confirm password" value={confirm}  onInput={setConfirm}  secureTextEntry />
 
           <PrimaryBtn label="Create account" onPress={handleRegister} loading={isLoading} />
-        </View>
-      </View>
-    </ScrollView>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 
@@ -749,49 +747,49 @@ const DashboardScreen = () => {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>✅ Auth Test</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>{user?.email}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">✅ Auth Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">{user?.email}</text>
+        </view>
+        <view bindtap={handleLogout}>
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <ScrollView style={{ flex: 1 }}>
+      <scroll-view className="flex-1">
         {/* Success card */}
-        <View style={{ margin: 16, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 32, alignItems: 'center' }}>
-          <Text style={{ fontSize: 40, marginBottom: 12 }}>🛡️</Text>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717', marginBottom: 6 }}>
+        <view className="m-4 bg-white rounded-3xl border border-neutral-100 p-8 items-center">
+          <text className="text-4xl mb-3">🛡️</text>
+          <text className="text-base font-semibold text-neutral-900 mb-1.5">
             Authentication successful
-          </Text>
-          <Text style={{ fontSize: 11, color: '#737373', textAlign: 'center', lineHeight: 20 }}>
+          </text>
+          <text className="text-xs text-neutral-500 text-center leading-5">
             {`This screen is protected by the auth layout.\nOnly signed-in users can see it.`}
-          </Text>
-        </View>
+          </text>
+        </view>
 
         {/* User info */}
-        <View style={{ marginHorizontal: 16, marginTop: 4, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 20 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#171717', marginBottom: 12 }}>User info</Text>
-          <View style={{ backgroundColor: '#fafafa', borderRadius: 12, padding: 16 }}>
-            <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#737373', lineHeight: 20 }}>
+        <view className="mx-4 mt-1 bg-white rounded-3xl border border-neutral-100 p-5">
+          <text className="text-sm font-semibold text-neutral-900 mb-3">User info</text>
+          <view className="bg-neutral-50 rounded-xl p-4">
+            <text className="text-xs font-mono text-neutral-500 leading-5">
               {JSON.stringify(user, null, 2)}
-            </Text>
-          </View>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {/* Footer note */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 32, backgroundColor: '#f5f5f5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
-          <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace', lineHeight: 20 }}>
+        <view className="mx-4 mt-4 mb-8 bg-neutral-100 rounded-2xl px-4 py-3">
+          <text className="text-xs text-neutral-500 font-mono leading-5">
             {`token: Sanctum Bearer\nscope: auth-test SQLite\nshared: web ↔ native same token`}
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+          </text>
+        </view>
+      </scroll-view>
+    </view>
   )
 }
 
