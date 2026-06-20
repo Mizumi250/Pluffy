@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T04:54:15.155Z
+// Generated: 2026-06-20T06:17:51.499Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

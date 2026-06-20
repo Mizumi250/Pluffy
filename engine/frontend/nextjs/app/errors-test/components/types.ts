@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T04:54:17.297Z
+// Generated: 2026-06-20T06:17:53.475Z
 // ============================================================
 
 export type ErrorDef = {

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — EventLogStoreRequest
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T05:11:46.289471Z
+// Generated: 2026-06-20T06:17:54.906232Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\EventsTest;

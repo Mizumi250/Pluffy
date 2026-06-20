@@ -5,7 +5,7 @@
   "scripts": {
     "build": "rspeedy build",
     "sync:shared": "tsx arkzen/sync.ts",
-    "dev": "npm run sync:shared && NAPI_RS_NATIVE_LIBRARY_PATH=$(pwd)/node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node rspeedy dev",
+    "dev": "npm run sync:shared && concurrently \"npm run arkzen\" \"NAPI_RS_NATIVE_LIBRARY_PATH=$(pwd)/node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node rspeedy dev\"",
     "postinstall": "mkdir -p node_modules/@rspack/binding-android-arm64 && cp ~/rspack-src/target/aarch64-linux-android/release/librspack_node.so node_modules/@rspack/binding-android-arm64/rspack.android-arm64.node || true",
     "preview": "rspeedy preview",
     "arkzen": "tsx watch arkzen.ts",
@@ -13,7 +13,8 @@
   },
   "dependencies": {
     "@lynx-js/react": "^0.121.1",
-    "zustand": "^4.5.4"
+    "zustand": "^4.5.4",
+    "js-yaml": "^4.2.0"
   },
   "devDependencies": {
     "@lynx-js/preact-devtools": "^5.0.1",
@@ -25,6 +26,7 @@
     "@rsbuild/plugin-type-check": "1.3.4",
     "@types/react": "^18.3.28",
     "chokidar": "^3.6.0",
+    "concurrently": "^10.0.3",
     "rsbuild-plugin-tailwindcss": "^0.2.4",
     "tailwindcss": "^3.4.19",
     "tsx": "^4.19.4",

@@ -603,20 +603,35 @@ const getMimeIcon = (mime: string) => {
 /* @arkzen:native:page:lynx:dashboard */
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { view, text, scrollView, image, input } from '@lynx-js/react'
+import React, { useState, useCallback } from '@lynx-js/react'
+import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+
+const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+
+const formatSize = (bytes) => {
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1048576) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / 1048576).toFixed(1) + ' MB'
+}
+
+const getMimeIcon = (mime) => {
+  if (mime.startsWith('image/')) return '🖼️'
+  if (mime.includes('pdf')) return '📄'
+  if (mime.includes('video')) return '🎬'
+  if (mime.includes('zip') || mime.includes('rar')) return '🗜️'
+  return '📁'
+}
 
 const DashboardLynxPage = () => {
-  const [files, setFiles] = React.useState<any[]>([])
-  const [uploading, setUploading] = React.useState(false)
-  const [deleting, setDeleting] = React.useState<number | null>(null)
-  const [downloading, setDownloading] = React.useState<number | null>(null)
-  const [viewingImage, setViewingImage] = React.useState<string | null>(null)
-  const [error, setError] = React.useState<string | null>(null)
-  const [progress, setProgress] = React.useState(0)
-  const fileInputRef = React.useRef<HTMLInputElement>(null)
-  const [dragOver, setDragOver] = React.useState(false)
+  const [files, setFiles] = useState([])
+  const [uploading, setUploading] = useState(false)
+  const [deleting, setDeleting] = useState(null)
+  const [viewingImage, setViewingImage] = useState(null)
+  const [error, setError] = useState(null)
+  const [progress, setProgress] = useState(0)
 
-  const loadFiles = React.useCallback(async () => {
+  const loadFiles = useCallback(async () => {
     try {
       const res = await arkzenFetch('/api/upload-test/files')
       const d = await res.json()
@@ -628,7 +643,7 @@ const DashboardLynxPage = () => {
 
   React.useEffect(() => { loadFiles() }, [])
 
-  const upload = async (fileList: FileList | null) => {
+  const upload = async (fileList) => {
     if (!fileList || fileList.length === 0) return
     setUploading(true)
     setError(null)
@@ -646,29 +661,28 @@ const DashboardLynxPage = () => {
         if (e.lengthComputable) setProgress(Math.round((e.loaded / e.total) * 100))
       }
 
-      await new Promise<void>((resolve, reject) => {
+      await new Promise((resolve, reject) => {
         xhr.onload = () => {
           if (xhr.status >= 200 && xhr.status < 300) resolve()
           else {
             try { reject(new Error(JSON.parse(xhr.responseText)?.message ?? 'Upload failed')) }
-            catch { reject(new Error(`Upload failed (${xhr.status})`)) }
+            catch { reject(new Error('Upload failed')) }
           }
         }
-        xhr.onerror = () => reject(new Error('Network error during upload'))
+        xhr.onerror = () => reject(new Error('Network error'))
         xhr.send(formData)
       })
 
       await loadFiles()
     } catch (e) {
-      setError(e instanceof Error ? e.message : 'Upload failed')
+      setError(e.message)
     } finally {
       setUploading(false)
       setProgress(0)
-      if (fileInputRef.current) fileInputRef.current.value = ''
     }
   }
 
-  const deleteFile = async (id: number) => {
+  const deleteFile = async (id) => {
     setDeleting(id)
     try {
       await arkzenFetch(`/api/upload-test/files/${id}`, { method: 'DELETE' })
@@ -679,112 +693,106 @@ const DashboardLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">📤 Upload Test</h1>
-            <p className="text-sm text-neutral-500 mt-1">Run <code>php artisan storage:link</code> to enable public URLs.</p>
-          </div>
-        </div>
+    <scroll-view className="min-h-screen bg-neutral-50">
+      <view className="p-8">
+        <view className="max-w-2xl mx-auto space-y-6">
 
-        {/* Drop zone */}
-        <div
-          className={`relative border-2 border-dashed rounded-2xl p-10 text-center transition-colors cursor-pointer
-            ${dragOver ? 'border-neutral-900 bg-neutral-50' : 'border-neutral-200 hover:border-neutral-400'}`}
-          onDragOver={e => { e.preventDefault(); setDragOver(true) }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={e => { e.preventDefault(); setDragOver(false); upload(e.dataTransfer.files) }}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <input
-            ref={fileInputRef}
-            type="file"
-            multiple
-            className="hidden"
-            onChange={e => upload(e.target.files)}
-          />
-          <div className="text-3xl mb-2 flex justify-center">☁️</div>
-          <div className="text-sm font-medium text-neutral-700">Drop files here or click to browse</div>
-          <div className="text-xs text-neutral-400 mt-1">Any file type. Max 10MB each.</div>
+          {/* Header */}
+          <view className="flex items-center justify-between">
+            <view>
+              <text className="text-2xl font-bold">📤 Upload Test</text>
+              <text className="text-sm text-neutral-500 mt-1">Run php artisan storage:link</text>
+            </view>
+          </view>
 
-          {uploading && (
-            <div className="mt-4">
-              <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
-                <div
-                  className="h-full bg-neutral-900 rounded-full transition-all duration-200"
-                  style={{ width: `${progress}%` }}
-                />
-              </div>
-              <div className="text-xs text-neutral-500 mt-1">{progress}% uploaded</div>
-            </div>
+          {/* Upload button - Lynx uses input with type="file" */}
+          <view className="border-2 border-dashed rounded-2xl p-10 text-center border-neutral-200">
+            <text className="text-3xl mb-2">☁️</text>
+            <text className="text-sm font-medium text-neutral-700">Click to select files</text>
+            <text className="text-xs text-neutral-400 mt-1">Max 10MB each</text>
+            <input
+              type="file"
+              multiple
+              className="mt-4"
+              onChange={(e) => upload(e.target.files)}
+            />
+
+            {uploading && (
+              <view className="mt-4">
+                <view className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                  <view className="h-full bg-neutral-900 rounded-full" style={{ width: progress + '%' }} />
+                </view>
+                <text className="text-xs text-neutral-500 mt-1">{progress}% uploaded</text>
+              </view>
+            )}
+          </view>
+
+          {error && (
+            <view className="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <text className="text-sm text-red-600">{error}</text>
+            </view>
           )}
-        </div>
 
-        {error && (
-          <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600">{error}</div>
-        )}
+          {/* File list */}
+          <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+            <view className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
+              <text className="font-semibold">Uploaded files ({files.length})</text>
+              <view onTap={loadFiles}>
+                <text className="text-xs text-neutral-400">Refresh</text>
+              </view>
+            </view>
 
-        {/* File list */}
-        <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
-            <h2 className="font-semibold">Uploaded files ({files.length})</h2>
-            <button className="text-xs text-neutral-400 hover:text-neutral-600" onClick={loadFiles}>Refresh</button>
-          </div>
-          {files.length === 0 ? (
-            <div className="p-8 text-center text-sm text-neutral-400">No files uploaded yet.</div>
-          ) : (
-            <div className="divide-y divide-neutral-50">
-              {files.map(f => (
-                <div key={f.id} className="px-5 py-3 flex items-center gap-3">
-                  <span className="text-xl shrink-0">{getMimeIcon(f.mime_type)}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{f.original_name}</div>
-                    <div className="text-xs text-neutral-400">{formatSize(f.size_bytes)} · {f.mime_type}</div>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
+            {files.length === 0 ? (
+              <view className="p-8">
+                <text className="text-sm text-neutral-400">No files uploaded yet.</text>
+              </view>
+            ) : (
+              files.map((f) => (
+                <view key={f.id} className="px-5 py-3 flex items-center gap-3 border-b border-neutral-50">
+                  <text className="text-xl shrink-0">{getMimeIcon(f.mime_type)}</text>
+                  <view className="flex-1 min-w-0">
+                    <text className="text-sm font-medium truncate">{f.original_name}</text>
+                    <text className="text-xs text-neutral-400">{formatSize(f.size_bytes)} · {f.mime_type}</text>
+                  </view>
+                  <view className="flex items-center gap-2 shrink-0">
                     {f.is_image && f.url && (
-                      <button 
-                        onClick={() => setViewingImage(f.url)} 
-                        className="text-xs text-blue-500 hover:underline"
-                      >
-                        View
-                      </button>
+                      <view onTap={() => setViewingImage(f.url)}>
+                        <text className="text-xs text-blue-500">View</text>
+                      </view>
                     )}
-                    <a href={`/api/upload-test/files/${f.id}/url`} className="text-xs text-neutral-500 hover:underline">Download</a>
-                    <button
-                      className="text-xs text-red-400 hover:text-red-600 disabled:opacity-50"
-                      onClick={() => deleteFile(f.id)}
-                      disabled={deleting === f.id}
-                    >
-                      {deleting === f.id ? '...' : 'Delete'}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+                    <view onTap={() => window.open(`/api/upload-test/files/${f.id}/url`, '_blank')}>
+                      <text className="text-xs text-neutral-500">Download</text>
+                    </view>
+                    <view onTap={() => deleteFile(f.id)}>
+                      <text className="text-xs text-red-400">{deleting === f.id ? '...' : 'Delete'}</text>
+                    </view>
+                  </view>
+                </view>
+              ))
+            )}
+          </view>
 
-        {viewingImage && (
-          <div className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
-            <button 
-              onClick={() => setViewingImage(null)}
-              className="absolute top-4 right-4 text-white text-2xl hover:opacity-80"
-            >
-              ✕
-            </button>
-            <img src={viewingImage} alt="Preview" className="max-w-4xl max-h-screen object-contain" />
-          </div>
-        )}
+          {/* Info */}
+          <view className="bg-neutral-100 rounded-2xl px-4 py-3">
+            <text className="text-xs text-neutral-500 font-mono leading-5">
+              backend: /api/upload-test/files{'\n'}
+              storage: storage/app/public/arkzen/upload-test/
+            </text>
+          </view>
 
-        <div className="text-xs text-neutral-400 bg-neutral-50 rounded-xl p-4">
-          <strong>Backend stores files at:</strong> <code>storage/app/public/arkzen/upload-test/</code><br/>
-          <strong>Access via:</strong> <code>/storage/arkzen/upload-test/filename</code><br/>
-          <strong>Upload progress</strong> uses XHR instead of fetch — XHR supports <code>onprogress</code>, fetch does not.
-        </div>
-      </div>
-    </div>
+        </view>
+      </view>
+
+      {/* Image preview modal */}
+      {viewingImage && (
+        <view className="fixed inset-0 bg-black bg-opacity-90 z-50 flex items-center justify-center">
+          <view className="absolute top-4 right-4" onTap={() => setViewingImage(null)}>
+            <text className="text-white text-2xl">✕</text>
+          </view>
+          <image src={viewingImage} className="max-w-4xl max-h-screen object-contain" />
+        </view>
+      )}
+    </scroll-view>
   )
 }
 

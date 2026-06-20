@@ -1,0 +1,312 @@
+{
+  "asset-hub": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "auth-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "body-endpoint-handler": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "body-mail-notification": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "broadcast-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "crud-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "errors-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": true,
+    "has500": true
+  },
+  "events-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "hello-native": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "about",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "inventory-management": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "jo-payroll": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "job-database",
+        "layout": "default"
+      },
+      {
+        "page": "cash-atm",
+        "layout": "default"
+      },
+      {
+        "page": "appointments",
+        "layout": "default"
+      },
+      {
+        "page": "payslip",
+        "layout": "default"
+      }
+    ],
+    "has404": true,
+    "has500": false
+  },
+  "job-test": {
+    "pages": [
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "layout-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "single",
+        "layout": "default"
+      },
+      {
+        "page": "chain",
+        "layout": "default"
+      },
+      {
+        "page": "native-deep",
+        "layout": "default"
+      },
+      {
+        "page": "native-auth",
+        "layout": "default"
+      },
+      {
+        "page": "native-chain-auth",
+        "layout": "default"
+      },
+      {
+        "page": "native-guest",
+        "layout": "default"
+      }
+    ],
+    "has404": true,
+    "has500": false
+  },
+  "mail-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "middleware-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "new-updates-styles": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "about",
+        "layout": "default"
+      },
+      {
+        "page": "features",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "notification-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "portfolio-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "roles-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "scheduler-test": {
+    "pages": [
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "upload-test": {
+    "pages": [
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  }
+}
