@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — asset-hub
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.036Z
+// Generated: 2026-06-20T13:07:58.571Z
 // ============================================================
 
-import React, { Image, ScrollView, Text, View, useState } from '@lynx-js/react'
+import React, { useState } from '@lynx-js/react'
 
 export const LYNX_ASSET_REGISTRY: LynxAssetItem[] = [
   // ── Add an entry here for every file you drop ──

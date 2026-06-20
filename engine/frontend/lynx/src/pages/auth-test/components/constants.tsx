@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — auth-test
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.266Z
+// Generated: 2026-06-20T13:07:58.919Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 export const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 

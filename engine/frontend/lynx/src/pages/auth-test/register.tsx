@@ -1,10 +1,10 @@
 // ARKZEN GENERATED — auth-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.277Z
+// Generated: 2026-06-20T13:07:58.944Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
-import { ScrollView, Text, View, useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 const RegisterScreen = () => {
@@ -26,20 +26,20 @@ const RegisterScreen = () => {
   }
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#fafafa' }}>
-      <View style={{ flex: 1, justifyContent: 'center', paddingHorizontal: 24, paddingVertical: 48 }}>
+    <scroll-view className="flex-1 bg-neutral-50">
+      <view className="flex-1 justify-center px-6 py-12">
 
         {/* Header */}
-        <View style={{ marginBottom: 32 }}>
-          <View style={{ width: 48, height: 48, borderRadius: 16, backgroundColor: '#171717', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-            <Text style={{ color: '#fff', fontSize: 20 }}>🔒</Text>
-          </View>
-          <Text style={{ fontSize: 22, fontWeight: '700', color: '#171717' }}>Auth Test</Text>
-          <Text style={{ fontSize: 13, color: '#737373', marginTop: 4 }}>Create an account</Text>
-        </View>
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <text className="text-white text-lg font-bold">🔒</text>
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Auth Test</text>
+          <text className="text-sm text-neutral-500 mt-1">Create an account</text>
+        </view>
 
         {/* Form */}
-        <View style={{ gap: 12 }}>
+        <view className="gap-y-3">
           {error && <ErrorBox message={error} />}
 
           <Field placeholder="Name"             value={name}     onInput={setName}     />
@@ -48,8 +48,8 @@ const RegisterScreen = () => {
           <Field placeholder="Confirm password" value={confirm}  onInput={setConfirm}  secureTextEntry />
 
           <PrimaryBtn label="Create account" onPress={handleRegister} loading={isLoading} />
-        </View>
-      </View>
-    </ScrollView>
+        </view>
+      </view>
+    </scroll-view>
   )
 }

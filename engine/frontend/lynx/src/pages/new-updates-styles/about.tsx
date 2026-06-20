@@ -1,12 +1,13 @@
 // ARKZEN GENERATED — new-updates-styles/about (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.520Z
+// Generated: 2026-06-20T13:08:04.991Z
+import '../../arkzen/generated/new-updates-styles.lynx-styles.css'
 import { LynxBadge } from './components/LynxBadge'
 import { LynxGhostButton } from './components/LynxGhostButton'
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
-const AboutLynxPage = () => {
+const AboutLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
   const [expanded, setExpanded] = useState<string | null>(null)
 
   const sections = [
@@ -25,42 +26,42 @@ const AboutLynxPage = () => {
   ]
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50 px-6 pt-14 pb-12 flex flex-col">
+    <scroll-view className="flex-1 bg-slate-50 px-6 pt-14 pb-12">
 
-      <LynxGhostButton label="← Back" onPress={() => window.history.back()} />
+      <LynxGhostButton label="← Back" onPress={() => onNavigate('index')} />
 
-      <div className="mt-8 mb-8">
+      <view className="mt-8 mb-8">
         <LynxBadge label="about" />
-        <h1 className="text-3xl font-bold text-neutral-900 mt-4">About this showcase</h1>
-        <p className="text-sm text-neutral-500 mt-2 leading-6">
+        <text className="text-3xl font-bold text-neutral-900 mt-4">About this showcase</text>
+        <text className="text-sm text-neutral-500 mt-2 leading-6">
           This tatemono demonstrates all new features added to Arkzen v2.0.
-        </p>
-      </div>
+        </text>
+      </view>
 
-      <div className="flex flex-col gap-3 mb-8">
+      <view className="flex-col" style={{ gap: 12 }}>
         {sections.map(s => (
-          <div
+          <view
             key={s.title}
-            onClick={() => setExpanded(expanded === s.title ? null : s.title)}
-            className="bg-white rounded-2xl border border-neutral-200 p-5 cursor-pointer"
+            bindtap={() => setExpanded(expanded === s.title ? null : s.title)}
+            className="bg-white rounded-2xl border border-neutral-200 p-5"
           >
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-neutral-900 text-base">{s.title}</span>
-              <span className="text-neutral-400 text-lg">{expanded === s.title ? '−' : '+'}</span>
-            </div>
+            <view className="flex-row items-center justify-between">
+              <text className="font-bold text-neutral-900 text-base">{s.title}</text>
+              <text className="text-neutral-400 text-lg">{expanded === s.title ? '−' : '+'}</text>
+            </view>
             {expanded === s.title && (
-              <p className="mt-3 text-sm text-neutral-600 leading-6">{s.content}</p>
+              <text className="mt-3 text-sm text-neutral-600 leading-6">{s.content}</text>
             )}
-          </div>
+          </view>
         ))}
-      </div>
+      </view>
 
-      <div className="bg-neutral-100 rounded-2xl px-5 py-4">
-        <pre className="text-xs font-mono text-neutral-500 leading-6">
-          {`stack: lynx\nengine: arkzen v10.1\ntatemono: new-updates-styles\nscreens: index, about, features`}
-        </pre>
-      </div>
+      <view className="bg-neutral-100 rounded-2xl px-5 py-4 mt-4">
+        <text className="text-xs font-mono text-neutral-500 leading-6">
+          {'stack: lynx\nengine: arkzen v10.1\ntatemono: new-updates-styles\nscreens: index, about, features'}
+        </text>
+      </view>
 
-    </div>
+    </scroll-view>
   )
 }

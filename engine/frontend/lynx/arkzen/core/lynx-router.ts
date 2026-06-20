@@ -286,12 +286,25 @@ function resolveImports(
 
   // Normalise module specifiers so @/arkzen/* paths (written by tatemono
   // authors) collapse to the same importMap key as the relative
-  // ../../../arkzen/* paths engineNamed uses. Depth is fixed at 3 (component
-  // level) here since resolveImports is only ever called from the
-  // component-splitting path in this file; page-level normalisation is done
-  // separately in generatePageFile with depth 2.
-  const normaliseMod = (mod: string): string =>
-    mod.replace(/^@\/arkzen\//, '../../../arkzen/')
+  // ../../../../arkzen/* paths engineNamed uses. Depth is fixed at 4 here
+  // since resolveImports is only ever called from the component-splitting
+  // path in this file, and component files live at
+  // src/pages/{tat}/components/{Name}.tsx — 4 directories below the Lynx
+  // project root (src/pages/{tat}/components), unlike Expo's app/{tat}/
+  // /components which is only 3 deep. Page-level normalisation is done
+  // separately in generatePageFile with depth 3.
+  //
+  // Bare 'react' imports are also folded onto LYNX_CORE_MODULE here: tatemono
+  // component blocks are sometimes copy-shared from the Expo/RN versions of
+  // the same component, which legitimately import from 'react'. Lynx has no
+  // real 'react' package — without this alias those imports survive
+  // resolveImports untouched and get re-emitted as a second, colliding
+  // `import React ... from 'react'` line alongside the merged
+  // `@lynx-js/react` line (TS2300: Duplicate identifier 'React').
+  const normaliseMod = (mod: string): string => {
+    if (mod === 'react') return LYNX_CORE_MODULE
+    return mod.replace(/^@\/arkzen\//, '../../../../arkzen/')
+  }
 
   const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
   const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
@@ -974,9 +987,14 @@ function generateIndividualLynxComponentFiles(
   const rawSources = nativeLynxComponents.map(c => c.raw.trim())
   const { canonicalBlock, strippedSources } = resolveImports(rawSources)
 
-  // Component files live at src/pages/{tat}/components/{Name}.tsx — 3 levels
-  // up to project root (same depth expo-router.ts's components/ dir uses).
-  const normalisedCanonicalBlock = normaliseLynxImports(canonicalBlock, 3)
+  // Component files live at src/pages/{tat}/components/{Name}.tsx — 4 levels
+  // up to project root (one deeper than expo-router.ts's app/{tat}/components,
+  // since Lynx nests pages under src/pages instead of app directly). The
+  // @/arkzen/ -> relative rewrite already happens inside resolveImports'
+  // normaliseMod above, so canonicalBlock should no longer contain any
+  // @/arkzen/ specifiers by this point — this second pass is just a safety
+  // net in case a future source slips one through untouched.
+  const normalisedCanonicalBlock = normaliseLynxImports(canonicalBlock, 4)
 
   const extractedComponents = extractLynxComponentNames(tatemono)
   const sharedConstants     = extractLynxSharedConstantNames(tatemono)

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — AssetRow
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.049Z
+// Generated: 2026-06-20T13:07:58.583Z
 // ============================================================
 
-import React, { Image, ScrollView, Text, View, useState } from '@lynx-js/react'
+import React, { useState } from '@lynx-js/react'
 import { LYNX_CATEGORY_EMOJI } from './constants'
 import type { LynxAssetItem } from './types'
 
@@ -14,26 +14,26 @@ export const AssetRow = ({ asset }: { asset: LynxAssetItem }) => {
   const isImage = asset.category === 'images'
 
   return (
-    <View style={{ backgroundColor: '#fff', borderWidth: 1, borderColor: '#f1f5f9', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12, marginBottom: 8 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-        <Text style={{ fontSize: 20, marginRight: 12 }}>{LYNX_CATEGORY_EMOJI[asset.category] ?? '📁'}</Text>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#0f172a' }}>{asset.name}</Text>
-          <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#94a3b8', marginTop: 2 }}>
+    <view className="bg-white border border-[#f1f5f9] rounded-2xl px-4 py-3 mb-2">
+      <view className="flex-row items-center">
+        <text className="text-xl mr-3">{LYNX_CATEGORY_EMOJI[asset.category] ?? '📁'}</text>
+        <view className="flex-1">
+          <text className="text-[13px] font-semibold text-[#0f172a]">{asset.name}</text>
+          <text className="text-[11px] font-mono text-[#94a3b8] mt-0.5">
             {asset.uri}
-          </Text>
-        </View>
-        <View style={{ backgroundColor: '#ede9fe', paddingHorizontal: 8, paddingVertical: 2, borderRadius: 4 }}>
-          <Text style={{ fontSize: 11, fontWeight: '600', color: '#6366f1', fontFamily: 'monospace' }}>.{asset.ext}</Text>
-        </View>
-      </View>
+          </text>
+        </view>
+        <view className="bg-[#ede9fe] px-2 py-0.5 rounded">
+          <text className="text-[11px] font-semibold text-[#6366f1] font-mono">.{asset.ext}</text>
+        </view>
+      </view>
       {isImage && (
-        <Image
+        <image
           src={asset.uri}
-          style={{ width: '100%', height: 160, borderRadius: 12, marginTop: 12 }}
+          className="w-full h-40 rounded-xl mt-3"
         />
       )}
-    </View>
+    </view>
   )
 }
 

@@ -2,19 +2,20 @@
 // ARKZEN GENERATED LYNX COMPONENT — KindBadge
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:49.070Z
+// Generated: 2026-06-20T13:07:59.832Z
 // ============================================================
 
-import React, { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
+import { Icon } from '@sigx/lynx-icons'
 
 // ── Kind badge ────────────────────────────────────────────────
 export const KindBadge = ({ kind }: { kind: string }) => (
-  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold ${
-    kind === 'mail' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'
-  }`}>
-    {kind === 'mail' ? '✉ MAIL' : '🔔 NOTIF'}
-  </span>
+  <view className={`inline-flex items-center px-2.5 py-0.5 rounded-full ${kind === 'mail' ? 'bg-blue-100' : 'bg-yellow-100'}`}>
+    <text className={`text-xs font-bold ${kind === 'mail' ? 'text-blue-700' : 'text-yellow-700'}`}>
+      {kind === 'mail' ? '✉ MAIL' : '🔔 NOTIF'}
+    </text>
+  </view>
 )
 
 // ── Status dot ────────────────────────────────────────────────

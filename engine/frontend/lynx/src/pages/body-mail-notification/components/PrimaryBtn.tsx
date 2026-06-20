@@ -2,11 +2,12 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:49.061Z
+// Generated: 2026-06-20T13:07:59.830Z
 // ============================================================
 
-import React, { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
+import { Icon } from '@sigx/lynx-icons'
 
 // ── Primary button ────────────────────────────────────────────
 export const PrimaryBtn = ({
@@ -20,13 +21,14 @@ export const PrimaryBtn = ({
   loading?:   boolean
   className?: string
 }) => (
-  <button
-    onClick={onPress}
-    disabled={loading}
-    className={`w-full py-3.5 rounded-2xl text-white text-sm font-semibold ${loading ? 'bg-neutral-300' : className}`}
+  <view
+    bindtap={loading ? undefined : onPress}
+    className={`w-full py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : className}`}
   >
-    {loading ? '…' : label}
-  </button>
+    <text className="text-white text-sm font-semibold">
+      {loading ? '…' : label}
+    </text>
+  </view>
 )
 
 // ── Kind badge ────────────────────────────────────────────────

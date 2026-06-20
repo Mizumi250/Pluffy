@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — WorkerRow
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.110Z
+// Generated: 2026-06-20T13:08:03.534Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 import { formatPeso } from './utils'
 import type { JobOrder } from './types'
@@ -19,24 +19,25 @@ export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void 
   const netPay = jo.basic_pay - deductions
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}
+    <view
+      bindtap={onPress}
+      className="flex-row items-center px-4 py-3 border-b border-gray-50"
+      style={{ gap: 12 }}
     >
       <Avatar name={jo.name_of_jo} size={38} />
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · {jo.funding}</Text>
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(netPay)}</Text>
-        <View style={{ backgroundColor: jo.disbursement_type === 'ATM' ? '#dbeafe' : '#fef3c7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-          <Text style={{ fontSize: 10, fontWeight: '700', color: jo.disbursement_type === 'ATM' ? '#2563eb' : '#d97706' }}>
+      <view className="flex-1">
+        <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+        <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · {jo.funding}</text>
+      </view>
+      <view className="items-end" style={{ gap: 4 }}>
+        <text className="text-[13px] font-bold text-gray-900">{formatPeso(netPay)}</text>
+        <view className={`rounded-md px-1.5 py-0.5 ${jo.disbursement_type === 'ATM' ? 'bg-blue-100' : 'bg-amber-100'}`}>
+          <text className={`text-[10px] font-bold ${jo.disbursement_type === 'ATM' ? 'text-blue-600' : 'text-amber-600'}`}>
             {jo.disbursement_type}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+          </text>
+        </view>
+      </view>
+    </view>
   )
 }
 

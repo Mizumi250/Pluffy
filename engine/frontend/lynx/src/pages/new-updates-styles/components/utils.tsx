@@ -2,18 +2,18 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — new-updates-styles
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.499Z
+// Generated: 2026-06-20T13:08:04.786Z
 // ============================================================
 
 import React, { useState } from '@lynx-js/react'
-import { Code, Layers, Palette, Zap } from 'lucide-react'
+import { Icon } from '@sigx/lynx-icons'
 
-export const getLynxIcon = (name: string) => {
-  switch (name) {
-    case 'zap':     return <Zap size={24} />
-    case 'code':    return <Code size={24} />
-    case 'palette': return <Palette size={24} />
-    case 'layers':  return <Layers size={24} />
-    default:        return null
+export const getLynxIcon = (name: string, color: string) => {
+  const colorMap: Record<string, string> = {
+    blue: '#2563eb',
+    purple: '#7c3aed',
+    green: '#059669',
+    orange: '#ea580c',
   }
+  return <Icon set="lucide" name={name} size={24} color={colorMap[color] || '#000'} />
 }

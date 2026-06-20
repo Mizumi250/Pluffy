@@ -2,25 +2,25 @@
 // ARKZEN GENERATED LYNX COMPONENT — SearchBar
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.112Z
+// Generated: 2026-06-20T13:08:03.535Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 import { TabRow } from './TabRow'
 
 // ── SearchBar ────────────────────────────────────────────────
 
 export const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 10, gap: 8 }}>
+  <view className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200 px-3 py-2.5" style={{ gap: 8 }}>
     <Icon set="lucide" name="search" size={14} color="#9ca3af" />
-    <TextInput
+    <input
       value={value}
-      onInput={e => onChange(e.detail.value)}
+      bindinput={e => onChange(e.detail.value)}
       placeholder={placeholder ?? 'Search…'}
-      style={{ flex: 1, fontSize: 13, color: '#111827' }}
+      className="flex-1 text-[13px] text-gray-900"
     />
-  </View>
+  </view>
 )
 
 // ── TabRow ───────────────────────────────────────────────────

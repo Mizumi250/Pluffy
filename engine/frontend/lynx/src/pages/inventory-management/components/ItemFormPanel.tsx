@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — ItemFormPanel
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:51.680Z
+// Generated: 2026-06-20T13:08:02.889Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 import { apiFetch, emptyForm } from './utils'
 import type { FormState, InventoryItem } from './types'
@@ -68,26 +68,26 @@ export const ItemFormPanel = ({
   if (!visible) return null
 
   return (
-    <View className="absolute inset-0 bg-black/40 justify-end z-50">
-      <View className="bg-white rounded-t-3xl">
+    <view className="absolute inset-0 bg-black/40 justify-end z-50">
+      <view className="bg-white rounded-t-3xl">
         {/* Panel header */}
-        <View className="flex-row items-center justify-between px-5 py-4 border-b border-neutral-100">
-          <Text className="text-base font-semibold text-neutral-900">
+        <view className="flex-row items-center justify-between px-5 py-4 border-b border-neutral-100">
+          <text className="text-base font-semibold text-neutral-900">
             {editing ? 'Edit Item' : 'Add New Item'}
-          </Text>
-          <TouchableOpacity
-            onPress={onClose}
+          </text>
+          <view
+            bindtap={onClose}
             className="p-1.5 rounded-xl bg-neutral-100"
           >
             <Icon set="lucide" name="x" size={16} color="#737373" />
-          </TouchableOpacity>
-        </View>
+          </view>
+        </view>
 
-        <ScrollView contentContainerStyle={{ padding: 20, gap: 14 }}>
+        <scroll-view className="p-5 gap-y-3.5">
           {error && (
-            <View className="p-3 bg-red-50 border border-red-100 rounded-xl">
-              <Text className="text-xs text-red-600">{error}</Text>
-            </View>
+            <view className="p-3 bg-red-50 border border-red-100 rounded-xl">
+              <text className="text-xs text-red-600">{error}</text>
+            </view>
           )}
 
           <Field label="Name *"       placeholder="Product name"       value={form.name}        onInput={v => setForm(f => ({...f, name: v}))}        />
@@ -96,27 +96,26 @@ export const ItemFormPanel = ({
           <Field label="Quantity"     placeholder="0"                   value={form.quantity}    onInput={v => setForm(f => ({...f, quantity: v}))}    />
           <Field label="Price (₱) *"  placeholder="0.00"                value={form.price}       onInput={v => setForm(f => ({...f, price: v}))}       />
           <Field label="Description"  placeholder="Optional description" value={form.description} onInput={v => setForm(f => ({...f, description: v}))} multiline />
-        </ScrollView>
+        </scroll-view>
 
         {/* Footer */}
-        <View className="flex-row gap-3 px-5 py-4 border-t border-neutral-100">
-          <TouchableOpacity
-            onPress={onClose}
+        <view className="flex-row gap-3 px-5 py-4 border-t border-neutral-100">
+          <view
+            bindtap={onClose}
             className="flex-1 py-3 rounded-2xl bg-neutral-100 items-center"
           >
-            <Text className="text-sm font-semibold text-neutral-700">Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={handleSave}
-            disabled={saving}
+            <text className="text-sm font-semibold text-neutral-700">Cancel</text>
+          </view>
+          <view
+            bindtap={saving ? undefined : handleSave}
             className={`flex-1 py-3 rounded-2xl items-center ${saving ? 'bg-neutral-300' : 'bg-neutral-900'}`}
           >
-            <Text className="text-sm font-semibold text-white">
+            <text className="text-sm font-semibold text-white">
               {saving ? 'Saving…' : editing ? 'Update' : 'Create'}
-            </Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
+            </text>
+          </view>
+        </view>
+      </view>
+    </view>
   )
 }

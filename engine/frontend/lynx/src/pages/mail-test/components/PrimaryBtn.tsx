@@ -2,12 +2,12 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.813Z
+// Generated: 2026-06-20T13:08:04.342Z
 // ============================================================
 
-import React, { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react-native'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
+import { Icon } from '@sigx/lynx-icons'
 
 // ── Primary button ────────────────────────────────────────────
 export const PrimaryBtn = ({
@@ -19,15 +19,12 @@ export const PrimaryBtn = ({
   onPress:  () => void
   loading?: boolean
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
+  <view
+    bindtap={loading ? undefined : onPress}
     className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
   >
-    {loading
-      ? <ActivityIndicator size="small" color="#fff" />
-      : <Text className="text-white text-sm font-semibold">{label}</Text>
-    }
-  </TouchableOpacity>
+    <text className="text-white text-sm font-semibold">
+      {loading ? 'Loading…' : label}
+    </text>
+  </view>
 )

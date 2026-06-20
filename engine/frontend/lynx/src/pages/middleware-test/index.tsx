@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — middleware-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.078Z
+// Generated: 2026-06-20T13:08:04.453Z
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'
 import { apiFetch } from './components/utils'
 import type { PingLog, Result } from './components/types'
-import { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import { useEffect, useState } from '@lynx-js/react'
 
 /* @arkzen:native:page:layout:default */
 
@@ -58,54 +58,48 @@ const IndexScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View className="bg-white border-b border-neutral-100 px-5 py-4">
-        <Text className="text-base font-semibold text-neutral-900">🛡️ Middleware Test</Text>
-        <Text className="text-xs text-neutral-400 mt-0.5">
+      <view className="bg-white border-b border-neutral-100 px-5 py-4">
+        <text className="text-base font-semibold text-neutral-900">🛡️ Middleware Test</text>
+        <text className="text-xs text-neutral-400 mt-0.5">
           Tests requireJson middleware body injection
-        </Text>
-      </View>
+        </text>
+      </view>
 
-      <ScrollView
-        className="flex-1"
-        contentContainerStyle={{ paddingBottom: 32 }}
-        showsVerticalScrollIndicator={false}
-      >
+      <scroll-view className="flex-1 pb-8">
 
         {/* What was generated */}
-        <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 p-5">
-          <Text className="text-sm font-semibold text-neutral-900 mb-2">What Arkzen generated</Text>
-          <Text className="text-xs text-neutral-500 leading-5">
-            <Text className="font-mono text-neutral-700">@arkzen:middleware:requireJson</Text>
+        <view className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 p-5">
+          <text className="text-sm font-semibold text-neutral-900 mb-2">What Arkzen generated</text>
+          <text className="text-xs text-neutral-500 leading-5">
+            <text className="font-mono text-neutral-700">@arkzen:middleware:requireJson</text>
             {' '}injects real PHP into{' '}
-            <Text className="font-mono text-neutral-700">handle()</Text>.
+            <text className="font-mono text-neutral-700">handle()</text>.
             {' '}Alias registered in route file so Laravel resolves it correctly.
-          </Text>
-          <View className="mt-2 bg-neutral-50 rounded-xl px-3 py-2">
-            <Text className="text-xs font-mono text-neutral-500">
+          </text>
+          <view className="mt-2 bg-neutral-50 rounded-xl px-3 py-2">
+            <text className="text-xs font-mono text-neutral-500">
               POST without Content-Type → 415{'\n'}
               POST with Content-Type: application/json → 200
-            </Text>
-          </View>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {/* Test panel */}
-        <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 p-5 gap-y-3">
-          <Text className="text-sm font-semibold text-neutral-900">Test the middleware</Text>
+        <view className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 p-5 gap-y-3">
+          <text className="text-sm font-semibold text-neutral-900">Test the middleware</text>
 
-          <TextInput
+          <input
             className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
             placeholder="Optional message"
-            placeholderTextColor="#a3a3a3"
             value={message}
-            onChangeText={setMessage}
-            autoCapitalize="none"
-            autoCorrect={false}
+            bindinput={e => setMessage(e.detail.value)}
+            type="text"
           />
 
-          <View className="flex-row gap-x-2">
+          <view className="flex-row gap-x-2">
             <PrimaryBtn
               label="✓ With JSON header"
               onPress={() => sendPing(true)}
@@ -116,38 +110,38 @@ const IndexScreen = () => {
               onPress={() => sendPing(false)}
               loading={loading}
             />
-          </View>
+          </view>
 
           <ResultBox result={result} />
-        </View>
+        </view>
 
         {/* Ping log */}
-        <View className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <View className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
-            <Text className="font-semibold text-sm text-neutral-900">Ping log</Text>
-            <TouchableOpacity onPress={loadLogs}>
-              <Text className="text-xs text-neutral-400">Refresh</Text>
-            </TouchableOpacity>
-          </View>
+        <view className="mx-4 mt-4 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
+            <text className="font-semibold text-sm text-neutral-900">Ping log</text>
+            <view bindtap={loadLogs}>
+              <text className="text-xs text-neutral-400">Refresh</text>
+            </view>
+          </view>
           {logs.length === 0 ? (
-            <View className="p-8 items-center">
-              <Text className="text-sm text-neutral-400">No pings yet.</Text>
-            </View>
+            <view className="p-8 items-center">
+              <text className="text-sm text-neutral-400">No pings yet.</text>
+            </view>
           ) : (
             logs.map((l, i) => (
-              <View key={i} className="px-5 py-3 flex-row items-center justify-between border-b border-neutral-50">
-                <Text className="text-sm text-neutral-900 flex-1" numberOfLines={1}>{l.message}</Text>
-                <View className={`px-2.5 py-1 rounded-full ml-3 ${l.headers_ok ? 'bg-green-100' : 'bg-neutral-100'}`}>
-                  <Text className={`text-xs font-semibold ${l.headers_ok ? 'text-green-700' : 'text-neutral-500'}`}>
+              <view key={i} className="px-5 py-3 flex-row items-center justify-between border-b border-neutral-50">
+                <text className="text-sm text-neutral-900 flex-1">{l.message}</text>
+                <view className={`px-2.5 py-1 rounded-full ml-3 ${l.headers_ok ? 'bg-green-100' : 'bg-neutral-100'}`}>
+                  <text className={`text-xs font-semibold ${l.headers_ok ? 'text-green-700' : 'text-neutral-500'}`}>
                     {l.headers_ok ? 'json ✓' : 'no header'}
-                  </Text>
-                </View>
-              </View>
+                  </text>
+                </view>
+              </view>
             ))
           )}
-        </View>
+        </view>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }

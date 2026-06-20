@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — ResultBox
 // Source: @arkzen:native:components:lynx:* (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.072Z
+// Generated: 2026-06-20T13:08:04.451Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import React, { useEffect, useState } from '@lynx-js/react'
 import type { Result, ResultStatus } from './types'
 
 // ── Result box ────────────────────────────────────────────────
@@ -24,8 +24,8 @@ export const ResultBox = ({ result }: { result: Result }) => {
     idle:    'text-neutral-500',
   }
   return (
-    <View className={`p-3 rounded-xl border ${bgStyles[result.status]}`}>
-      <Text className={`text-xs ${textStyles[result.status]}`}>{result.text}</Text>
-    </View>
+    <view className={`p-3 rounded-xl border ${bgStyles[result.status]}`}>
+      <text className={`text-xs ${textStyles[result.status]}`}>{result.text}</text>
+    </view>
   )
 }

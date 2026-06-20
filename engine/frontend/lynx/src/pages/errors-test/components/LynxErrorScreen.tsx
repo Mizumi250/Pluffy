@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxErrorScreen
 // Source: @arkzen:native:components:lynx:* (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:50.891Z
+// Generated: 2026-06-20T13:08:02.202Z
 // ============================================================
 
-import React, { ScrollView, Text, TouchableOpacity, View, useState } from '@lynx-js/react'
+import React, { useState } from '@lynx-js/react'
 import { LYNX_ERRORS } from './constants'
 
 export const LynxErrorScreen = ({ code, reset }: { code: number; reset?: () => void }) => {
@@ -13,31 +13,27 @@ export const LynxErrorScreen = ({ code, reset }: { code: number; reset?: () => v
     code,
     title: 'Error',
     message: 'An unexpected error occurred.',
-    color: '#404040',
-    bg: '#fafafa',
+    color: 'text-neutral-700',
+    bg:    'bg-neutral-50',
+    border: 'border-neutral-100',
   }
 
   return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 32, backgroundColor: err.bg }}>
-      <Text style={{ fontSize: 80, fontWeight: '900', color: err.color, marginBottom: 8 }}>{err.code}</Text>
-      <Text style={{ fontSize: 20, fontWeight: '700', color: '#171717', marginBottom: 12 }}>{err.title}</Text>
-      <Text style={{ fontSize: 13, color: '#737373', textAlign: 'center', lineHeight: 22, marginBottom: 40 }}>{err.message}</Text>
-      <View style={{ flexDirection: 'row', gap: 12 }}>
+    <view className={`flex-1 items-center justify-center px-8 ${err.bg}`}>
+      <text className={`text-8xl font-black mb-2 ${err.color}`}>{err.code}</text>
+      <text className="text-xl font-bold text-neutral-900 mb-3">{err.title}</text>
+      <text className="text-sm text-neutral-500 text-center leading-6 mb-10">{err.message}</text>
+      <view className="flex-row gap-x-3">
         {reset && (
-          <TouchableOpacity
-            onPress={reset}
-            style={{ backgroundColor: '#171717', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
-          >
-            <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>Try again</Text>
-          </TouchableOpacity>
+          <view bindtap={reset} className="bg-neutral-900 px-6 py-3 rounded-2xl">
+            <text className="text-white text-sm font-semibold">Try again</text>
+          </view>
         )}
-        <TouchableOpacity
-          style={{ borderWidth: 1, borderColor: '#e5e5e5', backgroundColor: '#fff', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 16 }}
-        >
-          <Text style={{ color: '#525252', fontSize: 13, fontWeight: '500' }}>Home</Text>
-        </TouchableOpacity>
-      </View>
-      <Text style={{ marginTop: 40, fontSize: 11, color: '#d4d4d4' }}>Error {err.code}</Text>
-    </View>
+        <view className="border border-neutral-200 bg-white px-6 py-3 rounded-2xl">
+          <text className="text-neutral-600 text-sm font-medium">Home</text>
+        </view>
+      </view>
+      <text className="mt-10 text-xs text-neutral-300">Error {err.code}</text>
+    </view>
   )
 }

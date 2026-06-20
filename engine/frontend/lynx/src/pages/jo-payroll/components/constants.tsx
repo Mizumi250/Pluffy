@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — jo-payroll
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.097Z
+// Generated: 2026-06-20T13:08:03.520Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
 export const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'

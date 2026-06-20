@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — mail-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.833Z
+// Generated: 2026-06-20T13:08:04.347Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
-import { KeyboardAvoidingView, Platform, ScrollView, Text, View, useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { Mail } from 'lucide-react-native'
+import { Icon } from '@sigx/lynx-icons'
 
 /* @arkzen:native:page:layout:guest */
 
@@ -29,28 +29,21 @@ const RegisterScreen = () => {
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-neutral-50"
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView
-        contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
-        keyboardShouldPersistTaps="handled"
-        className="px-6"
-      >
+    <scroll-view className="flex-1 bg-neutral-50 px-6">
+      <view className="flex-1 justify-center">
         {/* Header */}
-        <View className="mb-8">
-          <View className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Mail size={22} color="#fff" />
-          </View>
-          <Text className="text-2xl font-bold text-neutral-900">Mail Test</Text>
-          <Text className="text-sm text-neutral-500 mt-1">
+        <view className="mb-8">
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
+            <Icon set="lucide" name="mail" size={22} color="#fff" />
+          </view>
+          <text className="text-2xl font-bold text-neutral-900">Mail Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             Create an account to start testing email delivery
-          </Text>
-        </View>
+          </text>
+        </view>
 
         {/* Form */}
-        <View className="gap-y-3">
+        <view className="gap-y-3">
           {error && <ErrorBox message={error} />}
 
           <Field
@@ -78,16 +71,16 @@ const RegisterScreen = () => {
           />
 
           <PrimaryBtn label="Create account" onPress={handleRegister} loading={isLoading} />
-        </View>
+        </view>
 
         {/* Footer */}
-        <View className="mt-6 items-center">
-          <Text className="text-xs text-neutral-400">
+        <view className="mt-6 items-center">
+          <text className="text-xs text-neutral-400">
             Already have an account?{' '}
-            <Text className="text-neutral-700 font-medium">Sign in</Text>
-          </Text>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+            <text className="text-neutral-700 font-medium">Sign in</text>
+          </text>
+        </view>
+      </view>
+    </scroll-view>
   )
 }

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — inventory-management
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:51.673Z
+// Generated: 2026-06-20T13:08:02.879Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 import { BACKEND_URL } from './constants'
 import type { FormState } from './types'

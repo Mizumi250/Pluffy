@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — ItemRow
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:50.415Z
+// Generated: 2026-06-20T13:08:01.116Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import React, { useEffect, useState } from '@lynx-js/react'
 import type { Item } from './types'
 import { StatusBadge } from './StatusBadge'
 
@@ -21,35 +21,35 @@ export const ItemRow = ({
   onDelete: (id: number) => void
   deleting: number | null
 }) => (
-  <View style={{ paddingHorizontal: 16, paddingVertical: 12, flexDirection: 'row', alignItems: 'flex-start', gap: 12, borderBottomWidth: 1, borderBottomColor: '#fafafa' }}>
-    <View style={{ flex: 1 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <Text style={{ fontSize: 13, fontWeight: '500', color: '#171717' }}>{item.name}</Text>
+  <view className="px-4 py-3 flex-row items-start gap-3 border-b border-neutral-50">
+    <view className="flex-1">
+      <view className="flex-row items-center gap-2 flex-wrap">
+        <text className="text-sm font-medium text-neutral-900">{item.name}</text>
         <StatusBadge status={item.status} />
         {item.priority > 0 && (
-          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>P{item.priority}</Text>
+          <text className="text-xs text-neutral-400">P{item.priority}</text>
         )}
-      </View>
+      </view>
       {item.description ? (
-        <Text style={{ fontSize: 11, color: '#737373', marginTop: 2 }} numberOfLines={1}>{item.description}</Text>
+        <text className="text-xs text-neutral-500 mt-0.5">{item.description}</text>
       ) : null}
       {item.tags ? (
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+        <view className="flex-row flex-wrap gap-1 mt-1">
           {item.tags.split(',').map((t, i) => (
-            <View key={i} style={{ backgroundColor: '#f5f5f5', borderRadius: 4, paddingHorizontal: 6, paddingVertical: 2 }}>
-              <Text style={{ fontSize: 11, color: '#737373' }}>{t.trim()}</Text>
-            </View>
+            <view key={i} className="bg-neutral-100 rounded px-1.5 py-0.5">
+              <text className="text-xs text-neutral-500">{t.trim()}</text>
+            </view>
           ))}
-        </View>
+        </view>
       ) : null}
-    </View>
-    <View style={{ flexDirection: 'row', gap: 12, paddingTop: 2 }}>
-      <TouchableOpacity onPress={() => onEdit(item)}>
-        <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Edit</Text>
-      </TouchableOpacity>
-      <TouchableOpacity onPress={() => onDelete(item.id)} disabled={deleting === item.id}>
-        <Text style={{ fontSize: 11, color: '#f87171' }}>{deleting === item.id ? '…' : 'Delete'}</Text>
-      </TouchableOpacity>
-    </View>
-  </View>
+    </view>
+    <view className="flex-row gap-3 pt-0.5">
+      <view bindtap={() => onEdit(item)}>
+        <text className="text-xs text-neutral-400">Edit</text>
+      </view>
+      <view bindtap={() => deleting === item.id ? null : onDelete(item.id)}>
+        <text className="text-xs text-red-400">{deleting === item.id ? '…' : 'Delete'}</text>
+      </view>
+    </view>
+  </view>
 )

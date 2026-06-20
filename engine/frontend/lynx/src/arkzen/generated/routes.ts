@@ -111,7 +111,7 @@ export const lynxErrorFlags: Record<string, { has404: boolean; has500: boolean }
   'events-test': { has404: false, has500: false },
   'hello-native': { has404: false, has500: false },
   'inventory-management': { has404: false, has500: false },
-  'jo-payroll': { has404: true, has500: false },
+  'jo-payroll': { has404: false, has500: false },
   'job-test': { has404: false, has500: false },
   'layout-test': { has404: true, has500: false },
   'mail-test': { has404: false, has500: false },

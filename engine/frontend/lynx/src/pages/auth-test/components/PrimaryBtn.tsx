@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.269Z
+// Generated: 2026-06-20T13:07:58.928Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 // ── Primary button ────────────────────────────────────────────
 export const PrimaryBtn = ({
@@ -18,13 +18,12 @@ export const PrimaryBtn = ({
   onPress:  () => void
   loading?: boolean
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    style={{ paddingVertical: 14, borderRadius: 16, alignItems: 'center', backgroundColor: loading ? '#d4d4d4' : '#171717' }}
+  <view
+    bindtap={loading ? undefined : onPress}
+    className={`py-3.5 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
   >
-    <Text style={{ color: '#fff', fontSize: 13, fontWeight: '600' }}>
+    <text className="text-white text-sm font-semibold">
       {loading ? 'Loading…' : label}
-    </Text>
-  </TouchableOpacity>
+    </text>
+  </view>
 )

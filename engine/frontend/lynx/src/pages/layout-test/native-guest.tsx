@@ -1,19 +1,19 @@
 // ARKZEN GENERATED — layout-test/native-guest (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.723Z
+// Generated: 2026-06-20T13:08:04.298Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:+guest */
 
-import React from 'react'
+import React from '@lynx-js/react'
 
 const NativeGuestLynxPage = () => (
-  <div className="flex-1 overflow-y-auto p-5 gap-3 flex flex-col">
-    <h1 className="text-lg font-black text-gray-900">Native Guest Guard</h1>
-    <p className="text-sm text-gray-600 leading-relaxed">
-      Guest guard only. Uses <span className="font-mono text-indigo-600">+guest</span>.
+  <scroll-view className="flex-1 p-5" contentContainerStyle={{ gap: 12 }}>
+    <text className="text-lg font-black text-gray-900">Native Guest Guard</text>
+    <text className="text-sm text-gray-600 leading-relaxed">
+      Guest guard only. Uses <text className="font-mono text-indigo-600">+guest</text>.
       {'\n'}Redirects to dashboard if already authenticated.
-    </p>
+    </text>
     <NativeLayerBadge layers={['GuestLayout (guard)']} />
-  </div>
+  </scroll-view>
 )

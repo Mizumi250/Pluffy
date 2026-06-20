@@ -2,14 +2,14 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxSectionCard
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.429Z
+// Generated: 2026-06-20T13:07:59.027Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
 
 // ── Section card ──────────────────────────────────────────────
 export const LynxSectionCard = ({ children }: { children: any }) => (
-  <View style={{
+  <view style={{
     backgroundColor: '#fff',
     borderRadius: 16,
     padding: 16,
@@ -18,5 +18,5 @@ export const LynxSectionCard = ({ children }: { children: any }) => (
     borderColor: '#f1f1f1',
   }}>
     {children}
-  </View>
+  </view>
 )

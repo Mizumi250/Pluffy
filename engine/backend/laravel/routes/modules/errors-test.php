@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — errors-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T11:32:51.234262Z
+// Generated: 2026-06-20T13:08:04.165902Z
 // Resources: 
 // Custom controllers: SimulateController
 // ============================================================

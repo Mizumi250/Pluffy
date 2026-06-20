@@ -2,23 +2,23 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatusBadge
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:50.409Z
+// Generated: 2026-06-20T13:08:01.110Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import React, { useEffect, useState } from '@lynx-js/react'
 
 // ── Status badge ──────────────────────────────────────────────
 export const StatusBadge = ({ status }: { status: string }) => {
-  const color = {
-    active:   { bg: '#dcfce7', text: '#15803d' },
-    pending:  { bg: '#fef9c3', text: '#a16207' },
-    archived: { bg: '#f5f5f5', text: '#737373' },
-  }[status] ?? { bg: '#f5f5f5', text: '#525252' }
+  const styles = {
+    active:   { bg: 'bg-green-100',   text: 'text-green-700'   },
+    pending:  { bg: 'bg-yellow-100',  text: 'text-yellow-700'  },
+    archived: { bg: 'bg-neutral-100', text: 'text-neutral-500' },
+  }[status] ?? { bg: 'bg-neutral-100', text: 'text-neutral-600' }
 
   return (
-    <View style={{ backgroundColor: color.bg, paddingHorizontal: 8, paddingVertical: 2, borderRadius: 6 }}>
-      <Text style={{ color: color.text, fontSize: 11, fontWeight: '500' }}>{status}</Text>
-    </View>
+    <view className={`px-2 py-0.5 rounded-md ${styles.bg}`}>
+      <text className={`text-xs font-medium ${styles.text}`}>{status}</text>
+    </view>
   )
 }
 

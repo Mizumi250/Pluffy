@@ -2,12 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — GhostBtn
 // Source: @arkzen:native:components:lynx:* (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.990Z
+// Generated: 2026-06-20T13:08:05.483Z
 // ============================================================
 
-import React from '@lynx-js/react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 // ── Ghost button ──────────────────────────────────────────────
 export const GhostBtn = ({
@@ -15,17 +14,17 @@ export const GhostBtn = ({
   onPress,
   loading = false,
 }: {
-  label:    string
-  onPress:  () => void
+  label: string
+  onPress: () => void
   loading?: boolean
 }) => (
-  <button
-    onClick={onPress}
-    disabled={loading}
-    className="py-3 px-5 rounded-2xl text-sm font-medium border border-neutral-200 bg-white text-neutral-600 transition-colors disabled:opacity-50"
+  <view
+    bindtap={loading ? undefined : onPress}
+    className="py-3 px-5 rounded-2xl border border-neutral-200 items-center"
+    style={{ backgroundColor: '#ffffff' }}
   >
-    {loading ? '...' : label}
-  </button>
+    <text className="text-neutral-600 text-sm font-medium">{loading ? '...' : label}</text>
+  </view>
 )
 
 // ── Role badge ────────────────────────────────────────────────

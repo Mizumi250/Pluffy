@@ -1,7 +1,6 @@
 // ARKZEN GENERATED — auth-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.280Z
-import { ScrollView, Text, TouchableOpacity, View } from '@lynx-js/react'
+// Generated: 2026-06-20T13:07:58.952Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 const DashboardScreen = () => {
@@ -12,48 +11,48 @@ const DashboardScreen = () => {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717' }}>✅ Auth Test</Text>
-          <Text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2 }}>{user?.email}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text style={{ fontSize: 11, color: '#a3a3a3' }}>Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">✅ Auth Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">{user?.email}</text>
+        </view>
+        <view bindtap={handleLogout}>
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <ScrollView style={{ flex: 1 }}>
+      <scroll-view className="flex-1">
         {/* Success card */}
-        <View style={{ margin: 16, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 32, alignItems: 'center' }}>
-          <Text style={{ fontSize: 40, marginBottom: 12 }}>🛡️</Text>
-          <Text style={{ fontSize: 15, fontWeight: '600', color: '#171717', marginBottom: 6 }}>
+        <view className="m-4 bg-white rounded-3xl border border-neutral-100 p-8 items-center">
+          <text className="text-4xl mb-3">🛡️</text>
+          <text className="text-base font-semibold text-neutral-900 mb-1.5">
             Authentication successful
-          </Text>
-          <Text style={{ fontSize: 11, color: '#737373', textAlign: 'center', lineHeight: 20 }}>
+          </text>
+          <text className="text-xs text-neutral-500 text-center leading-5">
             {`This screen is protected by the auth layout.\nOnly signed-in users can see it.`}
-          </Text>
-        </View>
+          </text>
+        </view>
 
         {/* User info */}
-        <View style={{ marginHorizontal: 16, marginTop: 4, backgroundColor: '#fff', borderRadius: 20, borderWidth: 1, borderColor: '#f5f5f5', padding: 20 }}>
-          <Text style={{ fontSize: 13, fontWeight: '600', color: '#171717', marginBottom: 12 }}>User info</Text>
-          <View style={{ backgroundColor: '#fafafa', borderRadius: 12, padding: 16 }}>
-            <Text style={{ fontSize: 11, fontFamily: 'monospace', color: '#737373', lineHeight: 20 }}>
+        <view className="mx-4 mt-1 bg-white rounded-3xl border border-neutral-100 p-5">
+          <text className="text-sm font-semibold text-neutral-900 mb-3">User info</text>
+          <view className="bg-neutral-50 rounded-xl p-4">
+            <text className="text-xs font-mono text-neutral-500 leading-5">
               {JSON.stringify(user, null, 2)}
-            </Text>
-          </View>
-        </View>
+            </text>
+          </view>
+        </view>
 
         {/* Footer note */}
-        <View style={{ marginHorizontal: 16, marginTop: 16, marginBottom: 32, backgroundColor: '#f5f5f5', borderRadius: 16, paddingHorizontal: 16, paddingVertical: 12 }}>
-          <Text style={{ fontSize: 11, color: '#737373', fontFamily: 'monospace', lineHeight: 20 }}>
+        <view className="mx-4 mt-4 mb-8 bg-neutral-100 rounded-2xl px-4 py-3">
+          <text className="text-xs text-neutral-500 font-mono leading-5">
             {`token: Sanctum Bearer\nscope: auth-test SQLite\nshared: web ↔ native same token`}
-          </Text>
-        </View>
-      </ScrollView>
-    </View>
+          </text>
+        </view>
+      </scroll-view>
+    </view>
   )
 }

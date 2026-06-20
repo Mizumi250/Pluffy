@@ -150,7 +150,7 @@
         "layout": "default"
       }
     ],
-    "has404": true,
+    "has404": false,
     "has500": false
   },
   "job-test": {

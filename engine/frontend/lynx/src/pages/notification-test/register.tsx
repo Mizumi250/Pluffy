@@ -1,19 +1,19 @@
 // ARKZEN GENERATED — notification-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.644Z
+// Generated: 2026-06-20T13:08:05.170Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { useState } from '@lynx-js/react'
 
 const RegisterLynxPage = () => {
   const { register, isLoading } = useAuthStore()
-  const [name, setName] = React.useState('')
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [confirm, setConfirm] = React.useState('')
-  const [error, setError] = React.useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const handleRegister = async () => {
     setError(null)
@@ -26,62 +26,66 @@ const RegisterLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8 w-full max-w-sm space-y-5">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">🔔 Notification Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+    <view className="flex-1 items-center justify-center p-6">
+      <view className="bg-white rounded-2xl border border-neutral-100 p-8 w-full" style={{ maxWidth: 384, gap: 20 }}>
+        <view>
+          <text className="text-xl font-bold">🔔 Notification Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             Create an account to test notifications
-          </p>
-        </div>
+          </text>
+        </view>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
-            {error}
-          </div>
+          <view className="p-3 bg-red-50 border border-red-200 rounded-xl">
+            <text className="text-red-600 text-sm">{error}</text>
+          </view>
         )}
 
-        <div className="space-y-3">
+        <view style={{ gap: 12 }}>
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             placeholder="Name"
             value={name}
-            onChange={e => setName(e.target.value)}
+            bindinput={e => setName(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            bindinput={e => setEmail(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            bindinput={e => setPassword(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Confirm password"
             value={confirm}
-            onChange={e => setConfirm(e.target.value)}
+            bindinput={e => setConfirm(e.detail.value)}
           />
-        </div>
+        </view>
 
-        <button className="arkzen-btn w-full" onClick={handleRegister} disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Create account'}
-        </button>
+        <view
+          bindtap={isLoading ? undefined : handleRegister}
+          className="w-full rounded-xl py-2.5 items-center"
+          style={{ backgroundColor: '#171717', opacity: isLoading ? 0.6 : 1 }}
+        >
+          <text className="text-white text-sm font-medium">{isLoading ? 'Creating account...' : 'Create account'}</text>
+        </view>
 
-        <p className="text-xs text-center text-neutral-400">
+        <text className="text-xs text-center text-neutral-400">
           Already have an account?{' '}
-          <a href="/notification-test/login" className="text-neutral-700 underline underline-offset-2">
+          <text className="text-neutral-700" style={{ textDecorationLine: 'underline' }}>
             Sign in
-          </a>
-        </p>
-      </div>
-    </div>
+          </text>
+        </text>
+      </view>
+    </view>
   )
 }

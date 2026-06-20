@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.068Z
+// Generated: 2026-06-20T13:08:04.448Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import React, { useEffect, useState } from '@lynx-js/react'
 
 // ── Primary button ────────────────────────────────────────────
 export const PrimaryBtn = ({
@@ -17,17 +17,15 @@ export const PrimaryBtn = ({
   onPress:  () => void
   loading?: boolean
 }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    disabled={loading}
-    activeOpacity={0.8}
+  <view
+    bindtap={loading ? undefined : onPress}
     className={`flex-1 py-3 rounded-2xl items-center ${loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
   >
     {loading
-      ? <Text className="text-neutral-500 text-xs font-semibold">Loading…</Text>
-      : <Text className="text-white text-xs font-semibold">{label}</Text>
+      ? <text className="text-neutral-500 text-xs font-semibold">Loading…</text>
+      : <text className="text-white text-xs font-semibold">{label}</text>
     }
-  </TouchableOpacity>
+  </view>
 )
 
 // ── Ghost button ──────────────────────────────────────────────

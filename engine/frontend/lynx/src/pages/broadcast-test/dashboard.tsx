@@ -1,10 +1,10 @@
 // ARKZEN GENERATED — broadcast-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:50.021Z
+// Generated: 2026-06-20T13:08:00.722Z
 import { ChannelCard } from './components/ChannelCard'
 import { APP_KEY, BACKEND_URL, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
 import type { LynxMessage, WsStatus } from './components/types'
-import { ScrollView, Text, TouchableOpacity, View, useCallback, useEffect, useRef, useState } from '@lynx-js/react'
+import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 const DashboardScreen = () => {
@@ -141,20 +141,20 @@ const DashboardScreen = () => {
   const sendPresence = useCallback((val: string) => send('presence', val), [send])
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
-        <View>
-          <Text className="text-base font-semibold text-neutral-900">📡 Broadcast Test</Text>
-          <Text className="text-xs text-neutral-400 mt-0.5">{user?.name}</Text>
-        </View>
-        <TouchableOpacity onPress={handleLogout}>
-          <Text className="text-xs text-neutral-400">Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">📡 Broadcast Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">{user?.name}</text>
+        </view>
+        <view bindtap={handleLogout}>
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, paddingBottom: 32 }}>
+      <scroll-view className="flex-1 p-4 pb-8">
 
         <ChannelCard
           title="Public channel" badge="public" badgeColor="bg-blue-500"
@@ -173,33 +173,33 @@ const DashboardScreen = () => {
           description="presence-broadcast-test-presence · Auth + member roster."
           status={presenceStatus} count={presenceCount} msgs={presenceMsgs} onSend={sendPresence}
           footer={
-            <View className="flex-row flex-wrap items-center gap-1.5">
-              <Text className="text-xs text-neutral-400">Online:</Text>
+            <view className="flex-row flex-wrap items-center gap-1.5">
+              <text className="text-xs text-neutral-400">Online:</text>
               {members.length === 0
-                ? <Text className="text-xs text-neutral-300">No members yet</Text>
+                ? <text className="text-xs text-neutral-300">No members yet</text>
                 : members.map(m => (
-                    <View key={m.id} className="bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
-                      <Text className="text-xs text-green-700">{m.name}</Text>
-                    </View>
+                    <view key={m.id} className="bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
+                      <text className="text-xs text-green-700">{m.name}</text>
+                    </view>
                   ))
               }
-            </View>
+            </view>
           }
         />
 
         {/* How it works */}
-        <View className="bg-neutral-100 rounded-2xl px-4 py-3 mt-2">
-          <Text className="text-xs text-neutral-500 font-semibold mb-1.5">How each type works</Text>
-          <Text className="text-xs text-neutral-500 leading-5">
+        <view className="bg-neutral-100 rounded-2xl px-4 py-3 mt-2">
+          <text className="text-xs text-neutral-500 font-semibold mb-1.5">How each type works</text>
+          <text className="text-xs text-neutral-500 leading-5">
             {'Public — open channel, no auth handshake.\nPrivate — scoped to your user ID, HMAC-verified.\nPresence — like private + live member roster.'}
-          </Text>
+          </text>
           {/* fontFamily monospace not a Tailwind class in Lynx, use inline */}
-          <Text className="text-xs text-neutral-400 mt-2" style={{ fontFamily: 'monospace' }}>
+          <text className="text-xs text-neutral-400 mt-2" style={{ fontFamily: 'monospace' }}>
             {'php artisan reverb:start\nphp artisan queue:work'}
-          </Text>
-        </View>
+          </text>
+        </view>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }

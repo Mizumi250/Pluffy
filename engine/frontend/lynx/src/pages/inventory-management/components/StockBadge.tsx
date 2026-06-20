@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — StockBadge
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:51.676Z
+// Generated: 2026-06-20T13:08:02.886Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useCallback, useEffect, useState } from '@lynx-js/react'
+import React, { useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 import { Field } from './Field'
 
@@ -17,10 +17,11 @@ export const StockBadge = ({ quantity }: { quantity: number }) => {
     ? { bg: 'bg-amber-50',   text: 'text-amber-600',   label: 'Low stock'    }
     : { bg: 'bg-emerald-50', text: 'text-emerald-600', label: 'In stock'     }
   return (
-    <View className={`px-2 py-0.5 rounded-full ${cfg.bg}`}>
-      <Text className={`text-xs font-medium ${cfg.text}`}>{cfg.label}</Text>
-    </View>
+    <view className={`px-2 py-0.5 rounded-full ${cfg.bg}`}>
+      <text className={`text-xs font-medium ${cfg.text}`}>{cfg.label}</text>
+    </view>
   )
 }
 
 // ── Field ─────────────────────────────────────────────────────
+// Lynx has no multiline TextInput — multiline renders as <textarea>, single-line as <input>

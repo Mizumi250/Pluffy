@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-mail-notification/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:49.093Z
+// Generated: 2026-06-20T13:07:59.843Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -26,34 +26,34 @@ const LoginLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6 bg-neutral-50">
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8 w-full max-w-sm space-y-5">
-        <div>
-          <div className="w-12 h-12 rounded-2xl bg-neutral-900 flex items-center justify-center mb-4">
-            <span className="text-white text-lg font-bold">✉</span>
-          </div>
-          <h1 className="text-xl font-bold text-neutral-900">Body Injection Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+    <view className="min-h-screen flex items-center justify-center p-6 bg-neutral-50">
+      <view className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8 w-full" style={{ maxWidth: 384, gap: 20 }}>
+        <view>
+          <view className="w-12 h-12 rounded-2xl bg-neutral-900 flex items-center justify-center mb-4">
+            <text className="text-white text-lg font-bold">✉</text>
+          </view>
+          <text className="text-xl font-bold text-neutral-900">Body Injection Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             MailBuilder blade_body · NotificationBuilder toMail_body
-          </p>
-        </div>
+          </text>
+        </view>
 
         {error && <ErrorBox message={error} />}
 
-        <div className="space-y-3">
+        <view style={{ gap: 12 }}>
           <Field placeholder="Email"    value={email}    onChangeText={setEmail}    type="email"    />
           <Field placeholder="Password" value={password} onChangeText={setPassword} type="password" />
-        </div>
+        </view>
 
         <PrimaryBtn label={isLoading ? 'Signing in…' : 'Sign in'} onPress={handleLogin} loading={isLoading} />
 
-        <p className="text-xs text-center text-neutral-400">
+        <text className="text-xs text-center text-neutral-400">
           No account?{' '}
-          <a href="/body-mail-notification/register" className="text-neutral-700 underline underline-offset-2">
+          <text className="text-neutral-700" style={{ textDecorationLine: 'underline' }}>
             Register
-          </a>
-        </p>
-      </div>
-    </div>
+          </text>
+        </text>
+      </view>
+    </view>
   )
 }

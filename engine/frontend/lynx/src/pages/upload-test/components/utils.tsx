@@ -2,12 +2,11 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:26:45.851Z
+// Generated: 2026-06-20T13:08:06.560Z
 // ============================================================
 
 import React from '@lynx-js/react'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import React from 'react'
 
 export const formatSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`

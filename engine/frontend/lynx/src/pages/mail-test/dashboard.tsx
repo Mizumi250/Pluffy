@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — mail-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.845Z
+// Generated: 2026-06-20T13:08:04.353Z
 import { Field } from './components/Field'
 import { BACKEND_URL } from './components/constants'
 import type { MailLog, MailType } from './components/types'
-import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
+import { useEffect, useState } from '@lynx-js/react'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react-native'
+import { Icon } from '@sigx/lynx-icons'
 
 /* @arkzen:native:page:layout:auth */
 
@@ -87,165 +87,162 @@ const DashboardScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <View className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
-        <View className="flex-row items-center gap-3">
-          <View className="w-9 h-9 bg-neutral-900 rounded-xl items-center justify-center">
-            <Mail size={16} color="#fff" />
-          </View>
-          <View>
-            <Text className="text-base font-semibold text-neutral-900">Mail Test</Text>
-            <Text className="text-xs text-neutral-400 mt-0.5">{user?.email}</Text>
-          </View>
-        </View>
-        <TouchableOpacity onPress={handleLogout} className="flex-row items-center gap-1">
-          <LogOut size={13} color="#a3a3a3" />
-          <Text className="text-xs text-neutral-400">Sign out</Text>
-        </TouchableOpacity>
-      </View>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view className="flex-row items-center gap-3">
+          <view className="w-9 h-9 bg-neutral-900 rounded-xl items-center justify-center">
+            <Icon set="lucide" name="mail" size={16} color="#fff" />
+          </view>
+          <view>
+            <text className="text-base font-semibold text-neutral-900">Mail Test</text>
+            <text className="text-xs text-neutral-400 mt-0.5">{user?.email}</text>
+          </view>
+        </view>
+        <view bindtap={handleLogout} className="flex-row items-center gap-1">
+          <Icon set="lucide" name="log-out" size={13} color="#a3a3a3" />
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <ScrollView className="flex-1" contentContainerStyle={{ padding: 16, gap: 12 }}>
+      <scroll-view className="flex-1 p-4 gap-y-3">
 
         {/* Toast */}
         {toast && (
-          <View className={`flex-row items-center gap-2 px-4 py-3 rounded-2xl border ${
+          <view className={`flex-row items-center gap-2 px-4 py-3 rounded-2xl border ${
             toast.type === 'success'
               ? 'bg-white border-emerald-200'
               : 'bg-white border-red-200'
           }`}>
             {toast.type === 'success'
-              ? <CheckCircle size={15} color="#10b981" />
-              : <XCircle    size={15} color="#ef4444" />
+              ? <Icon set="lucide" name="check-circle" size={15} color="#10b981" />
+              : <Icon set="lucide" name="x-circle" size={15} color="#ef4444" />
             }
-            <Text className={`text-sm font-medium flex-1 ${
+            <text className={`text-sm font-medium flex-1 ${
               toast.type === 'success' ? 'text-emerald-700' : 'text-red-600'
             }`}>
               {toast.msg}
-            </Text>
-          </View>
+            </text>
+          </view>
         )}
 
         {/* Recipient */}
-        <View className="bg-white rounded-2xl border border-neutral-100 p-4">
-          <Text className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
+        <view className="bg-white rounded-2xl border border-neutral-100 p-4">
+          <text className="text-xs font-medium text-neutral-500 uppercase tracking-wide mb-2">
             Recipient
-          </Text>
+          </text>
           <Field
             placeholder="recipient@example.com"
             value={toEmail}
             onChangeText={setToEmail}
             keyboardType="email-address"
           />
-          <Text className="text-xs text-neutral-400 mt-2">
+          <text className="text-xs text-neutral-400 mt-2">
             Use Mailtrap or a real address. Configure MAIL_* in .env
-          </Text>
-        </View>
+          </text>
+        </view>
 
         {/* Mailables */}
-        <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <View className="px-5 py-3.5 border-b border-neutral-100">
-            <Text className="text-sm font-semibold text-neutral-900">Mailables</Text>
-            <Text className="text-xs text-neutral-400 mt-0.5">3 templates registered via @arkzen:mail</Text>
-          </View>
+        <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-3.5 border-b border-neutral-100">
+            <text className="text-sm font-semibold text-neutral-900">Mailables</text>
+            <text className="text-xs text-neutral-400 mt-0.5">3 templates registered via @arkzen:mail</text>
+          </view>
           {mailTypes.map((m, i) => (
-            <View
+            <view
               key={m.key}
               className={`px-5 py-4 flex-row items-center justify-between gap-3 ${
                 i < mailTypes.length - 1 ? 'border-b border-neutral-50' : ''
               }`}
             >
-              <View className="flex-1 min-w-0">
-                <Text className="text-sm font-medium text-neutral-800">{m.label}</Text>
-                <Text className="text-xs text-neutral-400 mt-0.5" numberOfLines={1}>{m.desc}</Text>
-                <Text className="text-xs font-mono text-neutral-300 mt-1">{m.key}</Text>
-              </View>
-              <TouchableOpacity
-                onPress={() => send(m.key, m.fields)}
-                disabled={!!sending || !toEmail}
-                activeOpacity={0.8}
+              <view className="flex-1 min-w-0">
+                <text className="text-sm font-medium text-neutral-800">{m.label}</text>
+                <text className="text-xs text-neutral-400 mt-0.5">{m.desc}</text>
+                <text className="text-xs font-mono text-neutral-300 mt-1">{m.key}</text>
+              </view>
+              <view
+                bindtap={!!sending || !toEmail ? undefined : () => send(m.key, m.fields)}
                 className={`flex-row items-center gap-1.5 px-3 py-2 rounded-xl ${
                   !!sending || !toEmail ? 'bg-neutral-200' : 'bg-neutral-900'
                 }`}
               >
                 {sending === m.key
-                  ? <ActivityIndicator size="small" color="#fff" />
-                  : <Send size={11} color="#fff" />
+                  ? <text className="text-white text-xs">…</text>
+                  : <Icon set="lucide" name="send" size={11} color="#fff" />
                 }
-                <Text className="text-white text-xs font-medium">
+                <text className="text-white text-xs font-medium">
                   {sending === m.key ? 'Sending' : 'Send'}
-                </Text>
-              </TouchableOpacity>
-            </View>
+                </text>
+              </view>
+            </view>
           ))}
-        </View>
+        </view>
 
         {/* Send Log */}
-        <View className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <View className="px-5 py-3.5 border-b border-neutral-100 flex-row items-center justify-between">
-            <View>
-              <Text className="text-sm font-semibold text-neutral-900">Send log</Text>
-              <Text className="text-xs text-neutral-400 mt-0.5">{logs.length} entries</Text>
-            </View>
-            <TouchableOpacity
-              onPress={loadLogs}
-              disabled={loadingLogs}
+        <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
+          <view className="px-5 py-3.5 border-b border-neutral-100 flex-row items-center justify-between">
+            <view>
+              <text className="text-sm font-semibold text-neutral-900">Send log</text>
+              <text className="text-xs text-neutral-400 mt-0.5">{logs.length} entries</text>
+            </view>
+            <view
+              bindtap={loadingLogs ? undefined : loadLogs}
               className="p-1.5 rounded-lg"
             >
               {loadingLogs
-                ? <ActivityIndicator size="small" color="#a3a3a3" />
-                : <RefreshCw size={14} color="#a3a3a3" />
+                ? <text className="text-xs text-neutral-400">…</text>
+                : <Icon set="lucide" name="refresh-cw" size={14} color="#a3a3a3" />
               }
-            </TouchableOpacity>
-          </View>
+            </view>
+          </view>
 
           {logs.length === 0 ? (
-            <View className="py-12 items-center">
-              <Mail size={28} color="#e5e5e5" />
-              <Text className="text-sm text-neutral-400 mt-3">No mail sent yet</Text>
-              <Text className="text-xs text-neutral-300 mt-1">Send a mail above to see logs here</Text>
-            </View>
+            <view className="py-12 items-center">
+              <Icon set="lucide" name="mail" size={28} color="#e5e5e5" />
+              <text className="text-sm text-neutral-400 mt-3">No mail sent yet</text>
+              <text className="text-xs text-neutral-300 mt-1">Send a mail above to see logs here</text>
+            </view>
           ) : (
             logs.map((l, i) => (
-              <View
+              <view
                 key={l.id}
                 className={`px-5 py-3.5 flex-row items-start justify-between gap-3 ${
                   i < logs.length - 1 ? 'border-b border-neutral-50' : ''
                 }`}
               >
-                <View className="flex-1 min-w-0">
-                  <Text className="text-sm font-medium text-neutral-800" numberOfLines={1}>
+                <view className="flex-1 min-w-0">
+                  <text className="text-sm font-medium text-neutral-800">
                     {l.mail_class}
-                  </Text>
-                  <Text className="text-xs text-neutral-400 mt-0.5" numberOfLines={1}>
+                  </text>
+                  <text className="text-xs text-neutral-400 mt-0.5">
                     To: {l.to_email}
-                  </Text>
+                  </text>
                   {l.error && (
-                    <Text className="text-xs text-red-500 mt-0.5" numberOfLines={1}>{l.error}</Text>
+                    <text className="text-xs text-red-500 mt-0.5">{l.error}</text>
                   )}
-                </View>
-                <View className="items-end gap-1">
-                  <View className={`px-2 py-0.5 rounded-full ${
+                </view>
+                <view className="items-end gap-1">
+                  <view className={`px-2 py-0.5 rounded-full ${
                     l.status === 'sent' ? 'bg-emerald-50' : 'bg-red-50'
                   }`}>
-                    <Text className={`text-xs font-medium ${
+                    <text className={`text-xs font-medium ${
                       l.status === 'sent' ? 'text-emerald-600' : 'text-red-500'
                     }`}>
                       {l.status}
-                    </Text>
-                  </View>
-                  <View className="flex-row items-center gap-1">
-                    <Clock size={10} color="#d4d4d4" />
-                    <Text className="text-xs text-neutral-300">{formatTime(l.created_at)}</Text>
-                  </View>
-                </View>
-              </View>
+                    </text>
+                  </view>
+                  <view className="flex-row items-center gap-1">
+                    <Icon set="lucide" name="clock" size={10} color="#d4d4d4" />
+                    <text className="text-xs text-neutral-300">{formatTime(l.created_at)}</text>
+                  </view>
+                </view>
+              </view>
             ))
           )}
-        </View>
+        </view>
 
-      </ScrollView>
-    </View>
+      </scroll-view>
+    </view>
   )
 }

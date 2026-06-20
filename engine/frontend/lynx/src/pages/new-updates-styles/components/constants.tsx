@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.498Z
+// Generated: 2026-06-20T13:08:04.784Z
 // ============================================================
 
 import React, { useState } from '@lynx-js/react'
-import { Code, Layers, Palette, Zap } from 'lucide-react'
+import { Icon } from '@sigx/lynx-icons'
 
 export const LYNX_COLOR_MAP: Record<LynxColor, { bg: string; text: string; border: string }> = {
   blue:   { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200'   },

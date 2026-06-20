@@ -2,12 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.988Z
+// Generated: 2026-06-20T13:08:05.482Z
 // ============================================================
 
-import React from '@lynx-js/react'
-import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 // ── Primary button ─────────────────────────────────────────────
 export const PrimaryBtn = ({
@@ -15,18 +14,17 @@ export const PrimaryBtn = ({
   onPress,
   loading = false,
 }: {
-  label:    string
-  onPress:  () => void
+  label: string
+  onPress: () => void
   loading?: boolean
 }) => (
-  <button
-    onClick={onPress}
-    disabled={loading}
-    className="w-full py-3.5 rounded-2xl text-white text-sm font-semibold transition-colors disabled:opacity-50"
+  <view
+    bindtap={loading ? undefined : onPress}
+    className="w-full py-3.5 rounded-2xl items-center"
     style={{ backgroundColor: loading ? '#a3a3a3' : '#171717' }}
   >
-    {loading ? '...' : label}
-  </button>
+    <text className="text-white text-sm font-semibold">{loading ? '...' : label}</text>
+  </view>
 )
 
 // ── Ghost button ──────────────────────────────────────────────

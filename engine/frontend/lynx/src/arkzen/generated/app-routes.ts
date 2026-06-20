@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-20T06:26:45.855Z
+// Generated: 2026-06-20T13:08:06.563Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -56,7 +56,6 @@ import { SchedulerTestDashboard } from '../../pages/scheduler-test/dashboard'
 import { UploadTestDashboard } from '../../pages/upload-test/dashboard'
 import { default as ErrorsTestError404 } from '../../pages/errors-test/error-404'
 import { default as ErrorsTestError500 } from '../../pages/errors-test/error-500'
-import { default as JoPayrollError404 } from '../../pages/jo-payroll/error-404'
 import { default as LayoutTestError404 } from '../../pages/layout-test/error-404'
 
 export interface LynxAppRoute {
@@ -119,7 +118,6 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
 
 export const LYNX_ERROR_404: Record<string, any> = {
   'errors-test': ErrorsTestError404,
-  'jo-payroll': JoPayrollError404,
   'layout-test': LayoutTestError404,
 }
 

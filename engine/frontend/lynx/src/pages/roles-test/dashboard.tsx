@@ -1,46 +1,45 @@
 // ARKZEN GENERATED — roles-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:53.998Z
+// Generated: 2026-06-20T13:08:05.489Z
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { RoleBadge } from './components/RoleBadge'
-import { useEffect, useState } from 'react'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:auth */
 
-import React from 'react'
+import { useState, useEffect } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
   const { user, logout, refreshUser } = useAuthStore()
 
   type TestResult = { status: 'idle' | 'pass' | 'fail'; message: string }
 
-  const [adminResult, setAdminResult] = React.useState<TestResult>({ status: 'idle', message: '' })
-  const [userResult,  setUserResult]  = React.useState<TestResult>({ status: 'idle', message: '' })
-  const [logs,        setLogs]        = React.useState<any[]>([])
-  const [promoting,   setPromoting]   = React.useState(false)
+  const [adminResult, setAdminResult] = useState<TestResult>({ status: 'idle', message: '' })
+  const [userResult, setUserResult] = useState<TestResult>({ status: 'idle', message: '' })
+  const [logs, setLogs] = useState<any[]>([])
+  const [promoting, setPromoting] = useState(false)
 
   const currentRole = (user as any)?.role ?? 'user'
 
   const loadLogs = async () => {
     try {
       const res = await arkzenFetch('/api/roles-test/logs')
-      const d   = await res.json()
+      const d = await res.json()
       setLogs(d.data ?? [])
     } catch {}
   }
 
-  React.useEffect(() => { loadLogs() }, [])
+  useEffect(() => { loadLogs() }, [])
 
   const testRoute = async (
     route: string,
-    setter: React.Dispatch<React.SetStateAction<TestResult>>
+    setter: (s: TestResult) => void
   ) => {
     setter({ status: 'idle', message: 'Testing...' })
     try {
       const res = await arkzenFetch(route)
-      const d   = await res.json()
+      const d = await res.json()
       if (res.ok) {
         setter({ status: 'pass', message: d.message ?? '✓ Access granted' })
       } else {
@@ -64,7 +63,6 @@ const DashboardLynxPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    window.location.href = '/roles-test/login'
   }
 
   const resultBg = (s: TestResult['status']) =>
@@ -78,28 +76,28 @@ const DashboardLynxPage = () => {
     'text-neutral-500'
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <view className="flex-1 bg-neutral-50">
 
       {/* Header */}
-      <div className="bg-white border-b border-neutral-100 px-6 py-4 flex items-center justify-between">
-        <div>
-          <div className="text-base font-semibold text-neutral-900">🛡️ Roles Test</div>
-          <div className="text-xs text-neutral-400 mt-0.5">{user?.email}</div>
-        </div>
-        <button onClick={handleLogout} className="text-xs text-neutral-400 hover:text-neutral-600">
-          Sign out
-        </button>
-      </div>
+      <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
+        <view>
+          <text className="text-base font-semibold text-neutral-900">🛡️ Roles Test</text>
+          <text className="text-xs text-neutral-400 mt-0.5">{user?.email}</text>
+        </view>
+        <view bindtap={handleLogout}>
+          <text className="text-xs text-neutral-400">Sign out</text>
+        </view>
+      </view>
 
-      <div className="max-w-2xl mx-auto p-6 space-y-6">
+      <scroll-view className="flex-1 p-4 pb-8">
 
         {/* Current user card */}
-        <div className="bg-white rounded-2xl border border-neutral-100 p-5">
-          <div className="text-xs text-neutral-400 mb-1">Signed in as</div>
-          <div className="font-semibold text-neutral-900 mb-3">{user?.name} · {user?.email}</div>
-          <div className="flex items-center justify-between">
+        <view className="bg-white rounded-2xl border border-neutral-100 p-5 mb-4">
+          <text className="text-xs text-neutral-400 mb-1">Signed in as</text>
+          <text className="font-semibold text-neutral-900 mb-2">{user?.name} · {user?.email}</text>
+          <view className="flex-row items-center justify-between">
             <RoleBadge role={currentRole} />
-            <div className="flex gap-2">
+            <view className="flex-row" style={{ gap: 8 }}>
               {currentRole !== 'admin' && (
                 <PrimaryBtn
                   label="Promote to admin"
@@ -114,106 +112,104 @@ const DashboardLynxPage = () => {
                   loading={promoting}
                 />
               )}
-            </div>
-          </div>
-        </div>
+            </view>
+          </view>
+        </view>
 
         {/* Route tests */}
-        <div className="space-y-3">
+        <view style={{ gap: 12 }}>
 
           {/* Admin-only route */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-neutral-900">Admin-only route</div>
-                <code className="text-xs text-neutral-400 mt-0.5">
+          <view className="bg-white rounded-2xl border border-neutral-100 p-5">
+            <view className="flex-row items-start justify-between mb-3">
+              <view className="flex-1">
+                <text className="text-sm font-semibold text-neutral-900">Admin-only route</text>
+                <text className="text-xs text-neutral-400 font-mono mt-0.5">
                   GET /api/roles-test/admin-only
-                </code>
-              </div>
-              <button
-                onClick={() => testRoute('/api/roles-test/admin-only', setAdminResult)}
-                className="bg-neutral-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-neutral-800"
+                </text>
+              </view>
+              <view
+                bindtap={() => testRoute('/api/roles-test/admin-only', setAdminResult)}
+                className="bg-neutral-900 px-4 py-2 rounded-xl"
               >
-                Test
-              </button>
-            </div>
+                <text className="text-white text-xs font-semibold">Test</text>
+              </view>
+            </view>
             {adminResult.message !== '' && (
-              <div className={`p-3 rounded-xl border ${resultBg(adminResult.status)}`}>
-                <p className={`text-xs ${resultText(adminResult.status)}`}>
+              <view className={`p-3 rounded-xl border ${resultBg(adminResult.status)}`}>
+                <text className={`text-xs ${resultText(adminResult.status)}`}>
                   {adminResult.message}
-                </p>
-              </div>
+                </text>
+              </view>
             )}
-          </div>
+          </view>
 
           {/* User route */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-5">
-            <div className="flex items-start justify-between mb-3">
-              <div className="flex-1">
-                <div className="text-sm font-semibold text-neutral-900">User route</div>
-                <code className="text-xs text-neutral-400 mt-0.5">
+          <view className="bg-white rounded-2xl border border-neutral-100 p-5">
+            <view className="flex-row items-start justify-between mb-3">
+              <view className="flex-1">
+                <text className="text-sm font-semibold text-neutral-900">User route</text>
+                <text className="text-xs text-neutral-400 font-mono mt-0.5">
                   GET /api/roles-test/user-only
-                </code>
-              </div>
-              <button
-                onClick={() => testRoute('/api/roles-test/user-only', setUserResult)}
-                className="bg-neutral-900 text-white px-4 py-2 rounded-xl text-xs font-semibold hover:bg-neutral-800"
+                </text>
+              </view>
+              <view
+                bindtap={() => testRoute('/api/roles-test/user-only', setUserResult)}
+                className="bg-neutral-900 px-4 py-2 rounded-xl"
               >
-                Test
-              </button>
-            </div>
+                <text className="text-white text-xs font-semibold">Test</text>
+              </view>
+            </view>
             {userResult.message !== '' && (
-              <div className={`p-3 rounded-xl border ${resultBg(userResult.status)}`}>
-                <p className={`text-xs ${resultText(userResult.status)}`}>
+              <view className={`p-3 rounded-xl border ${resultBg(userResult.status)}`}>
+                <text className={`text-xs ${resultText(userResult.status)}`}>
                   {userResult.message}
-                </p>
-              </div>
+                </text>
+              </view>
             )}
-          </div>
+          </view>
 
-        </div>
+        </view>
 
         {/* Audit log */}
-        <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
-            <div className="font-semibold text-sm text-neutral-900">Access audit log</div>
-            <button onClick={loadLogs} className="text-xs text-neutral-400 hover:text-neutral-600">
-              Refresh
-            </button>
-          </div>
+        <view className="bg-white rounded-2xl border border-neutral-100 overflow-hidden mt-4">
+          <view className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
+            <text className="font-semibold text-sm text-neutral-900">Access audit log</text>
+            <view bindtap={loadLogs}>
+              <text className="text-xs text-neutral-400">Refresh</text>
+            </view>
+          </view>
           {logs.length === 0 ? (
-            <div className="p-8 text-center">
-              <p className="text-sm text-neutral-400">No access attempts yet.</p>
-            </div>
+            <view className="p-8 items-center">
+              <text className="text-sm text-neutral-400">No access attempts yet.</text>
+            </view>
           ) : (
-            <div>
-              {logs.map((l, i) => (
-                <div key={i} className="px-5 py-3 flex items-center justify-between border-b border-neutral-50">
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900">{l.action}</p>
-                    <p className="text-xs text-neutral-400">Requires: {l.role_required}</p>
-                  </div>
-                  <div className={`px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    l.granted ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                  }`}>
+            logs.map((l, i) => (
+              <view key={i} className="px-5 py-3 flex-row items-center justify-between border-b border-neutral-50">
+                <view>
+                  <text className="text-sm font-medium text-neutral-900">{l.action}</text>
+                  <text className="text-xs text-neutral-400">Requires: {l.role_required}</text>
+                </view>
+                <view className={`px-2.5 py-1 rounded-full ${l.granted ? 'bg-green-100' : 'bg-red-100'}`}>
+                  <text className={`text-xs font-semibold ${l.granted ? 'text-green-700' : 'text-red-700'}`}>
                     {l.granted ? 'granted' : 'denied'}
-                  </div>
-                </div>
-              ))}
-            </div>
+                  </text>
+                </view>
+              </view>
+            ))
           )}
-        </div>
+        </view>
 
         {/* Info note */}
-        <div className="bg-neutral-100 rounded-2xl px-4 py-3">
-          <p className="text-xs text-neutral-500 font-mono leading-5">
-            middleware: [auth, role:admin]<br/>
-            token: Sanctum Bearer<br/>
+        <view className="bg-neutral-100 rounded-2xl px-4 py-3 mt-4">
+          <text className="text-xs text-neutral-500 font-mono leading-5">
+            middleware: [auth, role:admin]{'\n'}
+            token: Sanctum Bearer{'\n'}
             scope: roles-test SQLite
-          </p>
-        </div>
+          </text>
+        </view>
 
-      </div>
-    </div>
+      </scroll-view>
+    </view>
   )
 }

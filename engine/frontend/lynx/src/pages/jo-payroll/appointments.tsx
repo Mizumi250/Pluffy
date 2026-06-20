@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/appointments (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:52.143Z
+// Generated: 2026-06-20T13:08:03.597Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
@@ -8,7 +8,6 @@ import { StatCard } from './components/StatCard'
 import { BACKEND_URL } from './components/constants'
 import type { JobOrder } from './components/types'
 
-import { View, Text, ScrollView, TouchableOpacity } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -40,50 +39,52 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
   const activeCount = useMemo(() => sorted.filter(j => j.status === 'active').length, [sorted])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, backgroundColor: '#F4F5F7' }}>
-        <View>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>SEQUENCE</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Appointments</Text>
-        </View>
+    <view className="flex-1 bg-[#F4F5F7]">
+      <view className="px-4 pt-[52px] pb-3 bg-[#F4F5F7]">
+        <view>
+          <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>SEQUENCE</text>
+          <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Appointments</text>
+        </view>
 
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 12 }}>
+        <view className="flex-row mt-3 mb-3" style={{ gap: 10 }}>
           <StatCard value={sorted.length}  label="Total Slots"  />
           <StatCard value={activeCount}    label="Active Slots" color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
-        </View>
+        </view>
 
         <SearchBar value={search} onChange={setSearch} placeholder="Search name or title…" />
-      </View>
+      </view>
 
       {loading ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</Text>
-        </View>
+        <view className="flex-1 items-center justify-center py-10">
+          <text className="text-[13px] text-gray-400">Loading…</text>
+        </view>
       ) : sorted.length === 0 ? (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb', marginHorizontal: 16 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>No appointments found</Text>
-        </View>
+        <view className="bg-white rounded-2xl p-10 items-center border border-gray-200 mx-4">
+          <text className="text-[13px] text-gray-400">No appointments found</text>
+        </view>
       ) : (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
+        <scroll-view className="flex-1">
+          <view className="px-4 pb-6">
           {sorted.map(jo => (
-            <View key={jo.id} style={{ backgroundColor: '#ffffff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 36, height: 36, backgroundColor: '#f3f4f6', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#374151' }}>#{jo.appointment_order}</Text>
-              </View>
+            <view key={jo.id} className="bg-white rounded-[14px] border border-gray-200 p-3.5 mb-2 flex-row items-center" style={{ gap: 12 }}>
+              <view className="w-9 h-9 bg-gray-100 rounded-[10px] items-center justify-center">
+                <text className="text-xs font-extrabold text-gray-700">#{jo.appointment_order}</text>
+              </view>
               <Avatar name={jo.name_of_jo} size={36} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</Text>
-              </View>
-              <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <Text style={{ fontSize: 10, fontWeight: '700', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+              <view className="flex-1">
+                <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</text>
+              </view>
+              <view className={`rounded-lg px-2 py-1 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                <text className={`text-[10px] font-bold ${jo.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
                   {jo.status.toUpperCase()}
-                </Text>
-              </View>
-            </View>
+                </text>
+              </view>
+            </view>
           ))}
-        </ScrollView>
+          </view>
+        </scroll-view>
       )}
-    </View>
+    </view>
   )
 }

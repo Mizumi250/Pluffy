@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:48.267Z
+// Generated: 2026-06-20T13:07:58.922Z
 // ============================================================
 
-import React, { ScrollView, Text, TextInput, TouchableOpacity, View, useEffect, useState } from '@lynx-js/react'
-import { setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
+import React, { useEffect, useState } from '@lynx-js/react'
+import { setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 
 // ── Input field ───────────────────────────────────────────────
 export const Field = ({
@@ -20,11 +20,11 @@ export const Field = ({
   onInput:          (v: string) => void
   secureTextEntry?: boolean
 }) => (
-  <TextInput
-    style={{ backgroundColor: '#fafafa', borderWidth: 1, borderColor: '#e5e5e5', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 12, fontSize: 13, color: '#171717' }}
+  <input
+    className="bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
     placeholder={placeholder}
     value={value}
-    onInput={e => onInput(e.detail.value)}
+    bindinput={e => onInput(e.detail.value)}
     type={secureTextEntry ? 'password' : 'text'}
   />
 )

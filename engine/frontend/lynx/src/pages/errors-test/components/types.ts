@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — errors-test
 // Source: @arkzen:native:components:lynx:* (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T06:17:50.887Z
+// Generated: 2026-06-20T13:08:02.200Z
 // ============================================================
 
 export type LynxErrorDef = {
@@ -11,4 +11,5 @@ export type LynxErrorDef = {
   message: string
   color:   string
   bg:      string
+  border:  string
 }
