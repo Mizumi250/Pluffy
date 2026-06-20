@@ -359,13 +359,13 @@ const CATEGORIES = Array.from(new Set(SKILLS.map(s => s.category)))
 /* @arkzen:native:page:lynx:index */
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { useState } from '@lynx-js/react'
 
 const IndexLynxPage = () => {
-  const [name,      setName]      = React.useState('')
-  const [email,     setEmail]     = React.useState('')
-  const [message,   setMessage]   = React.useState('')
-  const [submitted, setSubmitted] = React.useState(false)
+  const [name,      setName]      = useState('')
+  const [email,     setEmail]     = useState('')
+  const [message,   setMessage]   = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   const handleSend = () => {
     if (!name || !email || !message) return
@@ -375,102 +375,116 @@ const IndexLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <scroll-view className="flex-1 bg-neutral-50">
       {/* Header */}
-      <header className="bg-white border-b border-neutral-200">
-        <div className="max-w-5xl mx-auto px-6 py-4 flex items-center gap-2">
-          <span className="text-2xl">💻</span>
-          <span className="font-semibold text-neutral-900">Portfolio</span>
-        </div>
-      </header>
+      <view className="bg-white border-b border-neutral-200">
+        <view className="px-6 py-4 flex-row items-center" style={{ gap: 8 }}>
+          <text className="text-2xl">💻</text>
+          <text className="font-semibold text-neutral-900">Portfolio</text>
+        </view>
+      </view>
 
-      <main className="max-w-5xl mx-auto px-6 py-16 space-y-20">
+      <view className="px-6 py-16" style={{ gap: 80 }}>
         {/* Hero */}
-        <section className="text-center">
-          <h1 className="text-5xl font-semibold text-neutral-900 mb-4">Full-Stack Developer</h1>
-          <p className="text-lg text-neutral-600">Crafting digital experiences</p>
-        </section>
+        <view className="items-center">
+          <text className="text-5xl font-semibold text-neutral-900 mb-4 text-center">Full-Stack Developer</text>
+          <text className="text-lg text-neutral-600">Crafting digital experiences</text>
+        </view>
 
         {/* Projects */}
-        <section>
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-8 flex items-center gap-2">⭐ Projects</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <view>
+          <view className="flex-row items-center mb-8" style={{ gap: 8 }}>
+            <text className="text-2xl font-semibold text-neutral-900">⭐ Projects</text>
+          </view>
+          <view className="flex-row flex-wrap" style={{ gap: 24 }}>
             {PROJECTS.map(p => (
-              <div key={p.id} className="bg-white rounded-2xl border border-neutral-200 overflow-hidden hover:shadow-md transition">
-                <div className="h-32 bg-gradient-to-br from-neutral-100 to-neutral-200 flex items-center justify-center text-5xl">{p.image}</div>
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-neutral-900 mb-2">{p.title}</h3>
-                  <p className="text-sm text-neutral-600 mb-4">{p.description}</p>
-                  <div className="flex gap-2 mb-4">
-                    {p.tags.map((t, i) => (<span key={i} className="px-2 py-1 text-xs bg-neutral-100 text-neutral-600 rounded">{t}</span>))}
-                  </div>
-                  <a href={p.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 text-sm text-neutral-900 font-medium">View ↗</a>
-                </div>
-              </div>
+              <view key={p.id} className="flex-1 bg-white rounded-2xl border border-neutral-200" style={{ overflow: 'hidden', minWidth: '30%' }}>
+                <view className="h-32 bg-neutral-100 items-center justify-center">
+                  <text className="text-5xl">{p.image}</text>
+                </view>
+                <view className="p-6">
+                  <text className="text-lg font-semibold text-neutral-900 mb-2">{p.title}</text>
+                  <text className="text-sm text-neutral-600 mb-4">{p.description}</text>
+                  <view className="flex-row flex-wrap mb-4" style={{ gap: 8 }}>
+                    {p.tags.map((t, i) => (
+                      <text key={i} className="px-2 py-1 text-xs bg-neutral-100 text-neutral-600 rounded">{t}</text>
+                    ))}
+                  </view>
+                  <text className="text-sm text-neutral-900 font-medium" bindtap={() => lynx.openSchema?.(p.url)}>View ↗</text>
+                </view>
+              </view>
             ))}
-          </div>
-        </section>
+          </view>
+        </view>
 
         {/* Skills */}
-        <section>
-          <h2 className="text-2xl font-semibold text-neutral-900 mb-12">Skills</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <view>
+          <text className="text-2xl font-semibold text-neutral-900 mb-12">Skills</text>
+          <view className="flex-row flex-wrap" style={{ gap: 48 }}>
             {CATEGORIES.map(cat => (
-              <div key={cat}>
-                <h3 className="text-sm font-semibold text-neutral-900 mb-6 uppercase tracking-widest">{cat}</h3>
-                <div className="space-y-4">
+              <view key={cat} className="flex-1" style={{ minWidth: '45%' }}>
+                <text className="text-sm font-semibold text-neutral-900 mb-6" style={{ letterSpacing: 1.5, textTransform: 'uppercase' }}>{cat}</text>
+                <view style={{ gap: 16 }}>
                   {SKILLS.filter(s => s.category === cat).map((s, i) => (
-                    <div key={i}>
-                      <div className="flex justify-between mb-2">
-                        <span className="text-sm text-neutral-700">{s.name}</span>
-                        <span className="text-xs text-neutral-500">{s.proficiency}%</span>
-                      </div>
-                      <div className="h-2 bg-neutral-200 rounded-full"><div className="h-full bg-neutral-900 rounded-full" style={{ width: `${s.proficiency}%` }} /></div>
-                    </div>
+                    <view key={i}>
+                      <view className="flex-row justify-between mb-2">
+                        <text className="text-sm text-neutral-700">{s.name}</text>
+                        <text className="text-xs text-neutral-500">{s.proficiency}%</text>
+                      </view>
+                      <view className="h-2 bg-neutral-200 rounded-full">
+                        <view className="h-full bg-neutral-900 rounded-full" style={{ width: `${s.proficiency}%` }} />
+                      </view>
+                    </view>
                   ))}
-                </div>
-              </div>
+                </view>
+              </view>
             ))}
-          </div>
-        </section>
+          </view>
+        </view>
 
         {/* Contact */}
-        <section className="bg-white rounded-2xl border border-neutral-200 p-8">
-          <div className="flex items-center gap-2 mb-6">
-            <span className="text-2xl">✉️</span>
-            <h2 className="text-2xl font-semibold text-neutral-900">Contact</h2>
-          </div>
-          {submitted && <div className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg text-emerald-600 text-sm">Thanks! Message sent.</div>}
-          <form onSubmit={(e) => { e.preventDefault(); handleSend() }} className="space-y-4">
-            <input 
-              type="text" 
-              placeholder="Name" 
-              required 
+        <view className="bg-white rounded-2xl border border-neutral-200 p-8">
+          <view className="flex-row items-center mb-6" style={{ gap: 8 }}>
+            <text className="text-2xl">✉️</text>
+            <text className="text-2xl font-semibold text-neutral-900">Contact</text>
+          </view>
+          {submitted && (
+            <view className="mb-6 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
+              <text className="text-emerald-600 text-sm">Thanks! Message sent.</text>
+            </view>
+          )}
+          <view style={{ gap: 16 }}>
+            <input
+              type="text"
+              placeholder="Name"
               value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-900"
+              bindinput={(e) => setName(e.detail.value)}
+              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
-            <input 
-              type="email" 
-              placeholder="Email" 
-              required 
+            <input
+              type="email"
+              placeholder="Email"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg focus:outline-none focus:border-neutral-900"
+              bindinput={(e) => setEmail(e.detail.value)}
+              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
-            <textarea 
-              placeholder="Message" 
-              rows={4} 
-              required 
+            <textarea
+              placeholder="Message"
+              maxlines={4}
               value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg resize-none focus:outline-none focus:border-neutral-900"
+              bindinput={(e) => setMessage(e.detail.value)}
+              className="w-full px-4 py-2 text-sm border border-neutral-200 rounded-lg"
             />
-            <button type="submit" className="w-full bg-neutral-900 text-white text-sm font-medium py-2 rounded-lg hover:bg-neutral-800 transition">Send</button>
-          </form>
-        </section>
-      </main>
-    </div>
+            <view
+              bindtap={handleSend}
+              className="w-full bg-neutral-900 rounded-lg py-2 items-center"
+            >
+              <text className="text-white text-sm font-medium">Send</text>
+            </view>
+          </view>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 

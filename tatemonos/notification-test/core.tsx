@@ -1287,13 +1287,13 @@ const channelDesc: Record<string, string> = {
 /* @arkzen:native:page:lynx:login */
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { useState } from '@lynx-js/react'
 
 const LoginLynxPage = () => {
   const { login, isLoading } = useAuthStore()
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [error, setError] = React.useState<string | null>(null)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const handleLogin = async () => {
     setError(null)
@@ -1305,50 +1305,54 @@ const LoginLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8 w-full max-w-sm space-y-5">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">🔔 Notification Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+    <view className="flex-1 items-center justify-center p-6">
+      <view className="bg-white rounded-2xl border border-neutral-100 p-8 w-full" style={{ maxWidth: 384, gap: 20 }}>
+        <view>
+          <text className="text-xl font-bold">🔔 Notification Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             Sign in to test notifications
-          </p>
-        </div>
+          </text>
+        </view>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
-            {error}
-          </div>
+          <view className="p-3 bg-red-50 border border-red-200 rounded-xl">
+            <text className="text-red-600 text-sm">{error}</text>
+          </view>
         )}
 
-        <div className="space-y-3">
+        <view style={{ gap: 12 }}>
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            bindinput={e => setEmail(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            bindinput={e => setPassword(e.detail.value)}
           />
-        </div>
+        </view>
 
-        <button className="arkzen-btn w-full" onClick={handleLogin} disabled={isLoading}>
-          {isLoading ? 'Signing in...' : 'Sign in'}
-        </button>
+        <view
+          bindtap={isLoading ? undefined : handleLogin}
+          className="w-full rounded-xl py-2.5 items-center"
+          style={{ backgroundColor: '#171717', opacity: isLoading ? 0.6 : 1 }}
+        >
+          <text className="text-white text-sm font-medium">{isLoading ? 'Signing in...' : 'Sign in'}</text>
+        </view>
 
-        <p className="text-xs text-center text-neutral-400">
+        <text className="text-xs text-center text-neutral-400">
           No account?{' '}
-          <a href="/notification-test/register" className="text-neutral-700 underline underline-offset-2">
+          <text className="text-neutral-700" style={{ textDecorationLine: 'underline' }}>
             Register
-          </a>
-        </p>
-      </div>
-    </div>
+          </text>
+        </text>
+      </view>
+    </view>
   )
 }
 
@@ -1357,15 +1361,15 @@ const LoginLynxPage = () => {
 /* @arkzen:native:page:lynx:register */
 /* @arkzen:native:page:layout:guest */
 
-import React from 'react'
+import { useState } from '@lynx-js/react'
 
 const RegisterLynxPage = () => {
   const { register, isLoading } = useAuthStore()
-  const [name, setName] = React.useState('')
-  const [email, setEmail] = React.useState('')
-  const [password, setPassword] = React.useState('')
-  const [confirm, setConfirm] = React.useState('')
-  const [error, setError] = React.useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [error, setError] = useState<string | null>(null)
 
   const handleRegister = async () => {
     setError(null)
@@ -1378,63 +1382,67 @@ const RegisterLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm p-8 w-full max-w-sm space-y-5">
-        <div>
-          <h1 className="text-xl font-bold flex items-center gap-2">🔔 Notification Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">
+    <view className="flex-1 items-center justify-center p-6">
+      <view className="bg-white rounded-2xl border border-neutral-100 p-8 w-full" style={{ maxWidth: 384, gap: 20 }}>
+        <view>
+          <text className="text-xl font-bold">🔔 Notification Test</text>
+          <text className="text-sm text-neutral-500 mt-1">
             Create an account to test notifications
-          </p>
-        </div>
+          </text>
+        </view>
 
         {error && (
-          <div className="p-3 bg-red-50 border border-red-200 text-red-600 rounded-xl text-sm">
-            {error}
-          </div>
+          <view className="p-3 bg-red-50 border border-red-200 rounded-xl">
+            <text className="text-red-600 text-sm">{error}</text>
+          </view>
         )}
 
-        <div className="space-y-3">
+        <view style={{ gap: 12 }}>
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             placeholder="Name"
             value={name}
-            onChange={e => setName(e.target.value)}
+            bindinput={e => setName(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="email"
             placeholder="Email"
             value={email}
-            onChange={e => setEmail(e.target.value)}
+            bindinput={e => setEmail(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Password"
             value={password}
-            onChange={e => setPassword(e.target.value)}
+            bindinput={e => setPassword(e.detail.value)}
           />
           <input
-            className="arkzen-input w-full"
+            className="w-full px-3.5 py-2.5 text-sm rounded-xl border border-gray-200 bg-white text-neutral-900"
             type="password"
             placeholder="Confirm password"
             value={confirm}
-            onChange={e => setConfirm(e.target.value)}
+            bindinput={e => setConfirm(e.detail.value)}
           />
-        </div>
+        </view>
 
-        <button className="arkzen-btn w-full" onClick={handleRegister} disabled={isLoading}>
-          {isLoading ? 'Creating account...' : 'Create account'}
-        </button>
+        <view
+          bindtap={isLoading ? undefined : handleRegister}
+          className="w-full rounded-xl py-2.5 items-center"
+          style={{ backgroundColor: '#171717', opacity: isLoading ? 0.6 : 1 }}
+        >
+          <text className="text-white text-sm font-medium">{isLoading ? 'Creating account...' : 'Create account'}</text>
+        </view>
 
-        <p className="text-xs text-center text-neutral-400">
+        <text className="text-xs text-center text-neutral-400">
           Already have an account?{' '}
-          <a href="/notification-test/login" className="text-neutral-700 underline underline-offset-2">
+          <text className="text-neutral-700" style={{ textDecorationLine: 'underline' }}>
             Sign in
-          </a>
-        </p>
-      </div>
-    </div>
+          </text>
+        </text>
+      </view>
+    </view>
   )
 }
 
@@ -1443,16 +1451,16 @@ const RegisterLynxPage = () => {
 /* @arkzen:native:page:lynx:dashboard */
 /* @arkzen:native:page:layout:auth */
 
-import React from 'react'
+import { useState, useEffect } from '@lynx-js/react'
 
 const DashboardLynxPage = () => {
   const { user, logout } = useAuthStore()
-  const [inbox, setInbox] = React.useState<any[]>([])
-  const [unread, setUnread] = React.useState(0)
-  const [loading, setLoading] = React.useState(false)
-  const [sending, setSending] = React.useState<string | null>(null)
-  const [wsStatus, setWsStatus] = React.useState<WsStatus>('connecting')
-  const [toast, setToast] = React.useState<string | null>(null)
+  const [inbox, setInbox] = useState<any[]>([])
+  const [unread, setUnread] = useState(0)
+  const [loading, setLoading] = useState(false)
+  const [sending, setSending] = useState<string | null>(null)
+  const [wsStatus, setWsStatus] = useState<WsStatus>('connecting')
+  const [toast, setToast] = useState<string | null>(null)
 
   const notifTypes = [
     'database-ping',
@@ -1477,7 +1485,7 @@ const DashboardLynxPage = () => {
     }
   }
 
-  React.useEffect(() => { loadInbox() }, [])
+  useEffect(() => { loadInbox() }, [])
 
   const trigger = async (key: string) => {
     setSending(key)
@@ -1515,7 +1523,6 @@ const DashboardLynxPage = () => {
 
   const handleLogout = async () => {
     await logout()
-    window.location.href = '/notification-test/login'
   }
 
   const statusColor = {
@@ -1525,137 +1532,138 @@ const DashboardLynxPage = () => {
   }
 
   return (
-    <div className="min-h-screen p-8">
+    <scroll-view className="flex-1 p-8">
       {toast && (
-        <div className="fixed top-5 right-5 z-50 bg-neutral-900 text-white text-sm rounded-2xl px-5 py-3 shadow-xl flex items-center gap-2">
-          🔔 {toast}
-        </div>
+        <view className="bg-[#171717] rounded-2xl px-5 py-3 mb-4 flex-row items-center" style={{ gap: 8 }}>
+          <text className="text-white text-sm">🔔 {toast}</text>
+        </view>
       )}
 
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold flex items-center gap-2">🔔 Notification Test</h1>
-            <p className="text-sm text-neutral-500 mt-1">
-              Signed in as <span className="font-medium">{user?.email}</span>
-            </p>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 text-sm">
-              <div 
-                className="w-2 h-2 rounded-full" 
+      <view style={{ gap: 24 }}>
+        <view className="flex-row items-center justify-between">
+          <view>
+            <text className="text-2xl font-bold">🔔 Notification Test</text>
+            <text className="text-sm text-neutral-500 mt-1">
+              Signed in as <text className="font-medium">{user?.email}</text>
+            </text>
+          </view>
+          <view className="flex-row items-center" style={{ gap: 16 }}>
+            <view className="flex-row items-center" style={{ gap: 8 }}>
+              <view
+                className="w-2 h-2 rounded-full"
                 style={{ backgroundColor: statusColor[wsStatus] }}
               />
-              <span className="text-neutral-500 capitalize">{wsStatus}</span>
-            </div>
-            <button
-              className="text-xs text-neutral-400 hover:text-neutral-700"
-              onClick={handleLogout}
-            >
+              <text className="text-neutral-500 text-sm" style={{ textTransform: 'capitalize' }}>{wsStatus}</text>
+            </view>
+            <text className="text-xs text-neutral-400" bindtap={handleLogout}>
               Sign out
-            </button>
-          </div>
-        </div>
+            </text>
+          </view>
+        </view>
 
-        <div className="bg-white rounded-2xl p-5 border border-neutral-100">
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="text-2xl font-bold text-neutral-900">{unread}</div>
-              <div className="text-sm text-neutral-500">Unread notifications</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-neutral-900">{inbox.length}</div>
-              <div className="text-sm text-neutral-500">Total notifications</div>
-            </div>
-          </div>
-        </div>
+        <view className="bg-white rounded-2xl p-5 border border-neutral-100">
+          <view className="flex-row items-center justify-between">
+            <view>
+              <text className="text-2xl font-bold text-neutral-900">{unread}</text>
+              <text className="text-sm text-neutral-500">Unread notifications</text>
+            </view>
+            <view>
+              <text className="text-2xl font-bold text-neutral-900">{inbox.length}</text>
+              <text className="text-sm text-neutral-500">Total notifications</text>
+            </view>
+          </view>
+        </view>
 
-        <div className="grid grid-cols-3 gap-3">
+        <view className="flex-row flex-wrap" style={{ gap: 12 }}>
           {notifTypes.map(key => (
-            <div key={key} className="bg-white rounded-2xl border border-neutral-100 p-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span>{channelEmoji[key]}</span>
-                <span className="font-medium text-sm">{channelLabel[key]}</span>
-              </div>
-              <div className="text-xs text-neutral-400 mb-3">{channelDesc[key]}</div>
-              <button
-                className="arkzen-btn w-full text-sm"
-                onClick={() => trigger(key)}
-                disabled={!!sending}
+            <view key={key} className="bg-white rounded-2xl border border-neutral-100 p-4" style={{ minWidth: '30%', flexGrow: 1 }}>
+              <view className="flex-row items-center mb-2" style={{ gap: 8 }}>
+                <text>{channelEmoji[key]}</text>
+                <text className="font-medium text-sm">{channelLabel[key]}</text>
+              </view>
+              <text className="text-xs text-neutral-400 mb-3">{channelDesc[key]}</text>
+              <view
+                bindtap={sending ? undefined : () => trigger(key)}
+                className="w-full rounded-xl py-2 items-center"
+                style={{ backgroundColor: '#171717', opacity: sending ? 0.6 : 1 }}
               >
-                {sending === key ? '...' : 'Trigger'}
-              </button>
-            </div>
+                <text className="text-white text-sm font-medium">{sending === key ? '...' : 'Trigger'}</text>
+              </view>
+            </view>
           ))}
-        </div>
+        </view>
 
-        <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-5 py-4 border-b border-neutral-100 flex items-center justify-between">
-            <h2 className="font-semibold">Database inbox ({unread} unread)</h2>
-            <div className="flex gap-3">
+        <view className="bg-white rounded-2xl border border-neutral-100" style={{ overflow: 'hidden' }}>
+          <view className="px-5 py-4 border-b border-neutral-100 flex-row items-center justify-between">
+            <text className="font-semibold">Database inbox ({unread} unread)</text>
+            <view className="flex-row" style={{ gap: 12 }}>
               {unread > 0 && (
-                <button className="text-xs text-neutral-500 hover:text-neutral-900" onClick={readAll}>
+                <text className="text-xs text-neutral-500" bindtap={readAll}>
                   Mark all read
-                </button>
+                </text>
               )}
-              <button className="text-xs text-neutral-400 hover:text-neutral-700" onClick={loadInbox}>
+              <text className="text-xs text-neutral-400" bindtap={loadInbox}>
                 {loading ? 'Loading...' : 'Refresh'}
-              </button>
-            </div>
-          </div>
+              </text>
+            </view>
+          </view>
           {inbox.length === 0 ? (
-            <div className="p-8 text-center text-sm text-neutral-400">
-              No notifications yet. Trigger one above.
-            </div>
+            <view className="p-8 items-center">
+              <text className="text-sm text-neutral-400">No notifications yet. Trigger one above.</text>
+            </view>
           ) : (
-            <div className="divide-y divide-neutral-50">
+            <view>
               {inbox.map((n) => {
                 const data = n.data && typeof n.data === 'string' ? JSON.parse(n.data) : (n.data || {})
                 return (
-                  <div key={n.id} className={`px-5 py-3 flex items-center gap-3 ${!n.read_at ? 'bg-blue-50/40' : ''}`}>
-                    {!n.read_at && <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />}
-                    {n.read_at && <div className="w-1.5 h-1.5 shrink-0" />}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm text-neutral-700 truncate">
+                  <view key={n.id} className={`px-5 py-3 border-b border-neutral-50 flex-row items-center ${!n.read_at ? 'bg-blue-50' : ''}`} style={{ gap: 12 }}>
+                    {!n.read_at && <view className="w-1.5 h-1.5 rounded-full bg-blue-500" />}
+                    {n.read_at && <view className="w-1.5 h-1.5" />}
+                    <view className="flex-1">
+                      <text className="text-sm text-neutral-700" maxLength={1}>
                         {data.message ?? 'Notification'}
-                      </p>
-                      <p className="text-xs text-neutral-400">
+                      </text>
+                      <text className="text-xs text-neutral-400">
                         {data.subject ?? n.type} · {n.created_at?.slice(0, 19).replace('T', ' ')}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {n.read_at && <span className="text-xs text-neutral-300">read</span>}
-                      <button
-                        className="text-xs text-red-400 hover:text-red-600"
-                        onClick={() => deleteNotif(n.id)}
+                      </text>
+                    </view>
+                    <view className="flex-row items-center" style={{ gap: 8 }}>
+                      {n.read_at && <text className="text-xs text-neutral-300">read</text>}
+                      <text
+                        className="text-xs text-red-400"
+                        bindtap={() => deleteNotif(n.id)}
                       >
                         Delete
-                      </button>
-                    </div>
-                  </div>
+                      </text>
+                    </view>
+                  </view>
                 )
               })}
-            </div>
+            </view>
           )}
-        </div>
+        </view>
 
         {wsStatus === 'error' && (
-          <div className="bg-amber-50 border border-amber-200 rounded-2xl p-5 text-sm text-amber-800">
-            <strong>WebSocket not connected.</strong> Make sure Laravel Reverb is running:{' '}
-            <code className="bg-amber-100 px-1 rounded">php artisan reverb:start</code>
-          </div>
+          <view className="bg-amber-50 border border-amber-200 rounded-2xl p-5">
+            <text className="text-sm text-amber-800">
+              <text className="font-bold">WebSocket not connected.</text> Make sure Laravel Reverb is running:{' '}
+              <text className="bg-amber-100 px-1 rounded" style={{ fontFamily: 'monospace' }}>php artisan reverb:start</text>
+            </text>
+          </view>
         )}
 
-        <div className="text-xs text-neutral-400 bg-neutral-50 rounded-xl p-4">
-          <strong>Channels tested:</strong><br/>
-          <strong>database</strong> — stored in native notifications table, shown in inbox above<br/>
-          <strong>mail</strong> — sent to {user?.email} (check Mailtrap)<br/>
-          <strong>broadcast (private)</strong> — fires on <code>private-notification-test.{'{'}userId{'}'}</code> — only you receive it<br/>
-          <strong>broadcast (public)</strong> — fires on <code>notification-test.notifications</code> — anyone subscribed receives it<br/>
-          Run <code>php artisan reverb:start</code> for broadcast + <code>php artisan queue:work</code> for mail.
-        </div>
-      </div>
-    </div>
+        <view className="text-xs bg-neutral-50 rounded-xl p-4">
+          <text className="text-xs text-neutral-400">
+            <text className="font-bold">Channels tested:</text>{'\n'}
+            <text className="font-bold">database</text> — stored in native notifications table, shown in inbox above{'\n'}
+            <text className="font-bold">mail</text> — sent to {user?.email} (check Mailtrap){'\n'}
+            <text className="font-bold">broadcast (private)</text> — fires on private-notification-test.userId — only you receive it{'\n'}
+            <text className="font-bold">broadcast (public)</text> — fires on notification-test.notifications — anyone subscribed receives it{'\n'}
+            Run <text style={{ fontFamily: 'monospace' }}>php artisan reverb:start</text> for broadcast + <text style={{ fontFamily: 'monospace' }}>php artisan queue:work</text> for mail.
+          </text>
+        </view>
+      </view>
+    </scroll-view>
   )
 }
 

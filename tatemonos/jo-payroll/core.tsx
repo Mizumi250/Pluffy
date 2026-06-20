@@ -2187,23 +2187,22 @@ const NotFoundScreen = () => {
 
 /* @arkzen:native:error:404:lynx */
 
-import { View, Text, TouchableOpacity } from '@lynx-js/react'
 import { useState } from '@lynx-js/react'
 
 const NotFoundScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
-  <View style={{ flex: 1, backgroundColor: '#F4F5F7', alignItems: 'center', justifyContent: 'center', padding: 32 }}>
-    <Text style={{ fontSize: 96, fontWeight: '900', color: '#e5e7eb', letterSpacing: -4 }}>404</Text>
-    <Text style={{ fontSize: 18, fontWeight: '800', color: '#111827', marginTop: -8, marginBottom: 8 }}>Page not found</Text>
-    <Text style={{ fontSize: 13, color: '#9ca3af', textAlign: 'center', marginBottom: 24 }}>
+  <view className="flex-1 bg-[#F4F5F7] items-center justify-center p-8">
+    <text className="text-[96px] font-black text-gray-200" style={{ letterSpacing: -4 }}>404</text>
+    <text className="text-lg font-extrabold text-gray-900" style={{ marginTop: -8 }}>Page not found</text>
+    <text className="text-[13px] text-gray-400 text-center mb-6">
       The page you're looking for doesn't exist in this module.
-    </Text>
-    <TouchableOpacity
-      onPress={() => onNavigate('index')}
-      style={{ backgroundColor: '#171717', paddingHorizontal: 20, paddingVertical: 12, borderRadius: 12 }}
+    </text>
+    <view
+      bindtap={() => onNavigate('index')}
+      className="bg-[#171717] px-5 py-3 rounded-xl"
     >
-      <Text style={{ color: '#ffffff', fontSize: 13, fontWeight: '600' }}>Back to Dashboard</Text>
-    </TouchableOpacity>
-  </View>
+      <text className="text-white text-[13px] font-semibold">Back to Dashboard</text>
+    </view>
+  </view>
 )
 
 /* @arkzen:native:error:404:lynx:end */
@@ -2509,7 +2508,6 @@ export const AppLayout: React.FC<{ children: React.ReactNode; activeScreen?: str
 
 /* @arkzen:native:layout:lynx:app */
 
-import { View, Text, TouchableOpacity } from '@lynx-js/react'
 import { useState } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
@@ -2528,28 +2526,29 @@ export const AppLayout = ({ children, activePage, onNavigate }: {
   activePage: string
   onNavigate: (page: string) => void
 }) => (
-  <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
-    <View style={{ flex: 1 }}>{children}</View>
+  <view className="flex-1 bg-[#F4F5F7]">
+    <view className="flex-1">{children}</view>
 
     {/* Bottom tab bar */}
-    <View style={{ flexDirection: 'row', backgroundColor: '#ffffff', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingBottom: 4, paddingTop: 8 }}>
+    <view className="flex-row bg-white border-t border-gray-100 pb-1 pt-2">
       {NAV_LYNX.map(({ name, label, icon }) => {
         const active = activePage === name
         return (
-          <TouchableOpacity
+          <view
             key={name}
-            onPress={() => onNavigate(name)}
-            style={{ flex: 1, alignItems: 'center', gap: 3 }}
+            bindtap={() => onNavigate(name)}
+            className="flex-1 items-center"
+            style={{ gap: 3 }}
           >
             <Icon set="lucide" name={icon} size={20} color={active ? '#171717' : '#d1d5db'} />
-            <Text style={{ fontSize: 10, fontWeight: active ? '700' : '500', color: active ? '#171717' : '#d1d5db' }}>
+            <text className={`text-[10px] ${active ? 'font-bold text-[#171717]' : 'font-medium text-gray-300'}`}>
               {label}
-            </Text>
-          </TouchableOpacity>
+            </text>
+          </view>
         )
       })}
-    </View>
-  </View>
+    </view>
+  </view>
 )
 
 /* @arkzen:native:layout:lynx:app:end */
@@ -3394,7 +3393,6 @@ export const useFadeSlideIn = (delay = 0) => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { View, Text, TextInput, TouchableOpacity, ScrollView } from '@lynx-js/react'
 import { useState, useEffect, useMemo, useCallback } from '@lynx-js/react'
 import { Icon } from '@sigx/lynx-icons'
 
@@ -3467,9 +3465,12 @@ export const getAvatarColor = (name: string) => {
 export const Avatar = ({ name, size = 36 }: { name: string; size?: number }) => {
   const color = getAvatarColor(name)
   return (
-    <View style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: color.bg, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: size * 0.33, fontWeight: '700', color: color.text }}>{getInitials(name)}</Text>
-    </View>
+    <view
+      className="items-center justify-center"
+      style={{ width: size, height: size, borderRadius: size * 0.28, backgroundColor: color.bg }}
+    >
+      <text style={{ fontSize: size * 0.33, fontWeight: '700', color: color.text }}>{getInitials(name)}</text>
+    </view>
   )
 }
 
@@ -3482,10 +3483,10 @@ export const StatCard = ({ value, label, color = '#111827', bg = '#ffffff', bord
   bg?: string
   borderColor?: string
 }) => (
-  <View style={{ flex: 1, backgroundColor: bg, borderRadius: 14, borderWidth: 1, borderColor, padding: 14 }}>
-    <Text style={{ fontSize: 22, fontWeight: '700', color }}>{value}</Text>
-    <Text style={{ fontSize: 11, color: '#9ca3af', fontWeight: '500', marginTop: 2 }}>{label}</Text>
-  </View>
+  <view className="flex-1 rounded-2xl border p-3.5" style={{ backgroundColor: bg, borderColor }}>
+    <text className="text-[22px] font-bold" style={{ color }}>{value}</text>
+    <text className="text-[11px] text-gray-400 font-medium" style={{ marginTop: 2 }}>{label}</text>
+  </view>
 )
 
 // ── WorkerRow ────────────────────────────────────────────────
@@ -3495,62 +3496,62 @@ export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void 
   const netPay = jo.basic_pay - deductions
 
   return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}
+    <view
+      bindtap={onPress}
+      className="flex-row items-center px-4 py-3 border-b border-gray-50"
+      style={{ gap: 12 }}
     >
       <Avatar name={jo.name_of_jo} size={38} />
-      <View style={{ flex: 1 }}>
-        <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · {jo.funding}</Text>
-      </View>
-      <View style={{ alignItems: 'flex-end', gap: 4 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(netPay)}</Text>
-        <View style={{ backgroundColor: jo.disbursement_type === 'ATM' ? '#dbeafe' : '#fef3c7', borderRadius: 6, paddingHorizontal: 6, paddingVertical: 2 }}>
-          <Text style={{ fontSize: 10, fontWeight: '700', color: jo.disbursement_type === 'ATM' ? '#2563eb' : '#d97706' }}>
+      <view className="flex-1">
+        <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+        <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · {jo.funding}</text>
+      </view>
+      <view className="items-end" style={{ gap: 4 }}>
+        <text className="text-[13px] font-bold text-gray-900">{formatPeso(netPay)}</text>
+        <view className={`rounded-md px-1.5 py-0.5 ${jo.disbursement_type === 'ATM' ? 'bg-blue-100' : 'bg-amber-100'}`}>
+          <text className={`text-[10px] font-bold ${jo.disbursement_type === 'ATM' ? 'text-blue-600' : 'text-amber-600'}`}>
             {jo.disbursement_type}
-          </Text>
-        </View>
-      </View>
-    </TouchableOpacity>
+          </text>
+        </view>
+      </view>
+    </view>
   )
 }
 
 // ── SearchBar ────────────────────────────────────────────────
 
 export const SearchBar = ({ value, onChange, placeholder }: { value: string; onChange: (v: string) => void; placeholder?: string }) => (
-  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#f9fafb', borderRadius: 12, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 10, gap: 8 }}>
+  <view className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200 px-3 py-2.5" style={{ gap: 8 }}>
     <Icon set="lucide" name="search" size={14} color="#9ca3af" />
-    <TextInput
+    <input
       value={value}
-      onInput={e => onChange(e.detail.value)}
+      bindinput={e => onChange(e.detail.value)}
       placeholder={placeholder ?? 'Search…'}
-      style={{ flex: 1, fontSize: 13, color: '#111827' }}
+      className="flex-1 text-[13px] text-gray-900"
     />
-  </View>
+  </view>
 )
 
 // ── TabRow ───────────────────────────────────────────────────
 
 export const TabRow = ({ tabs, active, onChange }: { tabs: string[]; active: string; onChange: (t: string) => void }) => (
-  <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
+  <view className="flex-row flex-wrap" style={{ gap: 4 }}>
     {tabs.map(t => (
-      <TouchableOpacity
+      <view
         key={t}
-        onPress={() => onChange(t)}
-        style={{ borderRadius: 8, paddingHorizontal: 12, paddingVertical: 6, backgroundColor: active === t ? '#171717' : 'transparent' }}
+        bindtap={() => onChange(t)}
+        className={`rounded-lg px-3 py-1.5 ${active === t ? 'bg-[#171717]' : 'bg-transparent'}`}
       >
-        <Text style={{ fontSize: 12, fontWeight: '600', color: active === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
-      </TouchableOpacity>
+        <text className={`text-xs font-semibold ${active === t ? 'text-white' : 'text-gray-400'}`}>{t}</text>
+      </view>
     ))}
-  </View>
+  </view>
 )
 
 /* @arkzen:native:components:lynx:shared:end */
 
 /* @arkzen:native:page:lynx:index */
 
-import { View, Text, ScrollView, TouchableOpacity } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const DashboardScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -3585,77 +3586,79 @@ const DashboardScreen = ({ onNavigate }: { onNavigate: (page: string) => void })
   const recentJOs = useMemo(() => jobOrders.slice(0, 5), [jobOrders])
 
   if (loading) return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</Text>
-    </View>
+    <view className="flex-1 items-center justify-center">
+      <text className="text-[13px] text-gray-400">Loading…</text>
+    </view>
   )
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
+    <scroll-view className="flex-1 bg-[#F4F5F7]">
+      <view className="px-4 pt-[52px] pb-6">
 
       {/* Header */}
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>J.O. PAYROLL SYSTEM</Text>
-        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Dashboard</Text>
-      </View>
+      <view className="mb-4">
+        <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>J.O. PAYROLL SYSTEM</text>
+        <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Dashboard</text>
+      </view>
 
       {/* Net pay hero */}
-      <View style={{ backgroundColor: '#171717', borderRadius: 20, padding: 20, marginBottom: 12 }}>
-        <Text style={{ fontSize: 11, color: '#6b7280', letterSpacing: 1.5, marginBottom: 8 }}>ACTIVE WORKERS NET PAY</Text>
-        <Text style={{ fontSize: 32, fontWeight: '800', color: '#ffffff', letterSpacing: -1 }}>{formatPeso(summary?.net_pay)}</Text>
-        <View style={{ flexDirection: 'row', gap: 16, marginTop: 12 }}>
-          <View>
-            <Text style={{ fontSize: 11, color: '#6b7280' }}>Gross Pay</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#ffffff', marginTop: 2 }}>{formatPeso(summary?.total_basic_pay)}</Text>
-          </View>
-          <View>
-            <Text style={{ fontSize: 11, color: '#6b7280' }}>Total Deductions</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color: '#f87171', marginTop: 2 }}>{formatPeso(summary?.total_deductions)}</Text>
-          </View>
-        </View>
-      </View>
+      <view className="bg-[#171717] rounded-[20px] p-5 mb-3">
+        <text className="text-[11px] text-gray-500 mb-2" style={{ letterSpacing: 1.5 }}>ACTIVE WORKERS NET PAY</text>
+        <text className="text-[32px] font-extrabold text-white" style={{ letterSpacing: -1 }}>{formatPeso(summary?.net_pay)}</text>
+        <view className="flex-row mt-3" style={{ gap: 16 }}>
+          <view>
+            <text className="text-[11px] text-gray-500">Gross Pay</text>
+            <text className="text-[13px] font-semibold text-white" style={{ marginTop: 2 }}>{formatPeso(summary?.total_basic_pay)}</text>
+          </view>
+          <view>
+            <text className="text-[11px] text-gray-500">Total Deductions</text>
+            <text className="text-[13px] font-semibold text-red-400" style={{ marginTop: 2 }}>{formatPeso(summary?.total_deductions)}</text>
+          </view>
+        </view>
+      </view>
 
       {/* Stat row */}
-      <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+      <view className="flex-row mb-3" style={{ gap: 10 }}>
         <StatCard value={summary?.total_active ?? 0}   label="Active JOs"  color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
         <StatCard value={summary?.total_cash ?? 0}     label="Cash"        color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
         <StatCard value={summary?.total_atm ?? 0}      label="ATM"         color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
         <StatCard value={summary?.total_inactive ?? 0} label="Inactive"    color="#9ca3af" />
-      </View>
+      </view>
 
       {/* Deduction breakdown */}
-      <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 12 }}>Deduction Breakdown</Text>
+      <view className="bg-white rounded-2xl border border-gray-200 p-4 mb-3">
+        <text className="text-[13px] font-bold text-gray-900 mb-3">Deduction Breakdown</text>
         {[
           { label: 'SSS',           value: summary?.total_sss,           color: '#e11d48' },
           { label: 'HDMF Premium',  value: summary?.total_hdmf_premium,  color: '#7c3aed' },
           { label: 'HDMF MPL',      value: summary?.total_hdmf_mpl,      color: '#2563eb' },
           { label: 'Calamity Loan', value: summary?.total_calamity_loan, color: '#d97706' },
         ].map(({ label, value, color }) => (
-          <View key={label} style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
-            <Text style={{ fontSize: 13, color: '#374151' }}>{label}</Text>
-            <Text style={{ fontSize: 13, fontWeight: '600', color }}>{formatPeso(value)}</Text>
-          </View>
+          <view key={label} className="flex-row items-center justify-between py-2 border-b border-gray-50">
+            <text className="text-[13px] text-gray-700">{label}</text>
+            <text className="text-[13px] font-semibold" style={{ color }}>{formatPeso(value)}</text>
+          </view>
         ))}
-        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 10 }}>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Total</Text>
-          <Text style={{ fontSize: 14, fontWeight: '800', color: '#e11d48' }}>{formatPeso(summary?.total_deductions)}</Text>
-        </View>
-      </View>
+        <view className="flex-row items-center justify-between pt-2.5">
+          <text className="text-[13px] font-bold text-gray-900">Total</text>
+          <text className="text-sm font-extrabold text-red-600">{formatPeso(summary?.total_deductions)}</text>
+        </view>
+      </view>
 
       {/* Recent JOs */}
-      <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden', marginBottom: 12 }}>
-        <View style={{ paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>Recent Workers</Text>
-          <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Latest 5 entries</Text>
-        </View>
+      <view className="bg-white rounded-2xl border border-gray-200 mb-3" style={{ overflow: 'hidden' }}>
+        <view className="px-4 py-3.5 border-b border-gray-100">
+          <text className="text-[13px] font-bold text-gray-900">Recent Workers</text>
+          <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>Latest 5 entries</text>
+        </view>
         {recentJOs.length === 0
-          ? <View style={{ padding: 32, alignItems: 'center' }}><Text style={{ fontSize: 13, color: '#9ca3af' }}>No data</Text></View>
+          ? <view className="p-8 items-center"><text className="text-[13px] text-gray-400">No data</text></view>
           : recentJOs.map(jo => <WorkerRow key={jo.id} jo={jo} onPress={() => onNavigate('job-database')} />)
         }
-      </View>
+      </view>
 
-    </ScrollView>
+      </view>
+    </scroll-view>
   )
 }
 
@@ -3663,7 +3666,6 @@ const DashboardScreen = ({ onNavigate }: { onNavigate: (page: string) => void })
 
 /* @arkzen:native:page:lynx:job-database */
 
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const WorkersScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -3703,38 +3705,39 @@ const WorkersScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
     }), [jobOrders, search, activeTab])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
+    <view className="flex-1 bg-[#F4F5F7]">
       {/* Fixed header */}
-      <View style={{ backgroundColor: '#F4F5F7', paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12 }}>
-        <View>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>JO DATABASE</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Workers</Text>
-        </View>
-        <View style={{ gap: 8, marginTop: 12 }}>
+      <view className="bg-[#F4F5F7] px-4 pt-[52px] pb-3">
+        <view>
+          <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>JO DATABASE</text>
+          <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Workers</text>
+        </view>
+        <view className="mt-3" style={{ gap: 8 }}>
           <SearchBar value={search} onChange={setSearch} placeholder="Search name, funding, SSS…" />
           <TabRow tabs={TABS} active={activeTab} onChange={setActiveTab} />
-        </View>
-        <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 8 }}>{filtered.length} records</Text>
-      </View>
+        </view>
+        <text className="text-[11px] text-gray-400 mt-2">{filtered.length} records</text>
+      </view>
 
       {/* List */}
       {loading ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</Text>
-        </View>
+        <view className="flex-1 items-center justify-center py-10">
+          <text className="text-[13px] text-gray-400">Loading…</text>
+        </view>
       ) : (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
-          <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' }}>
+        <scroll-view className="flex-1">
+          <view className="px-4 pb-6">
+          <view className="bg-white rounded-2xl border border-gray-200" style={{ overflow: 'hidden' }}>
             {filtered.length === 0 ? (
-              <View style={{ padding: 40, alignItems: 'center' }}>
-                <Text style={{ fontSize: 13, color: '#9ca3af' }}>No records found</Text>
-              </View>
+              <view className="p-10 items-center">
+                <text className="text-[13px] text-gray-400">No records found</text>
+              </view>
             ) : filtered.map(jo => (
-              <View key={jo.id}>
+              <view key={jo.id}>
                 <WorkerRow jo={jo} onPress={() => setExpanded(expanded === jo.id ? null : jo.id)} />
                 {expanded === jo.id && (
-                  <View style={{ paddingHorizontal: 16, paddingBottom: 14, paddingTop: 4, backgroundColor: '#fafafa', borderBottomWidth: 1, borderBottomColor: '#f3f4f6' }}>
-                    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                  <view className="px-4 pb-3.5 pt-1 bg-neutral-50 border-b border-gray-100">
+                    <view className="flex-row flex-wrap" style={{ gap: 8 }}>
                       {[
                         { label: 'JOR #',      value: String(jo.jor_number) },
                         { label: 'Group',      value: jo.jor_pyrl_group ?? '—' },
@@ -3745,34 +3748,35 @@ const WorkersScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
                         { label: 'HDMF MPL',   value: formatPeso(jo.hdmf_mpl) },
                         { label: 'Calamity',   value: formatPeso(jo.calamity_loan) },
                       ].map(({ label, value }) => (
-                        <View key={label} style={{ backgroundColor: '#ffffff', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 10, paddingVertical: 8, minWidth: '44%', flex: 1 }}>
-                          <Text style={{ fontSize: 10, color: '#9ca3af', fontWeight: '600', marginBottom: 2 }}>{label}</Text>
-                          <Text style={{ fontSize: 12, fontWeight: '600', color: '#111827' }}>{value}</Text>
-                        </View>
+                        <view key={label} className="flex-1 bg-white rounded-[10px] border border-gray-200 px-2.5 py-2" style={{ minWidth: '44%' }}>
+                          <text className="text-[10px] text-gray-400 font-semibold" style={{ marginBottom: 2 }}>{label}</text>
+                          <text className="text-xs font-semibold text-gray-900">{value}</text>
+                        </view>
                       ))}
-                    </View>
-                    <View style={{ marginTop: 8, flexDirection: 'row', gap: 8 }}>
-                      <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+                    </view>
+                    <view className="flex-row mt-2" style={{ gap: 8 }}>
+                      <view className={`rounded-lg px-2.5 py-1.5 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                        <text className={`text-[11px] font-semibold ${jo.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
                           {jo.status.toUpperCase()}
-                        </Text>
-                      </View>
+                        </text>
+                      </view>
                       {jo.cash_card_number && (
-                        <View style={{ backgroundColor: '#eff6ff', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6 }}>
-                          <Text style={{ fontSize: 11, fontWeight: '600', color: '#2563eb' }}>
+                        <view className="bg-blue-50 rounded-lg px-2.5 py-1.5">
+                          <text className="text-[11px] font-semibold text-blue-600">
                             ····{jo.cash_card_number.slice(-4)}
-                          </Text>
-                        </View>
+                          </text>
+                        </view>
                       )}
-                    </View>
-                  </View>
+                    </view>
+                  </view>
                 )}
-              </View>
+              </view>
             ))}
-          </View>
-        </ScrollView>
+          </view>
+          </view>
+        </scroll-view>
       )}
-    </View>
+    </view>
   )
 }
 
@@ -3780,7 +3784,6 @@ const WorkersScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
 
 /* @arkzen:native:page:lynx:cash-atm */
 
-import { View, Text, ScrollView, TouchableOpacity } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -3810,72 +3813,74 @@ const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
   const total = activeTab === 'CASH' ? cashTotal : atmTotal
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 24 }}>
+    <view className="flex-1 bg-[#F4F5F7]">
+      <scroll-view>
+        <view className="px-4 pt-[52px] pb-6">
 
-        <View style={{ marginBottom: 16 }}>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>DISBURSEMENT</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Cash / ATM</Text>
-        </View>
+        <view className="mb-4">
+          <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>DISBURSEMENT</text>
+          <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Cash / ATM</text>
+        </view>
 
         {/* Summary cards */}
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 12 }}>
+        <view className="flex-row mb-3" style={{ gap: 10 }}>
           <StatCard value={cashList.length} label="Cash Workers" color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
           <StatCard value={atmList.length}  label="ATM Workers"  color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
-        </View>
-        <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+        </view>
+        <view className="flex-row mb-4" style={{ gap: 10 }}>
           <StatCard value={formatPeso(cashTotal)} label="Cash Total" color="#d97706" bg="#fffbeb" borderColor="#fde68a" />
           <StatCard value={formatPeso(atmTotal)}  label="ATM Total"  color="#2563eb" bg="#eff6ff" borderColor="#bfdbfe" />
-        </View>
+        </view>
 
         {/* Tab toggle */}
-        <View style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}>
+        <view className="flex-row mb-3" style={{ gap: 8 }}>
           {(['CASH', 'ATM'] as const).map(t => (
-            <TouchableOpacity
+            <view
               key={t}
-              onPress={() => setActiveTab(t)}
-              style={{ flex: 1, paddingVertical: 12, borderRadius: 12, alignItems: 'center', backgroundColor: activeTab === t ? '#171717' : '#ffffff', borderWidth: 1, borderColor: activeTab === t ? '#171717' : '#e5e7eb' }}
+              bindtap={() => setActiveTab(t)}
+              className={`flex-1 py-3 rounded-xl items-center border ${activeTab === t ? 'bg-[#171717] border-[#171717]' : 'bg-white border-gray-200'}`}
             >
-              <Text style={{ fontSize: 13, fontWeight: '700', color: activeTab === t ? '#ffffff' : '#9ca3af' }}>{t}</Text>
-              <Text style={{ fontSize: 11, color: activeTab === t ? '#9ca3af' : '#d1d5db', marginTop: 2 }}>{t === 'CASH' ? cashList.length : atmList.length} workers</Text>
-            </TouchableOpacity>
+              <text className={`text-[13px] font-bold ${activeTab === t ? 'text-white' : 'text-gray-400'}`}>{t}</text>
+              <text className={`text-[11px] ${activeTab === t ? 'text-gray-400' : 'text-gray-300'}`} style={{ marginTop: 2 }}>{t === 'CASH' ? cashList.length : atmList.length} workers</text>
+            </view>
           ))}
-        </View>
+        </view>
 
         {/* List */}
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', overflow: 'hidden' }}>
-          <View style={{ paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f3f4f6', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{activeTab} Disbursement</Text>
-            <Text style={{ fontSize: 12, fontWeight: '600', color: activeTab === 'CASH' ? '#d97706' : '#2563eb' }}>{formatPeso(total)}</Text>
-          </View>
+        <view className="bg-white rounded-2xl border border-gray-200" style={{ overflow: 'hidden' }}>
+          <view className="px-4 py-3 border-b border-gray-100 flex-row justify-between items-center">
+            <text className="text-[13px] font-bold text-gray-900">{activeTab} Disbursement</text>
+            <text className={`text-xs font-semibold ${activeTab === 'CASH' ? 'text-amber-600' : 'text-blue-600'}`}>{formatPeso(total)}</text>
+          </view>
 
           {loading ? (
-            <View style={{ padding: 32, alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</Text>
-            </View>
+            <view className="p-8 items-center">
+              <text className="text-[13px] text-gray-400">Loading…</text>
+            </view>
           ) : list.length === 0 ? (
-            <View style={{ padding: 32, alignItems: 'center' }}>
-              <Text style={{ fontSize: 13, color: '#9ca3af' }}>No entries</Text>
-            </View>
+            <view className="p-8 items-center">
+              <text className="text-[13px] text-gray-400">No entries</text>
+            </view>
           ) : (
             list.map(jo => (
-              <View key={jo.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: '#f9fafb' }}>
+              <view key={jo.id} className="flex-row items-center px-4 py-3 border-b border-gray-50" style={{ gap: 12 }}>
                 <Avatar name={jo.name_of_jo} size={36} />
-                <View style={{ flex: 1 }}>
-                  <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                  <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</Text>
-                </View>
+                <view className="flex-1">
+                  <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                  <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</text>
+                </view>
                 {activeTab === 'ATM' && jo.cash_card_number && (
-                  <Text style={{ fontSize: 11, color: '#9ca3af' }}>····{jo.cash_card_number.slice(-4)}</Text>
+                  <text className="text-[11px] text-gray-400">····{jo.cash_card_number.slice(-4)}</text>
                 )}
-                <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827' }}>{formatPeso(jo.basic_pay)}</Text>
-              </View>
+                <text className="text-[13px] font-bold text-gray-900">{formatPeso(jo.basic_pay)}</text>
+              </view>
             ))
           )}
-        </View>
+        </view>
 
-      </ScrollView>
-    </View>
+        </view>
+      </scroll-view>
+    </view>
   )
 }
 
@@ -3883,7 +3888,6 @@ const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
 
 /* @arkzen:native:page:lynx:appointments */
 
-import { View, Text, ScrollView, TouchableOpacity } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -3915,51 +3919,53 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
   const activeCount = useMemo(() => sorted.filter(j => j.status === 'active').length, [sorted])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#F4F5F7' }}>
-      <View style={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 12, backgroundColor: '#F4F5F7' }}>
-        <View>
-          <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>SEQUENCE</Text>
-          <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Appointments</Text>
-        </View>
+    <view className="flex-1 bg-[#F4F5F7]">
+      <view className="px-4 pt-[52px] pb-3 bg-[#F4F5F7]">
+        <view>
+          <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>SEQUENCE</text>
+          <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Appointments</text>
+        </view>
 
-        <View style={{ flexDirection: 'row', gap: 10, marginTop: 12, marginBottom: 12 }}>
+        <view className="flex-row mt-3 mb-3" style={{ gap: 10 }}>
           <StatCard value={sorted.length}  label="Total Slots"  />
           <StatCard value={activeCount}    label="Active Slots" color="#059669" bg="#f0fdf4" borderColor="#bbf7d0" />
-        </View>
+        </view>
 
         <SearchBar value={search} onChange={setSearch} placeholder="Search name or title…" />
-      </View>
+      </view>
 
       {loading ? (
-        <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 40 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Loading…</Text>
-        </View>
+        <view className="flex-1 items-center justify-center py-10">
+          <text className="text-[13px] text-gray-400">Loading…</text>
+        </view>
       ) : sorted.length === 0 ? (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, padding: 40, alignItems: 'center', borderWidth: 1, borderColor: '#e5e7eb', marginHorizontal: 16 }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>No appointments found</Text>
-        </View>
+        <view className="bg-white rounded-2xl p-10 items-center border border-gray-200 mx-4">
+          <text className="text-[13px] text-gray-400">No appointments found</text>
+        </view>
       ) : (
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}>
+        <scroll-view className="flex-1">
+          <view className="px-4 pb-6">
           {sorted.map(jo => (
-            <View key={jo.id} style={{ backgroundColor: '#ffffff', borderRadius: 14, borderWidth: 1, borderColor: '#e5e7eb', padding: 14, marginBottom: 8, flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-              <View style={{ width: 36, height: 36, backgroundColor: '#f3f4f6', borderRadius: 10, alignItems: 'center', justifyContent: 'center' }}>
-                <Text style={{ fontSize: 12, fontWeight: '800', color: '#374151' }}>#{jo.appointment_order}</Text>
-              </View>
+            <view key={jo.id} className="bg-white rounded-[14px] border border-gray-200 p-3.5 mb-2 flex-row items-center" style={{ gap: 12 }}>
+              <view className="w-9 h-9 bg-gray-100 rounded-[10px] items-center justify-center">
+                <text className="text-xs font-extrabold text-gray-700">#{jo.appointment_order}</text>
+              </view>
               <Avatar name={jo.name_of_jo} size={36} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 13, fontWeight: '600', color: '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</Text>
-              </View>
-              <View style={{ backgroundColor: jo.status === 'active' ? '#d1fae5' : '#f3f4f6', borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 }}>
-                <Text style={{ fontSize: 10, fontWeight: '700', color: jo.status === 'active' ? '#059669' : '#9ca3af' }}>
+              <view className="flex-1">
+                <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</text>
+              </view>
+              <view className={`rounded-lg px-2 py-1 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
+                <text className={`text-[10px] font-bold ${jo.status === 'active' ? 'text-emerald-600' : 'text-gray-400'}`}>
                   {jo.status.toUpperCase()}
-                </Text>
-              </View>
-            </View>
+                </text>
+              </view>
+            </view>
           ))}
-        </ScrollView>
+          </view>
+        </scroll-view>
       )}
-    </View>
+    </view>
   )
 }
 
@@ -3967,7 +3973,6 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
 
 /* @arkzen:native:page:lynx:payslip */
 
-import { View, Text, ScrollView, TouchableOpacity, TextInput } from '@lynx-js/react'
 import { useState, useEffect, useMemo } from '@lynx-js/react'
 
 const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) => {
@@ -4010,66 +4015,68 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
   const periodLabel = now.toLocaleDateString('en-PH', { month: 'long', year: 'numeric' })
 
   return (
-    <ScrollView style={{ flex: 1, backgroundColor: '#F4F5F7' }} contentContainerStyle={{ paddingHorizontal: 16, paddingTop: 52, paddingBottom: 32 }}>
+    <scroll-view className="flex-1 bg-[#F4F5F7]">
+      <view className="px-4 pt-[52px] pb-8">
 
-      <View style={{ marginBottom: 16 }}>
-        <Text style={{ fontSize: 11, color: '#9ca3af', letterSpacing: 1.5, fontWeight: '600' }}>GENERATE</Text>
-        <Text style={{ fontSize: 22, fontWeight: '800', color: '#111827', marginTop: 2, letterSpacing: -0.5 }}>Payslip</Text>
-      </View>
+      <view className="mb-4">
+        <text className="text-[11px] text-gray-400 font-semibold" style={{ letterSpacing: 1.5 }}>GENERATE</text>
+        <text className="text-[22px] font-extrabold text-gray-900" style={{ marginTop: 2, letterSpacing: -0.5 }}>Payslip</text>
+      </view>
 
       {/* Worker search panel */}
-      <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 16, marginBottom: 12 }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: '#111827', marginBottom: 10 }}>Select Worker</Text>
+      <view className="bg-white rounded-2xl border border-gray-200 p-4 mb-3">
+        <text className="text-[13px] font-bold text-gray-900 mb-2.5">Select Worker</text>
         <SearchBar value={search} onChange={setSearch} placeholder="Search worker name…" />
 
-        <View style={{ marginTop: 10, gap: 4 }}>
+        <view className="mt-2.5" style={{ gap: 4 }}>
           {(search ? filtered : activeJOs.slice(0, 8)).map(jo => (
-            <TouchableOpacity
+            <view
               key={jo.id}
-              onPress={() => setSelected(jo)}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 10, borderRadius: 10, backgroundColor: selected?.id === jo.id ? '#171717' : 'transparent' }}
+              bindtap={() => setSelected(jo)}
+              className={`flex-row items-center p-2.5 rounded-[10px] ${selected?.id === jo.id ? 'bg-[#171717]' : 'bg-transparent'}`}
+              style={{ gap: 10 }}
             >
               <Avatar name={jo.name_of_jo} size={32} />
-              <View style={{ flex: 1 }}>
-                <Text style={{ fontSize: 12, fontWeight: '600', color: selected?.id === jo.id ? '#ffffff' : '#111827' }} numberOfLines={1}>{jo.name_of_jo}</Text>
-                <Text style={{ fontSize: 11, color: '#9ca3af' }}>{jo.job_title} · {formatPeso(jo.basic_pay)}/day</Text>
-              </View>
+              <view className="flex-1">
+                <text className={`text-xs font-semibold ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`} maxLength={1}>{jo.name_of_jo}</text>
+                <text className="text-[11px] text-gray-400">{jo.job_title} · {formatPeso(jo.basic_pay)}/day</text>
+              </view>
               {selected?.id === jo.id && (
-                <View style={{ width: 20, height: 20, borderRadius: 10, backgroundColor: '#ffffff', alignItems: 'center', justifyContent: 'center' }}>
-                  <Text style={{ fontSize: 12, color: '#171717' }}>✓</Text>
-                </View>
+                <view className="w-5 h-5 rounded-full bg-white items-center justify-center">
+                  <text className="text-xs text-[#171717]">✓</text>
+                </view>
               )}
-            </TouchableOpacity>
+            </view>
           ))}
-        </View>
+        </view>
 
-        {/* Work days input — Lynx uses onInput */}
-        <View style={{ marginTop: 12, flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-          <Text style={{ fontSize: 12, color: '#6b7280', fontWeight: '500' }}>Work Days:</Text>
-          <View style={{ flex: 1, backgroundColor: '#f9fafb', borderRadius: 10, borderWidth: 1, borderColor: '#e5e7eb', paddingHorizontal: 12, paddingVertical: 8 }}>
-            <TextInput
+        {/* Work days input */}
+        <view className="mt-3 flex-row items-center" style={{ gap: 10 }}>
+          <text className="text-xs text-gray-500 font-medium">Work Days:</text>
+          <view className="flex-1 bg-gray-50 rounded-[10px] border border-gray-200 px-3 py-2">
+            <input
               value={workDays}
-              onInput={e => setWorkDays(e.detail.value)}
-              style={{ fontSize: 13, color: '#111827', fontWeight: '600' }}
+              bindinput={e => setWorkDays(e.detail.value)}
+              className="text-[13px] text-gray-900 font-semibold"
             />
-          </View>
-          <Text style={{ fontSize: 11, color: '#9ca3af' }}>days</Text>
-        </View>
-      </View>
+          </view>
+          <text className="text-[11px] text-gray-400">days</text>
+        </view>
+      </view>
 
       {/* Payslip preview */}
       {selected && computed ? (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 2, borderColor: '#e5e7eb', borderStyle: 'dashed', padding: 18, marginBottom: 12 }}>
+        <view className="bg-white rounded-2xl border-2 border-gray-200 p-[18px] mb-3" style={{ borderStyle: 'dashed' }}>
 
           {/* Header */}
-          <View style={{ alignItems: 'center', borderBottomWidth: 1, borderBottomColor: '#f3f4f6', paddingBottom: 14, marginBottom: 14 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#111827', letterSpacing: -0.3 }}>LOCAL GOVERNMENT UNIT</Text>
-            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Job Order Payroll System</Text>
-            <Text style={{ fontSize: 11, color: '#9ca3af', marginTop: 2 }}>Pay Period: {periodLabel}</Text>
-          </View>
+          <view className="items-center border-b border-gray-100 pb-3.5 mb-3.5">
+            <text className="text-sm font-extrabold text-gray-900" style={{ letterSpacing: -0.3 }}>LOCAL GOVERNMENT UNIT</text>
+            <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>Job Order Payroll System</text>
+            <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>Pay Period: {periodLabel}</text>
+          </view>
 
           {/* Worker info */}
-          <View style={{ gap: 6, marginBottom: 14 }}>
+          <view className="mb-3.5" style={{ gap: 6 }}>
             {[
               { label: 'Name',         value: selected.name_of_jo },
               { label: 'JOR #',        value: String(selected.jor_number) },
@@ -4078,56 +4085,57 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
               { label: 'Disbursement', value: selected.disbursement_type },
               { label: 'Days Worked',  value: `${computed.days} days` },
             ].map(({ label, value }) => (
-              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: '#9ca3af' }}>{label}:</Text>
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#111827' }}>{value}</Text>
-              </View>
+              <view key={label} className="flex-row justify-between">
+                <text className="text-[11px] text-gray-400">{label}:</text>
+                <text className="text-[11px] font-semibold text-gray-900">{value}</text>
+              </view>
             ))}
-          </View>
+          </view>
 
           {/* Gross pay */}
-          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 12, marginBottom: 4 }}>
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 11, color: '#6b7280' }}>
+          <view className="border-t border-gray-100 pt-3" style={{ marginBottom: 4 }}>
+            <view className="flex-row justify-between">
+              <text className="text-[11px] text-gray-500">
                 {`Basic Pay (${formatPeso(selected.basic_pay)}/day × ${computed.days})`}
-              </Text>
-              <Text style={{ fontSize: 12, fontWeight: '700', color: '#111827' }}>{formatPeso(computed.gross)}</Text>
-            </View>
-          </View>
+              </text>
+              <text className="text-xs font-bold text-gray-900">{formatPeso(computed.gross)}</text>
+            </view>
+          </view>
 
           {/* Deductions */}
-          <View style={{ borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 10, marginTop: 8, gap: 6 }}>
-            <Text style={{ fontSize: 10, color: '#9ca3af', letterSpacing: 1 }}>DEDUCTIONS:</Text>
+          <view className="border-t border-gray-100 pt-2.5 mt-2" style={{ gap: 6 }}>
+            <text className="text-[10px] text-gray-400" style={{ letterSpacing: 1 }}>DEDUCTIONS:</text>
             {[
               { label: 'SSS Contribution', value: computed.sss,      show: computed.sss > 0 },
               { label: 'HDMF Premium',     value: computed.hdmfPrem, show: computed.hdmfPrem > 0 },
               { label: 'HDMF MPL',         value: computed.hdmfMpl,  show: computed.hdmfMpl > 0 },
               { label: 'Calamity Loan',    value: computed.calamity, show: computed.calamity > 0 },
             ].filter(d => d.show).map(({ label, value }) => (
-              <View key={label} style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ fontSize: 11, color: '#6b7280' }}>{label}</Text>
-                <Text style={{ fontSize: 11, fontWeight: '600', color: '#e11d48' }}>({formatPeso(value)})</Text>
-              </View>
+              <view key={label} className="flex-row justify-between">
+                <text className="text-[11px] text-gray-500">{label}</text>
+                <text className="text-[11px] font-semibold text-red-600">({formatPeso(value)})</text>
+              </view>
             ))}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', borderTopWidth: 1, borderTopColor: '#f3f4f6', paddingTop: 6 }}>
-              <Text style={{ fontSize: 11, color: '#9ca3af' }}>Total Deductions</Text>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: '#e11d48' }}>({formatPeso(computed.deductions)})</Text>
-            </View>
-          </View>
+            <view className="flex-row justify-between border-t border-gray-100 pt-1.5">
+              <text className="text-[11px] text-gray-400">Total Deductions</text>
+              <text className="text-[11px] font-bold text-red-600">({formatPeso(computed.deductions)})</text>
+            </view>
+          </view>
 
           {/* Net pay */}
-          <View style={{ backgroundColor: '#171717', borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 14 }}>
-            <Text style={{ fontSize: 14, fontWeight: '800', color: '#ffffff' }}>NET PAY</Text>
-            <Text style={{ fontSize: 20, fontWeight: '800', color: '#ffffff' }}>{formatPeso(computed.net)}</Text>
-          </View>
-        </View>
+          <view className="bg-[#171717] rounded-xl px-4 py-3.5 flex-row justify-between items-center mt-3.5">
+            <text className="text-sm font-extrabold text-white">NET PAY</text>
+            <text className="text-xl font-extrabold text-white">{formatPeso(computed.net)}</text>
+          </view>
+        </view>
       ) : (
-        <View style={{ backgroundColor: '#ffffff', borderRadius: 16, borderWidth: 1, borderColor: '#e5e7eb', padding: 40, alignItems: 'center' }}>
-          <Text style={{ fontSize: 13, color: '#9ca3af' }}>Select a worker to preview payslip</Text>
-        </View>
+        <view className="bg-white rounded-2xl border border-gray-200 p-10 items-center">
+          <text className="text-[13px] text-gray-400">Select a worker to preview payslip</text>
+        </view>
       )}
 
-    </ScrollView>
+      </view>
+    </scroll-view>
   )
 }
 
