@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-20T13:59:08.474Z
+// Generated: 2026-06-20T15:23:59.764Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -12,25 +12,13 @@ import { AssetHubIndex } from '../../pages/asset-hub/index'
 import { AuthTestLogin } from '../../pages/auth-test/login'
 import { AuthTestRegister } from '../../pages/auth-test/register'
 import { AuthTestDashboard } from '../../pages/auth-test/dashboard'
-import { BodyEndpointHandlerIndex } from '../../pages/body-endpoint-handler/index'
-import { BodyMailNotificationLogin } from '../../pages/body-mail-notification/login'
-import { BodyMailNotificationRegister } from '../../pages/body-mail-notification/register'
-import { BodyMailNotificationDashboard } from '../../pages/body-mail-notification/dashboard'
 import { BroadcastTestLogin } from '../../pages/broadcast-test/login'
 import { BroadcastTestRegister } from '../../pages/broadcast-test/register'
 import { BroadcastTestDashboard } from '../../pages/broadcast-test/dashboard'
 import { CrudTestIndex } from '../../pages/crud-test/index'
 import { ErrorsTestIndex } from '../../pages/errors-test/index'
-import { EventsTestIndex } from '../../pages/events-test/index'
 import { HelloNativeIndex } from '../../pages/hello-native/index'
 import { HelloNativeAbout } from '../../pages/hello-native/about'
-import { InventoryManagementIndex } from '../../pages/inventory-management/index'
-import { JoPayrollIndex } from '../../pages/jo-payroll/index'
-import { JoPayrollJobDatabase } from '../../pages/jo-payroll/job-database'
-import { JoPayrollCashAtm } from '../../pages/jo-payroll/cash-atm'
-import { JoPayrollAppointments } from '../../pages/jo-payroll/appointments'
-import { JoPayrollPayslip } from '../../pages/jo-payroll/payslip'
-import { JobTestDashboard } from '../../pages/job-test/dashboard'
 import { LayoutTestIndex } from '../../pages/layout-test/index'
 import { LayoutTestSingle } from '../../pages/layout-test/single'
 import { LayoutTestChain } from '../../pages/layout-test/chain'
@@ -38,13 +26,7 @@ import { LayoutTestNativeDeep } from '../../pages/layout-test/native-deep'
 import { LayoutTestNativeAuth } from '../../pages/layout-test/native-auth'
 import { LayoutTestNativeChainAuth } from '../../pages/layout-test/native-chain-auth'
 import { LayoutTestNativeGuest } from '../../pages/layout-test/native-guest'
-import { MailTestLogin } from '../../pages/mail-test/login'
-import { MailTestRegister } from '../../pages/mail-test/register'
-import { MailTestDashboard } from '../../pages/mail-test/dashboard'
 import { MiddlewareTestIndex } from '../../pages/middleware-test/index'
-import { NewUpdatesStylesIndex } from '../../pages/new-updates-styles/index'
-import { NewUpdatesStylesAbout } from '../../pages/new-updates-styles/about'
-import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/features'
 import { NotificationTestLogin } from '../../pages/notification-test/login'
 import { NotificationTestRegister } from '../../pages/notification-test/register'
 import { NotificationTestDashboard } from '../../pages/notification-test/dashboard'
@@ -54,6 +36,24 @@ import { RolesTestRegister } from '../../pages/roles-test/register'
 import { RolesTestDashboard } from '../../pages/roles-test/dashboard'
 import { SchedulerTestDashboard } from '../../pages/scheduler-test/dashboard'
 import { UploadTestDashboard } from '../../pages/upload-test/dashboard'
+import { BodyEndpointHandlerIndex } from '../../pages/body-endpoint-handler/index'
+import { MailTestLogin } from '../../pages/mail-test/login'
+import { MailTestRegister } from '../../pages/mail-test/register'
+import { MailTestDashboard } from '../../pages/mail-test/dashboard'
+import { EventsTestIndex } from '../../pages/events-test/index'
+import { InventoryManagementIndex } from '../../pages/inventory-management/index'
+import { BodyMailNotificationLogin } from '../../pages/body-mail-notification/login'
+import { BodyMailNotificationRegister } from '../../pages/body-mail-notification/register'
+import { BodyMailNotificationDashboard } from '../../pages/body-mail-notification/dashboard'
+import { JobTestDashboard } from '../../pages/job-test/dashboard'
+import { JoPayrollIndex } from '../../pages/jo-payroll/index'
+import { JoPayrollJobDatabase } from '../../pages/jo-payroll/job-database'
+import { JoPayrollCashAtm } from '../../pages/jo-payroll/cash-atm'
+import { JoPayrollAppointments } from '../../pages/jo-payroll/appointments'
+import { JoPayrollPayslip } from '../../pages/jo-payroll/payslip'
+import { NewUpdatesStylesIndex } from '../../pages/new-updates-styles/index'
+import { NewUpdatesStylesAbout } from '../../pages/new-updates-styles/about'
+import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/features'
 import { default as ErrorsTestError404 } from '../../pages/errors-test/error-404'
 import { default as ErrorsTestError500 } from '../../pages/errors-test/error-500'
 import { default as LayoutTestError404 } from '../../pages/layout-test/error-404'
@@ -73,28 +73,14 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'auth-test', page: 'register', component: AuthTestRegister, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'dashboard', component: AuthTestDashboard, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'index', component: AuthTestLogin, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
-  { module: 'body-endpoint-handler', page: 'index', component: BodyEndpointHandlerIndex, layout: null, loginRoute: '/body-endpoint-handler/index', dashboardRoute: '/body-endpoint-handler/index' },
-  { module: 'body-mail-notification', page: 'login', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
-  { module: 'body-mail-notification', page: 'register', component: BodyMailNotificationRegister, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
-  { module: 'body-mail-notification', page: 'dashboard', component: BodyMailNotificationDashboard, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
-  { module: 'body-mail-notification', page: 'index', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'broadcast-test', page: 'login', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'register', component: BroadcastTestRegister, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'dashboard', component: BroadcastTestDashboard, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'index', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'crud-test', page: 'index', component: CrudTestIndex, layout: null, loginRoute: '/crud-test/index', dashboardRoute: '/crud-test/index' },
   { module: 'errors-test', page: 'index', component: ErrorsTestIndex, layout: null, loginRoute: '/errors-test/index', dashboardRoute: '/errors-test/index' },
-  { module: 'events-test', page: 'index', component: EventsTestIndex, layout: null, loginRoute: '/events-test/index', dashboardRoute: '/events-test/index' },
   { module: 'hello-native', page: 'index', component: HelloNativeIndex, layout: null, loginRoute: '/hello-native/index', dashboardRoute: '/hello-native/index' },
   { module: 'hello-native', page: 'about', component: HelloNativeAbout, layout: null, loginRoute: '/hello-native/index', dashboardRoute: '/hello-native/index' },
-  { module: 'inventory-management', page: 'index', component: InventoryManagementIndex, layout: null, loginRoute: '/inventory-management/index', dashboardRoute: '/inventory-management/index' },
-  { module: 'jo-payroll', page: 'index', component: JoPayrollIndex, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
-  { module: 'jo-payroll', page: 'job-database', component: JoPayrollJobDatabase, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
-  { module: 'jo-payroll', page: 'cash-atm', component: JoPayrollCashAtm, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
-  { module: 'jo-payroll', page: 'appointments', component: JoPayrollAppointments, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
-  { module: 'jo-payroll', page: 'payslip', component: JoPayrollPayslip, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
-  { module: 'job-test', page: 'dashboard', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
-  { module: 'job-test', page: 'index', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
   { module: 'layout-test', page: 'index', component: LayoutTestIndex, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'single', component: LayoutTestSingle, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'chain', component: LayoutTestChain, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
@@ -102,14 +88,7 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'layout-test', page: 'native-auth', component: LayoutTestNativeAuth, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'native-chain-auth', component: LayoutTestNativeChainAuth, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
   { module: 'layout-test', page: 'native-guest', component: LayoutTestNativeGuest, layout: null, loginRoute: '/layout-test/index', dashboardRoute: '/layout-test/index' },
-  { module: 'mail-test', page: 'login', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
-  { module: 'mail-test', page: 'register', component: MailTestRegister, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
-  { module: 'mail-test', page: 'dashboard', component: MailTestDashboard, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
-  { module: 'mail-test', page: 'index', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
   { module: 'middleware-test', page: 'index', component: MiddlewareTestIndex, layout: null, loginRoute: '/middleware-test/index', dashboardRoute: '/middleware-test/index' },
-  { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
-  { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
-  { module: 'new-updates-styles', page: 'features', component: NewUpdatesStylesFeatures, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
   { module: 'notification-test', page: 'login', component: NotificationTestLogin, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
   { module: 'notification-test', page: 'register', component: NotificationTestRegister, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
   { module: 'notification-test', page: 'dashboard', component: NotificationTestDashboard, layout: null, loginRoute: '/notification-test/login', dashboardRoute: '/notification-test/dashboard' },
@@ -123,6 +102,27 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'scheduler-test', page: 'index', component: SchedulerTestDashboard, layout: null, loginRoute: '/scheduler-test/index', dashboardRoute: '/scheduler-test/dashboard' },
   { module: 'upload-test', page: 'dashboard', component: UploadTestDashboard, layout: null, loginRoute: '/upload-test/index', dashboardRoute: '/upload-test/dashboard' },
   { module: 'upload-test', page: 'index', component: UploadTestDashboard, layout: null, loginRoute: '/upload-test/index', dashboardRoute: '/upload-test/dashboard' },
+  { module: 'body-endpoint-handler', page: 'index', component: BodyEndpointHandlerIndex, layout: null, loginRoute: '/body-endpoint-handler/index', dashboardRoute: '/body-endpoint-handler/index' },
+  { module: 'mail-test', page: 'login', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
+  { module: 'mail-test', page: 'register', component: MailTestRegister, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
+  { module: 'mail-test', page: 'dashboard', component: MailTestDashboard, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
+  { module: 'mail-test', page: 'index', component: MailTestLogin, layout: null, loginRoute: '/mail-test/login', dashboardRoute: '/mail-test/dashboard' },
+  { module: 'events-test', page: 'index', component: EventsTestIndex, layout: null, loginRoute: '/events-test/index', dashboardRoute: '/events-test/index' },
+  { module: 'inventory-management', page: 'index', component: InventoryManagementIndex, layout: null, loginRoute: '/inventory-management/index', dashboardRoute: '/inventory-management/index' },
+  { module: 'body-mail-notification', page: 'login', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
+  { module: 'body-mail-notification', page: 'register', component: BodyMailNotificationRegister, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
+  { module: 'body-mail-notification', page: 'dashboard', component: BodyMailNotificationDashboard, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
+  { module: 'body-mail-notification', page: 'index', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
+  { module: 'job-test', page: 'dashboard', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
+  { module: 'job-test', page: 'index', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
+  { module: 'jo-payroll', page: 'index', component: JoPayrollIndex, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
+  { module: 'jo-payroll', page: 'job-database', component: JoPayrollJobDatabase, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
+  { module: 'jo-payroll', page: 'cash-atm', component: JoPayrollCashAtm, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
+  { module: 'jo-payroll', page: 'appointments', component: JoPayrollAppointments, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
+  { module: 'jo-payroll', page: 'payslip', component: JoPayrollPayslip, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
+  { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
+  { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
+  { module: 'new-updates-styles', page: 'features', component: NewUpdatesStylesFeatures, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
 ]
 
 export const LYNX_ERROR_404: Record<string, any> = {

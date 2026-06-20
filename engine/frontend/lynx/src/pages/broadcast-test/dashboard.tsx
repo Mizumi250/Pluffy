@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.126Z
+// Generated: 2026-06-20T15:23:53.955Z
 import { ChannelCard } from './components/ChannelCard'
 import { APP_KEY, BACKEND_URL, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
 import type { LynxMessage, WsStatus } from './components/types'
@@ -203,3 +203,5 @@ const DashboardScreen = () => {
     </view>
   )
 }
+
+export const BroadcastTestDashboard = DashboardScreen;

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — errors-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.661Z
+// Generated: 2026-06-20T15:23:54.962Z
 import { LynxResultBanner } from './components/LynxResultBanner'
 import { BACKEND_URL, LYNX_ERRORS } from './components/constants'
 import { useState } from '@lynx-js/react'
@@ -101,3 +101,5 @@ const IndexScreen = () => {
     </view>
   )
 }
+
+export const ErrorsTestIndex = IndexScreen;

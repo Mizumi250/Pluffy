@@ -1070,7 +1070,7 @@ const sourceColor = (s: string) =>
 
 // ── Badge ─────────────────────────────────────────────────────
 const LynxBadge = ({ label, color }: { label: string; color: string }) => (
-  <view style={{ paddingHorizontal: 8, paddingVertical: 2, borderRadius: 20, backgroundColor: color + '22' }}>
+  <view style={{ padding: '2px 8px', borderRadius: 20, backgroundColor: color + '22' }}>
     <text style={{ fontSize: 10, fontWeight: '700', color, letterSpacing: 0.5 }}>{label}</text>
   </view>
 )
@@ -1206,14 +1206,14 @@ const IndexScreen = () => {
       )}
 
       {/* Header */}
-      <view style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', paddingHorizontal: 20, paddingVertical: 16 }}>
+      <view style={{ backgroundColor: '#fff', borderBottomWidth: 1, borderBottomColor: '#f5f5f5', padding: '16px 20px' }}>
         <text style={{ fontSize: 17, fontWeight: '700', color: '#171717' }}>Body Injection Tester</text>
         <text style={{ fontSize: 11, color: '#a3a3a3', marginTop: 2, fontFamily: 'monospace' }}>
           ControllerBuilder v7.0 · CustomRouteBuilder v2.0
         </text>
       </view>
 
-      <scroll-view style={{ flex: 1 }} contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+      <scroll-view style={{ flex: 1, padding: 16, paddingBottom: 40 }}>
 
         {/* Stats */}
         <LynxSectionCard>
@@ -1238,7 +1238,7 @@ const IndexScreen = () => {
           ) : null}
           <view
             bindtap={loadAll}
-            style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 14, alignSelf: 'flex-start' }}
+            style={{ marginTop: 10, backgroundColor: '#0ea5e9', borderRadius: 8, padding: '6px 14px', alignSelf: 'flex-start' }}
           >
             <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>Refresh Stats</text>
           </view>
@@ -1253,16 +1253,16 @@ const IndexScreen = () => {
               <input
                 bindinput={(e: any) => { const n = [...echoFields]; n[i].key = e.detail.value; setEchoFields(n) }}
                 placeholder="key"
-                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: '8px 10px', fontSize: 13, color: '#171717' }}
               />
               <input
                 bindinput={(e: any) => { const n = [...echoFields]; n[i].value = e.detail.value; setEchoFields(n) }}
                 placeholder="value"
-                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717' }}
+                style={{ flex: 1, backgroundColor: '#f5f5f5', borderRadius: 8, padding: '8px 10px', fontSize: 13, color: '#171717' }}
               />
               <view
                 bindtap={() => setEchoFields(echoFields.filter((_: any, j: number) => j !== i))}
-                style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingHorizontal: 10, alignItems: 'center', justifyContent: 'center' }}
+                style={{ backgroundColor: '#ef4444', borderRadius: 8, paddingLeft: 10, paddingRight: 10, alignItems: 'center', justifyContent: 'center' }}
               >
                 <text style={{ color: '#fff', fontSize: 14, fontWeight: '700' }}>×</text>
               </view>
@@ -1271,14 +1271,14 @@ const IndexScreen = () => {
           <view style={{ flexDirection: 'row', gap: 8, marginBottom: 8 }}>
             <view
               bindtap={() => setEchoFields([...echoFields, { key: '', value: '' }])}
-              style={{ backgroundColor: '#6366f1', borderRadius: 8, paddingVertical: 6, paddingHorizontal: 12 }}
+              style={{ backgroundColor: '#6366f1', borderRadius: 8, padding: '6px 12px' }}
             >
               <text style={{ color: '#fff', fontSize: 11, fontWeight: '700' }}>+ Add Field</text>
             </view>
           </view>
           <view
             bindtap={echoing ? undefined : doEcho}
-            style={{ backgroundColor: echoing ? '#d4d4d4' : '#171717', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+            style={{ backgroundColor: echoing ? '#d4d4d4' : '#171717', borderRadius: 8, padding: '8px 16px', alignSelf: 'flex-start' }}
           >
             <text style={{ color: echoing ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
               {echoing ? 'Echoing…' : 'Send Echo'}
@@ -1303,7 +1303,7 @@ const IndexScreen = () => {
           <text style={{ fontSize: 11, color: '#a3a3a3', marginBottom: 12, fontFamily: 'monospace' }}>GET /ping · @arkzen:handler:ping</text>
           <view
             bindtap={doPing}
-            style={{ backgroundColor: '#059669', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+            style={{ backgroundColor: '#059669', borderRadius: 8, padding: '8px 16px', alignSelf: 'flex-start' }}
           >
             <text style={{ color: '#fff', fontSize: 13, fontWeight: '700' }}>Ping</text>
           </view>
@@ -1326,7 +1326,7 @@ const IndexScreen = () => {
           <input
             bindinput={(e: any) => setHProbe(e.detail.value)}
             placeholder="probe name"
-            style={{ backgroundColor: '#f5f5f5', borderRadius: 8, paddingHorizontal: 10, paddingVertical: 8, fontSize: 13, color: '#171717', marginBottom: 8 }}
+            style={{ backgroundColor: '#f5f5f5', borderRadius: 8, padding: '8px 10px', fontSize: 13, color: '#171717', marginBottom: 8 }}
           />
           <view
             bindtap={() => setHOk((v: boolean) => !v)}
@@ -1344,7 +1344,7 @@ const IndexScreen = () => {
           </view>
           <view
             bindtap={hRecording ? undefined : doRecord}
-            style={{ backgroundColor: hRecording ? '#d4d4d4' : '#7c3aed', borderRadius: 8, paddingVertical: 8, paddingHorizontal: 16, alignSelf: 'flex-start' }}
+            style={{ backgroundColor: hRecording ? '#d4d4d4' : '#7c3aed', borderRadius: 8, padding: '8px 16px', alignSelf: 'flex-start' }}
           >
             <text style={{ color: hRecording ? '#737373' : '#fff', fontSize: 13, fontWeight: '700' }}>
               {hRecording ? 'Recording…' : 'Record via Handler'}
@@ -1367,9 +1367,9 @@ const IndexScreen = () => {
             <text style={{ fontSize: 13, color: '#a3a3a3' }}>No results yet.</text>
           ) : (
             latest.map((r: ProbeResult) => (
-              <view key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingVertical: 8, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
+              <view key={r.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingTop: 8, paddingBottom: 8, borderBottomWidth: 1, borderBottomColor: '#f5f5f5' }}>
                 <LynxBadge label={r.source} color={sourceColor(r.source)} />
-                <text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#171717' }} numberOfLines={1}>{r.probe}</text>
+                <text style={{ flex: 1, fontSize: 12, fontWeight: '600', color: '#171717' }}>{r.probe}</text>
                 <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
                 <text style={{ fontSize: 10, color: '#a3a3a3' }}>{new Date(r.created_at).toLocaleTimeString()}</text>
               </view>
@@ -1389,19 +1389,19 @@ const IndexScreen = () => {
               <view
                 key={r.id}
                 style={{
-                  paddingVertical: 10,
+                  paddingTop: 10, paddingBottom: 10,
                   borderBottomWidth: i < probes.length - 1 ? 1 : 0,
                   borderBottomColor: '#f5f5f5',
                 }}
               >
                 <view style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 3 }}>
                   <LynxBadge label={r.source} color={sourceColor(r.source)} />
-                  <text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }} numberOfLines={1}>{r.probe}</text>
+                  <text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }}>{r.probe}</text>
                   <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
                   <view
                     bindtap={() => doDelete(r.id)}
                     disabled={deleting === r.id}
-                    style={{ backgroundColor: '#ef4444', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3, opacity: deleting === r.id ? 0.5 : 1 }}
+                    style={{ backgroundColor: '#ef4444', borderRadius: 6, padding: '3px 8px', opacity: deleting === r.id ? 0.5 : 1 }}
                   >
                     <text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>
                       {deleting === r.id ? '…' : 'Delete'}
@@ -1409,7 +1409,7 @@ const IndexScreen = () => {
                   </view>
                 </view>
                 {r.result && (
-                  <text style={{ fontSize: 11, color: '#737373', marginLeft: 2 }} numberOfLines={2}>{r.result}</text>
+                  <text style={{ fontSize: 11, color: '#737373', marginLeft: 2 }}>{r.result}</text>
                 )}
                 <text style={{ fontSize: 10, color: '#a3a3a3', marginTop: 2, marginLeft: 2 }}>
                   {new Date(r.created_at).toLocaleTimeString()}

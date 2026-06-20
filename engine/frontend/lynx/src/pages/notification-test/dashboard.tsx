@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.568Z
+// Generated: 2026-06-20T15:23:57.174Z
 import { channelDesc, channelEmoji, channelLabel } from './components/utils'
 import type { WsStatus } from './components/types'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
@@ -222,3 +222,5 @@ const DashboardLynxPage = () => {
     </scroll-view>
   )
 }
+
+export const NotificationTestDashboard = DashboardLynxPage;

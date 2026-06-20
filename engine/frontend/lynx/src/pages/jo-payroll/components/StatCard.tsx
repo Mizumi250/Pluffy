@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatCard
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.040Z
+// Generated: 2026-06-20T15:23:55.706Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 import { WorkerRow } from './WorkerRow'
 
 // ── StatCard ─────────────────────────────────────────────────

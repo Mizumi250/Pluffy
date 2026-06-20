@@ -994,13 +994,13 @@ const FeaturesScreen = () => {
 /* @arkzen:native:style:HeroSection:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LYNX SHARED COMPONENTS
+// LYNX SHARED COMPONENTS — FIXED
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:components:lynx:shared */
 
 import { useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import Icon from '@sigx/lynx-icons-lucide'   // ✅ fixed import (default)
 
 export const LynxBadge = ({ label }: { label: string }) => (
   <view className="px-3 py-1 bg-blue-100 rounded-full self-start">
@@ -1036,7 +1036,7 @@ export const LynxGhostButton = ({ label, onPress }: { label: string; onPress: ()
   </view>
 )
 
-type LynxColor = 'blue' | 'purple' | 'green' | 'orange'
+export type LynxColor = 'blue' | 'purple' | 'green' | 'orange'   // ✅ now exported
 
 const LYNX_COLOR_MAP: Record<LynxColor, { bg: string; text: string; border: string }> = {
   blue:   { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200'   },
@@ -1073,13 +1073,13 @@ export const LynxFeatureCard = ({
   )
 }
 
-type LynxFeature = {
+export type LynxFeature = {
   id: number
   icon: 'zap' | 'code' | 'palette' | 'layers'
   title: string
   description: string
   color: LynxColor
-}
+}   // ✅ now exported
 
 export const LYNX_FEATURES: LynxFeature[] = [
   { id: 1, icon: 'zap',     title: 'Component Separation', description: 'Individual component files with shared utilities backend',   color: 'blue'   },
@@ -1101,7 +1101,7 @@ export const getLynxIcon = (name: string, color: string) => {
 /* @arkzen:native:components:lynx:shared:end */
 
 // ─────────────────────────────────────────────────────────────────────────────
-// LYNX PAGES
+// LYNX PAGES — unchanged (they now import the correct types)
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:page:lynx:index */

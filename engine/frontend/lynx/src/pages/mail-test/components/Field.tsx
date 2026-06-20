@@ -2,23 +2,21 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.701Z
+// Generated: 2026-06-20T15:23:56.391Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 // ── Input field ───────────────────────────────────────────────
 export const Field = ({
   placeholder,
-  value,
   onChangeText,
   secureTextEntry = false,
   keyboardType = 'default',
 }: {
   placeholder:      string
-  value:            string
   onChangeText:     (v: string) => void
   secureTextEntry?: boolean
   keyboardType?:    'default' | 'email-address' | 'numeric'

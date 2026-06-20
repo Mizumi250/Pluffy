@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/native-chain-auth (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.569Z
+// Generated: 2026-06-20T15:23:56.267Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:+auth:tab-panel */
@@ -18,3 +18,5 @@ const NativeChainAuthLynxPage = () => (
     <NativeLayerBadge layers={['AppShellLayout', 'TabPanelLayout', 'AuthLayout (guard)']} />
   </scroll-view>
 )
+
+export const LayoutTestNativeChainAuth = NativeChainAuthLynxPage;

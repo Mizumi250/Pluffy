@@ -14,6 +14,11 @@
   "dependencies": {
     "@lynx-js/motion": "^0.0.3",
     "@lynx-js/react": "^0.121.1",
+    "@sigx/lynx-icons": "^0.9.1",
+    "@sigx/lynx-icons-lucide": "^0.9.1",
+    "@fortawesome/free-solid-svg-icons": "^6.5.1",
+    "@fortawesome/free-regular-svg-icons": "^6.5.1",
+    "@fortawesome/free-brands-svg-icons": "^6.5.1",
     "zustand": "^4.5.4",
     "js-yaml": "^4.2.0"
   },

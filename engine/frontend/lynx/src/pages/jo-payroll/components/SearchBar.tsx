@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — SearchBar
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.044Z
+// Generated: 2026-06-20T15:23:55.711Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 import { TabRow } from './TabRow'
 
 // ── SearchBar ────────────────────────────────────────────────

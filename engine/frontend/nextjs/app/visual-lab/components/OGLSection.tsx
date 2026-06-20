@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — OGLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:15.024Z
+// Generated: 2026-06-20T15:24:05.939Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

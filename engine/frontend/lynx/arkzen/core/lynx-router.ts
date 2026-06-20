@@ -1473,7 +1473,7 @@ function generatePageFile(
   const pageStrippedForRefs = stripTemplateLiterals(page.raw)
   const alreadyImported = extractAlreadyImportedNames(page.raw)
 
-  // ── Per-component imports — one import line per referenced component ────
+  // ── Per-component imports ──────────────────────────────────────────────
   const allComponentNames = extractLynxComponentNames(tatemono)
   const referencedComponents = findReferencedNames(pageStrippedForRefs, allComponentNames)
     .filter(n => !alreadyImported.has(n))
@@ -1481,7 +1481,7 @@ function generatePageFile(
     ? referencedComponents.sort().map(n => `import { ${n} } from './components/${n}'`).join('\n') + '\n'
     : ''
 
-  // ── Smart imports for constants / hooks / utils / types the page uses ───
+  // ── Smart imports for constants / hooks / utils / types ────────────────
   const sharedConstants    = extractLynxSharedConstantNames(tatemono)
   const referencedConstants = findReferencedNames(pageStrippedForRefs, sharedConstants).filter(n => !alreadyImported.has(n))
   const constantsImport = referencedConstants.length > 0
@@ -1506,7 +1506,7 @@ function generatePageFile(
     ? `import type { ${referencedTypes.sort().join(', ')} } from './components/types'\n`
     : ''
 
-  // ── Namespace + named imports declared only inside components blocks ────
+  // ── Namespace + named imports ──────────────────────────────────────────
   const namespaceImports = extractLynxNamespaceImports(tatemono)
   const referencedNamespaces = findReferencedNames(pageStrippedForRefs, new Set(namespaceImports.keys()))
     .filter(n => !alreadyImported.has(n))
@@ -1523,11 +1523,34 @@ function generatePageFile(
     }
   }
 
+  // ─── Extract the user's component name ──────────────────────────────────
+  const userCode = page.raw.trim()
+  const stripped = stripTemplateLiterals(userCode)
+  const constMatches = [...stripped.matchAll(/^(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*(?::[^=]*)?\s*=/gm)]
+  const funcMatches  = [...stripped.matchAll(/^(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/gm)]
+  const allPascal = [...constMatches, ...funcMatches]
+    .sort((a, b) => (a.index ?? 0) - (b.index ?? 0))
+  const lastPascal = allPascal[allPascal.length - 1]
+  let componentName: string
+
+  if (lastPascal) {
+    componentName = lastPascal[1]
+  } else {
+    // Fallback: use page name
+    componentName = `${toPascalCase(pageName)}Page`
+  }
+
+  // ─── Expected named export name ────────────────────────────────────────
+  const expectedExportName = `${toPascalCase(tatName)}${toPascalCase(pageName)}`
+
+  // ─── Assemble final content ─────────────────────────────────────────────
   const content = `// ARKZEN GENERATED — ${tatName}/${pageName} (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 ${animImport}${scriptImport}${styleImport}${compImports}${constantsImport}${hooksImport}${utilsImport}${typesImport}${namespaceImportLines ? namespaceImportLines + '\n' : ''}${namedImportLines.length > 0 ? namedImportLines.join('\n') + '\n' : ''}
-${page.raw.trim()}
+${userCode}
+
+export const ${expectedExportName} = ${componentName};
 `
 
   writeIfChanged(outPath, content)

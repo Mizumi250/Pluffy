@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — roles-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.992Z
+// Generated: 2026-06-20T15:23:58.010Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -64,3 +64,5 @@ const RegisterLynxPage = () => {
     </view>
   )
 }
+
+export const RolesTestRegister = RegisterLynxPage;

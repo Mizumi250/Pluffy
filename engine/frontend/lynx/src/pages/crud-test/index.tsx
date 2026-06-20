@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — crud-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.403Z
+// Generated: 2026-06-20T15:23:54.278Z
 import { ItemRow } from './components/ItemRow'
 import { StatCard } from './components/StatCard'
 import { apiFetch, emptyForm } from './components/utils'
@@ -210,3 +210,5 @@ const IndexScreen = () => {
     </view>
   )
 }
+
+export const CrudTestIndex = IndexScreen;

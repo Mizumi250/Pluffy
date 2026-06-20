@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.121Z
+// Generated: 2026-06-20T15:23:53.950Z
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
@@ -79,3 +79,5 @@ const RegisterScreen = () => {
     </scroll-view>
   )
 }
+
+export const BroadcastTestRegister = RegisterScreen;

@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxFeatureCard
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.454Z
+// Generated: 2026-06-20T15:23:57.045Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import Icon from '@sigx/lynx-icons-lucide'
 import { LYNX_COLOR_MAP } from './constants'
 import '../../../arkzen/generated/new-updates-styles.lynx-styles.css'
 import type { LynxColor } from './types'

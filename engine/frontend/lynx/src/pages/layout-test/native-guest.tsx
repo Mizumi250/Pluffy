@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/native-guest (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.572Z
+// Generated: 2026-06-20T15:23:56.271Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:+guest */
@@ -17,3 +17,5 @@ const NativeGuestLynxPage = () => (
     <NativeLayerBadge layers={['GuestLayout (guard)']} />
   </scroll-view>
 )
+
+export const LayoutTestNativeGuest = NativeGuestLynxPage;

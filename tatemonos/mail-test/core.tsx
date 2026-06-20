@@ -1054,7 +1054,7 @@ const DashboardScreen = () => {
 
 import { useState, useEffect } from '@lynx-js/react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 setActiveTatemono('mail-test')
 
@@ -1080,13 +1080,11 @@ interface MailType {
 // ── Input field ───────────────────────────────────────────────
 const Field = ({
   placeholder,
-  value,
   onChangeText,
   secureTextEntry = false,
   keyboardType = 'default',
 }: {
   placeholder:      string
-  value:            string
   onChangeText:     (v: string) => void
   secureTextEntry?: boolean
   keyboardType?:    'default' | 'email-address' | 'numeric'

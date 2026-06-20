@@ -740,7 +740,7 @@ const IndexScreen = () => {
 /* @arkzen:native:components:lynx:shared */
 
 import { useState, useEffect, useCallback, useRef } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 

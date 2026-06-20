@@ -465,7 +465,7 @@ const DashboardScreen = () => {
 
 import { useState, useEffect, useRef } from '@lynx-js/react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 

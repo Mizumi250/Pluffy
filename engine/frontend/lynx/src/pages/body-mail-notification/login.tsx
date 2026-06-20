@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-mail-notification/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:02.466Z
+// Generated: 2026-06-20T15:23:53.220Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -57,3 +57,5 @@ const LoginLynxPage = () => {
     </view>
   )
 }
+
+export const BodyMailNotificationLogin = LoginLynxPage;

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.565Z
+// Generated: 2026-06-20T15:23:57.165Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */
@@ -71,3 +71,5 @@ const LoginLynxPage = () => {
     </view>
   )
 }
+
+export const NotificationTestLogin = LoginLynxPage;

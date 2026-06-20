@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — asset-hub/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:01.677Z
+// Generated: 2026-06-20T15:23:52.512Z
 import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'
@@ -44,3 +44,5 @@ const IndexScreen = () => (
 
   </scroll-view>
 )
+
+export const AssetHubIndex = IndexScreen;

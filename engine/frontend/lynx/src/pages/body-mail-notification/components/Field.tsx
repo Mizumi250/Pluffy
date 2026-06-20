@@ -2,12 +2,12 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:02.449Z
+// Generated: 2026-06-20T15:23:53.212Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide-lucide'
 
 // ── Input field ───────────────────────────────────────────────
 export const Field = ({

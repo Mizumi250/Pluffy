@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — new-updates-styles/about (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.464Z
+// Generated: 2026-06-20T15:23:57.060Z
 import '../../arkzen/generated/new-updates-styles.lynx-styles.css'
 import { LynxBadge } from './components/LynxBadge'
 import { LynxGhostButton } from './components/LynxGhostButton'
@@ -65,3 +65,5 @@ const AboutLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) =
     </scroll-view>
   )
 }
+
+export const NewUpdatesStylesAbout = AboutLynxPage;

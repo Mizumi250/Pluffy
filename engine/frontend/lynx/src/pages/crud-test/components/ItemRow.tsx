@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — ItemRow
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.400Z
+// Generated: 2026-06-20T15:23:54.260Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

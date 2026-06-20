@@ -1,13 +1,13 @@
 // ARKZEN GENERATED — inventory-management/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:04.233Z
+// Generated: 2026-06-20T15:23:55.484Z
 import { ItemFormPanel } from './components/ItemFormPanel'
 import { StatCard } from './components/StatCard'
 import { StockBadge } from './components/StockBadge'
 import { apiFetch } from './components/utils'
 import type { InventoryItem } from './components/types'
 import { useCallback, useEffect, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '@sigx/lynx-icons-lucide'
 
 const IndexScreen = () => {
   const [items,      setItems]      = useState<InventoryItem[]>([])
@@ -231,3 +231,5 @@ const IndexScreen = () => {
     </view>
   )
 }
+
+export const InventoryManagementIndex = IndexScreen;

@@ -2,12 +2,12 @@
 // ARKZEN GENERATED LYNX COMPONENT — ErrorBox
 // Source: @arkzen:native:components:lynx:* (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.703Z
+// Generated: 2026-06-20T15:23:56.392Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 // ── Error box ─────────────────────────────────────────────────
 export const ErrorBox = ({ message }: { message: string }) => (

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-mail-notification/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:02.481Z
+// Generated: 2026-06-20T15:23:53.230Z
 import { Field } from './components/Field'
 import { KindBadge } from './components/KindBadge'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -10,7 +10,7 @@ import type { SendLogEntry } from './components/types'
 /* @arkzen:native:page:layout:auth */
 
 import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide-lucide'
 import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const DashboardLynxPage = () => {
@@ -280,3 +280,5 @@ const DashboardLynxPage = () => {
     </view>
   )
 }
+
+export const BodyMailNotificationDashboard = DashboardLynxPage;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — body-mail-notification
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:02.447Z
+// Generated: 2026-06-20T15:23:53.211Z
 // ============================================================
 
 export type SendLogEntry = {

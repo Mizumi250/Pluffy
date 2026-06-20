@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/cash-atm (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.080Z
+// Generated: 2026-06-20T15:23:55.754Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { StatCard } from './components/StatCard'
@@ -107,3 +107,5 @@ const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
     </view>
   )
 }
+
+export const JoPayrollCashAtm = CashAtmScreen;

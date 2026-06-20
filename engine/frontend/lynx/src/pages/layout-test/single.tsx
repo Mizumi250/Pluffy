@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/single (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.561Z
+// Generated: 2026-06-20T15:23:56.259Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:app-shell */
@@ -17,3 +17,5 @@ const SingleLynxPage = () => (
     <NativeLayerBadge layers={['AppShellLayout']} />
   </scroll-view>
 )
+
+export const LayoutTestSingle = SingleLynxPage;

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — errors-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.894Z
+// Generated: 2026-06-20T15:23:57.777Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

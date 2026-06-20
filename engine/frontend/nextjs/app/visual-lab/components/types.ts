@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — visual-lab
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:14.935Z
+// Generated: 2026-06-20T15:24:05.870Z
 // ============================================================
 
 // ─── STORE ────────────────────────────────────────────────────────────────────

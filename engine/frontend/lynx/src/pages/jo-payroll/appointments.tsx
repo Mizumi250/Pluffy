@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/appointments (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.092Z
+// Generated: 2026-06-20T15:23:55.766Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
@@ -88,3 +88,5 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
     </view>
   )
 }
+
+export const JoPayrollAppointments = AppointmentsScreen;

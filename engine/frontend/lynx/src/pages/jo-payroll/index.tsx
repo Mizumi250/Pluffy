@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.058Z
+// Generated: 2026-06-20T15:23:55.726Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { StatCard } from './components/StatCard'
 import { WorkerRow } from './components/WorkerRow'
@@ -117,3 +117,5 @@ const DashboardScreen = ({ onNavigate }: { onNavigate: (page: string) => void })
     </scroll-view>
   )
 }
+
+export const JoPayrollIndex = DashboardScreen;

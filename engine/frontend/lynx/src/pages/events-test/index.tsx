@@ -1,10 +1,10 @@
 // ARKZEN GENERATED — events-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:03.762Z
+// Generated: 2026-06-20T15:23:55.181Z
 import { apiFetch, eventColor, statusStyle } from './components/utils'
 import type { EventLogEntry } from './components/types'
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 const IndexScreen = () => {
   const events = [
@@ -199,3 +199,5 @@ const IndexScreen = () => {
     </view>
   )
 }
+
+export const EventsTestIndex = IndexScreen;

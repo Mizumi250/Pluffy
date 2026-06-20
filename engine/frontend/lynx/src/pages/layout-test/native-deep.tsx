@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/native-deep (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.564Z
+// Generated: 2026-06-20T15:23:56.263Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:card-modal */
@@ -18,3 +18,5 @@ const NativeDeepLynxPage = () => (
     <NativeLayerBadge layers={['AppShellLayout', 'TabPanelLayout', 'CardModalLayout']} />
   </view>
 )
+
+export const LayoutTestNativeDeep = NativeDeepLynxPage;

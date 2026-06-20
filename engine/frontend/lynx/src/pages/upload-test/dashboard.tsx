@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — upload-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:08.473Z
+// Generated: 2026-06-20T15:23:59.760Z
 import { formatSize, getMimeIcon } from './components/utils'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
 
@@ -163,3 +163,5 @@ const DashboardLynxPage = () => {
     </scroll-view>
   )
 }
+
+export const UploadTestDashboard = DashboardLynxPage;

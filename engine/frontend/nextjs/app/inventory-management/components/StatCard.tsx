@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatCard
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:08.974Z
+// Generated: 2026-06-20T15:24:00.188Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

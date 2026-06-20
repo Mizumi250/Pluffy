@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.559Z
+// Generated: 2026-06-20T15:23:56.256Z
 
 import React from '@lynx-js/react'
 
@@ -75,3 +75,5 @@ const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) =
     </view>
   </scroll-view>
 )
+
+export const LayoutTestIndex = IndexLynxPage;

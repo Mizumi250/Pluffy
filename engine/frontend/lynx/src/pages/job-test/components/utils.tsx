@@ -2,12 +2,12 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — job-test
 // Source: @arkzen:native:components:lynx:* (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:05.386Z
+// Generated: 2026-06-20T15:23:56.065Z
 // ============================================================
 
 import { useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from 'sigx/lynx-icons-lucide'
 
 // status badge classes — dynamic status value, use inline bg color
 export const statusBg = (s: string) => ({

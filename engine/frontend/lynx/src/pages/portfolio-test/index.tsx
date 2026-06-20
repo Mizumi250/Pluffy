@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — portfolio-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.847Z
+// Generated: 2026-06-20T15:23:57.716Z
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
 
 /* @arkzen:native:page:layout:guest */
@@ -130,3 +130,5 @@ const IndexLynxPage = () => {
     </scroll-view>
   )
 }
+
+export const PortfolioTestIndex = IndexLynxPage;

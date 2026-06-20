@@ -27,34 +27,6 @@
     "has404": false,
     "has500": false
   },
-  "body-endpoint-handler": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
-  "body-mail-notification": {
-    "pages": [
-      {
-        "page": "login",
-        "layout": "default"
-      },
-      {
-        "page": "register",
-        "layout": "default"
-      },
-      {
-        "page": "dashboard",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "broadcast-test": {
     "pages": [
       {
@@ -93,16 +65,6 @@
     "has404": true,
     "has500": true
   },
-  "events-test": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "hello-native": {
     "pages": [
       {
@@ -111,52 +73,6 @@
       },
       {
         "page": "about",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
-  "inventory-management": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
-  "jo-payroll": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      },
-      {
-        "page": "job-database",
-        "layout": "default"
-      },
-      {
-        "page": "cash-atm",
-        "layout": "default"
-      },
-      {
-        "page": "appointments",
-        "layout": "default"
-      },
-      {
-        "page": "payslip",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
-  "job-test": {
-    "pages": [
-      {
-        "page": "dashboard",
         "layout": "default"
       }
     ],
@@ -197,46 +113,10 @@
     "has404": true,
     "has500": false
   },
-  "mail-test": {
-    "pages": [
-      {
-        "page": "login",
-        "layout": "default"
-      },
-      {
-        "page": "register",
-        "layout": "default"
-      },
-      {
-        "page": "dashboard",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "middleware-test": {
     "pages": [
       {
         "page": "index",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
-  "new-updates-styles": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      },
-      {
-        "page": "about",
-        "layout": "default"
-      },
-      {
-        "page": "features",
         "layout": "default"
       }
     ],
@@ -303,6 +183,126 @@
     "pages": [
       {
         "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "body-endpoint-handler": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "mail-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "events-test": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "inventory-management": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "body-mail-notification": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "job-test": {
+    "pages": [
+      {
+        "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "jo-payroll": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "job-database",
+        "layout": "default"
+      },
+      {
+        "page": "cash-atm",
+        "layout": "default"
+      },
+      {
+        "page": "appointments",
+        "layout": "default"
+      },
+      {
+        "page": "payslip",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "new-updates-styles": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "about",
+        "layout": "default"
+      },
+      {
+        "page": "features",
         "layout": "default"
       }
     ],

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:native:components:lynx:* (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:06.844Z
+// Generated: 2026-06-20T15:23:57.713Z
 // ============================================================
 
 

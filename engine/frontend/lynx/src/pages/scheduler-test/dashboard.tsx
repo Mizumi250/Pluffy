@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — scheduler-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T13:59:08.190Z
+// Generated: 2026-06-20T15:23:59.371Z
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
@@ -169,3 +169,5 @@ const DashboardLynxPage = () => {
     </scroll-view>
   )
 }
+
+export const SchedulerTestDashboard = DashboardLynxPage;
