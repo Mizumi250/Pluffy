@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — scheduler-test
 // Source: @arkzen:native:components:lynx:* (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:18.613Z
+// Generated: 2026-06-21T10:20:25.251Z
 // ============================================================
 
 export interface CommandRun {

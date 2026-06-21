@@ -2,9 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:18.900Z
+// Generated: 2026-06-21T10:20:25.591Z
 // ============================================================
 
+import { openURL, pickFiles } from '../../../../arkzen/core/native-bridge'
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 
 export const formatSize = (bytes: number) => {

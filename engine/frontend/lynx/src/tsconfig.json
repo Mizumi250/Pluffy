@@ -16,6 +16,7 @@
     "./**/*.tsx",
     "../arkzen/core/components/**/*.ts",
     "../arkzen/core/components/**/*.tsx",
-    "../arkzen/core/stores/**/*.ts"
+    "../arkzen/core/stores/**/*.ts",
+    "../arkzen/core/native-bridge.ts"
   ],
 }

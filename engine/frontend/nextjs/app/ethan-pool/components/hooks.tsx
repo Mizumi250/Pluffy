@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — ethan-pool
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:17.694Z
+// Generated: 2026-06-21T10:20:23.545Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

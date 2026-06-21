@@ -1,7 +1,8 @@
 // ARKZEN GENERATED — portfolio-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:17.227Z
+// Generated: 2026-06-21T10:20:23.667Z
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
+import { openURL } from '../../../arkzen/core/native-bridge'
 
 /* @arkzen:native:page:layout:guest */
 
@@ -56,7 +57,7 @@ const IndexLynxPage = () => {
                       <text key={i} className="px-2 py-1 text-xs bg-neutral-100 text-neutral-600 rounded">{t}</text>
                     ))}
                   </view>
-                  <text className="text-sm text-neutral-900 font-medium" bindtap={() => lynx.openSchema?.(p.url)}>View ↗</text>
+                  <text className="text-sm text-neutral-900 font-medium" bindtap={() => openURL(p.url)}>View ↗</text>
                 </view>
               </view>
             ))}

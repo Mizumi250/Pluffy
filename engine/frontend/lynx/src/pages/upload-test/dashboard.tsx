@@ -1,8 +1,10 @@
 // ARKZEN GENERATED — upload-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:18.906Z
+// Generated: 2026-06-21T10:20:25.598Z
+import { BACKEND_URL } from './components/constants'
 import { formatSize, getMimeIcon } from './components/utils'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { openURL, pickFiles } from '../../../arkzen/core/native-bridge'
 
 /* @arkzen:native:page:layout:guest */
 
@@ -27,14 +29,20 @@ const DashboardLynxPage = () => {
 
   useEffect(() => { loadFiles() }, [])
 
-  // Lynx: use fetch (no progress) instead of XMLHttpRequest
-  const upload = async (fileList: FileList | null) => {
-    if (!fileList || fileList.length === 0) return
+  // Lynx has no FileList/File or XMLHttpRequest progress events.
+  // Selection goes through the native picker; each picked item is
+  // {uri, name, size, mimeType} and is appended RN/Lynx-fetch style.
+  const pickAndUpload = async () => {
+    const picked = await pickFiles({ multiple: true })
+    if (picked.length === 0) return
+
     setUploading(true)
     setError(null)
 
     const formData = new FormData()
-    Array.from(fileList).forEach(f => formData.append('files[]', f))
+    picked.forEach(f => {
+      formData.append('files[]', { uri: f.uri, name: f.name, type: f.mimeType } as any)
+    })
 
     try {
       const res = await fetch('/api/upload-test/files', {
@@ -82,12 +90,9 @@ const DashboardLynxPage = () => {
             <text className="text-3xl mb-2">☁️</text>
             <text className="text-sm font-medium text-neutral-700">Click to select files</text>
             <text className="text-xs text-neutral-400 mt-1">Max 10MB each</text>
-            <input
-              type="file"
-              multiple
-              className="mt-4"
-              bindinput={(e) => upload(e.detail.files)}
-            />
+            <view bindtap={pickAndUpload} className="mt-4 px-4 py-2 bg-neutral-900 rounded-lg inline-block">
+              <text className="text-xs text-white font-medium">Select files</text>
+            </view>
             {uploading && (
               <view className="mt-4">
                 <text className="text-xs text-neutral-500">Uploading...</text>
@@ -128,7 +133,7 @@ const DashboardLynxPage = () => {
                         <text className="text-xs text-blue-500">View</text>
                       </view>
                     )}
-                    <view bindtap={() => lynx.openSchema(`/api/upload-test/files/${f.id}/url`)}>
+                    <view bindtap={() => openURL(`${BACKEND_URL}/api/upload-test/files/${f.id}/url`)}>
                       <text className="text-xs text-neutral-500">Download</text>
                     </view>
                     <view bindtap={() => deleteFile(f.id)}>

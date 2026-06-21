@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — RoleBadge
 // Source: @arkzen:native:components:lynx:* (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:17.479Z
+// Generated: 2026-06-21T10:20:24.036Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

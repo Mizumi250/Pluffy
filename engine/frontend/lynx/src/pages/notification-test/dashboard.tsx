@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:16.657Z
+// Generated: 2026-06-21T10:20:23.414Z
 import { channelDesc, channelEmoji, channelLabel } from './components/utils'
 import type { WsStatus } from './components/types'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'

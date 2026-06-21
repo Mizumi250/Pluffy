@@ -338,6 +338,7 @@ const IndexScreen = () => {
 /* @arkzen:native:components:lynx:shared */
 
 import React from 'react'
+import { openURL } from '@/arkzen/core/native-bridge'
 
 const PROJECTS = [
   { id: 1, title: 'E-commerce',  description: 'Full-stack e-commerce',     image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel']   },
@@ -410,7 +411,7 @@ const IndexLynxPage = () => {
                       <text key={i} className="px-2 py-1 text-xs bg-neutral-100 text-neutral-600 rounded">{t}</text>
                     ))}
                   </view>
-                  <text className="text-sm text-neutral-900 font-medium" bindtap={() => lynx.openSchema?.(p.url)}>View ↗</text>
+                  <text className="text-sm text-neutral-900 font-medium" bindtap={() => openURL(p.url)}>View ↗</text>
                 </view>
               </view>
             ))}

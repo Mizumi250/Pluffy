@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — inventory-management/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T09:47:15.031Z
+// Generated: 2026-06-21T10:20:21.333Z
 import { ItemFormPanel } from './components/ItemFormPanel'
 import { StatCard } from './components/StatCard'
 import { StockBadge } from './components/StockBadge'
