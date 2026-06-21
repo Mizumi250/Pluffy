@@ -52,6 +52,7 @@ use App\Arkzen\Builders\EventBuilder;
 use App\Arkzen\Builders\ListenerBuilder;
 use App\Arkzen\Builders\BroadcastBuilder;
 use App\Arkzen\Builders\ChannelBuilder;
+use App\Arkzen\Builders\SseBridgeBuilder;
 use App\Arkzen\Builders\JobBuilder;
 use App\Arkzen\Builders\NotificationBuilder;
 use App\Arkzen\Builders\MailBuilder;
@@ -214,6 +215,7 @@ class ArkzenEngineController extends Controller
             Log::info("[Arkzen] Phase 9: Broadcast + Channels");
             $this->run("Broadcast Events", $steps, $errors, fn() => BroadcastBuilder::build($module));
             $this->run("Channels",         $steps, $errors, fn() => ChannelBuilder::build($module));
+            $this->run("Lynx SSE Bridge",  $steps, $errors, fn() => SseBridgeBuilder::build($module));
         }
 
         // ── PHASE 10: Jobs ────────────────────────

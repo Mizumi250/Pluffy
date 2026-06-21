@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — GhostBtn
 // Source: @arkzen:native:components:lynx:* (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:22.739Z
+// Generated: 2026-06-21T12:05:08.729Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

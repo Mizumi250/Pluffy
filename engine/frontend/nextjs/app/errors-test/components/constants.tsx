@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:23.137Z
+// Generated: 2026-06-21T12:05:10.053Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

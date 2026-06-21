@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:18.789Z
+// Generated: 2026-06-21T12:05:05.877Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-21T10:20:25.602Z
+// Generated: 2026-06-21T12:05:11.288Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -12,9 +12,6 @@ import { AssetHubIndex } from '../../pages/asset-hub/index'
 import { AuthTestLogin } from '../../pages/auth-test/login'
 import { AuthTestRegister } from '../../pages/auth-test/register'
 import { AuthTestDashboard } from '../../pages/auth-test/dashboard'
-import { BroadcastTestLogin } from '../../pages/broadcast-test/login'
-import { BroadcastTestRegister } from '../../pages/broadcast-test/register'
-import { BroadcastTestDashboard } from '../../pages/broadcast-test/dashboard'
 import { CrudTestIndex } from '../../pages/crud-test/index'
 import { ErrorsTestIndex } from '../../pages/errors-test/index'
 import { HelloNativeIndex } from '../../pages/hello-native/index'
@@ -54,6 +51,9 @@ import { InventoryManagementIndex } from '../../pages/inventory-management/index
 import { NewUpdatesStylesIndex } from '../../pages/new-updates-styles/index'
 import { NewUpdatesStylesAbout } from '../../pages/new-updates-styles/about'
 import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/features'
+import { BroadcastTestLogin } from '../../pages/broadcast-test/login'
+import { BroadcastTestRegister } from '../../pages/broadcast-test/register'
+import { BroadcastTestDashboard } from '../../pages/broadcast-test/dashboard'
 import { default as ErrorsTestError404 } from '../../pages/errors-test/error-404'
 import { default as ErrorsTestError500 } from '../../pages/errors-test/error-500'
 import { default as LayoutTestError404 } from '../../pages/layout-test/error-404'
@@ -73,10 +73,6 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'auth-test', page: 'register', component: AuthTestRegister, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'dashboard', component: AuthTestDashboard, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
   { module: 'auth-test', page: 'index', component: AuthTestLogin, layout: null, loginRoute: '/auth-test/login', dashboardRoute: '/auth-test/dashboard' },
-  { module: 'broadcast-test', page: 'login', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
-  { module: 'broadcast-test', page: 'register', component: BroadcastTestRegister, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
-  { module: 'broadcast-test', page: 'dashboard', component: BroadcastTestDashboard, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
-  { module: 'broadcast-test', page: 'index', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'crud-test', page: 'index', component: CrudTestIndex, layout: null, loginRoute: '/crud-test/index', dashboardRoute: '/crud-test/index' },
   { module: 'errors-test', page: 'index', component: ErrorsTestIndex, layout: null, loginRoute: '/errors-test/index', dashboardRoute: '/errors-test/index' },
   { module: 'hello-native', page: 'index', component: HelloNativeIndex, layout: null, loginRoute: '/hello-native/index', dashboardRoute: '/hello-native/index' },
@@ -123,6 +119,10 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
   { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
   { module: 'new-updates-styles', page: 'features', component: NewUpdatesStylesFeatures, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
+  { module: 'broadcast-test', page: 'login', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
+  { module: 'broadcast-test', page: 'register', component: BroadcastTestRegister, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
+  { module: 'broadcast-test', page: 'dashboard', component: BroadcastTestDashboard, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
+  { module: 'broadcast-test', page: 'index', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
 ]
 
 export const LYNX_ERROR_404: Record<string, any> = {

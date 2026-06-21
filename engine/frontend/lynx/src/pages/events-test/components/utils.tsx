@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — events-test
 // Source: @arkzen:native:components:lynx:* (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:20.490Z
+// Generated: 2026-06-21T12:05:07.161Z
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'

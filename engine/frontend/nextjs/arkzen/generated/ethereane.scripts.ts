@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — ethereane
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:23.781Z
+// Generated: 2026-06-21T12:05:11.492Z
 // ============================================================
 
 // ─── GAME CONSTANTS ────────────────────────────────────────────────────────────

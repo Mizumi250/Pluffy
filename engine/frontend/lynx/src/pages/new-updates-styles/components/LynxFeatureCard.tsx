@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxFeatureCard
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:23.268Z
+// Generated: 2026-06-21T12:05:08.983Z
 // ============================================================
 
 import { type ReactNode, useState } from '@lynx-js/react'

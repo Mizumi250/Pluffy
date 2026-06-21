@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — job-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:22.136Z
+// Generated: 2026-06-21T12:05:08.187Z
 import { BACKEND_URL } from './components/constants'
 import { dotBg, statusBg, statusText } from './components/utils'
 import type { JobResult } from './components/types'

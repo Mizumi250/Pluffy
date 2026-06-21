@@ -2,6 +2,7 @@
 
 // ── Auth routes — broadcast-test ──────────────────────────────────
 use App\Http\Controllers\Arkzen\BroadcastTest\AuthController as BroadcastTestAuthController;
+use App\Http\Controllers\Arkzen\BroadcastTest\SseController;
 
 Route::middleware(['api'])->prefix('/api/broadcast-test/auth')->group(function () {
     Route::post('/register', [BroadcastTestAuthController::class, 'register']);
@@ -66,7 +67,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/broadcast-test/auth')->
 // ============================================================
 // ARKZEN GENERATED ROUTES — broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:21.367008Z
+// Generated: 2026-06-21T12:05:08.450017Z
 // Resources: Message
 // Custom controllers: 
 // ============================================================
@@ -101,4 +102,20 @@ Route::middleware(['api'])
         // Delete a message
         Route::delete('/{message}', [MessageController::class, 'destroy']);
 
+    });
+
+// ── SSE bridge (Lynx only — auto-generated alongside broadcasting) ──
+// 'sse-poll' is the safe default: a one-shot JSON poll using plain
+// fetch, since streaming fetch-body support in Lynx's runtime is
+// unconfirmed. 'sse' (streaming) is kept for web/future Lynx use.
+Route::middleware(['api'])
+    ->prefix('/api/broadcast-test/sse')
+    ->group(function () {
+        Route::get('/{channelType}', [SseController::class, 'stream']);
+    });
+
+Route::middleware(['api'])
+    ->prefix('/api/broadcast-test/sse-poll')
+    ->group(function () {
+        Route::get('/{channelType}', [SseController::class, 'poll']);
     });

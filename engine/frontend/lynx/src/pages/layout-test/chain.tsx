@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/chain (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:22.485Z
+// Generated: 2026-06-21T12:05:08.361Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:tab-panel */

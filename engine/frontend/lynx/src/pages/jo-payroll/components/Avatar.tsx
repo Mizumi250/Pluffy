@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Avatar
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:21.738Z
+// Generated: 2026-06-21T12:05:07.749Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'

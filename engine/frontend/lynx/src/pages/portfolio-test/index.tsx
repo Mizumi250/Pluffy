@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — portfolio-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:23.667Z
+// Generated: 2026-06-21T12:05:09.345Z
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
 import { openURL } from '../../../arkzen/core/native-bridge'
 

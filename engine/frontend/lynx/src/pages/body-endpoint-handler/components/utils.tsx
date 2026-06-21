@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — body-endpoint-handler
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:18.425Z
+// Generated: 2026-06-21T12:05:05.235Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

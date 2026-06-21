@@ -27,24 +27,6 @@
     "has404": false,
     "has500": false
   },
-  "broadcast-test": {
-    "pages": [
-      {
-        "page": "login",
-        "layout": "default"
-      },
-      {
-        "page": "register",
-        "layout": "default"
-      },
-      {
-        "page": "dashboard",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "crud-test": {
     "pages": [
       {
@@ -303,6 +285,24 @@
       },
       {
         "page": "features",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "broadcast-test": {
+    "pages": [
+      {
+        "page": "login",
+        "layout": "default"
+      },
+      {
+        "page": "register",
+        "layout": "default"
+      },
+      {
+        "page": "dashboard",
         "layout": "default"
       }
     ],

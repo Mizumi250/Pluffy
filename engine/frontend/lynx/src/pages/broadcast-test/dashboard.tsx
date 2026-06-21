@@ -1,11 +1,27 @@
 // ARKZEN GENERATED — broadcast-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T10:20:19.716Z
+// Generated: 2026-06-21T12:05:06.423Z
 import { ChannelCard } from './components/ChannelCard'
-import { APP_KEY, BACKEND_URL, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
+import { BACKEND_URL, POLL_INTERVAL_MS } from './components/constants'
 import type { LynxMessage, WsStatus } from './components/types'
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
+
+// v2: Reverb/WebSocket replaced with polling via arkzenFetch.
+// Lynx's `new WebSocket(...)` throws "TypeError: not a function" —
+// @lynx-js/websocket's WebSocketImpl isn't functional in this
+// runtime. Streaming fetch()/EventSource support is also
+// unconfirmed in Lynx's main-thread, so this polls a plain JSON
+// endpoint (/api/broadcast-test/sse-poll/{channelType}) using the
+// same request/response arkzenFetch already proven to work
+// elsewhere on this page (login, send).
+//
+// Known gap: the live "who's online" presence roster relied on
+// real Pusher presence-channel semantics (member_added/removed)
+// with no equivalent when polling a messages table. The presence
+// message stream itself still works; the member list does not,
+// and is intentionally left empty here rather than faked.
+type ChannelType = 'public' | 'private' | 'presence'
 
 const DashboardScreen = () => {
   const { user, logout } = useAuthStore()
@@ -23,8 +39,9 @@ const DashboardScreen = () => {
   const [privateCount,  setPrivateCount]  = useState(0)
   const [presenceCount, setPresenceCount] = useState(0)
 
-  const wsRef      = useRef<any>(null)
-  const mountedRef = useRef(true)
+  const pollTimerRef = useRef<any>(null)
+  const cursorRef     = useRef<{ public: number; private: number; presence: number }>({ public: 0, private: 0, presence: 0 })
+  const mountedRef    = useRef(true)
 
   const addMsg = (setter: any, msg: LynxMessage) =>
     setter((prev: LynxMessage[]) => [msg, ...prev].slice(0, 50))
@@ -39,100 +56,63 @@ const DashboardScreen = () => {
     } catch (e) { console.error(e) }
   }, [])
 
-  const connectReverb = useCallback(async (userId: number) => {
-    if (wsRef.current?.readyState === 1) return
-
-    setPublicStatus('connecting')
-    setPrivateStatus('connecting')
-    setPresenceStatus('connecting')
-
-    const ws = new WebSocket(`${REVERB_SCHEME}://${REVERB_HOST}:${REVERB_PORT}/app/${APP_KEY}`)
-    wsRef.current = ws
-
-    ws.onmessage = async (event: any) => {
-      if (!mountedRef.current) return
-      let msg: { event: string; data: unknown; channel?: string }
-      try { msg = JSON.parse(event.data) } catch { return }
-
-      if (msg.event === 'pusher:connection_established') {
-        const connData = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        const socketId = (connData as any).socket_id as string
-
-        setPublicStatus('connected')
-        ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'broadcast-test-public' } }))
-
-        try {
-          const res = await arkzenFetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
-            method: 'POST',
-            body:   JSON.stringify({ socket_id: socketId, channel_name: `private-broadcast-test.${userId}` }),
-          })
-          if (res.ok) {
-            const { auth } = await res.json()
-            ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: `private-broadcast-test.${userId}`, auth } }))
-            setPrivateStatus('connected')
-          } else { setPrivateStatus('error') }
-        } catch { setPrivateStatus('error') }
-
-        try {
-          const res = await arkzenFetch(`${BACKEND_URL}/api/broadcast-test/auth/broadcasting/auth`, {
-            method: 'POST',
-            body:   JSON.stringify({ socket_id: socketId, channel_name: 'presence-broadcast-test-presence' }),
-          })
-          if (res.ok) {
-            const { auth, channel_data } = await res.json()
-            ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'presence-broadcast-test-presence', auth, channel_data } }))
-            setPresenceStatus('connected')
-          } else { setPresenceStatus('error') }
-        } catch { setPresenceStatus('error') }
-      }
-
-      if (msg.event === 'broadcast-test.message-sent-public' || msg.channel === 'broadcast-test-public') {
-        const p = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        addMsg(setPublicMsgs, p as LynxMessage); setPublicCount((c: number) => c + 1)
-      }
-      if (msg.event === 'broadcast-test.message-sent-private') {
-        const p = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        addMsg(setPrivateMsgs, p as LynxMessage); setPrivateCount((c: number) => c + 1)
-      }
-      if (msg.event === 'broadcast-test.message-sent-presence') {
-        const p = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        addMsg(setPresenceMsgs, p as LynxMessage); setPresenceCount((c: number) => c + 1)
-      }
-      if (msg.event === 'pusher_internal:member_added') {
-        const d = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        setMembers((prev: any[]) => [...prev.filter((m: any) => m.id !== (d as any).user_id), { id: (d as any).user_id, name: (d as any).user_info?.name ?? 'Unknown' }])
-      }
-      if (msg.event === 'pusher_internal:member_removed') {
-        const d = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        setMembers((prev: any[]) => prev.filter((m: any) => m.id !== (d as any).user_id))
-      }
-      if (msg.event === 'pusher_internal:subscription_succeeded' && msg.channel === 'presence-broadcast-test-presence') {
-        const d    = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
-        const hash = (d as any).presence?.hash ?? {}
-        setMembers(Object.entries(hash).map(([id, info]: [string, any]) => ({ id: Number(id), name: info?.name ?? 'Unknown' })))
-      }
+  const applyIncoming = useCallback((channelType: ChannelType, eventName: string | null, data: any) => {
+    if (eventName === 'broadcast-test.message-sent-public' || channelType === 'public') {
+      addMsg(setPublicMsgs, data as LynxMessage); setPublicCount((c: number) => c + 1)
     }
-
-    ws.onerror = () => { ws.close() }
-
-    ws.onclose = () => {
-      if (!mountedRef.current) return
-      setPublicStatus('error'); setPrivateStatus('error'); setPresenceStatus('error')
-      setTimeout(() => { if (mountedRef.current) connectReverb(userId) }, 3000)
+    if (eventName === 'broadcast-test.message-sent-private' || channelType === 'private') {
+      addMsg(setPrivateMsgs, data as LynxMessage); setPrivateCount((c: number) => c + 1)
+    }
+    if (eventName === 'broadcast-test.message-sent-presence' || channelType === 'presence') {
+      addMsg(setPresenceMsgs, data as LynxMessage); setPresenceCount((c: number) => c + 1)
     }
   }, [])
 
+  const pollChannel = useCallback(async (channelType: ChannelType, setStatus: (s: WsStatus) => void) => {
+    try {
+      const after = cursorRef.current[channelType]
+      const res   = await arkzenFetch(`${BACKEND_URL}/api/broadcast-test/sse-poll/${channelType}?after_id=${after}`)
+      if (!res.ok) { setStatus('error'); return }
+
+      const body = await res.json() as { messages: { event: string | null; data: any }[]; last_id: number }
+      cursorRef.current[channelType] = body.last_id
+
+      for (const item of body.messages) {
+        applyIncoming(channelType, item.event, item.data)
+      }
+      setStatus('connected')
+    } catch (e) {
+      console.error(e)
+      setStatus('error')
+    }
+  }, [applyIncoming])
+
+  const pollAll = useCallback(async () => {
+    if (!mountedRef.current) return
+    await Promise.all([
+      pollChannel('public',   setPublicStatus),
+      pollChannel('private',  setPrivateStatus),
+      pollChannel('presence', setPresenceStatus),
+    ])
+  }, [pollChannel])
+
+  const startPolling = useCallback(() => {
+    setPublicStatus('connecting'); setPrivateStatus('connecting'); setPresenceStatus('connecting')
+    pollAll()
+    pollTimerRef.current = setInterval(pollAll, POLL_INTERVAL_MS)
+  }, [pollAll])
+
   useEffect(() => {
     mountedRef.current = true
-    if (user?.id) connectReverb(user.id)
+    if (user?.id) startPolling()
     return () => {
       mountedRef.current = false
-      wsRef.current?.close()
+      if (pollTimerRef.current) clearInterval(pollTimerRef.current)
     }
   }, [user?.id])
 
   const handleLogout = async () => {
-    wsRef.current?.close()
+    if (pollTimerRef.current) clearInterval(pollTimerRef.current)
     await logout()
   }
 
@@ -164,13 +144,13 @@ const DashboardScreen = () => {
 
         <ChannelCard
           title="Private channel" badge="private" badgeColor="bg-purple-500"
-          description={`private-broadcast-test.${user?.id} · HMAC-signed per user.`}
+          description={`private-broadcast-test.${user?.id} · Bearer-token scoped per user.`}
           status={privateStatus} count={privateCount} msgs={privateMsgs} onSend={sendPrivate}
         />
 
         <ChannelCard
           title="Presence channel" badge="presence" badgeColor="bg-green-500"
-          description="presence-broadcast-test-presence · Auth + member roster."
+          description="presence-broadcast-test-presence · Auth required (no live roster on Lynx)."
           status={presenceStatus} count={presenceCount} msgs={presenceMsgs} onSend={sendPresence}
           footer={
             <view className="flex-row flex-wrap items-center gap-1.5">
@@ -191,11 +171,7 @@ const DashboardScreen = () => {
         <view className="bg-neutral-100 rounded-2xl px-4 py-3 mt-2">
           <text className="text-xs text-neutral-500 font-semibold mb-1.5">How each type works</text>
           <text className="text-xs text-neutral-500 leading-5">
-            {'Public — open channel, no auth handshake.\nPrivate — scoped to your user ID, HMAC-verified.\nPresence — like private + live member roster.'}
-          </text>
-          {/* fontFamily monospace not a Tailwind class in Lynx, use inline */}
-          <text className="text-xs text-neutral-400 mt-2" style={{ fontFamily: 'monospace' }}>
-            {'php artisan reverb:start\nphp artisan queue:work'}
+            {'Public — open, no auth.\nPrivate — scoped to your user ID via Bearer token.\nPresence — same as private; live member roster not available over the Lynx polling bridge.'}
           </text>
         </view>
 
