@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — asset-hub/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:26.982Z
+// Generated: 2026-06-21T03:17:28.562Z
 import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'

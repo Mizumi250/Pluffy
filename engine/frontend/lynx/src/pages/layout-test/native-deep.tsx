@@ -1,11 +1,9 @@
 // ARKZEN GENERATED — layout-test/native-deep (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:31.003Z
+// Generated: 2026-06-21T03:17:31.713Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:card-modal */
-
-import React from '@lynx-js/react'
 
 const NativeDeepLynxPage = () => (
   <view className="p-4" style={{ gap: 12 }}>

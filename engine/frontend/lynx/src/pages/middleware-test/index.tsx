@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — middleware-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:31.422Z
+// Generated: 2026-06-21T03:17:32.040Z
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'

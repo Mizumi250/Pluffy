@@ -1,14 +1,14 @@
 // ARKZEN GENERATED — body-mail-notification/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.920Z
+// Generated: 2026-06-21T03:17:29.285Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
+import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */
 
 import { useState } from '@lynx-js/react'
-import { useAuthStore } from '@/arkzen/core/stores/authStore'
 
 const RegisterLynxPage = () => {
   const { register, isLoading } = useAuthStore()

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:28.780Z
+// Generated: 2026-06-21T03:17:29.865Z
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 

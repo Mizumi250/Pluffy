@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/payslip (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.513Z
+// Generated: 2026-06-21T03:17:30.911Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
@@ -73,7 +73,7 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
             >
               <Avatar name={jo.name_of_jo} size={32} />
               <view className="flex-1">
-                <text className={`text-xs font-semibold ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`} maxLength={1}>{jo.name_of_jo}</text>
+                <text className={`text-xs font-semibold truncate ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`}>{jo.name_of_jo}</text>
                 <text className="text-[11px] text-gray-400">{jo.job_title} · {formatPeso(jo.basic_pay)}/day</text>
               </view>
               {selected?.id === jo.id && (
@@ -90,7 +90,6 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
           <text className="text-xs text-gray-500 font-medium">Work Days:</text>
           <view className="flex-1 bg-gray-50 rounded-[10px] border border-gray-200 px-3 py-2">
             <input
-              value={workDays}
               bindinput={e => setWorkDays(e.detail.value)}
               className="text-[13px] text-gray-900 font-semibold"
             />

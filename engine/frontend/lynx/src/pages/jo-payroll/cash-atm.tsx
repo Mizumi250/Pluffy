@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/cash-atm (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.494Z
+// Generated: 2026-06-21T03:17:30.897Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { StatCard } from './components/StatCard'
@@ -90,7 +90,7 @@ const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
               <view key={jo.id} className="flex-row items-center px-4 py-3 border-b border-gray-50" style={{ gap: 12 }}>
                 <Avatar name={jo.name_of_jo} size={36} />
                 <view className="flex-1">
-                  <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                  <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
                   <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</text>
                 </view>
                 {activeTab === 'ATM' && jo.cash_card_number && (

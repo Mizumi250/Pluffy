@@ -3167,7 +3167,7 @@ export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void 
     >
       <Avatar name={jo.name_of_jo} size={38} />
       <view className="flex-1">
-        <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+        <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
         <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · {jo.funding}</text>
       </view>
       <view className="items-end" style={{ gap: 4 }}>
@@ -3188,7 +3188,6 @@ export const SearchBar = ({ value, onChange, placeholder }: { value: string; onC
   <view className="flex-row items-center bg-gray-50 rounded-xl border border-gray-200 px-3 py-2.5" style={{ gap: 8 }}>
     <Icon set="lucide" name="search" size={14} color="#9ca3af" />
     <input
-      value={value}
       bindinput={e => onChange(e.detail.value)}
       placeholder={placeholder ?? 'Search…'}
       className="flex-1 text-[13px] text-gray-900"
@@ -3530,7 +3529,7 @@ const CashAtmScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
               <view key={jo.id} className="flex-row items-center px-4 py-3 border-b border-gray-50" style={{ gap: 12 }}>
                 <Avatar name={jo.name_of_jo} size={36} />
                 <view className="flex-1">
-                  <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                  <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
                   <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.jor_pyrl_group} · #{jo.jor_number}</text>
                 </view>
                 {activeTab === 'ATM' && jo.cash_card_number && (
@@ -3616,7 +3615,7 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
               </view>
               <Avatar name={jo.name_of_jo} size={36} />
               <view className="flex-1">
-                <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
                 <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</text>
               </view>
               <view className={`rounded-lg px-2 py-1 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>
@@ -3702,7 +3701,7 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
             >
               <Avatar name={jo.name_of_jo} size={32} />
               <view className="flex-1">
-                <text className={`text-xs font-semibold ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`} maxLength={1}>{jo.name_of_jo}</text>
+                <text className={`text-xs font-semibold truncate ${selected?.id === jo.id ? 'text-white' : 'text-gray-900'}`}>{jo.name_of_jo}</text>
                 <text className="text-[11px] text-gray-400">{jo.job_title} · {formatPeso(jo.basic_pay)}/day</text>
               </view>
               {selected?.id === jo.id && (
@@ -3719,7 +3718,6 @@ const PayslipScreen = ({ onNavigate }: { onNavigate: (page: string) => void }) =
           <text className="text-xs text-gray-500 font-medium">Work Days:</text>
           <view className="flex-1 bg-gray-50 rounded-[10px] border border-gray-200 px-3 py-2">
             <input
-              value={workDays}
               bindinput={e => setWorkDays(e.detail.value)}
               className="text-[13px] text-gray-900 font-semibold"
             />

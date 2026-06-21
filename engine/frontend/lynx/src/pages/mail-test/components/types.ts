@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — mail-test
 // Source: @arkzen:native:components:lynx:* (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:31.100Z
+// Generated: 2026-06-21T03:17:31.832Z
 // ============================================================
 
 export interface MailLog {

@@ -1,11 +1,9 @@
 // ARKZEN GENERATED — layout-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.997Z
-
-import React from '@lynx-js/react'
+// Generated: 2026-06-21T03:17:31.707Z
 
 const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
-  <scroll-view className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 40 }}>
+  <scroll-view className="flex-1 p-4 gap-y-3 pb-10">
     <text className="text-lg font-black text-gray-900">Layout Test</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       This test demonstrates nested layout chains in the arkzen native framework. 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — WorkerRow
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.455Z
+// Generated: 2026-06-21T03:17:30.878Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
@@ -26,7 +26,7 @@ export const WorkerRow = ({ jo, onPress }: { jo: JobOrder; onPress?: () => void 
     >
       <Avatar name={jo.name_of_jo} size={38} />
       <view className="flex-1">
-        <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+        <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
         <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · {jo.funding}</text>
       </view>
       <view className="items-end" style={{ gap: 4 }}>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatCard
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.066Z
+// Generated: 2026-06-21T03:17:30.704Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

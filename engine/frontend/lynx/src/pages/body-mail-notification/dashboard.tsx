@@ -1,16 +1,16 @@
 // ARKZEN GENERATED — body-mail-notification/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.925Z
+// Generated: 2026-06-21T03:17:29.290Z
 import { Field } from './components/Field'
 import { KindBadge } from './components/KindBadge'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { StatusDot } from './components/StatusDot'
 import type { SendLogEntry } from './components/types'
+import { arkzenFetch, useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:auth */
 
 import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const DashboardLynxPage = () => {
   const { user, logout } = useAuthStore()
@@ -165,6 +165,7 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Recipient email"
+            value={mailTo}
             onChangeText={setMailTo}
             type="email"
           />
@@ -204,6 +205,7 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Custom message (optional)"
+            value={notifMsg}
             onChangeText={setNotifMsg}
           />
           <view className="mt-2">

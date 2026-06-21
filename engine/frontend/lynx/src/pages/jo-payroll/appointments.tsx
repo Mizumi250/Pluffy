@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/appointments (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.506Z
+// Generated: 2026-06-21T03:17:30.905Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
@@ -72,7 +72,7 @@ const AppointmentsScreen = ({ onNavigate }: { onNavigate: (page: string) => void
               </view>
               <Avatar name={jo.name_of_jo} size={36} />
               <view className="flex-1">
-                <text className="text-[13px] font-semibold text-gray-900" maxLength={1}>{jo.name_of_jo}</text>
+                <text className="text-[13px] font-semibold text-gray-900 truncate">{jo.name_of_jo}</text>
                 <text className="text-[11px] text-gray-400" style={{ marginTop: 2 }}>{jo.job_title} · JOR #{jo.jor_number}</text>
               </view>
               <view className={`rounded-lg px-2 py-1 ${jo.status === 'active' ? 'bg-emerald-100' : 'bg-gray-100'}`}>

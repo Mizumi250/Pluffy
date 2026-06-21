@@ -1244,7 +1244,7 @@ const Field = ({
   placeholder:  string
   value:        string
   onChangeText: (v: string) => void
-  type?:        string
+  type?:        'text' | 'password' | 'email' | 'number' | 'tel' | 'digit'
 }) => (
   <input
     className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"
@@ -1303,7 +1303,6 @@ const StatusDot = ({ status }: { status: string }) => (
 /* @arkzen:native:page:layout:guest */
 
 import { useState } from '@lynx-js/react'
-import { useAuthStore } from '@/arkzen/core/stores/authStore'
 
 const LoginLynxPage = () => {
   const { login, isLoading } = useAuthStore()
@@ -1359,7 +1358,6 @@ const LoginLynxPage = () => {
 /* @arkzen:native:page:layout:guest */
 
 import { useState } from '@lynx-js/react'
-import { useAuthStore } from '@/arkzen/core/stores/authStore'
 
 const RegisterLynxPage = () => {
   const { register, isLoading } = useAuthStore()
@@ -1420,7 +1418,6 @@ const RegisterLynxPage = () => {
 /* @arkzen:native:page:layout:auth */
 
 import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const DashboardLynxPage = () => {
   const { user, logout } = useAuthStore()
@@ -1575,6 +1572,7 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Recipient email"
+            value={mailTo}
             onChangeText={setMailTo}
             type="email"
           />
@@ -1614,6 +1612,7 @@ const DashboardLynxPage = () => {
 
           <Field
             placeholder="Custom message (optional)"
+            value={notifMsg}
             onChangeText={setNotifMsg}
           />
           <view className="mt-2">

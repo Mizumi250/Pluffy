@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-endpoint-handler/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.224Z
+// Generated: 2026-06-21T03:17:28.823Z
 import { LynxBadge } from './components/LynxBadge'
 import { LynxInjectedBadge } from './components/LynxInjectedBadge'
 import { LynxSectionCard } from './components/LynxSectionCard'
@@ -307,8 +307,7 @@ const IndexScreen = () => {
                   <text style={{ flex: 1, fontSize: 12, fontWeight: '700', color: '#171717' }}>{r.probe}</text>
                   <LynxBadge label={r.ok ? '✓' : '✗'} color={r.ok ? '#16a34a' : '#dc2626'} />
                   <view
-                    bindtap={() => doDelete(r.id)}
-                    disabled={deleting === r.id}
+                    bindtap={deleting === r.id ? undefined : () => doDelete(r.id)}
                     style={{ backgroundColor: '#ef4444', borderRadius: 6, padding: '3px 8px', opacity: deleting === r.id ? 0.5 : 1 }}
                   >
                     <text style={{ color: '#fff', fontSize: 10, fontWeight: '700' }}>

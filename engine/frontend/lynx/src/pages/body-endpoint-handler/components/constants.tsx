@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — body-endpoint-handler
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.212Z
+// Generated: 2026-06-21T03:17:28.803Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

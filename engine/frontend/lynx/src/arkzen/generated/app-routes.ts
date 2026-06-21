@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-21T02:50:33.649Z
+// Generated: 2026-06-21T03:17:34.531Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from

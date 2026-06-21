@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — auth-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.149Z
+// Generated: 2026-06-21T03:17:28.721Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 const DashboardScreen = () => {

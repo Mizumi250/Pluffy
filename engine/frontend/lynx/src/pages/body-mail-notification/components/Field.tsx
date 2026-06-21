@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:27.911Z
+// Generated: 2026-06-21T03:17:29.276Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'
@@ -18,7 +18,7 @@ export const Field = ({
   placeholder:  string
   value:        string
   onChangeText: (v: string) => void
-  type?:        string
+  type?:        'text' | 'password' | 'email' | 'number' | 'tel' | 'digit'
 }) => (
   <input
     className="w-full bg-neutral-50 border border-neutral-200 rounded-xl px-4 py-3 text-sm text-neutral-900"

@@ -2,13 +2,13 @@
 // ARKZEN GENERATED LYNX COMPONENT — NativeLayerBadge
 // Source: @arkzen:native:components:lynx:* (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.993Z
+// Generated: 2026-06-21T03:17:31.702Z
 // ============================================================
 
 
 import { NATIVE_COLORS } from './constants'
 
-export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (
+export const NativeLayerBadge = ({ layers }: { layers: string[] }) => (
   <view className="flex-row flex-wrap" style={{ gap: 6 }}>
     {layers.map((layer, i) => (
       <view

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LottieLazySection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:39.646Z
+// Generated: 2026-06-21T03:17:42.421Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

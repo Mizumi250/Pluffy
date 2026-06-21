@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — job-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:35.452008Z
+// Generated: 2026-06-21T03:17:37.865198Z
 // Resources: JobResult
 // Custom controllers: 
 // ============================================================

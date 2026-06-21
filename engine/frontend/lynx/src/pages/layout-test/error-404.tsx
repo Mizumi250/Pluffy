@@ -1,7 +1,5 @@
 // ARKZEN GENERATED — layout-test error 404 (Lynx)
 // DO NOT EDIT DIRECTLY.
-import React from '@lynx-js/react'
-
 const NotFoundLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
   <view className="flex-1 bg-indigo-50 items-center justify-center p-8">
     <view className="text-center max-w-md" style={{ gap: 8 }}>

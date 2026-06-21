@@ -819,11 +819,9 @@ const NativeNotFoundScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import React from '@lynx-js/react'
-
 const NATIVE_COLORS = ['#6366f1', '#8b5cf6', '#a78bfa', '#c4b5fd', '#ddd6fe']
 
-export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (
+export const NativeLayerBadge = ({ layers }: { layers: string[] }) => (
   <view className="flex-row flex-wrap" style={{ gap: 6 }}>
     {layers.map((layer, i) => (
       <view
@@ -843,10 +841,8 @@ export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => 
 
 /* @arkzen:native:page:lynx:index */
 
-import React from '@lynx-js/react'
-
 const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
-  <scroll-view className="flex-1 p-4" contentContainerStyle={{ gap: 12, paddingBottom: 40 }}>
+  <scroll-view className="flex-1 p-4 gap-y-3 pb-10">
     <text className="text-lg font-black text-gray-900">Layout Test</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       This test demonstrates nested layout chains in the arkzen native framework. 
@@ -922,10 +918,8 @@ const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) =
 /* @arkzen:native:page:lynx:single */
 /* @arkzen:native:page:layout:app-shell */
 
-import React from '@lynx-js/react'
-
 const SingleLynxPage = () => (
-  <scroll-view className="flex-1 p-4" contentContainerStyle={{ gap: 12 }}>
+  <scroll-view className="flex-1 p-4 gap-y-3">
     <text className="text-lg font-black text-gray-900">Single Layout</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       Rendered inside <text className="font-mono text-indigo-600">AppShellLayout</text>.
@@ -940,10 +934,8 @@ const SingleLynxPage = () => (
 /* @arkzen:native:page:lynx:chain */
 /* @arkzen:native:page:layout:tab-panel */
 
-import React from '@lynx-js/react'
-
 const ChainLynxPage = () => (
-  <scroll-view className="flex-1 p-4" contentContainerStyle={{ gap: 12 }}>
+  <scroll-view className="flex-1 p-4 gap-y-3">
     <text className="text-lg font-black text-gray-900">Layout Chain</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       Rendered inside <text className="font-mono text-indigo-600">AppShellLayout → TabPanelLayout</text>.
@@ -957,8 +949,6 @@ const ChainLynxPage = () => (
 
 /* @arkzen:native:page:lynx:native-deep */
 /* @arkzen:native:page:layout:card-modal */
-
-import React from '@lynx-js/react'
 
 const NativeDeepLynxPage = () => (
   <view className="p-4" style={{ gap: 12 }}>
@@ -977,10 +967,8 @@ const NativeDeepLynxPage = () => (
 /* @arkzen:native:page:lynx:native-auth */
 /* @arkzen:native:page:layout:+auth */
 
-import React from '@lynx-js/react'
-
 const NativeAuthLynxPage = () => (
-  <scroll-view className="flex-1 p-5" contentContainerStyle={{ gap: 12 }}>
+  <scroll-view className="flex-1 p-5 gap-y-3">
     <text className="text-lg font-black text-gray-900">Native Auth Guard</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       Guard only — no custom layout chain. Uses <text className="font-mono text-indigo-600">+auth</text>.
@@ -995,10 +983,8 @@ const NativeAuthLynxPage = () => (
 /* @arkzen:native:page:lynx:native-chain-auth */
 /* @arkzen:native:page:layout:+auth:tab-panel */
 
-import React from '@lynx-js/react'
-
 const NativeChainAuthLynxPage = () => (
-  <scroll-view className="flex-1 p-4" contentContainerStyle={{ gap: 12 }}>
+  <scroll-view className="flex-1 p-4 gap-y-3">
     <text className="text-lg font-black text-gray-900">Native Chain + Auth</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       Auth guard wrapped in full native chain:{'\n'}
@@ -1014,10 +1000,8 @@ const NativeChainAuthLynxPage = () => (
 /* @arkzen:native:page:lynx:native-guest */
 /* @arkzen:native:page:layout:+guest */
 
-import React from '@lynx-js/react'
-
 const NativeGuestLynxPage = () => (
-  <scroll-view className="flex-1 p-5" contentContainerStyle={{ gap: 12 }}>
+  <scroll-view className="flex-1 p-5 gap-y-3">
     <text className="text-lg font-black text-gray-900">Native Guest Guard</text>
     <text className="text-sm text-gray-600 leading-relaxed">
       Guest guard only. Uses <text className="font-mono text-indigo-600">+guest</text>.
@@ -1030,8 +1014,6 @@ const NativeGuestLynxPage = () => (
 /* @arkzen:native:page:lynx:native-guest:end */
 
 /* @arkzen:native:error:404:lynx */
-
-import React from '@lynx-js/react'
 
 const NotFoundLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
   <view className="flex-1 bg-indigo-50 items-center justify-center p-8">

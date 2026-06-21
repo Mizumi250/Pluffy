@@ -579,8 +579,7 @@ const DashboardScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import React from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 

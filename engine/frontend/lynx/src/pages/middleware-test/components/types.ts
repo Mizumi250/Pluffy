@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — middleware-test
 // Source: @arkzen:native:components:lynx:* (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:31.413Z
+// Generated: 2026-06-21T03:17:32.026Z
 // ============================================================
 
 export type PingLog = {

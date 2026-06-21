@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:36.563Z
+// Generated: 2026-06-21T03:17:39.061Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:33.642Z
+// Generated: 2026-06-21T03:17:34.521Z
 // ============================================================
 
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 
 export const formatSize = (bytes: number) => {
   if (bytes < 1024) return `${bytes} B`

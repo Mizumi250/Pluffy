@@ -5,7 +5,7 @@
 // Tatemono: broadcast-test
 // Channel: broadcast-test-presence (presence)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T02:50:30.313610Z
+// Generated: 2026-06-21T03:17:32.067640Z
 // ============================================================
 
 namespace App\Events\Arkzen\BroadcastTest\Broadcast;
