@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:29.278Z
+// Generated: 2026-06-21T09:47:12.500Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

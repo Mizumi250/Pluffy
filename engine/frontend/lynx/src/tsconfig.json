@@ -11,5 +11,11 @@
 
     "noEmit": true,
   },
-  "include": ["./**/*.ts", "./**/*.tsx"],
+  "include": [
+    "./**/*.ts",
+    "./**/*.tsx",
+    "../arkzen/core/components/**/*.ts",
+    "../arkzen/core/components/**/*.tsx",
+    "../arkzen/core/stores/**/*.ts"
+  ],
 }

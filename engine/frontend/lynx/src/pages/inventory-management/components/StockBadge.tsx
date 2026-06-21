@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — StockBadge
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:30.705Z
+// Generated: 2026-06-21T09:47:15.009Z
 // ============================================================
 
-import { useCallback, useEffect, useState } from '@lynx-js/react'
+import { type ReactNode, useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '../../../../arkzen/core/components/Icon'
 import { Field } from './Field'
 

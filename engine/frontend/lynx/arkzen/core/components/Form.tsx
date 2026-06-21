@@ -13,7 +13,7 @@
 // Primitives: <view>, <text> from @lynx-js/react.
 // ============================================================
 
-import React from '@lynx-js/react'
+import type { FC } from '@lynx-js/react'
 
 // ─────────────────────────────────────────────
 // BADGE
@@ -48,7 +48,7 @@ const dotColors = {
   warning: 'bg-amber-500', info: 'bg-blue-500', neutral: 'bg-neutral-400',
 }
 
-export const Badge: React.FC<BadgeProps> = ({ label, variant = 'default', size = 'sm', dot = false, renderContent }) => (
+export const Badge: FC<BadgeProps> = ({ label, variant = 'default', size = 'sm', dot = false, renderContent }) => (
   <view className={`flex-row items-center gap-1.5 rounded-full ${size === 'sm' ? 'px-2 py-0.5' : 'px-3 py-1'} ${badgeVariants[variant]}`}>
     {dot && <view className={`w-1.5 h-1.5 rounded-full ${dotColors[variant]}`} />}
     {renderContent ? renderContent(label) : (
@@ -71,7 +71,7 @@ const avatarSizes      = { sm: 'w-7 h-7', md: 'w-9 h-9', lg: 'w-12 h-12', xl: 'w
 const avatarTextSizes  = { sm: 'text-xs', md: 'text-sm', lg: 'text-base', xl: 'text-lg' }
 const avatarColors = ['bg-violet-100', 'bg-blue-100', 'bg-emerald-100', 'bg-amber-100', 'bg-rose-100']
 
-export const Avatar: React.FC<AvatarProps> = ({ name, size = 'md', renderFallback }) => {
+export const Avatar: FC<AvatarProps> = ({ name, size = 'md', renderFallback }) => {
   const initials = name ? name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase() : '?'
   const colorIdx = name ? name.charCodeAt(0) % avatarColors.length : 0
 
@@ -98,7 +98,7 @@ export interface EmptyStateProps {
   renderContent?: (title: string, description?: string) => any
 }
 
-export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, action, icon, renderIcon, renderTitle, renderContent }) => (
+export const EmptyState: FC<EmptyStateProps> = ({ title, description, action, icon, renderIcon, renderTitle, renderContent }) => (
   <view className="items-center justify-center py-12 px-4">
     <view className="w-14 h-14 rounded-2xl bg-neutral-100 items-center justify-center mb-4">
       {renderIcon ? renderIcon() : (icon ?? <text className="text-2xl text-neutral-400">📂</text>)}
@@ -126,7 +126,7 @@ export interface LoadingProps {
   renderSpinner?: () => any
 }
 
-export const Loading: React.FC<LoadingProps> = ({ label, fullPage = false, renderSpinner }) => {
+export const Loading: FC<LoadingProps> = ({ label, fullPage = false, renderSpinner }) => {
   const inner = (
     <view className="items-center gap-3">
       {renderSpinner ? renderSpinner() : <text className="text-2xl text-neutral-400">⏳</text>}
@@ -157,7 +157,7 @@ export interface FieldProps {
   renderError?: (error: string) => any
 }
 
-export const Field: React.FC<FieldProps> = ({ label, error, required, hint, children, renderLabel, renderError }) => (
+export const Field: FC<FieldProps> = ({ label, error, required, hint, children, renderLabel, renderError }) => (
   <view className="gap-1.5">
     {renderLabel ? renderLabel(label, required) : (
       <text className="text-sm font-medium text-neutral-700">
@@ -177,7 +177,7 @@ export interface FormProps {
   renderSubmit?: (onSubmit: () => void) => any
 }
 
-export const Form: React.FC<FormProps> = ({ onSubmit, children, className, renderSubmit }) => (
+export const Form: FC<FormProps> = ({ onSubmit, children, className, renderSubmit }) => (
   <view className={className}>
     {children}
     {renderSubmit ? renderSubmit(onSubmit) : null}

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — auth-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:28.718Z
+// Generated: 2026-06-21T09:47:11.914Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'

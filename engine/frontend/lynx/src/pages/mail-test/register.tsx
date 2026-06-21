@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — mail-test/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:31.858Z
+// Generated: 2026-06-21T09:47:15.822Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'

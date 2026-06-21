@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/cash-atm (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:30.897Z
+// Generated: 2026-06-21T09:47:15.311Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { StatCard } from './components/StatCard'

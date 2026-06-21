@@ -1086,6 +1086,13 @@ function generateIndividualLynxComponentFiles(
 
     if (constChunks.length > 0 || destructuredChunksFixed.length > 0) {
       const allConstChunks = [...constChunks, ...destructuredChunksFixed]
+      const allConstChunksJoined = allConstChunks.join('\n\n')
+
+      const constReferencedTypes = findReferencedNames(allConstChunksJoined, sharedTypes)
+      const constTypesImport = constReferencedTypes.length > 0
+        ? `import type { ${constReferencedTypes.sort().join(', ')} } from './types'\n`
+        : ''
+
       const content = `// ============================================================
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — ${tatName}
 // Source: @arkzen:native:components:lynx:* (${tatName})
@@ -1094,8 +1101,8 @@ function generateIndividualLynxComponentFiles(
 // ============================================================
 
 ${normalisedCanonicalBlock}
-
-${allConstChunks.join('\n\n')}
+${constTypesImport}
+${allConstChunksJoined}
 `
       writeIfChanged(path.join(componentsDir, 'constants.tsx'), content)
       removeStaleSiblingExt(componentsDir, 'constants', ['.ts'])
@@ -1424,15 +1431,64 @@ function generateErrorFiles(tatemono: ParsedTatemono): { has404: boolean; has500
   let has404 = false
   let has500 = false
 
+  // Same reference resolution generatePageFile already does for index/etc
+  // pages — error-404.tsx/error-500.tsx live at the same directory depth
+  // (src/pages/{tat}/) and need the same './components/*' imports for
+  // anything the handler body references (e.g. a shared LynxErrorScreen).
+  const allComponentNames = extractLynxComponentNames(tatemono)
+  const sharedConstants    = extractLynxSharedConstantNames(tatemono)
+  const customHooks        = extractLynxCustomHookNames(tatemono)
+  const utilityFunctions   = extractLynxUtilityFunctionNames(tatemono)
+  const sharedTypes        = extractLynxSharedTypeNames(tatemono)
+
   for (const h of handlers) {
     const code     = h.type === '404' ? '404' : '500'
     if (code === '404') has404 = true
     if (code === '500') has500 = true
+
+    const raw = h.raw.trim()
+    const nameMatch = raw.match(/^(?:export\s+)?(?:const|function)\s+(\w+)/)
+    const compName  = nameMatch ? nameMatch[1] : null
+    if (!compName) {
+      console.log(`[Arkzen Lynx Router] ⚠ Could not isolate a component name for ${tatName} error ${code}; app-routes.ts expects a default export here`)
+    }
+
+    const strippedForRefs = stripTemplateLiterals(raw)
+    const alreadyImported  = extractAlreadyImportedNames(raw)
+
+    const referencedComponents = findReferencedNames(strippedForRefs, allComponentNames).filter(n => !alreadyImported.has(n))
+    const compImports = referencedComponents.length > 0
+      ? referencedComponents.sort().map(n => `import { ${n} } from './components/${n}'`).join('\n') + '\n'
+      : ''
+
+    const referencedConstants = findReferencedNames(strippedForRefs, sharedConstants).filter(n => !alreadyImported.has(n))
+    const constantsImport = referencedConstants.length > 0
+      ? `import { ${referencedConstants.sort().join(', ')} } from './components/constants'\n`
+      : ''
+
+    const referencedHooks = findReferencedNames(strippedForRefs, customHooks).filter(n => !alreadyImported.has(n))
+    const hooksImport = referencedHooks.length > 0
+      ? `import { ${referencedHooks.sort().join(', ')} } from './components/hooks'\n`
+      : ''
+
+    const referencedUtils = findReferencedNames(strippedForRefs, utilityFunctions).filter(n => !alreadyImported.has(n))
+    const utilsImport = referencedUtils.length > 0
+      ? `import { ${referencedUtils.sort().join(', ')} } from './components/utils'\n`
+      : ''
+
+    const referencedTypes = findReferencedNames(strippedForRefs, sharedTypes).filter(n => !alreadyImported.has(n))
+    const typesImport = referencedTypes.length > 0
+      ? `import type { ${referencedTypes.sort().join(', ')} } from './components/types'\n`
+      : ''
+
+    const exportDefault = compName ? `\nexport default ${compName}\n` : ''
+
     const outPath  = path.join(PAGES_DIR, tatemono.meta.name, `error-${code}.tsx`)
     const content  = `// ARKZEN GENERATED — ${tatName} error ${code} (Lynx)
 // DO NOT EDIT DIRECTLY.
-${h.raw.trim()}
-`
+${compImports}${constantsImport}${hooksImport}${utilsImport}${typesImport}
+${raw}
+${exportDefault}`
     writeIfChanged(outPath, content)
     console.log(`[Arkzen Lynx Router] ✓ Error ${code}: ${tatName}/error-${code}.tsx`)
   }

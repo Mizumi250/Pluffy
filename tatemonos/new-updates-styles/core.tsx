@@ -999,7 +999,7 @@ const FeaturesScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { useState } from '@lynx-js/react'
+import { type ReactNode, useState } from '@lynx-js/react'
 import { Icon } from '@/arkzen/core/components/Icon'
 
 export const LynxBadge = ({ label }: { label: string }) => (
@@ -1048,7 +1048,7 @@ const LYNX_COLOR_MAP: Record<LynxColor, { bg: string; text: string; border: stri
 export const LynxFeatureCard = ({
   icon, title, description, color, onPress, expanded = false,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   description: string
   color: LynxColor

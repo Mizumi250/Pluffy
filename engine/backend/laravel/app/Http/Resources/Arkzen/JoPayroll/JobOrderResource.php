@@ -4,7 +4,7 @@
 // ARKZEN GENERATED RESOURCE — JobOrderResource
 // Tatemono: jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:37.438916Z
+// Generated: 2026-06-21T09:47:20.375388Z
 // ============================================================
 
 namespace App\Http\Resources\Arkzen\JoPayroll;

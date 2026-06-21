@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-21T03:17:34.531Z
+// Generated: 2026-06-21T09:47:18.911Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -44,9 +44,6 @@ import { EventsTestIndex } from '../../pages/events-test/index'
 import { BodyMailNotificationLogin } from '../../pages/body-mail-notification/login'
 import { BodyMailNotificationRegister } from '../../pages/body-mail-notification/register'
 import { BodyMailNotificationDashboard } from '../../pages/body-mail-notification/dashboard'
-import { NewUpdatesStylesIndex } from '../../pages/new-updates-styles/index'
-import { NewUpdatesStylesAbout } from '../../pages/new-updates-styles/about'
-import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/features'
 import { JobTestDashboard } from '../../pages/job-test/dashboard'
 import { JoPayrollIndex } from '../../pages/jo-payroll/index'
 import { JoPayrollJobDatabase } from '../../pages/jo-payroll/job-database'
@@ -54,6 +51,9 @@ import { JoPayrollCashAtm } from '../../pages/jo-payroll/cash-atm'
 import { JoPayrollAppointments } from '../../pages/jo-payroll/appointments'
 import { JoPayrollPayslip } from '../../pages/jo-payroll/payslip'
 import { InventoryManagementIndex } from '../../pages/inventory-management/index'
+import { NewUpdatesStylesIndex } from '../../pages/new-updates-styles/index'
+import { NewUpdatesStylesAbout } from '../../pages/new-updates-styles/about'
+import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/features'
 import { default as ErrorsTestError404 } from '../../pages/errors-test/error-404'
 import { default as ErrorsTestError500 } from '../../pages/errors-test/error-500'
 import { default as LayoutTestError404 } from '../../pages/layout-test/error-404'
@@ -112,9 +112,6 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'body-mail-notification', page: 'register', component: BodyMailNotificationRegister, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'body-mail-notification', page: 'dashboard', component: BodyMailNotificationDashboard, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
   { module: 'body-mail-notification', page: 'index', component: BodyMailNotificationLogin, layout: null, loginRoute: '/body-mail-notification/login', dashboardRoute: '/body-mail-notification/dashboard' },
-  { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
-  { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
-  { module: 'new-updates-styles', page: 'features', component: NewUpdatesStylesFeatures, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
   { module: 'job-test', page: 'dashboard', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
   { module: 'job-test', page: 'index', component: JobTestDashboard, layout: null, loginRoute: '/job-test/index', dashboardRoute: '/job-test/dashboard' },
   { module: 'jo-payroll', page: 'index', component: JoPayrollIndex, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
@@ -123,6 +120,9 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'jo-payroll', page: 'appointments', component: JoPayrollAppointments, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
   { module: 'jo-payroll', page: 'payslip', component: JoPayrollPayslip, layout: null, loginRoute: '/jo-payroll/index', dashboardRoute: '/jo-payroll/index' },
   { module: 'inventory-management', page: 'index', component: InventoryManagementIndex, layout: null, loginRoute: '/inventory-management/index', dashboardRoute: '/inventory-management/index' },
+  { module: 'new-updates-styles', page: 'index', component: NewUpdatesStylesIndex, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
+  { module: 'new-updates-styles', page: 'about', component: NewUpdatesStylesAbout, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
+  { module: 'new-updates-styles', page: 'features', component: NewUpdatesStylesFeatures, layout: null, loginRoute: '/new-updates-styles/index', dashboardRoute: '/new-updates-styles/index' },
 ]
 
 export const LYNX_ERROR_404: Record<string, any> = {

@@ -12,7 +12,7 @@
 // react-native-reanimated's enter/exit props.
 // ============================================================
 
-import React, { useState, useEffect } from '@lynx-js/react'
+import { type FC, useState, useEffect } from '@lynx-js/react'
 
 export interface NativeModalProps {
   open:            boolean
@@ -48,7 +48,7 @@ const enterAnimMap = {
   fade:      'animate-in fade-in duration-200',
 }
 
-export const NativeModal: React.FC<NativeModalProps> = ({
+export const NativeModal: FC<NativeModalProps> = ({
   open,
   onClose,
   title,

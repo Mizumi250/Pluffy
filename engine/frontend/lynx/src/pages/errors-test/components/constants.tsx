@@ -2,10 +2,11 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — errors-test
 // Source: @arkzen:native:components:lynx:* (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:30.294Z
+// Generated: 2026-06-21T09:47:14.176Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'
+import type { LynxErrorDef } from './types'
 
 export const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 

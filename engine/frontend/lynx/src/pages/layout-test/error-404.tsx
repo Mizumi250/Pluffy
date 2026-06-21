@@ -1,5 +1,6 @@
 // ARKZEN GENERATED — layout-test error 404 (Lynx)
 // DO NOT EDIT DIRECTLY.
+
 const NotFoundLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
   <view className="flex-1 bg-indigo-50 items-center justify-center p-8">
     <view className="text-center max-w-md" style={{ gap: 8 }}>
@@ -15,3 +16,5 @@ const NotFoundLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }
     </view>
   </view>
 )
+
+export default NotFoundLynxPage

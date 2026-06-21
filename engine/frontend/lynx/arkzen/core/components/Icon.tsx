@@ -1,8 +1,6 @@
 // ============================================================
-// ARKZEN ENGINE — LYNX ICON COMPONENT v1.0
-// Drop-in replacement for `@sigx/lynx-icons`, built on Lynx 3.7's
-// native <svg> element (lynxjs.org/blog/lynx-3-7) instead of a
-// DOM/ComponentFactory-based icon runtime.
+// ARKZEN ENGINE — LYNX ICON COMPONENT v1.1
+// Drop-in replacement for `@sigx/lynx-icons`.
 //
 // Import this directly from tatemono source instead of
 // '@sigx/lynx-icons':
@@ -12,22 +10,36 @@
 //
 // Path data is resolved at render time from packages already in
 // package.json (@fortawesome/free-{solid,regular,brands}-svg-icons)
-// for set="fas"|"far"|"fab", and from @lucide/icons (new dep,
-// framework-agnostic icon-node data, no React/DOM coupling) for
-// set="lucide". No per-icon static imports — names are resolved
-// generically so every existing call site (<Icon set="fas" name=
-// "circle-xmark" .../>, <Icon set="lucide" name="trash-2" .../>)
-// keeps working.
+// for set="fas"|"far"|"fab", and from @lucide/icons (framework-
+// agnostic icon-node data, no React/DOM coupling) for set="lucide".
+// No per-icon static imports — names are resolved generically so
+// every existing call site (<Icon set="fas" name="circle-xmark" .../>,
+// <Icon set="lucide" name="trash-2" .../>) keeps working.
+//
+// RENDERING NOTE: Lynx's React runtime (@lynx-js/react) does not
+// expose <svg>/<path> as JSX intrinsics — there is no SVGProps /
+// IntrinsicElements entry for them. Actual SVG support comes from
+// @lynx-js/web-elements' <x-svg> custom element, which takes raw
+// SVG markup as a string via its `content` attribute. So instead
+// of walking icon node data into nested JSX elements, this builds
+// a complete SVG string and hands it to <x-svg>.
+//
+// SETUP REQUIRED: this needs @lynx-js/web-elements installed and
+// its elements registered for this app (see that package's docs /
+// your lynx.config.ts) before <x-svg> will render. If your TS
+// config's jsxImportSource type defs don't already pick up
+// `x-svg` under JSX.IntrinsicElements, add the package's type
+// augmentation (or a local one) so this file type-checks.
 // ============================================================
 
-import React from '@lynx-js/react'
+import type { FC } from '@lynx-js/react'
 
 import * as faSolid   from '@fortawesome/free-solid-svg-icons'
 import * as faRegular from '@fortawesome/free-regular-svg-icons'
 import * as faBrands  from '@fortawesome/free-brands-svg-icons'
 
 import * as lucideIcons from '@lucide/icons'
-import { buildLucideIconNode } from '@lucide/icons/builders'
+import { buildLucideSvg } from '@lucide/icons/build'
 
 export type IconSet = 'fas' | 'far' | 'fab' | 'lucide'
 
@@ -70,30 +82,22 @@ function resolveLucideIcon(name: string) {
 }
 
 // ─────────────────────────────────────────────
-// LUCIDE NODE -> LYNX ELEMENTS
-// @lucide/icons ships icon data as a framework-agnostic
-// [tagName, attributes, children?] tree (svgson-like).
-// We walk it into real Lynx-native intrinsics (<path>,
-// <circle>, <line>, <polyline>, <rect>, ...). `color` is
-// re-applied on every node (not just the root <svg>) since
-// Lynx's renderer is not guaranteed to cascade `stroke`
-// via CSS-style inheritance the way a browser would.
+// FA ICON -> SVG STRING
+// FA icon data is [width, height, ligatures, unicode, pathData].
 // ─────────────────────────────────────────────
 
-function renderLucideNode(node: any, color: string, key: string | number): any {
-  const [tag, attrs = {}, children] = node
-  const ownAttrs = attrs.stroke ? attrs : { ...attrs, stroke: color }
-  const kids = Array.isArray(children)
-    ? children.map((child: any, i: number) => renderLucideNode(child, color, i))
-    : null
-  return React.createElement(tag, { key, ...ownAttrs }, kids)
+function faToSvgString(faIcon: any, color: string): string {
+  const [width, height, , , pathData] = faIcon.icon
+  const paths: string[] = Array.isArray(pathData) ? pathData : [pathData]
+  const body = paths.map(d => `<path d="${d}" fill="${color}"/>`).join('')
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}">${body}</svg>`
 }
 
 // ─────────────────────────────────────────────
 // ICON
 // ─────────────────────────────────────────────
 
-export const Icon: React.FC<IconProps> = ({
+export const Icon: FC<IconProps> = ({
   set = 'fas',
   name,
   size = 16,
@@ -103,43 +107,30 @@ export const Icon: React.FC<IconProps> = ({
 }) => {
   const dimension = `${size}px`
 
+  let svgContent: string
+
   if (set === 'lucide') {
     const iconData = resolveLucideIcon(name)
     if (!iconData) {
       console.error(`[Icon] Unknown lucide icon: "${name}"`)
       return null
     }
-    const [, rootAttrs, children] = buildLucideIconNode(iconData, { size, color })
-    return (
-      <svg
-        viewBox={rootAttrs.viewBox}
-        style={{ width: dimension, height: dimension, ...style }}
-        className={className}
-      >
-        {(children ?? []).map((child: any, i: number) => renderLucideNode(child, color, i))}
-      </svg>
-    )
+    svgContent = buildLucideSvg(iconData, { size, color })
+  } else {
+    const faIcon = resolveFaIcon(set, name)
+    if (!faIcon) {
+      console.error(`[Icon] Unknown ${set} icon: "${name}"`)
+      return null
+    }
+    svgContent = faToSvgString(faIcon, color)
   }
-
-  const faIcon = resolveFaIcon(set, name)
-  if (!faIcon) {
-    console.error(`[Icon] Unknown ${set} icon: "${name}"`)
-    return null
-  }
-
-  const [width, height, , , pathData] = faIcon.icon
-  const paths: string[] = Array.isArray(pathData) ? pathData : [pathData]
 
   return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
+    <x-svg
+      content={svgContent}
       style={{ width: dimension, height: dimension, ...style }}
       className={className}
-    >
-      {paths.map((d, i) => (
-        <path key={i} d={d} fill={color} />
-      ))}
-    </svg>
+    />
   )
 }
 

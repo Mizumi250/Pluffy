@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatCard
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:30.704Z
+// Generated: 2026-06-21T09:47:15.007Z
 // ============================================================
 
-import { useCallback, useEffect, useState } from '@lynx-js/react'
+import { type ReactNode, useCallback, useEffect, useState } from '@lynx-js/react'
 import { Icon } from '../../../../arkzen/core/components/Icon'
 
 // ── Stat card ─────────────────────────────────────────────────
@@ -13,7 +13,7 @@ export const StatCard = ({
   label, value, icon, bg,
 }: {
   label: string; value: string | number
-  icon: React.ReactNode; bg: string
+  icon: ReactNode; bg: string
 }) => (
   <view className={`flex-1 ${bg} rounded-2xl p-3.5 items-center gap-1.5`}>
     {icon}

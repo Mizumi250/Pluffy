@@ -10,7 +10,7 @@
 // instead of Dimensions.get('window').
 // ============================================================
 
-import React, { createContext, useContext, useState, useCallback, useRef } from '@lynx-js/react'
+import { type FC, Fragment, createContext, useContext, useState, useCallback, useRef } from '@lynx-js/react'
 
 type ToastType     = 'success' | 'error' | 'warning' | 'info'
 type ToastPosition = 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left'
@@ -49,7 +49,7 @@ const positionClasses: Record<ToastPosition, string> = {
   'bottom-left':  'bottom-10 left-4',
 }
 
-const DefaultToastItem: React.FC<{ toast: ToastItemData; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
+const DefaultToastItem: FC<{ toast: ToastItemData; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
   const config = toastConfig[toast.type]
   return (
     <view className={`flex-row items-start w-80 px-4 py-3.5 rounded-xl border shadow-lg mb-2 animate-in fade-in slide-in-from-top-2 duration-200 ${config.bg} ${config.border}`}>
@@ -62,7 +62,7 @@ const DefaultToastItem: React.FC<{ toast: ToastItemData; onDismiss: (id: string)
   )
 }
 
-export const ToastProvider: React.FC<{
+export const ToastProvider: FC<{
   children:         any
   position?:        ToastPosition
   defaultDuration?: number
@@ -100,7 +100,7 @@ export const ToastProvider: React.FC<{
       <view className={`fixed z-50 flex-col ${positionClasses[position]}`}>
         {toasts.map(t =>
           renderToast
-            ? <React.Fragment key={t.id}>{renderToast({ ...t, onClose: () => dismiss(t.id) })}</React.Fragment>
+            ? <Fragment key={t.id}>{renderToast({ ...t, onClose: () => dismiss(t.id) })}</Fragment>
             : <DefaultToastItem key={t.id} toast={t} onDismiss={dismiss} />
         )}
       </view>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — NativeLayerBadge
 // Source: @arkzen:native:components:lynx:* (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:31.702Z
+// Generated: 2026-06-21T09:47:15.665Z
 // ============================================================
 
 

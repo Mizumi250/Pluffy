@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — hello-native/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:30.602Z
+// Generated: 2026-06-21T09:47:14.825Z
 import { Badge } from './components/Badge'
 import { Card } from './components/Card'
 import { PrimaryButton } from './components/PrimaryButton'

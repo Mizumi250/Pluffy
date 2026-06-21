@@ -3314,7 +3314,7 @@ const EasingSection = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import React, { useState, useEffect, useRef } from '@lynx-js/react'
+import { type ReactNode, useState, useEffect, useRef } from '@lynx-js/react'
 import { animate, useMotionValueRef } from '@lynx-js/motion'
 
 // ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
@@ -3348,7 +3348,7 @@ const LynxSectionHeader = ({
 
 // ─── DEMO CARD ─────────────────────────────────────────────────────────────────
 const LynxDemoCard = ({ title, desc, full = false, children }: {
-  title: string; desc: string; full?: boolean; children: React.ReactNode
+  title: string; desc: string; full?: boolean; children: ReactNode
 }) => (
   <div className={`${full ? 'mx-4 mb-3' : 'w-[46%] m-1'} bg-white/5 border border-white/10 rounded-xl overflow-hidden`}>
     <div className="px-3 py-2 border-b border-white/5">

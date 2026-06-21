@@ -2,10 +2,10 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxFeatureCard
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:32.363Z
+// Generated: 2026-06-21T09:47:16.490Z
 // ============================================================
 
-import { useState } from '@lynx-js/react'
+import { type ReactNode, useState } from '@lynx-js/react'
 import { Icon } from '../../../../arkzen/core/components/Icon'
 import { LYNX_COLOR_MAP } from './constants'
 import '../../../arkzen/generated/new-updates-styles.lynx-styles.css'
@@ -14,7 +14,7 @@ import type { LynxColor } from './types'
 export const LynxFeatureCard = ({
   icon, title, description, color, onPress, expanded = false,
 }: {
-  icon: React.ReactNode
+  icon: ReactNode
   title: string
   description: string
   color: LynxColor

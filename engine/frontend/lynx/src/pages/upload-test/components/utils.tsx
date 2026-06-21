@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T03:17:34.521Z
+// Generated: 2026-06-21T09:47:18.900Z
 // ============================================================
 
 import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'

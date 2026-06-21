@@ -245,24 +245,6 @@
     "has404": false,
     "has500": false
   },
-  "new-updates-styles": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      },
-      {
-        "page": "about",
-        "layout": "default"
-      },
-      {
-        "page": "features",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "job-test": {
     "pages": [
       {
@@ -303,6 +285,24 @@
     "pages": [
       {
         "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "new-updates-styles": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "about",
+        "layout": "default"
+      },
+      {
+        "page": "features",
         "layout": "default"
       }
     ],

@@ -863,7 +863,7 @@ const IndexScreen = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { useState, useEffect, useCallback } from '@lynx-js/react'
+import { type ReactNode, useState, useEffect, useCallback } from '@lynx-js/react'
 import { Icon } from '@/arkzen/core/components/Icon'
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
@@ -902,7 +902,7 @@ const StatCard = ({
   label, value, icon, bg,
 }: {
   label: string; value: string | number
-  icon: React.ReactNode; bg: string
+  icon: ReactNode; bg: string
 }) => (
   <view className={`flex-1 ${bg} rounded-2xl p-3.5 items-center gap-1.5`}>
     {icon}
