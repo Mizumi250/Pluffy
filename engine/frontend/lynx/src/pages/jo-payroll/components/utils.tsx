@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — jo-payroll
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:55.625Z
+// Generated: 2026-06-21T01:58:48.643Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 import { AVATAR_COLORS } from './constants'
 
 // ── Utils ────────────────────────────────────────────────────

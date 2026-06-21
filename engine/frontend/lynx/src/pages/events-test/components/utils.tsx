@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — events-test
 // Source: @arkzen:native:components:lynx:* (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:54.851Z
+// Generated: 2026-06-21T01:58:47.688Z
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 import { BACKEND_URL } from './constants'
 
 export const statusStyle = (s: string) => ({

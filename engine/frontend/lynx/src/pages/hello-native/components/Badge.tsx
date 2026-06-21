@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Badge
 // Source: @arkzen:native:components:lynx:* (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:55.031Z
+// Generated: 2026-06-21T01:58:47.813Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

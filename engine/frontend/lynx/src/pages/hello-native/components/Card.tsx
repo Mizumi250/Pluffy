@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Card
 // Source: @arkzen:native:components:lynx:* (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:55.054Z
+// Generated: 2026-06-21T01:58:47.816Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — mail-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:56.252Z
+// Generated: 2026-06-21T01:58:49.381Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 
 /* @arkzen:native:page:layout:guest */
 
@@ -31,7 +31,7 @@ const LoginScreen = () => {
         {/* Header */}
         <view className="mb-8">
           <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Icon set="lucide" name="mail" size={22} color="#fff" />
+            <Icon set="fas" name="envelope" size={22} color="#fff" />
           </view>
           <text className="text-2xl font-bold text-neutral-900">Mail Test</text>
           <text className="text-sm text-neutral-500 mt-1">

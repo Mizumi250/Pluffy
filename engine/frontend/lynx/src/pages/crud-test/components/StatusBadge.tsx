@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatusBadge
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:53.358Z
+// Generated: 2026-06-21T01:58:47.265Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

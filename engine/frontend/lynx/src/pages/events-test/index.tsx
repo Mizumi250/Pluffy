@@ -1,10 +1,10 @@
 // ARKZEN GENERATED — events-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:54.864Z
+// Generated: 2026-06-21T01:58:47.694Z
 import { apiFetch, eventColor, statusStyle } from './components/utils'
 import type { EventLogEntry } from './components/types'
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 
 const IndexScreen = () => {
   const events = [
@@ -87,7 +87,7 @@ const IndexScreen = () => {
       {/* Header */}
       <view className="bg-white border-b border-neutral-100 px-5 py-4">
         <view className="flex-row items-center gap-2">
-          <Icon set="lucide" name="zap" size={18} color="#0f172a" />
+          <Icon set="fas" name="bolt" size={18} color="#0f172a" />
           <text className="text-base font-semibold text-neutral-900">Events Test</text>
         </view>
         <text className="text-xs text-neutral-500 mt-0.5">
@@ -134,13 +134,13 @@ const IndexScreen = () => {
             <text className="text-sm font-semibold text-neutral-900">Listener execution log</text>
             <view className="flex-row items-center gap-3">
               <view bindtap={loadLog} className="p-1.5">
-                <Icon set="lucide" name="refresh-cw" size={14} color="#a3a3a3" />
+                <Icon set="fas" name="arrows-rotate" size={14} color="#a3a3a3" />
               </view>
               {log.length > 0 && (
                 <view bindtap={clearing ? undefined : clearLog} className="p-1.5">
                   {clearing
                     ? <text className="text-xs text-red-400">…</text>
-                    : <Icon set="lucide" name="trash-2" size={14} color="#f87171" />
+                    : <Icon set="fas" name="trash" size={14} color="#f87171" />
                   }
                 </view>
               )}
@@ -157,7 +157,7 @@ const IndexScreen = () => {
               <view key={groupKey} className="px-5 py-3 border-b border-neutral-50">
                 {/* Group header */}
                 <view className="flex-row items-center gap-1.5 mb-2">
-                  <Icon set="lucide" name="flame" size={13} color="#f59e0b" />
+                  <Icon set="fas" name="fire" size={13} color="#f59e0b" />
                   <text className="text-xs font-medium text-neutral-500">
                     {entries[0].event_name} — {entries[0].created_at?.slice(11, 19)}
                   </text>

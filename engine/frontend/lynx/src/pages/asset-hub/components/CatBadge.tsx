@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — CatBadge
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:50.407Z
+// Generated: 2026-06-21T01:58:45.393Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

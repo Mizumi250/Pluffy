@@ -1000,7 +1000,7 @@ const FeaturesScreen = () => {
 /* @arkzen:native:components:lynx:shared */
 
 import { useState } from '@lynx-js/react'
-import Icon from '@sigx/lynx-icons-lucide'   // ✅ fixed import (default)
+import { Icon } from '@sigx/lynx-icons'
 
 export const LynxBadge = ({ label }: { label: string }) => (
   <view className="px-3 py-1 bg-blue-100 rounded-full self-start">

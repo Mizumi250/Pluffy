@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InjectedBadge
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:52.458Z
+// Generated: 2026-06-21T01:58:47.271Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -227,16 +227,6 @@
     "has404": false,
     "has500": false
   },
-  "inventory-management": {
-    "pages": [
-      {
-        "page": "index",
-        "layout": "default"
-      }
-    ],
-    "has404": false,
-    "has500": false
-  },
   "body-mail-notification": {
     "pages": [
       {
@@ -249,6 +239,24 @@
       },
       {
         "page": "dashboard",
+        "layout": "default"
+      }
+    ],
+    "has404": false,
+    "has500": false
+  },
+  "new-updates-styles": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      },
+      {
+        "page": "about",
+        "layout": "default"
+      },
+      {
+        "page": "features",
         "layout": "default"
       }
     ],
@@ -291,18 +299,10 @@
     "has404": false,
     "has500": false
   },
-  "new-updates-styles": {
+  "inventory-management": {
     "pages": [
       {
         "page": "index",
-        "layout": "default"
-      },
-      {
-        "page": "about",
-        "layout": "default"
-      },
-      {
-        "page": "features",
         "layout": "default"
       }
     ],

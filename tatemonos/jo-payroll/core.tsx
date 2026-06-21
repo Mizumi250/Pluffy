@@ -3059,8 +3059,7 @@ export const useFadeSlideIn = (delay = 0) => {
 /* @arkzen:native:components:lynx:shared */
 
 import { useState, useEffect, useMemo, useCallback } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide'
-
+import { Icon } from '@sigx/lynx-icons'
 const BACKEND_URL = process.env.ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
 // ── Types ────────────────────────────────────────────────────

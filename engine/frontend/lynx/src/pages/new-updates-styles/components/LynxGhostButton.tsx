@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxGhostButton
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:57.185Z
+// Generated: 2026-06-21T01:58:50.092Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'
-import Icon from '@sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 import '../../../arkzen/generated/new-updates-styles.lynx-styles.css'
 
 export const LynxGhostButton = ({ label, onPress }: { label: string; onPress: () => void }) => (

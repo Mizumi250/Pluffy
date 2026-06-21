@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-mail-notification/register (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:51.920Z
+// Generated: 2026-06-21T01:58:46.169Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryButton
 // Source: @arkzen:native:components:lynx:* (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:55.038Z
+// Generated: 2026-06-21T01:58:47.814Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

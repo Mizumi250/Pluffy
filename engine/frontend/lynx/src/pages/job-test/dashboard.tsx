@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — job-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:09:55.948Z
+// Generated: 2026-06-21T01:58:49.109Z
 import { BACKEND_URL } from './components/constants'
 import { dotBg, statusBg, statusText } from './components/utils'
 import type { JobResult } from './components/types'
 import { useEffect, useRef, useState } from '@lynx-js/react'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 
 const DashboardScreen = () => {
   const jobs = [
