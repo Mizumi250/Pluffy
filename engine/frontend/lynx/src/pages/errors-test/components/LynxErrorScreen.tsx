@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxErrorScreen
 // Source: @arkzen:native:components:lynx:* (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:54.947Z
+// Generated: 2026-06-21T01:09:54.590Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

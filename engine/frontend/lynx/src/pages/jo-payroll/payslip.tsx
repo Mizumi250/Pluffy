@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/payslip (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:55.781Z
+// Generated: 2026-06-21T01:09:55.693Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'

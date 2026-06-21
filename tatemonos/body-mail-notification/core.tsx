@@ -1217,7 +1217,6 @@ const DashboardScreen = () => {
 /* @arkzen:native:components:lynx:shared */
 
 import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide-lucide'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 setActiveTatemono('body-mail-notification')
@@ -1421,7 +1420,6 @@ const RegisterLynxPage = () => {
 /* @arkzen:native:page:layout:auth */
 
 import { useState, useEffect, useCallback } from '@lynx-js/react'
-import { Icon } from 'sigx/lynx-icons-lucide-lucide'
 import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 const DashboardLynxPage = () => {

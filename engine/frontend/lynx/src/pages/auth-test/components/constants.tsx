@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — auth-test
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:52.658Z
+// Generated: 2026-06-21T01:09:50.571Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

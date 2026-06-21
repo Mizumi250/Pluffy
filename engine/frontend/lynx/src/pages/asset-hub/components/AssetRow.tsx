@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — AssetRow
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:52.499Z
+// Generated: 2026-06-21T01:09:50.409Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

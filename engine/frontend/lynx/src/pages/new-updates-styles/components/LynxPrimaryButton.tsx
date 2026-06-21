@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxPrimaryButton
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:57.042Z
+// Generated: 2026-06-21T01:09:57.183Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

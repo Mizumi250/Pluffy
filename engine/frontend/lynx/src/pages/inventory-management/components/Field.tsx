@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:55.478Z
+// Generated: 2026-06-21T01:09:55.325Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

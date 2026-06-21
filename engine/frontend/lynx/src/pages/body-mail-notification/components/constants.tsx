@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — body-mail-notification
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:53.210Z
+// Generated: 2026-06-21T01:09:51.885Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

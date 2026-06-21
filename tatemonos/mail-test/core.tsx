@@ -1054,7 +1054,7 @@ const DashboardScreen = () => {
 
 import { useState, useEffect } from '@lynx-js/react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Icon } from 'sigx/lynx-icons-lucide'
+import { Icon } from '@sigx/lynx-icons'
 
 setActiveTatemono('mail-test')
 
@@ -1100,7 +1100,7 @@ const Field = ({
 // ── Error box ─────────────────────────────────────────────────
 const ErrorBox = ({ message }: { message: string }) => (
   <view className="flex-row items-start gap-2 p-3 bg-red-50 border border-red-100 rounded-xl">
-    <Icon set="lucide" name="x-circle" size={14} color="#ef4444" />
+    <Icon set="fas" name="circle-xmark" size={14} color="#ef4444" />
     <text className="text-xs text-red-600 flex-1">{message}</text>
   </view>
 )
@@ -1151,7 +1151,7 @@ const LoginScreen = () => {
         {/* Header */}
         <view className="mb-8">
           <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Icon set="lucide" name="mail" size={22} color="#fff" />
+            <Icon set="fas" name="envelope" size={22} color="#fff" />
           </view>
           <text className="text-2xl font-bold text-neutral-900">Mail Test</text>
           <text className="text-sm text-neutral-500 mt-1">
@@ -1224,7 +1224,7 @@ const RegisterScreen = () => {
         {/* Header */}
         <view className="mb-8">
           <view className="w-12 h-12 rounded-2xl bg-neutral-900 items-center justify-center mb-4">
-            <Icon set="lucide" name="mail" size={22} color="#fff" />
+            <Icon set="fas" name="envelope" size={22} color="#fff" />
           </view>
           <text className="text-2xl font-bold text-neutral-900">Mail Test</text>
           <text className="text-sm text-neutral-500 mt-1">
@@ -1359,7 +1359,7 @@ const DashboardScreen = () => {
       <view className="bg-white border-b border-neutral-100 px-5 py-4 flex-row items-center justify-between">
         <view className="flex-row items-center gap-3">
           <view className="w-9 h-9 bg-neutral-900 rounded-xl items-center justify-center">
-            <Icon set="lucide" name="mail" size={16} color="#fff" />
+            <Icon set="fas" name="envelope" size={16} color="#fff" />
           </view>
           <view>
             <text className="text-base font-semibold text-neutral-900">Mail Test</text>
@@ -1367,7 +1367,7 @@ const DashboardScreen = () => {
           </view>
         </view>
         <view bindtap={handleLogout} className="flex-row items-center gap-1">
-          <Icon set="lucide" name="log-out" size={13} color="#a3a3a3" />
+          <Icon set="fas" name="right-from-bracket" size={13} color="#a3a3a3" />
           <text className="text-xs text-neutral-400">Sign out</text>
         </view>
       </view>
@@ -1382,8 +1382,8 @@ const DashboardScreen = () => {
               : 'bg-white border-red-200'
           }`}>
             {toast.type === 'success'
-              ? <Icon set="lucide" name="check-circle" size={15} color="#10b981" />
-              : <Icon set="lucide" name="x-circle" size={15} color="#ef4444" />
+              ? <Icon set="fas" name="circle-check" size={15} color="#10b981" />
+              : <Icon set="fas" name="circle-xmark" size={15} color="#ef4444" />
             }
             <text className={`text-sm font-medium flex-1 ${
               toast.type === 'success' ? 'text-emerald-700' : 'text-red-600'
@@ -1434,7 +1434,7 @@ const DashboardScreen = () => {
               >
                 {sending === m.key
                   ? <text className="text-white text-xs">…</text>
-                  : <Icon set="lucide" name="send" size={11} color="#fff" />
+                  : <Icon set="fas" name="paper-plane" size={11} color="#fff" />
                 }
                 <text className="text-white text-xs font-medium">
                   {sending === m.key ? 'Sending' : 'Send'}
@@ -1457,14 +1457,14 @@ const DashboardScreen = () => {
             >
               {loadingLogs
                 ? <text className="text-xs text-neutral-400">…</text>
-                : <Icon set="lucide" name="refresh-cw" size={14} color="#a3a3a3" />
+                : <Icon set="fas" name="arrows-rotate" size={14} color="#a3a3a3" />
               }
             </view>
           </view>
 
           {logs.length === 0 ? (
             <view className="py-12 items-center">
-              <Icon set="lucide" name="mail" size={28} color="#e5e5e5" />
+              <Icon set="fas" name="envelope" size={28} color="#e5e5e5" />
               <text className="text-sm text-neutral-400 mt-3">No mail sent yet</text>
               <text className="text-xs text-neutral-300 mt-1">Send a mail above to see logs here</text>
             </view>
@@ -1498,7 +1498,7 @@ const DashboardScreen = () => {
                     </text>
                   </view>
                   <view className="flex-row items-center gap-1">
-                    <Icon set="lucide" name="clock" size={10} color="#d4d4d4" />
+                    <Icon set="fas" name="clock" size={10} color="#d4d4d4" />
                     <text className="text-xs text-neutral-300">{formatTime(l.created_at)}</text>
                   </view>
                 </view>

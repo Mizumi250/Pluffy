@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — broadcast-test
 // Source: @arkzen:native:components:lynx:* (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-20T15:23:53.934Z
+// Generated: 2026-06-21T01:09:52.921Z
 // ============================================================
 
 export type WsStatus = 'connecting' | 'connected' | 'error'
