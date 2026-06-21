@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — Avatar
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:48.645Z
+// Generated: 2026-06-21T02:50:30.450Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '../../../../arkzen/core/components/Icon'
 import { getAvatarColor, getInitials } from './utils'
 import { StatCard } from './StatCard'
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — broadcast-test
 // Visiting /broadcast-test redirects to /broadcast-test/login
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:48.690Z
+// Generated: 2026-06-21T02:50:30.165Z
 // ============================================================
 
 import { redirect } from 'next/navigation'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — ErrorBox
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:46.160Z
+// Generated: 2026-06-21T02:50:27.912Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

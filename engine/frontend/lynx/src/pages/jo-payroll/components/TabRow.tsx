@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — TabRow
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:48.657Z
+// Generated: 2026-06-21T02:50:30.457Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '../../../../arkzen/core/components/Icon'
 
 // ── TabRow ───────────────────────────────────────────────────
 

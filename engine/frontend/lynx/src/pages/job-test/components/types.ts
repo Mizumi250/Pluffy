@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — job-test
 // Source: @arkzen:native:components:lynx:* (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:49.104Z
+// Generated: 2026-06-21T02:50:30.760Z
 // ============================================================
 
 export interface JobResult {

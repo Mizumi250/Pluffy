@@ -1,12 +1,12 @@
 // ARKZEN GENERATED — mail-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:49.381Z
+// Generated: 2026-06-21T02:50:31.116Z
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { useState } from '@lynx-js/react'
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '../../../arkzen/core/components/Icon'
 
 /* @arkzen:native:page:layout:guest */
 

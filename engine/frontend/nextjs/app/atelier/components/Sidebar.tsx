@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Sidebar
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:46.609Z
+// Generated: 2026-06-21T02:50:28.281Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

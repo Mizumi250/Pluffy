@@ -2,11 +2,11 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:47.920Z
+// Generated: 2026-06-21T02:50:30.067Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '../../../../arkzen/core/components/Icon'
 
 // ── Field ─────────────────────────────────────────────────────
 // Lynx has no multiline TextInput — multiline renders as <textarea>, single-line as <input>

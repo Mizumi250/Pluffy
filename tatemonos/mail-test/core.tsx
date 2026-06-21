@@ -1054,7 +1054,7 @@ const DashboardScreen = () => {
 
 import { useState, useEffect } from '@lynx-js/react'
 import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
+import { Icon } from '@/arkzen/core/components/Icon'
 
 setActiveTatemono('mail-test')
 

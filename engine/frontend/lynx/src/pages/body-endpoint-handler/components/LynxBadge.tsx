@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxBadge
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:45.703Z
+// Generated: 2026-06-21T02:50:27.216Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

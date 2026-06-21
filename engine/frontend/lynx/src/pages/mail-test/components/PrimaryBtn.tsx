@@ -2,12 +2,12 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T01:58:49.373Z
+// Generated: 2026-06-21T02:50:31.112Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'
+import { Icon } from '../../../../arkzen/core/components/Icon'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
-import { Icon } from '@sigx/lynx-icons'
 
 // ── Primary button ────────────────────────────────────────────
 export const PrimaryBtn = ({

@@ -14,6 +14,7 @@
   "dependencies": {
     "@lynx-js/motion": "^0.0.3",
     "@lynx-js/react": "^0.121.1",
+    "@lucide/icons": "^1.21.0",
     "@sigx/lynx-icons": "^0.9.1",
     "@sigx/lynx-icons-fa-free": "^0.9.1",
     "@fortawesome/fontawesome-free": "^6.5.1",
