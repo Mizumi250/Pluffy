@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxInjectedBadge
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:54.692Z
+// Generated: 2026-06-22T05:22:10.530Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

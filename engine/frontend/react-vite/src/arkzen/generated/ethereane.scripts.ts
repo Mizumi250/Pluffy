@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — ethereane
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:57.868Z
+// Generated: 2026-06-22T05:51:02.459Z
 // ============================================================
 
 import * as THREE from 'three'
@@ -24,7 +24,9 @@ export const WORLD_MARGIN = TILE_SIZE * 2
 export const CHAR_PLANE_W = TILE_SIZE * 1.0
 export const CHAR_PLANE_H = TILE_SIZE * 1.5
 export const CHAR_RADIUS  = TILE_SIZE * 0.28
-export const CHAR_SPEED   = 0.0625
+export const CHAR_SPEED       = 0.0625
+export const CHAR_RUN_MULT    = 1.65         // speed multiplier when running
+export const RUN_WALK_RATE    = 3            // frame ticks per walk frame (faster = snappier legs)
 
 // ─── CAMERA ───────────────────────────────────────────────────────────────────
 export const CAM_DIST_MIN      = 1.1
@@ -39,7 +41,8 @@ export const CAM_LERP          = 0.22
 export const CAM_LOOK_HEIGHT   = CHAR_PLANE_H * 0.6
 // "break delay" — camera target lags behind the character with this factor.
 // Lower = more lag, feels heavier. 0.09 gives a gentle spring-follow.
-export const CAM_FOLLOW_LERP   = 0.09
+export const CAM_FOLLOW_LERP     = 0.09
+export const CAM_FOLLOW_LERP_RUN = 0.07     // much lazier follow when sprinting — makes you feel fast
 
 // ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
@@ -63,11 +66,11 @@ export const ASSETS = {
   character1:     '/tatemonos/ethereane/assets/images/character1.png',
   bush1:          '/tatemonos/ethereane/assets/images/bush1.png',
   bush2:          '/tatemonos/ethereane/assets/images/bush2.png',
-  // ── sky parallax layers (drop PNGs here when you have them) ──
-  // skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
-  // skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
-  // skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
-  // skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
+  // ── sky parallax layers ──
+  skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
+  skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
+  skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
+  skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
 }
 
 // ─── PROPS ────────────────────────────────────────────────────────────────────
@@ -348,31 +351,48 @@ export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInsta
 // ─── SKY DOME ─────────────────────────────────────────────────────────────────
 // Gradient sphere mapped on the inside — every camera angle sees the right sky.
 // depthTest: false + renderOrder -1 ensures it always sits behind all geometry.
-// When you have real sky PNGs, replace createSkyTexture() with a loaded texture.
+// Sky layers 0-3 are composited onto a canvas in order (back → front) so all
+// four cloud PNGs appear on a single dome material — no extra meshes needed.
 export const SKY_RADIUS = 90
 
-export function createSkyTexture(): THREE.CanvasTexture {
-  const w = 4, h = 256
-  const c = document.createElement('canvas')
-  c.width = w; c.height = h
-  const ctx = c.getContext('2d')!
+// SKY_TEX_W / SKY_TEX_H — large enough for the cloud PNGs to tile cleanly.
+const SKY_TEX_W = 1024
+const SKY_TEX_H = 512
+
+// Fallback gradient — drawn first so it shows even before images load, and
+// also acts as the solid sky base that the cloud layers sit on top of.
+function drawSkyGradient(ctx: CanvasRenderingContext2D, w: number, h: number) {
   const grad = ctx.createLinearGradient(0, 0, 0, h)
   grad.addColorStop(0,    '#1565c0')   // zenith — deep rich blue
-  grad.addColorStop(0.3,  '#2196f3')   // upper
-  grad.addColorStop(0.65, '#64b5f6')   // mid
+  grad.addColorStop(0.3,  '#2196f3')   // upper sky
+  grad.addColorStop(0.65, '#64b5f6')   // mid sky
   grad.addColorStop(0.88, '#b3e5fc')   // near horizon
-  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog
+  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog colour
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, w, h)
-  const tex = new THREE.CanvasTexture(c)
-  tex.needsUpdate = true
-  return tex
 }
 
+// createSkyDome — returns the mesh immediately with the gradient.
+// Then loads the 4 cloud PNGs and composites them onto the canvas texture;
+// the dome material updates automatically via tex.needsUpdate.
 export function createSkyDome(): THREE.Mesh {
-  const geo = new THREE.SphereGeometry(SKY_RADIUS, 16, 10)
+  // Canvas that backs the dome texture — lives for the lifetime of the scene.
+  const canvas = document.createElement('canvas')
+  canvas.width  = SKY_TEX_W
+  canvas.height = SKY_TEX_H
+  const ctx = canvas.getContext('2d')!
+
+  // Draw the gradient base immediately so the sky isn't blank while loading.
+  drawSkyGradient(ctx, SKY_TEX_W, SKY_TEX_H)
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.wrapS    = THREE.RepeatWrapping
+  tex.wrapT    = THREE.ClampToEdgeWrapping
+  tex.needsUpdate = true
+
+  const geo = new THREE.SphereGeometry(SKY_RADIUS, 32, 16)
   const mat = new THREE.MeshBasicMaterial({
-    map:        createSkyTexture(),
+    map:        tex,
     side:       THREE.BackSide,
     depthWrite: false,
     depthTest:  false,   // ← always behind everything — no z-fighting
@@ -380,7 +400,105 @@ export function createSkyDome(): THREE.Mesh {
   })
   const mesh = new THREE.Mesh(geo, mat)
   mesh.renderOrder = -1  // ← render before all scene geometry
+
+  // Load all 4 sky layer PNGs and composite them onto the canvas in order.
+  // layer 0 = furthest back (faint, slow-moving clouds / colour wash)
+  // layer 3 = closest (bright, fast-moving foreground clouds)
+  const layerPaths = [
+    ASSETS.skyLayer0,
+    ASSETS.skyLayer1,
+    ASSETS.skyLayer2,
+    ASSETS.skyLayer3,
+  ]
+
+  // Parallax scroll offsets per layer (0 = static, higher = scrolls further).
+  // These are driven by updateSkyScroll() called each frame from the game loop.
+  const layerOffsets: number[] = [0, 0, 0, 0]
+
+  // Load images sequentially so later layers always composite on top correctly.
+  Promise.all(
+    layerPaths.map(
+      (src) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload  = () => resolve(img)
+          img.onerror = () => reject(new Error(`Sky layer failed: ${src}`))
+          img.src = src
+        }),
+    ),
+  )
+    .then((imgs) => {
+      // Store images on the mesh so the scroll updater can re-composite each frame.
+      ;(mesh as any).__skyLayers  = imgs
+      ;(mesh as any).__skyOffsets = layerOffsets
+      ;(mesh as any).__skyCanvas  = canvas
+      ;(mesh as any).__skyCtx    = ctx
+      ;(mesh as any).__skyTex    = tex
+      compositeSkyLayers(ctx, canvas, imgs, layerOffsets, tex)
+    })
+    .catch((err) => {
+      // PNG load failed — gradient fallback is already visible, just warn.
+      console.warn('[Ethereane] Sky layer load error:', err)
+    })
+
   return mesh
+}
+
+// compositeSkyLayers — redraws the sky canvas with the gradient base then
+// each cloud layer at its current horizontal scroll offset.
+// Called once after load, then every frame from updateSkyScroll.
+export function compositeSkyLayers(
+  ctx:     CanvasRenderingContext2D,
+  canvas:  HTMLCanvasElement,
+  imgs:    HTMLImageElement[],
+  offsets: number[],
+  tex:     THREE.CanvasTexture,
+) {
+  const w = canvas.width
+  const h = canvas.height
+
+  // Redraw gradient base.
+  drawSkyGradient(ctx, w, h)
+
+  // Composite each layer — tiled horizontally via modulo wrap.
+  imgs.forEach((img, i) => {
+    if (!img.naturalWidth) return
+    const ox  = ((offsets[i] % w) + w) % w   // keep positive
+    const iw  = img.naturalWidth
+    const ih  = img.naturalHeight
+    // Scale image to canvas height.
+    const sh  = h
+    const sw  = Math.round(iw * (sh / ih))
+    // Tile across full width with offset.
+    for (let x = ox - sw; x < w; x += sw) {
+      ctx.drawImage(img, x, 0, sw, sh)
+    }
+  })
+
+  tex.needsUpdate = true
+}
+
+// updateSkyScroll — call this each frame with the camera azimuth (radians) so
+// the cloud layers drift convincingly as the player rotates the camera.
+// Parallax speeds: layer 0 is slowest, layer 3 is fastest.
+const SKY_PARALLAX_SPEEDS = [0.08, 0.18, 0.30, 0.48]
+
+export function updateSkyScroll(skyMesh: THREE.Mesh, azimuthRad: number) {
+  const imgs    = (skyMesh as any).__skyLayers  as HTMLImageElement[] | undefined
+  const offsets = (skyMesh as any).__skyOffsets as number[]           | undefined
+  const ctx     = (skyMesh as any).__skyCtx     as CanvasRenderingContext2D | undefined
+  const canvas  = (skyMesh as any).__skyCanvas  as HTMLCanvasElement  | undefined
+  const tex     = (skyMesh as any).__skyTex     as THREE.CanvasTexture | undefined
+  if (!imgs || !offsets || !ctx || !canvas || !tex) return
+
+  // Map azimuth → pixel offset for each layer.
+  const baseOffset = (azimuthRad / (Math.PI * 2)) * SKY_TEX_W
+  offsets.forEach((_, i) => {
+    offsets[i] = baseOffset * SKY_PARALLAX_SPEEDS[i]
+  })
+
+  compositeSkyLayers(ctx, canvas, imgs, offsets, tex)
 }
 
 // ─── SHADOW BLOB ──────────────────────────────────────────────────────────────

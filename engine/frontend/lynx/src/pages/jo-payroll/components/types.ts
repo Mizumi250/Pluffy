@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — jo-payroll
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:58.185Z
+// Generated: 2026-06-22T05:22:13.584Z
 // ============================================================
 
 // ── Types ────────────────────────────────────────────────────

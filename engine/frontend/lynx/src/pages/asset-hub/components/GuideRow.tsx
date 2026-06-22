@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — GuideRow
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:54.262Z
+// Generated: 2026-06-22T05:22:10.209Z
 // ============================================================
 
 import { useState } from '@lynx-js/react'

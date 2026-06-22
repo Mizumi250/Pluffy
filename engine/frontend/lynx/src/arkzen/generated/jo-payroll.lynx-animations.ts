@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX ANIMATIONS — jo-payroll
 // Source: @arkzen:native:animation:lynx
 // DO NOT EDIT DIRECTLY.
-// Generated: 2026-06-22T03:18:58.150Z
+// Generated: 2026-06-22T05:22:13.560Z
 // ============================================================
 
 import { useState, useEffect } from '@lynx-js/react'

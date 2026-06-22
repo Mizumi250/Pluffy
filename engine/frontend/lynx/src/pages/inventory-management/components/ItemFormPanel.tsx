@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — ItemFormPanel
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:57.810Z
+// Generated: 2026-06-22T05:22:13.268Z
 // ============================================================
 
 import { type ReactNode, useCallback, useEffect, useState } from '@lynx-js/react'

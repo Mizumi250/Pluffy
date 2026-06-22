@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatCard
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:56.618Z
+// Generated: 2026-06-22T05:22:12.390Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — body-endpoint-handler/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:54.712Z
+// Generated: 2026-06-22T05:22:10.541Z
 import { LynxBadge } from './components/LynxBadge'
 import { LynxInjectedBadge } from './components/LynxInjectedBadge'
 import { LynxSectionCard } from './components/LynxSectionCard'

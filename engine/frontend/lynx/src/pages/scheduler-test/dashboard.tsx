@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — scheduler-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:19:01.365Z
+// Generated: 2026-06-22T05:22:17.022Z
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'

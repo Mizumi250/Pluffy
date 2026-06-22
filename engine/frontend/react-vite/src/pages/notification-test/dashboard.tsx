@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-22T03:19:00.671Z
+// Generated: 2026-06-22T05:22:16.089Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

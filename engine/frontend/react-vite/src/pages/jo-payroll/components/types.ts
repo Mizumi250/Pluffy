@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — jo-payroll [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:59.137Z
+// Generated: 2026-06-22T05:22:14.237Z
 // ============================================================
 
 // ─── Types ─────────────────────────────────────────────────────────────────

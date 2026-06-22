@@ -2,11 +2,12 @@
 // ARKZEN GENERATED TYPES — ethereane [React+Vite]
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:57.818Z
+// Generated: 2026-06-22T05:51:02.377Z
 // ============================================================
 
 export type ThreeState = {
   renderer:   THREE.WebGLRenderer
+  composer:   EffectComposer
   scene:      THREE.Scene
   camera:     THREE.PerspectiveCamera
   skyMesh:    THREE.Mesh

@@ -2,15 +2,19 @@
 // ARKZEN GENERATED COMPONENT — EtheraneGame [React+Vite]
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T03:18:57.858Z
+// Generated: 2026-06-22T05:51:02.442Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_FOLLOW_LERP, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, Npc, PROP_DEFS, Prop, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, createShadowTexture, createSkyDome, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs } from '@/arkzen/generated/ethereane.scripts'
+import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_FOLLOW_LERP, CAM_FOLLOW_LERP_RUN, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_RUN_MULT, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, Npc, PROP_DEFS, Prop, RUN_WALK_RATE, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, compositeSkyLayers, createShadowTexture, createSkyDome, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs, updateSkyScroll } from '@/arkzen/generated/ethereane.scripts'
 import * as THREE from 'three'
+import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
+import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
 import { JOY_RADIUS, KNOB_MAX, UP_AXIS } from './constants'
-import { angle, applyScale, blockGeo, bush1Mat, bush1Mesh, bush1Props, bush2Mat, bush2Mesh, bush2Props, bushGeo, camAzimuth, camAzimuthTarget, camDist, camDistTarget, camFollowX, camFollowZ, camForward, camPolar, camPolarTarget, camPos, camRight, camera, canvas, canvasRef, charGeo, charMat, charMesh, charPos, charShadow, closeDialogue, ctx2, dirRow, dist, dragPointerId, dragging, dummy, dx, dy, frameIndex, frameTick, fwdDot, gameLoop, grassMesh, h, halfD, halfW, handleInteract, hemi, idlePausing, isWalking, joyActive, joyOrigin, joyPointerId, joyVec, joyZoneRef, keys, keysHeld, knob, knobRef, lastPointer, loader, m, mag, makeShadow, mat, mesh, minimapCanvas, minimapRef, moveX, moveZ, moving, nearby, nearbyNpcRef, npc, npcMeshes, npcMoving, npcShadows, npcTexes, npcsRef, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel, onJoyPointerDown, onJoyPointerMove, onJoyPointerUp, onKeyDown, onKeyUp, plainMesh, propsRef, rafRef, rate, rawDx, rawDy, renderer, resetKnob, resolved, rightDot, row, s, scene, setKnobPos, shadow, shadowGeo, shadowTex, sheetRow, skyMesh, startPos, sun, t, tex, three, viewport, viewportRef, w, zone } from './utils'
+import { angle, applyScale, blockGeo, bloomPass, bush1Mat, bush1Mesh, bush1Props, bush2Mat, bush2Mesh, bush2Props, bushGeo, camAzimuth, camAzimuthTarget, camDist, camDistTarget, camFollowX, camFollowZ, camForward, camPolar, camPolarTarget, camPos, camRight, camera, canvas, canvasRef, charGeo, charMat, charMesh, charPos, charShadow, closeDialogue, composer, ctx2, dirRow, dist, dragPointerId, dragging, dummy, dx, dy, followLerp, frameIndex, frameTick, fwdDot, gameLoop, grassMesh, h, halfD, halfW, handleInteract, hemi, idlePausing, isRunning, isWalking, joyActive, joyOrigin, joyPointerId, joyVec, joyZoneRef, keys, keysHeld, knob, knobRef, lastPointer, loader, m, mag, makeShadow, mat, mesh, minimapCanvas, minimapRef, moveX, moveZ, moving, nearby, nearbyNpcRef, npc, npcMeshes, npcMoving, npcShadows, npcTexes, npcsRef, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel, onJoyPointerDown, onJoyPointerMove, onJoyPointerUp, onKeyDown, onKeyUp, outputPass, plainMesh, propsRef, rafRef, rate, rawDx, rawDy, renderPass, renderer, resetKnob, resolved, rightDot, row, running, s, scene, setKnobPos, shadow, shadowGeo, shadowTex, sheetRow, skyMesh, startPos, sun, t, tex, three, viewport, viewportRef, w, walkRate, zone } from './utils'
 import type { ThreeState } from './types'
 
 export const EtheraneGame = () => {
@@ -34,6 +38,7 @@ export const EtheraneGame = () => {
   const [nearbyNpc, setNearbyNpc] = useState<Npc | null>(null)
   const [dialogue,  setDialogue]  = useState<string[] | null>(null)
   const nearbyNpcRef = useRef<Npc | null>(null)
+  const [runActive,  setRunActive] = useState(false)
 
   // ─── ANIMATION STATE ──────────────────────────────────────────────────────
   const frameIndex  = useRef(0)
@@ -41,6 +46,7 @@ export const EtheraneGame = () => {
   const dirRow      = useRef(DIR_DOWN)
   const idlePausing = useRef(false)
   const isWalking   = useRef(false)
+  const isRunning   = useRef(false)   // true while run button / Shift held
 
   // ─── THREE.JS SCENE ───────────────────────────────────────────────────────
   const three = useRef<ThreeState | null>(null)
@@ -158,9 +164,13 @@ export const EtheraneGame = () => {
   const onKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'e' || e.key === 'E') { handleInteract(); return }
     if (e.key === 'Escape') { closeDialogue(); return }
+    if (e.key === 'Shift') { isRunning.current = true; return }
     keysHeld.current.add(e.key)
   }, [handleInteract, closeDialogue])
-  const onKeyUp = useCallback((e: KeyboardEvent) => { keysHeld.current.delete(e.key) }, [])
+  const onKeyUp = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Shift') { isRunning.current = false; return }
+    keysHeld.current.delete(e.key)
+  }, [])
 
   // ─── GAME LOOP ────────────────────────────────────────────────────────────
   const gameLoop = useCallback(() => {
@@ -173,6 +183,9 @@ export const EtheraneGame = () => {
     if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) kx += 1
     if (keys.has('ArrowUp')    || keys.has('w') || keys.has('W')) ky -= 1
     if (keys.has('ArrowDown')  || keys.has('s') || keys.has('S')) ky += 1
+
+    // Running: Shift key OR run button held
+    const running = isRunning.current && (Math.abs(joyVec.current.x) > 0.1 || Math.abs(joyVec.current.y) > 0.1 || kx !== 0 || ky !== 0)
 
     let dx = joyVec.current.x + kx
     let dy = joyVec.current.y + ky
@@ -189,8 +202,8 @@ export const EtheraneGame = () => {
     const moveX = camForward.x * -dy + camRight.x * dx
     const moveZ = camForward.z * -dy + camRight.z * dx
 
-    let nextX = charPos.current.x + moveX * CHAR_SPEED
-    let nextZ = charPos.current.z + moveZ * CHAR_SPEED
+    let nextX = charPos.current.x + moveX * CHAR_SPEED * (running ? CHAR_RUN_MULT : 1)
+    let nextZ = charPos.current.z + moveZ * CHAR_SPEED * (running ? CHAR_RUN_MULT : 1)
     const halfW = WORLD_W / 2 - WORLD_MARGIN
     const halfD = WORLD_D / 2 - WORLD_MARGIN
     nextX = Math.max(-halfW, Math.min(nextX, halfW))
@@ -217,7 +230,8 @@ export const EtheraneGame = () => {
     // ── frame cycling ──
     frameTick.current++
     if (moving) {
-      if (frameTick.current >= WALK_FRAME_RATE) {
+      const walkRate = running ? RUN_WALK_RATE : WALK_FRAME_RATE
+      if (frameTick.current >= walkRate) {
         frameTick.current = 0
         frameIndex.current = (frameIndex.current + 1) % WALK_FRAMES
       }
@@ -286,8 +300,10 @@ export const EtheraneGame = () => {
     camDist.current    = lerp(camDist.current, camDistTarget.current, CAM_LERP)
 
     // "break delay" — the orbit pivot chases charPos with gentle lag
-    camFollowX.current = lerp(camFollowX.current, charPos.current.x, CAM_FOLLOW_LERP)
-    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, CAM_FOLLOW_LERP)
+    // When running, lerp is much lower so the camera dramatically lags behind
+    const followLerp = running ? CAM_FOLLOW_LERP_RUN : CAM_FOLLOW_LERP
+    camFollowX.current = lerp(camFollowX.current, charPos.current.x, followLerp)
+    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, followLerp)
 
     const camPos = orbitCameraPosition(
       camFollowX.current, camFollowZ.current,
@@ -298,8 +314,10 @@ export const EtheraneGame = () => {
 
     // sky dome follows camera — horizon stays correct at any camera height
     t.skyMesh.position.copy(t.camera.position)
+    // scroll cloud layers to match camera azimuth (parallax effect)
+    updateSkyScroll(t.skyMesh, camAzimuth.current)
 
-    t.renderer.render(t.scene, t.camera)
+    t.composer.render()
 
     if (t.minimapCtx) {
       renderMinimap(t.minimapCtx, charPos.current.x, charPos.current.z, camAzimuth.current)
@@ -354,6 +372,10 @@ export const EtheraneGame = () => {
     // Shadow map — sun casts real shadows on the ground blocks
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type    = THREE.PCFSoftShadowMap
+    // Bloom needs linear tone mapping so colours don't clamp before the pass
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
+    renderer.outputColorSpace    = THREE.SRGBColorSpace
 
     canvas.style.touchAction = 'none'
     canvas.addEventListener('pointerdown', onCamPointerDown)
@@ -364,6 +386,24 @@ export const EtheraneGame = () => {
 
     let cancelled = false
     const loader = new THREE.TextureLoader()
+
+    // ── post-processing: bloom ──────────────────────────────────────────────
+    // RenderPass → UnrealBloomPass → OutputPass
+    // Threshold 0.82 means only pixels brighter than ~82% white bloom —
+    // so the sky clouds, sun-lit grass edges, and highlights glow but the
+    // dark sprite outlines and ground shadows stay crisp.
+    const composer    = new EffectComposer(renderer)
+    const renderPass  = new RenderPass(scene, camera)
+    const bloomPass   = new UnrealBloomPass(
+      new THREE.Vector2(GAME_W, GAME_H),
+      0.38,   // strength  — noticeable but not blinding
+      0.5,    // radius    — soft spread
+      0.88,   // threshold — bright highlights + sky bloom, darks stay crisp
+    )
+    const outputPass  = new OutputPass()
+    composer.addPass(renderPass)
+    composer.addPass(bloomPass)
+    composer.addPass(outputPass)
 
     Promise.all([
       loadTexture(loader, ASSETS.tileGrass),
@@ -418,8 +458,8 @@ export const EtheraneGame = () => {
       )
       scene.add(hemi)
 
-      // Directional sun — slight warm tint, casts real shadows
-      const sun = new THREE.DirectionalLight('#fff5e0', 1.0)
+      // Directional sun — warm tint, casts real shadows, bright enough to bloom
+      const sun = new THREE.DirectionalLight('#fff5e0', 1.35)
       sun.position.set(8, 14, 6)
       sun.castShadow            = true
       sun.shadow.mapSize.width  = 512
@@ -448,6 +488,7 @@ export const EtheraneGame = () => {
       const charMat = new THREE.MeshBasicMaterial({ map: charTex, alphaTest: 0.5, side: THREE.DoubleSide })
       const charMesh = new THREE.Mesh(charGeo, charMat)
       charMesh.position.set(0, CHAR_PLANE_H / 2, 0)
+      charMesh.castShadow = true
       scene.add(charMesh)
       const charShadow = makeShadow()
 
@@ -463,6 +504,7 @@ export const EtheraneGame = () => {
         const mat  = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide })
         const mesh = new THREE.Mesh(charGeo, mat)
         mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
+        mesh.castShadow = true
         scene.add(mesh)
         npcMeshes.push(mesh)
         npcTexes.push(tex)
@@ -477,12 +519,14 @@ export const EtheraneGame = () => {
       const bush2Mat   = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
       const bush1Mesh  = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
       const bush2Mesh  = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
+      bush1Mesh.castShadow = true
+      bush2Mesh.castShadow = true
       billboardInstances(bush1Mesh, bush1Props, PROP_DEFS.bush1.size, camera.position)
       billboardInstances(bush2Mesh, bush2Props, PROP_DEFS.bush2.size, camera.position)
       scene.add(bush1Mesh, bush2Mesh)
 
       three.current = {
-        renderer, scene, camera,
+        renderer, composer, scene, camera,
         skyMesh,
         charMesh, charTex, charShadow,
         npcMeshes, npcTexes, npcShadows,
@@ -548,6 +592,16 @@ export const EtheraneGame = () => {
         <div className="eth-joystick-base" />
         <div className="eth-joystick-knob" ref={knobRef} />
       </div>
+
+      {/* Run button — hold to sprint, Shift on keyboard */}
+      <button
+        className={`eth-run-btn${runActive ? ' active' : ''}`}
+        onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); isRunning.current = true; setRunActive(true) }}
+        onPointerUp={() => { isRunning.current = false; setRunActive(false) }}
+        onPointerCancel={() => { isRunning.current = false; setRunActive(false) }}
+      >
+        RUN
+      </button>
 
       {nearbyNpc && !dialogue && (
         <button className="eth-interact-btn" onClick={handleInteract}>E</button>

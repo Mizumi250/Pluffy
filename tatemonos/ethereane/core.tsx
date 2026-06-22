@@ -126,6 +126,39 @@ description: A 3D pixel RPG world.
   transform: scale(0.92);
 }
 
+.eth-run-btn {
+  position: fixed;
+  bottom: 120px;
+  right: 40px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 200, 80, 0.15);
+  border: 2px solid rgba(255, 200, 80, 0.5);
+  color: rgba(255, 200, 80, 0.9);
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 20;
+  pointer-events: auto;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.08s, transform 0.08s;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.eth-run-btn.active {
+  background: rgba(255, 200, 80, 0.38);
+  border-color: rgba(255, 220, 120, 0.9);
+  color: #fff;
+  transform: scale(0.94);
+}
+
 @keyframes eth-pop {
   from { transform: scale(0.5); opacity: 0; }
   to   { transform: scale(1);   opacity: 1; }
@@ -209,7 +242,9 @@ export const WORLD_MARGIN = TILE_SIZE * 2
 export const CHAR_PLANE_W = TILE_SIZE * 1.0
 export const CHAR_PLANE_H = TILE_SIZE * 1.5
 export const CHAR_RADIUS  = TILE_SIZE * 0.28
-export const CHAR_SPEED   = 0.0625
+export const CHAR_SPEED       = 0.0625
+export const CHAR_RUN_MULT    = 1.65         // speed multiplier when running
+export const RUN_WALK_RATE    = 3            // frame ticks per walk frame (faster = snappier legs)
 
 // ─── CAMERA ───────────────────────────────────────────────────────────────────
 export const CAM_DIST_MIN      = 1.1
@@ -224,7 +259,8 @@ export const CAM_LERP          = 0.22
 export const CAM_LOOK_HEIGHT   = CHAR_PLANE_H * 0.6
 // "break delay" — camera target lags behind the character with this factor.
 // Lower = more lag, feels heavier. 0.09 gives a gentle spring-follow.
-export const CAM_FOLLOW_LERP   = 0.09
+export const CAM_FOLLOW_LERP     = 0.09
+export const CAM_FOLLOW_LERP_RUN = 0.07     // much lazier follow when sprinting — makes you feel fast
 
 // ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
@@ -248,11 +284,11 @@ export const ASSETS = {
   character1:     '/tatemonos/ethereane/assets/images/character1.png',
   bush1:          '/tatemonos/ethereane/assets/images/bush1.png',
   bush2:          '/tatemonos/ethereane/assets/images/bush2.png',
-  // ── sky parallax layers (drop PNGs here when you have them) ──
-  // skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
-  // skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
-  // skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
-  // skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
+  // ── sky parallax layers ──
+  skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
+  skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
+  skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
+  skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
 }
 
 // ─── PROPS ────────────────────────────────────────────────────────────────────
@@ -533,31 +569,48 @@ export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInsta
 // ─── SKY DOME ─────────────────────────────────────────────────────────────────
 // Gradient sphere mapped on the inside — every camera angle sees the right sky.
 // depthTest: false + renderOrder -1 ensures it always sits behind all geometry.
-// When you have real sky PNGs, replace createSkyTexture() with a loaded texture.
+// Sky layers 0-3 are composited onto a canvas in order (back → front) so all
+// four cloud PNGs appear on a single dome material — no extra meshes needed.
 export const SKY_RADIUS = 90
 
-export function createSkyTexture(): THREE.CanvasTexture {
-  const w = 4, h = 256
-  const c = document.createElement('canvas')
-  c.width = w; c.height = h
-  const ctx = c.getContext('2d')!
+// SKY_TEX_W / SKY_TEX_H — large enough for the cloud PNGs to tile cleanly.
+const SKY_TEX_W = 1024
+const SKY_TEX_H = 512
+
+// Fallback gradient — drawn first so it shows even before images load, and
+// also acts as the solid sky base that the cloud layers sit on top of.
+function drawSkyGradient(ctx: CanvasRenderingContext2D, w: number, h: number) {
   const grad = ctx.createLinearGradient(0, 0, 0, h)
   grad.addColorStop(0,    '#1565c0')   // zenith — deep rich blue
-  grad.addColorStop(0.3,  '#2196f3')   // upper
-  grad.addColorStop(0.65, '#64b5f6')   // mid
+  grad.addColorStop(0.3,  '#2196f3')   // upper sky
+  grad.addColorStop(0.65, '#64b5f6')   // mid sky
   grad.addColorStop(0.88, '#b3e5fc')   // near horizon
-  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog
+  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog colour
   ctx.fillStyle = grad
   ctx.fillRect(0, 0, w, h)
-  const tex = new THREE.CanvasTexture(c)
-  tex.needsUpdate = true
-  return tex
 }
 
+// createSkyDome — returns the mesh immediately with the gradient.
+// Then loads the 4 cloud PNGs and composites them onto the canvas texture;
+// the dome material updates automatically via tex.needsUpdate.
 export function createSkyDome(): THREE.Mesh {
-  const geo = new THREE.SphereGeometry(SKY_RADIUS, 16, 10)
+  // Canvas that backs the dome texture — lives for the lifetime of the scene.
+  const canvas = document.createElement('canvas')
+  canvas.width  = SKY_TEX_W
+  canvas.height = SKY_TEX_H
+  const ctx = canvas.getContext('2d')!
+
+  // Draw the gradient base immediately so the sky isn't blank while loading.
+  drawSkyGradient(ctx, SKY_TEX_W, SKY_TEX_H)
+
+  const tex = new THREE.CanvasTexture(canvas)
+  tex.wrapS    = THREE.RepeatWrapping
+  tex.wrapT    = THREE.ClampToEdgeWrapping
+  tex.needsUpdate = true
+
+  const geo = new THREE.SphereGeometry(SKY_RADIUS, 32, 16)
   const mat = new THREE.MeshBasicMaterial({
-    map:        createSkyTexture(),
+    map:        tex,
     side:       THREE.BackSide,
     depthWrite: false,
     depthTest:  false,   // ← always behind everything — no z-fighting
@@ -565,7 +618,105 @@ export function createSkyDome(): THREE.Mesh {
   })
   const mesh = new THREE.Mesh(geo, mat)
   mesh.renderOrder = -1  // ← render before all scene geometry
+
+  // Load all 4 sky layer PNGs and composite them onto the canvas in order.
+  // layer 0 = furthest back (faint, slow-moving clouds / colour wash)
+  // layer 3 = closest (bright, fast-moving foreground clouds)
+  const layerPaths = [
+    ASSETS.skyLayer0,
+    ASSETS.skyLayer1,
+    ASSETS.skyLayer2,
+    ASSETS.skyLayer3,
+  ]
+
+  // Parallax scroll offsets per layer (0 = static, higher = scrolls further).
+  // These are driven by updateSkyScroll() called each frame from the game loop.
+  const layerOffsets: number[] = [0, 0, 0, 0]
+
+  // Load images sequentially so later layers always composite on top correctly.
+  Promise.all(
+    layerPaths.map(
+      (src) =>
+        new Promise<HTMLImageElement>((resolve, reject) => {
+          const img = new Image()
+          img.crossOrigin = 'anonymous'
+          img.onload  = () => resolve(img)
+          img.onerror = () => reject(new Error(`Sky layer failed: ${src}`))
+          img.src = src
+        }),
+    ),
+  )
+    .then((imgs) => {
+      // Store images on the mesh so the scroll updater can re-composite each frame.
+      ;(mesh as any).__skyLayers  = imgs
+      ;(mesh as any).__skyOffsets = layerOffsets
+      ;(mesh as any).__skyCanvas  = canvas
+      ;(mesh as any).__skyCtx    = ctx
+      ;(mesh as any).__skyTex    = tex
+      compositeSkyLayers(ctx, canvas, imgs, layerOffsets, tex)
+    })
+    .catch((err) => {
+      // PNG load failed — gradient fallback is already visible, just warn.
+      console.warn('[Ethereane] Sky layer load error:', err)
+    })
+
   return mesh
+}
+
+// compositeSkyLayers — redraws the sky canvas with the gradient base then
+// each cloud layer at its current horizontal scroll offset.
+// Called once after load, then every frame from updateSkyScroll.
+export function compositeSkyLayers(
+  ctx:     CanvasRenderingContext2D,
+  canvas:  HTMLCanvasElement,
+  imgs:    HTMLImageElement[],
+  offsets: number[],
+  tex:     THREE.CanvasTexture,
+) {
+  const w = canvas.width
+  const h = canvas.height
+
+  // Redraw gradient base.
+  drawSkyGradient(ctx, w, h)
+
+  // Composite each layer — tiled horizontally via modulo wrap.
+  imgs.forEach((img, i) => {
+    if (!img.naturalWidth) return
+    const ox  = ((offsets[i] % w) + w) % w   // keep positive
+    const iw  = img.naturalWidth
+    const ih  = img.naturalHeight
+    // Scale image to canvas height.
+    const sh  = h
+    const sw  = Math.round(iw * (sh / ih))
+    // Tile across full width with offset.
+    for (let x = ox - sw; x < w; x += sw) {
+      ctx.drawImage(img, x, 0, sw, sh)
+    }
+  })
+
+  tex.needsUpdate = true
+}
+
+// updateSkyScroll — call this each frame with the camera azimuth (radians) so
+// the cloud layers drift convincingly as the player rotates the camera.
+// Parallax speeds: layer 0 is slowest, layer 3 is fastest.
+const SKY_PARALLAX_SPEEDS = [0.08, 0.18, 0.30, 0.48]
+
+export function updateSkyScroll(skyMesh: THREE.Mesh, azimuthRad: number) {
+  const imgs    = (skyMesh as any).__skyLayers  as HTMLImageElement[] | undefined
+  const offsets = (skyMesh as any).__skyOffsets as number[]           | undefined
+  const ctx     = (skyMesh as any).__skyCtx     as CanvasRenderingContext2D | undefined
+  const canvas  = (skyMesh as any).__skyCanvas  as HTMLCanvasElement  | undefined
+  const tex     = (skyMesh as any).__skyTex     as THREE.CanvasTexture | undefined
+  if (!imgs || !offsets || !ctx || !canvas || !tex) return
+
+  // Map azimuth → pixel offset for each layer.
+  const baseOffset = (azimuthRad / (Math.PI * 2)) * SKY_TEX_W
+  offsets.forEach((_, i) => {
+    offsets[i] = baseOffset * SKY_PARALLAX_SPEEDS[i]
+  })
+
+  compositeSkyLayers(ctx, canvas, imgs, offsets, tex)
 }
 
 // ─── SHADOW BLOB ──────────────────────────────────────────────────────────────
@@ -642,6 +793,10 @@ export function renderMinimap(
 
 import React, { useEffect, useRef, useCallback, useState } from 'react'
 import * as THREE from 'three'
+import { EffectComposer }  from 'three/examples/jsm/postprocessing/EffectComposer.js'
+import { RenderPass }      from 'three/examples/jsm/postprocessing/RenderPass.js'
+import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import { OutputPass }      from 'three/examples/jsm/postprocessing/OutputPass.js'
 import {
   GAME_W,
   GAME_H,
@@ -653,6 +808,8 @@ import {
   CHAR_PLANE_W,
   CHAR_PLANE_H,
   CHAR_SPEED,
+  CHAR_RUN_MULT,
+  RUN_WALK_RATE,
   IDLE_FRAMES,
   IDLE_FRAME_RATE,
   IDLE_PAUSE,
@@ -681,6 +838,8 @@ import {
   buildGroundData,
   createShadowTexture,
   createSkyDome,
+  compositeSkyLayers,
+  updateSkyScroll,
   calcScale,
   renderMinimap,
   clamp,
@@ -698,6 +857,7 @@ import {
   CAM_LERP,
   CAM_LOOK_HEIGHT,
   CAM_FOLLOW_LERP,
+  CAM_FOLLOW_LERP_RUN,
 } from '@/arkzen/generated/ethereane.scripts'
 
 const JOY_RADIUS = 60
@@ -706,6 +866,7 @@ const UP_AXIS    = new THREE.Vector3(0, 1, 0)
 
 type ThreeState = {
   renderer:   THREE.WebGLRenderer
+  composer:   EffectComposer
   scene:      THREE.Scene
   camera:     THREE.PerspectiveCamera
   skyMesh:    THREE.Mesh
@@ -743,6 +904,7 @@ export const EtheraneGame = () => {
   const [nearbyNpc, setNearbyNpc] = useState<Npc | null>(null)
   const [dialogue,  setDialogue]  = useState<string[] | null>(null)
   const nearbyNpcRef = useRef<Npc | null>(null)
+  const [runActive,  setRunActive] = useState(false)
 
   // ─── ANIMATION STATE ──────────────────────────────────────────────────────
   const frameIndex  = useRef(0)
@@ -750,6 +912,7 @@ export const EtheraneGame = () => {
   const dirRow      = useRef(DIR_DOWN)
   const idlePausing = useRef(false)
   const isWalking   = useRef(false)
+  const isRunning   = useRef(false)   // true while run button / Shift held
 
   // ─── THREE.JS SCENE ───────────────────────────────────────────────────────
   const three = useRef<ThreeState | null>(null)
@@ -867,9 +1030,13 @@ export const EtheraneGame = () => {
   const onKeyDown = useCallback((e: KeyboardEvent) => {
     if (e.key === 'e' || e.key === 'E') { handleInteract(); return }
     if (e.key === 'Escape') { closeDialogue(); return }
+    if (e.key === 'Shift') { isRunning.current = true; return }
     keysHeld.current.add(e.key)
   }, [handleInteract, closeDialogue])
-  const onKeyUp = useCallback((e: KeyboardEvent) => { keysHeld.current.delete(e.key) }, [])
+  const onKeyUp = useCallback((e: KeyboardEvent) => {
+    if (e.key === 'Shift') { isRunning.current = false; return }
+    keysHeld.current.delete(e.key)
+  }, [])
 
   // ─── GAME LOOP ────────────────────────────────────────────────────────────
   const gameLoop = useCallback(() => {
@@ -882,6 +1049,9 @@ export const EtheraneGame = () => {
     if (keys.has('ArrowRight') || keys.has('d') || keys.has('D')) kx += 1
     if (keys.has('ArrowUp')    || keys.has('w') || keys.has('W')) ky -= 1
     if (keys.has('ArrowDown')  || keys.has('s') || keys.has('S')) ky += 1
+
+    // Running: Shift key OR run button held
+    const running = isRunning.current && (Math.abs(joyVec.current.x) > 0.1 || Math.abs(joyVec.current.y) > 0.1 || kx !== 0 || ky !== 0)
 
     let dx = joyVec.current.x + kx
     let dy = joyVec.current.y + ky
@@ -898,8 +1068,8 @@ export const EtheraneGame = () => {
     const moveX = camForward.x * -dy + camRight.x * dx
     const moveZ = camForward.z * -dy + camRight.z * dx
 
-    let nextX = charPos.current.x + moveX * CHAR_SPEED
-    let nextZ = charPos.current.z + moveZ * CHAR_SPEED
+    let nextX = charPos.current.x + moveX * CHAR_SPEED * (running ? CHAR_RUN_MULT : 1)
+    let nextZ = charPos.current.z + moveZ * CHAR_SPEED * (running ? CHAR_RUN_MULT : 1)
     const halfW = WORLD_W / 2 - WORLD_MARGIN
     const halfD = WORLD_D / 2 - WORLD_MARGIN
     nextX = Math.max(-halfW, Math.min(nextX, halfW))
@@ -926,7 +1096,8 @@ export const EtheraneGame = () => {
     // ── frame cycling ──
     frameTick.current++
     if (moving) {
-      if (frameTick.current >= WALK_FRAME_RATE) {
+      const walkRate = running ? RUN_WALK_RATE : WALK_FRAME_RATE
+      if (frameTick.current >= walkRate) {
         frameTick.current = 0
         frameIndex.current = (frameIndex.current + 1) % WALK_FRAMES
       }
@@ -995,8 +1166,10 @@ export const EtheraneGame = () => {
     camDist.current    = lerp(camDist.current, camDistTarget.current, CAM_LERP)
 
     // "break delay" — the orbit pivot chases charPos with gentle lag
-    camFollowX.current = lerp(camFollowX.current, charPos.current.x, CAM_FOLLOW_LERP)
-    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, CAM_FOLLOW_LERP)
+    // When running, lerp is much lower so the camera dramatically lags behind
+    const followLerp = running ? CAM_FOLLOW_LERP_RUN : CAM_FOLLOW_LERP
+    camFollowX.current = lerp(camFollowX.current, charPos.current.x, followLerp)
+    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, followLerp)
 
     const camPos = orbitCameraPosition(
       camFollowX.current, camFollowZ.current,
@@ -1007,8 +1180,10 @@ export const EtheraneGame = () => {
 
     // sky dome follows camera — horizon stays correct at any camera height
     t.skyMesh.position.copy(t.camera.position)
+    // scroll cloud layers to match camera azimuth (parallax effect)
+    updateSkyScroll(t.skyMesh, camAzimuth.current)
 
-    t.renderer.render(t.scene, t.camera)
+    t.composer.render()
 
     if (t.minimapCtx) {
       renderMinimap(t.minimapCtx, charPos.current.x, charPos.current.z, camAzimuth.current)
@@ -1063,6 +1238,10 @@ export const EtheraneGame = () => {
     // Shadow map — sun casts real shadows on the ground blocks
     renderer.shadowMap.enabled = true
     renderer.shadowMap.type    = THREE.PCFSoftShadowMap
+    // Bloom needs linear tone mapping so colours don't clamp before the pass
+    renderer.toneMapping         = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.0
+    renderer.outputColorSpace    = THREE.SRGBColorSpace
 
     canvas.style.touchAction = 'none'
     canvas.addEventListener('pointerdown', onCamPointerDown)
@@ -1073,6 +1252,24 @@ export const EtheraneGame = () => {
 
     let cancelled = false
     const loader = new THREE.TextureLoader()
+
+    // ── post-processing: bloom ──────────────────────────────────────────────
+    // RenderPass → UnrealBloomPass → OutputPass
+    // Threshold 0.82 means only pixels brighter than ~82% white bloom —
+    // so the sky clouds, sun-lit grass edges, and highlights glow but the
+    // dark sprite outlines and ground shadows stay crisp.
+    const composer    = new EffectComposer(renderer)
+    const renderPass  = new RenderPass(scene, camera)
+    const bloomPass   = new UnrealBloomPass(
+      new THREE.Vector2(GAME_W, GAME_H),
+      0.38,   // strength  — noticeable but not blinding
+      0.5,    // radius    — soft spread
+      0.88,   // threshold — bright highlights + sky bloom, darks stay crisp
+    )
+    const outputPass  = new OutputPass()
+    composer.addPass(renderPass)
+    composer.addPass(bloomPass)
+    composer.addPass(outputPass)
 
     Promise.all([
       loadTexture(loader, ASSETS.tileGrass),
@@ -1127,8 +1324,8 @@ export const EtheraneGame = () => {
       )
       scene.add(hemi)
 
-      // Directional sun — slight warm tint, casts real shadows
-      const sun = new THREE.DirectionalLight('#fff5e0', 1.0)
+      // Directional sun — warm tint, casts real shadows, bright enough to bloom
+      const sun = new THREE.DirectionalLight('#fff5e0', 1.35)
       sun.position.set(8, 14, 6)
       sun.castShadow            = true
       sun.shadow.mapSize.width  = 512
@@ -1157,6 +1354,7 @@ export const EtheraneGame = () => {
       const charMat = new THREE.MeshBasicMaterial({ map: charTex, alphaTest: 0.5, side: THREE.DoubleSide })
       const charMesh = new THREE.Mesh(charGeo, charMat)
       charMesh.position.set(0, CHAR_PLANE_H / 2, 0)
+      charMesh.castShadow = true
       scene.add(charMesh)
       const charShadow = makeShadow()
 
@@ -1172,6 +1370,7 @@ export const EtheraneGame = () => {
         const mat  = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide })
         const mesh = new THREE.Mesh(charGeo, mat)
         mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
+        mesh.castShadow = true
         scene.add(mesh)
         npcMeshes.push(mesh)
         npcTexes.push(tex)
@@ -1186,12 +1385,14 @@ export const EtheraneGame = () => {
       const bush2Mat   = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
       const bush1Mesh  = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
       const bush2Mesh  = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
+      bush1Mesh.castShadow = true
+      bush2Mesh.castShadow = true
       billboardInstances(bush1Mesh, bush1Props, PROP_DEFS.bush1.size, camera.position)
       billboardInstances(bush2Mesh, bush2Props, PROP_DEFS.bush2.size, camera.position)
       scene.add(bush1Mesh, bush2Mesh)
 
       three.current = {
-        renderer, scene, camera,
+        renderer, composer, scene, camera,
         skyMesh,
         charMesh, charTex, charShadow,
         npcMeshes, npcTexes, npcShadows,
@@ -1257,6 +1458,16 @@ export const EtheraneGame = () => {
         <div className="eth-joystick-base" />
         <div className="eth-joystick-knob" ref={knobRef} />
       </div>
+
+      {/* Run button — hold to sprint, Shift on keyboard */}
+      <button
+        className={`eth-run-btn${runActive ? ' active' : ''}`}
+        onPointerDown={(e) => { e.currentTarget.setPointerCapture(e.pointerId); isRunning.current = true; setRunActive(true) }}
+        onPointerUp={() => { isRunning.current = false; setRunActive(false) }}
+        onPointerCancel={() => { isRunning.current = false; setRunActive(false) }}
+      >
+        RUN
+      </button>
 
       {nearbyNpc && !dialogue && (
         <button className="eth-interact-btn" onClick={handleInteract}>E</button>
