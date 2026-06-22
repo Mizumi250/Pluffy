@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — StatusDot
 // Source: @arkzen:native:components:lynx:* (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:27.537Z
+// Generated: 2026-06-22T03:18:56.383Z
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'

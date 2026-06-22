@@ -2,15 +2,15 @@
 // ARKZEN GENERATED COMPONENT — EtheraneGame [React+Vite]
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:29.077Z
+// Generated: 2026-06-22T03:18:57.858Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, Npc, PROP_DEFS, Prop, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, createShadowTexture, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs } from '@/arkzen/generated/ethereane.scripts'
+import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_FOLLOW_LERP, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, Npc, PROP_DEFS, Prop, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, createShadowTexture, createSkyDome, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs } from '@/arkzen/generated/ethereane.scripts'
 import * as THREE from 'three'
 import { JOY_RADIUS, KNOB_MAX, UP_AXIS } from './constants'
-import { angle, applyScale, blockGeo, bush1Mat, bush1Mesh, bush1Props, bush2Mat, bush2Mesh, bush2Props, bushGeo, camAzimuth, camAzimuthTarget, camDist, camDistTarget, camForward, camPolar, camPolarTarget, camPos, camRight, camera, canvas, canvasRef, charGeo, charMat, charMesh, charPos, charShadow, closeDialogue, ctx2, dirRow, dist, dragPointerId, dragging, dummy, dx, dy, frameIndex, frameTick, gameLoop, grassMesh, h, halfD, halfW, handleInteract, idlePausing, isWalking, joyActive, joyOrigin, joyVec, joyZoneRef, keys, keysHeld, knob, knobClamp, knobRef, lastPointer, loader, m, mag, makeShadow, mat, mesh, minimapCanvas, minimapRef, moveX, moveZ, moving, nearby, nearbyNpcRef, npc, npcMeshes, npcMoving, npcShadows, npcTexes, npcsRef, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel, onKeyDown, onKeyUp, onTouchEnd, onTouchMove, onTouchStart, plainMesh, propsRef, rafRef, rate, rawDx, rawDy, renderer, resetKnob, resolved, row, s, scene, setKnobPos, shadow, shadowGeo, shadowTex, sheetRow, startPos, sun, t, tex, three, viewport, viewportRef, w, zone } from './utils'
+import { angle, applyScale, blockGeo, bush1Mat, bush1Mesh, bush1Props, bush2Mat, bush2Mesh, bush2Props, bushGeo, camAzimuth, camAzimuthTarget, camDist, camDistTarget, camFollowX, camFollowZ, camForward, camPolar, camPolarTarget, camPos, camRight, camera, canvas, canvasRef, charGeo, charMat, charMesh, charPos, charShadow, closeDialogue, ctx2, dirRow, dist, dragPointerId, dragging, dummy, dx, dy, frameIndex, frameTick, fwdDot, gameLoop, grassMesh, h, halfD, halfW, handleInteract, hemi, idlePausing, isWalking, joyActive, joyOrigin, joyPointerId, joyVec, joyZoneRef, keys, keysHeld, knob, knobRef, lastPointer, loader, m, mag, makeShadow, mat, mesh, minimapCanvas, minimapRef, moveX, moveZ, moving, nearby, nearbyNpcRef, npc, npcMeshes, npcMoving, npcShadows, npcTexes, npcsRef, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel, onJoyPointerDown, onJoyPointerMove, onJoyPointerUp, onKeyDown, onKeyUp, plainMesh, propsRef, rafRef, rate, rawDx, rawDy, renderer, resetKnob, resolved, rightDot, row, s, scene, setKnobPos, shadow, shadowGeo, shadowTex, sheetRow, skyMesh, startPos, sun, t, tex, three, viewport, viewportRef, w, zone } from './utils'
 import type { ThreeState } from './types'
 
 export const EtheraneGame = () => {
@@ -35,28 +35,44 @@ export const EtheraneGame = () => {
   const [dialogue,  setDialogue]  = useState<string[] | null>(null)
   const nearbyNpcRef = useRef<Npc | null>(null)
 
-  // ─── ANIMATION STATE (unchanged) ──────────────────────────────────────────
+  // ─── ANIMATION STATE ──────────────────────────────────────────────────────
   const frameIndex  = useRef(0)
   const frameTick   = useRef(0)
   const dirRow      = useRef(DIR_DOWN)
   const idlePausing = useRef(false)
   const isWalking   = useRef(false)
 
-  // ─── THREE.JS SCENE ─────────────────────────────────────────────────────────
+  // ─── THREE.JS SCENE ───────────────────────────────────────────────────────
   const three = useRef<ThreeState | null>(null)
 
-  // ─── MANUAL ORBIT CAMERA — driven by pointer drag + wheel, not OrbitControls ─
+  // ─── CAMERA ORBIT ─────────────────────────────────────────────────────────
   const camAzimuth       = useRef(0)
   const camPolar         = useRef(CAM_POLAR_DEFAULT)
   const camDist          = useRef(CAM_DIST_DEFAULT)
   const camAzimuthTarget = useRef(0)
   const camPolarTarget   = useRef(CAM_POLAR_DEFAULT)
   const camDistTarget    = useRef(CAM_DIST_DEFAULT)
+
+  // ─── CAMERA FOLLOW ("break delay" spring) ─────────────────────────────────
+  // These lag behind charPos with CAM_FOLLOW_LERP, giving the camera a soft
+  // inertia so it feels like it "brakes" to catch up rather than snapping.
+  const camFollowX = useRef(0)
+  const camFollowZ = useRef(0)
+
   const dragging         = useRef(false)
   const dragPointerId    = useRef<number | null>(null)
   const lastPointer      = useRef({ x: 0, y: 0 })
 
+  // ─── JOYSTICK POINTER ID ───────────────────────────────────────────────────
+  // Tracking the joystick's pointer separately from the camera pointer is what
+  // fixes the multi-touch "joystick gets hijacked" bug.  Pointer capture on the
+  // joystick zone means its touch never leaks into the canvas camera handler.
+  const joyPointerId = useRef<number | null>(null)
+
+  // ─── CAMERA POINTER ───────────────────────────────────────────────────────
   const onCamPointerDown = useCallback((e: PointerEvent) => {
+    // Reject if this pointer is already owned by the joystick
+    if (e.pointerId === joyPointerId.current) return
     dragging.current      = true
     dragPointerId.current = e.pointerId
     lastPointer.current   = { x: e.clientX, y: e.clientY }
@@ -95,32 +111,37 @@ export const EtheraneGame = () => {
     setKnobPos(0, 0)
   }, [setKnobPos])
 
-  // ─── TOUCH ────────────────────────────────────────────────────────────────
-  const onTouchStart = useCallback((e: TouchEvent) => {
+  // ─── JOYSTICK — pointer events (not touch) for proper multi-touch isolation ─
+  // Using pointer events + setPointerCapture means the browser routes all
+  // subsequent move/up events for this pointer to the joystick zone, even
+  // if the finger wanders outside it — and it never bleeds into the canvas
+  // camera handler which checks joyPointerId.current before accepting a drag.
+  const onJoyPointerDown = useCallback((e: PointerEvent) => {
     e.preventDefault()
-    const t = e.changedTouches[0]
-    joyActive.current = true
-    joyOrigin.current = { x: t.clientX, y: t.clientY }
+    if (joyPointerId.current !== null) return   // already tracking a joystick touch
+    const zone = joyZoneRef.current
+    if (zone) zone.setPointerCapture(e.pointerId)
+    joyPointerId.current = e.pointerId
+    joyActive.current    = true
+    joyOrigin.current    = { x: e.clientX, y: e.clientY }
   }, [])
 
-  const onTouchMove = useCallback((e: TouchEvent) => {
-    e.preventDefault()
-    if (!joyActive.current) return
-    const t     = e.changedTouches[0]
-    const rawDx = t.clientX - joyOrigin.current.x
-    const rawDy = t.clientY - joyOrigin.current.y
+  const onJoyPointerMove = useCallback((e: PointerEvent) => {
+    if (!joyActive.current || e.pointerId !== joyPointerId.current) return
+    const rawDx = e.clientX - joyOrigin.current.x
+    const rawDy = e.clientY - joyOrigin.current.y
     const dist  = Math.sqrt(rawDx * rawDx + rawDy * rawDy)
     const angle = Math.atan2(rawDy, rawDx)
-    const knobClamp = Math.min(dist, KNOB_MAX)
-    setKnobPos(Math.cos(angle) * knobClamp, Math.sin(angle) * knobClamp)
+    setKnobPos(Math.cos(angle) * Math.min(dist, KNOB_MAX), Math.sin(angle) * Math.min(dist, KNOB_MAX))
     joyVec.current = {
       x: Math.cos(angle) * Math.min(dist / JOY_RADIUS, 1),
       y: Math.sin(angle) * Math.min(dist / JOY_RADIUS, 1),
     }
   }, [setKnobPos])
 
-  const onTouchEnd = useCallback((e: TouchEvent) => {
-    e.preventDefault()
+  const onJoyPointerUp = useCallback((e: PointerEvent) => {
+    if (e.pointerId !== joyPointerId.current) return
+    joyPointerId.current = null
     resetKnob()
   }, [resetKnob])
 
@@ -158,7 +179,7 @@ export const EtheraneGame = () => {
     const mag = Math.sqrt(dx * dx + dy * dy)
     if (mag > 1) { dx /= mag; dy /= mag }
 
-    // ── camera-relative movement: forward = -dy, strafe = dx ──
+    // ── camera-relative movement ──
     const camForward = new THREE.Vector3()
     t.camera.getWorldDirection(camForward)
     camForward.y = 0
@@ -178,7 +199,7 @@ export const EtheraneGame = () => {
     charPos.current.x = resolved.x
     charPos.current.z = resolved.z
 
-    // ── direction row (screen-relative input axes, same feel as the old build) ──
+    // ── direction row ──
     const moving = Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1
     if (isWalking.current && !moving) {
       frameIndex.current  = 0
@@ -193,7 +214,7 @@ export const EtheraneGame = () => {
       else if (dx >  0.1) dirRow.current = DIR_RIGHT
     }
 
-    // ── frame cycling (unchanged) ──
+    // ── frame cycling ──
     frameTick.current++
     if (moving) {
       if (frameTick.current >= WALK_FRAME_RATE) {
@@ -232,7 +253,7 @@ export const EtheraneGame = () => {
     setSheetFrame(t.charTex, frameIndex.current, sheetRow)
     faceCamera(t.charMesh, t.camera.position.x, t.camera.position.z)
 
-    // ── sync NPC billboards ──
+    // ── sync NPC billboards — camera-relative direction (moonwalk fix) ──
     npcsRef.current.forEach((npc, i) => {
       const mesh   = t.npcMeshes[i]
       const shadow = t.npcShadows[i]
@@ -240,7 +261,17 @@ export const EtheraneGame = () => {
       mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
       shadow.position.set(npc.x, 0.02, npc.z)
       const npcMoving = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1
-      const row = npcMoving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
+      let npcVisualDir = npc.dirRow
+      if (npcMoving) {
+        const fwdDot   = npc.dx * camForward.x + npc.dz * camForward.z
+        const rightDot = npc.dx * camRight.x   + npc.dz * camRight.z
+        if (Math.abs(rightDot) >= Math.abs(fwdDot)) {
+          npcVisualDir = rightDot > 0 ? DIR_RIGHT : DIR_LEFT
+        } else {
+          npcVisualDir = fwdDot > 0 ? DIR_UP : DIR_DOWN
+        }
+      }
+      const row = npcMoving ? WALK_ROW_OFFSET + npcVisualDir : npc.dirRow
       setSheetFrame(tex, npc.frameIndex, row)
       faceCamera(mesh, t.camera.position.x, t.camera.position.z)
     })
@@ -249,18 +280,25 @@ export const EtheraneGame = () => {
     billboardInstances(t.bush1Mesh, t.bush1Props, PROP_DEFS.bush1.size, t.camera.position)
     billboardInstances(t.bush2Mesh, t.bush2Props, PROP_DEFS.bush2.size, t.camera.position)
 
-    // ── manual orbit camera — position rebuilt fresh from the character's
-    //    CURRENT spot every frame, so it can never lag behind like before ──
+    // ── orbit camera with spring follow ──
     camAzimuth.current = lerpAngle(camAzimuth.current, camAzimuthTarget.current, CAM_LERP)
     camPolar.current   = lerp(camPolar.current, camPolarTarget.current, CAM_LERP)
     camDist.current    = lerp(camDist.current, camDistTarget.current, CAM_LERP)
 
+    // "break delay" — the orbit pivot chases charPos with gentle lag
+    camFollowX.current = lerp(camFollowX.current, charPos.current.x, CAM_FOLLOW_LERP)
+    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, CAM_FOLLOW_LERP)
+
     const camPos = orbitCameraPosition(
-      charPos.current.x, charPos.current.z,
+      camFollowX.current, camFollowZ.current,
       camAzimuth.current, camPolar.current, camDist.current,
     )
     t.camera.position.set(camPos.x, camPos.y, camPos.z)
-    t.camera.lookAt(charPos.current.x, CAM_LOOK_HEIGHT, charPos.current.z)
+    t.camera.lookAt(camFollowX.current, CAM_LOOK_HEIGHT, camFollowZ.current)
+
+    // sky dome follows camera — horizon stays correct at any camera height
+    t.skyMesh.position.copy(t.camera.position)
+
     t.renderer.render(t.scene, t.camera)
 
     if (t.minimapCtx) {
@@ -274,7 +312,7 @@ export const EtheraneGame = () => {
   useEffect(() => {
     const canvas        = canvasRef.current
     const minimapCanvas = minimapRef.current
-    const viewport       = viewportRef.current
+    const viewport      = viewportRef.current
     if (!canvas || !minimapCanvas || !viewport) return
 
     canvas.width  = GAME_W
@@ -288,8 +326,8 @@ export const EtheraneGame = () => {
       const h = Math.floor(GAME_H * s)
       viewport.style.width  = `${w}px`
       viewport.style.height = `${h}px`
-      canvas.style.width  = `${w}px`
-      canvas.style.height = `${h}px`
+      canvas.style.width    = `${w}px`
+      canvas.style.height   = `${h}px`
       minimapCanvas.style.width  = `${w}px`
       minimapCanvas.style.height = `${h}px`
     }
@@ -298,10 +336,10 @@ export const EtheraneGame = () => {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup',   onKeyUp)
 
-    // ── scene / camera / renderer ──
+    // ── scene ──
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#bfe6ff')
-    scene.fog = new THREE.Fog('#bfe6ff', 14, 34)
+    // Fog horizon colour matches the sky dome's horizon stop
+    scene.fog = new THREE.Fog('#e1f5fe', 14, 34)
 
     const camera = new THREE.PerspectiveCamera(50, GAME_W / GAME_H, 0.1, 100)
     const startPos = orbitCameraPosition(0, 0, camAzimuth.current, camPolar.current, camDist.current)
@@ -311,8 +349,12 @@ export const EtheraneGame = () => {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false })
     renderer.setPixelRatio(1)
     renderer.setSize(GAME_W, GAME_H, false)
+    // Clear colour = horizon haze — visible for 1 frame before the sky dome draws
+    renderer.setClearColor('#e1f5fe', 1)
+    // Shadow map — sun casts real shadows on the ground blocks
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type    = THREE.PCFSoftShadowMap
 
-    // ── free orbit camera — drag anywhere on the canvas to rotate, wheel/pinch to zoom ──
     canvas.style.touchAction = 'none'
     canvas.addEventListener('pointerdown', onCamPointerDown)
     window.addEventListener('pointermove', onCamPointerMove)
@@ -335,7 +377,11 @@ export const EtheraneGame = () => {
       initSheetTexture(charTex)
       setSheetFrame(charTex, 0, DIR_DOWN)
 
-      // ── ground blocks — placeholder cubes, ready to be voxelized later ──
+      // ── sky dome — first in scene so it's always behind everything ──
+      const skyMesh = createSkyDome()
+      scene.add(skyMesh)
+
+      // ── ground ──
       const { grass, plain } = buildGroundData()
       const blockGeo = new THREE.BoxGeometry(TILE_SIZE, BLOCK_HEIGHT, TILE_SIZE)
       const dummy = new THREE.Object3D()
@@ -347,6 +393,7 @@ export const EtheraneGame = () => {
         grassMesh.setMatrixAt(i, dummy.matrix)
       })
       grassMesh.instanceMatrix.needsUpdate = true
+      grassMesh.receiveShadow = true
 
       const plainMesh = new THREE.InstancedMesh(blockGeo, new THREE.MeshLambertMaterial({ map: plainTex }), plain.length)
       plain.forEach((g, i) => {
@@ -355,16 +402,37 @@ export const EtheraneGame = () => {
         plainMesh.setMatrixAt(i, dummy.matrix)
       })
       plainMesh.instanceMatrix.needsUpdate = true
+      plainMesh.receiveShadow = true
 
       scene.add(grassMesh, plainMesh)
 
-      // ── lighting — only the block ground is lit, so cube edges read in 3D ──
-      scene.add(new THREE.AmbientLight('#ffffff', 0.8))
-      const sun = new THREE.DirectionalLight('#ffffff', 0.9)
+      // ── lighting ──
+      // HemisphereLight = sky-blue from above, warm-brown bounce from below.
+      // This is what gives the "glazed" outdoor feel — objects lit from above
+      // get a cool bluish tint, undersides get a warm ground-bounce colour,
+      // exactly like real open-sky daylight.  No faking needed.
+      const hemi = new THREE.HemisphereLight(
+        '#c8e8ff',   // sky colour  — cool blue-white from above
+        '#6b8c42',   // ground colour — warm green-brown bounce from below
+        1.0,
+      )
+      scene.add(hemi)
+
+      // Directional sun — slight warm tint, casts real shadows
+      const sun = new THREE.DirectionalLight('#fff5e0', 1.0)
       sun.position.set(8, 14, 6)
+      sun.castShadow            = true
+      sun.shadow.mapSize.width  = 512
+      sun.shadow.mapSize.height = 512
+      sun.shadow.camera.near    = 1
+      sun.shadow.camera.far     = 60
+      sun.shadow.camera.left    = -30
+      sun.shadow.camera.right   = 30
+      sun.shadow.camera.top     = 30
+      sun.shadow.camera.bottom  = -30
       scene.add(sun)
 
-      // ── shadow blob, reused under every billboard ──
+      // ── shadow blob ──
       const shadowTex  = createShadowTexture()
       const shadowGeo  = new THREE.PlaneGeometry(CHAR_PLANE_W * 0.9, CHAR_PLANE_W * 0.9)
       const makeShadow = () => {
@@ -375,7 +443,7 @@ export const EtheraneGame = () => {
         return m
       }
 
-      // ── character billboard — "thin paper from Gumball" ──
+      // ── character billboard ──
       const charGeo = new THREE.PlaneGeometry(CHAR_PLANE_W, CHAR_PLANE_H)
       const charMat = new THREE.MeshBasicMaterial({ map: charTex, alphaTest: 0.5, side: THREE.DoubleSide })
       const charMesh = new THREE.Mesh(charGeo, charMat)
@@ -383,9 +451,9 @@ export const EtheraneGame = () => {
       scene.add(charMesh)
       const charShadow = makeShadow()
 
-      // ── NPC billboards — same trick, each gets its own cloned texture for an independent frame ──
-      const npcMeshes: THREE.Mesh[] = []
-      const npcTexes:  THREE.Texture[] = []
+      // ── NPC billboards ──
+      const npcMeshes:  THREE.Mesh[] = []
+      const npcTexes:   THREE.Texture[] = []
       const npcShadows: THREE.Mesh[] = []
       npcsRef.current.forEach((npc) => {
         const tex = charTex.clone()
@@ -401,21 +469,21 @@ export const EtheraneGame = () => {
         npcShadows.push(makeShadow())
       })
 
-      // ── bushes — billboarded sprites, same camera-facing trick as the character ──
+      // ── bush billboards ──
       const bush1Props = propsRef.current.filter(p => p.type === 'bush1')
       const bush2Props = propsRef.current.filter(p => p.type === 'bush2')
-
-      const bushGeo  = new THREE.PlaneGeometry(1, 1)
-      const bush1Mat = new THREE.MeshBasicMaterial({ map: bush1Tex, alphaTest: 0.5, side: THREE.DoubleSide })
-      const bush2Mat = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
-      const bush1Mesh = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
-      const bush2Mesh = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
+      const bushGeo    = new THREE.PlaneGeometry(1, 1)
+      const bush1Mat   = new THREE.MeshBasicMaterial({ map: bush1Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush2Mat   = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush1Mesh  = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
+      const bush2Mesh  = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
       billboardInstances(bush1Mesh, bush1Props, PROP_DEFS.bush1.size, camera.position)
       billboardInstances(bush2Mesh, bush2Props, PROP_DEFS.bush2.size, camera.position)
       scene.add(bush1Mesh, bush2Mesh)
 
       three.current = {
         renderer, scene, camera,
+        skyMesh,
         charMesh, charTex, charShadow,
         npcMeshes, npcTexes, npcShadows,
         bush1Mesh, bush2Mesh, bush1Props, bush2Props,
@@ -447,28 +515,28 @@ export const EtheraneGame = () => {
       window.removeEventListener('pointercancel', onCamPointerUp)
       canvas.removeEventListener('wheel', onCamWheel)
       const t = three.current
-      if (t) {
-        t.renderer.dispose()
-      }
+      if (t) t.renderer.dispose()
       three.current = null
     }
   }, [gameLoop, onKeyDown, onKeyUp, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel])
 
-  // ─── JOYSTICK TOUCH EVENTS ────────────────────────────────────────────────
+  // ─── JOYSTICK POINTER EVENTS ───────────────────────────────────────────────
+  // Pointer events (not touch events) so we can track pointer IDs and use
+  // setPointerCapture — the combination that makes multi-touch actually work.
   useEffect(() => {
     const zone = joyZoneRef.current
     if (!zone) return
-    zone.addEventListener('touchstart',  onTouchStart, { passive: false })
-    zone.addEventListener('touchmove',   onTouchMove,  { passive: false })
-    zone.addEventListener('touchend',    onTouchEnd,   { passive: false })
-    zone.addEventListener('touchcancel', onTouchEnd,   { passive: false })
+    zone.addEventListener('pointerdown',   onJoyPointerDown)
+    zone.addEventListener('pointermove',   onJoyPointerMove)
+    zone.addEventListener('pointerup',     onJoyPointerUp)
+    zone.addEventListener('pointercancel', onJoyPointerUp)
     return () => {
-      zone.removeEventListener('touchstart',  onTouchStart)
-      zone.removeEventListener('touchmove',   onTouchMove)
-      zone.removeEventListener('touchend',    onTouchEnd)
-      zone.removeEventListener('touchcancel', onTouchEnd)
+      zone.removeEventListener('pointerdown',   onJoyPointerDown)
+      zone.removeEventListener('pointermove',   onJoyPointerMove)
+      zone.removeEventListener('pointerup',     onJoyPointerUp)
+      zone.removeEventListener('pointercancel', onJoyPointerUp)
     }
-  }, [onTouchStart, onTouchMove, onTouchEnd])
+  }, [onJoyPointerDown, onJoyPointerMove, onJoyPointerUp])
 
   return (
     <div className="eth-root">
@@ -481,14 +549,10 @@ export const EtheraneGame = () => {
         <div className="eth-joystick-knob" ref={knobRef} />
       </div>
 
-      {/* Interact button — pops up when near NPC */}
       {nearbyNpc && !dialogue && (
-        <button className="eth-interact-btn" onClick={handleInteract}>
-          E
-        </button>
+        <button className="eth-interact-btn" onClick={handleInteract}>E</button>
       )}
 
-      {/* Dialogue box */}
       {dialogue && (
         <div className="eth-dialogue">
           <div className="eth-dialogue-name">Villager</div>

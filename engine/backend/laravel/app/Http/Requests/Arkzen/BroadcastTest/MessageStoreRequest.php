@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — MessageStoreRequest
 // Tatemono: broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:27.987323Z
+// Generated: 2026-06-22T03:18:56.464258Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\BroadcastTest;

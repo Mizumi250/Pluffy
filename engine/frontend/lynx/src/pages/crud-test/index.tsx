@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — crud-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:28.096Z
+// Generated: 2026-06-22T03:18:56.636Z
 import { ItemRow } from './components/ItemRow'
 import { StatCard } from './components/StatCard'
 import { apiFetch, emptyForm } from './components/utils'

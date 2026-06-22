@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/native-guest (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:29.786Z
+// Generated: 2026-06-22T03:18:59.036Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:+guest */

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — broadcast-test
 // Source: @arkzen:native:components:lynx:* (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:27.532Z
+// Generated: 2026-06-22T03:18:56.378Z
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'

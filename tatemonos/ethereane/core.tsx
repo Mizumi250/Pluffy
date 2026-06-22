@@ -1,6 +1,6 @@
 /* @arkzen:meta
 name: ethereane
-version: 2.0.1
+version: 2.0.2
 label: Ethereane
 auth: false
 description: Real-time 3D voxel-pixel RPG — free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for character/NPCs/bushes, virtual joystick + keyboard, low-res pixelated render target.
@@ -71,6 +71,7 @@ description: A 3D pixel RPG world.
   height: 120px;
   pointer-events: auto;
   z-index: 10;
+  touch-action: none;
 }
 
 .eth-joystick-base {
@@ -192,55 +193,47 @@ description: A 3D pixel RPG world.
 import * as THREE from 'three'
 
 // ─── VIEWPORT / RENDER TARGET ──────────────────────────────────────────────────
-// internal WebGL buffer stays fixed-res and gets CSS-upscaled with crisp pixels,
-// same trick the old 2D build used — keeps the chunky pixel-art look.
 export const GAME_W = 640
 export const GAME_H = 360
 
 // ─── WORLD / VOXEL GRID ─────────────────────────────────────────────────────────
-// "Blocks for the tiles for now" — simple textured cubes, placeholder until
-// the real voxel meshes are ready.
-export const TILE_SIZE    = 1        // world units per ground block
-export const GRID_W       = 100      // blocks across X
-export const GRID_D       = 64       // blocks across Z
+export const TILE_SIZE    = 1
+export const GRID_W       = 100
+export const GRID_D       = 64
 export const WORLD_W      = GRID_W * TILE_SIZE
 export const WORLD_D      = GRID_D * TILE_SIZE
 export const BLOCK_HEIGHT = 0.6
 export const WORLD_MARGIN = TILE_SIZE * 2
 
 // ─── CHARACTER ────────────────────────────────────────────────────────────────
-export const CHAR_PLANE_W = TILE_SIZE * 1.0   // billboard plane width  (matches 32px sprite)
-export const CHAR_PLANE_H = TILE_SIZE * 1.5   // billboard plane height (matches 48px sprite)
+export const CHAR_PLANE_W = TILE_SIZE * 1.0
+export const CHAR_PLANE_H = TILE_SIZE * 1.5
 export const CHAR_RADIUS  = TILE_SIZE * 0.28
-export const CHAR_SPEED   = 0.0625            // world units / tick — same pace as the old 2D build
+export const CHAR_SPEED   = 0.0625
 
-// ─── CAMERA — manual orbit, NOT OrbitControls ──────────────────────────────────
-// OrbitControls re-derives its spherical offset from (camera.position - target)
-// every update() call. Re-targeting it every frame (to follow a moving
-// character) feeds it a target that's always slightly stale, so it never
-// actually keeps pace with the player, and the leftover translation gets
-// folded into its rotation math and compounds into the "swipe = chaos" glitch.
-// Driving azimuth/polar/distance ourselves and rebuilding camera.position from
-// the character's *current* position every frame sidesteps both problems.
-export const CAM_DIST_MIN     = 1.1
-export const CAM_DIST_MAX     = 9
-export const CAM_DIST_DEFAULT = 2.4    // "very very close to the user"
-export const CAM_POLAR_MIN     = 0.4   // clamped shy of true top-down (0) — avoids the pole glitch
-export const CAM_POLAR_MAX     = 1.45  // clamped shy of straight-on/under
+// ─── CAMERA ───────────────────────────────────────────────────────────────────
+export const CAM_DIST_MIN      = 1.1
+export const CAM_DIST_MAX      = 9
+export const CAM_DIST_DEFAULT  = 2.4
+export const CAM_POLAR_MIN     = 0.4
+export const CAM_POLAR_MAX     = 1.45
 export const CAM_POLAR_DEFAULT = 0.75
-export const CAM_ROTATE_SPEED = 0.0055 // radians of azimuth/polar per drag pixel
-export const CAM_ZOOM_SPEED   = 0.0035 // distance units per wheel-delta pixel
-export const CAM_LERP         = 0.22   // smoothing toward the latest input each frame
-export const CAM_LOOK_HEIGHT  = CHAR_PLANE_H * 0.6
+export const CAM_ROTATE_SPEED  = 0.0055
+export const CAM_ZOOM_SPEED    = 0.0035
+export const CAM_LERP          = 0.22
+export const CAM_LOOK_HEIGHT   = CHAR_PLANE_H * 0.6
+// "break delay" — camera target lags behind the character with this factor.
+// Lower = more lag, feels heavier. 0.09 gives a gentle spring-follow.
+export const CAM_FOLLOW_LERP   = 0.09
 
-// ─── ANIMATION (pacing unchanged from the 2D build — chavarter still animates) ──
+// ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
-export const IDLE_FRAME_RATE = 8    // ticks per frame during animation (snappy)
-export const IDLE_PAUSE      = 60   // ~1 second at 60fps
+export const IDLE_FRAME_RATE = 8
+export const IDLE_PAUSE      = 60
 export const WALK_FRAMES     = 6
-export const WALK_FRAME_RATE = 8    // ticks per frame for walk
-export const WALK_ROW_OFFSET = 4    // walk rows start at row 4
-export const SHEET_COLS      = 6    // character1.png is 192x384 = 6 cols x 8 rows
+export const WALK_FRAME_RATE = 8
+export const WALK_ROW_OFFSET = 4
+export const SHEET_COLS      = 6
 export const SHEET_ROWS      = 8
 
 export const DIR_DOWN  = 0
@@ -255,9 +248,14 @@ export const ASSETS = {
   character1:     '/tatemonos/ethereane/assets/images/character1.png',
   bush1:          '/tatemonos/ethereane/assets/images/bush1.png',
   bush2:          '/tatemonos/ethereane/assets/images/bush2.png',
+  // ── sky parallax layers (drop PNGs here when you have them) ──
+  // skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
+  // skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
+  // skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
+  // skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
 }
 
-// ─── PROPS — billboarded, camera-facing, same trick as the character ──────────
+// ─── PROPS ────────────────────────────────────────────────────────────────────
 export type PropType = 'bush1' | 'bush2'
 
 export interface Prop {
@@ -274,15 +272,12 @@ export const PROP_DEFS: Record<PropType, { size: number; collision: boolean; rad
 export const COUNT_BUSH1 = 86
 export const COUNT_BUSH2 = 43
 
-// ─── WORLD GENERATOR (same seeded RNG as before, now scattering in XZ) ────────
 export function generateProps(seed: number = 42): Prop[] {
   const props: Prop[] = []
   let s = seed
   const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
-
   const halfW = WORLD_W / 2 - WORLD_MARGIN
   const halfD = WORLD_D / 2 - WORLD_MARGIN
-
   for (let i = 0; i < COUNT_BUSH1; i++) {
     props.push({ type: 'bush1', x: -halfW + rand() * halfW * 2, z: -halfD + rand() * halfD * 2 })
   }
@@ -292,7 +287,6 @@ export function generateProps(seed: number = 42): Prop[] {
   return props
 }
 
-// ─── COLLISION CHECK — circle vs circle push-out in the XZ plane ──────────────
 export function resolveCollision(nextX: number, nextZ: number, props: Prop[]): { x: number; z: number } {
   let x = nextX
   let z = nextZ
@@ -319,7 +313,7 @@ export const NPC_SPEED           = 0.025
 export const NPC_WANDER_MIN      = 60
 export const NPC_WANDER_MAX      = 240
 export const NPC_SPAWN_RANGE     = 14
-export const NPC_INTERACT_RADIUS = 1.2   // world units — how close to trigger button
+export const NPC_INTERACT_RADIUS = 1.2
 
 export const NPC_DIALOGUES = [
   ["Hey there, traveler!", "This world is bigger than it looks..."],
@@ -381,10 +375,8 @@ export function findNearbyNpc(charX: number, charZ: number, npcs: Npc[]): Npc | 
 export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   const halfW = WORLD_W / 2 - WORLD_MARGIN
   const halfD = WORLD_D / 2 - WORLD_MARGIN
-
   for (const npc of npcs) {
     npc.wanderTick++
-
     if (!paused && npc.wanderTick >= npc.wanderMax) {
       npc.wanderTick = 0
       npc.wanderMax  = NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN))
@@ -397,9 +389,7 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
         npc.dz = Math.sin(angle)
       }
     }
-
     const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1)
-
     if (moving) {
       npc.x = Math.max(-halfW, Math.min(npc.x + npc.dx * NPC_SPEED, halfW))
       npc.z = Math.max(-halfD, Math.min(npc.z + npc.dz * NPC_SPEED, halfD))
@@ -408,7 +398,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
       else if (npc.dx < -0.3) npc.dirRow = DIR_LEFT
       else if (npc.dx >  0.3) npc.dirRow = DIR_RIGHT
     }
-
     npc.frameTick++
     if (moving) {
       if (npc.frameTick >= WALK_FRAME_RATE) {
@@ -434,14 +423,14 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   }
 }
 
-// ─── TEXTURE LOADING — nearest filter, no mipmaps, crisp pixel art ────────────
+// ─── TEXTURE LOADING ──────────────────────────────────────────────────────────
 export function loadTexture(loader: THREE.TextureLoader, src: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
     loader.load(
       src,
       (tex) => {
-        tex.magFilter      = THREE.NearestFilter
-        tex.minFilter      = THREE.NearestFilter
+        tex.magFilter       = THREE.NearestFilter
+        tex.minFilter       = THREE.NearestFilter
         tex.generateMipmaps = false
         tex.colorSpace      = THREE.SRGBColorSpace
         resolve(tex)
@@ -452,7 +441,7 @@ export function loadTexture(loader: THREE.TextureLoader, src: string): Promise<T
   })
 }
 
-// ─── SPRITE SHEET FRAMING (UV offset trick, replaces the old ctx sub-rect draw) ─
+// ─── SPRITE SHEET FRAMING ─────────────────────────────────────────────────────
 export function initSheetTexture(tex: THREE.Texture): void {
   tex.wrapS = THREE.RepeatWrapping
   tex.wrapT = THREE.RepeatWrapping
@@ -463,22 +452,19 @@ export function setSheetFrame(tex: THREE.Texture, col: number, row: number): voi
   tex.offset.set(col / SHEET_COLS, 1 - (row + 1) / SHEET_ROWS)
 }
 
-// ─── BILLBOARDING — "thin paper from Gumball": Y-axis-only rotation so the ─────
-// sprite stays upright and just turns to face the camera, never tilts.
-// A small deadzone guards against the angle thrashing when the camera's
-// horizontal offset from the sprite collapses near a top-down view.
+// ─── BILLBOARDING ─────────────────────────────────────────────────────────────
 const BILLBOARD_DEADZONE = 0.02
 
 export function faceCamera(mesh: THREE.Object3D, camX: number, camZ: number): void {
   const dx = camX - mesh.position.x
   const dz = camZ - mesh.position.z
-  if (Math.hypot(dx, dz) < BILLBOARD_DEADZONE) return // hold last angle instead of spinning
+  if (Math.hypot(dx, dz) < BILLBOARD_DEADZONE) return
   mesh.rotation.y = Math.atan2(dx, dz)
 }
 
 const _billboardDummy = new THREE.Object3D()
 
-// ─── MANUAL ORBIT CAMERA MATH ──────────────────────────────────────────────────
+// ─── CAMERA MATH ──────────────────────────────────────────────────────────────
 export function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
 }
@@ -487,15 +473,11 @@ export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }
 
-// shortest-path angle interpolation — avoids spinning the long way around at the wrap point
 export function lerpAngle(a: number, b: number, t: number): number {
   const diff = (((b - a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) - Math.PI
   return a + diff * t
 }
 
-// camera position rebuilt fresh every frame from the character's *current*
-// position — never relies on the camera's own previous position, so there's
-// nothing to go stale or compound.
 export function orbitCameraPosition(
   charX: number, charZ: number,
   azimuth: number, polar: number, dist: number,
@@ -508,7 +490,6 @@ export function orbitCameraPosition(
   }
 }
 
-// same billboard trick, applied per-instance for the bush InstancedMesh-es
 export function billboardInstances(
   mesh:      THREE.InstancedMesh,
   props:     { x: number; z: number }[],
@@ -519,9 +500,7 @@ export function billboardInstances(
     const p  = props[i]
     const dx = cameraPos.x - p.x
     const dz = cameraPos.z - p.z
-    const angle = Math.hypot(dx, dz) < BILLBOARD_DEADZONE
-      ? 0
-      : Math.atan2(dx, dz)
+    const angle = Math.hypot(dx, dz) < BILLBOARD_DEADZONE ? 0 : Math.atan2(dx, dz)
     _billboardDummy.position.set(p.x, size / 2, p.z)
     _billboardDummy.rotation.set(0, angle, 0)
     _billboardDummy.scale.set(size, size, 1)
@@ -531,13 +510,12 @@ export function billboardInstances(
   mesh.instanceMatrix.needsUpdate = true
 }
 
-// ─── GROUND BLOCK LAYOUT — same patch-noise distribution as the old 2D build ───
+// ─── GROUND ───────────────────────────────────────────────────────────────────
 export interface GroundInstance { x: number; z: number }
 
 export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInstance[] } {
   const grass: GroundInstance[] = []
   const plain: GroundInstance[] = []
-
   for (let r = 0; r < GRID_D; r++) {
     for (let c = 0; c < GRID_W; c++) {
       const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
@@ -552,12 +530,49 @@ export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInsta
   return { grass, plain }
 }
 
-// ─── SHADOW BLOB — small radial-gradient texture, reused under every sprite ────
+// ─── SKY DOME ─────────────────────────────────────────────────────────────────
+// Gradient sphere mapped on the inside — every camera angle sees the right sky.
+// depthTest: false + renderOrder -1 ensures it always sits behind all geometry.
+// When you have real sky PNGs, replace createSkyTexture() with a loaded texture.
+export const SKY_RADIUS = 90
+
+export function createSkyTexture(): THREE.CanvasTexture {
+  const w = 4, h = 256
+  const c = document.createElement('canvas')
+  c.width = w; c.height = h
+  const ctx = c.getContext('2d')!
+  const grad = ctx.createLinearGradient(0, 0, 0, h)
+  grad.addColorStop(0,    '#1565c0')   // zenith — deep rich blue
+  grad.addColorStop(0.3,  '#2196f3')   // upper
+  grad.addColorStop(0.65, '#64b5f6')   // mid
+  grad.addColorStop(0.88, '#b3e5fc')   // near horizon
+  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, w, h)
+  const tex = new THREE.CanvasTexture(c)
+  tex.needsUpdate = true
+  return tex
+}
+
+export function createSkyDome(): THREE.Mesh {
+  const geo = new THREE.SphereGeometry(SKY_RADIUS, 16, 10)
+  const mat = new THREE.MeshBasicMaterial({
+    map:        createSkyTexture(),
+    side:       THREE.BackSide,
+    depthWrite: false,
+    depthTest:  false,   // ← always behind everything — no z-fighting
+    fog:        false,   // ← sky must never fade to fog
+  })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.renderOrder = -1  // ← render before all scene geometry
+  return mesh
+}
+
+// ─── SHADOW BLOB ──────────────────────────────────────────────────────────────
 export function createShadowTexture(): THREE.CanvasTexture {
   const size = 64
   const c = document.createElement('canvas')
-  c.width = size
-  c.height = size
+  c.width = size; c.height = size
   const ctx = c.getContext('2d')!
   const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
   grad.addColorStop(0, 'rgba(0,0,0,0.45)')
@@ -570,7 +585,7 @@ export function createShadowTexture(): THREE.CanvasTexture {
   return tex
 }
 
-// ─── SCALE CALCULATOR (unchanged) ──────────────────────────────────────────────
+// ─── SCALE ────────────────────────────────────────────────────────────────────
 export function calcScale(): number {
   const scaleX  = window.innerWidth  / GAME_W
   const scaleY  = window.innerHeight / GAME_H
@@ -579,7 +594,7 @@ export function calcScale(): number {
   return integer >= 1 ? integer : fit
 }
 
-// ─── MINIMAP — drawn on a separate 2D overlay canvas above the WebGL canvas ────
+// ─── MINIMAP ──────────────────────────────────────────────────────────────────
 export const MINI_W      = 80
 export const MINI_H      = 52
 export const MINI_PAD    = 8
@@ -592,39 +607,30 @@ export function renderMinimap(
   camAzimuth: number,
 ) {
   ctx.clearRect(0, 0, GAME_W, GAME_H)
-
   const x = GAME_W - MINI_W - MINI_PAD
   const y = MINI_PAD
-
   ctx.save()
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#0a1a0a'
   ctx.fillRect(x - MINI_BORDER, y - MINI_BORDER, MINI_W + MINI_BORDER * 2, MINI_H + MINI_BORDER * 2)
   ctx.globalAlpha = 1
-
   ctx.fillStyle = '#2d5a27'
   ctx.fillRect(x, y, MINI_W, MINI_H)
-
   ctx.strokeStyle = 'rgba(255,255,255,0.4)'
   ctx.lineWidth = 0.5
   ctx.strokeRect(x, y, MINI_W, MINI_H)
-
   const dotX = x + ((charX + WORLD_W / 2) / WORLD_W) * MINI_W
   const dotY = y + ((charZ + WORLD_D / 2) / WORLD_D) * MINI_H
-
-  // facing arrow — shows which way the camera is currently looking from
   ctx.strokeStyle = 'rgba(255,255,255,0.6)'
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(dotX, dotY)
   ctx.lineTo(dotX + Math.sin(camAzimuth) * 6, dotY + Math.cos(camAzimuth) * 6)
   ctx.stroke()
-
   ctx.fillStyle = '#fff'
   ctx.beginPath()
   ctx.arc(dotX, dotY, 1.5, 0, Math.PI * 2)
   ctx.fill()
-
   ctx.restore()
 }
 
@@ -674,6 +680,7 @@ import {
   billboardInstances,
   buildGroundData,
   createShadowTexture,
+  createSkyDome,
   calcScale,
   renderMinimap,
   clamp,
@@ -690,6 +697,7 @@ import {
   CAM_ZOOM_SPEED,
   CAM_LERP,
   CAM_LOOK_HEIGHT,
+  CAM_FOLLOW_LERP,
 } from '@/arkzen/generated/ethereane.scripts'
 
 const JOY_RADIUS = 60
@@ -700,6 +708,7 @@ type ThreeState = {
   renderer:   THREE.WebGLRenderer
   scene:      THREE.Scene
   camera:     THREE.PerspectiveCamera
+  skyMesh:    THREE.Mesh
   charMesh:   THREE.Mesh
   charTex:    THREE.Texture
   charShadow: THREE.Mesh
@@ -735,28 +744,44 @@ export const EtheraneGame = () => {
   const [dialogue,  setDialogue]  = useState<string[] | null>(null)
   const nearbyNpcRef = useRef<Npc | null>(null)
 
-  // ─── ANIMATION STATE (unchanged) ──────────────────────────────────────────
+  // ─── ANIMATION STATE ──────────────────────────────────────────────────────
   const frameIndex  = useRef(0)
   const frameTick   = useRef(0)
   const dirRow      = useRef(DIR_DOWN)
   const idlePausing = useRef(false)
   const isWalking   = useRef(false)
 
-  // ─── THREE.JS SCENE ─────────────────────────────────────────────────────────
+  // ─── THREE.JS SCENE ───────────────────────────────────────────────────────
   const three = useRef<ThreeState | null>(null)
 
-  // ─── MANUAL ORBIT CAMERA — driven by pointer drag + wheel, not OrbitControls ─
+  // ─── CAMERA ORBIT ─────────────────────────────────────────────────────────
   const camAzimuth       = useRef(0)
   const camPolar         = useRef(CAM_POLAR_DEFAULT)
   const camDist          = useRef(CAM_DIST_DEFAULT)
   const camAzimuthTarget = useRef(0)
   const camPolarTarget   = useRef(CAM_POLAR_DEFAULT)
   const camDistTarget    = useRef(CAM_DIST_DEFAULT)
+
+  // ─── CAMERA FOLLOW ("break delay" spring) ─────────────────────────────────
+  // These lag behind charPos with CAM_FOLLOW_LERP, giving the camera a soft
+  // inertia so it feels like it "brakes" to catch up rather than snapping.
+  const camFollowX = useRef(0)
+  const camFollowZ = useRef(0)
+
   const dragging         = useRef(false)
   const dragPointerId    = useRef<number | null>(null)
   const lastPointer      = useRef({ x: 0, y: 0 })
 
+  // ─── JOYSTICK POINTER ID ───────────────────────────────────────────────────
+  // Tracking the joystick's pointer separately from the camera pointer is what
+  // fixes the multi-touch "joystick gets hijacked" bug.  Pointer capture on the
+  // joystick zone means its touch never leaks into the canvas camera handler.
+  const joyPointerId = useRef<number | null>(null)
+
+  // ─── CAMERA POINTER ───────────────────────────────────────────────────────
   const onCamPointerDown = useCallback((e: PointerEvent) => {
+    // Reject if this pointer is already owned by the joystick
+    if (e.pointerId === joyPointerId.current) return
     dragging.current      = true
     dragPointerId.current = e.pointerId
     lastPointer.current   = { x: e.clientX, y: e.clientY }
@@ -795,32 +820,37 @@ export const EtheraneGame = () => {
     setKnobPos(0, 0)
   }, [setKnobPos])
 
-  // ─── TOUCH ────────────────────────────────────────────────────────────────
-  const onTouchStart = useCallback((e: TouchEvent) => {
+  // ─── JOYSTICK — pointer events (not touch) for proper multi-touch isolation ─
+  // Using pointer events + setPointerCapture means the browser routes all
+  // subsequent move/up events for this pointer to the joystick zone, even
+  // if the finger wanders outside it — and it never bleeds into the canvas
+  // camera handler which checks joyPointerId.current before accepting a drag.
+  const onJoyPointerDown = useCallback((e: PointerEvent) => {
     e.preventDefault()
-    const t = e.changedTouches[0]
-    joyActive.current = true
-    joyOrigin.current = { x: t.clientX, y: t.clientY }
+    if (joyPointerId.current !== null) return   // already tracking a joystick touch
+    const zone = joyZoneRef.current
+    if (zone) zone.setPointerCapture(e.pointerId)
+    joyPointerId.current = e.pointerId
+    joyActive.current    = true
+    joyOrigin.current    = { x: e.clientX, y: e.clientY }
   }, [])
 
-  const onTouchMove = useCallback((e: TouchEvent) => {
-    e.preventDefault()
-    if (!joyActive.current) return
-    const t     = e.changedTouches[0]
-    const rawDx = t.clientX - joyOrigin.current.x
-    const rawDy = t.clientY - joyOrigin.current.y
+  const onJoyPointerMove = useCallback((e: PointerEvent) => {
+    if (!joyActive.current || e.pointerId !== joyPointerId.current) return
+    const rawDx = e.clientX - joyOrigin.current.x
+    const rawDy = e.clientY - joyOrigin.current.y
     const dist  = Math.sqrt(rawDx * rawDx + rawDy * rawDy)
     const angle = Math.atan2(rawDy, rawDx)
-    const knobClamp = Math.min(dist, KNOB_MAX)
-    setKnobPos(Math.cos(angle) * knobClamp, Math.sin(angle) * knobClamp)
+    setKnobPos(Math.cos(angle) * Math.min(dist, KNOB_MAX), Math.sin(angle) * Math.min(dist, KNOB_MAX))
     joyVec.current = {
       x: Math.cos(angle) * Math.min(dist / JOY_RADIUS, 1),
       y: Math.sin(angle) * Math.min(dist / JOY_RADIUS, 1),
     }
   }, [setKnobPos])
 
-  const onTouchEnd = useCallback((e: TouchEvent) => {
-    e.preventDefault()
+  const onJoyPointerUp = useCallback((e: PointerEvent) => {
+    if (e.pointerId !== joyPointerId.current) return
+    joyPointerId.current = null
     resetKnob()
   }, [resetKnob])
 
@@ -858,7 +888,7 @@ export const EtheraneGame = () => {
     const mag = Math.sqrt(dx * dx + dy * dy)
     if (mag > 1) { dx /= mag; dy /= mag }
 
-    // ── camera-relative movement: forward = -dy, strafe = dx ──
+    // ── camera-relative movement ──
     const camForward = new THREE.Vector3()
     t.camera.getWorldDirection(camForward)
     camForward.y = 0
@@ -878,7 +908,7 @@ export const EtheraneGame = () => {
     charPos.current.x = resolved.x
     charPos.current.z = resolved.z
 
-    // ── direction row (screen-relative input axes, same feel as the old build) ──
+    // ── direction row ──
     const moving = Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1
     if (isWalking.current && !moving) {
       frameIndex.current  = 0
@@ -893,7 +923,7 @@ export const EtheraneGame = () => {
       else if (dx >  0.1) dirRow.current = DIR_RIGHT
     }
 
-    // ── frame cycling (unchanged) ──
+    // ── frame cycling ──
     frameTick.current++
     if (moving) {
       if (frameTick.current >= WALK_FRAME_RATE) {
@@ -932,7 +962,7 @@ export const EtheraneGame = () => {
     setSheetFrame(t.charTex, frameIndex.current, sheetRow)
     faceCamera(t.charMesh, t.camera.position.x, t.camera.position.z)
 
-    // ── sync NPC billboards ──
+    // ── sync NPC billboards — camera-relative direction (moonwalk fix) ──
     npcsRef.current.forEach((npc, i) => {
       const mesh   = t.npcMeshes[i]
       const shadow = t.npcShadows[i]
@@ -940,7 +970,17 @@ export const EtheraneGame = () => {
       mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
       shadow.position.set(npc.x, 0.02, npc.z)
       const npcMoving = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1
-      const row = npcMoving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
+      let npcVisualDir = npc.dirRow
+      if (npcMoving) {
+        const fwdDot   = npc.dx * camForward.x + npc.dz * camForward.z
+        const rightDot = npc.dx * camRight.x   + npc.dz * camRight.z
+        if (Math.abs(rightDot) >= Math.abs(fwdDot)) {
+          npcVisualDir = rightDot > 0 ? DIR_RIGHT : DIR_LEFT
+        } else {
+          npcVisualDir = fwdDot > 0 ? DIR_UP : DIR_DOWN
+        }
+      }
+      const row = npcMoving ? WALK_ROW_OFFSET + npcVisualDir : npc.dirRow
       setSheetFrame(tex, npc.frameIndex, row)
       faceCamera(mesh, t.camera.position.x, t.camera.position.z)
     })
@@ -949,18 +989,25 @@ export const EtheraneGame = () => {
     billboardInstances(t.bush1Mesh, t.bush1Props, PROP_DEFS.bush1.size, t.camera.position)
     billboardInstances(t.bush2Mesh, t.bush2Props, PROP_DEFS.bush2.size, t.camera.position)
 
-    // ── manual orbit camera — position rebuilt fresh from the character's
-    //    CURRENT spot every frame, so it can never lag behind like before ──
+    // ── orbit camera with spring follow ──
     camAzimuth.current = lerpAngle(camAzimuth.current, camAzimuthTarget.current, CAM_LERP)
     camPolar.current   = lerp(camPolar.current, camPolarTarget.current, CAM_LERP)
     camDist.current    = lerp(camDist.current, camDistTarget.current, CAM_LERP)
 
+    // "break delay" — the orbit pivot chases charPos with gentle lag
+    camFollowX.current = lerp(camFollowX.current, charPos.current.x, CAM_FOLLOW_LERP)
+    camFollowZ.current = lerp(camFollowZ.current, charPos.current.z, CAM_FOLLOW_LERP)
+
     const camPos = orbitCameraPosition(
-      charPos.current.x, charPos.current.z,
+      camFollowX.current, camFollowZ.current,
       camAzimuth.current, camPolar.current, camDist.current,
     )
     t.camera.position.set(camPos.x, camPos.y, camPos.z)
-    t.camera.lookAt(charPos.current.x, CAM_LOOK_HEIGHT, charPos.current.z)
+    t.camera.lookAt(camFollowX.current, CAM_LOOK_HEIGHT, camFollowZ.current)
+
+    // sky dome follows camera — horizon stays correct at any camera height
+    t.skyMesh.position.copy(t.camera.position)
+
     t.renderer.render(t.scene, t.camera)
 
     if (t.minimapCtx) {
@@ -974,7 +1021,7 @@ export const EtheraneGame = () => {
   useEffect(() => {
     const canvas        = canvasRef.current
     const minimapCanvas = minimapRef.current
-    const viewport       = viewportRef.current
+    const viewport      = viewportRef.current
     if (!canvas || !minimapCanvas || !viewport) return
 
     canvas.width  = GAME_W
@@ -988,8 +1035,8 @@ export const EtheraneGame = () => {
       const h = Math.floor(GAME_H * s)
       viewport.style.width  = `${w}px`
       viewport.style.height = `${h}px`
-      canvas.style.width  = `${w}px`
-      canvas.style.height = `${h}px`
+      canvas.style.width    = `${w}px`
+      canvas.style.height   = `${h}px`
       minimapCanvas.style.width  = `${w}px`
       minimapCanvas.style.height = `${h}px`
     }
@@ -998,10 +1045,10 @@ export const EtheraneGame = () => {
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup',   onKeyUp)
 
-    // ── scene / camera / renderer ──
+    // ── scene ──
     const scene = new THREE.Scene()
-    scene.background = new THREE.Color('#bfe6ff')
-    scene.fog = new THREE.Fog('#bfe6ff', 14, 34)
+    // Fog horizon colour matches the sky dome's horizon stop
+    scene.fog = new THREE.Fog('#e1f5fe', 14, 34)
 
     const camera = new THREE.PerspectiveCamera(50, GAME_W / GAME_H, 0.1, 100)
     const startPos = orbitCameraPosition(0, 0, camAzimuth.current, camPolar.current, camDist.current)
@@ -1011,8 +1058,12 @@ export const EtheraneGame = () => {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: false })
     renderer.setPixelRatio(1)
     renderer.setSize(GAME_W, GAME_H, false)
+    // Clear colour = horizon haze — visible for 1 frame before the sky dome draws
+    renderer.setClearColor('#e1f5fe', 1)
+    // Shadow map — sun casts real shadows on the ground blocks
+    renderer.shadowMap.enabled = true
+    renderer.shadowMap.type    = THREE.PCFSoftShadowMap
 
-    // ── free orbit camera — drag anywhere on the canvas to rotate, wheel/pinch to zoom ──
     canvas.style.touchAction = 'none'
     canvas.addEventListener('pointerdown', onCamPointerDown)
     window.addEventListener('pointermove', onCamPointerMove)
@@ -1035,7 +1086,11 @@ export const EtheraneGame = () => {
       initSheetTexture(charTex)
       setSheetFrame(charTex, 0, DIR_DOWN)
 
-      // ── ground blocks — placeholder cubes, ready to be voxelized later ──
+      // ── sky dome — first in scene so it's always behind everything ──
+      const skyMesh = createSkyDome()
+      scene.add(skyMesh)
+
+      // ── ground ──
       const { grass, plain } = buildGroundData()
       const blockGeo = new THREE.BoxGeometry(TILE_SIZE, BLOCK_HEIGHT, TILE_SIZE)
       const dummy = new THREE.Object3D()
@@ -1047,6 +1102,7 @@ export const EtheraneGame = () => {
         grassMesh.setMatrixAt(i, dummy.matrix)
       })
       grassMesh.instanceMatrix.needsUpdate = true
+      grassMesh.receiveShadow = true
 
       const plainMesh = new THREE.InstancedMesh(blockGeo, new THREE.MeshLambertMaterial({ map: plainTex }), plain.length)
       plain.forEach((g, i) => {
@@ -1055,16 +1111,37 @@ export const EtheraneGame = () => {
         plainMesh.setMatrixAt(i, dummy.matrix)
       })
       plainMesh.instanceMatrix.needsUpdate = true
+      plainMesh.receiveShadow = true
 
       scene.add(grassMesh, plainMesh)
 
-      // ── lighting — only the block ground is lit, so cube edges read in 3D ──
-      scene.add(new THREE.AmbientLight('#ffffff', 0.8))
-      const sun = new THREE.DirectionalLight('#ffffff', 0.9)
+      // ── lighting ──
+      // HemisphereLight = sky-blue from above, warm-brown bounce from below.
+      // This is what gives the "glazed" outdoor feel — objects lit from above
+      // get a cool bluish tint, undersides get a warm ground-bounce colour,
+      // exactly like real open-sky daylight.  No faking needed.
+      const hemi = new THREE.HemisphereLight(
+        '#c8e8ff',   // sky colour  — cool blue-white from above
+        '#6b8c42',   // ground colour — warm green-brown bounce from below
+        1.0,
+      )
+      scene.add(hemi)
+
+      // Directional sun — slight warm tint, casts real shadows
+      const sun = new THREE.DirectionalLight('#fff5e0', 1.0)
       sun.position.set(8, 14, 6)
+      sun.castShadow            = true
+      sun.shadow.mapSize.width  = 512
+      sun.shadow.mapSize.height = 512
+      sun.shadow.camera.near    = 1
+      sun.shadow.camera.far     = 60
+      sun.shadow.camera.left    = -30
+      sun.shadow.camera.right   = 30
+      sun.shadow.camera.top     = 30
+      sun.shadow.camera.bottom  = -30
       scene.add(sun)
 
-      // ── shadow blob, reused under every billboard ──
+      // ── shadow blob ──
       const shadowTex  = createShadowTexture()
       const shadowGeo  = new THREE.PlaneGeometry(CHAR_PLANE_W * 0.9, CHAR_PLANE_W * 0.9)
       const makeShadow = () => {
@@ -1075,7 +1152,7 @@ export const EtheraneGame = () => {
         return m
       }
 
-      // ── character billboard — "thin paper from Gumball" ──
+      // ── character billboard ──
       const charGeo = new THREE.PlaneGeometry(CHAR_PLANE_W, CHAR_PLANE_H)
       const charMat = new THREE.MeshBasicMaterial({ map: charTex, alphaTest: 0.5, side: THREE.DoubleSide })
       const charMesh = new THREE.Mesh(charGeo, charMat)
@@ -1083,9 +1160,9 @@ export const EtheraneGame = () => {
       scene.add(charMesh)
       const charShadow = makeShadow()
 
-      // ── NPC billboards — same trick, each gets its own cloned texture for an independent frame ──
-      const npcMeshes: THREE.Mesh[] = []
-      const npcTexes:  THREE.Texture[] = []
+      // ── NPC billboards ──
+      const npcMeshes:  THREE.Mesh[] = []
+      const npcTexes:   THREE.Texture[] = []
       const npcShadows: THREE.Mesh[] = []
       npcsRef.current.forEach((npc) => {
         const tex = charTex.clone()
@@ -1101,21 +1178,21 @@ export const EtheraneGame = () => {
         npcShadows.push(makeShadow())
       })
 
-      // ── bushes — billboarded sprites, same camera-facing trick as the character ──
+      // ── bush billboards ──
       const bush1Props = propsRef.current.filter(p => p.type === 'bush1')
       const bush2Props = propsRef.current.filter(p => p.type === 'bush2')
-
-      const bushGeo  = new THREE.PlaneGeometry(1, 1)
-      const bush1Mat = new THREE.MeshBasicMaterial({ map: bush1Tex, alphaTest: 0.5, side: THREE.DoubleSide })
-      const bush2Mat = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
-      const bush1Mesh = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
-      const bush2Mesh = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
+      const bushGeo    = new THREE.PlaneGeometry(1, 1)
+      const bush1Mat   = new THREE.MeshBasicMaterial({ map: bush1Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush2Mat   = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush1Mesh  = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
+      const bush2Mesh  = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
       billboardInstances(bush1Mesh, bush1Props, PROP_DEFS.bush1.size, camera.position)
       billboardInstances(bush2Mesh, bush2Props, PROP_DEFS.bush2.size, camera.position)
       scene.add(bush1Mesh, bush2Mesh)
 
       three.current = {
         renderer, scene, camera,
+        skyMesh,
         charMesh, charTex, charShadow,
         npcMeshes, npcTexes, npcShadows,
         bush1Mesh, bush2Mesh, bush1Props, bush2Props,
@@ -1147,28 +1224,28 @@ export const EtheraneGame = () => {
       window.removeEventListener('pointercancel', onCamPointerUp)
       canvas.removeEventListener('wheel', onCamWheel)
       const t = three.current
-      if (t) {
-        t.renderer.dispose()
-      }
+      if (t) t.renderer.dispose()
       three.current = null
     }
   }, [gameLoop, onKeyDown, onKeyUp, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel])
 
-  // ─── JOYSTICK TOUCH EVENTS ────────────────────────────────────────────────
+  // ─── JOYSTICK POINTER EVENTS ───────────────────────────────────────────────
+  // Pointer events (not touch events) so we can track pointer IDs and use
+  // setPointerCapture — the combination that makes multi-touch actually work.
   useEffect(() => {
     const zone = joyZoneRef.current
     if (!zone) return
-    zone.addEventListener('touchstart',  onTouchStart, { passive: false })
-    zone.addEventListener('touchmove',   onTouchMove,  { passive: false })
-    zone.addEventListener('touchend',    onTouchEnd,   { passive: false })
-    zone.addEventListener('touchcancel', onTouchEnd,   { passive: false })
+    zone.addEventListener('pointerdown',   onJoyPointerDown)
+    zone.addEventListener('pointermove',   onJoyPointerMove)
+    zone.addEventListener('pointerup',     onJoyPointerUp)
+    zone.addEventListener('pointercancel', onJoyPointerUp)
     return () => {
-      zone.removeEventListener('touchstart',  onTouchStart)
-      zone.removeEventListener('touchmove',   onTouchMove)
-      zone.removeEventListener('touchend',    onTouchEnd)
-      zone.removeEventListener('touchcancel', onTouchEnd)
+      zone.removeEventListener('pointerdown',   onJoyPointerDown)
+      zone.removeEventListener('pointermove',   onJoyPointerMove)
+      zone.removeEventListener('pointerup',     onJoyPointerUp)
+      zone.removeEventListener('pointercancel', onJoyPointerUp)
     }
-  }, [onTouchStart, onTouchMove, onTouchEnd])
+  }, [onJoyPointerDown, onJoyPointerMove, onJoyPointerUp])
 
   return (
     <div className="eth-root">
@@ -1181,14 +1258,10 @@ export const EtheraneGame = () => {
         <div className="eth-joystick-knob" ref={knobRef} />
       </div>
 
-      {/* Interact button — pops up when near NPC */}
       {nearbyNpc && !dialogue && (
-        <button className="eth-interact-btn" onClick={handleInteract}>
-          E
-        </button>
+        <button className="eth-interact-btn" onClick={handleInteract}>E</button>
       )}
 
-      {/* Dialogue box */}
       {dialogue && (
         <div className="eth-dialogue">
           <div className="eth-dialogue-name">Villager</div>

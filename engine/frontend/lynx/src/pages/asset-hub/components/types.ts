@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — asset-hub
 // Source: @arkzen:native:components:lynx:* (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:25.881Z
+// Generated: 2026-06-22T03:18:54.252Z
 // ============================================================
 
 // ─── LYNX ASSET REGISTRY ──────────────────────────────────────────────────────

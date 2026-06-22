@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — crud-test [React+Vite]
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:28.179Z
+// Generated: 2026-06-22T03:18:56.608Z
 // ============================================================
 
 export type Item = {

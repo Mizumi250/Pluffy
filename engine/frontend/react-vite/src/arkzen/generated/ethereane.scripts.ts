@@ -2,61 +2,53 @@
 // ARKZEN GENERATED SCRIPT — ethereane
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:29.080Z
+// Generated: 2026-06-22T03:18:57.868Z
 // ============================================================
 
 import * as THREE from 'three'
 
 // ─── VIEWPORT / RENDER TARGET ──────────────────────────────────────────────────
-// internal WebGL buffer stays fixed-res and gets CSS-upscaled with crisp pixels,
-// same trick the old 2D build used — keeps the chunky pixel-art look.
 export const GAME_W = 640
 export const GAME_H = 360
 
 // ─── WORLD / VOXEL GRID ─────────────────────────────────────────────────────────
-// "Blocks for the tiles for now" — simple textured cubes, placeholder until
-// the real voxel meshes are ready.
-export const TILE_SIZE    = 1        // world units per ground block
-export const GRID_W       = 100      // blocks across X
-export const GRID_D       = 64       // blocks across Z
+export const TILE_SIZE    = 1
+export const GRID_W       = 100
+export const GRID_D       = 64
 export const WORLD_W      = GRID_W * TILE_SIZE
 export const WORLD_D      = GRID_D * TILE_SIZE
 export const BLOCK_HEIGHT = 0.6
 export const WORLD_MARGIN = TILE_SIZE * 2
 
 // ─── CHARACTER ────────────────────────────────────────────────────────────────
-export const CHAR_PLANE_W = TILE_SIZE * 1.0   // billboard plane width  (matches 32px sprite)
-export const CHAR_PLANE_H = TILE_SIZE * 1.5   // billboard plane height (matches 48px sprite)
+export const CHAR_PLANE_W = TILE_SIZE * 1.0
+export const CHAR_PLANE_H = TILE_SIZE * 1.5
 export const CHAR_RADIUS  = TILE_SIZE * 0.28
-export const CHAR_SPEED   = 0.0625            // world units / tick — same pace as the old 2D build
+export const CHAR_SPEED   = 0.0625
 
-// ─── CAMERA — manual orbit, NOT OrbitControls ──────────────────────────────────
-// OrbitControls re-derives its spherical offset from (camera.position - target)
-// every update() call. Re-targeting it every frame (to follow a moving
-// character) feeds it a target that's always slightly stale, so it never
-// actually keeps pace with the player, and the leftover translation gets
-// folded into its rotation math and compounds into the "swipe = chaos" glitch.
-// Driving azimuth/polar/distance ourselves and rebuilding camera.position from
-// the character's *current* position every frame sidesteps both problems.
-export const CAM_DIST_MIN     = 1.1
-export const CAM_DIST_MAX     = 9
-export const CAM_DIST_DEFAULT = 2.4    // "very very close to the user"
-export const CAM_POLAR_MIN     = 0.4   // clamped shy of true top-down (0) — avoids the pole glitch
-export const CAM_POLAR_MAX     = 1.45  // clamped shy of straight-on/under
+// ─── CAMERA ───────────────────────────────────────────────────────────────────
+export const CAM_DIST_MIN      = 1.1
+export const CAM_DIST_MAX      = 9
+export const CAM_DIST_DEFAULT  = 2.4
+export const CAM_POLAR_MIN     = 0.4
+export const CAM_POLAR_MAX     = 1.45
 export const CAM_POLAR_DEFAULT = 0.75
-export const CAM_ROTATE_SPEED = 0.0055 // radians of azimuth/polar per drag pixel
-export const CAM_ZOOM_SPEED   = 0.0035 // distance units per wheel-delta pixel
-export const CAM_LERP         = 0.22   // smoothing toward the latest input each frame
-export const CAM_LOOK_HEIGHT  = CHAR_PLANE_H * 0.6
+export const CAM_ROTATE_SPEED  = 0.0055
+export const CAM_ZOOM_SPEED    = 0.0035
+export const CAM_LERP          = 0.22
+export const CAM_LOOK_HEIGHT   = CHAR_PLANE_H * 0.6
+// "break delay" — camera target lags behind the character with this factor.
+// Lower = more lag, feels heavier. 0.09 gives a gentle spring-follow.
+export const CAM_FOLLOW_LERP   = 0.09
 
-// ─── ANIMATION (pacing unchanged from the 2D build — chavarter still animates) ──
+// ─── ANIMATION ────────────────────────────────────────────────────────────────
 export const IDLE_FRAMES     = 4
-export const IDLE_FRAME_RATE = 8    // ticks per frame during animation (snappy)
-export const IDLE_PAUSE      = 60   // ~1 second at 60fps
+export const IDLE_FRAME_RATE = 8
+export const IDLE_PAUSE      = 60
 export const WALK_FRAMES     = 6
-export const WALK_FRAME_RATE = 8    // ticks per frame for walk
-export const WALK_ROW_OFFSET = 4    // walk rows start at row 4
-export const SHEET_COLS      = 6    // character1.png is 192x384 = 6 cols x 8 rows
+export const WALK_FRAME_RATE = 8
+export const WALK_ROW_OFFSET = 4
+export const SHEET_COLS      = 6
 export const SHEET_ROWS      = 8
 
 export const DIR_DOWN  = 0
@@ -71,9 +63,14 @@ export const ASSETS = {
   character1:     '/tatemonos/ethereane/assets/images/character1.png',
   bush1:          '/tatemonos/ethereane/assets/images/bush1.png',
   bush2:          '/tatemonos/ethereane/assets/images/bush2.png',
+  // ── sky parallax layers (drop PNGs here when you have them) ──
+  // skyLayer0: '/tatemonos/ethereane/assets/images/sky-layer-0.png',
+  // skyLayer1: '/tatemonos/ethereane/assets/images/sky-layer-1.png',
+  // skyLayer2: '/tatemonos/ethereane/assets/images/sky-layer-2.png',
+  // skyLayer3: '/tatemonos/ethereane/assets/images/sky-layer-3.png',
 }
 
-// ─── PROPS — billboarded, camera-facing, same trick as the character ──────────
+// ─── PROPS ────────────────────────────────────────────────────────────────────
 export type PropType = 'bush1' | 'bush2'
 
 export interface Prop {
@@ -90,15 +87,12 @@ export const PROP_DEFS: Record<PropType, { size: number; collision: boolean; rad
 export const COUNT_BUSH1 = 86
 export const COUNT_BUSH2 = 43
 
-// ─── WORLD GENERATOR (same seeded RNG as before, now scattering in XZ) ────────
 export function generateProps(seed: number = 42): Prop[] {
   const props: Prop[] = []
   let s = seed
   const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
-
   const halfW = WORLD_W / 2 - WORLD_MARGIN
   const halfD = WORLD_D / 2 - WORLD_MARGIN
-
   for (let i = 0; i < COUNT_BUSH1; i++) {
     props.push({ type: 'bush1', x: -halfW + rand() * halfW * 2, z: -halfD + rand() * halfD * 2 })
   }
@@ -108,7 +102,6 @@ export function generateProps(seed: number = 42): Prop[] {
   return props
 }
 
-// ─── COLLISION CHECK — circle vs circle push-out in the XZ plane ──────────────
 export function resolveCollision(nextX: number, nextZ: number, props: Prop[]): { x: number; z: number } {
   let x = nextX
   let z = nextZ
@@ -135,7 +128,7 @@ export const NPC_SPEED           = 0.025
 export const NPC_WANDER_MIN      = 60
 export const NPC_WANDER_MAX      = 240
 export const NPC_SPAWN_RANGE     = 14
-export const NPC_INTERACT_RADIUS = 1.2   // world units — how close to trigger button
+export const NPC_INTERACT_RADIUS = 1.2
 
 export const NPC_DIALOGUES = [
   ["Hey there, traveler!", "This world is bigger than it looks..."],
@@ -197,10 +190,8 @@ export function findNearbyNpc(charX: number, charZ: number, npcs: Npc[]): Npc | 
 export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   const halfW = WORLD_W / 2 - WORLD_MARGIN
   const halfD = WORLD_D / 2 - WORLD_MARGIN
-
   for (const npc of npcs) {
     npc.wanderTick++
-
     if (!paused && npc.wanderTick >= npc.wanderMax) {
       npc.wanderTick = 0
       npc.wanderMax  = NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN))
@@ -213,9 +204,7 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
         npc.dz = Math.sin(angle)
       }
     }
-
     const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1)
-
     if (moving) {
       npc.x = Math.max(-halfW, Math.min(npc.x + npc.dx * NPC_SPEED, halfW))
       npc.z = Math.max(-halfD, Math.min(npc.z + npc.dz * NPC_SPEED, halfD))
@@ -224,7 +213,6 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
       else if (npc.dx < -0.3) npc.dirRow = DIR_LEFT
       else if (npc.dx >  0.3) npc.dirRow = DIR_RIGHT
     }
-
     npc.frameTick++
     if (moving) {
       if (npc.frameTick >= WALK_FRAME_RATE) {
@@ -250,14 +238,14 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   }
 }
 
-// ─── TEXTURE LOADING — nearest filter, no mipmaps, crisp pixel art ────────────
+// ─── TEXTURE LOADING ──────────────────────────────────────────────────────────
 export function loadTexture(loader: THREE.TextureLoader, src: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
     loader.load(
       src,
       (tex) => {
-        tex.magFilter      = THREE.NearestFilter
-        tex.minFilter      = THREE.NearestFilter
+        tex.magFilter       = THREE.NearestFilter
+        tex.minFilter       = THREE.NearestFilter
         tex.generateMipmaps = false
         tex.colorSpace      = THREE.SRGBColorSpace
         resolve(tex)
@@ -268,7 +256,7 @@ export function loadTexture(loader: THREE.TextureLoader, src: string): Promise<T
   })
 }
 
-// ─── SPRITE SHEET FRAMING (UV offset trick, replaces the old ctx sub-rect draw) ─
+// ─── SPRITE SHEET FRAMING ─────────────────────────────────────────────────────
 export function initSheetTexture(tex: THREE.Texture): void {
   tex.wrapS = THREE.RepeatWrapping
   tex.wrapT = THREE.RepeatWrapping
@@ -279,22 +267,19 @@ export function setSheetFrame(tex: THREE.Texture, col: number, row: number): voi
   tex.offset.set(col / SHEET_COLS, 1 - (row + 1) / SHEET_ROWS)
 }
 
-// ─── BILLBOARDING — "thin paper from Gumball": Y-axis-only rotation so the ─────
-// sprite stays upright and just turns to face the camera, never tilts.
-// A small deadzone guards against the angle thrashing when the camera's
-// horizontal offset from the sprite collapses near a top-down view.
+// ─── BILLBOARDING ─────────────────────────────────────────────────────────────
 const BILLBOARD_DEADZONE = 0.02
 
 export function faceCamera(mesh: THREE.Object3D, camX: number, camZ: number): void {
   const dx = camX - mesh.position.x
   const dz = camZ - mesh.position.z
-  if (Math.hypot(dx, dz) < BILLBOARD_DEADZONE) return // hold last angle instead of spinning
+  if (Math.hypot(dx, dz) < BILLBOARD_DEADZONE) return
   mesh.rotation.y = Math.atan2(dx, dz)
 }
 
 const _billboardDummy = new THREE.Object3D()
 
-// ─── MANUAL ORBIT CAMERA MATH ──────────────────────────────────────────────────
+// ─── CAMERA MATH ──────────────────────────────────────────────────────────────
 export function clamp(v: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, v))
 }
@@ -303,15 +288,11 @@ export function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t
 }
 
-// shortest-path angle interpolation — avoids spinning the long way around at the wrap point
 export function lerpAngle(a: number, b: number, t: number): number {
   const diff = (((b - a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) - Math.PI
   return a + diff * t
 }
 
-// camera position rebuilt fresh every frame from the character's *current*
-// position — never relies on the camera's own previous position, so there's
-// nothing to go stale or compound.
 export function orbitCameraPosition(
   charX: number, charZ: number,
   azimuth: number, polar: number, dist: number,
@@ -324,7 +305,6 @@ export function orbitCameraPosition(
   }
 }
 
-// same billboard trick, applied per-instance for the bush InstancedMesh-es
 export function billboardInstances(
   mesh:      THREE.InstancedMesh,
   props:     { x: number; z: number }[],
@@ -335,9 +315,7 @@ export function billboardInstances(
     const p  = props[i]
     const dx = cameraPos.x - p.x
     const dz = cameraPos.z - p.z
-    const angle = Math.hypot(dx, dz) < BILLBOARD_DEADZONE
-      ? 0
-      : Math.atan2(dx, dz)
+    const angle = Math.hypot(dx, dz) < BILLBOARD_DEADZONE ? 0 : Math.atan2(dx, dz)
     _billboardDummy.position.set(p.x, size / 2, p.z)
     _billboardDummy.rotation.set(0, angle, 0)
     _billboardDummy.scale.set(size, size, 1)
@@ -347,13 +325,12 @@ export function billboardInstances(
   mesh.instanceMatrix.needsUpdate = true
 }
 
-// ─── GROUND BLOCK LAYOUT — same patch-noise distribution as the old 2D build ───
+// ─── GROUND ───────────────────────────────────────────────────────────────────
 export interface GroundInstance { x: number; z: number }
 
 export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInstance[] } {
   const grass: GroundInstance[] = []
   const plain: GroundInstance[] = []
-
   for (let r = 0; r < GRID_D; r++) {
     for (let c = 0; c < GRID_W; c++) {
       const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
@@ -368,12 +345,49 @@ export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInsta
   return { grass, plain }
 }
 
-// ─── SHADOW BLOB — small radial-gradient texture, reused under every sprite ────
+// ─── SKY DOME ─────────────────────────────────────────────────────────────────
+// Gradient sphere mapped on the inside — every camera angle sees the right sky.
+// depthTest: false + renderOrder -1 ensures it always sits behind all geometry.
+// When you have real sky PNGs, replace createSkyTexture() with a loaded texture.
+export const SKY_RADIUS = 90
+
+export function createSkyTexture(): THREE.CanvasTexture {
+  const w = 4, h = 256
+  const c = document.createElement('canvas')
+  c.width = w; c.height = h
+  const ctx = c.getContext('2d')!
+  const grad = ctx.createLinearGradient(0, 0, 0, h)
+  grad.addColorStop(0,    '#1565c0')   // zenith — deep rich blue
+  grad.addColorStop(0.3,  '#2196f3')   // upper
+  grad.addColorStop(0.65, '#64b5f6')   // mid
+  grad.addColorStop(0.88, '#b3e5fc')   // near horizon
+  grad.addColorStop(1,    '#e1f5fe')   // horizon haze — matches fog
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, w, h)
+  const tex = new THREE.CanvasTexture(c)
+  tex.needsUpdate = true
+  return tex
+}
+
+export function createSkyDome(): THREE.Mesh {
+  const geo = new THREE.SphereGeometry(SKY_RADIUS, 16, 10)
+  const mat = new THREE.MeshBasicMaterial({
+    map:        createSkyTexture(),
+    side:       THREE.BackSide,
+    depthWrite: false,
+    depthTest:  false,   // ← always behind everything — no z-fighting
+    fog:        false,   // ← sky must never fade to fog
+  })
+  const mesh = new THREE.Mesh(geo, mat)
+  mesh.renderOrder = -1  // ← render before all scene geometry
+  return mesh
+}
+
+// ─── SHADOW BLOB ──────────────────────────────────────────────────────────────
 export function createShadowTexture(): THREE.CanvasTexture {
   const size = 64
   const c = document.createElement('canvas')
-  c.width = size
-  c.height = size
+  c.width = size; c.height = size
   const ctx = c.getContext('2d')!
   const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
   grad.addColorStop(0, 'rgba(0,0,0,0.45)')
@@ -386,7 +400,7 @@ export function createShadowTexture(): THREE.CanvasTexture {
   return tex
 }
 
-// ─── SCALE CALCULATOR (unchanged) ──────────────────────────────────────────────
+// ─── SCALE ────────────────────────────────────────────────────────────────────
 export function calcScale(): number {
   const scaleX  = window.innerWidth  / GAME_W
   const scaleY  = window.innerHeight / GAME_H
@@ -395,7 +409,7 @@ export function calcScale(): number {
   return integer >= 1 ? integer : fit
 }
 
-// ─── MINIMAP — drawn on a separate 2D overlay canvas above the WebGL canvas ────
+// ─── MINIMAP ──────────────────────────────────────────────────────────────────
 export const MINI_W      = 80
 export const MINI_H      = 52
 export const MINI_PAD    = 8
@@ -408,38 +422,29 @@ export function renderMinimap(
   camAzimuth: number,
 ) {
   ctx.clearRect(0, 0, GAME_W, GAME_H)
-
   const x = GAME_W - MINI_W - MINI_PAD
   const y = MINI_PAD
-
   ctx.save()
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#0a1a0a'
   ctx.fillRect(x - MINI_BORDER, y - MINI_BORDER, MINI_W + MINI_BORDER * 2, MINI_H + MINI_BORDER * 2)
   ctx.globalAlpha = 1
-
   ctx.fillStyle = '#2d5a27'
   ctx.fillRect(x, y, MINI_W, MINI_H)
-
   ctx.strokeStyle = 'rgba(255,255,255,0.4)'
   ctx.lineWidth = 0.5
   ctx.strokeRect(x, y, MINI_W, MINI_H)
-
   const dotX = x + ((charX + WORLD_W / 2) / WORLD_W) * MINI_W
   const dotY = y + ((charZ + WORLD_D / 2) / WORLD_D) * MINI_H
-
-  // facing arrow — shows which way the camera is currently looking from
   ctx.strokeStyle = 'rgba(255,255,255,0.6)'
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.moveTo(dotX, dotY)
   ctx.lineTo(dotX + Math.sin(camAzimuth) * 6, dotY + Math.cos(camAzimuth) * 6)
   ctx.stroke()
-
   ctx.fillStyle = '#fff'
   ctx.beginPath()
   ctx.arc(dotX, dotY, 1.5, 0, Math.PI * 2)
   ctx.fill()
-
   ctx.restore()
 }

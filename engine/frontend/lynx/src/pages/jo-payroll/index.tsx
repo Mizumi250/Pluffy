@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — jo-payroll/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:29.164Z
+// Generated: 2026-06-22T03:18:58.223Z
 import { useFadeSlideIn } from '../../arkzen/generated/jo-payroll.lynx-animations'
 import { StatCard } from './components/StatCard'
 import { WorkerRow } from './components/WorkerRow'

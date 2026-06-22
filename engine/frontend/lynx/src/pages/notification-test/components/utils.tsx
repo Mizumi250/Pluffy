@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — notification-test
 // Source: @arkzen:native:components:lynx:* (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:30.582Z
+// Generated: 2026-06-22T03:19:00.050Z
 // ============================================================
 
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'

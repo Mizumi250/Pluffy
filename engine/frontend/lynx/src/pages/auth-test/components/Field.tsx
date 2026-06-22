@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — Field
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:26.125Z
+// Generated: 2026-06-22T03:18:54.557Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

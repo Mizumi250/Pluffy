@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EpPromoModal [React+Vite]
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:28.941Z
+// Generated: 2026-06-22T03:18:57.616Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

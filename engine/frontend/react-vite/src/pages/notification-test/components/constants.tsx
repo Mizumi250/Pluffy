@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — notification-test [React+Vite]
 // Source: @arkzen:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:32.868Z
+// Generated: 2026-06-22T03:19:00.658Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

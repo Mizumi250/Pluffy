@@ -55,6 +55,7 @@
   height: 120px;
   pointer-events: auto;
   z-index: 10;
+  touch-action: none;
 }
 
 .eth-joystick-base {

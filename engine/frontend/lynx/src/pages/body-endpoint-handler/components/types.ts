@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — body-endpoint-handler
 // Source: @arkzen:native:components:lynx:* (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:26.281Z
+// Generated: 2026-06-22T03:18:54.686Z
 // ============================================================
 
 export type ProbeResult = {

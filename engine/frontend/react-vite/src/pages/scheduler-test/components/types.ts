@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — scheduler-test [React+Vite]
 // Source: @arkzen:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:34.200Z
+// Generated: 2026-06-22T03:19:02.635Z
 // ============================================================
 
 export interface CommandRun {

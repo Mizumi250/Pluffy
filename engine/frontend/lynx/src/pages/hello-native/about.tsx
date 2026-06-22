@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — hello-native/about (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T00:05:28.684Z
+// Generated: 2026-06-22T03:18:57.504Z
 import { Badge } from './components/Badge'
 import { GhostButton } from './components/GhostButton'
 import { useState } from '@lynx-js/react'
