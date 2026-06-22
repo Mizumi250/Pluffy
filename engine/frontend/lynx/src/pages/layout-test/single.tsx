@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/single (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:14.239Z
+// Generated: 2026-06-22T07:06:50.483Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:app-shell */

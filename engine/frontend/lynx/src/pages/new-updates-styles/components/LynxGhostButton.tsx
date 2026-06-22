@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — LynxGhostButton
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:15.065Z
+// Generated: 2026-06-22T07:06:51.457Z
 // ============================================================
 
 import { type ReactNode, useState } from '@lynx-js/react'

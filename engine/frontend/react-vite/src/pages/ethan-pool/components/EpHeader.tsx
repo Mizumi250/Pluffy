@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EpHeader [React+Vite]
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:13.156Z
+// Generated: 2026-06-22T12:11:36.948Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

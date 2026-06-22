@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/native-deep (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:14.252Z
+// Generated: 2026-06-22T07:06:50.495Z
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 /* @arkzen:native:page:layout:card-modal */

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — SearchBar
 // Source: @arkzen:native:components:lynx:* (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:13.602Z
+// Generated: 2026-06-22T07:06:49.665Z
 // ============================================================
 
 import { useCallback, useEffect, useMemo, useState } from '@lynx-js/react'

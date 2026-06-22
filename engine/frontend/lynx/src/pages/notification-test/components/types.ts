@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — notification-test
 // Source: @arkzen:native:components:lynx:* (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:15.215Z
+// Generated: 2026-06-22T07:06:51.580Z
 // ============================================================
 
 export type WsStatus = 'connecting' | 'connected' | 'error'

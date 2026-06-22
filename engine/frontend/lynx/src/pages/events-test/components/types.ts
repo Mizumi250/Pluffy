@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — events-test
 // Source: @arkzen:native:components:lynx:* (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:12.868Z
+// Generated: 2026-06-22T07:06:48.515Z
 // ============================================================
 
 export interface EventLogEntry {

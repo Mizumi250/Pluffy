@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T05:22:15.864Z
+// Generated: 2026-06-22T12:11:38.408Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
