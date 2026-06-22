@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Navbar [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.313Z
+// Generated: 2026-06-22T00:05:32.766Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,14 +11,12 @@ import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { Link } from 'react-router'
 import { links } from './utils'
 
-// ─── CUSTOM COMPONENTS ───────────────────────────────
-
 export const Navbar = ({ currentPath }: { currentPath: string }) => {
   const [isOpen, setIsOpen] = useState(false)
-  
+
   const links = [
-    { name: 'Home', path: '/new-updates-styles' },
-    { name: 'About', path: '/new-updates-styles/about' },
+    { name: 'Home',     path: '/new-updates-styles' },
+    { name: 'About',    path: '/new-updates-styles/about' },
     { name: 'Features', path: '/new-updates-styles/features' },
   ]
 
@@ -29,8 +27,7 @@ export const Navbar = ({ currentPath }: { currentPath: string }) => {
           <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600" />
           <span className="font-bold text-lg">Arkzen v2.0</span>
         </div>
-        
-        {/* Desktop menu */}
+
         <div className="hidden md:flex gap-1">
           {links.map(link => (
             <Link
@@ -43,7 +40,6 @@ export const Navbar = ({ currentPath }: { currentPath: string }) => {
           ))}
         </div>
 
-        {/* Mobile menu button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           className="md:hidden p-2 rounded-lg hover:bg-neutral-100"
@@ -52,7 +48,6 @@ export const Navbar = ({ currentPath }: { currentPath: string }) => {
         </button>
       </div>
 
-      {/* Mobile menu */}
       {isOpen && (
         <div className="navbar-mobile md:hidden">
           {links.map(link => (

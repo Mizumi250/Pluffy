@@ -3,7 +3,7 @@
 // Rendered by the wildcard route /layout-test/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-06-16T14:29:27.692Z
+// Generated: 2026-06-22T00:05:31.070Z
 // ============================================================
 
 import React from 'react'

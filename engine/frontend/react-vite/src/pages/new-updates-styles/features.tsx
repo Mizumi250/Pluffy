@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/features [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-16T14:29:28.368Z
+// Generated: 2026-06-22T00:05:32.793Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -25,7 +25,7 @@ const FeaturesPage = () => {
       <Navbar currentPath="/new-updates-styles/features" />
       <div className="container mx-auto px-4 space-y-8 py-8">
         <h1 className="text-4xl font-bold">All Features</h1>
-        
+
         <div className="flex gap-4 flex-wrap">
           {(['blue', 'purple', 'green', 'orange'] as const).map(color => (
             <button

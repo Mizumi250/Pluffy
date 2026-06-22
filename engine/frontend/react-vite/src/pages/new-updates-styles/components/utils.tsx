@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — new-updates-styles [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.304Z
+// Generated: 2026-06-22T00:05:32.763Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,8 +12,8 @@ import { Link } from 'react-router'
 
 export const getIconComponent = (iconName: string) => {
   const icons: Record<string, React.ReactNode> = {
-    zap:    <Zap size={32} />,
-    code:   <Code size={32} />,
+    zap:     <Zap size={32} />,
+    code:    <Code size={32} />,
     palette: <Palette size={32} />,
     layers:  <Layers size={32} />,
   }

@@ -1,15 +1,15 @@
 /* @arkzen:meta
 name: ethereane
-version: 1.3.0
+version: 2.0.1
 label: Ethereane
 auth: false
-description: Pixel RPG game — fixed 640x360 viewport, 6400x3600 world, smooth follow camera, virtual joystick + keyboard, simple oval shadow.
+description: Real-time 3D voxel-pixel RPG — free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for character/NPCs/bushes, virtual joystick + keyboard, low-res pixelated render target.
 */
 
 /* @arkzen:meta:web
 favicon: 🎮
 title: Ethereane
-description: A pixel RPG world.
+description: A 3D pixel RPG world.
 */
 
 /* @arkzen:web:style */
@@ -49,6 +49,16 @@ description: A pixel RPG world.
 
 .eth-canvas {
   display: block;
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+  touch-action: none;
+}
+
+.eth-minimap-canvas {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
@@ -179,27 +189,60 @@ description: A pixel RPG world.
 
 /* @arkzen:web:script */
 
-// ─── GAME CONSTANTS ────────────────────────────────────────────────────────────
-export const GAME_W     = 640
-export const GAME_H     = 360
-export const WORLD_W    = 6400
-export const WORLD_H    = 3600
-export const TILE_SIZE  = 32
-export const CHAR_W     = 32
-export const CHAR_H     = 48
-export const CHAR_SPEED    = 2
-export const CAM_LERP      = 0.08
-export const ZOOM          = 2
+import * as THREE from 'three'
 
-// ─── ANIMATION ────────────────────────────────────────────────────────────────
+// ─── VIEWPORT / RENDER TARGET ──────────────────────────────────────────────────
+// internal WebGL buffer stays fixed-res and gets CSS-upscaled with crisp pixels,
+// same trick the old 2D build used — keeps the chunky pixel-art look.
+export const GAME_W = 640
+export const GAME_H = 360
+
+// ─── WORLD / VOXEL GRID ─────────────────────────────────────────────────────────
+// "Blocks for the tiles for now" — simple textured cubes, placeholder until
+// the real voxel meshes are ready.
+export const TILE_SIZE    = 1        // world units per ground block
+export const GRID_W       = 100      // blocks across X
+export const GRID_D       = 64       // blocks across Z
+export const WORLD_W      = GRID_W * TILE_SIZE
+export const WORLD_D      = GRID_D * TILE_SIZE
+export const BLOCK_HEIGHT = 0.6
+export const WORLD_MARGIN = TILE_SIZE * 2
+
+// ─── CHARACTER ────────────────────────────────────────────────────────────────
+export const CHAR_PLANE_W = TILE_SIZE * 1.0   // billboard plane width  (matches 32px sprite)
+export const CHAR_PLANE_H = TILE_SIZE * 1.5   // billboard plane height (matches 48px sprite)
+export const CHAR_RADIUS  = TILE_SIZE * 0.28
+export const CHAR_SPEED   = 0.0625            // world units / tick — same pace as the old 2D build
+
+// ─── CAMERA — manual orbit, NOT OrbitControls ──────────────────────────────────
+// OrbitControls re-derives its spherical offset from (camera.position - target)
+// every update() call. Re-targeting it every frame (to follow a moving
+// character) feeds it a target that's always slightly stale, so it never
+// actually keeps pace with the player, and the leftover translation gets
+// folded into its rotation math and compounds into the "swipe = chaos" glitch.
+// Driving azimuth/polar/distance ourselves and rebuilding camera.position from
+// the character's *current* position every frame sidesteps both problems.
+export const CAM_DIST_MIN     = 1.1
+export const CAM_DIST_MAX     = 9
+export const CAM_DIST_DEFAULT = 2.4    // "very very close to the user"
+export const CAM_POLAR_MIN     = 0.4   // clamped shy of true top-down (0) — avoids the pole glitch
+export const CAM_POLAR_MAX     = 1.45  // clamped shy of straight-on/under
+export const CAM_POLAR_DEFAULT = 0.75
+export const CAM_ROTATE_SPEED = 0.0055 // radians of azimuth/polar per drag pixel
+export const CAM_ZOOM_SPEED   = 0.0035 // distance units per wheel-delta pixel
+export const CAM_LERP         = 0.22   // smoothing toward the latest input each frame
+export const CAM_LOOK_HEIGHT  = CHAR_PLANE_H * 0.6
+
+// ─── ANIMATION (pacing unchanged from the 2D build — chavarter still animates) ──
 export const IDLE_FRAMES     = 4
 export const IDLE_FRAME_RATE = 8    // ticks per frame during animation (snappy)
 export const IDLE_PAUSE      = 60   // ~1 second at 60fps
 export const WALK_FRAMES     = 6
 export const WALK_FRAME_RATE = 8    // ticks per frame for walk
 export const WALK_ROW_OFFSET = 4    // walk rows start at row 4
+export const SHEET_COLS      = 6    // character1.png is 192x384 = 6 cols x 8 rows
+export const SHEET_ROWS      = 8
 
-// Direction rows in sprite sheet (idle rows 0-3, walk rows 4-7 — not drawn yet)
 export const DIR_DOWN  = 0
 export const DIR_LEFT  = 1
 export const DIR_RIGHT = 2
@@ -207,110 +250,76 @@ export const DIR_UP    = 3
 
 // ─── ASSET PATHS ──────────────────────────────────────────────────────────────
 export const ASSETS = {
-  tileGrass:       '/tatemonos/ethereane/assets/images/tile-grass.png',
-  tilePlainGrass:  '/tatemonos/ethereane/assets/images/tile-plain-grass.png',
-  character1:      '/tatemonos/ethereane/assets/images/character1.png',
-  bush1:           '/tatemonos/ethereane/assets/images/bush1.png',
-  bush2:           '/tatemonos/ethereane/assets/images/bush2.png',
+  tileGrass:      '/tatemonos/ethereane/assets/images/tile-grass.png',
+  tilePlainGrass: '/tatemonos/ethereane/assets/images/tile-plain-grass.png',
+  character1:     '/tatemonos/ethereane/assets/images/character1.png',
+  bush1:          '/tatemonos/ethereane/assets/images/bush1.png',
+  bush2:          '/tatemonos/ethereane/assets/images/bush2.png',
 }
 
-// ─── PROP TYPES ───────────────────────────────────────────────────────────────
+// ─── PROPS — billboarded, camera-facing, same trick as the character ──────────
 export type PropType = 'bush1' | 'bush2'
 
 export interface Prop {
-  type:      PropType
-  x:         number
-  y:         number
-  w:         number
-  h:         number
-  collision: boolean
+  type: PropType
+  x:    number
+  z:    number
 }
 
-// bush2 collision box — bottom half only so top overlaps character
-export const PROP_DEFS: Record<PropType, { w: number; h: number; collision: boolean; colOffsetY: number; colH: number }> = {
-  bush1: { w: 32, h: 32, collision: false, colOffsetY: 0,  colH: 0  },
-  bush2: { w: 32, h: 32, collision: true,  colOffsetY: 16, colH: 16 },
+export const PROP_DEFS: Record<PropType, { size: number; collision: boolean; radius: number }> = {
+  bush1: { size: TILE_SIZE * 0.85, collision: false, radius: 0 },
+  bush2: { size: TILE_SIZE * 0.9,  collision: true,  radius: TILE_SIZE * 0.32 },
 }
 
-// ─── WORLD GENERATOR ──────────────────────────────────────────────────────────
+export const COUNT_BUSH1 = 86
+export const COUNT_BUSH2 = 43
+
+// ─── WORLD GENERATOR (same seeded RNG as before, now scattering in XZ) ────────
 export function generateProps(seed: number = 42): Prop[] {
   const props: Prop[] = []
-  // simple seeded random
   let s = seed
   const rand = () => { s = (s * 1664525 + 1013904223) & 0xffffffff; return (s >>> 0) / 0xffffffff }
 
-  const COUNT_BUSH1 = 300
-  const COUNT_BUSH2 = 150
-  const MARGIN      = 64  // keep away from world edges
+  const halfW = WORLD_W / 2 - WORLD_MARGIN
+  const halfD = WORLD_D / 2 - WORLD_MARGIN
 
   for (let i = 0; i < COUNT_BUSH1; i++) {
-    props.push({
-      type: 'bush1',
-      x: Math.floor(MARGIN + rand() * (WORLD_W - MARGIN * 2)),
-      y: Math.floor(MARGIN + rand() * (WORLD_H - MARGIN * 2)),
-      w: 32, h: 32,
-      collision: false,
-    })
+    props.push({ type: 'bush1', x: -halfW + rand() * halfW * 2, z: -halfD + rand() * halfD * 2 })
   }
   for (let i = 0; i < COUNT_BUSH2; i++) {
-    props.push({
-      type: 'bush2',
-      x: Math.floor(MARGIN + rand() * (WORLD_W - MARGIN * 2)),
-      y: Math.floor(MARGIN + rand() * (WORLD_H - MARGIN * 2)),
-      w: 32, h: 32,
-      collision: true,
-    })
+    props.push({ type: 'bush2', x: -halfW + rand() * halfW * 2, z: -halfD + rand() * halfD * 2 })
   }
   return props
 }
 
-// ─── COLLISION CHECK ──────────────────────────────────────────────────────────
-export function resolveCollision(
-  nextX:  number,
-  nextY:  number,
-  props:  Prop[],
-): { x: number; y: number } {
-  // character feet box
-  const cLeft   = nextX + 4
-  const cRight  = nextX + CHAR_W - 4
-  const cTop    = nextY + CHAR_H - 12
-  const cBottom = nextY + CHAR_H
-
+// ─── COLLISION CHECK — circle vs circle push-out in the XZ plane ──────────────
+export function resolveCollision(nextX: number, nextZ: number, props: Prop[]): { x: number; z: number } {
+  let x = nextX
+  let z = nextZ
   for (const p of props) {
-    if (!p.collision) continue
-    const def     = PROP_DEFS[p.type]
-    const pLeft   = p.x
-    const pRight  = p.x + p.w
-    const pTop    = p.y + def.colOffsetY
-    const pBottom = p.y + def.colOffsetY + def.colH
-
-    if (cRight > pLeft && cLeft < pRight && cBottom > pTop && cTop < pBottom) {
-      // push back — find smallest overlap axis
-      const overlapLeft  = cRight  - pLeft
-      const overlapRight = pRight  - cLeft
-      const overlapTop   = cBottom - pTop
-      const overlapBot   = pBottom - cTop
-
-      const minH = Math.min(overlapLeft, overlapRight)
-      const minV = Math.min(overlapTop,  overlapBot)
-
-      if (minH < minV) {
-        nextX += overlapLeft < overlapRight ? -overlapLeft : overlapRight
-      } else {
-        nextY += overlapTop  < overlapBot   ? -overlapTop  : overlapBot
-      }
+    const def = PROP_DEFS[p.type]
+    if (!def.collision) continue
+    const dx = x - p.x
+    const dz = z - p.z
+    const distSq  = dx * dx + dz * dz
+    const minDist = CHAR_RADIUS + def.radius
+    if (distSq < minDist * minDist) {
+      const dist = Math.sqrt(distSq) || 0.0001
+      const push = minDist - dist
+      x += (dx / dist) * push
+      z += (dz / dist) * push
     }
   }
-  return { x: nextX, y: nextY }
+  return { x, z }
 }
 
 // ─── NPC ──────────────────────────────────────────────────────────────────────
-export const NPC_COUNT      = 10
-export const NPC_SPEED      = 0.8
-export const NPC_WANDER_MIN = 60
-export const NPC_WANDER_MAX = 240
-export const NPC_SPAWN_RANGE = 400
-export const NPC_INTERACT_RADIUS = 36  // pixels — how close to trigger button
+export const NPC_COUNT           = 10
+export const NPC_SPEED           = 0.025
+export const NPC_WANDER_MIN      = 60
+export const NPC_WANDER_MAX      = 240
+export const NPC_SPAWN_RANGE     = 14
+export const NPC_INTERACT_RADIUS = 1.2   // world units — how close to trigger button
 
 export const NPC_DIALOGUES = [
   ["Hey there, traveler!", "This world is bigger than it looks..."],
@@ -326,93 +335,80 @@ export const NPC_DIALOGUES = [
 ]
 
 export interface Npc {
-  x:            number
-  y:            number
-  dx:           number
-  dy:           number
-  dirRow:       number
-  frameIndex:   number
-  frameTick:    number
-  wanderTick:   number
-  wanderMax:    number
-  idlePausing:  boolean
-  idleTick:     number
+  x:             number
+  z:             number
+  dx:            number
+  dz:            number
+  dirRow:        number
+  frameIndex:    number
+  frameTick:     number
+  wanderTick:    number
+  wanderMax:     number
+  idlePausing:   boolean
   dialogueIndex: number
 }
 
 export function generateNpcs(): Npc[] {
   const npcs: Npc[] = []
-  const cx = WORLD_W / 2
-  const cy = WORLD_H / 2
   for (let i = 0; i < NPC_COUNT; i++) {
     const angle = (i / NPC_COUNT) * Math.PI * 2
-    const dist  = 100 + Math.random() * NPC_SPAWN_RANGE
+    const dist  = 3 + Math.random() * NPC_SPAWN_RANGE
     npcs.push({
-      x:           cx + Math.cos(angle) * dist,
-      y:           cy + Math.sin(angle) * dist,
-      dx:          0,
-      dy:          0,
-      dirRow:      DIR_DOWN,
-      frameIndex:  Math.floor(Math.random() * WALK_FRAMES),
-      frameTick:   0,
-      wanderTick:  0,
+      x:             Math.cos(angle) * dist,
+      z:             Math.sin(angle) * dist,
+      dx:            0,
+      dz:            0,
+      dirRow:        DIR_DOWN,
+      frameIndex:    Math.floor(Math.random() * WALK_FRAMES),
+      frameTick:     0,
+      wanderTick:    0,
       wanderMax:     NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN)),
       idlePausing:   false,
-      idleTick:      0,
       dialogueIndex: i % NPC_DIALOGUES.length,
     })
   }
   return npcs
 }
 
-export function findNearbyNpc(
-  charX: number,
-  charY: number,
-  npcs:  Npc[],
-): Npc | null {
-  const cx = charX + CHAR_W / 2
-  const cy = charY + CHAR_H / 2
+export function findNearbyNpc(charX: number, charZ: number, npcs: Npc[]): Npc | null {
   for (const npc of npcs) {
-    const nx   = npc.x + CHAR_W / 2
-    const ny   = npc.y + CHAR_H / 2
-    const dist = Math.sqrt((cx - nx) ** 2 + (cy - ny) ** 2)
+    const dist = Math.hypot(charX - npc.x, charZ - npc.z)
     if (dist < NPC_INTERACT_RADIUS) return npc
   }
   return null
 }
 
-// ─── NPC UPDATE FUNCTION (added to fix parse error) ─────────────────────────
 export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
+  const halfW = WORLD_W / 2 - WORLD_MARGIN
+  const halfD = WORLD_D / 2 - WORLD_MARGIN
+
   for (const npc of npcs) {
     npc.wanderTick++
 
-    // Pick new direction only when not paused
     if (!paused && npc.wanderTick >= npc.wanderMax) {
       npc.wanderTick = 0
       npc.wanderMax  = NPC_WANDER_MIN + Math.floor(Math.random() * (NPC_WANDER_MAX - NPC_WANDER_MIN))
       if (Math.random() < 0.25) {
         npc.dx = 0
-        npc.dy = 0
+        npc.dz = 0
       } else {
         const angle = Math.random() * Math.PI * 2
         npc.dx = Math.cos(angle)
-        npc.dy = Math.sin(angle)
+        npc.dz = Math.sin(angle)
       }
     }
 
-    const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1)
+    const moving = !paused && (Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1)
 
-    // Move only if not paused
     if (moving) {
-      npc.x = Math.max(0, Math.min(npc.x + npc.dx * NPC_SPEED, WORLD_W - CHAR_W))
-      npc.y = Math.max(0, Math.min(npc.y + npc.dy * NPC_SPEED, WORLD_H - CHAR_H))
-      if      (npc.dy >  0.3) npc.dirRow = DIR_DOWN
-      else if (npc.dy < -0.3) npc.dirRow = DIR_UP
+      npc.x = Math.max(-halfW, Math.min(npc.x + npc.dx * NPC_SPEED, halfW))
+      npc.z = Math.max(-halfD, Math.min(npc.z + npc.dz * NPC_SPEED, halfD))
+      if      (npc.dz >  0.3) npc.dirRow = DIR_DOWN
+      else if (npc.dz < -0.3) npc.dirRow = DIR_UP
       else if (npc.dx < -0.3) npc.dirRow = DIR_LEFT
       else if (npc.dx >  0.3) npc.dirRow = DIR_RIGHT
     }
 
-    // Animation always runs (idle or walk frames)
     npc.frameTick++
     if (moving) {
       if (npc.frameTick >= WALK_FRAME_RATE) {
@@ -438,17 +434,143 @@ export function updateNpcs(npcs: Npc[], paused: boolean = false): void {
   }
 }
 
-// ─── IMAGE LOADER ─────────────────────────────────────────────────────────────
-export function loadImage(src: string): Promise<HTMLImageElement> {
+// ─── TEXTURE LOADING — nearest filter, no mipmaps, crisp pixel art ────────────
+export function loadTexture(loader: THREE.TextureLoader, src: string): Promise<THREE.Texture> {
   return new Promise((resolve, reject) => {
-    const img = new Image()
-    img.onload  = () => resolve(img)
-    img.onerror = () => reject(new Error(`Failed to load: ${src}`))
-    img.src = src
+    loader.load(
+      src,
+      (tex) => {
+        tex.magFilter      = THREE.NearestFilter
+        tex.minFilter      = THREE.NearestFilter
+        tex.generateMipmaps = false
+        tex.colorSpace      = THREE.SRGBColorSpace
+        resolve(tex)
+      },
+      undefined,
+      () => reject(new Error(`Failed to load: ${src}`)),
+    )
   })
 }
 
-// ─── SCALE CALCULATOR ─────────────────────────────────────────────────────────
+// ─── SPRITE SHEET FRAMING (UV offset trick, replaces the old ctx sub-rect draw) ─
+export function initSheetTexture(tex: THREE.Texture): void {
+  tex.wrapS = THREE.RepeatWrapping
+  tex.wrapT = THREE.RepeatWrapping
+  tex.repeat.set(1 / SHEET_COLS, 1 / SHEET_ROWS)
+}
+
+export function setSheetFrame(tex: THREE.Texture, col: number, row: number): void {
+  tex.offset.set(col / SHEET_COLS, 1 - (row + 1) / SHEET_ROWS)
+}
+
+// ─── BILLBOARDING — "thin paper from Gumball": Y-axis-only rotation so the ─────
+// sprite stays upright and just turns to face the camera, never tilts.
+// A small deadzone guards against the angle thrashing when the camera's
+// horizontal offset from the sprite collapses near a top-down view.
+const BILLBOARD_DEADZONE = 0.02
+
+export function faceCamera(mesh: THREE.Object3D, camX: number, camZ: number): void {
+  const dx = camX - mesh.position.x
+  const dz = camZ - mesh.position.z
+  if (Math.hypot(dx, dz) < BILLBOARD_DEADZONE) return // hold last angle instead of spinning
+  mesh.rotation.y = Math.atan2(dx, dz)
+}
+
+const _billboardDummy = new THREE.Object3D()
+
+// ─── MANUAL ORBIT CAMERA MATH ──────────────────────────────────────────────────
+export function clamp(v: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, v))
+}
+
+export function lerp(a: number, b: number, t: number): number {
+  return a + (b - a) * t
+}
+
+// shortest-path angle interpolation — avoids spinning the long way around at the wrap point
+export function lerpAngle(a: number, b: number, t: number): number {
+  const diff = (((b - a + Math.PI) % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2) - Math.PI
+  return a + diff * t
+}
+
+// camera position rebuilt fresh every frame from the character's *current*
+// position — never relies on the camera's own previous position, so there's
+// nothing to go stale or compound.
+export function orbitCameraPosition(
+  charX: number, charZ: number,
+  azimuth: number, polar: number, dist: number,
+): { x: number; y: number; z: number } {
+  const sinPolar = Math.sin(polar)
+  return {
+    x: charX + dist * sinPolar * Math.sin(azimuth),
+    y: CAM_LOOK_HEIGHT + dist * Math.cos(polar),
+    z: charZ + dist * sinPolar * Math.cos(azimuth),
+  }
+}
+
+// same billboard trick, applied per-instance for the bush InstancedMesh-es
+export function billboardInstances(
+  mesh:      THREE.InstancedMesh,
+  props:     { x: number; z: number }[],
+  size:      number,
+  cameraPos: THREE.Vector3,
+): void {
+  for (let i = 0; i < props.length; i++) {
+    const p  = props[i]
+    const dx = cameraPos.x - p.x
+    const dz = cameraPos.z - p.z
+    const angle = Math.hypot(dx, dz) < BILLBOARD_DEADZONE
+      ? 0
+      : Math.atan2(dx, dz)
+    _billboardDummy.position.set(p.x, size / 2, p.z)
+    _billboardDummy.rotation.set(0, angle, 0)
+    _billboardDummy.scale.set(size, size, 1)
+    _billboardDummy.updateMatrix()
+    mesh.setMatrixAt(i, _billboardDummy.matrix)
+  }
+  mesh.instanceMatrix.needsUpdate = true
+}
+
+// ─── GROUND BLOCK LAYOUT — same patch-noise distribution as the old 2D build ───
+export interface GroundInstance { x: number; z: number }
+
+export function buildGroundData(): { grass: GroundInstance[]; plain: GroundInstance[] } {
+  const grass: GroundInstance[] = []
+  const plain: GroundInstance[] = []
+
+  for (let r = 0; r < GRID_D; r++) {
+    for (let c = 0; c < GRID_W; c++) {
+      const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
+      const medium = Math.sin(c * 0.31 + r * 0.29) * 0.4
+      const small  = Math.sin(c * 0.61 + r * 0.53) * 0.2
+      const noise  = large + medium + small
+      const x = (c - GRID_W / 2) * TILE_SIZE + TILE_SIZE / 2
+      const z = (r - GRID_D / 2) * TILE_SIZE + TILE_SIZE / 2
+      ;(noise > 0 ? plain : grass).push({ x, z })
+    }
+  }
+  return { grass, plain }
+}
+
+// ─── SHADOW BLOB — small radial-gradient texture, reused under every sprite ────
+export function createShadowTexture(): THREE.CanvasTexture {
+  const size = 64
+  const c = document.createElement('canvas')
+  c.width = size
+  c.height = size
+  const ctx = c.getContext('2d')!
+  const grad = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2)
+  grad.addColorStop(0, 'rgba(0,0,0,0.45)')
+  grad.addColorStop(1, 'rgba(0,0,0,0)')
+  ctx.fillStyle = grad
+  ctx.fillRect(0, 0, size, size)
+  const tex = new THREE.CanvasTexture(c)
+  tex.minFilter = THREE.LinearFilter
+  tex.magFilter = THREE.LinearFilter
+  return tex
+}
+
+// ─── SCALE CALCULATOR (unchanged) ──────────────────────────────────────────────
 export function calcScale(): number {
   const scaleX  = window.innerWidth  / GAME_W
   const scaleY  = window.innerHeight / GAME_H
@@ -457,232 +579,53 @@ export function calcScale(): number {
   return integer >= 1 ? integer : fit
 }
 
-// ─── CAMERA ───────────────────────────────────────────────────────────────────
-export function lerpCam(
-  cam:    { x: number; y: number },
-  target: { x: number; y: number },
-  lerp:   number,
-  zoom:   number,
-): { x: number; y: number } {
-  const visW = GAME_W / zoom
-  const visH = GAME_H / zoom
-  const targetCamX = target.x + CHAR_W / 2 - visW / 2
-  const targetCamY = target.y + CHAR_H / 2 - visH / 2
-  let cx = cam.x + (targetCamX - cam.x) * lerp
-  let cy = cam.y + (targetCamY - cam.y) * lerp
-  cx = Math.max(0, Math.min(cx, WORLD_W - visW))
-  cy = Math.max(0, Math.min(cy, WORLD_H - visH))
-  return { x: cx, y: cy }
-}
-
-// ─── MINIMAP ──────────────────────────────────────────────────────────────────
-export const MINI_W      = 80   // minimap width in pixels
-export const MINI_H      = 45   // minimap height (keeps 16:9 ratio of world)
-export const MINI_PAD    = 8    // padding from corner
+// ─── MINIMAP — drawn on a separate 2D overlay canvas above the WebGL canvas ────
+export const MINI_W      = 80
+export const MINI_H      = 52
+export const MINI_PAD    = 8
 export const MINI_BORDER = 1
 
 export function renderMinimap(
-  ctx:   CanvasRenderingContext2D,
-  charX: number,
-  charY: number,
+  ctx:        CanvasRenderingContext2D,
+  charX:      number,
+  charZ:      number,
+  camAzimuth: number,
 ) {
+  ctx.clearRect(0, 0, GAME_W, GAME_H)
+
   const x = GAME_W - MINI_W - MINI_PAD
   const y = MINI_PAD
 
-  // ── Background ──
   ctx.save()
   ctx.globalAlpha = 0.7
   ctx.fillStyle = '#0a1a0a'
   ctx.fillRect(x - MINI_BORDER, y - MINI_BORDER, MINI_W + MINI_BORDER * 2, MINI_H + MINI_BORDER * 2)
   ctx.globalAlpha = 1
 
-  // ── World fill ──
   ctx.fillStyle = '#2d5a27'
   ctx.fillRect(x, y, MINI_W, MINI_H)
 
-  // ── Border ──
   ctx.strokeStyle = 'rgba(255,255,255,0.4)'
   ctx.lineWidth = 0.5
   ctx.strokeRect(x, y, MINI_W, MINI_H)
 
-  // ── Player dot ──
-  const dotX = x + (charX / WORLD_W) * MINI_W
-  const dotY = y + (charY / WORLD_H) * MINI_H
+  const dotX = x + ((charX + WORLD_W / 2) / WORLD_W) * MINI_W
+  const dotY = y + ((charZ + WORLD_D / 2) / WORLD_D) * MINI_H
+
+  // facing arrow — shows which way the camera is currently looking from
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)'
+  ctx.lineWidth = 1
+  ctx.beginPath()
+  ctx.moveTo(dotX, dotY)
+  ctx.lineTo(dotX + Math.sin(camAzimuth) * 6, dotY + Math.cos(camAzimuth) * 6)
+  ctx.stroke()
+
   ctx.fillStyle = '#fff'
   ctx.beginPath()
   ctx.arc(dotX, dotY, 1.5, 0, Math.PI * 2)
   ctx.fill()
 
-  // ── Viewport box — shows what camera sees ──
-  const vx = x + ((charX - GAME_W / ZOOM / 2) / WORLD_W) * MINI_W
-  const vy = y + ((charY - GAME_H / ZOOM / 2) / WORLD_H) * MINI_H
-  const vw = (GAME_W / ZOOM / WORLD_W) * MINI_W
-  const vh = (GAME_H / ZOOM / WORLD_H) * MINI_H
-  ctx.strokeStyle = 'rgba(255,255,255,0.25)'
-  ctx.lineWidth = 0.5
-  ctx.strokeRect(vx, vy, vw, vh)
-
   ctx.restore()
-}
-
-// ─── RENDER FRAME ─────────────────────────────────────────────────────────────
-export function renderFrame(
-  ctx:        CanvasRenderingContext2D,
-  grass:      HTMLImageElement,
-  plainGrass: HTMLImageElement,
-  char:       HTMLImageElement,
-  images:     Record<string, HTMLImageElement>,
-  props:      Prop[],
-  npcs:       Npc[],
-  charX:      number,
-  charY:      number,
-  camX:       number,
-  camY:       number,
-  zoom:       number,
-  frameIndex: number,
-  dirRow:     number,
-  isWalking:  boolean,
-) {
-  // ── Keep pixels sharp ──
-  ctx.imageSmoothingEnabled = false
-  ctx.clearRect(0, 0, GAME_W, GAME_H)
-
-  // floor camera to prevent sub-pixel jitter on all sprites
-  camX = Math.floor(camX)
-  camY = Math.floor(camY)
-
-  ctx.save()
-  ctx.scale(zoom, zoom)
-
-  const visW = GAME_W / zoom
-  const visH = GAME_H / zoom
-
-  // ── Tiles — patchy distribution using multi-frequency hash ──
-  const startCol = Math.floor(camX / TILE_SIZE)
-  const startRow = Math.floor(camY / TILE_SIZE)
-  const endCol   = Math.ceil((camX + visW) / TILE_SIZE)
-  const endRow   = Math.ceil((camY + visH) / TILE_SIZE)
-
-  for (let r = startRow; r <= endRow; r++) {
-    for (let c = startCol; c <= endCol; c++) {
-      const sx = c * TILE_SIZE - camX
-      const sy = r * TILE_SIZE - camY
-      // patch noise — large scale + medium blended, more mix visible
-      const large  = Math.sin(c * 0.13 + r * 0.17) * Math.cos(c * 0.07 - r * 0.11)
-      const medium = Math.sin(c * 0.31 + r * 0.29) * 0.4
-      const small  = Math.sin(c * 0.61 + r * 0.53) * 0.2
-      const noise  = large + medium + small
-      const tile   = noise > 0.0 ? plainGrass : grass
-      ctx.drawImage(tile, sx, sy, TILE_SIZE, TILE_SIZE)
-    }
-  }
-
-  // ── Y-sort: collect visible props + character into one list ──
-  const visibleProps = props.filter(p =>
-    p.x + p.w > camX - 32 && p.x < camX + visW + 32 &&
-    p.y + p.h > camY - 32 && p.y < camY + visH + 32
-  )
-
-  // character sort key = bottom of feet
-  const charSortY = charY + CHAR_H
-
-  // sort everything by bottom Y
-  type Drawable = { sortY: number; draw: () => void }
-  const drawables: Drawable[] = []
-
-  // add props
-  for (const p of visibleProps) {
-    const sx = Math.floor(p.x - camX)
-    const sy = Math.floor(p.y - camY)
-    const img = images[p.type]
-    if (!img) continue
-    drawables.push({
-      sortY: p.y + p.h,
-      draw: () => {
-        // shadow under bush2
-        if (p.type === 'bush2') {
-          ctx.save()
-          ctx.globalAlpha = 0.3
-          ctx.fillStyle = '#000'
-          ctx.beginPath()
-          ctx.ellipse(
-            sx + p.w / 2,
-            sy + p.h,
-            p.w / 2.5,
-            p.h / 5,
-            0, 0, Math.PI * 2,
-          )
-          ctx.fill()
-          ctx.restore()
-        }
-        ctx.drawImage(img, sx, sy, p.w, p.h)
-      },
-    })
-  }
-
-  // add npcs
-  for (const npc of npcs) {
-    const nx = Math.floor(npc.x - camX)
-    const ny = Math.floor(npc.y - camY)
-    // skip if off screen
-    if (nx + CHAR_W < 0 || nx > visW || ny + CHAR_H < 0 || ny > visH) continue
-    const moving   = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dy) > 0.1
-    const npcRow   = moving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
-    drawables.push({
-      sortY: npc.y + CHAR_H,
-      draw: () => {
-        // shadow
-        ctx.save()
-        ctx.globalAlpha = 0.25
-        ctx.fillStyle = '#000'
-        ctx.beginPath()
-        ctx.ellipse(nx + CHAR_W / 2, ny + CHAR_H, CHAR_W / 2.5, CHAR_H / 10, 0, 0, Math.PI * 2)
-        ctx.fill()
-        ctx.restore()
-        // sprite
-        ctx.drawImage(char, npc.frameIndex * CHAR_W, npcRow * CHAR_H, CHAR_W, CHAR_H, nx, ny, CHAR_W, CHAR_H)
-      },
-    })
-  }
-
-  // add character
-  const screenX = Math.floor(charX - camX)
-  const screenY = Math.floor(charY - camY)
-  const sheetRow = isWalking ? WALK_ROW_OFFSET + dirRow : dirRow
-  drawables.push({
-    sortY: charSortY,
-    draw: () => {
-      // shadow
-      ctx.save()
-      ctx.globalAlpha = 0.3
-      ctx.fillStyle = '#000'
-      ctx.beginPath()
-      ctx.ellipse(
-        screenX + CHAR_W / 2, screenY + CHAR_H,
-        CHAR_W / 2.5, CHAR_H / 10,
-        0, 0, Math.PI * 2,
-      )
-      ctx.fill()
-      ctx.restore()
-      // sprite
-      ctx.drawImage(
-        char,
-        frameIndex * CHAR_W, sheetRow * CHAR_H,
-        CHAR_W, CHAR_H,
-        screenX, screenY,
-        CHAR_W, CHAR_H,
-      )
-    },
-  })
-
-  // draw in Y order
-  drawables.sort((a, b) => a.sortY - b.sortY)
-  for (const d of drawables) d.draw()
-
-  ctx.restore()
-
-  // ── Minimap — outside zoom so it stays fixed size ──
-  renderMinimap(ctx, charX, charY)
 }
 
 /* @arkzen:web:script:end */
@@ -692,16 +635,18 @@ export function renderFrame(
 'use client'
 
 import React, { useEffect, useRef, useCallback, useState } from 'react'
+import * as THREE from 'three'
 import {
   GAME_W,
   GAME_H,
+  TILE_SIZE,
   WORLD_W,
-  WORLD_H,
-  CHAR_W,
-  CHAR_H,
+  WORLD_D,
+  BLOCK_HEIGHT,
+  WORLD_MARGIN,
+  CHAR_PLANE_W,
+  CHAR_PLANE_H,
   CHAR_SPEED,
-  CAM_LERP,
-  ZOOM,
   IDLE_FRAMES,
   IDLE_FRAME_RATE,
   IDLE_PAUSE,
@@ -714,57 +659,128 @@ import {
   DIR_UP,
   ASSETS,
   Prop,
+  PROP_DEFS,
+  generateProps,
   Npc,
   NPC_DIALOGUES,
-  generateProps,
   generateNpcs,
   updateNpcs,
   findNearbyNpc,
   resolveCollision,
-  loadImage,
+  loadTexture,
+  initSheetTexture,
+  setSheetFrame,
+  faceCamera,
+  billboardInstances,
+  buildGroundData,
+  createShadowTexture,
   calcScale,
-  lerpCam,
-  renderFrame,
   renderMinimap,
+  clamp,
+  lerp,
+  lerpAngle,
+  orbitCameraPosition,
+  CAM_DIST_MIN,
+  CAM_DIST_MAX,
+  CAM_DIST_DEFAULT,
+  CAM_POLAR_MIN,
+  CAM_POLAR_MAX,
+  CAM_POLAR_DEFAULT,
+  CAM_ROTATE_SPEED,
+  CAM_ZOOM_SPEED,
+  CAM_LERP,
+  CAM_LOOK_HEIGHT,
 } from '@/arkzen/generated/ethereane.scripts'
 
 const JOY_RADIUS = 60
 const KNOB_MAX   = 38
+const UP_AXIS    = new THREE.Vector3(0, 1, 0)
+
+type ThreeState = {
+  renderer:   THREE.WebGLRenderer
+  scene:      THREE.Scene
+  camera:     THREE.PerspectiveCamera
+  charMesh:   THREE.Mesh
+  charTex:    THREE.Texture
+  charShadow: THREE.Mesh
+  npcMeshes:  THREE.Mesh[]
+  npcTexes:   THREE.Texture[]
+  npcShadows: THREE.Mesh[]
+  bush1Mesh:  THREE.InstancedMesh
+  bush2Mesh:  THREE.InstancedMesh
+  bush1Props: Prop[]
+  bush2Props: Prop[]
+  minimapCtx: CanvasRenderingContext2D | null
+}
 
 export const EtheraneGame = () => {
-  const canvasRef   = useRef<HTMLCanvasElement>(null)
   const viewportRef = useRef<HTMLDivElement>(null)
+  const canvasRef   = useRef<HTMLCanvasElement>(null)
+  const minimapRef  = useRef<HTMLCanvasElement>(null)
   const knobRef     = useRef<HTMLDivElement>(null)
   const joyZoneRef  = useRef<HTMLDivElement>(null)
 
-  const charPos  = useRef({
-    x: WORLD_W / 2 - CHAR_W / 2,
-    y: WORLD_H / 2 - CHAR_H / 2,
-  })
-  const camPos   = useRef({
-    x: WORLD_W / 2 - GAME_W / 2,
-    y: WORLD_H / 2 - GAME_H / 2,
-  })
+  const charPos = useRef({ x: 0, z: 0 })
 
   const joyVec    = useRef({ x: 0, y: 0 })
   const keysHeld  = useRef<Set<string>>(new Set())
   const rafRef    = useRef<number>(0)
-  const assetsRef = useRef<{ grass: HTMLImageElement; plainGrass: HTMLImageElement; char: HTMLImageElement; images: Record<string, HTMLImageElement> } | null>(null)
-  const propsRef  = useRef<Prop[]>(generateProps(42))
-  const npcsRef   = useRef<Npc[]>(generateNpcs())
-
-  const [nearbyNpc,  setNearbyNpc]  = useState<Npc | null>(null)
-  const [dialogue,   setDialogue]   = useState<string[] | null>(null)
-  const nearbyNpcRef = useRef<Npc | null>(null)
   const joyActive = useRef(false)
   const joyOrigin = useRef({ x: 0, y: 0 })
 
-  // ─── ANIMATION STATE ──────────────────────────────────────────────────────
+  const propsRef = useRef<Prop[]>(generateProps(42))
+  const npcsRef  = useRef<Npc[]>(generateNpcs())
+
+  const [nearbyNpc, setNearbyNpc] = useState<Npc | null>(null)
+  const [dialogue,  setDialogue]  = useState<string[] | null>(null)
+  const nearbyNpcRef = useRef<Npc | null>(null)
+
+  // ─── ANIMATION STATE (unchanged) ──────────────────────────────────────────
   const frameIndex  = useRef(0)
   const frameTick   = useRef(0)
   const dirRow      = useRef(DIR_DOWN)
   const idlePausing = useRef(false)
   const isWalking   = useRef(false)
+
+  // ─── THREE.JS SCENE ─────────────────────────────────────────────────────────
+  const three = useRef<ThreeState | null>(null)
+
+  // ─── MANUAL ORBIT CAMERA — driven by pointer drag + wheel, not OrbitControls ─
+  const camAzimuth       = useRef(0)
+  const camPolar         = useRef(CAM_POLAR_DEFAULT)
+  const camDist          = useRef(CAM_DIST_DEFAULT)
+  const camAzimuthTarget = useRef(0)
+  const camPolarTarget   = useRef(CAM_POLAR_DEFAULT)
+  const camDistTarget    = useRef(CAM_DIST_DEFAULT)
+  const dragging         = useRef(false)
+  const dragPointerId    = useRef<number | null>(null)
+  const lastPointer      = useRef({ x: 0, y: 0 })
+
+  const onCamPointerDown = useCallback((e: PointerEvent) => {
+    dragging.current      = true
+    dragPointerId.current = e.pointerId
+    lastPointer.current   = { x: e.clientX, y: e.clientY }
+  }, [])
+
+  const onCamPointerMove = useCallback((e: PointerEvent) => {
+    if (!dragging.current || e.pointerId !== dragPointerId.current) return
+    const dx = e.clientX - lastPointer.current.x
+    const dy = e.clientY - lastPointer.current.y
+    lastPointer.current = { x: e.clientX, y: e.clientY }
+    camAzimuthTarget.current -= dx * CAM_ROTATE_SPEED
+    camPolarTarget.current = clamp(camPolarTarget.current - dy * CAM_ROTATE_SPEED, CAM_POLAR_MIN, CAM_POLAR_MAX)
+  }, [])
+
+  const onCamPointerUp = useCallback((e: PointerEvent) => {
+    if (e.pointerId !== dragPointerId.current) return
+    dragging.current      = false
+    dragPointerId.current = null
+  }, [])
+
+  const onCamWheel = useCallback((e: WheelEvent) => {
+    e.preventDefault()
+    camDistTarget.current = clamp(camDistTarget.current + e.deltaY * CAM_ZOOM_SPEED, CAM_DIST_MIN, CAM_DIST_MAX)
+  }, [])
 
   // ─── KNOB ─────────────────────────────────────────────────────────────────
   const setKnobPos = useCallback((dx: number, dy: number) => {
@@ -795,8 +811,8 @@ export const EtheraneGame = () => {
     const rawDy = t.clientY - joyOrigin.current.y
     const dist  = Math.sqrt(rawDx * rawDx + rawDy * rawDy)
     const angle = Math.atan2(rawDy, rawDx)
-    const clamp = Math.min(dist, KNOB_MAX)
-    setKnobPos(Math.cos(angle) * clamp, Math.sin(angle) * clamp)
+    const knobClamp = Math.min(dist, KNOB_MAX)
+    setKnobPos(Math.cos(angle) * knobClamp, Math.sin(angle) * knobClamp)
     joyVec.current = {
       x: Math.cos(angle) * Math.min(dist / JOY_RADIUS, 1),
       y: Math.sin(angle) * Math.min(dist / JOY_RADIUS, 1),
@@ -827,12 +843,8 @@ export const EtheraneGame = () => {
 
   // ─── GAME LOOP ────────────────────────────────────────────────────────────
   const gameLoop = useCallback(() => {
-    const canvas = canvasRef.current
-    const assets = assetsRef.current
-    if (!canvas || !assets) { rafRef.current = requestAnimationFrame(gameLoop); return }
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const t = three.current
+    if (!t) { rafRef.current = requestAnimationFrame(gameLoop); return }
 
     let kx = 0, ky = 0
     const keys = keysHeld.current
@@ -846,25 +858,34 @@ export const EtheraneGame = () => {
     const mag = Math.sqrt(dx * dx + dy * dy)
     if (mag > 1) { dx /= mag; dy /= mag }
 
-    let nextX = charPos.current.x + dx * CHAR_SPEED
-    let nextY = charPos.current.y + dy * CHAR_SPEED
-    nextX = Math.max(0, Math.min(nextX, WORLD_W - CHAR_W))
-    nextY = Math.max(0, Math.min(nextY, WORLD_H - CHAR_H))
-    const resolved = resolveCollision(nextX, nextY, propsRef.current)
+    // ── camera-relative movement: forward = -dy, strafe = dx ──
+    const camForward = new THREE.Vector3()
+    t.camera.getWorldDirection(camForward)
+    camForward.y = 0
+    camForward.normalize()
+    const camRight = new THREE.Vector3().crossVectors(camForward, UP_AXIS).normalize()
+
+    const moveX = camForward.x * -dy + camRight.x * dx
+    const moveZ = camForward.z * -dy + camRight.z * dx
+
+    let nextX = charPos.current.x + moveX * CHAR_SPEED
+    let nextZ = charPos.current.z + moveZ * CHAR_SPEED
+    const halfW = WORLD_W / 2 - WORLD_MARGIN
+    const halfD = WORLD_D / 2 - WORLD_MARGIN
+    nextX = Math.max(-halfW, Math.min(nextX, halfW))
+    nextZ = Math.max(-halfD, Math.min(nextZ, halfD))
+    const resolved = resolveCollision(nextX, nextZ, propsRef.current)
     charPos.current.x = resolved.x
-    charPos.current.y = resolved.y
+    charPos.current.z = resolved.z
 
-    // ── Direction ──
+    // ── direction row (screen-relative input axes, same feel as the old build) ──
     const moving = Math.abs(dx) > 0.1 || Math.abs(dy) > 0.1
-
-    // reset to idle start when transitioning from walk to idle
     if (isWalking.current && !moving) {
       frameIndex.current  = 0
       frameTick.current   = 0
-      idlePausing.current = true  // start with pause before first idle cycle
+      idlePausing.current = true
     }
     isWalking.current = moving
-
     if (moving) {
       if      (dy >  0.1) dirRow.current = DIR_DOWN
       else if (dy < -0.1) dirRow.current = DIR_UP
@@ -872,16 +893,14 @@ export const EtheraneGame = () => {
       else if (dx >  0.1) dirRow.current = DIR_RIGHT
     }
 
-    // ── Frame cycling ──
+    // ── frame cycling (unchanged) ──
     frameTick.current++
     if (moving) {
-      // walk — loop continuously
       if (frameTick.current >= WALK_FRAME_RATE) {
         frameTick.current = 0
         frameIndex.current = (frameIndex.current + 1) % WALK_FRAMES
       }
     } else {
-      // idle — play once, pause 3s, repeat
       const rate = idlePausing.current ? IDLE_PAUSE : IDLE_FRAME_RATE
       if (frameTick.current >= rate) {
         frameTick.current = 0
@@ -898,84 +917,222 @@ export const EtheraneGame = () => {
       }
     }
 
-    camPos.current = lerpCam(camPos.current, charPos.current, CAM_LERP, ZOOM)
-
-    // ── Update NPCs ──
+    // ── NPCs ──
     updateNpcs(npcsRef.current, !!dialogue)
-
-    // ── Nearby NPC detection ──
-    const nearby = findNearbyNpc(charPos.current.x, charPos.current.y, npcsRef.current)
+    const nearby = findNearbyNpc(charPos.current.x, charPos.current.z, npcsRef.current)
     if (nearby !== nearbyNpcRef.current) {
       nearbyNpcRef.current = nearby
       setNearbyNpc(nearby)
     }
 
-    renderFrame(
-      ctx,
-      assets.grass,
-      assets.plainGrass,
-      assets.char,
-      assets.images,
-      propsRef.current,
-      npcsRef.current,
-      charPos.current.x,
-      charPos.current.y,
-      camPos.current.x,
-      camPos.current.y,
-      ZOOM,
-      frameIndex.current,
-      dirRow.current,
-      isWalking.current,
+    // ── sync character billboard ──
+    t.charMesh.position.set(charPos.current.x, CHAR_PLANE_H / 2, charPos.current.z)
+    t.charShadow.position.set(charPos.current.x, 0.02, charPos.current.z)
+    const sheetRow = isWalking.current ? WALK_ROW_OFFSET + dirRow.current : dirRow.current
+    setSheetFrame(t.charTex, frameIndex.current, sheetRow)
+    faceCamera(t.charMesh, t.camera.position.x, t.camera.position.z)
+
+    // ── sync NPC billboards ──
+    npcsRef.current.forEach((npc, i) => {
+      const mesh   = t.npcMeshes[i]
+      const shadow = t.npcShadows[i]
+      const tex    = t.npcTexes[i]
+      mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
+      shadow.position.set(npc.x, 0.02, npc.z)
+      const npcMoving = Math.abs(npc.dx) > 0.1 || Math.abs(npc.dz) > 0.1
+      const row = npcMoving ? WALK_ROW_OFFSET + npc.dirRow : npc.dirRow
+      setSheetFrame(tex, npc.frameIndex, row)
+      faceCamera(mesh, t.camera.position.x, t.camera.position.z)
+    })
+
+    // ── sync bush billboards ──
+    billboardInstances(t.bush1Mesh, t.bush1Props, PROP_DEFS.bush1.size, t.camera.position)
+    billboardInstances(t.bush2Mesh, t.bush2Props, PROP_DEFS.bush2.size, t.camera.position)
+
+    // ── manual orbit camera — position rebuilt fresh from the character's
+    //    CURRENT spot every frame, so it can never lag behind like before ──
+    camAzimuth.current = lerpAngle(camAzimuth.current, camAzimuthTarget.current, CAM_LERP)
+    camPolar.current   = lerp(camPolar.current, camPolarTarget.current, CAM_LERP)
+    camDist.current    = lerp(camDist.current, camDistTarget.current, CAM_LERP)
+
+    const camPos = orbitCameraPosition(
+      charPos.current.x, charPos.current.z,
+      camAzimuth.current, camPolar.current, camDist.current,
     )
+    t.camera.position.set(camPos.x, camPos.y, camPos.z)
+    t.camera.lookAt(charPos.current.x, CAM_LOOK_HEIGHT, charPos.current.z)
+    t.renderer.render(t.scene, t.camera)
+
+    if (t.minimapCtx) {
+      renderMinimap(t.minimapCtx, charPos.current.x, charPos.current.z, camAzimuth.current)
+    }
 
     rafRef.current = requestAnimationFrame(gameLoop)
   }, [dialogue])
 
   // ─── SETUP ────────────────────────────────────────────────────────────────
   useEffect(() => {
-    const canvas   = canvasRef.current
-    const viewport = viewportRef.current
-    if (!canvas || !viewport) return
+    const canvas        = canvasRef.current
+    const minimapCanvas = minimapRef.current
+    const viewport       = viewportRef.current
+    if (!canvas || !minimapCanvas || !viewport) return
 
     canvas.width  = GAME_W
     canvas.height = GAME_H
+    minimapCanvas.width  = GAME_W
+    minimapCanvas.height = GAME_H
 
     const applyScale = () => {
       const s = calcScale()
-      viewport.style.width  = `${Math.floor(GAME_W * s)}px`
-      viewport.style.height = `${Math.floor(GAME_H * s)}px`
-      canvas.style.width    = `${Math.floor(GAME_W * s)}px`
-      canvas.style.height   = `${Math.floor(GAME_H * s)}px`
+      const w = Math.floor(GAME_W * s)
+      const h = Math.floor(GAME_H * s)
+      viewport.style.width  = `${w}px`
+      viewport.style.height = `${h}px`
+      canvas.style.width  = `${w}px`
+      canvas.style.height = `${h}px`
+      minimapCanvas.style.width  = `${w}px`
+      minimapCanvas.style.height = `${h}px`
     }
     applyScale()
     window.addEventListener('resize', applyScale)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup',   onKeyUp)
 
+    // ── scene / camera / renderer ──
+    const scene = new THREE.Scene()
+    scene.background = new THREE.Color('#bfe6ff')
+    scene.fog = new THREE.Fog('#bfe6ff', 14, 34)
+
+    const camera = new THREE.PerspectiveCamera(50, GAME_W / GAME_H, 0.1, 100)
+    const startPos = orbitCameraPosition(0, 0, camAzimuth.current, camPolar.current, camDist.current)
+    camera.position.set(startPos.x, startPos.y, startPos.z)
+    camera.lookAt(0, CAM_LOOK_HEIGHT, 0)
+
+    const renderer = new THREE.WebGLRenderer({ canvas, antialias: false })
+    renderer.setPixelRatio(1)
+    renderer.setSize(GAME_W, GAME_H, false)
+
+    // ── free orbit camera — drag anywhere on the canvas to rotate, wheel/pinch to zoom ──
+    canvas.style.touchAction = 'none'
+    canvas.addEventListener('pointerdown', onCamPointerDown)
+    window.addEventListener('pointermove', onCamPointerMove)
+    window.addEventListener('pointerup',   onCamPointerUp)
+    window.addEventListener('pointercancel', onCamPointerUp)
+    canvas.addEventListener('wheel', onCamWheel, { passive: false })
+
     let cancelled = false
+    const loader = new THREE.TextureLoader()
+
     Promise.all([
-      loadImage(ASSETS.tileGrass),
-      loadImage(ASSETS.tilePlainGrass),
-      loadImage(ASSETS.character1),
-      loadImage(ASSETS.bush1),
-      loadImage(ASSETS.bush2),
-    ]).then(([grass, plainGrass, char, bush1, bush2]) => {
+      loadTexture(loader, ASSETS.tileGrass),
+      loadTexture(loader, ASSETS.tilePlainGrass),
+      loadTexture(loader, ASSETS.character1),
+      loadTexture(loader, ASSETS.bush1),
+      loadTexture(loader, ASSETS.bush2),
+    ]).then(([grassTex, plainTex, charTex, bush1Tex, bush2Tex]) => {
       if (cancelled) return
-      assetsRef.current = {
-        grass, plainGrass, char,
-        images: { bush1, bush2 },
+
+      initSheetTexture(charTex)
+      setSheetFrame(charTex, 0, DIR_DOWN)
+
+      // ── ground blocks — placeholder cubes, ready to be voxelized later ──
+      const { grass, plain } = buildGroundData()
+      const blockGeo = new THREE.BoxGeometry(TILE_SIZE, BLOCK_HEIGHT, TILE_SIZE)
+      const dummy = new THREE.Object3D()
+
+      const grassMesh = new THREE.InstancedMesh(blockGeo, new THREE.MeshLambertMaterial({ map: grassTex }), grass.length)
+      grass.forEach((g, i) => {
+        dummy.position.set(g.x, -BLOCK_HEIGHT / 2, g.z)
+        dummy.updateMatrix()
+        grassMesh.setMatrixAt(i, dummy.matrix)
+      })
+      grassMesh.instanceMatrix.needsUpdate = true
+
+      const plainMesh = new THREE.InstancedMesh(blockGeo, new THREE.MeshLambertMaterial({ map: plainTex }), plain.length)
+      plain.forEach((g, i) => {
+        dummy.position.set(g.x, -BLOCK_HEIGHT / 2, g.z)
+        dummy.updateMatrix()
+        plainMesh.setMatrixAt(i, dummy.matrix)
+      })
+      plainMesh.instanceMatrix.needsUpdate = true
+
+      scene.add(grassMesh, plainMesh)
+
+      // ── lighting — only the block ground is lit, so cube edges read in 3D ──
+      scene.add(new THREE.AmbientLight('#ffffff', 0.8))
+      const sun = new THREE.DirectionalLight('#ffffff', 0.9)
+      sun.position.set(8, 14, 6)
+      scene.add(sun)
+
+      // ── shadow blob, reused under every billboard ──
+      const shadowTex  = createShadowTexture()
+      const shadowGeo  = new THREE.PlaneGeometry(CHAR_PLANE_W * 0.9, CHAR_PLANE_W * 0.9)
+      const makeShadow = () => {
+        const m = new THREE.Mesh(shadowGeo, new THREE.MeshBasicMaterial({ map: shadowTex, transparent: true, depthWrite: false }))
+        m.rotation.x = -Math.PI / 2
+        m.position.y = 0.02
+        scene.add(m)
+        return m
       }
+
+      // ── character billboard — "thin paper from Gumball" ──
+      const charGeo = new THREE.PlaneGeometry(CHAR_PLANE_W, CHAR_PLANE_H)
+      const charMat = new THREE.MeshBasicMaterial({ map: charTex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const charMesh = new THREE.Mesh(charGeo, charMat)
+      charMesh.position.set(0, CHAR_PLANE_H / 2, 0)
+      scene.add(charMesh)
+      const charShadow = makeShadow()
+
+      // ── NPC billboards — same trick, each gets its own cloned texture for an independent frame ──
+      const npcMeshes: THREE.Mesh[] = []
+      const npcTexes:  THREE.Texture[] = []
+      const npcShadows: THREE.Mesh[] = []
+      npcsRef.current.forEach((npc) => {
+        const tex = charTex.clone()
+        tex.needsUpdate = true
+        initSheetTexture(tex)
+        setSheetFrame(tex, npc.frameIndex, npc.dirRow)
+        const mat  = new THREE.MeshBasicMaterial({ map: tex, alphaTest: 0.5, side: THREE.DoubleSide })
+        const mesh = new THREE.Mesh(charGeo, mat)
+        mesh.position.set(npc.x, CHAR_PLANE_H / 2, npc.z)
+        scene.add(mesh)
+        npcMeshes.push(mesh)
+        npcTexes.push(tex)
+        npcShadows.push(makeShadow())
+      })
+
+      // ── bushes — billboarded sprites, same camera-facing trick as the character ──
+      const bush1Props = propsRef.current.filter(p => p.type === 'bush1')
+      const bush2Props = propsRef.current.filter(p => p.type === 'bush2')
+
+      const bushGeo  = new THREE.PlaneGeometry(1, 1)
+      const bush1Mat = new THREE.MeshBasicMaterial({ map: bush1Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush2Mat = new THREE.MeshBasicMaterial({ map: bush2Tex, alphaTest: 0.5, side: THREE.DoubleSide })
+      const bush1Mesh = new THREE.InstancedMesh(bushGeo, bush1Mat, bush1Props.length)
+      const bush2Mesh = new THREE.InstancedMesh(bushGeo, bush2Mat, bush2Props.length)
+      billboardInstances(bush1Mesh, bush1Props, PROP_DEFS.bush1.size, camera.position)
+      billboardInstances(bush2Mesh, bush2Props, PROP_DEFS.bush2.size, camera.position)
+      scene.add(bush1Mesh, bush2Mesh)
+
+      three.current = {
+        renderer, scene, camera,
+        charMesh, charTex, charShadow,
+        npcMeshes, npcTexes, npcShadows,
+        bush1Mesh, bush2Mesh, bush1Props, bush2Props,
+        minimapCtx: minimapCanvas.getContext('2d'),
+      }
+
       rafRef.current = requestAnimationFrame(gameLoop)
     }).catch((err) => {
       if (cancelled) return
-      const ctx = canvas.getContext('2d')
-      if (!ctx) return
-      ctx.fillStyle = '#111'
-      ctx.fillRect(0, 0, GAME_W, GAME_H)
-      ctx.fillStyle = '#f87171'
-      ctx.font = '8px monospace'
-      ctx.fillText('Asset load failed. Check console.', 4, 12)
       console.error(err)
+      const ctx2 = minimapCanvas.getContext('2d')
+      if (!ctx2) return
+      ctx2.fillStyle = '#111'
+      ctx2.fillRect(0, 0, GAME_W, GAME_H)
+      ctx2.fillStyle = '#f87171'
+      ctx2.font = '12px monospace'
+      ctx2.fillText('Asset load failed. Check console.', 12, 24)
     })
 
     return () => {
@@ -984,8 +1141,18 @@ export const EtheraneGame = () => {
       window.removeEventListener('resize', applyScale)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup',   onKeyUp)
+      canvas.removeEventListener('pointerdown', onCamPointerDown)
+      window.removeEventListener('pointermove', onCamPointerMove)
+      window.removeEventListener('pointerup',   onCamPointerUp)
+      window.removeEventListener('pointercancel', onCamPointerUp)
+      canvas.removeEventListener('wheel', onCamWheel)
+      const t = three.current
+      if (t) {
+        t.renderer.dispose()
+      }
+      three.current = null
     }
-  }, [gameLoop, onKeyDown, onKeyUp])
+  }, [gameLoop, onKeyDown, onKeyUp, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel])
 
   // ─── JOYSTICK TOUCH EVENTS ────────────────────────────────────────────────
   useEffect(() => {
@@ -1007,6 +1174,7 @@ export const EtheraneGame = () => {
     <div className="eth-root">
       <div className="eth-viewport" ref={viewportRef}>
         <canvas ref={canvasRef} className="eth-canvas" />
+        <canvas ref={minimapRef} className="eth-minimap-canvas" />
       </div>
       <div className="eth-joystick-zone" ref={joyZoneRef}>
         <div className="eth-joystick-base" />

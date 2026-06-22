@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — ChannelCard
 // Source: @arkzen:native:components:lynx:* (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:06.412Z
+// Generated: 2026-06-22T00:05:27.538Z
 // ============================================================
 
 import { useCallback, useEffect, useRef, useState } from '@lynx-js/react'

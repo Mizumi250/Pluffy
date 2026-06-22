@@ -178,6 +178,7 @@ function resolveImports(
     reactHooks?: string[]
     framerNamed?: string[]
     extra?: string
+    forceReact?: boolean
   } = {}
 ): ResolvedImports {
   const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
@@ -260,11 +261,14 @@ function resolveImports(
   const lines: string[] = []
 
   const reactNamed = [...(importMap.get('react')?.named ?? [])].filter(h => h !== 'React').sort()
-  lines.push(
-    reactNamed.length > 0
-      ? `import React, { ${reactNamed.join(', ')} } from 'react'`
-      : `import React from 'react'`
-  )
+  const forceReact = engineRequired.forceReact ?? true
+  if (forceReact || reactNamed.length > 0) {
+    lines.push(
+      reactNamed.length > 0
+        ? `import React, { ${reactNamed.join(', ')} } from 'react'`
+        : `import React from 'react'`
+    )
+  }
 
   const framerNamed = [...(importMap.get('framer-motion')?.named ?? [])].sort()
   if (framerNamed.length > 0) {
@@ -1109,14 +1113,17 @@ ${cleanAnimation}${pageVariantsBlock}
 function generateScriptFile(tatemono: ParsedTatemono): string | null {
   if (!tatemono.script) return null
 
-  const { strippedSources } = resolveImports([tatemono.script.raw], {
+  const { canonicalBlock, strippedSources } = resolveImports([tatemono.script.raw], {
     reactHooks:  [],
     framerNamed: [],
+    forceReact:  false,
   })
 
   const cleanScript = strippedSources[0]
     .replace(/\*\/\s*$/, '')
     .trim()
+
+  const importsBlock = canonicalBlock ? `${canonicalBlock}\n\n` : ''
 
   return `// ============================================================
 // ARKZEN GENERATED SCRIPT — ${tatemono.meta.name}
@@ -1125,7 +1132,7 @@ function generateScriptFile(tatemono: ParsedTatemono): string | null {
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${cleanScript}
+${importsBlock}${cleanScript}
 `
 }
 
@@ -1155,14 +1162,17 @@ function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string
 
     if (!scriptName) continue
 
-    const { strippedSources } = resolveImports([section.raw], {
+    const { canonicalBlock, strippedSources } = resolveImports([section.raw], {
       reactHooks:  [],
       framerNamed: [],
+      forceReact:  false,
     })
 
     const cleanScript = strippedSources[0]
       .replace(/\*\/\s*$/, '')
       .trim()
+
+    const importsBlock = canonicalBlock ? `${canonicalBlock}\n\n` : ''
 
     const fileName = `${tatemono.meta.name}.${scriptName}.script.ts`
     const filePath = path.join(generatedDir, fileName)
@@ -1173,7 +1183,7 @@ function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string
 // Generated: ${new Date().toISOString()}
 // ============================================================
 
-${cleanScript}
+${importsBlock}${cleanScript}
 `
     fs.writeFileSync(filePath, fileOut, 'utf-8')
     console.log(`[Arkzen Astro Router] ✓ Named script: ${fileName}`)

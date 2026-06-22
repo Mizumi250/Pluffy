@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — ErrorBox
 // Source: @arkzen:native:components:lynx:* (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:05.136Z
+// Generated: 2026-06-22T00:05:26.128Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

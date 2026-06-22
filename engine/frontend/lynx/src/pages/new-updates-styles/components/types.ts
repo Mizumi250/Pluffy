@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — new-updates-styles
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:08.973Z
+// Generated: 2026-06-22T00:05:30.475Z
 // ============================================================
 
 export type LynxColor = 'blue' | 'purple' | 'green' | 'orange'   // ✅ now exported

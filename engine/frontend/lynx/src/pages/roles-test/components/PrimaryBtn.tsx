@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — PrimaryBtn
 // Source: @arkzen:native:components:lynx:* (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:09.718Z
+// Generated: 2026-06-22T00:05:31.235Z
 // ============================================================
 
 import { useEffect, useState } from '@lynx-js/react'

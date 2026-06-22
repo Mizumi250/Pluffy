@@ -569,44 +569,58 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
 //
 // DSL format (inside a page/layout/component/error block body):
 //   /* @arkzen:import:expo */
+//   ...expo-targeted code...
 //   /* @arkzen:import:expo:end */
 //
-// The content between open and :end is intentionally empty — the block
-// serves only as a stack-targeting flag. The parser strips the entire
-// block (open tag + :end tag) from the raw body and re-embeds a resolved
-// marker at the top so builders can detect the target stack.
+//   /* @arkzen:import:rn */
+//   ...rn-targeted code...
+//   /* @arkzen:import:rn:end */
+//
+// v10.6: a single DSL block may legitimately contain MULTIPLE expo/rn
+// sub-block pairs side by side (e.g. one pair for imports, another pair
+// wrapping the actual component/handler) — this is intentional dual-target
+// authoring from one tatemono source, not a duplicate. Since this exact
+// file is byte-for-byte synced (see shared-sync.ts) into every stack's
+// arkzen/core/, it cannot hardcode which target it's resolving for — it
+// must detect its own stack the same way shared-sync.ts does, via the
+// folder name under engine/frontend/ it's currently running in
+// (process.cwd() at build time is that stack's directory).
+//
+// Resolution: keep every sub-block matching THIS stack's target (strip
+// just its markers), and fully delete (markers + body) every sub-block
+// matching the other target. Stacks with no native target (lynx, web
+// stacks) never see these markers in their own DSL content, so this is a
+// no-op for them.
 //
 // Self-closing form (v10.3 legacy, no :end) is still accepted as fallback
 // so old tatemonos don't break before migration.
 // ─────────────────────────────────────────────
 
-const NATIVE_IMPORT_EXPO_OPEN  = '/* @arkzen:import:expo */'
-const NATIVE_IMPORT_EXPO_END   = '/* @arkzen:import:expo:end */'
-const NATIVE_IMPORT_RN_OPEN    = '/* @arkzen:import:rn */'
-const NATIVE_IMPORT_RN_END     = '/* @arkzen:import:rn:end */'
+function detectNativeTarget(): 'expo' | 'rn' | null {
+  const stackName = path.basename(process.cwd())
+  if (stackName === 'expo')         return 'expo'
+  if (stackName === 'react-native') return 'rn'
+  return null
+}
 
 function extractNativeImportLine(raw: string): { cleanRaw: string; importStack: 'expo' | 'rn' | null } {
-  // Expo — try open+close first, then self-closing fallback
-  if (raw.includes(NATIVE_IMPORT_EXPO_OPEN)) {
-    let cleanRaw = raw
-    // Strip :end tag if present
-    if (cleanRaw.includes(NATIVE_IMPORT_EXPO_END)) {
-      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_END, '')
-    }
-    // Strip open tag
-    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_OPEN, '').trim()
-    return { cleanRaw: `/* @arkzen:resolved:import expo */\n${cleanRaw}`, importStack: 'expo' }
-  }
-  // RN — try open+close first, then self-closing fallback
-  if (raw.includes(NATIVE_IMPORT_RN_OPEN)) {
-    let cleanRaw = raw
-    if (cleanRaw.includes(NATIVE_IMPORT_RN_END)) {
-      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_END, '')
-    }
-    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_OPEN, '').trim()
-    return { cleanRaw: `/* @arkzen:resolved:import rn */\n${cleanRaw}`, importStack: 'rn' }
-  }
-  return { cleanRaw: raw, importStack: null }
+  const target = detectNativeTarget()
+
+  // Legacy self-closing fallback / non-native stacks: no open+close pair detection possible,
+  // leave content untouched (old behavior preserved for stacks without a native target).
+  if (!target) return { cleanRaw: raw, importStack: null }
+
+  const blockRe = /\/\*\s*@arkzen:import:(expo|rn)\s*\*\/([\s\S]*?)\/\*\s*@arkzen:import:\1:end\s*\*\//g
+
+  let found: 'expo' | 'rn' | null = null
+  const cleanRaw = raw.replace(blockRe, (_match, stack: 'expo' | 'rn', body: string) => {
+    if (stack !== target) return '' // discard the other target's block entirely
+    found = target
+    return body.trim()
+  }).trim()
+
+  if (!found) return { cleanRaw: raw, importStack: null }
+  return { cleanRaw: `/* @arkzen:resolved:import ${target} */\n${cleanRaw}`, importStack: found }
 }
 
 function parseAllNativeComponents(content: string): ArkzenSection[] {
@@ -678,19 +692,6 @@ function parseAllNativeLynxPages(content: string): ArkzenPage[] {
       end:    section.end,
     }
   })
-}
-
-// v10.3: Lynx pages — @arkzen:native:page:lynx:name
-// Lynx is a separate renderer (not React Native). Self-contained, no embedded import line.
-function parseAllNativeLynxPages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page:lynx')
-  return sections.map(section => ({
-    name:   section.name!,
-    raw:    section.raw,
-    layout: 'default',
-    start:  section.start,
-    end:    section.end,
-  }))
 }
 
 // v10.3: Lynx layouts — @arkzen:native:layout:lynx:name

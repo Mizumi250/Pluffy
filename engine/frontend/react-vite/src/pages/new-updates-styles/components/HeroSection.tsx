@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:28.318Z
+// Generated: 2026-06-22T00:05:32.768Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,21 +12,14 @@ import { Link } from 'react-router'
 import styles from '../styles/HeroSection.module.css'
 import type { HeroSectionProps } from './types'
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => {
-  return (
-    <div className="space-y-4 py-16 text-center">
-      <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-        {title}
-      </h1>
-      <p className="text-xl text-neutral-600">{subtitle}</p>
-      <button 
-        onClick={onCta}
-        className="arkzen-btn mx-auto"
-      >
-        {ctaText}
-      </button>
-    </div>
-  )
-}
-
-// ─── UTILITIES & TYPES ───────────────────────────────
+export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => (
+  <div className="space-y-4 py-16 text-center">
+    <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+      {title}
+    </h1>
+    <p className="text-xl text-neutral-600">{subtitle}</p>
+    <button onClick={onCta} className="arkzen-btn mx-auto">
+      {ctaText}
+    </button>
+  </div>
+)
