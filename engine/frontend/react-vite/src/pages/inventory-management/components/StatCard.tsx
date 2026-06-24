@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatCard [React+Vite]
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T12:11:37.399Z
+// Generated: 2026-06-24T16:50:57.464Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

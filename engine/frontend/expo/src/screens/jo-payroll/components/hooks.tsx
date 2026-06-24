@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE HOOKS — jo-payroll [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T12:11:37.423Z
+// Generated: 2026-06-24T16:50:57.618Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'
