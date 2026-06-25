@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PICO8_PALETTE [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T01:17:01.437Z
+// Generated: 2026-06-25T07:06:04.606Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

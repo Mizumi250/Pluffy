@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MobileNav [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T01:16:52.765Z
+// Generated: 2026-06-25T07:05:46.637Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

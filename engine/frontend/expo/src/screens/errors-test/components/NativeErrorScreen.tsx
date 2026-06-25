@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NativeErrorScreen [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T01:16:55.942Z
+// Generated: 2026-06-25T07:05:49.646Z
 // ============================================================
 
 import React, { useState } from 'react'
