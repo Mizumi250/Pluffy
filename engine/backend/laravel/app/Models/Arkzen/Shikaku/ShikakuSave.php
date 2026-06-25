@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — ShikakuSave
 // Tatemono: shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:49:37.152219Z
+// Generated: 2026-06-25T01:17:01.535258Z
 // ============================================================
 
 namespace App\Models\Arkzen\Shikaku;

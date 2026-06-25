@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — shikaku [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:49:36.997Z
+// Generated: 2026-06-25T01:17:01.434Z
 // ============================================================
 
 export type Tool =

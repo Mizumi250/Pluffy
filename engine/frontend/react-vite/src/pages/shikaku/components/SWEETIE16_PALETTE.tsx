@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SWEETIE16_PALETTE [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:49:37.018Z
+// Generated: 2026-06-25T01:17:01.445Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

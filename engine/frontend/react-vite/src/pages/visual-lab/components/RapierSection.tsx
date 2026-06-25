@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RapierSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:49:37.770Z
+// Generated: 2026-06-25T01:17:02.560Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

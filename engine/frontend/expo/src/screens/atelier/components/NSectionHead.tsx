@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NSectionHead [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:50:54.062Z
+// Generated: 2026-06-25T01:16:52.659Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

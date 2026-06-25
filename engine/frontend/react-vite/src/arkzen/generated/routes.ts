@@ -14,20 +14,6 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
-// ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:false
-const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
-// ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
-const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
-// ROUTE:shikaku:index:/shikaku:true
-const ArkzenPage_Shikaku_Index = lazy(() => import('@/pages/shikaku/index'))
-// ROUTE:shikaku:editor:/shikaku/editor:true
-const ArkzenPage_Shikaku_Editor = lazy(() => import('@/pages/shikaku/editor'))
-// ROUTE:upload-test:dashboard:/upload-test/dashboard:false
-const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
-// ROUTE:upload-test:__root_redirect:/upload-test:false
-const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
-// ROUTE:visual-lab:index:/visual-lab:false
-const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:atelier:index:/atelier:false
@@ -100,6 +86,8 @@ const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-
 const ArkzenPage_JobTest_Dashboard = lazy(() => import('@/pages/job-test/dashboard'))
 // ROUTE:job-test:__root_redirect:/job-test:false
 const ArkzenPage_JobTest_RootRedirect = lazy(() => import('@/pages/job-test/__root_redirect'))
+// ROUTE:lain098:index:/lain098:false
+const ArkzenPage_Lain098_Index = lazy(() => import('@/pages/lain098/index'))
 // ROUTE:layout-test:index:/layout-test:false
 const ArkzenPage_LayoutTest_Index = lazy(() => import('@/pages/layout-test/index'))
 // ROUTE:layout-test:panel:/layout-test/panel:false
@@ -152,6 +140,20 @@ const ArkzenPage_RolesTest_Register = lazy(() => import('@/pages/roles-test/regi
 const ArkzenPage_RolesTest_Dashboard = lazy(() => import('@/pages/roles-test/dashboard'))
 // ROUTE:roles-test:__root_redirect:/roles-test:true
 const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/__root_redirect'))
+// ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:false
+const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
+// ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
+const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
+// ROUTE:shikaku:index:/shikaku:true
+const ArkzenPage_Shikaku_Index = lazy(() => import('@/pages/shikaku/index'))
+// ROUTE:shikaku:editor:/shikaku/editor:true
+const ArkzenPage_Shikaku_Editor = lazy(() => import('@/pages/shikaku/editor'))
+// ROUTE:upload-test:dashboard:/upload-test/dashboard:false
+const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
+// ROUTE:upload-test:__root_redirect:/upload-test:false
+const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
+// ROUTE:visual-lab:index:/visual-lab:false
+const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -160,13 +162,6 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 }
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
-  { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
-  { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
-  { path: '/shikaku', name: 'index', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Index, auth: true },
-  { path: '/shikaku/editor', name: 'editor', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Editor, auth: true },
-  { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
-  { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
-  { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/atelier', name: 'index', tatemono: 'atelier', component: ArkzenPage_Atelier_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
@@ -203,6 +198,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
   { path: '/job-test/dashboard', name: 'dashboard', tatemono: 'job-test', component: ArkzenPage_JobTest_Dashboard, auth: false },
   { path: '/job-test', name: '__root_redirect', tatemono: 'job-test', component: ArkzenPage_JobTest_RootRedirect, auth: false },
+  { path: '/lain098', name: 'index', tatemono: 'lain098', component: ArkzenPage_Lain098_Index, auth: false },
   { path: '/layout-test', name: 'index', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Index, auth: false },
   { path: '/layout-test/panel', name: 'panel', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Panel, auth: false },
   { path: '/layout-test/deep', name: 'deep', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Deep, auth: false },
@@ -229,4 +225,11 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
+  { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
+  { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
+  { path: '/shikaku', name: 'index', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Index, auth: true },
+  { path: '/shikaku/editor', name: 'editor', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Editor, auth: true },
+  { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
+  { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
+  { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
 ]

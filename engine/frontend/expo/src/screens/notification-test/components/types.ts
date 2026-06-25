@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — notification-test [Expo]
 // Source: @arkzen:native:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:50:58.872Z
+// Generated: 2026-06-25T01:16:58.891Z
 // ============================================================
 
 export type WsStatus = 'connecting' | 'connected' | 'error'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — ShikakuSaveSaveRequest
 // Tatemono: shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:49:37.158857Z
+// Generated: 2026-06-25T01:17:01.541225Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\Shikaku;

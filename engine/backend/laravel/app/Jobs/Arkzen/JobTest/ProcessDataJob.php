@@ -5,7 +5,7 @@
 // Tatemono: job-test
 // Queue: default | Tries: 3 | Timeout: 30s
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:50:58.137640Z
+// Generated: 2026-06-25T01:16:58.160410Z
 // ============================================================
 
 namespace App\Jobs\Arkzen\JobTest;

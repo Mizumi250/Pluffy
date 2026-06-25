@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — ethereane [React+Vite]
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:50:57.105Z
+// Generated: 2026-06-25T01:16:56.279Z
 // ============================================================
 
 export type ThreeState = {

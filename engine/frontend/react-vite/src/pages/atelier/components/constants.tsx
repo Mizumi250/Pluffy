@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — atelier [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-24T16:50:54.586Z
+// Generated: 2026-06-25T01:16:52.755Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
