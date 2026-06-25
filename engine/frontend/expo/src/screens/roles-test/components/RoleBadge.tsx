@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — RoleBadge [Expo]
 // Source: @arkzen:native:components (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:52:52.879Z
+// Generated: 2026-06-25T16:31:27.341Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'

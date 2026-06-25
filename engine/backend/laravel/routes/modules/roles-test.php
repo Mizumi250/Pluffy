@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/roles-test/auth')->grou
 // ============================================================
 // ARKZEN GENERATED ROUTES — roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:52:53.837217Z
+// Generated: 2026-06-25T16:31:29.580410Z
 // Resources: RoleAuditLog
 // Custom controllers: 
 // ============================================================

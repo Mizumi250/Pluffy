@@ -14,6 +14,14 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
+// ROUTE:coveo:index:/coveo:false
+const ArkzenPage_Coveo_Index = lazy(() => import('@/pages/coveo/index'))
+// ROUTE:coveo:not-found:/coveo/*:false
+const ArkzenPage_Coveo_NotFound = lazy(() => import('@/pages/coveo/not-found'))
+// ROUTE:lain:index:/lain:false
+const ArkzenPage_Lain_Index = lazy(() => import('@/pages/lain/index'))
+// ROUTE:lain:not-found:/lain/*:false
+const ArkzenPage_Lain_NotFound = lazy(() => import('@/pages/lain/not-found'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:atelier:index:/atelier:false
@@ -154,6 +162,8 @@ const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-tes
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
 // ROUTE:lain098:index:/lain098:false
 const ArkzenPage_Lain098_Index = lazy(() => import('@/pages/lain098/index'))
+// ROUTE:lain098:not-found:/lain098/*:false
+const ArkzenPage_Lain098_NotFound = lazy(() => import('@/pages/lain098/not-found'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -162,6 +172,10 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 }
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
+  { path: '/coveo', name: 'index', tatemono: 'coveo', component: ArkzenPage_Coveo_Index, auth: false },
+  { path: '/coveo/*', name: 'not-found', tatemono: 'coveo', component: ArkzenPage_Coveo_NotFound, auth: false },
+  { path: '/lain', name: 'index', tatemono: 'lain', component: ArkzenPage_Lain_Index, auth: false },
+  { path: '/lain/*', name: 'not-found', tatemono: 'lain', component: ArkzenPage_Lain_NotFound, auth: false },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/atelier', name: 'index', tatemono: 'atelier', component: ArkzenPage_Atelier_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
@@ -232,4 +246,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
   { path: '/lain098', name: 'index', tatemono: 'lain098', component: ArkzenPage_Lain098_Index, auth: false },
+  { path: '/lain098/*', name: 'not-found', tatemono: 'lain098', component: ArkzenPage_Lain098_NotFound, auth: false },
 ]

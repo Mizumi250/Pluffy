@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GeofenceMapView [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:52:50.101Z
+// Generated: 2026-06-25T16:31:15.432Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

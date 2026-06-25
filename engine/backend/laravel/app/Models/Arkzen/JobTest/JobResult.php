@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — JobResult
 // Tatemono: job-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:52:52.159200Z
+// Generated: 2026-06-25T16:31:25.028971Z
 // ============================================================
 
 namespace App\Models\Arkzen\JobTest;

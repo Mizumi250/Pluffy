@@ -5,7 +5,7 @@
 // Tatemono: scheduler-test
 // Signature: scheduler-test:cleanup-temp
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:52:54.749539Z
+// Generated: 2026-06-25T16:31:31.327662Z
 // ============================================================
 
 namespace App\Console\Commands\Arkzen\SchedulerTest;
