@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — errors-test [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:49.643Z
+// Generated: 2026-06-25T13:04:01.627Z
 // ============================================================
 
 export type NativeErrorDef = {

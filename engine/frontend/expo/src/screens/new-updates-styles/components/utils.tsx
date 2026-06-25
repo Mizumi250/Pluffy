@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — new-updates-styles [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:59.909Z
+// Generated: 2026-06-25T13:04:03.382Z
 // ============================================================
 
 import React, { useState } from 'react'

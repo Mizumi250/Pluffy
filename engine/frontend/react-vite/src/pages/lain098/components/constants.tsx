@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — lain098 [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:56.767Z
+// Generated: 2026-06-25T13:17:37.115Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -21,7 +21,7 @@ export const NAV_LINKS = [
   { label: 'Contact',     href: '#contact'     },
 ]
 
-export const ART_TYPES = [
+export const ART_MARQUEE = [
   'Anime Illustrations', '✦', 'Fanart', '✦', 'Original Characters',
   '✦', 'Chibi Art', '✦', 'Short Animations', '✦', 'Character Design',
   '✦', 'Digital Art', '✦', 'OC Lore', '✦', 'Sticker Packs', '✦',
@@ -30,7 +30,7 @@ export const ART_TYPES = [
   '✦', 'Digital Art', '✦', 'OC Lore', '✦', 'Sticker Packs', '✦',
 ]
 
-export const GALLERY_ITEMS = [
+export const GALLERY = [
   {
     id: 0,
     tag: 'OC Design',
@@ -165,7 +165,12 @@ export const GALLERY_ITEMS = [
   },
 ]
 
-export const COMM_TYPES = [
+// After GALLERY is defined, create this:
+
+// After GALLERY is defined, create this:
+export const COLLAGE_IMGS = GALLERY.slice(0, 5).map(item => item.img)
+
+export const COMMISSIONS = [
   {
     icon: '✦',
     num: '/01',
@@ -173,7 +178,7 @@ export const COMM_TYPES = [
     name: 'Illustration',
     desc: 'Clean lineart with full color shading. Perfect for character portraits, OC reveals, or profile art. Includes 1 round of revision.',
     features: ['Clean lineart', 'Full color shading', 'Simple background', '1 revision round', 'PNG + transparent BG'],
-    start: '$25',
+    price: '$25',
     delay: 0,
   },
   {
@@ -183,7 +188,7 @@ export const COMM_TYPES = [
     name: 'Illustration',
     desc: 'Full character with detailed pose, expression, and background elements. Great for OCs and fanart. Includes 2 revision rounds.',
     features: ['Full body pose', 'Detailed shading', 'Full background', '2 revision rounds', 'High-res PNG'],
-    start: '$45',
+    price: '$45',
     delay: 0.08,
   },
   {
@@ -193,7 +198,7 @@ export const COMM_TYPES = [
     name: 'Chibi',
     desc: 'Adorable simplified chibi style. Perfect for sticker packs, emotes, or just because they\'re the cutest thing ever.',
     features: ['Chibi proportions', 'Bold outlines', 'Flat or soft shading', 'Pack discounts', 'Emote-ready sizing'],
-    start: '$18',
+    price: '$18',
     delay: 0.16,
   },
   {
@@ -203,29 +208,29 @@ export const COMM_TYPES = [
     name: 'Animation',
     desc: 'Short looping GIF animations — blinking, breathing, sparkle effects. Bring your character to life beautifully.',
     features: ['Looping GIF', 'Smooth keyframes', 'Effect overlays', '24fps smooth', 'WebM + GIF format'],
-    start: '$60',
+    price: '$60',
     delay: 0.24,
   },
 ]
 
-export const PROCESS_STEPS = [
+export const PROCESS = [
   {
     num: '01',
     title: 'Inquiry & Quote',
     desc: 'Fill out my commission form on Throne or DM me on Instagram with your reference, style preference, deadline, and any details you want me to know.',
-    side: 'Throne / Instagram DM',
+    label: 'Throne / Instagram DM',
   },
   {
     num: '02',
     title: 'Sketch & Approval',
     desc: 'I send you a rough sketch first. We tweak composition, pose, and expression until you\'re completely happy — no surprises in the final.',
-    side: '24–48 hrs turnaround',
+    label: '24–48 hrs turnaround',
   },
   {
     num: '03',
     title: 'Lineart & Color',
     desc: 'Clean precise lines, color blocking, full shading and lighting details. WIP previews shared at each major stage.',
-    side: '3–7 days (varies)',
+    label: '3–7 days (varies)',
   },
   {
     num: '04',
@@ -237,7 +242,7 @@ export const PROCESS_STEPS = [
     num: '05',
     title: 'Enjoy your art ✦',
     desc: 'Tag me if you post it — I love seeing where my pieces end up. Your support means absolutely everything to me 🩵',
-    side: '@lain098_',
+    label: '@lain098_',
   },
 ]
 

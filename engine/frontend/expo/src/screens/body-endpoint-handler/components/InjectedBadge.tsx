@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — InjectedBadge [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:47.037Z
+// Generated: 2026-06-25T13:03:59.062Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

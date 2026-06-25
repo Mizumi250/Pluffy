@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — asset-hub [React+Vite]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:46.462Z
+// Generated: 2026-06-25T13:03:59.246Z
 // ============================================================
 
 // ─── ASSET REGISTRY ───────────────────────────────────────────────────────────

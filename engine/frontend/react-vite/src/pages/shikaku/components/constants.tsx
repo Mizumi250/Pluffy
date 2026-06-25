@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — shikaku [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:06:04.588Z
+// Generated: 2026-06-25T13:04:05.816Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — lain098 [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T07:05:56.860Z
+// Generated: 2026-06-25T13:17:37.118Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -18,17 +18,17 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     const loaderTl = gsap.timeline()
     let pct = 0
-    const pctEl = document.getElementById('lain-loader-pct')
+    const pctEl = document.getElementById('l-loader-pct')
     const pctInterval = setInterval(() => {
       pct = Math.min(pct + Math.random() * 18, 98)
       if (pctEl) pctEl.textContent = `${Math.floor(pct)}%`
     }, 80)
 
     loaderTl
-      .to('#lain-loader-name', { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, 0.15)
-      .to('#lain-loader-sub',  { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 0.45)
-      .to('#lain-loader-bar',  { width: '100%', duration: 1.5, ease: 'power2.inOut' }, 0.35)
-      .to('#lain-loader', {
+      .to('#l-loader-name', { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, 0.15)
+      .to('#l-loader-sub',  { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, 0.45)
+      .to('#l-loader-bar',  { width: '100%', duration: 1.5, ease: 'power2.inOut' }, 0.35)
+      .to('#l-loader', {
         opacity: 0,
         y: '-100%',
         duration: 0.9,
@@ -38,7 +38,7 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
           if (pctEl) pctEl.textContent = '100%'
         },
         onComplete: () => {
-          const el = document.getElementById('lain-loader')
+          const el = document.getElementById('l-loader')
           if (el) el.style.display = 'none'
         },
       }, 2.0)
@@ -48,19 +48,19 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     const heroTl = gsap.timeline({ delay: 2.6 })
     heroTl
-      .to('.lain-hero-eyebrow',  { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' })
-      .to('.lain-hero-svg-wrap', { opacity: 1, duration: 0.5 }, '-=0.3')
-      .to('.lain-hero-title',    { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' }, '-=0.2')
-      .to('.lain-hero-sub',      { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, '-=0.55')
-      .to('.lain-hero-ctas',     { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, '-=0.45')
-      .to('.lain-scroll-hint',   { opacity: 1, duration: 0.5 }, '-=0.2')
-      .to('.lain-hero-index',    { opacity: 1, duration: 0.5 }, '-=0.4')
-      .to('.lain-hero-social',   { opacity: 1, duration: 0.5 }, '-=0.4')
+      .to('.l-hero-eyebrow',  { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' })
+      .to('.l-hero-svg-wrap', { opacity: 1, duration: 0.5 }, '-=0.3')
+      .to('.l-hero-title',    { opacity: 1, y: 0, duration: 1.0, ease: 'power3.out' }, '-=0.2')
+      .to('.l-hero-sub',      { opacity: 1, y: 0, duration: 0.75, ease: 'power3.out' }, '-=0.55')
+      .to('.l-hero-ctas',     { opacity: 1, y: 0, duration: 0.65, ease: 'power3.out' }, '-=0.45')
+      .to('.l-scroll-hint',   { opacity: 1, duration: 0.5 }, '-=0.2')
+      .to('.l-hero-index',    { opacity: 1, duration: 0.5 }, '-=0.4')
+      .to('.l-hero-social',   { opacity: 1, duration: 0.5 }, '-=0.4')
 
     // ══════════════════════════════════════════════════
     // FLOATING COLLAGE CARDS (hero)
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-float-card').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-float-card').forEach((el, i) => {
       // fade in
       gsap.to(el, {
         opacity: 1,
@@ -85,12 +85,12 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     // PARALLAX on scroll — hero blobs
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-blob').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-blob').forEach((el, i) => {
       gsap.to(el, {
         y: (i % 2 === 0 ? -1 : 1) * 80,
         ease: 'none',
         scrollTrigger: {
-          trigger: '.lain-hero',
+          trigger: '.l-hero',
           start: 'top top',
           end: 'bottom top',
           scrub: 1.5,
@@ -101,7 +101,7 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     // ABOUT — image stack reveal
     // ══════════════════════════════════════════════════
-    const aboutImgs = gsap.utils.toArray<HTMLElement>('.lain-about-img')
+    const aboutImgs = gsap.utils.toArray<HTMLElement>('.l-about-img')
     aboutImgs.forEach((el, i) => {
       const targets = [
         { x: 0, y: 0, rotation: -3 },
@@ -117,36 +117,36 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
         ease: 'power3.out',
         delay: i * 0.22,
         scrollTrigger: {
-          trigger: '.lain-about',
+          trigger: '.l-about',
           start: 'top 72%',
           toggleActions: 'play none none none',
         },
       })
     })
-    gsap.to('.lain-about-content', {
+    gsap.to('.l-about-content', {
       opacity: 1,
       x: 0,
       duration: 0.95,
       ease: 'power3.out',
-      scrollTrigger: { trigger: '.lain-about-content', start: 'top 76%' },
+      scrollTrigger: { trigger: '.l-about-content', start: 'top 76%' },
     })
 
     // ══════════════════════════════════════════════════
     // CHARACTER ATTRS — bar fills
     // ══════════════════════════════════════════════════
-    gsap.to('.lain-char-left', {
+    gsap.to('.l-char-left', {
       opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
-      scrollTrigger: { trigger: '.lain-char-section', start: 'top 72%' },
+      scrollTrigger: { trigger: '.l-char-section', start: 'top 72%' },
     })
-    gsap.to('.lain-char-right', {
+    gsap.to('.l-char-right', {
       opacity: 1, x: 0, duration: 0.9, ease: 'power3.out', delay: 0.15,
-      scrollTrigger: { trigger: '.lain-char-section', start: 'top 72%' },
+      scrollTrigger: { trigger: '.l-char-section', start: 'top 72%' },
     })
     ScrollTrigger.create({
-      trigger: '.lain-char-attrs',
+      trigger: '.l-char-attrs',
       start: 'top 75%',
       onEnter: () => {
-        document.querySelectorAll<HTMLElement>('.lain-attr-bar-fill').forEach((bar) => {
+        document.querySelectorAll<HTMLElement>('.l-attr-bar-fill').forEach((bar) => {
           setTimeout(() => bar.classList.add('active'), 200)
         })
       },
@@ -155,7 +155,7 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     // GALLERY — stagger reveal
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-art-card').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-art-card').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1,
         y: 0,
@@ -163,7 +163,7 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
         ease: 'power3.out',
         delay: i * 0.07,
         scrollTrigger: {
-          trigger: '.lain-gallery-grid',
+          trigger: '.l-gallery-grid',
           start: 'top 76%',
           toggleActions: 'play none none none',
         },
@@ -173,13 +173,13 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     // SCRAPBOOK — cards fan in
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-scrapbook-card').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-scrapbook-card').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1,
         duration: 0.7,
         ease: 'power2.out',
         delay: i * 0.13,
-        scrollTrigger: { trigger: '.lain-scrapbook', start: 'top 74%' },
+        scrollTrigger: { trigger: '.l-scrapbook', start: 'top 74%' },
       })
       // subtle sway
       gsap.to(el, {
@@ -191,66 +191,66 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
         delay: 0.5 + i * 0.15,
       })
     })
-    gsap.to('.lain-scrapbook-content', {
+    gsap.to('.l-scrapbook-content', {
       opacity: 1, x: 0, duration: 0.9, ease: 'power3.out',
-      scrollTrigger: { trigger: '.lain-scrapbook-content', start: 'top 76%' },
+      scrollTrigger: { trigger: '.l-scrapbook-content', start: 'top 76%' },
     })
 
     // ══════════════════════════════════════════════════
     // EDITORIAL PANELS
     // ══════════════════════════════════════════════════
-    gsap.to('.lain-editorial-header', {
+    gsap.to('.l-editorial-header', {
       opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
-      scrollTrigger: { trigger: '.lain-editorial', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-editorial', start: 'top 74%' },
     })
-    gsap.utils.toArray<HTMLElement>('.lain-editorial-panel').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-editorial-panel').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
         delay: i * 0.12,
-        scrollTrigger: { trigger: '.lain-editorial-grid', start: 'top 76%' },
+        scrollTrigger: { trigger: '.l-editorial-grid', start: 'top 76%' },
       })
     })
 
     // ══════════════════════════════════════════════════
     // COMMISSION CARDS
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-comm-card').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-comm-card').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1, y: 0, duration: 0.75, ease: 'power3.out',
         delay: i * 0.1,
-        scrollTrigger: { trigger: '.lain-comm-grid', start: 'top 78%' },
+        scrollTrigger: { trigger: '.l-comm-grid', start: 'top 78%' },
       })
     })
 
     // ══════════════════════════════════════════════════
     // PROCESS STEPS
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-step').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-step').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1, x: 0, duration: 0.75, ease: 'power3.out',
         delay: i * 0.13,
-        scrollTrigger: { trigger: '.lain-steps', start: 'top 76%' },
+        scrollTrigger: { trigger: '.l-steps', start: 'top 76%' },
       })
     })
 
     // ══════════════════════════════════════════════════
     // TESTIMONIALS
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-testimonial-card').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-testimonial-card').forEach((el, i) => {
       gsap.to(el, {
         opacity: 1, y: 0, duration: 0.75, ease: 'power3.out',
         delay: i * 0.12,
-        scrollTrigger: { trigger: '.lain-testimonials-grid', start: 'top 76%' },
+        scrollTrigger: { trigger: '.l-testimonials-grid', start: 'top 76%' },
       })
     })
 
     // ══════════════════════════════════════════════════
     // WORD-BY-WORD TEXT REVEAL (scrubbed)
     // ══════════════════════════════════════════════════
-    const words = gsap.utils.toArray<HTMLElement>('.lain-reveal-word')
+    const words = gsap.utils.toArray<HTMLElement>('.l-reveal-word')
     gsap.timeline({
       scrollTrigger: {
-        trigger: '.lain-reveal-section',
+        trigger: '.l-reveal-section',
         start: 'top 65%',
         end: 'center 40%',
         scrub: 1.2,
@@ -262,58 +262,58 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
       stagger: 0.08,
       ease: 'power2.out',
     })
-    gsap.to('.lain-reveal-sig', {
+    gsap.to('.l-reveal-sig', {
       opacity: 1, y: 0, duration: 0.8, ease: 'power3.out',
-      scrollTrigger: { trigger: '.lain-reveal-section', start: 'center 55%' },
+      scrollTrigger: { trigger: '.l-reveal-section', start: 'center 55%' },
     })
-    gsap.to('.lain-reveal-side-labels', {
+    gsap.to('.l-reveal-side-labels', {
       opacity: 1, duration: 0.8,
-      scrollTrigger: { trigger: '.lain-reveal-section', start: 'top 65%' },
+      scrollTrigger: { trigger: '.l-reveal-section', start: 'top 65%' },
     })
 
     // ══════════════════════════════════════════════════
     // CONTACT
     // ══════════════════════════════════════════════════
-    gsap.to('.lain-contact-avatar', {
+    gsap.to('.l-contact-avatar', {
       opacity: 1, scale: 1, duration: 0.9, ease: 'back.out(1.8)',
-      scrollTrigger: { trigger: '.lain-contact', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-contact', start: 'top 74%' },
     })
-    gsap.to('.lain-contact-title', {
+    gsap.to('.l-contact-title', {
       opacity: 1, y: 0, duration: 0.8, ease: 'power3.out', delay: 0.1,
-      scrollTrigger: { trigger: '.lain-contact', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-contact', start: 'top 74%' },
     })
-    gsap.to('.lain-contact-text', {
+    gsap.to('.l-contact-text', {
       opacity: 1, y: 0, duration: 0.75, ease: 'power3.out', delay: 0.2,
-      scrollTrigger: { trigger: '.lain-contact', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-contact', start: 'top 74%' },
     })
-    gsap.to('.lain-socials', {
+    gsap.to('.l-socials', {
       opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.3,
-      scrollTrigger: { trigger: '.lain-contact', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-contact', start: 'top 74%' },
     })
-    gsap.to('.lain-contact-cta', {
+    gsap.to('.l-contact-cta', {
       opacity: 1, y: 0, duration: 0.7, ease: 'power3.out', delay: 0.4,
-      scrollTrigger: { trigger: '.lain-contact', start: 'top 74%' },
+      scrollTrigger: { trigger: '.l-contact', start: 'top 74%' },
     })
 
     // ══════════════════════════════════════════════════
     // NAV scroll state
     // ══════════════════════════════════════════════════
     ScrollTrigger.create({
-      trigger: '.lain-hero',
+      trigger: '.l-hero',
       start: 'bottom top',
-      onEnter:     () => document.getElementById('lain-nav')?.classList.add('scrolled'),
-      onLeaveBack: () => document.getElementById('lain-nav')?.classList.remove('scrolled'),
+      onEnter:     () => document.getElementById('l-nav')?.classList.add('scrolled'),
+      onLeaveBack: () => document.getElementById('l-nav')?.classList.remove('scrolled'),
     })
 
     // ══════════════════════════════════════════════════
     // PARALLAX — about images subtle scroll
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-about-img').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-about-img').forEach((el, i) => {
       gsap.to(el, {
         y: (i % 2 === 0 ? -1 : 1) * 40,
         ease: 'none',
         scrollTrigger: {
-          trigger: '.lain-about',
+          trigger: '.l-about',
           start: 'top bottom',
           end: 'bottom top',
           scrub: 1.2,
@@ -324,12 +324,12 @@ export const lain098Animations = (pageRef: React.RefObject<HTMLDivElement>) => {
     // ══════════════════════════════════════════════════
     // EDITORIAL SECTION — parallax on images
     // ══════════════════════════════════════════════════
-    gsap.utils.toArray<HTMLElement>('.lain-editorial-img-wrap img').forEach((el, i) => {
+    gsap.utils.toArray<HTMLElement>('.l-editorial-img-wrap img').forEach((el, i) => {
       gsap.to(el, {
         y: -30,
         ease: 'none',
         scrollTrigger: {
-          trigger: el.closest('.lain-editorial-panel') as Element,
+          trigger: el.closest('.l-editorial-panel') as Element,
           start: 'top bottom',
           end: 'bottom top',
           scrub: 1.0,

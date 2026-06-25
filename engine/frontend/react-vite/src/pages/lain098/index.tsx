@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — lain098/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T07:05:57.060Z
+// Generated: 2026-06-25T13:17:37.156Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,1015 +11,819 @@ import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { lain098Animations, pageVariants } from '@/arkzen/generated/lain098.animations'
 import { useNavigate } from 'react-router'
 import './styles/global.css'
-import { ABOUT_IMGS, ART_TYPES, CHAR_ATTRS, COMM_TYPES, EDITORIAL_IMGS, FLOAT_IMGS, GALLERY_ITEMS, NAV_LINKS, PROCESS_STEPS, REVEAL_WORDS, SCRAPBOOK_ITEMS, STATS, TESTIMONIALS } from './components/constants'
+import { ART_MARQUEE, COLLAGE_IMGS, COMMISSIONS, GALLERY, PROCESS } from './components/constants'
 import { el, lerp, smoothScroll } from './components/utils'
 import { gsap } from 'gsap'
 import { Instagram, ExternalLink, Heart, Star, ArrowRight, ChevronDown, Menu, X, Sparkles, Send, Eye, Download, ChevronLeft, ChevronRight, ZoomIn, Play } from 'lucide-react'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
-  const pageRef        = useRef<HTMLDivElement>(null)
-  const cursorRef      = useRef<HTMLDivElement>(null)
-  const cursorRingRef  = useRef<HTMLDivElement>(null)
-  const cursorTarget   = useRef({ x: -200, y: -200 })
-  const rafRef         = useRef<number>(0)
+  const pageRef       = useRef<HTMLDivElement>(null)
+  const cursorRef     = useRef<HTMLDivElement>(null)
+  const ringRef       = useRef<HTMLDivElement>(null)
+  const rafRef        = useRef<number>(0)
+  const ringPos       = useRef({x:-200,y:-200})
 
-  const [menuOpen,       setMenuOpen]       = useState(false)
-  const [activeFilter,   setActiveFilter]   = useState('all')
-  const [lightboxOpen,   setLightboxOpen]   = useState(false)
-  const [lightboxIndex,  setLightboxIndex]  = useState(0)
+  const [menuOpen,      setMenuOpen]      = useState(false)
+  const [activeFilter,  setActiveFilter]  = useState('all')
+  const [lbOpen,        setLbOpen]        = useState(false)
+  const [lbIdx,         setLbIdx]         = useState(0)
 
-  // ── Custom cursor ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      if (cursorRef.current) {
-        gsap.set(cursorRef.current, { x: e.clientX, y: e.clientY })
+  const filtered = activeFilter==='all' ? GALLERY : GALLERY.filter(g=>g.tag.toLowerCase().includes(activeFilter))
+
+  // ── cursor ────────────────────────────────────────────────────────────────
+  useEffect(()=>{
+    const onMove=(e:MouseEvent)=>{
+      if(cursorRef.current) gsap.set(cursorRef.current,{x:e.clientX,y:e.clientY})
+      ringPos.current={x:e.clientX,y:e.clientY}
+    }
+    const onClick=()=>{ cursorRef.current?.classList.add('click'); setTimeout(()=>cursorRef.current?.classList.remove('click'),160) }
+    window.addEventListener('mousemove',onMove)
+    window.addEventListener('click',onClick)
+    const tick=()=>{
+      if(ringRef.current){
+        const rx=lerp((ringRef.current as any).__rx??-200,ringPos.current.x,.12)
+        const ry=lerp((ringRef.current as any).__ry??-200,ringPos.current.y,.12)
+        ;(ringRef.current as any).__rx=rx
+        ;(ringRef.current as any).__ry=ry
+        gsap.set(ringRef.current,{x:rx,y:ry})
       }
-      cursorTarget.current = { x: e.clientX, y: e.clientY }
+      rafRef.current=requestAnimationFrame(tick)
     }
-    const onClick = () => {
-      cursorRef.current?.classList.add('clicking')
-      setTimeout(() => cursorRef.current?.classList.remove('clicking'), 200)
-    }
-    window.addEventListener('mousemove', onMove)
-    window.addEventListener('click', onClick)
+    rafRef.current=requestAnimationFrame(tick)
+    return ()=>{ window.removeEventListener('mousemove',onMove); window.removeEventListener('click',onClick); cancelAnimationFrame(rafRef.current) }
+  },[])
 
-    const tick = () => {
-      if (cursorRingRef.current) {
-        const cx = parseFloat((cursorRingRef.current as any).__lainX ?? '-200')
-        const cy = parseFloat((cursorRingRef.current as any).__lainY ?? '-200')
-        const nx = lerp(cx, cursorTarget.current.x, 0.13)
-        const ny = lerp(cy, cursorTarget.current.y, 0.13)
-        ;(cursorRingRef.current as any).__lainX = nx
-        ;(cursorRingRef.current as any).__lainY = ny
-        gsap.set(cursorRingRef.current, { x: nx, y: ny })
-      }
-      rafRef.current = requestAnimationFrame(tick)
-    }
-    rafRef.current = requestAnimationFrame(tick)
+  // hover cursor
+  useEffect(()=>{
+    const els=pageRef.current?.querySelectorAll('a,button,.l-art-card,.l-comm-card,.l-vand-item,.l-carousel-item,.l-collage-photo')
+    const on=()=>{ cursorRef.current?.classList.add('hov'); ringRef.current?.classList.add('hov') }
+    const off=()=>{ cursorRef.current?.classList.remove('hov'); ringRef.current?.classList.remove('hov') }
+    els?.forEach(el=>{ el.addEventListener('mouseenter',on); el.addEventListener('mouseleave',off) })
+    return ()=>els?.forEach(el=>{ el.removeEventListener('mouseenter',on); el.removeEventListener('mouseleave',off) })
+  },[activeFilter])
 
-    return () => {
-      window.removeEventListener('mousemove', onMove)
-      window.removeEventListener('click', onClick)
-      cancelAnimationFrame(rafRef.current)
-    }
-  }, [])
+  // gsap
+  useEffect(() => { 
+  if (!pageRef.current) return
+  return lain098Animations(pageRef as React.RefObject<HTMLDivElement>) 
+}, [])
 
-  // ── Cursor hover on interactive els ──────────────────────────────────────
-  useEffect(() => {
-    const targets = pageRef.current?.querySelectorAll(
-      'a, button, .lain-art-card, .lain-comm-card, .lain-scrapbook-card, .lain-testimonial-card'
-    )
-    const enter = () => {
-      cursorRef.current?.classList.add('hovered')
-      cursorRingRef.current?.classList.add('hovered')
-    }
-    const leave = () => {
-      cursorRef.current?.classList.remove('hovered')
-      cursorRingRef.current?.classList.remove('hovered')
-    }
-    targets?.forEach(el => {
-      el.addEventListener('mouseenter', enter)
-      el.addEventListener('mouseleave', leave)
-    })
-    return () => targets?.forEach(el => {
-      el.removeEventListener('mouseenter', enter)
-      el.removeEventListener('mouseleave', leave)
-    })
-  }, [activeFilter])
+  // lightbox
+  const openLb=useCallback((i:number)=>{ setLbIdx(i); setLbOpen(true); document.body.style.overflow='hidden' },[])
+  const closeLb=useCallback(()=>{ setLbOpen(false); document.body.style.overflow='' },[])
+  const lbPrev=useCallback(()=>setLbIdx(i=>(i-1+filtered.length)%filtered.length),[filtered])
+  const lbNext=useCallback(()=>setLbIdx(i=>(i+1)%filtered.length),[filtered])
+  useEffect(()=>{
+    const h=(e:KeyboardEvent)=>{ if(!lbOpen) return; if(e.key==='Escape') closeLb(); if(e.key==='ArrowLeft') lbPrev(); if(e.key==='ArrowRight') lbNext() }
+    window.addEventListener('keydown',h); return ()=>window.removeEventListener('keydown',h)
+  },[lbOpen,lbPrev,lbNext,closeLb])
 
-  // ── GSAP ──────────────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (!pageRef.current) return
-    const cleanup = lain098Animations(pageRef as React.RefObject<HTMLDivElement>)
-    return cleanup
-  }, [])
+  // magnetic
+  const mag=useCallback((e:React.MouseEvent<HTMLElement>,s=.32)=>{
+    const r=(e.currentTarget as HTMLElement).getBoundingClientRect()
+    gsap.to(e.currentTarget,{x:(e.clientX-(r.left+r.width/2))*s,y:(e.clientY-(r.top+r.height/2))*s,duration:.3,ease:'power2.out'})
+  },[])
+  const magLeave=useCallback((e:React.MouseEvent<HTMLElement>)=>{
+    gsap.to(e.currentTarget,{x:0,y:0,duration:.55,ease:'elastic.out(1,.45)'})
+  },[])
 
-  // ── Lightbox ──────────────────────────────────────────────────────────────
-  const openLightbox = useCallback((index: number) => {
-    setLightboxIndex(index)
-    setLightboxOpen(true)
-    document.body.style.overflow = 'hidden'
-  }, [])
-  const closeLightbox = useCallback(() => {
-    setLightboxOpen(false)
-    document.body.style.overflow = ''
-  }, [])
-  const lightboxPrev = useCallback(() => {
-    setLightboxIndex(i => (i - 1 + filteredGallery.length) % filteredGallery.length)
-  }, [])
-  const lightboxNext = useCallback(() => {
-    setLightboxIndex(i => (i + 1) % filteredGallery.length)
-  }, [])
-
-  // ── Keyboard shortcuts ────────────────────────────────────────────────────
-  useEffect(() => {
-    const handler = (e: KeyboardEvent) => {
-      if (!lightboxOpen) return
-      if (e.key === 'Escape') closeLightbox()
-      if (e.key === 'ArrowLeft')  lightboxPrev()
-      if (e.key === 'ArrowRight') lightboxNext()
-    }
-    window.addEventListener('keydown', handler)
-    return () => window.removeEventListener('keydown', handler)
-  }, [lightboxOpen, lightboxPrev, lightboxNext, closeLightbox])
-
-  // ── Magnetic hover ────────────────────────────────────────────────────────
-  const handleMagnet = useCallback((
-    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>,
-    strength = 0.35
-  ) => {
-    const el = e.currentTarget as HTMLElement
-    const rect = el.getBoundingClientRect()
-    gsap.to(el, {
-      x: (e.clientX - (rect.left + rect.width  / 2)) * strength,
-      y: (e.clientY - (rect.top  + rect.height / 2)) * strength,
-      duration: 0.3,
-      ease: 'power2.out',
-    })
-  }, [])
-  const handleMagnetLeave = useCallback((
-    e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>
-  ) => {
-    gsap.to(e.currentTarget, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.42)' })
-  }, [])
-
-  // ── Gallery filter ────────────────────────────────────────────────────────
-  const filteredGallery = activeFilter === 'all'
-    ? GALLERY_ITEMS
-    : GALLERY_ITEMS.filter(g => g.tag.toLowerCase().includes(activeFilter))
-
-  // ── Render ────────────────────────────────────────────────────────────────
   return (
-    <div ref={pageRef} style={{ position: 'relative' }}>
+    <div ref={pageRef} style={{position:'relative'}}>
 
-      {/* ── Custom Cursor ─────────────────────────────────────────────────── */}
-      <div ref={cursorRef}     className="lain-cursor" />
-      <div ref={cursorRingRef} className="lain-cursor-ring" />
+      {/* cursor */}
+      <div ref={cursorRef} className="l-cursor" />
+      <div ref={ringRef}   className="l-cursor-ring" />
 
-      {/* ── Loader ───────────────────────────────────────────────────────── */}
-      <div id="lain-loader">
-        <div id="lain-loader-name">Lain098_</div>
-        <div id="lain-loader-sub">digital artist</div>
-        <div id="lain-loader-bar-wrap">
-          <div id="lain-loader-bar" />
-        </div>
-        <div id="lain-loader-pct">0%</div>
+      {/* LOADER */}
+      <div id="l-loader">
+        <div id="l-loader-title">Lain098_</div>
+        <div id="l-loader-sub">digital artist</div>
+        <div id="l-loader-bar-wrap"><div id="l-loader-bar" /></div>
+        <div id="l-loader-pct">0%</div>
       </div>
 
-      {/* ── Ambient Particles ─────────────────────────────────────────────── */}
-      <div className="lain-particles" aria-hidden="true">
-        {Array.from({ length: 28 }).map((_, i) => (
-          <div
-            key={i}
-            className="lain-particle"
-            style={{
-              left:   `${Math.random() * 100}%`,
-              bottom: `${-8 - Math.random() * 10}px`,
-              width:  `${3 + Math.random() * 9}px`,
-              height: `${3 + Math.random() * 9}px`,
-              background: `hsl(${194 + Math.random() * 25}, ${55 + Math.random() * 30}%, ${62 + Math.random() * 24}%)`,
-              ['--dur'   as string]: `${6 + Math.random() * 9}s`,
-              ['--delay' as string]: `${Math.random() * 8}s`,
-              ['--op'    as string]: `${0.14 + Math.random() * 0.28}`,
-            } as React.CSSProperties}
-          />
+      {/* PARTICLES */}
+      <div className="l-particles" aria-hidden="true">
+        {Array.from({length:24}).map((_,i)=>(
+          <div key={i} className="l-particle" style={{
+            left:`${Math.random()*100}%`, bottom:`${-5-Math.random()*8}px`,
+            width:`${3+Math.random()*8}px`, height:`${3+Math.random()*8}px`,
+            background:`hsl(${194+Math.random()*22},${54+Math.random()*28}%,${62+Math.random()*22}%)`,
+            '--dur':`${6+Math.random()*9}s`,'--del':`${Math.random()*8}s`,'--op':`${.12+Math.random()*0.26}`,
+          } as React.CSSProperties} />
         ))}
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          NAV
-      ══════════════════════════════════════════════════ */}
-      <nav id="lain-nav">
-        <a href="#" className="lain-nav-logo">
-          Lain<span>098_</span>
-          <span className="lain-nav-logo-dot" />
-        </a>
-        <ul className="lain-nav-links">
-          {NAV_LINKS.map(n => (
-            <li key={n.label}>
-              <a
-                href={n.href}
-                onClick={e => { e.preventDefault(); smoothScroll(n.href) }}
-              >
-                {n.label}
-              </a>
-            </li>
+      {/* NAV */}
+      <nav id="l-nav">
+        <a href="#" className="l-nav-logo">Lain<span>098_</span></a>
+        <ul className="l-nav-links">
+          {[{l:'About',h:'#about'},{l:'Gallery',h:'#gallery'},{l:'Commissions',h:'#commissions'},{l:'Process',h:'#process'},{l:'Contact',h:'#contact'}].map(n=>(
+            <li key={n.l}><a href={n.h} onClick={e=>{e.preventDefault();smoothScroll(n.h)}}>{n.l}</a></li>
           ))}
         </ul>
-        <div className="lain-nav-right">
-          <a
-            href="https://throne.com/lain098_"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lain-nav-cta"
-            onMouseMove={handleMagnet as any}
-            onMouseLeave={handleMagnetLeave as any}
-          >
+        <div style={{display:'flex',alignItems:'center',gap:'1rem'}}>
+          <a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer"
+             className="l-nav-cta" onMouseMove={e=>mag(e)} onMouseLeave={magLeave}>
             Commission Me
           </a>
-          <button
-            className="lain-nav-burger"
-            aria-label="Toggle menu"
-            onClick={() => setMenuOpen(p => !p)}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
+          <button className="l-nav-burger" onClick={()=>setMenuOpen(p=>!p)} aria-label="menu">
+            {menuOpen ? <X size={22}/> : <Menu size={22}/>}
           </button>
         </div>
       </nav>
-
-      {/* Mobile menu */}
-      <div className={`lain-mobile-menu${menuOpen ? ' open' : ''}`}>
-        <button
-          className="lain-mobile-menu-close"
-          onClick={() => setMenuOpen(false)}
-          aria-label="Close menu"
-        >
-          <X size={26} />
-        </button>
-        {NAV_LINKS.map(n => (
-          <a
-            key={n.label}
-            href={n.href}
-            onClick={e => { e.preventDefault(); smoothScroll(n.href); setMenuOpen(false) }}
-          >
-            {n.label}
-          </a>
+      <div className={`l-mobile-nav${menuOpen?' open':''}`}>
+        <button className="l-mobile-nav-close" onClick={()=>setMenuOpen(false)}><X size={26}/></button>
+        {[{l:'About',h:'#about'},{l:'Gallery',h:'#gallery'},{l:'Commissions',h:'#commissions'},{l:'Process',h:'#process'},{l:'Contact',h:'#contact'}].map(n=>(
+          <a key={n.l} href={n.h} onClick={e=>{e.preventDefault();smoothScroll(n.h);setMenuOpen(false)}}>{n.l}</a>
         ))}
-        <span className="lain-mobile-menu-sub">@lain098_ · Digital Artist</span>
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          HERO
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-hero">
-        {/* Ambient blobs */}
-        <div className="lain-blob" style={{
-          width: 520, height: 520,
-          top: -120, right: -100,
-          background: '#bae6fd',
-          ['--bd' as string]: '14s',
-          ['--bx' as string]: '38px',
-          ['--by' as string]: '-28px',
-        } as React.CSSProperties} />
-        <div className="lain-blob" style={{
-          width: 300, height: 300,
-          bottom: 40, left: -50,
-          background: '#fce4ec',
-          ['--bd' as string]: '11s',
-          ['--bx' as string]: '-22px',
-          ['--by' as string]: '20px',
-        } as React.CSSProperties} />
-        <div className="lain-blob" style={{
-          width: 220, height: 220,
-          top: '45%', right: '22%',
-          background: '#e0f7f4',
-          ['--bd' as string]: '9s',
-          ['--bx' as string]: '20px',
-          ['--by' as string]: '-34px',
-        } as React.CSSProperties} />
-        <div className="lain-blob" style={{
-          width: 160, height: 160,
-          bottom: '25%', left: '28%',
-          background: '#fef9c3',
-          ['--bd' as string]: '13s',
-          ['--bx' as string]: '-14px',
-          ['--by' as string]: '16px',
-        } as React.CSSProperties} />
+      {/* ════════════════════════════════════════════════
+          HERO — Astrophile exact layout
+          Full-bleed sky, center circle title, vertical nav
+          right, vertical date left, IG url left, long line+dot
+      ════════════════════════════════════════════════ */}
+      <section className="l-hero">
+        <div className="l-hero-bg" />
 
-        {/* Floating collage art cards */}
-        {FLOAT_IMGS.map((src, i) => (
-          <div key={i} className="lain-float-card">
-            <img src={src} alt="" aria-hidden="true" />
-            <span className="lain-float-card-tag">
-              {['OC · 2024', 'Fanart', 'Chibi', 'Animation'][i]}
-            </span>
-          </div>
+        {/* clouds */}
+        {[
+          {w:320,h:120,top:'8%',left:'5%','--cd':'22s','--cx':'50px'},
+          {w:240,h:90, top:'18%',right:'8%','--cd':'18s','--cx':'-40px'},
+          {w:180,h:70, top:'55%',left:'15%','--cd':'25s','--cx':'35px'},
+          {w:140,h:55, top:'70%',right:'15%','--cd':'19s','--cx':'-30px'},
+          {w:200,h:75, top:'35%',left:'60%','--cd':'21s','--cx':'28px'},
+        ].map((c,i)=>(
+          <div key={i} className="l-cloud" style={{
+            width:c.w,height:c.h,top:c.top,left:(c as any).left,right:(c as any).right,
+            '--cd':c['--cd'],'--cx':c['--cx'],
+          } as React.CSSProperties} />
         ))}
 
-        {/* Eyebrow */}
-        <p className="lain-hero-eyebrow" aria-label="Anime illustrator specialties">
-          Digital Artist · Anime · OC · Chibi · Animations
+        {/* three dots top right — Astrophile */}
+        <div className="l-hero-dots" aria-hidden="true">
+          <div className="l-hero-dot"/><div className="l-hero-dot"/><div className="l-hero-dot"/>
+        </div>
+
+        {/* CENTER CIRCLE — Astrophile */}
+        <div className="l-hero-circle-wrap">
+          <div className="l-hero-circle">
+            <div className="l-hero-circle-title">
+              Lain<span>digital artist</span>
+            </div>
+            <span className="l-hero-sparkle" aria-hidden="true">✦</span>
+            <span className="l-hero-sparkle" aria-hidden="true">✧</span>
+            <span className="l-hero-sparkle" aria-hidden="true">✦</span>
+          </div>
+        </div>
+
+        {/* body text left of circle — Astrophile paragraph rotated */}
+        <p className="l-hero-body-text" aria-label="About Lain">
+          Hello I'm Lain — anime illustrations, fanart, OCs, chibi and short animations. Art for those who feel everything a little too deeply.
         </p>
 
-        {/* Animated SVG script stroke — COVEO reference */}
-        <div className="lain-hero-svg-wrap" aria-hidden="true">
-          <svg viewBox="0 0 540 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path
-              d="M10 44 C22 22, 48 14, 72 34 C88 48, 104 52, 124 38 C142 26, 158 18, 180 38 C196 52, 216 54, 236 42"
-              style={{ '--sd': '1.2s', '--sd-delay': '2.7s' } as React.CSSProperties}
-            />
-            <path
-              d="M258 38 C274 20, 296 14, 318 34 C334 48, 354 52, 374 38 C390 26, 410 20, 432 38 C450 52, 472 56, 492 43 C506 34, 522 28, 536 38"
-              style={{ '--sd': '1.2s', '--sd-delay': '3.5s' } as React.CSSProperties}
-            />
-          </svg>
+        {/* vertical right nav — Astrophile Post/Story/Reels/Typography/Creative */}
+        <nav className="l-hero-vnav" aria-label="content types">
+          {['Gallery','About','Commissions','Process','Contact'].map((item,i)=>(
+            <button key={item} className={`l-hero-vnav-item${i===0?' active':''}`}
+              onClick={()=>smoothScroll(`#${item.toLowerCase()}`)}>
+              {item}
+            </button>
+          ))}
+        </nav>
+
+        {/* vertical date left — Astrophile "05 March 2023" */}
+        <span className="l-hero-vdate" aria-hidden="true">Digital Art · Since 2020</span>
+
+        {/* vertical IG URL far left — Astrophile */}
+        <a href="https://www.instagram.com/lain098_" target="_blank" rel="noopener noreferrer"
+           className="l-hero-vig" aria-label="Instagram">
+          https://instagram.com/lain098_
+        </a>
+
+        {/* long vertical line + dot — Astrophile exact */}
+        <div className="l-hero-vline" aria-hidden="true">
+          <div className="l-hero-vline-dot"/>
         </div>
 
-        {/* Title */}
-        <h1 className="lain-hero-title">
-          Hello, I'm <em>Lain</em>
-          <span className="lain-hero-title-line2">digital artist</span>
-        </h1>
-
-        {/* Sub */}
-        <p className="lain-hero-sub">
-          Crafting anime illustrations, fanart, original characters, chibi, and short animations —
-          art for people who feel everything a little too deeply.
-        </p>
-
-        {/* CTAs */}
-        <div className="lain-hero-ctas">
-          <a
-            href="https://throne.com/lain098_"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="lain-btn-primary"
-            onMouseMove={handleMagnet as any}
-            onMouseLeave={handleMagnetLeave as any}
-          >
-            <Sparkles size={14} />
-            Commission Me
-          </a>
-          <button
-            className="lain-btn-outline"
-            onClick={() => smoothScroll('#gallery')}
-            onMouseMove={e => handleMagnet(e as any, 0.28)}
-            onMouseLeave={handleMagnetLeave as any}
-          >
-            View Gallery
-            <ArrowRight size={14} />
-          </button>
-        </div>
-
-        {/* Scroll hint */}
-        <div className="lain-scroll-hint" aria-hidden="true">
-          <span>Scroll</span>
-          <div className="lain-scroll-line" />
-        </div>
-
-        {/* Page index — editorial reference */}
-        <span className="lain-hero-index" aria-hidden="true">
-          Portfolio · 2025
-        </span>
-
-        {/* Vertical social links — Astrophile reference */}
-        <div className="lain-hero-social" aria-hidden="true">
-          <a
-            href="https://www.instagram.com/lain098_"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Instagram
-          </a>
-          <a
-            href="https://throne.com/lain098_"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Throne
-          </a>
-        </div>
+        {/* download circle bottom left — Astrophile */}
+        <button className="l-hero-dl" onClick={()=>smoothScroll('#gallery')} aria-label="View gallery">
+          <ChevronDown size={14}/>
+        </button>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          STATS BAR (game UI reference)
-      ══════════════════════════════════════════════════ */}
-      <div className="lain-stats-bar" aria-label="Portfolio stats">
-        <div className="lain-stats-row">
-          {[...STATS, ...STATS, ...STATS].map((s, i) => (
-            <React.Fragment key={i}>
-              <div className="lain-stat-item">
-                <span className="lain-stat-icon">{s.icon}</span>
-                <span className="lain-stat-val">{s.value}</span>
-                <span className="lain-stat-lbl">{s.label}</span>
-              </div>
-              <div className="lain-stat-div" />
-            </React.Fragment>
+      {/* ════════════════════════════════════════════════
+          COVEO-STYLE CAROUSEL SECTION
+          carouselContainer, intro avatar+logo, side-text,
+          horizontal scrolling art cards, new banner, fade
+      ════════════════════════════════════════════════ */}
+      <section className="l-carousel-section" style={{minHeight:'420px',position:'relative'}}>
+
+        {/* "Now Available" banner — COVEO featuredRelease */}
+        <div className="l-new-banner">
+          <span className="l-new-banner-dot"/>
+          <span className="l-new-banner-text">Latest Work — Now Available</span>
+        </div>
+
+        {/* COVEO .intro: avatar + logo */}
+        <div className="l-carousel-intro">
+          <div className="l-carousel-avatar">
+            <img src="https://images.unsplash.com/photo-1607748851687-ba9a10438621?w=160&q=80" alt="Lain"/>
+          </div>
+          <div className="l-carousel-logo">Lain<span>098_</span></div>
+          <div className="l-carousel-sub">An Anime Art Project</div>
+        </div>
+
+        {/* COVEO .side-text with highlighted spans */}
+        <p className="l-carousel-sidetext">
+          Art for the <span>day-dreamers</span>, the <span>over-thinkers</span>, the <span>storytellers</span>,
+          and the <span>wanderers</span> — a soundtrack for those who find beauty in every moment.
+        </p>
+
+        {/* carousel track — like COVEO .carousel */}
+        <div className="l-carousel">
+          {[...GALLERY,...GALLERY].map((item,i)=>(
+            <div key={i} className="l-carousel-item" onClick={()=>openLb(i%GALLERY.length)}>
+              <img src={item.img} alt={item.title} loading="lazy"/>
+              <div className="l-carousel-item-overlay"/>
+              <span className="l-carousel-item-tag">{item.tag}</span>
+            </div>
+          ))}
+        </div>
+
+        {/* COVEO .fade radial gradient overlay */}
+        <div className="l-carousel-fade" aria-hidden="true"/>
+
+        {/* COVEO .previewText */}
+        <p className="l-carousel-preview-txt">Tap artwork to view full piece</p>
+      </section>
+
+      {/* MARQUEE */}
+      <div className="l-marquee-wrap" aria-hidden="true">
+        <div className="l-marquee">
+          {[...ART_MARQUEE,...ART_MARQUEE,...ART_MARQUEE].map((t,i)=>(
+            <span key={i} className={`l-marquee-item${t==='✦'?' l-marquee-dot':''}`}>{t}</span>
           ))}
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          ART-TYPE MARQUEE
-      ══════════════════════════════════════════════════ */}
-      <div className="lain-marquee-section" aria-hidden="true">
-        <div className="lain-marquee-track">
-          {[...ART_TYPES, ...ART_TYPES].map((t, i) => (
-            <span
-              key={i}
-              className={`lain-marquee-item${t === '✦' ? ' dot' : ''}`}
-            >
-              {t}
-            </span>
-          ))}
+      {/* ════════════════════════════════════════════════
+          ABOUT — Fuzzy Hat reference
+          Huge split serif title, image bleed off-screen right,
+          floating ghost circles, JOIN NOW pill, numbered feats
+      ════════════════════════════════════════════════ */}
+      <section className="l-about" id="about">
+        {/* image bleed right — Fuzzy Hat */}
+        <div className="l-about-img-bleed">
+          <img src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=900&q=85" alt="art"/>
         </div>
-      </div>
 
-      {/* ══════════════════════════════════════════════════
-          ABOUT
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-about" id="about">
-        <div className="lain-about-inner">
-          {/* Collage image stack — vanderbilt/japanese editorial ref */}
-          <div className="lain-about-stack">
-            {ABOUT_IMGS.map((src, i) => (
-              <div key={i} className="lain-about-img">
-                <img src={src} alt={`Art example ${i + 1}`} />
-                <span className="lain-about-img-tag">
-                  {['Page /01', 'Page /02', 'Page /03'][i]}
-                </span>
+        {/* ghost circle elements — Fuzzy Hat */}
+        {[
+          {w:180,h:180,top:'15%',left:'42%','--gf':'9s','--gy':'-22px'},
+          {w:90, h:90, top:'60%',left:'38%','--gf':'7s','--gy':'-14px'},
+          {w:120,h:120,top:'30%',right:'52%','--gf':'11s','--gy':'-18px'},
+          {w:55, h:55, bottom:'20%',left:'46%','--gf':'8s','--gy':'-10px'},
+        ].map((c,i)=>(
+          <div key={i} className="l-about-ghost-circle" style={{
+            width:c.w,height:c.h,top:(c as any).top,left:(c as any).left,
+            right:(c as any).right,bottom:(c as any).bottom,
+            '--gf':c['--gf'],'--gy':c['--gy'],
+          } as React.CSSProperties}/>
+        ))}
+
+        <div className="l-about-content">
+          {/* HUGE split title — Fuzzy Hat "FUZZY HAT" */}
+          <div className="l-about-bigtitle" aria-label="Hello I'm Lain">
+            <span className="line1"><em>Hello</em></span>
+            <span className="line2">I'm Lain.</span>
+          </div>
+
+          <p className="l-about-text">
+            I'm a digital artist specializing in anime-style illustrations, fanart,
+            original characters, chibi, and short animations. Every piece I make
+            is made with intention — to make you feel something.
+          </p>
+
+          <div className="l-about-cta-row">
+            <a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer"
+               className="l-btn-pri" onMouseMove={e=>mag(e)} onMouseLeave={magLeave}>
+              Commission Me
+            </a>
+            <a href="https://www.instagram.com/lain098_" target="_blank" rel="noopener noreferrer"
+               className="l-btn-out" onMouseMove={e=>mag(e)} onMouseLeave={magLeave}>
+              <Instagram size={14}/> Instagram
+            </a>
+          </div>
+
+          {/* numbered sections — Fuzzy Hat "01 LLAMATIVO Y ÚNICO" */}
+          <div className="l-about-feats">
+            {[
+              {n:'01',title:'Anime & Fanart',    desc:'Detailed character illustrations with expressive linework, rich color and cinematic lighting.'},
+              {n:'02',title:'Original Characters',desc:'Unique OC designs from concept to final with full color, shading and optional lore sheet.'},
+              {n:'03',title:'Chibi & Animations', desc:'Adorable chibi illustrations and short looping GIF animations for emotes and sticker packs.'},
+            ].map(f=>(
+              <div key={f.n} className="l-about-feat">
+                <div className="l-about-feat-num">{f.n}</div>
+                <div>
+                  <div className="l-about-feat-title">{f.title}</div>
+                  <div className="l-about-feat-desc">{f.desc}</div>
+                </div>
               </div>
             ))}
           </div>
 
-          {/* Content */}
-          <div className="lain-about-content">
-            <span className="lain-section-label">— About Lain</span>
-            <h2 className="lain-about-title">
-              Art that feels like a quiet <em>sunny afternoon</em>
-            </h2>
-            <p className="lain-about-text">
-              Hello! I'm Lain — a digital artist who draws anime-style illustrations,
-              fanart of characters I love, original characters with full backstories,
-              and tiny chibi versions of absolutely everything.
-            </p>
-            <p className="lain-about-text">
-              Every piece I make is personal. I want the person receiving my art to feel
-              something — a memory, a daydream, a warmth they can't quite name.
-              That's what I'm always chasing in every brushstroke.
-            </p>
-            <p className="lain-about-text">
-              Based online, creating always. Open for commissions and collaborations
-              with fellow dreamers 🩵
-            </p>
-            <div className="lain-tags">
-              {['Anime Style', 'Fanart', 'OC Design', 'Chibi', 'Animations', 'Character Design', 'Digital'].map(tag => (
-                <span key={tag} className="lain-tag">{tag}</span>
-              ))}
-            </div>
-            <a
-              href="https://www.instagram.com/lain098_?igsh=aXpiYXBuYWJxOXFw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lain-btn-outline"
-              onMouseMove={handleMagnet as any}
-              onMouseLeave={handleMagnetLeave as any}
-            >
-              <Instagram size={14} />
-              Follow on Instagram
-            </a>
-          </div>
+          {/* arrow like Fuzzy Hat → */}
+          <div className="l-about-arrow" aria-hidden="true">→</div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          CHARACTER ATTRS (game UI reference)
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-char-section">
-        <div className="lain-char-bg-text" aria-hidden="true">Lain</div>
-        <div className="lain-char-inner">
-          <div className="lain-char-left">
-            <span className="lain-section-label" style={{ color: 'rgba(135,206,235,0.55)' }}>
-              — Artist Profile
-            </span>
-            <h2 className="lain-char-title">Skills &amp; Specialties</h2>
-            <p className="lain-char-sub">
-              CHARACTER_ID · Lain098_<br />
-              CLASS · Digital Illustrator<br />
-              SPECIALIZATION · Anime &amp; Character Art
-            </p>
-            <div className="lain-char-card">
-              <div className="lain-char-avatar">
-                <img
-                  src="https://images.unsplash.com/photo-1607748851687-ba9a10438621?w=160&q=80"
-                  alt="Lain avatar"
-                />
-              </div>
-              <div>
-                <div className="lain-char-info-name">Lain098_</div>
-                <div className="lain-char-info-role">Digital Artist · Open for Comms</div>
-                <div className="lain-char-badges">
-                  <span className="lain-char-badge">ANIME</span>
-                  <span className="lain-char-badge">OC</span>
-                  <span className="lain-char-badge">CHIBI</span>
-                  <span className="lain-char-badge">GIF</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="lain-char-right">
-            <div className="lain-char-attrs">
-              {CHAR_ATTRS.map((attr, i) => (
-                <div key={i} className="lain-attr-row">
-                  <div className="lain-attr-header">
-                    <span className="lain-attr-label">{attr.label}</span>
-                    <span className="lain-attr-value">{attr.value}</span>
-                  </div>
-                  <div className="lain-attr-bar-bg">
-                    <div
-                      className="lain-attr-bar-fill"
-                      style={{ '--val': `${attr.value}%` } as React.CSSProperties}
-                    />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          GALLERY
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-gallery" id="gallery">
-        <div className="lain-gallery-header">
+      {/* ════════════════════════════════════════════════
+          GALLERY — Vanderbilt + Japanese zine
+      ════════════════════════════════════════════════ */}
+      <section className="l-gallery" id="gallery">
+        <div className="l-gallery-header">
           <div>
-            <span className="lain-section-label">— Portfolio</span>
-            <h2 className="lain-gallery-title">Selected <em>Works</em></h2>
+            <span className="l-sec-label">— Portfolio</span>
+            <h2 className="l-gallery-title">Selected <em>Works</em></h2>
           </div>
-          <div className="lain-gallery-filters">
-            {['all', 'oc', 'fanart', 'chibi', 'animation'].map(f => (
-              <button
-                key={f}
-                className={`lain-filter-btn${activeFilter === f ? ' active' : ''}`}
-                onClick={() => setActiveFilter(f)}
-              >
-                {f === 'all' ? 'All Works' : f === 'oc' ? 'OC Design' : f.charAt(0).toUpperCase() + f.slice(1)}
+          <div className="l-gallery-filters">
+            {[{k:'all',l:'All Works'},{k:'oc',l:'OC Design'},{k:'fanart',l:'Fanart'},{k:'chibi',l:'Chibi'},{k:'animation',l:'Animation'}].map(f=>(
+              <button key={f.k} className={`l-filter-btn${activeFilter===f.k?' on':''}`}
+                onClick={()=>setActiveFilter(f.k)}>
+                {f.l}
               </button>
             ))}
           </div>
         </div>
 
-        {/* 12-column editorial art grid */}
-        <div className="lain-gallery-grid">
-          {filteredGallery.map((item, i) => (
-            <div
-              key={item.id}
-              className="lain-art-card"
-              onClick={() => openLightbox(i)}
-              role="button"
-              tabIndex={0}
-              aria-label={`View ${item.title}`}
-              onKeyDown={e => e.key === 'Enter' && openLightbox(i)}
-            >
-              <div className="lain-art-card-img-wrap">
-                <img src={item.thumb} alt={item.title} loading="lazy" />
-                <div className="lain-art-card-overlay" aria-hidden="true">
-                  <span className="lain-art-tag">{item.tag}</span>
-                  <span className="lain-art-name">{item.title}</span>
+        {/* VANDERBILT row — center photo larger, side blurred, /01 /02 /03 labels */}
+        <div className="l-gallery-vand" style={{maxWidth:'1100px',margin:'0 auto 5rem'}}>
+          <div className="l-gallery-vand-header">Grupos like x like</div>
+          <div className="l-gallery-vand-row">
+            {[
+              {img:GALLERY[0].img, num:'/01', name:'Crystal Reverie',  cls:'side'},
+              {img:GALLERY[2].img, num:'/02', name:'Star & Sky',       cls:'center'},
+              {img:GALLERY[6].img, num:'/03', name:'Cloud Dancer',     cls:'side'},
+            ].map((v,i)=>(
+              <div key={i}>
+                <div className={`l-vand-item ${v.cls}`} onClick={()=>openLb(i===0?0:i===1?2:6)}>
+                  <img src={v.img} alt={v.name} loading="lazy"
+                    style={{height: v.cls==='center'?'360px':'280px'}}/>
+                  <div className="l-art-zoom"><ZoomIn size={13}/></div>
                 </div>
-                <div className="lain-art-zoom-icon" aria-hidden="true">
-                  <ZoomIn size={14} />
+                <div className="l-vand-label">
+                  <span className="l-vand-num">{v.num}</span>
+                  <span className="l-vand-name">{v.name}</span>
                 </div>
               </div>
-              <div className="lain-art-card-meta">
-                <div className="lain-art-card-meta-left">
-                  <span className="lain-art-tag">{item.tag}</span>
-                  <span className="lain-art-name">{item.title}</span>
+            ))}
+          </div>
+          {/* Vanderbilt page number "022" and "created by" */}
+          <div className="l-vand-footer">
+            <span className="l-vand-page">022</span>
+            <span className="l-vand-credit">created by <span>lain098_</span></span>
+          </div>
+        </div>
+
+        {/* main art grid — Japanese zine asymmetric layout */}
+        <div className="l-gallery-grid">
+          {filtered.map((item,i)=>(
+            <div key={item.id} className="l-art-card" onClick={()=>openLb(i)}
+              role="button" tabIndex={0} aria-label={`View ${item.title}`}
+              onKeyDown={e=>e.key==='Enter'&&openLb(i)}>
+              <div className="l-art-img-wrap">
+                <img src={item.img} alt={item.title} loading="lazy"/>
+                <div className="l-art-overlay" aria-hidden="true">
+                  <span className="l-art-tag">{item.tag}</span>
+                  <span className="l-art-title">{item.title}</span>
                 </div>
-                <span className="lain-art-card-num">
-                  /{String(i + 1).padStart(2, '0')}
-                </span>
+                <div className="l-art-zoom" aria-hidden="true"><ZoomIn size={13}/></div>
+              </div>
+              <div className="l-art-meta">
+                <div>
+                  <div className="l-art-tag">{item.tag}</div>
+                  <div className="l-art-title">{item.title}</div>
+                </div>
+                {/* Japanese zine Page /XX */}
+                <span className="l-art-page">Page /{String(i+1).padStart(2,'0')}</span>
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          LIGHTBOX
-      ══════════════════════════════════════════════════ */}
-      <div
-        className={`lain-lightbox${lightboxOpen ? ' open' : ''}`}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Image lightbox"
-      >
-        <div className="lain-lightbox-bg" onClick={closeLightbox} />
-        <div className="lain-lightbox-content">
-          <button
-            className="lain-lightbox-close"
-            onClick={closeLightbox}
-            aria-label="Close lightbox"
-          >
-            <X size={18} />
-          </button>
-          <button
-            className="lain-lightbox-nav prev"
-            onClick={lightboxPrev}
-            aria-label="Previous image"
-          >
-            <ChevronLeft size={20} />
-          </button>
-          <button
-            className="lain-lightbox-nav next"
-            onClick={lightboxNext}
-            aria-label="Next image"
-          >
-            <ChevronRight size={20} />
-          </button>
-          {filteredGallery[lightboxIndex] && (
-            <>
-              <div className="lain-lightbox-img-wrap">
-                <img
-                  src={filteredGallery[lightboxIndex].img}
-                  alt={filteredGallery[lightboxIndex].title}
-                />
+      {/* LIGHTBOX */}
+      <div className={`l-lightbox${lbOpen?' open':''}`} role="dialog" aria-modal="true">
+        <div className="l-lightbox-bg" onClick={closeLb}/>
+        <div className="l-lightbox-inner">
+          <button className="l-lightbox-close" onClick={closeLb} aria-label="Close"><X size={17}/></button>
+          <button className="l-lightbox-nav prev" onClick={lbPrev} aria-label="Previous"><ChevronLeft size={19}/></button>
+          <button className="l-lightbox-nav next" onClick={lbNext} aria-label="Next"><ChevronRight size={19}/></button>
+          {filtered[lbIdx] && <>
+            <div className="l-lightbox-img-wrap">
+              <img src={filtered[lbIdx].img} alt={filtered[lbIdx].title}/>
+            </div>
+            <div className="l-lightbox-info">
+              <div>
+                <div className="l-lightbox-title">{filtered[lbIdx].title}</div>
+                <div className="l-lightbox-tag">{filtered[lbIdx].tag}</div>
               </div>
-              <div className="lain-lightbox-info">
-                <div>
-                  <div className="lain-lightbox-title">
-                    {filteredGallery[lightboxIndex].title}
-                  </div>
-                  <div className="lain-lightbox-tag">
-                    {filteredGallery[lightboxIndex].tag} · {filteredGallery[lightboxIndex].medium}
-                  </div>
-                </div>
-                <div className="lain-lightbox-year">
-                  {filteredGallery[lightboxIndex].year}
-                </div>
-              </div>
-              <div className="lain-lightbox-counter">
-                {lightboxIndex + 1} / {filteredGallery.length}
-              </div>
-            </>
-          )}
+              <div className="l-lightbox-year">{filtered[lbIdx].year}</div>
+            </div>
+            <div className="l-lightbox-count">{lbIdx+1} / {filtered.length}</div>
+          </>}
         </div>
       </div>
 
-      {/* ══════════════════════════════════════════════════
-          SCRAPBOOK (Lost&Forgotten / collage reference)
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-scrapbook">
-        <div className="lain-scrapbook-inner">
-          {/* Photo scrapbook board */}
-          <div className="lain-scrapbook-board" aria-hidden="true">
-            {SCRAPBOOK_ITEMS.map((item, i) => (
-              <div
-                key={i}
-                className="lain-scrapbook-card"
-                style={{
-                  left: item.x,
-                  top:  item.y,
-                  transform: `rotate(${item.rotate}deg)`,
-                  zIndex: i,
-                }}
-              >
-                <img src={item.img} alt={item.caption} />
-                <div className="lain-scrapbook-caption">{item.caption}</div>
-                <div className="lain-scrapbook-date">{item.date}</div>
-              </div>
-            ))}
-            {/* decorative diagonal line — ref: Lost&Forgotten layout */}
-            <div
-              className="lain-diagonal-line"
-              style={{
-                left: '50%', top: '0', height: '100%',
-                transform: 'rotate(12deg) translateX(-50%)',
-                opacity: 0.18,
-              }}
-            />
-          </div>
+      {/* ════════════════════════════════════════════════
+          COLLAGE SECTION — Lost & Forgotten exact
+          Full landscape top photo, overlapping cut-out photos,
+          vertical center line, "LOST AND FORGOTTEN" title,
+          scattered corner texts, cursive script, "ME?" big word
+      ════════════════════════════════════════════════ */}
+      <section className="l-collage">
+        {/* full-width top photo — L&F */}
+        <img
+          className="l-collage-top-img"
+          src="https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=1400&q=85"
+          alt="cherry blossom landscape"
+          loading="lazy"
+        />
 
-          {/* Content */}
-          <div className="lain-scrapbook-content">
-            <span className="lain-section-label">— Memory Board</span>
-            <h2 className="lain-scrapbook-title">
-              Every piece tells a <em>story</em>
-            </h2>
-            <p className="lain-scrapbook-text">
-              These aren't just illustrations — they're feelings given form.
-              Each piece starts with an emotion: a colour, a melody, a memory.
-              I chase that feeling until the art captures it.
-            </p>
-            <p className="lain-scrapbook-text">
-              My sketchbooks are full of character concepts and scene studies.
-              The ones that make it to final are the ones that stop me mid-sketch
-              and make me feel something I can't quite name yet.
-            </p>
-            <div style={{ marginTop: '2rem' }}>
-              <a
-                href="https://www.instagram.com/lain098_?igsh=aXpiYXBuYWJxOXFw"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lain-btn-outline"
-                onMouseMove={handleMagnet as any}
-                onMouseLeave={handleMagnetLeave as any}
-              >
-                <Instagram size={14} />
-                See more on Instagram
-              </a>
+        {/* scattered corner texts — L&F exact */}
+        <div className="l-collage-corner tl" aria-hidden="true">
+          TO ART, FOR ART<br/>
+          I'VE CHANGED EVERY<br/>
+          PART OF ME<br/>
+          UNTIL THE OC PIECES<br/>
+          AREN'T ME AT ALL
+        </div>
+        <div className="l-collage-corner tr" aria-hidden="true">
+          I LOOK AT THE SCREEN, NOW I'M<br/>
+          JUST A JIGSAW<br/>
+          YOU TAKE EVERY PART OF ME<br/>
+          ALL OF THE THINGS YOU NEED<br/>
+          THE THE REST YOU KEEP
+        </div>
+
+        {/* overlapping cut-out photo chaos — L&F */}
+        <div className="l-collage-board">
+          <div className="l-collage-vline" aria-hidden="true"/>
+          <div className="l-collage-num" aria-hidden="true">02</div>
+
+          {[
+            {src:COLLAGE_IMGS[0], w:160,h:130, top:'8%',  left:'5%',  rot:-5,  cap:'Loop of Spring'},
+            {src:COLLAGE_IMGS[1], w:200,h:160, top:'4%',  left:'30%', rot:3,   cap:'Crystal Reverie'},
+            {src:COLLAGE_IMGS[2], w:145,h:120, top:'2%',  left:'62%', rot:-3,  cap:'Velvet Dawn'},
+            {src:COLLAGE_IMGS[3], w:175,h:140, top:'42%', left:'8%',  rot:5,   cap:'Tiny Wisteria'},
+            {src:COLLAGE_IMGS[4], w:155,h:130, top:'46%', left:'52%', rot:-4,  cap:'Cloud Dancer'},
+          ].map((p,i)=>(
+            <div key={i} className="l-collage-photo" style={{
+              top:p.top, left:p.left,
+              transform:`rotate(${p.rot}deg)`,
+              zIndex:i+1,
+            }}>
+              <img src={p.src} alt={p.cap} style={{width:p.w,height:p.h}} loading="lazy"/>
+              <div className="l-collage-photo-cap">{p.cap}</div>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          EDITORIAL GRID (Japanese photo zine reference)
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-editorial">
-        <div className="lain-editorial-inner">
-          <div className="lain-editorial-header">
-            <span className="lain-section-label">— Process Studies</span>
-            <h2 className="lain-editorial-title">
-              Moments of <em>Inspiration</em>
-            </h2>
-          </div>
-          <div className="lain-editorial-grid">
-            {EDITORIAL_IMGS.map((panel, i) => (
-              <div key={i} className="lain-editorial-panel">
-                <div className="lain-editorial-img-wrap">
-                  <img src={panel.src} alt={panel.caption} loading="lazy" />
-                </div>
-                <div className="lain-editorial-body">
-                  <div className="lain-editorial-label">{panel.label}</div>
-                  <div className="lain-editorial-kanji">{panel.caption}</div>
-                  <p className="lain-editorial-caption">
-                    {[
-                      'Reference photography for a shrine fanart piece — the way light filters through stone always ends up in my work somehow.',
-                      'Starfields and atmosphere studies. Looking up on clear nights and thinking about the universe always inspires new OC concepts.',
-                      'Cherry blossoms in motion — the ephemeral quality translates directly into anime aesthetics. Beauty that knows it\'s temporary.',
-                    ][i]}
-                  </p>
-                  <div className="lain-editorial-date">{panel.date}</div>
-                  <span className="lain-editorial-page">
-                    Page /{String(i + 12).padStart(2, '0')}
-                  </span>
-                  <div className="lain-editorial-vert">{panel.label} · Lain098_</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          COMMISSIONS
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-commissions" id="commissions">
-        <div className="lain-commissions-inner">
-          <div className="lain-commissions-head">
-            <span className="lain-section-label">— Commissions</span>
-            <h2 className="lain-commissions-title">
-              Let me draw <em>your</em> vision
-            </h2>
-            <div className="lain-comm-meta">
-              <span className="lain-comm-status">
-                <span className="lain-comm-status-dot" />
-                Commissions Open
-              </span>
-              <a
-                href="https://throne.com/lain098_"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="lain-btn-primary"
-                style={{ fontSize: '0.76rem', padding: '0.55rem 1.3rem' }}
-                onMouseMove={handleMagnet as any}
-                onMouseLeave={handleMagnetLeave as any}
-              >
-                <ExternalLink size={12} />
-                Request via Throne
-              </a>
-            </div>
-          </div>
-
-          <div className="lain-comm-grid">
-            {COMM_TYPES.map((c, i) => (
-              <div
-                key={i}
-                className="lain-comm-card"
-                style={{ transitionDelay: `${c.delay}s` }}
-              >
-                <div className="lain-comm-num">{c.num}</div>
-                <div className="lain-comm-icon">{c.icon}</div>
-                <div className="lain-comm-tier">{c.tier}</div>
-                <div className="lain-comm-name">{c.name}</div>
-                <p className="lain-comm-desc">{c.desc}</p>
-                <div className="lain-comm-features">
-                  {c.features.map((f, fi) => (
-                    <div key={fi} className="lain-comm-feature">{f}</div>
-                  ))}
-                </div>
-                <div className="lain-comm-footer">
-                  <div className="lain-comm-price">
-                    {c.start} <span>starting</span>
-                  </div>
-                  <div className="lain-comm-arrow" aria-hidden="true">
-                    <ArrowRight size={15} />
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          PROCESS TIMELINE
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-process" id="process">
-        <div className="lain-process-inner">
-          <span className="lain-section-label" style={{ textAlign: 'center', display: 'block' }}>
-            — How it works
-          </span>
-          <h2 className="lain-process-title">
-            The commission <em>process</em>
-          </h2>
-          <div className="lain-steps">
-            <div className="lain-steps-line" aria-hidden="true" />
-            {PROCESS_STEPS.map((step, i) => (
-              <div key={i} className="lain-step">
-                <div className="lain-step-num" aria-hidden="true">{step.num}</div>
-                <div className="lain-step-body">
-                  <div className="lain-step-title">{step.title}</div>
-                  <p className="lain-step-desc">{step.desc}</p>
-                </div>
-                <div className="lain-step-side" aria-hidden="true">{step.side}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          TESTIMONIALS
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-testimonials">
-        <div className="lain-testimonials-inner">
-          <div className="lain-testimonials-header">
-            <span className="lain-section-label">— Kind Words</span>
-            <h2 className="lain-testimonials-title">
-              What clients <em>say</em>
-            </h2>
-          </div>
-          <div className="lain-testimonials-grid">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="lain-testimonial-card">
-                <div className="lain-testimonial-stars">
-                  {Array.from({ length: 5 }).map((_, si) => (
-                    <Star key={si} size={12} fill="currentColor" />
-                  ))}
-                </div>
-                <p className="lain-testimonial-text">"{t.text}"</p>
-                <div className="lain-testimonial-author">
-                  <div className="lain-testimonial-avatar">
-                    <img src={t.avatar} alt={t.name} />
-                  </div>
-                  <div>
-                    <div className="lain-testimonial-name">{t.name}</div>
-                    <div className="lain-testimonial-handle">{t.handle}</div>
-                  </div>
-                </div>
-                <div className="lain-testimonial-art">{t.art}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ══════════════════════════════════════════════════
-          WORD REVEAL — sky blue section (Astrophile / Filosofi Teras ref)
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-reveal-section">
-        {/* giant background word */}
-        <div className="lain-reveal-bg-word" aria-hidden="true">Lain</div>
-
-        {/* Side labels — Astrophile poster reference */}
-        <div className="lain-reveal-side-labels" aria-hidden="true">
-          {['Post', 'Story', 'Reels', 'Typography', 'Creative'].map(label => (
-            <span key={label} className="lain-reveal-side-label">{label}</span>
           ))}
         </div>
 
-        {/* Date — Astrophile style */}
-        <span className="lain-reveal-date" aria-hidden="true">
-          Digital Art · Since 2020
-        </span>
-
-        {/* Vertical line + dot */}
-        <div className="lain-reveal-line" aria-hidden="true">
-          <div className="lain-reveal-line-dot" />
+        {/* "LOST AND FORGOTTEN" style section */}
+        <div className="l-collage-title-wrap">
+          <h2 className="l-collage-title">Lost &amp; Found in Art</h2>
+          <span className="l-collage-script" aria-hidden="true">lost and found</span>
+          <p className="l-collage-title-sub">
+            the moment when you feel forgotten in the place where you once felt most important.
+            it's hard to even breathe in here without thinking that you are truly lost.
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="lain-reveal-content">
-          <p className="lain-reveal-eyebrow">— A note from Lain</p>
-          <div className="lain-reveal-words-wrap">
-            {REVEAL_WORDS.map((word, i) => (
-              <span
-                key={i}
-                className="lain-reveal-word"
-                style={{ transitionDelay: `${i * 0.055}s` }}
-              >
-                {word}
-              </span>
-            ))}
-          </div>
-          <p className="lain-reveal-sig">— Lain098_</p>
+        {/* "ME?" like L&F big word */}
+        <div className="l-collage-bigword" aria-hidden="true">ART?</div>
+        <div className="l-collage-corner br" aria-hidden="true">
+          @lain098_<br/>
+          digital artist
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          CONTACT
-      ══════════════════════════════════════════════════ */}
-      <section className="lain-contact" id="contact">
-        <div className="lain-contact-inner">
-          <div className="lain-contact-avatar">
-            <img
-              src="https://images.unsplash.com/photo-1607748851687-ba9a10438621?w=240&q=80"
-              alt="Lain — Digital Artist"
-            />
+      {/* ════════════════════════════════════════════════
+          SKY SECTION — Filosofi Teras + 樸素 + Chinese blue collage
+          Full-bleed sky, all vertical text, overlapping photos,
+          color swatches, diagonal slash, big kanji-style word
+      ════════════════════════════════════════════════ */}
+      <section className="l-sky-section">
+        <div className="l-sky-bg"/>
+
+        {/* diagonal slash lines — Chinese blue collage */}
+        {[
+          {left:'30%',top:'0',height:'100%',rot:'12deg'},
+          {left:'65%',top:'0',height:'100%',rot:'-8deg'},
+        ].map((s,i)=>(
+          <div key={i} className="l-sky-slash" style={{
+            left:s.left, top:s.top, height:s.height,
+            transform:`rotate(${s.rot}) translateX(-50%)`,
+          }}/>
+        ))}
+
+        {/* 樸素 large kanji-style */}
+        <div className="l-sky-kanji" aria-hidden="true">夢</div>
+
+        {/* center: cursive title + vertical body text — Filosofi Teras */}
+        <div className="l-sky-vert-title" style={{position:'absolute',left:'50%',top:'50%',transform:'translate(-50%,-50%)',zIndex:5,display:'flex',gap:'3rem',alignItems:'center'}}>
+          <p className="l-sky-vtext">
+            Hello I'm Lain — a digital artist whose work focuses on anime style illustrations, fanart, OCs, chibi, and short animations. I enjoy creating unique characters and bringing ideas to life through art.
+          </p>
+          <div className="l-sky-cursive">Lain098_</div>
+          <p className="l-sky-vtext">
+            Commissions open. DM on Instagram or visit my Throne wishlist. Every piece is made with love and intention — art for those who feel everything deeply.
+          </p>
+        </div>
+
+        {/* offset overlapping photos — Chinese blue collage */}
+        <div className="l-sky-photos" style={{position:'absolute',right:'4%',top:'50%',transform:'translateY(-50%)',zIndex:4,width:'clamp(260px,35vw,380px)',height:'460px'}}>
+          {[
+            {src:GALLERY[9].img,  w:'65%', h:'200px', top:'0',   left:'0',   rot:'-2deg'},
+            {src:GALLERY[3].img,  w:'72%', h:'220px', top:'40%', right:'0',  rot:'3deg'},
+            {src:GALLERY[5].img,  w:'52%', h:'160px', top:'60%', left:'5%',  rot:'-1deg'},
+          ].map((p,i)=>(
+            <div key={i} className="l-sky-photo-item" style={{
+              width:p.w, height:p.h,
+              top:p.top, left:(p as any).left, right:(p as any).right,
+              transform:`rotate(${p.rot})`,
+            }}>
+              <img src={p.src} alt="" loading="lazy"/>
+            </div>
+          ))}
+        </div>
+
+        {/* color swatches — Chinese blue collage bottom right */}
+        <div className="l-sky-swatches" aria-hidden="true">
+          <div className="l-sky-swatch" style={{background:'#1a2d4a'}}/>
+          <div className="l-sky-swatch" style={{background:'#3BA3CE'}}/>
+          <div className="l-sky-swatch" style={{background:'#87CEEB'}}/>
+        </div>
+
+        {/* metadata columns — Filosofi Teras "Halaman 131" / "Archive by" / "Typography" */}
+        <div className="l-sky-meta-cols">
+          {['Typography','Archive by Lain','Halaman 001','Creative'].map((t,i)=>(
+            <div key={i} className="l-sky-meta-col">{t}</div>
+          ))}
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+          YHL GAME UI — artist stats HUD
+          Dark parchment, character image left, stat bars right
+      ════════════════════════════════════════════════ */}
+      <section className="l-hud">
+        {/* HUD top bar — YHL */}
+        <div className="l-hud-topbar" style={{maxWidth:'1100px',margin:'0 auto 2rem'}}>
+          <div className="l-hud-topbar-item">
+            <span>Commissions</span>
+            <span className="l-hud-topbar-val">● 900</span>
+          </div>
+          <div className="l-hud-topbar-item">
+            <span>Followers</span>
+            <span className="l-hud-topbar-val">▲ 7890</span>
+          </div>
+          <div className="l-hud-topbar-item">
+            <span>Works</span>
+            <span className="l-hud-topbar-val">◆ 1200</span>
+          </div>
+        </div>
+
+        <div className="l-hud-inner" style={{maxWidth:'1100px',margin:'0 auto'}}>
+          {/* left: character silhouette */}
+          <div className="l-hud-char">
+            <div className="l-hud-char-tab">Introduce</div>
+            <img className="l-hud-char-img"
+              src="https://images.unsplash.com/photo-1614850523459-c2f4c699c52e?w=600&q=85"
+              alt="Lain character art"/>
+            <div className="l-hud-char-label">ANNUAL 人物信息界面</div>
           </div>
 
-          <span className="lain-section-label">— Get in Touch</span>
+          {/* right: stats panel — YHL exact */}
+          <div className="l-hud-stats">
+            <div className="l-hud-stats-header">
+              <div className="l-hud-char-name">Lain098_</div>
+              <div className="l-hud-char-level">70 ─────── 剩可达再工程[4.8s]</div>
+              <div className="l-hud-char-status">● MESSAGE RESTART IN PROGRESS</div>
+              <div style={{fontFamily:"'JetBrains Mono',monospace",fontSize:'.58rem',color:'rgba(90,75,50,.45)',letterSpacing:'.1em',marginTop:'.2rem'}}>
+                REMAINING LIFE ●●●●●
+              </div>
+            </div>
 
-          <h2 className="lain-contact-title">
-            Let's create <em>together</em>
-          </h2>
+            {/* HP bars */}
+            <div className="l-hud-hp-row">
+              {[{l:'Linework Precision',v:92},{l:'Color Theory',v:88},{l:'Character Design',v:95},{l:'Storytelling',v:90}].map(b=>(
+                <div key={b.l}>
+                  <div className="l-hud-hp-label">{b.l}</div>
+                  <div className="l-hud-hp-bar-bg">
+                    <div className="l-hud-hp-bar-fill" style={{'--v':`${b.v}%`} as React.CSSProperties}/>
+                  </div>
+                </div>
+              ))}
+            </div>
 
-          <p className="lain-contact-text">
+            {/* stat grid — YHL numbered table */}
+            <div className="l-hud-stat-grid">
+              {[
+                {k:'建设系数RO',v:'90000'},{k:'攻击系数RO',v:'18021'},
+                {k:'防御系数RO',v:'2000'}, {k:'意志系数RO',v:'9009'},
+                {k:'年配系数RO',v:'600'},  {k:'平行系数RO',v:'58'},
+              ].map(s=>(
+                <div key={s.k} className="l-hud-stat-row">
+                  <span className="l-hud-stat-key">{s.k}</span>
+                  <span className="l-hud-stat-val">{s.v}</span>
+                </div>
+              ))}
+            </div>
+
+            {/* action buttons — YHL Equip / Live */}
+            <div className="l-hud-actions">
+              <button className="l-hud-action">Equip</button>
+              <button className="l-hud-action">Live</button>
+            </div>
+
+            {/* icon row */}
+            <div className="l-hud-icon-row">
+              {['◯','□','△','♡','✦','⟡','☆'].map((ic,i)=>(
+                <div key={i} className="l-hud-icon">{ic}</div>
+              ))}
+            </div>
+            <span className="l-hud-section-label">ANNUAL 人物信息界面 · RO 90</span>
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+          COMMISSIONS — RS/blutkrahe split hero + Fuzzy Hat cards
+      ════════════════════════════════════════════════ */}
+      <section className="l-comm" id="commissions">
+        {/* RS split hero: photo LEFT, bold text RIGHT */}
+        <div className="l-comm-hero">
+          <div className="l-comm-hero-img">
+            <img src="https://images.unsplash.com/photo-1612544448445-b8232cff3b6c?w=900&q=85" alt="commission art"/>
+            <div className="l-comm-hero-img-overlay"/>
+          </div>
+          <div className="l-comm-hero-text">
+            {/* RS fake nav */}
+            <div className="l-comm-nav-fake">
+              {['Home','About','Gallery','Settings'].map((n,i)=>(
+                <span key={n} className={`l-comm-nav-fake-item${i===0?' active':''}`}>{n}</span>
+              ))}
+            </div>
+            {/* "LET'S GET THIS PARTY STARTED" — RS */}
+            <h2 className="l-comm-hero-hed">Let's create<br/>something<br/>beautiful.</h2>
+            <div className="l-comm-status">
+              <span className="l-comm-status-dot"/>
+              Commissions Open
+            </div>
+            <p className="l-comm-sub">
+              Fill out my commission form on Throne or DM me on Instagram.
+              I love bringing your characters and ideas to life.
+            </p>
+            <a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer"
+               className="l-btn-pri" onMouseMove={e=>mag(e)} onMouseLeave={magLeave}>
+              <ExternalLink size={13}/> Request via Throne
+            </a>
+          </div>
+        </div>
+
+        {/* commission cards */}
+        <div className="l-comm-cards">
+          <div style={{marginBottom:'2.5rem'}}>
+            <span className="l-sec-label">— Commission Types</span>
+            <h2 style={{fontFamily:"'Playfair Display',serif",fontSize:'clamp(1.8rem,3.4vw,2.6rem)',fontWeight:400,color:'#1a2332'}}>
+              Choose your <em style={{color:'#3BA3CE',fontStyle:'italic'}}>style</em>
+            </h2>
+          </div>
+          <div className="l-comm-grid">
+            {COMMISSIONS.map((c,i)=>(
+              <div key={i} className="l-comm-card">
+                <div className="l-comm-num">{c.num}</div>
+                <div className="l-comm-icon">{c.icon}</div>
+                <div className="l-comm-tier">{c.tier}</div>
+                <div className="l-comm-name">{c.name}</div>
+                <p className="l-comm-desc">{c.desc}</p>
+                <div className="l-comm-feats">
+                  {c.features.map((f,fi)=><div key={fi} className="l-comm-feat">{f}</div>)}
+                </div>
+                <div className="l-comm-footer">
+                  <div className="l-comm-price">{c.price} <span>starting</span></div>
+                  <div className="l-comm-arr"><ArrowRight size={14}/></div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+          PROCESS — Japanese zine layout
+          White page, big decorative number, asymmetric,
+          Page /XX labels, thin rules, lots of whitespace
+      ════════════════════════════════════════════════ */}
+      <section className="l-process" id="process">
+        <div className="l-process-inner">
+          <div className="l-process-header">
+            <div>
+              <span className="l-sec-label">— How it works</span>
+              <h2 className="l-process-title">The commission <em>process</em></h2>
+            </div>
+            {/* big decorative number — Japanese zine right side */}
+            <div className="l-process-big-num" aria-hidden="true">05</div>
+          </div>
+
+          <div className="l-steps">
+            <div className="l-steps-rule" aria-hidden="true"/>
+            {PROCESS.map((s,i)=>(
+              <div key={i} className="l-step">
+                <div className="l-step-num">{s.num}</div>
+                <div className="l-step-body">
+                  <div className="l-step-title">{s.title}</div>
+                  <p className="l-step-desc">{s.desc}</p>
+                </div>
+                <div className="l-step-aside">
+                  <div className="l-step-label">{s.label}</div>
+                  {/* Page /XX like Japanese zine */}
+                  <div className="l-step-page">Page /{String(i+1).padStart(2,'0')}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════
+          COVEO ACKNOWLEDGEMENTS-STYLE contact
+          avatar + logo, SVG sig, side-text, COVEO vibes
+      ════════════════════════════════════════════════ */}
+      <section className="l-contact" id="contact">
+        <div className="l-contact-inner">
+          <div className="l-contact-avatar">
+            <img src="https://images.unsplash.com/photo-1607748851687-ba9a10438621?w=220&q=80" alt="Lain"/>
+          </div>
+          <span className="l-sec-label">— Get in Touch</span>
+          <h2 className="l-contact-title">Let's create <em>together</em></h2>
+          <p className="l-contact-text">
             Whether you want a commission, have a collab idea, or just want to say hi —
             my DMs are always open. I love meeting fellow art enjoyers 🩵
           </p>
-
-          <div className="lain-socials">
-            <a
-              href="https://www.instagram.com/lain098_?igsh=aXpiYXBuYWJxOXFw"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lain-social-link"
-            >
-              <Instagram size={15} style={{ color: '#3BA3CE' }} />
-              @lain098_
+          <div className="l-socials">
+            <a href="https://www.instagram.com/lain098_?igsh=aXpiYXBuYWJxOXFw" target="_blank" rel="noopener noreferrer" className="l-social-link">
+              <Instagram size={14} style={{color:'#3BA3CE'}}/> @lain098_
             </a>
-            <a
-              href="https://throne.com/lain098_"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lain-social-link"
-            >
-              <Heart size={15} style={{ color: '#3BA3CE' }} />
-              Throne Wishlist
+            <a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer" className="l-social-link">
+              <Heart size={14} style={{color:'#3BA3CE'}}/> Throne Wishlist
             </a>
           </div>
-
-          <div className="lain-contact-cta">
-            <a
-              href="https://throne.com/lain098_"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="lain-btn-primary"
-              onMouseMove={handleMagnet as any}
-              onMouseLeave={handleMagnetLeave as any}
-            >
-              <Send size={14} />
-              Send a Commission Request
+          <div className="l-contact-cta">
+            <a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer"
+               className="l-btn-pri" onMouseMove={e=>mag(e)} onMouseLeave={magLeave}>
+              <Send size={13}/> Send a Commission Request
             </a>
           </div>
         </div>
       </section>
 
-      {/* ══════════════════════════════════════════════════
-          FOOTER
-      ══════════════════════════════════════════════════ */}
-      <footer className="lain-footer">
-        <p className="lain-footer-copy">© 2025 Lain098_ · All rights reserved</p>
-        <span className="lain-footer-sig">Lain</span>
-        <ul className="lain-footer-links">
-          <li>
-            <a href="#about" onClick={e => { e.preventDefault(); smoothScroll('#about') }}>
-              About
-            </a>
-          </li>
-          <li>
-            <a href="#gallery" onClick={e => { e.preventDefault(); smoothScroll('#gallery') }}>
-              Gallery
-            </a>
-          </li>
-          <li>
-            <a href="#commissions" onClick={e => { e.preventDefault(); smoothScroll('#commissions') }}>
-              Commissions
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://www.instagram.com/lain098_"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Instagram
-            </a>
-          </li>
-          <li>
-            <a
-              href="https://throne.com/lain098_"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Throne
-            </a>
-          </li>
+      {/* COVEO acknowledgements section */}
+      <section className="l-ack">
+        <div className="l-ack-inner">
+          <div className="l-ack-img">
+            <img src="https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=800&q=85" alt="art inspiration"/>
+          </div>
+          <div className="l-ack-content">
+            {/* SVG signature — COVEO acknowledgements style */}
+            <div className="l-ack-sig">
+              <svg width="116" height="44" viewBox="0 0 116 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M115.346 21.8893C115.305 21.6315 115.088 21.6635 114.899 21.6469C114.402 21.6007 113.924 21.6789 113.464 21.8765C113.242 21.9599 109.686 22.8784 105.778 23.1414C104.747 23.2017 102.393 23.5993 100.553 23.5339C98.9668 23.5403 88.081 23.2132 86.2898 24.6884C85.5888 25.3504 85.6289 26.2496 86.3792 26.7833C87.0835 27.2836 87.0917 27.3234 86.6043 27.8724C85.8637 28.891 83.6847 29.7197 82.9489 29.2899C83.0842 27.5479 85.926 26.9295 84.0513 26.0598C83.4149 25.7647 81.424 25.3504 79.6624 28.4343C79.3146 28.9256 78.8567 29.2386 78.3032 29.5196C77.8925 29.7274 75.6383 30.5625 74.8862 30.6138C74.4426 30.6113 74.003 30.6087 73.5634 30.6061C73.0993 30.3816 73.0863 30.1289 73.514 29.8441C73.7613 29.6786 73.9881 29.4811 74.2546 29.3464C78.0784 27.4273 77.4601 26.401 77.0447 25.5916C76.9659 25.3453 76.8179 25.2221 76.5444 25.3196C76.0707 24.818 75.5291 24.6307 74.8535 24.8219C73.8417 25.1913 72.8623 25.4569 72.0139 26.3061C71.1806 27.1399 70.471 27.9135 70.2315 29.0321C69.3042 29.3066 69.0989 29.9262 66.788 29.8313C66.4072 29.6928 65.2469 29.5363 65.5642 28.1777C65.9267 27.6364 65.6954 27.3336 65.224 26.9873C64.5875 26.4613 63.8351 26.4729 63.3077 27.0155C62.5863 27.8763 60.6122 28.9013 58.9639 29.5953C58.3162 29.8416 57.6698 30.0891 57.022 30.3355C56.6968 30.4586 56.3719 30.524 56.0556 30.3355C55.8377 30.1251 54.8566 29.3195 56.4474 28.5716C57.4093 28.12 56.4913 27.1669 55.6385 25.8058C55.2269 25.149 53.1888 26.2573 52.8579 26.3933C51.6102 26.9052 52.1026 26.6499 49.7792 26.809C47.4631 27.1322 47.9722 27.5684 46.6876 28.2432C45.1827 29.0334 44.6493 29.9763 43.149 29.9865C42.6599 29.9352 42.4152 29.3451 43.0573 28.7306C45.3477 25.7211 45.3494 26.8436 47.6409 26.3946C49.2152 26.0867 48.8306 24.1009 47.9928 24.0534C46.9551 24.0599 44.6926 24.9527 44.2357 25.1362C41.3477 26.292 37.5034 27.8481 35.8066 28.4086C32.0896 29.6389 21.7617 33.9774 21.5556 34.0595C7.10894 40.7969 2.90246 42.5518 4.08568 40.77C5.52312 38.9099 10.3262 33.7491 10.8497 33.2051C11.2088 32.8793 16.9105 27.6056 16.9366 27.5812C18.8516 26.0418 33.0841 14.0949 34.0069 13.2238C34.2114 13.0558 41.0973 7.85776 41.933 7.31769C42.0825 7.28947 42.2265 7.31641 42.1962 7.58452C41.4282 8.52611 37.3373 13.2469 37.3373 13.2469C35.1643 15.6124 31.9829 18.7515 31.1203 19.6264C30.5669 20.187 31.8674 21.1697 32.8189 21.0337C34.0383 20.8605 36.1702 17.8612 36.6926 17.2622C37.1885 16.6952 49.5336 1.96445 49.4422 1.40899C49.3511 0.840697 48.8746 0.626465 48.392 0.626465C47.4872 0.626465 33.5191 10.0565 32.8692 10.8506C32.084 11.5023 22.3807 19.4815 15.6569 25.2529C11.9735 28.4138 9.32178 31.0243 9.20305 31.1462C7.64138 32.7549 2.41964 38.6867 1.69305 39.7758C1.11065 40.6494 0.736125 41.4717 0.983001 42.4556C1.54436 44.6864 5.70062 43.5678 6.42017 43.3407C10.5752 42.0284 19.9324 37.3666 25.4318 35.0665C31.5375 32.5124 36.8574 30.0212 39.4193 29.3464C39.5733 29.3053 39.7741 29.2194 39.8053 29.4901C39.7413 29.7607 40.0489 30.8742 40.9466 31.6439C42.1303 32.3944 43.3156 32.2405 44.4162 32.0506C45.289 31.948 48.1669 29.6825 48.9324 29.2989C50.5016 28.5126 52.7424 28.2444 52.9079 28.9295C52.8792 30.5561 53.8826 31.8505 54.7227 32.2905C55.2451 32.6792 55.7662 32.7869 56.476 32.6189C58.6433 32.107 62.3282 30.2149 62.3942 30.1559C62.8553 29.7338 63.2732 29.7454 63.4429 30.329C63.6749 31.1282 65.4137 32.0647 66.1803 32.0211C66.4446 32.0609 68.291 32.0878 68.9026 31.6016C69.3 31.295 70.2161 31.2283 70.7788 31.7594C71.036 32.0018 72.0967 32.5047 72.2333 32.556C75.5519 33.0897 78.523 31.5529 78.7992 31.4092C79.3577 31.2809 79.9193 30.9538 80.4477 31.4631C81.0988 32.0904 81.6246 32.0313 82.8004 31.7863C84.7104 31.508 87.5 30.8883 90.1396 27.7595C90.4309 27.4132 90.2265 26.918 90.4072 26.4074C91.5516 25.3311 98.5553 25.6185 99.4386 25.6185C102.213 25.6185 105.898 25.0528 106.913 24.945C110.826 24.5332 113.568 23.4929 114.503 23.0464C114.97 22.7527 115.397 22.491 115.345 21.8906L115.346 21.8893Z" fill="#87CEEB"/>
+              </svg>
+              <div className="l-ack-sig-line"/>
+            </div>
+            <p className="l-ack-quote">
+              Music for the <span>day-dreamers</span>, the <span>over-thinkers</span>, the <span>storytellers</span>,
+              and the <span>wanderers</span> — a soundtrack for those who find beauty in every moment,
+              and meaning in every silence.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* FOOTER */}
+      <footer className="l-footer">
+        <p className="l-footer-copy">© 2025 Lain098_ · All rights reserved</p>
+        <span className="l-footer-sig">Lain</span>
+        <ul className="l-footer-links">
+          {[{l:'About',h:'#about'},{l:'Gallery',h:'#gallery'},{l:'Commissions',h:'#commissions'}].map(n=>(
+            <li key={n.l}><a href={n.h} onClick={e=>{e.preventDefault();smoothScroll(n.h)}}>{n.l}</a></li>
+          ))}
+          <li><a href="https://www.instagram.com/lain098_" target="_blank" rel="noopener noreferrer">Instagram</a></li>
+          <li><a href="https://throne.com/lain098_" target="_blank" rel="noopener noreferrer">Throne</a></li>
         </ul>
       </footer>
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-endpoint-handler [React+Vite]
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:46.829Z
+// Generated: 2026-06-25T13:03:59.580Z
 // ============================================================
 
 export type ProbeResult = {

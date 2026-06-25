@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EmptyRow [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:51.444Z
+// Generated: 2026-06-25T13:04:02.463Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

@@ -86,8 +86,6 @@ const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-
 const ArkzenPage_JobTest_Dashboard = lazy(() => import('@/pages/job-test/dashboard'))
 // ROUTE:job-test:__root_redirect:/job-test:false
 const ArkzenPage_JobTest_RootRedirect = lazy(() => import('@/pages/job-test/__root_redirect'))
-// ROUTE:lain098:index:/lain098:false
-const ArkzenPage_Lain098_Index = lazy(() => import('@/pages/lain098/index'))
 // ROUTE:layout-test:index:/layout-test:false
 const ArkzenPage_LayoutTest_Index = lazy(() => import('@/pages/layout-test/index'))
 // ROUTE:layout-test:panel:/layout-test/panel:false
@@ -154,6 +152,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:lain098:index:/lain098:false
+const ArkzenPage_Lain098_Index = lazy(() => import('@/pages/lain098/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -198,7 +198,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
   { path: '/job-test/dashboard', name: 'dashboard', tatemono: 'job-test', component: ArkzenPage_JobTest_Dashboard, auth: false },
   { path: '/job-test', name: '__root_redirect', tatemono: 'job-test', component: ArkzenPage_JobTest_RootRedirect, auth: false },
-  { path: '/lain098', name: 'index', tatemono: 'lain098', component: ArkzenPage_Lain098_Index, auth: false },
   { path: '/layout-test', name: 'index', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Index, auth: false },
   { path: '/layout-test/panel', name: 'panel', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Panel, auth: false },
   { path: '/layout-test/deep', name: 'deep', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Deep, auth: false },
@@ -232,4 +231,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/lain098', name: 'index', tatemono: 'lain098', component: ArkzenPage_Lain098_Index, auth: false },
 ]

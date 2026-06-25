@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — lain098 [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:56.775Z
+// Generated: 2026-06-25T13:17:37.116Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

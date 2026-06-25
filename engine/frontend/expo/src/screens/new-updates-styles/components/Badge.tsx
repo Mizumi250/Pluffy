@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Badge [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T07:05:59.923Z
+// Generated: 2026-06-25T13:04:03.387Z
 // ============================================================
 
 import React, { useState } from 'react'
