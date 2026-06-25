@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — auth-test [React+Vite]
 // Visiting /auth-test redirects to /auth-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T13:03:59.505Z
+// Generated: 2026-06-25T13:52:49.052Z
 // ============================================================
 
 import React from 'react'

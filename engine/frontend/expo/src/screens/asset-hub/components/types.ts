@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — asset-hub [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:03:58.530Z
+// Generated: 2026-06-25T13:52:47.653Z
 // ============================================================
 
 export interface NativeAssetItem {

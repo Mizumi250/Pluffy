@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusDot [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:00.428Z
+// Generated: 2026-06-25T13:52:49.217Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

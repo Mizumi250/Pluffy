@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:06.765Z
+// Generated: 2026-06-25T13:52:55.585Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — ethereane
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:01.926Z
+// Generated: 2026-06-25T13:52:50.972Z
 // ============================================================
 
 import * as THREE from 'three'

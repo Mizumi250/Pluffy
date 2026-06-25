@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — body-mail-notification [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:03:59.695Z
+// Generated: 2026-06-25T13:52:48.591Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

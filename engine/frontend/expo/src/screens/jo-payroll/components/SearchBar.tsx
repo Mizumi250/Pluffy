@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SearchBar [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:02.316Z
+// Generated: 2026-06-25T13:52:51.195Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

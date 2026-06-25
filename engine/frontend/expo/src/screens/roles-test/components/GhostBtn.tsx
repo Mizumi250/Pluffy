@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GhostBtn [Expo]
 // Source: @arkzen:native:components (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:04.019Z
+// Generated: 2026-06-25T13:52:52.878Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'

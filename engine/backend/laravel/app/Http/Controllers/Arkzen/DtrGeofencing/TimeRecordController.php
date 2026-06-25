@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — TimeRecordController
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:01.640398Z
+// Generated: 2026-06-25T13:52:50.608660Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\DtrGeofencing;

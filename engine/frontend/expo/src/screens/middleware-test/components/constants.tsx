@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — middleware-test [Expo]
 // Source: @arkzen:native:components (middleware-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T13:04:03.212Z
+// Generated: 2026-06-25T13:52:52.170Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'
