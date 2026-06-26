@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AboutSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.671Z
+// Generated: 2026-06-26T07:08:59.312Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -32,7 +32,7 @@ export const AboutSection = () => {
     })
   }, [])
   return (
-    <section id="about" className="about" ref={ref}>
+    <section id="about" className="about">
       <div className="about-bg-text" aria-hidden>LAIN</div>
       <div className="about-inner">
         <div className="about-img-col about-el">

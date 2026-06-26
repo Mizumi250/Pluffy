@@ -2,7 +2,7 @@
 // ARKZEN GENERATED HOOKS — ethan-pool [React+Vite]
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:31:18.892Z
+// Generated: 2026-06-26T07:08:58.047Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

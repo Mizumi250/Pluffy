@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — layout-test/deep [React+Vite]
 // Layout: modal | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T16:31:25.531Z
+// Generated: 2026-06-26T07:08:59.391Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

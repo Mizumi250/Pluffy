@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — HeroScript [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.645Z
+// Generated: 2026-06-26T07:08:59.301Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 // ─── HERO SCRIPT SVG (BACKGROUND) ────────────────────────────
 
+// (Script path is kept as a subtle decorative element over the sky)
 export const HeroScript = () => (
   <div className="hero-script-bg" aria-hidden>
     <svg viewBox="0 0 1285 260" fill="none" xmlns="http://www.w3.org/2000/svg">

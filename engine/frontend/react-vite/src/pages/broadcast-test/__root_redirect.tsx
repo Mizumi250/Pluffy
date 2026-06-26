@@ -2,7 +2,7 @@
 // ARKZEN GENERATED ROOT REDIRECT — broadcast-test [React+Vite]
 // Visiting /broadcast-test redirects to /broadcast-test/login
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T16:31:15.022Z
+// Generated: 2026-06-26T07:08:57.004Z
 // ============================================================
 
 import React from 'react'

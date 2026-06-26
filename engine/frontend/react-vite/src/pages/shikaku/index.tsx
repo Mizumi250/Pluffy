@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — shikaku/index [React+Vite]
 // Layout: +auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T16:31:32.304Z
+// Generated: 2026-06-26T07:09:02.759Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

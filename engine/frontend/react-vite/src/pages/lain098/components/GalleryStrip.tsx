@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GalleryStrip [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.664Z
+// Generated: 2026-06-26T07:08:59.308Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

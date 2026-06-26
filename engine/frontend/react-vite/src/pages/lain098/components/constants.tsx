@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — lain098 [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.624Z
+// Generated: 2026-06-26T07:08:59.292Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

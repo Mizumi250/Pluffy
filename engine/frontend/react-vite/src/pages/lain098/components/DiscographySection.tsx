@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — DiscographySection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.667Z
+// Generated: 2026-06-26T07:08:59.309Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { BURST_IMGS } from './constants'
-import { burstIdRef, handleSectionClick, id, rect, ref, releases, sectionRef, shuffled, total, x, y } from './utils'
+import { burstIdRef, handleSectionClick, id, rect, releases, sectionRef, shuffled, total, x, y } from './utils'
 import type { BurstItem } from './types'
 
 export const DiscographySection = () => {
@@ -46,7 +46,7 @@ export const DiscographySection = () => {
   }
 
   return (
-    <section id="discography" className="discography" ref={sectionRef} onClick={handleSectionClick}>
+    <section id="discography" className="discography">
       <div className="section-head">
         <h2 className="section-title">Discography <span>The complete works</span></h2>
         <p className="section-sub">all releases — ordered by newest first</p>
@@ -95,4 +95,4 @@ export const DiscographySection = () => {
   )
 }
 
-// ─── COMMISSIONS ──────────────────────────────────────────────
+// ─── COMMISSIONS (FIXED CARD CLIPPING) ───────────────────────

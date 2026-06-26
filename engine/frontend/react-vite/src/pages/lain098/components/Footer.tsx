@@ -2,28 +2,50 @@
 // ARKZEN GENERATED COMPONENT — Footer [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.682Z
+// Generated: 2026-06-26T07:08:59.316Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { BURST_IMGS } from './constants'
 import { SignatureLogo } from './SignatureLogo'
 
-// ─── FOOTER ────────────────────────────────────────────────────
+// ─── FOOTER (NO SMALL SIGNATURE, BIG CENTER LOGO WITH MIZUMI) ─
 
 export const Footer = () => (
-  <footer className="footer">
-    <div className="footer-inner">
-      <SignatureLogo className="footer-sig" />
-      <p className="footer-tagline">Anime illustrations · Fanart · OCs · Chibi · Short Animations</p>
-      <div className="footer-links">
-        <a href="https://www.instagram.com/lain098_" target="_blank">Instagram</a>
-        <a href="https://throne.com/lain098_" target="_blank">Throne</a>
-        <a href="mailto:lain098@example.com">Licensing</a>
+  <footer className="footer scrapbook-footer">
+    <div className="torn-edge" />
+
+    <div className="footer-layout">
+      
+      <div className="footer-center-col">
+        <div className="footer-center-line-vert" />
+        <div className="footer-center-collage">
+          <img src={BURST_IMGS[0]} alt="collage1" />
+          <img src={BURST_IMGS[1]} alt="collage2" />
+        </div>
+        
+        {/* LARGE LAIN LOGO */}
+        <SignatureLogo className="footer-center-logo" />
+        
+        {/* MIZUMI DIRECTLY BELOW THE BIG LOGO */}
+        <h3 className="footer-center-brand">MIZUMI</h3>
       </div>
-      <p className="footer-copy">© 2021–2025 Lain098_ · All Rights Reserved</p>
+
+      <div className="footer-side-text right">
+        I LOOK IN THE MIRROR, NOW I'M<br />
+        JUST A GHOST<br />
+        YOU TAKE EVERY PART OF ME<br />
+        ALL OF THE THINGS YOU NEED<br />
+        THE REST YOU WANT
+      </div>
+    </div>
+
+    <div className="footer-legal">
+      {/* REMOVED THE SMALL SIGNATURE AND "created by mortpoet" */}
+      © 2026 Lain098_ · site by mizumi
     </div>
   </footer>
 )

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LainNav [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.641Z
+// Generated: 2026-06-26T07:08:59.299Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -74,3 +74,5 @@ export const LainNav = ({ visible }: { visible: boolean }) => {
 }
 
 // ─── HERO SCRIPT SVG (BACKGROUND) ────────────────────────────
+
+// (Script path is kept as a subtle decorative element over the sky)

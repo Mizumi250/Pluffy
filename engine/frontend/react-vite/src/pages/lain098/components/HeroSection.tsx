@@ -2,17 +2,18 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.653Z
+// Generated: 2026-06-26T07:08:59.304Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { bgCloudRef, bgImgRef, ctx, heroRef, ref } from './utils'
 import { ArtCarousel } from './ArtCarousel'
 import { HeroScript } from './HeroScript'
 
-// ─── HERO SECTION ─────────────────────────────────────────────
+// ─── HERO SECTION (100vh STATIC, NO PINNING) ─────────────────
 
 export const HeroSection = ({
   onPreview,
@@ -23,19 +24,70 @@ export const HeroSection = ({
   orbitVisible: boolean
   avatarVisible: boolean
 }) => {
+  const heroRef = useRef<HTMLDivElement>(null)
+  const bgCloudRef = useRef<HTMLDivElement>(null)
+  const bgImgRef = useRef<HTMLImageElement>(null)
+
+  // Very gentle zoom/fade out as you scroll past the hero.
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    if (!bgCloudRef.current || !bgImgRef.current || !heroRef.current) return
+
+    const ctx = gsap.context(() => {
+      // The "white cloud" overlay fades out revealing the sky
+      gsap.to(bgCloudRef.current, {
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.8,
+        }
+      })
+
+      // The background sky image gently zooms in
+      gsap.to(bgImgRef.current, {
+        scale: 1.08,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.8,
+        }
+      })
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section className="hero">
-      {/* Script SVG sits as background layer */}
+    <section className="hero hero-ocean-bg" ref={heroRef}>
+      
+      {/* SKY BACKGROUND LAYER */}
+      <div className="hero-bg-container">
+        <div className="hero-bg-gradient" />
+        <img 
+          ref={bgImgRef}
+          src="https://images.unsplash.com/photo-1505533321630-975218a5f66f?w=1920&q=80" 
+          alt="Blue sky and clouds" 
+          className="hero-bg-img" 
+        />
+        <div ref={bgCloudRef} className="hero-bg-cloud-overlay" />
+      </div>
+
+      {/* Script SVG */}
       <HeroScript />
 
-      {/* Foreground: avatar + orbit carousel stacked above script */}
+      {/* Center Carousel */}
       <div className="hero-center">
         <div className={`hero-avatar-wrap ${avatarVisible ? 'avatar-visible' : 'avatar-hidden'}`}>
           <ArtCarousel onPreview={onPreview} orbitVisible={orbitVisible} />
         </div>
       </div>
 
-      {/* Side text fades in with nav */}
+      {/* Side text */}
       <div className={`hero-side-content ${avatarVisible ? 'side-visible' : 'side-hidden'}`}>
         <div className="hero-badge">Digital Artist</div>
         <p className="hero-preview muted">

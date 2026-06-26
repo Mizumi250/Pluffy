@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ContactSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:32:32.680Z
+// Generated: 2026-06-26T07:08:59.313Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -29,7 +29,7 @@ export const ContactSection = () => {
     )
   }, [])
   return (
-    <section id="contact" className="contact" ref={ref}>
+    <section id="contact" className="contact">
       <div className="contact-inner">
         <div className="contact-el contact-sig">
           <SignatureLogo />
@@ -63,4 +63,4 @@ export const ContactSection = () => {
   )
 }
 
-// ─── FOOTER ────────────────────────────────────────────────────
+// ─── ZEN TYPOGRAPHY SECTION ──────────────────────────────────

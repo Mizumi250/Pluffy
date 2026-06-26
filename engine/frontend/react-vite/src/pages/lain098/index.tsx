@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — lain098/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-25T16:32:32.769Z
+// Generated: 2026-06-26T07:08:59.338Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -19,6 +19,7 @@ import { DiscographySection } from './components/DiscographySection'
 import { Footer } from './components/Footer'
 import { FullscreenSlider } from './components/FullscreenSlider'
 import { GalleryStrip } from './components/GalleryStrip'
+import { GridSection } from './components/GridSection'
 import { HeroScript } from './components/HeroScript'
 import { HeroSection } from './components/HeroSection'
 import { IntroStrip } from './components/IntroStrip'
@@ -26,8 +27,11 @@ import { LainNav } from './components/LainNav'
 import { SignatureLogo } from './components/SignatureLogo'
 import { WorkChapter } from './components/WorkChapter'
 import { WorksSection } from './components/WorksSection'
+import { ZenSection } from './components/ZenSection'
 import { CAROUSEL_ITEMS } from './components/constants'
-import { ref } from './components/utils'
+import { ctx, items, ref } from './components/utils'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -53,14 +57,54 @@ const IndexPage = () => {
     setSliderOpen(true)
   }
 
+  // GLOBAL THEME TRANSITION UPON REACHING THE FOOTER
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    const footerEl = document.querySelector('.scrapbook-footer')
+    if (!footerEl) return
+
+    const ctx = gsap.context(() => {
+      gsap.to(".lain-root", {
+        backgroundColor: "#1D1812",
+        color: "#f0f0f0",
+        duration: 2,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: footerEl,
+          start: "top bottom",
+          end: "top 30%",
+          scrub: 1.2
+        }
+      })
+      gsap.to(".lain-root", {
+        "--muted": "rgba(255,255,255,0.45)",
+        "--border": "rgba(255,255,255,0.08)",
+        "--text-light": "rgba(255,255,255,0.6)",
+        duration: 2,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: footerEl,
+          start: "top bottom",
+          end: "top 30%",
+          scrub: 1.2
+        }
+      })
+    }, footerEl)
+    return () => ctx.revert()
+  }, [])
+
   return (
     <motion.div
       ref={pageRef}
+      className="lain-root"
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
     >
+      {/* ⭐ GLOBAL FIXED BLEEDING BLUE ORB STARTS HERE ⭐ */}
+      <div className="global-bg-bleed" />
+      
       <LainNav visible={navVisible} />
       <HeroSection
         onPreview={openSlider}
@@ -74,6 +118,8 @@ const IndexPage = () => {
       <CommissionsSection />
       <AboutSection />
       <ContactSection />
+      <ZenSection />
+      <GridSection />
       <Footer />
 
       <AnimatePresence>

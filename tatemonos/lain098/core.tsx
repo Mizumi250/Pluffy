@@ -141,7 +141,7 @@ const BURST_IMGS = [
 
 const SignatureLogo = ({ className = '' }: { className?: string }) => (
   <svg className={`signature-logo ${className}`} width="90" height="34" viewBox="0 0 116 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <path d="M115.346 21.8893C115.305 21.6315 115.088 21.6635 114.899 21.6469C114.402 21.6007 113.924 21.6789 113.464 21.8765C113.242 21.9599 109.686 22.8784 105.778 23.1414C104.747 23.2017 102.393 23.5993 100.553 23.5339C98.9668 23.5403 88.081 23.2132 86.2898 24.6884C86.2885 24.6884 86.2871 24.691 86.2857 24.6923C85.5888 25.3504 85.6289 26.2496 86.3792 26.7833C87.0835 27.2836 87.0917 27.3234 86.6043 27.8724C85.8637 28.891 83.6847 29.7197 82.9489 29.2899C82.9358 29.2823 82.9295 29.2681 82.9299 29.254C83.0842 27.5479 85.926 26.9295 84.0513 26.0598C83.4149 25.7647 81.424 25.3504 79.6624 28.4343C79.6624 28.4343 79.6609 28.4369 79.6596 28.4382C79.3146 28.9256 78.8567 29.2386 78.3032 29.5196C77.8925 29.7274 75.6383 30.5625 74.8862 30.6138C74.8862 30.6138 74.8835 30.6138 74.8822 30.6138C74.4426 30.6113 74.003 30.6087 73.5634 30.6061C73.5567 30.6061 73.55 30.6048 73.5447 30.6023C73.0993 30.3816 73.0863 30.1289 73.514 29.8441C73.7613 29.6786 73.9881 29.4811 74.2546 29.3464C78.0784 27.4273 77.4601 26.401 77.0447 25.5916C76.9659 25.3453 76.8179 25.2221 76.5444 25.3196C76.5295 25.3247 76.5122 25.3209 76.5018 25.3093C76.0707 24.818 75.5291 24.6307 74.8535 24.8219C73.8417 25.1913 72.8623 25.4569 72.0139 26.3061C71.1806 27.1399 70.471 27.9135 70.2315 29.0321C70.2284 29.0449 70.2188 29.0552 70.2053 29.059C69.3042 29.3066 69.0989 29.9262 66.788 29.8313C66.784 29.8313 66.7786 29.8313 66.7747 29.8287C66.4072 29.6928 65.2469 29.5363 65.5642 28.1777C65.5644 28.1726 65.5672 28.1675 65.57 28.1636C65.9267 27.6364 65.6954 27.3336 65.224 26.9873C64.5875 26.4613 63.8351 26.4729 63.3077 27.0155C62.5863 27.8763 60.6122 28.9013 58.9639 29.5953C58.3162 29.8416 57.6698 30.0891 57.022 30.3355C56.6968 30.4586 56.3719 30.524 56.0556 30.3355C55.8377 30.1251 54.8566 29.3195 56.4474 28.5716C57.4093 28.12 56.4913 27.1669 55.6385 25.8058C55.2269 25.149 53.1888 26.2573 52.8579 26.3933C51.6102 26.9052 52.1026 26.6499 49.7792 26.809C47.4631 27.1322 47.9722 27.5684 46.6876 28.2432C45.1827 29.0334 44.6493 29.9763 43.149 29.9865C42.6599 29.9352 42.4152 29.3451 43.0573 28.7306C45.3477 25.7211 45.3494 26.8436 47.6409 26.3946C49.2152 26.0867 48.8306 24.1009 47.9928 24.0534C46.9551 24.0599 44.6926 24.9527 44.2357 25.1362C41.3477 26.292 37.5034 27.8481 35.8066 28.4086C32.0896 29.6389 21.7617 33.9774 21.5556 34.0595C7.10894 40.7969 2.90246 42.5518 4.08568 40.77C5.52312 38.9099 10.3262 33.7491 10.8497 33.2051C11.2088 32.8793 16.9105 27.6056 16.9366 27.5812C18.8516 26.0418 33.0841 14.0949 34.0069 13.2238C34.2114 13.0558 41.0973 7.85776 41.933 7.31769C42.0825 7.28947 42.2265 7.31641 42.1962 7.58452C41.4282 8.52611 37.3373 13.2469 37.3373 13.2469C35.1643 15.6124 31.9829 18.7515 31.1203 19.6264C30.5669 20.187 31.8674 21.1697 32.8189 21.0337C34.0383 20.8605 36.1702 17.8612 36.6926 17.2622C37.1885 16.6952 49.5336 1.96445 49.4422 1.40899C49.3511 0.840697 48.8746 0.626465 48.392 0.626465C47.4872 0.626465 33.5191 10.0565 32.8692 10.8506C32.084 11.5023 22.3807 19.4815 15.6569 25.2529C11.9735 28.4138 9.32178 31.0243 9.20305 31.1462C7.64138 32.7549 2.41964 38.6867 1.69305 39.7758C1.11065 40.6494 0.736125 41.4717 0.983001 42.4556C1.54436 44.6864 5.70062 43.5678 6.42017 43.3407C10.5752 42.0284 19.9324 37.3666 25.4318 35.0665C31.5375 32.5124 36.8574 30.0212 39.4193 29.3464C39.7413 29.7607 40.0489 30.8742 40.9466 31.6439C42.1303 32.3944 43.3156 32.2405 44.4162 32.0506C45.289 31.948 48.1669 29.6825 48.9324 29.2989C50.5016 28.5126 52.7424 28.2444 52.9079 28.9295C52.8792 30.5561 53.8826 31.8505 54.7227 32.2905C55.2451 32.6792 55.7662 32.7869 56.476 32.6189C58.6433 32.107 62.3282 30.2149 62.3942 30.1559C62.8553 29.7338 63.2732 29.7454 63.4429 30.329C63.6749 31.1282 65.4137 32.0647 66.1803 32.0211C68.291 32.0878 68.9026 31.6016 69.3 31.295C70.2161 31.2283 70.7788 31.7594 71.036 32.0018C72.0967 32.5047 72.2333 32.556 75.5519 33.0897C78.523 31.5529 78.7992 31.4092C79.3577 31.2809 79.9193 30.9538 80.4477 31.4631C81.0988 32.0904 81.6246 32.0313 82.8004 31.7863C84.7104 31.508 87.5 30.8883 90.1396 27.7595C90.4309 27.4132 90.2265 26.918 90.4072 26.4074C91.5516 25.3311 98.5553 25.6185 99.4386 25.6185C102.213 25.6185 105.898 25.0528 106.913 24.945C110.826 24.5332 113.568 23.4929 114.503 23.0464C114.97 22.7527 115.397 22.491 115.345 21.8906L115.346 21.8893Z" fill="currentColor"/>
+    <path d="M115.346 21.8893C115.305 21.6315 115.088 21.6635 114.899 21.6469C114.402 21.6007 113.924 21.6789 113.464 21.8765C113.242 21.9599 109.686 22.8784 105.778 23.1414C104.747 23.2017 102.393 23.5993 100.553 23.5339C98.9668 23.5403 88.081 23.2132 86.2898 24.6884C86.2885 24.6884 86.2871 24.691 86.2857 24.6923C85.5888 25.3504 85.6289 26.2496 86.3792 26.7833C87.0835 27.2836 87.0917 27.3234 86.6043 27.8724C85.8637 28.891 83.6847 29.7197 82.9489 29.2899C82.9358 29.2823 82.9295 29.2681 82.9299 29.254C83.0842 27.5479 85.926 26.9295 84.0513 26.0598C83.4149 25.7647 81.424 25.3504 79.6624 28.4343C79.6624 28.4343 79.6609 28.4369 79.6596 28.4382C79.3146 28.9256 78.8567 29.2386 78.3032 29.5196C77.8925 29.7274 75.6383 30.5625 74.8862 30.6138C74.8862 30.6138 74.8835 30.6138 74.8822 30.6138C74.4426 30.6113 74.003 30.6087 73.5634 30.6061C73.5567 30.6061 73.55 30.6048 73.5447 30.6023C73.0993 30.3816 73.0863 30.1289 73.514 29.8441C73.7613 29.6786 73.9881 29.4811 74.2546 29.3464C78.0784 27.4273 77.4601 26.401 77.0447 25.5916C76.9659 25.3453 76.8179 25.2221 76.5444 25.3196C76.5295 25.3247 76.5122 25.3209 76.5018 25.3093C76.0707 24.818 75.5291 24.6307 74.8535 24.8219C73.8417 25.1913 72.8623 25.4569 72.0139 26.3061C71.1806 27.1399 70.471 27.9135 70.2315 29.0321C70.2284 29.0449 70.2188 29.0552 70.2053 29.059C69.3042 29.3066 69.0989 29.9262 66.788 29.8313C66.784 29.8313 66.7786 29.8313 66.7747 29.8287C66.4072 29.6928 65.2469 29.5363 65.5642 28.1777C65.5644 28.1726 65.5672 28.1675 65.57 28.1636C65.9267 27.6364 65.6954 27.3336 65.224 26.9873C64.5875 26.4613 63.8351 26.4729 63.3077 27.0155C62.5863 27.8763 60.6122 28.9013 58.9639 29.5953C58.3162 29.8416 57.6698 30.0891 57.022 30.3355C56.6968 30.4586 56.3719 30.524 56.0556 30.3355C55.8377 30.1251 54.8566 29.3195 56.4474 28.5716C57.4093 28.12 56.4913 27.1669 55.6385 25.8058C55.2269 25.149 53.1888 26.2573 52.8579 26.3933C51.6102 26.9052 52.1026 26.6499 49.7792 26.809C47.4631 27.1322 47.9722 27.5684 46.6876 28.2432C45.1827 29.0334 44.6493 29.9763 43.149 29.9865C42.6599 29.9352 42.4152 29.3451 43.0573 28.7306C45.3477 25.7211 45.3494 26.8436 47.6409 26.3946C49.2152 26.0867 48.8306 24.1009 47.9928 24.0534C46.9551 24.0599 44.6926 24.9527 44.2357 25.1362C41.3477 26.292 37.5034 27.8481 35.8066 28.4086C32.0896 29.6389 21.7617 33.9774 21.5556 34.0595C7.10894 40.7969 2.90246 42.5518 4.08568 40.77C5.52312 38.9099 10.3262 33.7491 10.8497 33.2051C11.2088 32.8793 16.9105 27.6056 16.9366 27.5812C18.8516 26.0418 33.0841 14.0949 34.0069 13.2238C34.2114 13.0558 41.0973 7.85776 41.933 7.31769C42.0825 7.28947 42.2265 7.31641 42.1962 7.58452C41.4282 8.52611 37.3373 13.2469 37.3373 13.2469C35.1643 15.6124 31.9829 18.7515 31.1203 19.6264C30.5669 20.187 31.8674 21.1697 32.8189 21.0337C34.0383 20.8605 36.1702 17.8612 36.6926 17.2622C37.1885 16.6952 49.5336 1.96445 49.4422 1.40899C49.3511 0.840697 48.8746 0.626465 48.392 0.626465C47.4872 0.626465 33.5191 10.0565 32.8692 10.8506C32.084 11.5023 22.3807 19.4815 15.6569 25.2529C11.9735 28.4138 9.32178 31.0243 9.20305 31.1462C7.64138 32.7549 2.41964 38.6867 1.69305 39.7758C1.11065 40.6494 0.736125 41.4717 0.983001 42.4556C1.54436 44.6864 5.70062 43.5678 6.42017 43.3407C10.5752 42.0284 19.9324 37.3666 25.4318 35.0665C31.5375 32.5124 36.8574 30.0212 39.4193 29.3464C39.7413 29.7607 40.0489 30.8742 40.9466 31.6439C42.1303 32.3944 43.3156 32.2405 44.4162 32.0506C45.289 31.948 48.1669 29.6825 48.9324 29.2989C50.5016 28.5126 52.7424 28.2444 52.9079 28.9295C52.8792 30.5561 53.8826 31.8505 54.7227 32.2905C55.2451 32.6792 55.7662 32.7869 56.476 32.6189C58.6433 32.107 62.3282 30.2149 62.3942 30.1559C62.8553 29.7338 63.2732 29.7454 63.4429 30.329C63.6749 31.1282 65.4137 32.0647 66.1803 32.0211C68.291 32.0878 68.9026 31.6016 69.3 31.295C70.2161 31.2283 70.7788 31.7594 71.036 32.0018C72.0967 32.5047 72.2333 32.556 75.5519 33.0897C78.523 31.5529 78.7992 31.4092 79.3577 31.2809 79.9193 30.9538 80.4477 31.4631C81.0988 32.0904 81.6246 32.0313 82.8004 31.7863C84.7104 31.508 87.5 30.8883 90.1396 27.7595C90.4309 27.4132 90.2265 26.918 90.4072 26.4074C91.5516 25.3311 98.5553 25.6185 99.4386 25.6185C102.213 25.6185 105.898 25.0528 106.913 24.945C110.826 24.5332 113.568 23.4929 114.503 23.0464C114.97 22.7527 115.397 22.491 115.345 21.8906L115.346 21.8893Z" fill="currentColor"/>
   </svg>
 )
 
@@ -207,6 +207,7 @@ const LainNav = ({ visible }: { visible: boolean }) => {
 
 // ─── HERO SCRIPT SVG (BACKGROUND) ────────────────────────────
 
+// (Script path is kept as a subtle decorative element over the sky)
 const HeroScript = () => (
   <div className="hero-script-bg" aria-hidden>
     <svg viewBox="0 0 1285 260" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -354,7 +355,7 @@ const FullscreenSlider = ({
   )
 }
 
-// ─── HERO SECTION ─────────────────────────────────────────────
+// ─── HERO SECTION (100vh STATIC, NO PINNING) ─────────────────
 
 const HeroSection = ({
   onPreview,
@@ -365,19 +366,70 @@ const HeroSection = ({
   orbitVisible: boolean
   avatarVisible: boolean
 }) => {
+  const heroRef = useRef<HTMLDivElement>(null)
+  const bgCloudRef = useRef<HTMLDivElement>(null)
+  const bgImgRef = useRef<HTMLImageElement>(null)
+
+  // Very gentle zoom/fade out as you scroll past the hero.
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    if (!bgCloudRef.current || !bgImgRef.current || !heroRef.current) return
+
+    const ctx = gsap.context(() => {
+      // The "white cloud" overlay fades out revealing the sky
+      gsap.to(bgCloudRef.current, {
+        opacity: 0,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.8,
+        }
+      })
+
+      // The background sky image gently zooms in
+      gsap.to(bgImgRef.current, {
+        scale: 1.08,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: 0.8,
+        }
+      })
+    }, heroRef)
+
+    return () => ctx.revert()
+  }, [])
+
   return (
-    <section className="hero">
-      {/* Script SVG sits as background layer */}
+    <section className="hero hero-ocean-bg" ref={heroRef}>
+      
+      {/* SKY BACKGROUND LAYER */}
+      <div className="hero-bg-container">
+        <div className="hero-bg-gradient" />
+        <img 
+          ref={bgImgRef}
+          src="https://images.unsplash.com/photo-1505533321630-975218a5f66f?w=1920&q=80" 
+          alt="Blue sky and clouds" 
+          className="hero-bg-img" 
+        />
+        <div ref={bgCloudRef} className="hero-bg-cloud-overlay" />
+      </div>
+
+      {/* Script SVG */}
       <HeroScript />
 
-      {/* Foreground: avatar + orbit carousel stacked above script */}
+      {/* Center Carousel */}
       <div className="hero-center">
         <div className={`hero-avatar-wrap ${avatarVisible ? 'avatar-visible' : 'avatar-hidden'}`}>
           <ArtCarousel onPreview={onPreview} orbitVisible={orbitVisible} />
         </div>
       </div>
 
-      {/* Side text fades in with nav */}
+      {/* Side text */}
       <div className={`hero-side-content ${avatarVisible ? 'side-visible' : 'side-hidden'}`}>
         <div className="hero-badge">Digital Artist</div>
         <p className="hero-preview muted">
@@ -571,7 +623,7 @@ const DiscographySection = () => {
   }
 
   return (
-    <section id="discography" className="discography" ref={sectionRef} onClick={handleSectionClick}>
+    <section id="discography" className="discography">
       <div className="section-head">
         <h2 className="section-title">Discography <span>The complete works</span></h2>
         <p className="section-sub">all releases — ordered by newest first</p>
@@ -620,52 +672,60 @@ const DiscographySection = () => {
   )
 }
 
-// ─── COMMISSIONS ──────────────────────────────────────────────
+// ─── COMMISSIONS (FIXED CARD CLIPPING) ───────────────────────
 
 const CommissionsSection = () => {
-  const ref = useRef<HTMLDivElement>(null)
-  useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger)
-    if (!ref.current) return
-    gsap.fromTo(ref.current.querySelectorAll('.tier-row'),
-      { opacity: 0, y: 30, filter: 'blur(6px)' },
-      {
-        opacity: 1, y: 0, filter: 'blur(0px)',
-        stagger: 0.08, duration: 0.8, ease: 'power3.out',
-        scrollTrigger: { trigger: ref.current, start: 'top 76%' },
-      }
-    )
-  }, [])
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const items = COMMISSION_TIERS
+
   return (
-    <section id="commissions" className="commissions" ref={ref}>
+    <section id="commissions" className="commissions">
       <div className="section-head">
         <h2 className="section-title">Let's create <em>together</em></h2>
         <p className="section-sub">all slots ordered by popularity</p>
       </div>
-      <div className="tiers-list">
-        {COMMISSION_TIERS.map((tier) => (
-          <div key={tier.id} className={`tier-row ${tier.featured ? 'tier-featured' : ''}`}>
-            <div className="tier-row-inner">
-              <p className="muted tier-index">{tier.num}</p>
-              <div className="tier-thumb" />
-              <div className="tier-info">
-                <p className="tier-title">{tier.title}</p>
-                <div className="tier-meta">
-                  <p className="muted">{tier.price}</p>
-                  <p className="muted">{tier.features.length} deliverables</p>
-                  {tier.featured && <p className="tier-featured-tag">Most Popular</p>}
+
+      <div className="commissions-wrapper">
+        <div className="ocean-glow-bg" />
+
+        <div className="commissions-scroll-container">
+          {items.map((item, idx) => {
+            const isHovered = hoveredIndex === idx
+            return (
+              <div
+                key={item.id}
+                className={`commission-card ${isHovered ? 'hovered' : ''}`}
+                onMouseEnter={() => setHoveredIndex(idx)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              >
+                <div className="commission-img-wrap">
+                  <img src={BURST_IMGS[idx % BURST_IMGS.length]} alt={item.title} />
+                </div>
+                <div className="commission-meta">
+                  <span className="commission-num">/ {String(idx + 1).padStart(2, '0')}</span>
+                  <span className="commission-label">{item.title}</span>
                 </div>
               </div>
-            </div>
-            <div className="tier-cta">
-              <a href="https://throne.com/lain098_" target="_blank" rel="noreferrer" className="btn-tier">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg> Order
-              </a>
-            </div>
-          </div>
-        ))}
+            )
+          })}
+        </div>
+
+        <div className="commission-text-wrapper">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={hoveredIndex !== null ? hoveredIndex : 0}
+              initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
+              animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
+              exit={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
+              transition={{ duration: 0.4, ease: 'power3.out' }}
+              className="commission-active-text"
+            >
+              <p className="commission-active-title">{items[hoveredIndex !== null ? hoveredIndex : 0].title}</p>
+              <p className="commission-active-desc muted">{items[hoveredIndex !== null ? hoveredIndex : 0].desc}</p>
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </div>
-      <p className="comm-notice muted">All prices are base rates. Complex designs may affect pricing — I'll always discuss first.</p>
     </section>
   )
 }
@@ -691,7 +751,7 @@ const AboutSection = () => {
     })
   }, [])
   return (
-    <section id="about" className="about" ref={ref}>
+    <section id="about" className="about">
       <div className="about-bg-text" aria-hidden>LAIN</div>
       <div className="about-inner">
         <div className="about-img-col about-el">
@@ -738,7 +798,7 @@ const ContactSection = () => {
     )
   }, [])
   return (
-    <section id="contact" className="contact" ref={ref}>
+    <section id="contact" className="contact">
       <div className="contact-inner">
         <div className="contact-el contact-sig">
           <SignatureLogo />
@@ -772,19 +832,134 @@ const ContactSection = () => {
   )
 }
 
-// ─── FOOTER ────────────────────────────────────────────────────
+// ─── ZEN TYPOGRAPHY SECTION ──────────────────────────────────
+
+const ZenSection = () => {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    if (!ref.current) return
+    gsap.fromTo(ref.current.querySelectorAll('.zen-el'),
+      { opacity: 0, y: 30, filter: 'blur(8px)' },
+      {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        stagger: 0.1, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+      }
+    )
+  }, [])
+
+  return (
+    <section className="zen-section" ref={ref}>
+      <div className="zen-inner">
+        <div className="zen-content zen-el">
+          <div className="zen-char-box">
+            <span className="zen-char">樸</span>
+            <span className="zen-char">素</span>
+            <div className="zen-stamp" />
+          </div>
+          <div className="zen-vert-text">
+            愛護天地 萬物及眾生<br />
+            生活回歸 自然形態
+          </div>
+          <div className="zen-scatter-text">少欲 知足</div>
+          <div className="zen-scatter-right">清淨調和<br />如規如律</div>
+        </div>
+        <div className="zen-collage zen-el">
+          <img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=800&q=80" alt="sky" />
+          <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=800&q=80" alt="clouds" />
+          <img src="https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=800&q=80" alt="tree" />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── BLUE GRID SCRAPBOOK SECTION ────────────────────────────
+
+const GridSection = () => {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    if (!ref.current) return
+    gsap.fromTo(ref.current.querySelectorAll('.grid-el'),
+      { opacity: 0, y: 30, filter: 'blur(8px)' },
+      {
+        opacity: 1, y: 0, filter: 'blur(0px)',
+        stagger: 0.08, duration: 0.8, ease: 'power3.out',
+        scrollTrigger: { trigger: ref.current, start: 'top 80%' },
+      }
+    )
+  }, [])
+
+  return (
+    <section className="grid-section" ref={ref}>
+      <div className="grid-inner">
+        <div className="grid-bg-line" />
+        <div className="grid-bg-line-2" />
+        
+        <div className="grid-text-top grid-el">No one can get closer to each other</div>
+        <div className="grid-text-center grid-el">
+          没有人能够比<br />
+          <span className="j-big">我们</span><br />
+          接近 对方。
+        </div>
+        <div className="grid-text-bottom grid-el">
+          就这样并肩躺在<br />一望无际麦田的中央
+        </div>
+        <div className="grid-text-tiny grid-el">
+          直到再没有人能够<br />比我们更为接近对方
+        </div>
+
+        <div className="grid-img-vert grid-el"><img src="https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=600&q=80" alt="Tall forest" /></div>
+        <div className="grid-img-sml grid-el"><img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=600&q=80" alt="Grass" /></div>
+        <div className="grid-img-sq grid-el"><img src="https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&q=80" alt="Sunset" /></div>
+        <div className="grid-img-sq2 grid-el"><img src="https://images.unsplash.com/photo-1501785888041-af3ef285b470?w=600&q=80" alt="Mountain" /></div>
+
+        <div className="grid-swatches grid-el">
+          <div className="g-swatch" style={{ background: '#1b3d5c' }} />
+          <div className="g-swatch" style={{ background: '#4f8eb3' }} />
+          <div className="g-swatch" style={{ background: '#7ec3e2' }} />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+// ─── FOOTER (NO SMALL SIGNATURE, BIG CENTER LOGO WITH MIZUMI) ─
 
 const Footer = () => (
-  <footer className="footer">
-    <div className="footer-inner">
-      <SignatureLogo className="footer-sig" />
-      <p className="footer-tagline">Anime illustrations · Fanart · OCs · Chibi · Short Animations</p>
-      <div className="footer-links">
-        <a href="https://www.instagram.com/lain098_" target="_blank">Instagram</a>
-        <a href="https://throne.com/lain098_" target="_blank">Throne</a>
-        <a href="mailto:lain098@example.com">Licensing</a>
+  <footer className="footer scrapbook-footer">
+    <div className="torn-edge" />
+
+    <div className="footer-layout">
+      
+      <div className="footer-center-col">
+        <div className="footer-center-line-vert" />
+        <div className="footer-center-collage">
+          <img src={BURST_IMGS[0]} alt="collage1" />
+          <img src={BURST_IMGS[1]} alt="collage2" />
+        </div>
+        
+        {/* LARGE LAIN LOGO */}
+        <SignatureLogo className="footer-center-logo" />
+        
+        {/* MIZUMI DIRECTLY BELOW THE BIG LOGO */}
+        <h3 className="footer-center-brand">MIZUMI</h3>
       </div>
-      <p className="footer-copy">© 2021–2025 Lain098_ · All Rights Reserved</p>
+
+      <div className="footer-side-text right">
+        I LOOK IN THE MIRROR, NOW I'M<br />
+        JUST A GHOST<br />
+        YOU TAKE EVERY PART OF ME<br />
+        ALL OF THE THINGS YOU NEED<br />
+        THE REST YOU WANT
+      </div>
+    </div>
+
+    <div className="footer-legal">
+      {/* REMOVED THE SMALL SIGNATURE AND "created by mortpoet" */}
+      © 2026 Lain098_ · site by mizumi
     </div>
   </footer>
 )
@@ -799,20 +974,44 @@ const Footer = () => (
 
 @import url('https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap');
 
-/* ── RESET & ROOT ─────────────────────────────────────────────── */
+/* ── CSS VARIABLES ───────────────────────────────────────────── */
 
 .lain-root {
+  --bg: #ffffff;
+  --bg-alt: #fafaf8;
+  --text: #1D1812;
+  --text-light: rgba(29,24,18,0.6);
+  --muted: rgba(29,24,18,0.45);
+  --border: rgba(29,24,18,0.08);
+  --border-strong: rgba(29,24,18,0.12);
+  --shadow: rgba(0,0,0,0.05);
+  --nav-bg: rgba(255, 255, 255, 0.15);
+  --nav-border: rgba(255, 255, 255, 0.2);
+
+  background-color: transparent; /* Make Root transparent so the Orb bleeds through */
+  color: var(--text);
+  transition: background-color 1s ease, color 1s ease, border-color 1s ease;
+  
   margin: 0; padding: 0;
   font-family: 'Inter', sans-serif;
   font-weight: 400;
-  color: #1D1812;
-  background: #ffffff;
-  background-image:
-    radial-gradient(ellipse at 60% 0%, rgba(234,246,255,0.55) 0%, transparent 65%),
-    radial-gradient(ellipse at 10% 80%, rgba(230,244,250,0.35) 0%, transparent 60%);
+  
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
 }
+
+/* ⭐ GLOBAL BLEEDING BLUE GRADIENT ORB ⭐ */
+.global-bg-bleed {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: radial-gradient(ellipse at 50% 0%, rgba(100, 180, 240, 0.35) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 * { box-sizing: border-box; }
 a { text-decoration: none; color: inherit; }
 img { display: block; width: 100%; object-fit: cover; }
@@ -823,7 +1022,7 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ── SIGNATURE LOGO ──────────────────────────────────────────── */
 
 .signature-logo {
-  color: #1D1812;
+  color: var(--text);
   width: 80px;
   height: auto;
   display: block;
@@ -836,12 +1035,12 @@ ul { list-style: none; margin: 0; padding: 0; }
   position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: space-between;
   padding: 20px 40px;
-  transition: background 0.4s ease, backdrop-filter 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease;
+  transition: background 0.4s ease, backdrop-filter 0.4s ease, opacity 0.6s ease, filter 0.6s ease, transform 0.6s ease, color 0.6s ease;
 }
 .lain-header.scrolled {
   background: rgba(255,255,255,0.92);
   backdrop-filter: blur(20px);
-  box-shadow: 0 1px 0 rgba(29,24,18,0.08);
+  box-shadow: 0 1px 0 var(--border);
 }
 .lain-header-logo {
   display: flex; align-items: center;
@@ -865,7 +1064,7 @@ ul { list-style: none; margin: 0; padding: 0; }
   padding: 8px; display: flex; flex-direction: column; gap: 5px; align-items: flex-end;
 }
 .lain-burger i {
-  display: block; height: 1.5px; background: #1D1812;
+  display: block; height: 1.5px; background: var(--text);
   border-radius: 1px; transition: all 0.3s ease;
 }
 .lain-burger i:nth-child(1) { width: 26px; }
@@ -875,13 +1074,20 @@ ul { list-style: none; margin: 0; padding: 0; }
 .lain-burger.open i:nth-child(2) { opacity: 0; }
 .lain-burger.open i:nth-child(3) { transform: translateY(-7px) rotate(-45deg); width: 24px; }
 
+/* GLASSMORPHISM MENU OVERLAY */
 .lain-nav-overlay {
   position: fixed; inset: 0; z-index: 900;
-  background: rgba(29,24,18,0.3); backdrop-filter: blur(6px);
+  background: var(--nav-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
 }
 .lain-nav-panel {
   position: absolute; top: 0; right: 0; bottom: 0;
-  width: min(360px, 90vw); background: #f8f8f6;
+  width: min(360px, 90vw); 
+  background: rgba(255, 255, 255, 0.25);
+  border-left: 1px solid var(--nav-border);
+  backdrop-filter: blur(30px);
+  -webkit-backdrop-filter: blur(30px);
   display: flex; flex-direction: column; justify-content: center;
   padding: 60px 48px;
 }
@@ -889,18 +1095,18 @@ ul { list-style: none; margin: 0; padding: 0; }
 .lain-nav-link {
   font-family: 'Inter', sans-serif;
   font-size: clamp(26px, 4vw, 38px); font-weight: 800;
-  color: #1D1812; letter-spacing: -0.02em;
+  color: inherit; letter-spacing: -0.02em;
   display: block; padding: 10px 0;
-  border-bottom: 1px solid rgba(29,24,18,0.08);
+  border-bottom: 1px solid var(--border);
   transition: color 0.2s, padding-left 0.3s;
 }
-.lain-nav-link:hover { color: rgba(29,24,18,0.5); padding-left: 8px; }
+.lain-nav-link:hover { color: var(--muted); padding-left: 8px; }
 .lain-nav-socials { display: flex; gap: 16px; padding-top: 24px; }
 .lain-nav-socials a {
   font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
-  color: rgba(29,24,18,0.4); transition: color 0.2s;
+  color: var(--muted); transition: color 0.2s;
 }
-.lain-nav-socials a:hover { color: #1D1812; }
+.lain-nav-socials a:hover { color: var(--text); }
 
 /* ── BUTTONS ──────────────────────────────────────────────────── */
 
@@ -914,26 +1120,59 @@ ul { list-style: none; margin: 0; padding: 0; }
   border: 1.5px solid transparent;
   white-space: nowrap;
 }
-.btn-dark { background: #1D1812; color: #fff; }
+.btn-dark { background: var(--text); color: var(--bg); }
 .btn-dark:hover { background: #3a3228; transform: translateY(-2px); }
-.btn-ghost { background: transparent; color: #1D1812; border-color: rgba(29,24,18,0.25); }
-.btn-ghost:hover { border-color: #1D1812; transform: translateY(-2px); }
-.btn-tier { background: rgba(29,24,18,0.06); color: #1D1812; border-color: rgba(29,24,18,0.12); }
+.btn-ghost { background: transparent; color: inherit; border-color: var(--border-strong); }
+.btn-ghost:hover { border-color: var(--text); transform: translateY(-2px); }
+.btn-tier { background: rgba(29,24,18,0.06); color: inherit; border-color: var(--border); }
 .btn-tier:hover { background: rgba(29,24,18,0.12); }
 
 /* ── HERO ────────────────────────────────────────────────────── */
 
 .hero {
   position: relative;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  height: 100vh;
+  display: block;
   overflow: hidden;
   padding: 0;
+  z-index: 0;
 }
 
-/* Script lives as a full-bleed background layer */
+/* The Sky Background Container */
+.hero-bg-container {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+.hero-bg-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  will-change: transform;
+}
+.hero-bg-gradient {
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 35%;
+  background: linear-gradient(to bottom, #ffffff 0%, rgba(255,255,255,0.6) 30%, rgba(255,255,255,0) 100%);
+  z-index: 2;
+  pointer-events: none;
+  transition: background 1s ease;
+}
+.hero-bg-cloud-overlay {
+  position: absolute;
+  inset: 0;
+  background: #ffffff;
+  z-index: 1;
+  pointer-events: none;
+  transition: background 1s ease;
+}
+
+/* Script lives as a background decorative layer */
 .hero-script-bg {
   position: absolute;
   inset: 0;
@@ -941,34 +1180,36 @@ ul { list-style: none; margin: 0; padding: 0; }
   align-items: center;
   justify-content: center;
   padding: 0 40px;
-  z-index: 0;
+  z-index: 1;
   pointer-events: none;
+  opacity: 0.9; /* Increased visibility */
 }
 .hero-script-bg svg {
   width: 100%;
   max-width: 1200px;
   height: auto;
 }
+/* ⭐ SIGNATURE CHANGE TO BLUE ⭐ */
 .script-path {
-  stroke: #1D1812;
+  stroke: rgba(0, 119, 190, 0.6);
   stroke-width: 2;
   fill: none;
   stroke-dasharray: 1000;
   stroke-dashoffset: 1000;
 }
 
-/* Carousel + avatar are front layer */
+/* STICKY CAROUSEL LAYER */
 .hero-center {
-  position: relative;
-  z-index: 2;
+  position: sticky;
+  top: 0;
+  height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  min-height: 100vh;
+  z-index: 2;
 }
 
-/* Avatar wrapper — controls the scale+fade entrance */
 .hero-avatar-wrap {
   display: flex;
   align-items: center;
@@ -987,15 +1228,13 @@ ul { list-style: none; margin: 0; padding: 0; }
   filter: blur(0px);
 }
 
-/* Side text — appears alongside nav */
+/* Side text */
 .hero-side-content {
   position: absolute;
   bottom: 64px;
   left: 40px;
   z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: flex; flex-direction: column; gap: 12px;
   max-width: 340px;
   transition: opacity 0.7s ease, filter 0.7s ease, transform 0.7s ease;
 }
@@ -1012,18 +1251,18 @@ ul { list-style: none; margin: 0; padding: 0; }
 }
 .hero-badge {
   display: inline-block; padding: 6px 14px;
-  border: 1px solid rgba(29,24,18,0.12); border-radius: 100px;
+  border: 1px solid var(--border); border-radius: 100px;
   font-size: 10px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase;
-  color: rgba(29,24,18,0.6); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
+  color: var(--muted); background: rgba(255,255,255,0.7); backdrop-filter: blur(8px);
   align-self: flex-start;
 }
 .hero-preview {
   font-size: 10px; letter-spacing: 0.14em; text-transform: uppercase;
 }
 .hero-tagline {
-  font-size: 13px; line-height: 1.8; color: rgba(29,24,18,0.55);
+  font-size: 13px; line-height: 1.8; color: var(--muted);
 }
-.hero-tagline span { font-style: italic; color: #1D1812; font-weight: 600; }
+.hero-tagline span { font-style: italic; color: var(--text); font-weight: 600; }
 
 /* ── ORBIT CAROUSEL ──────────────────────────────────────────── */
 
@@ -1038,7 +1277,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   justify-content: center;
 }
 
-/* Orbit entrance — expands from 0 scale */
 .orbit-hidden .carousel-track { transform: scale(0) rotate(0deg) !important; opacity: 0; }
 .orbit-visible .carousel-track { opacity: 1; }
 
@@ -1064,7 +1302,7 @@ ul { list-style: none; margin: 0; padding: 0; }
     translateX(320px)
     rotate(calc(-1 * var(--item) * 360deg / var(--itemCount)));
   transition: transform 0.35s ease, opacity 0.3s ease;
-  box-shadow: 0 4px 28px rgba(0,0,0,0.08);
+  box-shadow: 0 4px 28px var(--shadow);
   opacity: 0.5;
 }
 .carousel-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -1147,9 +1385,14 @@ ul { list-style: none; margin: 0; padding: 0; }
 .slider-dot.active { background: #fff; transform: scale(1.25); }
 .slider-dot:hover { background: rgba(255,255,255,0.6); }
 
-/* ── INTRO STRIP ──────────────────────────────────────────────── */
+/* ── INTRO STRIP (DARK GLASS, RESTORED BG) ──────────────────── */
 
-.intro-strip { background: #1D1812; padding: 80px 40px; }
+.intro-strip { 
+  background: rgba(29, 24, 18, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  padding: 80px 40px;
+}
 .intro-strip-inner {
   max-width: 1200px; margin: 0 auto;
   display: grid; grid-template-columns: auto 1fr auto; gap: 60px; align-items: center;
@@ -1176,14 +1419,14 @@ ul { list-style: none; margin: 0; padding: 0; }
 /* ── SECTION SHARED ───────────────────────────────────────────── */
 
 .section-head { max-width: 1200px; margin: 0 auto 64px; padding: 0 40px; display: flex; flex-direction: column; gap: 12px; }
-.section-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(29,24,18,0.45); }
+.section-eyebrow { font-size: 10px; font-weight: 600; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
 .section-title {
   font-size: clamp(36px, 5.5vw, 68px); font-weight: 900;
-  color: #1D1812; line-height: 1.05; margin: 0; letter-spacing: -0.03em;
+  color: inherit; line-height: 1.05; margin: 0; letter-spacing: -0.03em;
 }
-.section-title em { font-style: italic; font-weight: 300; color: rgba(29,24,18,0.45); }
-.section-title span { font-style: italic; font-weight: 300; color: rgba(29,24,18,0.45); font-size: 0.65em; display: block; }
-.section-sub { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(29,24,18,0.4); margin: 0; }
+.section-title em { font-style: italic; font-weight: 300; color: var(--muted); }
+.section-title span { font-style: italic; font-weight: 300; color: var(--muted); font-size: 0.65em; display: block; }
+.section-sub { font-size: 10px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin: 0; }
 
 /* ── WORKS ───────────────────────────────────────────────────── */
 
@@ -1192,14 +1435,14 @@ ul { list-style: none; margin: 0; padding: 0; }
 .work-chapter { display: grid; grid-template-columns: 1fr 1fr; min-height: 520px; overflow: hidden; }
 .work-chapter.wc-right { direction: rtl; }
 .work-chapter.wc-right .wc-text { direction: ltr; }
-.wc-img-wrap { position: relative; overflow: hidden; background: #f0ede8; }
+.wc-img-wrap { position: relative; overflow: hidden; background: rgba(250,250,248,0.8); backdrop-filter: blur(4px); }
 .wc-img-inner { position: absolute; inset: -10%; overflow: hidden; }
 .wc-img { width: 100%; height: 100%; object-fit: cover; }
 .wc-num { position: absolute; bottom: 24px; right: 24px; font-size: 11px; font-weight: 700; letter-spacing: 0.2em; text-transform: uppercase; color: rgba(255,255,255,0.6); }
-.wc-text { display: flex; flex-direction: column; justify-content: center; padding: 64px 56px; gap: 20px; background: #fff; }
-.wc-tagline { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(29,24,18,0.4); }
-.wc-headline { font-size: clamp(30px, 4vw, 52px); font-weight: 900; color: #1D1812; line-height: 1.1; margin: 0; letter-spacing: -0.03em; }
-.wc-accent-line { width: 36px; height: 1.5px; background: #1D1812; opacity: 0.3; margin-top: 4px; }
+.wc-text { display: flex; flex-direction: column; justify-content: center; padding: 64px 56px; gap: 20px; background: rgba(255,255,255,0.8); backdrop-filter: blur(8px); }
+.wc-tagline { font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); }
+.wc-headline { font-size: clamp(30px, 4vw, 52px); font-weight: 900; color: inherit; line-height: 1.1; margin: 0; letter-spacing: -0.03em; }
+.wc-accent-line { width: 36px; height: 1.5px; background: var(--text); opacity: 0.3; margin-top: 4px; }
 
 /* ── GALLERY ──────────────────────────────────────────────────── */
 
@@ -1216,21 +1459,24 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 .discography {
   padding: 100px 0;
-  background: #fafaf8;
+  background: rgba(250,250,248,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   position: relative;
   overflow: hidden;
   cursor: crosshair;
   user-select: none;
+  transition: background 1s ease;
 }
 .discography-list { max-width: 1200px; margin: 0 auto; padding: 0 40px; }
 .discography-item {
   padding: 16px 0;
-  border-bottom: 1px solid rgba(29,24,18,0.06);
+  border-bottom: 1px solid var(--border);
 }
-.discography-item:first-child { border-top: 1px solid rgba(29,24,18,0.06); }
+.discography-item:first-child { border-top: 1px solid var(--border); }
 .discography-row { display: flex; align-items: center; gap: 20px; }
 .disc-index { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; min-width: 36px; }
-.discography-artwork { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; border: 1px solid rgba(29,24,18,0.06); }
+.discography-artwork { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; flex-shrink: 0; border: 1px solid var(--border); }
 .discography-artwork img { width: 100%; height: 100%; object-fit: cover; }
 .discography-info { flex: 1; }
 .disc-title { font-size: 16px; font-weight: 700; margin: 0 0 2px; letter-spacing: -0.01em; }
@@ -1269,29 +1515,502 @@ ul { list-style: none; margin: 0; padding: 0; }
 
 /* ── COMMISSIONS ──────────────────────────────────────────────── */
 
-.commissions { padding: 100px 0; }
-.tiers-list { max-width: 1200px; margin: 0 auto; padding: 0 40px; display: flex; flex-direction: column; }
-.tier-row {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 20px 0; border-bottom: 1px solid rgba(29,24,18,0.08);
-  gap: 16px; transition: background 0.2s; cursor: pointer;
+.commissions {
+  padding: 100px 0 120px;
+  position: relative;
+  overflow: visible;
+  background: rgba(255,255,255,0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.tier-row:first-child { border-top: 1px solid rgba(29,24,18,0.08); }
-.tier-row:hover { background: rgba(29,24,18,0.025); }
-.tier-row-inner { display: flex; align-items: center; gap: 20px; flex: 1; min-width: 0; }
-.tier-index { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; min-width: 36px; margin: 0; }
-.tier-thumb { width: 48px; height: 48px; border-radius: 8px; background: rgba(29,24,18,0.06); flex-shrink: 0; border: 1px solid rgba(29,24,18,0.08); }
-.tier-info { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.tier-title { font-size: 18px; font-weight: 700; color: #1D1812; margin: 0; letter-spacing: -0.02em; }
-.tier-meta { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
-.tier-meta p { font-size: 10px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(29,24,18,0.45); margin: 0; }
-.tier-featured-tag {
-  color: #1D1812 !important; opacity: 0.7;
-  background: rgba(29,24,18,0.07); padding: 2px 8px; border-radius: 100px;
-  font-size: 9px !important; font-weight: 700 !important;
+.commissions-wrapper {
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  /* Extra padding top prevents scaled cards from clipping at the ceiling */
+  padding-top: 40px; 
+  padding-bottom: 20px;
 }
-.tier-cta { flex-shrink: 0; }
-.comm-notice { max-width: 1200px; margin: 24px auto 0; padding: 0 40px; font-size: 10px; font-weight: 500; letter-spacing: 0.06em; line-height: 1.8; }
+.commissions-scroll-container {
+  display: flex;
+  overflow-x: auto;
+  overflow-y: visible; /* Critical! Prevents hover scaling from being cut at top */
+  gap: 24px;
+  padding: 0 40px;
+  position: relative;
+  z-index: 1;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.commissions-scroll-container::-webkit-scrollbar { display: none; }
+
+.commission-card {
+  flex-shrink: 0;
+  border-radius: 12px;
+  overflow: hidden;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 260px;
+  aspect-ratio: 3 / 4;
+  transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px var(--shadow);
+}
+.commission-card.hovered {
+  transform: scale(1.12);
+  z-index: 2;
+  box-shadow: 0 16px 48px var(--shadow);
+}
+.commission-card:not(.hovered) {
+  transform: scale(0.9);
+  opacity: 0.7;
+  filter: saturate(0.7);
+}
+
+.commission-img-wrap { width: 100%; height: 100%; border-radius: 8px; overflow: hidden; }
+.commission-img-wrap img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s ease; }
+.commission-img-wrap img:hover { transform: scale(1.05); }
+.commission-meta {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 8px 0;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  color: var(--text-light);
+}
+.commission-num { font-weight: 700; color: var(--muted); }
+.commission-label { font-weight: 800; color: var(--text); }
+
+.ocean-glow-bg {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80vw;
+  max-width: 900px;
+  height: 80vw;
+  max-height: 900px;
+  background: radial-gradient(circle, rgba(0, 119, 190, 0.65) 0%, rgba(0, 119, 190, 0.25) 30%, rgba(30, 144, 255, 0.08) 60%, transparent 80%);
+  filter: blur(100px);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.commission-text-wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  padding: 0 40px;
+  min-height: 80px;
+}
+.commission-active-text { text-align: center; max-width: 480px; }
+.commission-active-title { font-size: 20px; font-weight: 700; color: var(--text); margin: 0 0 6px; letter-spacing: -0.01em; }
+.commission-active-desc { font-size: 13px; line-height: 1.6; color: var(--muted); margin: 0; }
+
+@media (max-width: 768px) {
+  .commissions-scroll-container { padding: 0 16px; gap: 16px; }
+  .commission-card { width: 200px; }
+  .commission-card.hovered { transform: scale(1.08); }
+  .commission-card:not(.hovered) { transform: scale(0.85); }
+  .commission-text-wrapper { padding: 0 16px; min-height: 60px; }
+  .commission-active-title { font-size: 16px; }
+  .commission-active-desc { font-size: 11px; }
+  .ocean-glow-bg { width: 80vw; height: 80vw; filter: blur(80px); }
+}
+
+/* ── ZEN TYPOGRAPHY SECTION ────────────────────────────────── */
+
+.zen-section {
+  padding: 100px 40px;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  position: relative;
+  overflow: hidden;
+  transition: background 1s ease;
+}
+.zen-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  gap: 40px;
+}
+.zen-content {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  position: relative;
+  margin-bottom: 60px;
+}
+.zen-char-box {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  position: relative;
+}
+.zen-char {
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 78px;
+  font-weight: 900;
+  line-height: 0.8;
+  color: var(--text);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  letter-spacing: 6px;
+  margin-right: 8px;
+}
+.zen-stamp {
+  position: absolute;
+  bottom: 16px;
+  right: -12px;
+  width: 24px;
+  height: 24px;
+  background: #b63a2b;
+  border-radius: 2px;
+}
+.zen-stamp::after {
+  content: '印';
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+}
+.zen-vert-text {
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  font-size: 15px;
+  letter-spacing: 0.35em;
+  color: var(--muted);
+  line-height: 2.2;
+  margin-left: 24px;
+}
+.zen-scatter-text {
+  position: absolute;
+  top: 120px;
+  right: 60px;
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 18px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  color: var(--text-light);
+  letter-spacing: 0.2em;
+}
+.zen-scatter-right {
+  position: absolute;
+  top: 120px;
+  right: -60px;
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 14px;
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  color: var(--muted);
+  letter-spacing: 0.2em;
+}
+.zen-collage {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+  opacity: 0.7;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 40%, black 100%);
+}
+.zen-collage img {
+  flex: 1;
+  object-fit: cover;
+}
+
+/* ── BLUE GRID SCRAPBOOK SECTION ──────────────────────────── */
+
+.grid-section {
+  padding: 80px 40px 120px;
+  position: relative;
+  background: rgba(255,255,255,0.8);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  overflow: hidden;
+  transition: background 1s ease;
+}
+.grid-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+  min-height: 600px;
+  padding: 20px 0;
+  background-image: 
+    linear-gradient(rgba(100, 150, 200, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(100, 150, 200, 0.08) 1px, transparent 1px);
+  background-size: 30px 30px;
+}
+.grid-bg-line {
+  position: absolute;
+  top: 40px; left: 40px;
+  width: 60px; height: 1px;
+  background: var(--border);
+  transform: rotate(-15deg);
+}
+.grid-bg-line-2 {
+  position: absolute;
+  bottom: 40px; right: 60px;
+  width: 80px; height: 1px;
+  background: var(--border);
+  transform: rotate(20deg);
+}
+
+/* Grid text */
+.grid-text-top {
+  position: absolute;
+  top: 60px; right: 20px;
+  font-size: 9px;
+  color: var(--muted);
+  font-weight: 500;
+  letter-spacing: 0.1em;
+}
+.grid-text-center {
+  position: absolute;
+  top: 120px; right: 180px;
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 14px;
+  color: var(--text-light);
+  line-height: 2.4;
+  letter-spacing: 0.1em;
+  text-align: right;
+}
+.grid-text-center .j-big {
+  font-size: 34px;
+  font-weight: 900;
+  color: var(--text);
+  letter-spacing: 0.15em;
+}
+.grid-text-bottom {
+  position: absolute;
+  bottom: 130px; left: -10px;
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 10px;
+  color: var(--muted);
+  line-height: 1.8;
+  text-align: left;
+  letter-spacing: 0.08em;
+}
+.grid-text-tiny {
+  position: absolute;
+  bottom: 20px; left: 60px;
+  font-family: 'Noto Serif SC', 'SimSun', serif;
+  font-size: 9px;
+  color: var(--muted);
+  line-height: 1.8;
+  letter-spacing: 0.05em;
+}
+
+/* Grid Images */
+.grid-img-vert {
+  position: absolute;
+  top: 60px; left: 40px;
+  width: 150px; height: 350px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.grid-img-vert img { width: 100%; height: 100%; object-fit: cover; }
+
+.grid-img-sml {
+  position: absolute;
+  bottom: 110px; left: 40px;
+  width: 100px; height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.grid-img-sml img { width: 100%; height: 100%; object-fit: cover; }
+
+.grid-img-sq {
+  position: absolute;
+  top: 160px; right: 60px;
+  width: 220px; height: 220px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.grid-img-sq img { width: 100%; height: 100%; object-fit: cover; }
+
+.grid-img-sq2 {
+  position: absolute;
+  bottom: 160px; right: 60px;
+  width: 100px; height: 100px;
+  border-radius: 4px;
+  overflow: hidden;
+}
+.grid-img-sq2 img { width: 100%; height: 100%; object-fit: cover; }
+
+/* Color swatches */
+.grid-swatches {
+  position: absolute;
+  bottom: 40px; right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.g-swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 2px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+@media (max-width: 1024px) {
+  .grid-img-sq { width: 180px; height: 180px; right: 30px; }
+  .grid-text-center { right: 120px; }
+}
+@media (max-width: 768px) {
+  .zen-section { padding: 60px 20px; }
+  .zen-char { font-size: 52px; letter-spacing: 0px; }
+  .zen-scatter-text { right: 10px; top: 80px; font-size: 14px; }
+  .zen-scatter-right { display: none; }
+  .zen-collage { height: 120px; gap: 6px; }
+  
+  .grid-section { padding: 60px 20px; }
+  .grid-inner { min-height: 900px; display: flex; flex-direction: column; gap: 16px; background-image: none; }
+  .grid-bg-line, .grid-bg-line-2 { display: none; }
+  .grid-img-vert { position: relative; top: 0; left: 0; width: 100%; height: 300px; }
+  .grid-img-sml { position: relative; bottom: 0; left: 0; width: 120px; height: 120px; margin-top: -80px; z-index: 2; }
+  .grid-img-sq { position: relative; top: 0; right: 0; width: 100%; height: 240px; margin-top: -40px; }
+  .grid-img-sq2 { position: relative; bottom: 0; right: 0; width: 100px; height: 100px; align-self: flex-end; margin-top: -50px; z-index: 2; }
+  .grid-text-top { position: relative; top: 0; right: 0; text-align: right; margin-bottom: 8px; }
+  .grid-text-center { position: relative; top: 0; right: 0; text-align: left; margin-bottom: 16px; }
+  .grid-text-bottom { position: relative; bottom: 0; left: 0; margin-top: 8px; }
+  .grid-text-tiny { position: relative; bottom: 0; left: 0; margin-top: 8px; }
+  .grid-swatches { position: relative; bottom: 0; right: 0; flex-direction: row; margin-top: 16px; justify-content: flex-end; }
+}
+
+/* ── FOOTER (EXACT SCRAPBOOK LAYOUT) ────────────────────────── */
+
+.scrapbook-footer {
+  position: relative;
+  background: #1D1812;
+  padding: 70px 40px 40px;
+  overflow: hidden;
+  margin-top: 40px;
+  z-index: 10; /* So scrollTrigger detects it easily */
+}
+/* CSS Torn edge (black clips into the white above) */
+.torn-edge {
+  position: absolute;
+  top: -30px;
+  left: 0;
+  width: 100%;
+  height: 30px;
+  background: #1D1812;
+  clip-path: polygon(
+    0% 100%, 4% 70%, 8% 100%, 12% 80%, 16% 100%, 20% 60%,
+    24% 100%, 28% 85%, 32% 100%, 36% 65%, 40% 100%, 44% 90%,
+    48% 100%, 52% 75%, 56% 100%, 60% 85%, 64% 100%, 68% 55%,
+    72% 100%, 76% 80%, 80% 100%, 84% 70%, 88% 100%, 92% 90%, 96% 100%, 100% 90%
+  );
+  z-index: 2;
+  pointer-events: none;
+}
+.footer-layout {
+  display: grid;
+  grid-template-columns: 1fr 1.4fr 1fr;
+  gap: 30px;
+  max-width: 1200px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+  align-items: start;
+  padding-top: 10px;
+}
+.footer-side-text {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  line-height: 2.8;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  font-weight: 500;
+}
+.footer-side-text.right { text-align: right; padding-top: 20px; }
+
+.footer-center-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  position: relative;
+  padding: 0 10px;
+}
+.footer-center-line-vert {
+  position: absolute;
+  top: -10px; bottom: 40px; left: 50%;
+  width: 1px;
+  background: rgba(255,255,255,0.08);
+  transform: translateX(-50%);
+  z-index: 0;
+}
+.footer-center-collage {
+  display: flex;
+  gap: 8px;
+  margin: 4px 0 40px;
+  position: relative;
+  z-index: 1;
+}
+.footer-center-collage img {
+  width: 60px; height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+.footer-center-logo {
+  width: 160px; 
+  height: auto;
+  color: #fff !important;
+  position: relative;
+  z-index: 1;
+  margin-top: 10px;
+}
+.footer-center-brand {
+  font-size: 28px;
+  font-weight: 900;
+  color: #fff;
+  margin: 6px 0 0;
+  letter-spacing: 0.06em;
+  position: relative;
+  z-index: 1;
+}
+
+.footer-legal {
+  margin-top: 50px;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 24px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(255,255,255,0.3);
+  letter-spacing: 0.1em;
+  z-index: 2;
+  position: relative;
+}
+
+@media (max-width: 768px) {
+  .footer-layout { grid-template-columns: 1fr; gap: 20px; }
+  .footer-side-text.right { text-align: center; padding-top: 0; font-size: 7px; }
+  .footer-center-line-vert { display: none; }
+  .scrapbook-footer { padding: 60px 20px 30px; }
+  .torn-edge { top: -20px; height: 20px; }
+  .footer-center-logo { width: 120px; }
+  .footer-center-brand { font-size: 24px; }
+}
 
 /* ── ABOUT ───────────────────────────────────────────────────── */
 
@@ -1311,53 +2030,42 @@ ul { list-style: none; margin: 0; padding: 0; }
 .about-float1 { top: 10%; right: -10px; transform: rotate(12deg); }
 .about-float2 { bottom: 15%; left: -5px; transform: rotate(-8deg); }
 .about-text-col { display: flex; flex-direction: column; gap: 20px; }
-.about-title { font-size: clamp(28px, 4vw, 48px); font-weight: 900; color: #1D1812; line-height: 1.15; margin: 0; letter-spacing: -0.03em; }
-.about-title span { font-style: italic; font-weight: 300; color: rgba(29,24,18,0.5); }
-.about-p { font-size: 15px; line-height: 1.75; color: rgba(29,24,18,0.65); margin: 0; font-weight: 400; }
+.about-title { font-size: clamp(28px, 4vw, 48px); font-weight: 900; color: inherit; line-height: 1.15; margin: 0; letter-spacing: -0.03em; }
+.about-title span { font-style: italic; font-weight: 300; color: var(--muted); }
+.about-p { font-size: 15px; line-height: 1.75; color: var(--text-light); margin: 0; font-weight: 400; }
 .about-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
 .tag {
   padding: 5px 12px; background: rgba(29,24,18,0.05);
-  border: 1px solid rgba(29,24,18,0.1); border-radius: 100px;
+  border: 1px solid var(--border); border-radius: 100px;
   font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(29,24,18,0.6); transition: background 0.2s, border-color 0.2s;
+  color: var(--muted); transition: background 0.2s, border-color 0.2s;
 }
-.tag:hover { background: rgba(29,24,18,0.1); border-color: rgba(29,24,18,0.2); color: #1D1812; }
+.tag:hover { background: rgba(29,24,18,0.1); border-color: var(--border-strong); color: var(--text); }
 .about-links { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* ── CONTACT ──────────────────────────────────────────────────── */
 
-.contact { padding: 100px 40px; background: #fafaf8; border-top: 1px solid rgba(29,24,18,0.08); }
+.contact { padding: 100px 40px; background: rgba(250,250,248,0.8); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border-top: 1px solid var(--border); transition: background 1s ease; }
 .contact-inner { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 24px; text-align: center; }
 .contact-sig { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .contact-sig .signature-logo { width: 100px; }
-.contact-sig-line { width: 120px; height: 1px; background: rgba(29,24,18,0.12); }
-.contact-title { font-size: clamp(36px, 6vw, 68px); font-weight: 900; color: #1D1812; margin: 0; letter-spacing: -0.03em; line-height: 1.1; }
-.contact-title em { font-style: italic; font-weight: 300; color: rgba(29,24,18,0.45); }
-.contact-sub { font-size: 15px; font-weight: 400; color: rgba(29,24,18,0.55); max-width: 420px; line-height: 1.7; margin: 0; }
+.contact-sig-line { width: 120px; height: 1px; background: var(--border); }
+.contact-title { font-size: clamp(36px, 6vw, 68px); font-weight: 900; color: inherit; margin: 0; letter-spacing: -0.03em; line-height: 1.1; }
+.contact-title em { font-style: italic; font-weight: 300; color: var(--muted); }
+.contact-sub { font-size: 15px; font-weight: 400; color: var(--muted); max-width: 420px; line-height: 1.7; margin: 0; }
 .contact-cards { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
 .contact-card {
   display: flex; flex-direction: column; align-items: center; gap: 6px;
-  background: #ffffff; border: 1px solid rgba(29,24,18,0.1);
+  background: rgba(255,255,255,0.9); border: 1px solid var(--border);
   border-radius: 20px; padding: 28px 36px; min-width: 180px;
-  box-shadow: 0 4px 20px rgba(29,24,18,0.05);
+  box-shadow: 0 4px 20px var(--shadow);
   transition: box-shadow 0.3s, border-color 0.3s; cursor: pointer;
 }
-.contact-card:hover { box-shadow: 0 12px 40px rgba(29,24,18,0.1); border-color: rgba(29,24,18,0.2); }
-.contact-card-icon { width: 28px; height: 28px; color: #1D1812; display: flex; align-items: center; justify-content: center; }
-.contact-card strong { font-size: 17px; font-weight: 700; color: #1D1812; }
+.contact-card:hover { box-shadow: 0 12px 40px var(--shadow); border-color: var(--border-strong); }
+.contact-card-icon { width: 28px; height: 28px; color: var(--text); display: flex; align-items: center; justify-content: center; }
+.contact-card strong { font-size: 17px; font-weight: 700; color: inherit; }
 .contact-card span { font-size: 11px; }
 .contact-note { font-size: 10px; letter-spacing: 0.05em; line-height: 1.8; max-width: 380px; }
-
-/* ── FOOTER ───────────────────────────────────────────────────── */
-
-.footer { background: #1D1812; padding: 64px 40px 48px; }
-.footer-inner { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; align-items: center; gap: 16px; text-align: center; }
-.footer-sig { color: #fff !important; width: 90px; opacity: 0.6; }
-.footer-tagline { font-size: 9px; font-weight: 600; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(255,255,255,0.25); margin: 0; }
-.footer-links { display: flex; gap: 24px; margin-top: 4px; }
-.footer-links a { font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); transition: color 0.2s; }
-.footer-links a:hover { color: rgba(255,255,255,0.8); }
-.footer-copy { font-size: 10px; font-weight: 500; letter-spacing: 0.08em; color: rgba(255,255,255,0.2); margin: 0; }
 
 /* ── RESPONSIVE ───────────────────────────────────────────────── */
 
@@ -1390,9 +2098,6 @@ ul { list-style: none; margin: 0; padding: 0; }
   .section-head { padding: 0 24px; }
   .about { padding: 80px 24px; }
   .contact { padding: 80px 24px; }
-  .footer { padding: 48px 24px 36px; }
-  .tiers-list { padding: 0 24px; }
-  .comm-notice { padding: 0 24px; }
   .discography-list { padding: 0 24px; }
   .carousel { height: 340px; max-width: 100%; }
   .carousel-item {
@@ -1506,14 +2211,54 @@ const IndexPage = () => {
     setSliderOpen(true)
   }
 
+  // GLOBAL THEME TRANSITION UPON REACHING THE FOOTER
+  useEffect(() => {
+    gsap.registerPlugin(ScrollTrigger)
+    const footerEl = document.querySelector('.scrapbook-footer')
+    if (!footerEl) return
+
+    const ctx = gsap.context(() => {
+      gsap.to(".lain-root", {
+        backgroundColor: "#1D1812",
+        color: "#f0f0f0",
+        duration: 2,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: footerEl,
+          start: "top bottom",
+          end: "top 30%",
+          scrub: 1.2
+        }
+      })
+      gsap.to(".lain-root", {
+        "--muted": "rgba(255,255,255,0.45)",
+        "--border": "rgba(255,255,255,0.08)",
+        "--text-light": "rgba(255,255,255,0.6)",
+        duration: 2,
+        ease: "power2.inOut",
+        scrollTrigger: {
+          trigger: footerEl,
+          start: "top bottom",
+          end: "top 30%",
+          scrub: 1.2
+        }
+      })
+    }, footerEl)
+    return () => ctx.revert()
+  }, [])
+
   return (
     <motion.div
       ref={pageRef}
+      className="lain-root"
       variants={pageVariants}
       initial="initial"
       animate="animate"
       exit="exit"
     >
+      {/* ⭐ GLOBAL FIXED BLEEDING BLUE ORB STARTS HERE ⭐ */}
+      <div className="global-bg-bleed" />
+      
       <LainNav visible={navVisible} />
       <HeroSection
         onPreview={openSlider}
@@ -1527,6 +2272,8 @@ const IndexPage = () => {
       <CommissionsSection />
       <AboutSection />
       <ContactSection />
+      <ZenSection />
+      <GridSection />
       <Footer />
 
       <AnimatePresence>

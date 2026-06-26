@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — new-updates-styles [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:31:25.872Z
+// Generated: 2026-06-26T07:08:59.754Z
 // ============================================================
 
 import React, { useState } from 'react'

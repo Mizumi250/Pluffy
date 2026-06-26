@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — ShikakuProjectArkzenSeeder
 // Tatemono: shikaku  |  Connection: shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:31:32.574766Z
+// Generated: 2026-06-26T07:09:02.947378Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\Shikaku;

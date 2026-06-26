@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ShikakuProjectController
 // Tatemono: shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-25T16:31:32.556686Z
+// Generated: 2026-06-26T07:09:02.922391Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Shikaku;
