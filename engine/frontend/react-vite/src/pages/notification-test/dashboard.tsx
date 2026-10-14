@@ -2,16 +2,16 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.981Z
+// Generated: 2026-10-13T14:10:33.655Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { useNavigate } from 'react-router'
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
@@ -354,7 +354,7 @@ const ArkzenPage_NotificationTest_Dashboard = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

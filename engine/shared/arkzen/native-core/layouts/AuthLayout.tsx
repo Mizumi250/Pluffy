@@ -20,7 +20,7 @@ import { useRouter } from 'expo-router'
 import { 
   useAuthStore, 
   setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'  // import setActiveTatemono
+} from '../stores/authStore'
 
 interface AuthLayoutProps {
   children:   React.ReactNode

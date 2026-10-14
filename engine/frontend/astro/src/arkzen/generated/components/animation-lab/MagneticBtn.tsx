@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MagneticBtn
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:11.208Z
+// Generated: 2026-10-09T14:13:11.072Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shan-shan [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:23.801Z
+// Generated: 2026-10-13T17:05:22.136Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,9 +10,9 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
-    const ctx = gsap.context(() => {
-    // Mask parallax (all sections)
+export const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
+  
+  const ctx = gsap.context(() => {
     gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
       gsap.to(el.querySelector('svg'), {
         yPercent: 14, ease: 'none',

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED COMPONENT — CanvasEngine [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:02.725Z
+// Generated: 2026-10-13T14:10:34.204Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Bucket, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
-import { applyTool, c, canvasRef, color, containerRef, ctx, delta, dist, drawLine, drawing, dx, dy, flattenFrame, floodFill, frame, id, key, lastPinchDist, lastPos, lastTouches, layer, lineStart, next, onMouseDown, onMouseMove, onMouseUp, onTouchEnd, onTouchMove, onTouchStart, onWheel, out, panStart, pixelAt, pos, prev, px, py, ratio, rect, spaceDown, t, target, tmp } from './utils'
-import type { CanvasEngineProps, Layer } from './types'
+import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
+import { drawLine, flattenFrame, floodFill } from './utils'
+import type { CanvasEngineProps } from './types'
 
 export const CanvasEngine: React.FC<CanvasEngineProps> = ({
   frames, currentFrameIdx, currentLayerIdx,
@@ -24,7 +24,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
   const lineStart = useRef<[number,number] | null>(null)
   const spaceDown = useRef(false)
   const panStart = useRef<{ mx: number; my: number; px: number; py: number } | null>(null)
-  const lastTouches = useRef<TouchList | null>(null)
+  const lastTouches = useRef<React.TouchList | null>(null)
   const lastPinchDist = useRef<number | null>(null)
 
   const pixelAt = useCallback((clientX: number, clientY: number): [number, number] | null => {
@@ -268,6 +268,4 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
       </div>
     </div>
   )
-}
-
-// ─── Layer Panel ───────────────────────────────────────────────────────────────
+};

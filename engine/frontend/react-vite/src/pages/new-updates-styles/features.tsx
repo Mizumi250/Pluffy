@@ -2,19 +2,19 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/features [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.889Z
+// Generated: 2026-10-13T14:10:33.602Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
-import './styles/global.css'
 import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
 import { FEATURES } from './components/constants'
 import { getIconComponent } from './components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router'
+import './styles/global.css'
 
 // ── Page component from @arkzen:page:features ─────────────────────────────
 const FeaturesPage = () => {
@@ -64,7 +64,7 @@ const ArkzenPage_NewUpdatesStyles_Features = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

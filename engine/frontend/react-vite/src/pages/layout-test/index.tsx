@@ -2,14 +2,14 @@
 // ARKZEN GENERATED PAGE — layout-test/index [React+Vite]
 // Layout: shell | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.389Z
+// Generated: 2026-10-13T14:10:33.393Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { LayerBadge } from './components/LayerBadge'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
 import { useNavigate } from 'react-router'
-import { LayerBadge } from './components/LayerBadge'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const PAGES = [
@@ -69,7 +69,7 @@ const ArkzenPage_LayoutTest_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

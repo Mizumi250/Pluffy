@@ -1,6 +1,5 @@
 /* shan-shan v2 — Indigo-lab × MIJ merged stylesheet */
 
-/* ─── FONTS + RESET ───────────────── */
 @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Unbounded:wght@300;400;700;900&display=swap');
 
 .shan-root {
@@ -17,7 +16,6 @@
 * { box-sizing: border-box; }
 a { text-decoration: none; color: inherit; }
 
-/* ─── CUSTOM CURSOR ───────────────── */
 .shan-cursor {
   position: fixed;
   width: 12px; height: 12px;
@@ -44,7 +42,6 @@ a { text-decoration: none; color: inherit; }
 a:hover ~ .shan-cursor,
 button:hover ~ .shan-cursor { width: 32px; height: 32px; }
 
-/* ─── LOADER ─────────────────────── */
 #shan-loader {
   position: fixed; inset: 0;
   background: #0a0a0a;
@@ -85,7 +82,6 @@ button:hover ~ .shan-cursor { width: 32px; height: 32px; }
   z-index: 1;
 }
 
-/* ─── BURGER ─────────────────────── */
 #shan-burger {
   position: fixed; top: 24px; right: 24px;
   z-index: 1001;
@@ -119,7 +115,6 @@ body.nav-open #shan-burger i { background: #fff; }
 #shan-burger.open i:nth-child(4) { opacity: 0; }
 #shan-burger.open i:nth-child(5) { opacity: 0; }
 
-/* ─── NAV ────────────────────────── */
 .shan-nav {
   position: fixed; inset: 0;
   background: rgba(10,10,10,0.96);
@@ -149,7 +144,6 @@ body.nav-open #shan-burger i { background: #fff; }
 
 .shan-nav ul li a:hover { color: #CC0000; letter-spacing: 0.02em; }
 
-/* ─── SCROLL INDICATOR ────────────── */
 .shan-scrollbar {
   position: fixed;
   right: 6px; top: 0;
@@ -167,7 +161,6 @@ body.nav-open #shan-burger i { background: #fff; }
   transition: opacity 0.3s;
 }
 
-/* ─── MASKS ──────────────────────── */
 .mask-top, .mask-bottom {
   position: absolute; left: 0; right: 0;
   z-index: 2; line-height: 0;
@@ -180,7 +173,6 @@ body.nav-open #shan-burger i { background: #fff; }
   height: 80px;
 }
 
-/* ─── HERO / KV ──────────────────── */
 #kv {
   min-height: 100vh;
   background: #CC0000;
@@ -265,7 +257,6 @@ body.nav-open #shan-burger i { background: #fff; }
   writing-mode: horizontal-tb;
 }
 
-/* ─── INTRO SECTION ──────────────── */
 #shan-intro {
   background: #f5f0eb;
   padding: 160px 0 100px;
@@ -334,7 +325,6 @@ body.nav-open #shan-burger i { background: #fff; }
 .intro-side-img--l { left: 24px; }
 .intro-side-img--r { right: 24px; transform: scaleX(-1); }
 
-/* ─── CHAPTER — HOMEPAGE TALE ────── */
 .homepage-tale { position: relative; }
 
 .homepage-tale::after {
@@ -346,7 +336,6 @@ body.nav-open #shan-burger i { background: #fff; }
   bottom: -100vh; left: 0; right: 0;
 }
 
-/* ─── CHAPTER COVER (sticky) ─────── */
 .chapter-cover {
   height: 100svh; min-height: 500px;
   overflow: hidden;
@@ -396,7 +385,6 @@ body.nav-open #shan-burger i { background: #fff; }
   user-select: none;
 }
 
-/* ─── CHAPTER HEAD ───────────────── */
 .chapter-head {
   position: relative;
   overflow: hidden;
@@ -492,7 +480,6 @@ body.nav-open #shan-burger i { background: #fff; }
 
 .chapter-side-img--offset { margin-top: 48px; }
 
-/* ─── CHAPTER LOOKBOOK ───────────── */
 .chapter-lookbook {
   position: relative;
   overflow: hidden;
@@ -541,7 +528,6 @@ body.nav-open #shan-burger i { background: #fff; }
   opacity: 0;
 }
 
-/* ─── CHAPTER OVERVIEW ───────────── */
 .chapter-overview {
   position: relative;
   overflow: hidden;
@@ -620,7 +606,6 @@ body.nav-open #shan-burger i { background: #fff; }
   transform: translateX(-50%) translateY(-4px);
 }
 
-/* ─── CHAPTER STORY ──────────────── */
 .chapter-story { position: relative; overflow: hidden; }
 
 .chapter-story-inner {
@@ -655,7 +640,6 @@ body.nav-open #shan-burger i { background: #fff; }
   margin: 0;
 }
 
-/* Sound strip */
 .chapter-sound-strip {
   display: flex;
   align-items: center;
@@ -708,7 +692,6 @@ body.nav-open #shan-burger i { background: #fff; }
 .chapter-sound-bar:nth-child(8)  { animation-delay: 0.11s; }
 .chapter-sound-bar:nth-child(9)  { animation-delay: 0s; }
 
-/* ─── CHAPTER OUTRO ──────────────── */
 .chapter-outro { position: relative; padding-top: max(100svh, 500px); }
 
 .chapter-outro-inner {
@@ -807,7 +790,6 @@ body.nav-open #shan-burger i { background: #fff; }
   text-transform: uppercase;
 }
 
-/* ─── SKILLS MARQUEE ─────────────── */
 #skills-marquee {
   background: #CC0000;
   padding: 24px 0;
@@ -837,7 +819,6 @@ body.nav-open #shan-burger i { background: #fff; }
   to   { transform: translateX(-50%); }
 }
 
-/* ─── ABOUT ──────────────────────── */
 #about {
   background: #1a1a1a;
   padding: 120px 0 100px;
@@ -918,7 +899,6 @@ body.nav-open #shan-burger i { background: #fff; }
   padding-left: 24px;
 }
 
-/* ─── CONTACT ────────────────────── */
 #contact {
   background: #f5f0eb;
   padding: 120px 0 80px;
@@ -993,7 +973,6 @@ body.nav-open #shan-burger i { background: #fff; }
   user-select: none;
 }
 
-/* ─── FOOTER ─────────────────────── */
 #shan-footer {
   background: #0a0a0a;
   padding: 60px 48px 32px;
@@ -1051,7 +1030,6 @@ body.nav-open #shan-burger i { background: #fff; }
   text-transform: uppercase;
 }
 
-/* ─── RESPONSIVE ─────────────────── */
 @media (max-width: 900px) {
   #kv .kv-inner { flex-direction: column; }
   .kv-photo-half { flex: 0 0 45vh; }

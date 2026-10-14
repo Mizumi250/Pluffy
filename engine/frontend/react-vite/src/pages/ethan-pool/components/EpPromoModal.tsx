@@ -2,16 +2,13 @@
 // ARKZEN GENERATED COMPONENT — EpPromoModal [React+Vite]
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.051Z
+// Generated: 2026-10-13T14:10:32.080Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { t } from './utils'
-
-// ─── PROMO MODAL ──────────────────────────────────────────────────────────────
 
 export const EpPromoModal = () => {
   const [open, setOpen] = useState(false)
@@ -53,6 +50,4 @@ export const EpPromoModal = () => {
       <div className="ep-modal-backdrop" onClick={() => setOpen(false)} />
     </div>
   )
-}
-
-// ─── GALLERY MODAL ────────────────────────────────────────────────────────────
+};

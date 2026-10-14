@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ThreeR3FSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.428Z
+// Generated: 2026-10-13T17:05:22.563Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { ambient, animate, app, camera, canvas, canvasRef, geo, mat, mesh, point, point2, rafRef, render, renderer, scene, t, torus, torusGeo, torusMat } from './utils'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'
@@ -98,7 +97,6 @@ export const ThreeR3FSection = () => {
             <PackageBadge name="@react-three/drei" />
             <PackageBadge name="@react-three/postprocessing" />
             <PackageBadge name="@react-three/uikit" />
-            <PackageBadge name="@react-three/flex" />
             <PackageBadge name="maath" />
             <p className="vl-placeholder-note">Import + Canvas verified — use in your page JSX directly</p>
           </div>

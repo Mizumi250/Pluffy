@@ -634,31 +634,31 @@ export const FramerVariantsSection = () => {
       transition: { staggerChildren: 0.12, delayChildren: 0.1 }
     },
     exit: { opacity: 0, transition: { staggerChildren: 0.05, staggerDirection: -1 } }
-  }
+  } as const
 
   const itemVariants = {
     hidden: { opacity: 0, y: 24, scale: 0.9 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
     exit: { opacity: 0, y: -16, scale: 0.9 }
-  }
+  } as const
 
   const fadeSlide = {
     initial: { opacity: 0, x: -40 },
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: 40 },
-  }
+  } as const
 
   const scaleBounce = {
     initial: { scale: 0, opacity: 0 },
     animate: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 400, damping: 20 } },
     exit: { scale: 0, opacity: 0 }
-  }
+  } as const
 
   const rotateIn = {
     initial: { rotate: -180, opacity: 0 },
     animate: { rotate: 0, opacity: 1, transition: { type: 'spring', stiffness: 200 } },
     exit: { rotate: 180, opacity: 0 }
-  }
+  } as const
 
   return (
     <div>
@@ -1712,7 +1712,7 @@ export const CSSCustomPropsSection = () => {
 import { gsap } from 'gsap'
 import React from 'react'
 
-const animationLabAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+const animationLabAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.anim-lab-logo',
       { opacity: 0, x: -20 },
@@ -1856,6 +1856,7 @@ import Animated, {
   runOnJS,
 } from 'react-native-reanimated'
 import { Play, RotateCcw } from 'lucide-react-native'
+import { create } from 'zustand'
 /* @arkzen:import:rn:end */
 
 // ─── ZUSTAND STORE ────────────────────────────────────────────────────────────
@@ -2557,7 +2558,7 @@ export {
 // NATIVE PAGES (Expo)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:page:index */
+/* @arkzen:native:page:index + @arkzen:import:expo */
 /* @arkzen:import:expo */
 
 import React, { useState } from 'react'
@@ -2639,7 +2640,7 @@ export default IndexPageExpo
 // NATIVE PAGES (Bare RN)
 // ─────────────────────────────────────────────────────────────────────────────
 
-/* @arkzen:native:page:index */
+/* @arkzen:native:page:index + @arkzen:import:rn */
 /* @arkzen:import:rn */
 
 import React, { useState } from 'react'
@@ -2701,7 +2702,10 @@ const IndexPageRN = () => {
         key={activeSection + key}
         from={{ opacity: 0, translateY: 10 }}
         animate={{ opacity: 1, translateY: 0 }}
-        transition={{ type: 'timing', duration: 220 }}
+        transition={{
+          opacity: { type: 'timing', duration: 220 },
+          translateY: { type: 'timing', duration: 220 },
+        }}
         style={nativeStyles.sectionScroll}
       >
         <ScrollView showsVerticalScrollIndicator={false}>
@@ -2999,7 +3003,10 @@ const MotiSection = () => {
                 key={w}
                 from={{ opacity: 0, translateY: 20 }}
                 animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'spring', delay: i * 100, damping: 14 }}
+                transition={{
+                  opacity: { type: 'spring', delay: i * 100, damping: 14 },
+                  translateY: { type: 'spring', delay: i * 100, damping: 14 },
+                }}
                 style={[nativeStyles.animPill, { backgroundColor: '#f59e0b' }]}
               >
                 <Text style={nativeStyles.animPillLabel}>{w}</Text>
@@ -3031,7 +3038,10 @@ const MotiSection = () => {
                 from={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                transition={{
+                  opacity: { type: 'spring', stiffness: 400, damping: 20 },
+                  scale: { type: 'spring', stiffness: 400, damping: 20 },
+                }}
                 style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#10b981' }}
               />
             )}
@@ -3047,7 +3057,10 @@ const MotiSection = () => {
                 from={{ opacity: 0, rotate: '-180deg' }}
                 animate={{ opacity: 1, rotate: '0deg' }}
                 exit={{ opacity: 0, rotate: '180deg' }}
-                transition={{ type: 'spring', stiffness: 200 }}
+                transition={{
+                  opacity: { type: 'spring', stiffness: 200 },
+                  rotate: { type: 'spring', stiffness: 200 },
+                }}
                 style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#a855f7' }}
               />
             )}
@@ -3060,7 +3073,10 @@ const MotiSection = () => {
           <MotiView
             from={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+            transition={{
+              opacity: { type: 'spring', stiffness: 200, damping: 18 },
+              scale: { type: 'spring', stiffness: 200, damping: 18 },
+            }}
             style={{ width: 100, height: 44, borderRadius: 10, backgroundColor: '#0ea5e9', alignItems: 'center', justifyContent: 'center' }}
           >
             <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>In View!</Text>
@@ -3167,14 +3183,18 @@ const LoopSection = () => {
           <MotiView
             from={{ backgroundColor: '#f43f5e' }}
             animate={{ backgroundColor: ['#f43f5e','#f97316','#eab308','#22c55e','#0ea5e9','#a855f7','#f43f5e'] }}
-            transition={{ loop: true, duration: 4000, type: 'timing' }}
+            transition={{
+              backgroundColor: { loop: true, duration: 4000, type: 'timing' },
+            }}
             style={{ width: 72, height: 72, borderRadius: 12 }}
           />
         </DemoCardNative>
         <DemoCardNative title="Border Radius Morph" desc="shape morphs via MotiView loop">
           <MotiView
             animate={{ borderRadius: [12, 26, 6, 26, 12] }}
-            transition={{ loop: true, duration: 2500, type: 'timing' }}
+            transition={{
+              borderRadius: { loop: true, duration: 2500, type: 'timing' },
+            }}
             style={{ width: 64, height: 64, backgroundColor: '#a855f7' }}
           />
         </DemoCardNative>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE STYLES — new-updates-styles
 // Source: @arkzen:native:style / @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.774Z
+// Generated: 2026-10-09T14:43:20.516Z
 // ============================================================
 
 import { StyleSheet } from 'react-native'
@@ -14,6 +14,10 @@ export const s = StyleSheet.create({
     fontWeight: 600,
     color: 'white',
     borderWidth: 0,
+    paddingLeft: 24,
+    paddingRight: 24,
+    paddingTop: 16,
+    paddingBottom: 16,
   },
   arkzenInput: {
     borderWidth: 2,
@@ -21,27 +25,13 @@ export const s = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-  },
-  featureCard: {
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  arkzenBtn: {
-    paddingLeft: 24,
-    paddingRight: 24,
-    paddingTop: 16,
-    paddingBottom: 16,
-    fontWeight: 600,
-    color: 'white',
-    borderWidth: 0,
-  },
-  arkzenInput: {
-    borderWidth: 2,
-    borderColor: '#e5e7eb',
     paddingLeft: 12,
     paddingRight: 12,
     paddingTop: 10,
     paddingBottom: 10,
-    fontSize: 16,
+  },
+  featureCard: {
+    position: 'relative',
+    overflow: 'hidden',
   },
 })

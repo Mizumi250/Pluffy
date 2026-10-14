@@ -2,16 +2,10 @@
 // ARKZEN GENERATED TYPES — new-updates-styles [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.867Z
+// Generated: 2026-10-13T14:10:33.567Z
 // ============================================================
 
-export type Feature = {
-  id: number
-  icon: 'zap' | 'code' | 'palette' | 'layers'
-  title: string
-  description: string
-  color: 'blue' | 'purple' | 'green' | 'orange'
-}
+
 
 export interface FeatureCardProps {
   icon: React.ReactNode
@@ -25,4 +19,12 @@ export interface HeroSectionProps {
   subtitle: string
   ctaText: string
   onCta?: () => void
+}
+
+export type Feature = {
+  id: number
+  icon: 'zap' | 'code' | 'palette' | 'layers'
+  title: string
+  description: string
+  color: 'blue' | 'purple' | 'green' | 'orange'
 }

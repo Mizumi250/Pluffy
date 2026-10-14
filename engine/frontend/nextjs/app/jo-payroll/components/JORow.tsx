@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — JORow
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:13.318Z
+// Generated: 2026-10-09T13:50:37.072Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -11,8 +11,8 @@ import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { create } from 'zustand'
-import { avatarColor, colors, deductions, formatPeso, getAvatarColor, getInitials, initials, netPay } from './utils'
-import type { JobOrder } from './types'
+import { formatPeso, getAvatarColor, getInitials } from './utils'
+import type { JobOrder, PayrollState, PayrollSummary } from './types'
 
 // JO row — replaces the "course row" in the reference UI
 export const JORow = ({

@@ -3,14 +3,15 @@
 // ARKZEN GENERATED PAGE — mail-test/register
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.234Z
+// Generated: 2026-10-09T13:50:38.854Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import type { MailLog, MailType } from '../components/types'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { Mail, Send, RefreshCw, LogOut, CheckCircle, XCircle, Clock } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { CheckCircle, Clock, LogOut, Mail, RefreshCw, Send, XCircle } from 'lucide-react'
 
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {
@@ -110,7 +111,7 @@ const ArkzenPage_MailTest_Register = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

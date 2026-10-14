@@ -3,14 +3,14 @@
 // ARKZEN GENERATED PAGE — layout-test/index
 // Layout: shell | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.024Z
+// Generated: 2026-10-09T13:50:38.607Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { useRouter } from 'next/navigation'
-import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
 import { LayerBadge } from './components/LayerBadge'
+import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
+import { useRouter } from 'next/navigation'
 
 // Page component code (from @arkzen:page:index)
 const PAGES = [
@@ -70,7 +70,7 @@ const ArkzenPage_LayoutTest_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

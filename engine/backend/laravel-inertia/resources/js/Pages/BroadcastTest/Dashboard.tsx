@@ -2,21 +2,19 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:18.809Z
+// Generated: 2026-10-13T17:05:20.190Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { ChannelPanel } from './components/ChannelPanel'
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
-import { val } from './components/utils'
-import type { Message, WsStatus } from './components/types'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 import { Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type BroadcastTestDashboardProps = {
@@ -312,7 +310,7 @@ function ArkzenPage_BroadcastTest_Dashboard() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -327,7 +325,11 @@ function ArkzenPage_BroadcastTest_Dashboard() {
     </motion.div>
   )
 
-  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
+  return (
+    <AuthLayout requireAuth={true}>
+    {content}
+    </AuthLayout>
+  )
 }
 
 export default ArkzenPage_BroadcastTest_Dashboard

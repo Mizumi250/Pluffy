@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LocationWidget [React+Inertia]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.278Z
+// Generated: 2026-10-13T17:05:20.443Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
 import { useDtrStore } from './hooks'
-import { calcDistance, requestLocation, within } from './utils'
+import { calcDistance } from './utils'
 
 export const LocationWidget = () => {
   const { locationStatus, currentPosition, settings, distanceToOffice, setLocationStatus, setCurrentPosition, setDistanceToOffice } = useDtrStore()

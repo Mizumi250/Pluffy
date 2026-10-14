@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — jo-payroll [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:20.329Z
+// Generated: 2026-10-13T17:05:21.117Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,7 +10,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement>) => {
+export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement | null>) => {
   if (!ref.current) return () => {}
 
   const ctx = gsap.context(() => {

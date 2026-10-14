@@ -2,13 +2,10 @@
 // ARKZEN GENERATED TYPES — asset-hub [React+Vite]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.427Z
+// Generated: 2026-10-13T14:10:30.444Z
 // ============================================================
 
-// ─── ASSET REGISTRY ───────────────────────────────────────────────────────────
-// Add an entry here after dropping a file into tatemonos/asset-hub/assets/<category>/
-// The engine copies everything in assets/ → public/tatemonos/asset-hub/assets/
-// Reference in code: /tatemonos/asset-hub/assets/<category>/<filename>
+
 
 export type AssetCategory = 'images' | 'fonts' | 'icons' | 'svg' | 'video' | 'audio' | 'data'
 

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.871Z
+// Generated: 2026-10-13T14:10:33.574Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -22,4 +22,4 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaTe
       {ctaText}
     </button>
   </div>
-)
+);

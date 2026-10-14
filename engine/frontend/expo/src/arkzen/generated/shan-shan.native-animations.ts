@@ -1,8 +1,8 @@
 // ============================================================
 // ARKZEN GENERATED NATIVE ANIMATIONS — shan-shan
-// Source: @arkzen:native:animation:rn
+// Source: @arkzen:native:animation:rn (legacy fallback)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:31.845Z
+// Generated: 2026-10-09T14:43:21.300Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,
@@ -12,9 +12,9 @@
 // ============================================================
 
 import React from 'react'
+import { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
 
 export function shanShanNativeAnimations() {
-  // ── Marquee scroll ───────────────────────────────────────────────────────
   const marqueeX = useSharedValue(0)
 
   const startMarquee = (halfWidth: number) => {
@@ -32,7 +32,6 @@ export function shanShanNativeAnimations() {
     transform: [{ translateX: marqueeX.value }],
   }))
 
-  // ── Hero SHAN logo pulse ─────────────────────────────────────────────────
   const logoScale   = useSharedValue(0.88)
   const logoOpacity = useSharedValue(0)
 
@@ -46,7 +45,6 @@ export function shanShanNativeAnimations() {
     transform: [{ scale: logoScale.value }],
   }))
 
-  // ── Scroll indicator line bounce ─────────────────────────────────────────
   const scrollBounce = useSharedValue(0)
 
   const startScrollBounce = () => {

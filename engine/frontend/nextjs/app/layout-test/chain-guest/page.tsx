@@ -3,14 +3,14 @@
 // ARKZEN GENERATED PAGE — layout-test/chain-guest
 // Layout: +guest:shell | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.041Z
+// Generated: 2026-10-09T13:50:38.671Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { LayerBadge } from '../components/LayerBadge'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
 
 // Page component code (from @arkzen:page:chain-guest)
 const ChainGuestPage = () => (
@@ -30,7 +30,7 @@ const ArkzenPage_LayoutTest_ChainGuest = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

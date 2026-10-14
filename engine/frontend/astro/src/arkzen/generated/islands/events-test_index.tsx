@@ -3,15 +3,15 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:14.418Z
+// Generated: 2026-10-09T14:13:11.953Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import type { EventLogEntry } from '@/arkzen/generated/components/events-test/types'
 import { Flame, Zap } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

@@ -2,17 +2,14 @@
 // ARKZEN GENERATED COMPONENT — ContactSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.313Z
+// Generated: 2026-10-13T14:10:33.285Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { cards, id, rect, ref, x, y } from './utils'
 import { SignatureLogo } from './SignatureLogo'
-
-// ─── CONTACT ──────────────────────────────────────────────────
 
 export const ContactSection = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -61,6 +58,4 @@ export const ContactSection = () => {
       </div>
     </section>
   )
-}
-
-// ─── ZEN TYPOGRAPHY SECTION ──────────────────────────────────
+};

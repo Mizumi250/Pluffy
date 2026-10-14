@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — new-updates-styles/features (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:51.486Z
+// Generated: 2026-10-14T08:58:41.542Z
 import '../../arkzen/generated/new-updates-styles.lynx-styles.css'
 import { LynxBadge } from './components/LynxBadge'
 import { LynxFeatureCard } from './components/LynxFeatureCard'

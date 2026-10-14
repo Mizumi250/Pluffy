@@ -2,13 +2,15 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — new-updates-styles [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.754Z
+// Generated: 2026-10-09T14:43:20.507Z
 // ============================================================
 
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { Code, Layers, Palette, Zap } from 'lucide-react-native'
 import { Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import type { NativeColor, NativeFeature } from './types'
+
 
 export const COLOR_MAP: Record<NativeColor, { bg: string; text: string; border: string }> = {
   blue:   { bg: 'bg-blue-50',   text: 'text-blue-700',   border: 'border-blue-200'   },

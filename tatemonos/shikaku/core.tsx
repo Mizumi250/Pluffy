@@ -1159,7 +1159,7 @@ import {
   ChevronDown, Play, Pause, SkipBack, SkipForward,
   Undo2, Redo2, Download, Share2, Settings, ArrowLeft,
   Layers, Palette, Sparkles, Film, Grid3x3, FlipHorizontal,
-  FlipVertical, RotateCcw, Copy, Crosshair, Bucket,
+  FlipVertical, RotateCcw, Copy, Crosshair, PaintBucket as Bucket,
   Save, RefreshCw, Check, X
 } from 'lucide-react'
 
@@ -1368,7 +1368,7 @@ export async function skFetch(url: string, options?: RequestInit) {
 
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import {
-  Pencil, Eraser, Bucket, Pipette, Move, Square, Minus,
+  Pencil, Eraser, PaintBucket as Bucket, Pipette, Move, Square, Minus,
   Type, Trash2, Plus, Eye, EyeOff, Lock,
   ChevronDown, Play, Pause, SkipBack, SkipForward,
   Undo2, Redo2, Download, Share2, ArrowLeft,
@@ -1412,7 +1412,7 @@ export const CanvasEngine: React.FC<CanvasEngineProps> = ({
   const lineStart = useRef<[number,number] | null>(null)
   const spaceDown = useRef(false)
   const panStart = useRef<{ mx: number; my: number; px: number; py: number } | null>(null)
-  const lastTouches = useRef<TouchList | null>(null)
+  const lastTouches = useRef<React.TouchList | null>(null)
   const lastPinchDist = useRef<number | null>(null)
 
   const pixelAt = useCallback((clientX: number, clientY: number): [number, number] | null => {

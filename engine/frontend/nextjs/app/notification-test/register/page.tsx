@@ -3,14 +3,14 @@
 // ARKZEN GENERATED PAGE — notification-test/register
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:15.259Z
+// Generated: 2026-10-09T13:50:39.241Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {
@@ -98,7 +98,7 @@ const ArkzenPage_NotificationTest_Register = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

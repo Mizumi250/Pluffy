@@ -2,23 +2,20 @@
 // ARKZEN GENERATED COMPONENT — UXSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:03.323Z
+// Generated: 2026-10-13T14:10:34.598Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { angle, canvas, colors, el, fireConfetti, initLenis, lenis, raf, stage, t, tiltRef } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
-import { VanillaTilt } from './VanillaTilt'
 
-// ─── SECTION: VANILLA TILT + LENIS + CONFETTI ─────────────────────────────────
 export const UXSection = () => {
   const tiltRef = useRef<HTMLDivElement>(null)
   const { resetKey } = useVisualLabStore()
@@ -95,6 +92,4 @@ export const UXSection = () => {
       </div>
     </div>
   )
-}
-
-// ─── SECTION: SCRIPT DSL ──────────────────────────────────────────────────────
+};

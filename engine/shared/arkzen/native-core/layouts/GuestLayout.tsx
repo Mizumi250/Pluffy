@@ -21,7 +21,7 @@ import { useRouter } from 'expo-router'
 import { 
   useAuthStore, 
   setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'
+} from '../stores/authStore'
 
 interface GuestLayoutProps {
   children:       React.ReactNode

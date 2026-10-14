@@ -2,16 +2,16 @@
 // ARKZEN GENERATED PAGE — broadcast-test/login [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:56.991Z
+// Generated: 2026-10-13T14:10:30.949Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
 import { ChannelPanel } from './components/ChannelPanel'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:login ─────────────────────────────
 const LoginPage = () => {
@@ -58,7 +58,7 @@ const ArkzenPage_BroadcastTest_Login = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

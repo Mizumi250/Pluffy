@@ -2,14 +2,11 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:57.588Z
+// Generated: 2026-10-13T14:10:31.879Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
-import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
-import { useNavigate } from 'react-router'
 import { EmployeeDropdown } from './components/EmployeeDropdown'
 import { GeofenceBadge } from './components/GeofenceBadge'
 import { GeofenceMap } from './components/GeofenceMap'
@@ -17,10 +14,13 @@ import { LocationWidget } from './components/LocationWidget'
 import { RecordRow } from './components/RecordRow'
 import { Skeleton } from './components/Skeleton'
 import { useDtrStore } from './components/hooks'
-import { map, parseSettings, within } from './components/utils'
-import type { Employee, TimeRecord } from './components/types'
-import { MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw, User as UserIcon, Clock, Loader2, Navigation, TrendingUp, ChevronDown, LogIn, LogOut } from 'lucide-react'
+import { parseSettings } from './components/utils'
+import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import type { Employee, TimeRecord } from './components/types'
 
 // ── Page component from @arkzen:page:admin ─────────────────────────────
 const AdminPage = () => {
@@ -247,8 +247,7 @@ const ArkzenPage_DtrGeofencing_Admin = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = dtrGeofencingAnimations(pageRef)
-    return cleanup
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

@@ -1,8 +1,7 @@
 // ARKZEN GENERATED 404 ISLAND — queue-flow
 // DO NOT EDIT DIRECTLY.
 
-import React from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/queue-flow/ErrorScreen'
+
 
 
 const NotFoundPage = () => (

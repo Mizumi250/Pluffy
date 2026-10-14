@@ -2,15 +2,15 @@
 // ARKZEN GENERATED PAGE — layout-test/panel [React+Vite]
 // Layout: panel | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.390Z
+// Generated: 2026-10-13T14:10:33.396Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
-import { PanelLayout } from '@/arkzen/core/layouts/custom/layout-test-panel'
-import { useNavigate } from 'react-router'
 import { LayerBadge } from './components/LayerBadge'
+import { PanelLayout } from '@/arkzen/core/layouts/custom/layout-test-panel'
+import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:panel ─────────────────────────────
 const PanelPage = () => (
@@ -30,7 +30,7 @@ const ArkzenPage_LayoutTest_Panel = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

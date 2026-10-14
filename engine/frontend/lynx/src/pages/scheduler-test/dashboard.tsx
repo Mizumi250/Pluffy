@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — scheduler-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:52.974Z
+// Generated: 2026-10-14T08:58:42.143Z
 import { exitCodeStyle, triggeredStyle } from './components/utils'
 import type { CommandRun } from './components/types'
 import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
@@ -82,12 +82,12 @@ const DashboardLynxPage = () => {
                   <text className="text-xs text-neutral-500">{cmd.schedule}</text>
                 </view>
                 <view
-                  bindtap={running === cmd.key ? undefined : () => runCommand(cmd.key)}
+                  bindtap={runningKey?.command === cmd.key ? undefined : () => runCommand('/api/scheduler-test/run', { command: cmd.key, triggered_by: 'manual' })}
                   className="w-full py-2 rounded-xl items-center"
-                  style={{ backgroundColor: running === cmd.key ? '#e5e5e5' : '#171717' }}
+                  style={{ backgroundColor: runningKey?.command === cmd.key ? '#e5e5e5' : '#171717' }}
                 >
-                  <text className={`text-sm font-semibold ${running === cmd.key ? 'text-neutral-700' : 'text-white'}`}>
-                    {running === cmd.key ? '...' : 'Run now'}
+                  <text className={`text-sm font-semibold ${runningKey?.command === cmd.key ? 'text-neutral-700' : 'text-white'}`}>
+                    {runningKey?.command === cmd.key ? '...' : 'Run now'}
                   </text>
                 </view>
               </view>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:native:components:lynx:* (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:51.780Z
+// Generated: 2026-10-14T08:58:41.736Z
 // ============================================================
 
 import { openURL } from '../../../../arkzen/core/native-bridge'

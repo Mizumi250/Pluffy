@@ -2,15 +2,14 @@
 // ARKZEN GENERATED COMPONENT — PalettePanel [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:02.731Z
+// Generated: 2026-10-13T14:10:34.209Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Bucket, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
+import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
 import { DEFAULT_PALETTES } from './constants'
-import { clean, color, i, key, target } from './utils'
-import type { PalettePanelProps, Tool } from './types'
+import type { PalettePanelProps } from './types'
 
 export const PalettePanel: React.FC<PalettePanelProps> = ({
   palette, primaryColor, onSelectColor, onAddColor, activePaletteName, onChangePalette,
@@ -70,6 +69,4 @@ export const PalettePanel: React.FC<PalettePanelProps> = ({
       </div>
     </div>
   )
-}
-
-// ─── Tool definitions ──────────────────────────────────────────────────────────
+};

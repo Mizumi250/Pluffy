@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ScriptDSLSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.460Z
+// Generated: 2026-10-13T17:05:22.587Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,6 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { ambient, camera, canvas, colors, config, geo, globalCode, mat, mesh, namedCode, point, renderer, scene } from './utils'
 import { SectionHeader } from './SectionHeader'
 
 // ─── SECTION: SCRIPT DSL ──────────────────────────────────────────────────────
@@ -22,8 +21,7 @@ export const ScriptDSLSection = () => {
   // The named scripts export `threeSceneHelper` (three-scene) and `particleConfig` (particles-config).
   const [tab, setTab] = useState<'global' | 'named'>('global')
 
-  const globalCode = `/* @arkzen:script */
-// Global scene constants — shared across all visual-lab pages
+  const globalCode = `/* @arkzen:script */// Global scene constants — shared across all visual-lab pages
 const VisualLabColors = {
   primary:   '#a78bfa',
   secondary: '#60a5fa',
@@ -47,8 +45,7 @@ function visualLabSceneSetup(canvas: HTMLCanvasElement) {
 }
 /* @arkzen:script:end */`
 
-  const namedCode = `/* @arkzen:script:three-scene */
-// Named helper — imported as: visual-lab.three-scene.script.ts
+  const namedCode = `/* @arkzen:script:three-scene */// Named helper — imported as: visual-lab.three-scene.script.ts
 export function makeIcosahedron(scene: THREE.Scene) {
   const geo = new THREE.IcosahedronGeometry(1, 1)
   const mat = new THREE.MeshStandardMaterial({

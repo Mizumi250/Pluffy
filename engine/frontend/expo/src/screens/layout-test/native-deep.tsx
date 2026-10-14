@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { CardModalLayout } from '../../../arkzen/core/layouts/custom/layout-test-card-modal'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 // User screen (from @arkzen:native:page:native-deep)
@@ -33,8 +34,8 @@ export function ArkzenScreen_LayoutTest_NativeDeep() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <CardModalLayout tatSlug="layout-test">
+      <ArkzenStatusBar style="dark" />
+      <CardModalLayout>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}

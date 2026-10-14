@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow [React+Vite]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.553Z
+// Generated: 2026-10-13T14:10:31.754Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -34,4 +34,4 @@ export const RecordRow = ({ rec, geofencingEnabled }: { rec: TimeRecord; geofenc
       <span className="text-xs text-white/25 font-mono">{fmtDate(rec.timestamp)}</span>
     </div>
   </div>
-)
+);

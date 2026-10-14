@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ScriptDSLSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:18.170Z
+// Generated: 2026-10-09T14:13:14.466Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -21,8 +21,7 @@ export const ScriptDSLSection = () => {
   // The named scripts export `threeSceneHelper` (three-scene) and `particleConfig` (particles-config).
   const [tab, setTab] = useState<'global' | 'named'>('global')
 
-  const globalCode = `/* @arkzen:script */
-// Global scene constants — shared across all visual-lab pages
+  const globalCode = `/* @arkzen:script */// Global scene constants — shared across all visual-lab pages
 const VisualLabColors = {
   primary:   '#a78bfa',
   secondary: '#60a5fa',
@@ -46,8 +45,7 @@ function visualLabSceneSetup(canvas: HTMLCanvasElement) {
 }
 /* @arkzen:script:end */`
 
-  const namedCode = `/* @arkzen:script:three-scene */
-// Named helper — imported as: visual-lab.three-scene.script.ts
+  const namedCode = `/* @arkzen:script:three-scene */// Named helper — imported as: visual-lab.three-scene.script.ts
 export function makeIcosahedron(scene: THREE.Scene) {
   const geo = new THREE.IcosahedronGeometry(1, 1)
   const mat = new THREE.MeshStandardMaterial({

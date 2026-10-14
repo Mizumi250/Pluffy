@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — TATEMONO VALIDATOR v5.0
+// ARKZEN ENGINE — TATEMONO VALIDATOR v6.0
 // Pre-build validation. Run before engine builds.
 //
 // Usage: node validate.js <tatemono-name>
@@ -10,7 +10,8 @@
 //   2. Database  — table names, types, foreign keys, no circles
 //   3. API       — naming conventions, methods, prefixes
 //   4. Pages     — layout declarations, no duplicates
-//   5. Consistency — model/table name alignment
+//   5. Native    — mandatory @arkzen:import:expo/:rn DSL for Expo/RN blocks
+//   6. Consistency — model/table name alignment
 // ============================================================
 
 import * as fs   from 'fs'
@@ -26,9 +27,14 @@ const VALID_COLUMN_TYPES = new Set([
 
 const VALID_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
-// ─────────────────────────────────────────────
+// ─── Native DSL check ──────────────────────────────────────────────────────
+function hasImportDSL(raw: string): boolean {
+  return raw.includes('/* @arkzen:import:expo') || raw.includes('/* @arkzen:import:rn')
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // MAIN VALIDATOR
-// ─────────────────────────────────────────────
+// ────────────────────────────────────────────────────────────────────────────
 
 export function validateTatemono(filePath: string): ValidationResult {
   const errors:   string[] = []
@@ -36,7 +42,6 @@ export function validateTatemono(filePath: string): ValidationResult {
 
   let parsed: ParsedTatemono
 
-  // ── Parse first ──────────────────────────────
   try {
     parsed = parseTatemono(filePath)
   } catch (e) {
@@ -45,31 +50,28 @@ export function validateTatemono(filePath: string): ValidationResult {
   }
 
   // ── 1. Structure ─────────────────────────────
-  if (parsed.pages.length === 0) {
-    errors.push('At least one @arkzen:page:name section is required')
+  if (parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+    errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 
-  if (parsed.components.length === 0) {
-    errors.push('At least one @arkzen:components:identifier section is required')
+  if (parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
+    warnings.push('No @arkzen:components or @arkzen:native:components found – consider adding shared UI components.')
   }
 
   // ── 2. Database ───────────────────────────────
   const tableNames = new Set(parsed.databases.map(d => d.table))
-  tableNames.add('users') // users is always available
+  tableNames.add('users')
 
   for (const db of parsed.databases) {
-    // Table name format
     if (!/^[a-z][a-z0-9_]*s$/.test(db.table) && db.table !== 'users') {
       warnings.push(`Table "${db.table}" should be plural snake_case (e.g., "${db.table}s")`)
     }
 
-    // Column types
     for (const [colName, col] of Object.entries(db.columns)) {
       if (!VALID_COLUMN_TYPES.has(col.type)) {
         errors.push(`Table "${db.table}", column "${colName}": invalid type "${col.type}"`)
       }
 
-      // Foreign key validation
       if (col.foreign) {
         const [refTable] = col.foreign.split('.')
         if (!tableNames.has(refTable)) {
@@ -82,11 +84,9 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  // Check for circular foreign key dependencies
   const circularErrors = detectCircularDeps(parsed.databases)
   errors.push(...circularErrors)
 
-  // Check duplicate table names
   const seenTables = new Set<string>()
   for (const db of parsed.databases) {
     if (seenTables.has(db.table)) {
@@ -97,22 +97,18 @@ export function validateTatemono(filePath: string): ValidationResult {
 
   // ── 3. API ────────────────────────────────────
   for (const api of parsed.apis) {
-    // Controller naming
     if (!api.controller.endsWith('Controller')) {
       errors.push(`API controller "${api.controller}" must end with "Controller" (e.g., "${api.controller}Controller")`)
     }
 
-    // Model naming
     if (!/^[A-Z][a-zA-Z0-9]*$/.test(api.model)) {
       errors.push(`API model "${api.model}" must be PascalCase`)
     }
 
-    // Prefix format
     if (!api.prefix.startsWith('/api/')) {
       errors.push(`API prefix "${api.prefix}" must start with /api/ (e.g., /api/${api.model.toLowerCase()}s)`)
     }
 
-    // Endpoint methods
     for (const [epName, ep] of Object.entries(api.endpoints)) {
       if (ep.method && !VALID_METHODS.has(ep.method)) {
         errors.push(`API "${api.controller}", endpoint "${epName}": invalid method "${ep.method}"`)
@@ -120,7 +116,6 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  // Duplicate controllers
   const seenControllers = new Set<string>()
   for (const api of parsed.apis) {
     if (seenControllers.has(api.controller)) {
@@ -129,32 +124,95 @@ export function validateTatemono(filePath: string): ValidationResult {
     seenControllers.add(api.controller)
   }
 
-  // ── 4. Pages ──────────────────────────────────
-  const validLayouts = new Set(['guest', 'auth', ...parsed.layouts.map(l => l.name)])
+  // ── 4. Pages (web) ──────────────────────────────
+  const validWebLayouts = new Set(['guest', 'auth', ...parsed.layouts.map(l => l.name)])
 
   for (const page of parsed.pages) {
-    if (!validLayouts.has(page.layout)) {
+    if (!validWebLayouts.has(page.layout)) {
       errors.push(
-        `Page "${page.name}": layout "${page.layout}" is not defined. ` +
-        `Valid layouts: ${[...validLayouts].join(', ')}. ` +
-        `To define a custom layout, use @arkzen:layout:${page.layout}`
+        `Web page "${page.name}": layout "${page.layout}" is not defined. ` +
+        `Valid layouts: ${[...validWebLayouts].join(', ')}. ` +
+        `To define a custom layout, use @arkzen:web:layout:${page.layout}`
       )
     }
   }
 
-  // Auth pages vs guest pages — warn if no guest page when auth:true
   if (parsed.meta.auth) {
     const guestPages = parsed.pages.filter(p => p.layout === 'guest')
     const authPages  = parsed.pages.filter(p => p.layout === 'auth')
     if (guestPages.length === 0 && authPages.length > 0) {
       warnings.push(
         'auth: true is set but no guest (public) pages found. ' +
-        'Users will have no way to log in. Add @arkzen:page:layout:guest to a login page.'
+        'Users will have no way to log in. Add @arkzen:web:page:layout:guest to a login page.'
       )
     }
   }
 
-  // ── 5. Consistency ────────────────────────────
+  // ── 5. Native: MANDATORY IMPORT DSL CHECK ──────────────────────────────
+  // Per your table: Expo and Bare RN blocks MUST have @arkzen:import:expo or :rn
+  // Lynx blocks use :lynx suffix – they are self-contained, no import DSL required.
+
+  // 5a. Native pages (Expo / Bare RN)
+  for (const page of parsed.nativePages) {
+    if (!hasImportDSL(page.raw)) {
+      errors.push(
+        `Native page "${page.name}" targets Expo or Bare RN but does not contain ` +
+        `an @arkzen:import:expo or @arkzen:import:rn block. ` +
+        `Per the DSL table, every native page must be wrapped with the appropriate import DSL.`
+      )
+    }
+  }
+
+  // 5b. Native layouts (Expo / Bare RN)
+  for (const layout of parsed.nativeLayouts) {
+    if (!hasImportDSL(layout.raw)) {
+      errors.push(
+        `Native layout "${layout.name}" targets Expo or Bare RN but does not contain ` +
+        `an @arkzen:import:expo or @arkzen:import:rn block.`
+      )
+    }
+  }
+
+  // 5c. Native components (Expo / Bare RN)
+  for (const comp of parsed.nativeComponents) {
+    if (!hasImportDSL(comp.raw)) {
+      errors.push(
+        `Native component block "${comp.name}" targets Expo or Bare RN but does not contain ` +
+        `an @arkzen:import:expo or @arkzen:import:rn block.`
+      )
+    }
+  }
+
+  // 5d. Native error handlers (Expo / Bare RN)
+  for (const err of parsed.nativeErrorHandlers) {
+    if (!hasImportDSL(err.raw)) {
+      errors.push(
+        `Native error handler (${err.type}) targets Expo or Bare RN but does not contain ` +
+        `an @arkzen:import:expo or @arkzen:import:rn block.`
+      )
+    }
+  }
+
+  // 5e. Lynx blocks – NO import DSL required. We do NOT check them.
+
+  // Duplicate native page names
+  const seenNativePages = new Set<string>()
+  for (const page of parsed.nativePages) {
+    if (seenNativePages.has(page.name)) {
+      errors.push(`Duplicate native page: "${page.name}"`)
+    }
+    seenNativePages.add(page.name)
+  }
+
+  const seenLynxPages = new Set<string>()
+  for (const page of parsed.nativeLynxPages) {
+    if (seenLynxPages.has(page.name)) {
+      errors.push(`Duplicate Lynx page: "${page.name}"`)
+    }
+    seenLynxPages.add(page.name)
+  }
+
+  // ── 6. Consistency ────────────────────────────
   for (const api of parsed.apis) {
     const expectedTable = toSnakeCase(api.model) + 's'
     const hasTable = parsed.databases.some(d => d.table === expectedTable || d.table === toSnakeCase(api.model))
@@ -166,7 +224,6 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  // Default role column warning
   for (const db of parsed.databases) {
     if (db.table === 'users' && db.columns['role']) {
       warnings.push(`users table uses custom "role" column — ensure your auth logic handles this`)
@@ -179,7 +236,11 @@ export function validateTatemono(filePath: string): ValidationResult {
     console.log(`\n✓ Valid tatemono: ${parsed.meta.name}`)
     console.log(`  - ${parsed.databases.length} table(s): ${parsed.databases.map(d => d.table).join(', ')}`)
     console.log(`  - ${parsed.apis.length} resource(s): ${parsed.apis.map(a => a.model).join(', ')}`)
-    console.log(`  - ${parsed.pages.length} page(s): ${parsed.pages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
+    console.log(`  - ${parsed.pages.length} web page(s): ${parsed.pages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
+    console.log(`  - ${parsed.nativePages.length} native page(s): ${parsed.nativePages.map(p => p.name).join(', ')}`)
+    if (parsed.nativeLynxPages.length > 0) {
+      console.log(`  - ${parsed.nativeLynxPages.length} Lynx page(s): ${parsed.nativeLynxPages.map(p => p.name).join(', ')}`)
+    }
     if (warnings.length > 0) {
       console.log(`  - ${warnings.length} warning(s):`)
       warnings.forEach(w => console.log(`    ⚠ ${w}`))

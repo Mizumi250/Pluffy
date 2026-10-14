@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — MaskTop [React+Inertia]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.856Z
+// Generated: 2026-10-13T17:05:22.161Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -19,4 +19,3 @@ export const MaskTop = ({ fill = '#CC0000' }: { fill?: string }) => (
 )
 
 // ─── ANIMATED SHAN LOGO ───────────────────────────────────────────────────────
-// Full stroke-draw animation on mount. Letters are meaty, editorial weight.

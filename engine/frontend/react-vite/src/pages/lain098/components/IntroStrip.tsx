@@ -2,15 +2,13 @@
 // ARKZEN GENERATED COMPONENT — IntroStrip [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.305Z
+// Generated: 2026-10-13T14:10:33.273Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-
-// ─── INTRO STRIP ──────────────────────────────────────────────
 
 export const IntroStrip = () => (
   <section className="intro-strip">
@@ -27,6 +25,4 @@ export const IntroStrip = () => (
       </div>
     </div>
   </section>
-)
-
-// ─── WORK CHAPTER ─────────────────────────────────────────────
+);

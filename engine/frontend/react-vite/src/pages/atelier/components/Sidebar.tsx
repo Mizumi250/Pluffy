@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Sidebar [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.588Z
+// Generated: 2026-10-13T14:10:30.571Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,8 +10,6 @@ import { motion } from 'framer-motion'
 import { Activity, AlertCircle, ArrowLeft, ArrowRight, Award, Bell, Book, Briefcase, Camera, Check, ChevronLeft, ChevronRight, Clock, Coffee, Download, ExternalLink, Eye, FileText, Film, Filter, Folders, GitCommit, Globe, Grid, Hash, Heart, Home, Image, Info, Layers, Link, List, Lock, LogOut, MessageCircle, Mic, MoreHorizontal, Music, Paperclip, Pause, Pencil, Play, Plus, Radio, RefreshCw, Search, Send, Settings, Share2, Smile, Sparkles, Star, Tag, TrendingUp, User, Users, X, Zap } from 'lucide-react'
 import { CURRENT_USER } from './constants'
 
-// ── Shared UI components ──────────────────────────────────────────────────────
- 
 export const Sidebar = ({ active, onNav }: { active: string; onNav: (v: string) => void }) => (
   <nav className="atl-sidebar">
     <div className="atl-sidebar-logo">
@@ -82,4 +80,4 @@ export const Sidebar = ({ active, onNav }: { active: string; onNav: (v: string) 
  
     <div className="atl-sidebar-footer">No algorithms. No pressure.</div>
   </nav>
-)
+);

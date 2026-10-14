@@ -2,21 +2,21 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/features [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.305Z
+// Generated: 2026-10-13T17:05:21.753Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import './styles/global.css'
 import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
 import { FEATURES } from './components/constants'
 import { getIconComponent } from './components/utils'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type NewUpdatesStylesFeaturesProps = {
@@ -35,7 +35,7 @@ const FeaturesPage = () => {
       <Navbar currentPath="/new-updates-styles/features" />
       <div className="container mx-auto px-4 space-y-8 py-8">
         <h1 className="text-4xl font-bold">All Features</h1>
-        
+
         <div className="flex gap-4 flex-wrap">
           {(['blue', 'purple', 'green', 'orange'] as const).map(color => (
             <button
@@ -75,7 +75,7 @@ function ArkzenPage_NewUpdatesStyles_Features() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -90,7 +90,11 @@ function ArkzenPage_NewUpdatesStyles_Features() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_NewUpdatesStyles_Features

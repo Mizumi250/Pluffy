@@ -2,8 +2,8 @@
 // Generated from tatemono: jo-payroll
 
 import React, { useEffect, useState } from 'react'
-import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { Banknote, Bell, Building2, CalendarDays, ChevronRight, Database, Landmark, LayoutDashboard, LogOut, Menu, X } from 'lucide-react'
 
 const NAV_ITEMS = [
   { href: '/jo-payroll',              label: 'Dashboard',    icon: LayoutDashboard },

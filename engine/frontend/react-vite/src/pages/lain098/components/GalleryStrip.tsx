@@ -2,16 +2,13 @@
 // ARKZEN GENERATED COMPONENT — GalleryStrip [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.308Z
+// Generated: 2026-10-13T14:10:33.280Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { cards, galleryImgs, ref, y } from './utils'
-
-// ─── GALLERY STRIP ────────────────────────────────────────────
 
 export const GalleryStrip = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -66,6 +63,4 @@ export const GalleryStrip = () => {
       </div>
     </section>
   )
-}
-
-// ─── DISCOGRAPHY (COVEO-STYLE CLICK BURST) ───────────────────
+};

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — errors-test [React+Inertia]
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.580Z
+// Generated: 2026-10-13T17:05:20.550Z
 // ============================================================
 
 export type ErrorDef = {

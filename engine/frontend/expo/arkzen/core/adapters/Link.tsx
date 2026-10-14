@@ -10,9 +10,8 @@
 // ============================================================
 
 import React from 'react'
-import { Link as ExpoLink } from 'expo-router'
+import { Link as ExpoLink, type Href } from 'expo-router'
 import { StyleSheet } from 'react-native'
-import type { ExpoRouterHref } from '../../types'
 
 interface ArkzenLinkProps {
   href?:      string
@@ -23,7 +22,7 @@ interface ArkzenLinkProps {
 }
 
 export const Link: React.FC<ArkzenLinkProps> = ({ href, to, children, style }) => {
-  const target = (to ?? href ?? '/') as ExpoRouterHref
+  const target = (to ?? href ?? '/') as Href
 
   return (
     <ExpoLink href={target} style={[styles.link, style]}>

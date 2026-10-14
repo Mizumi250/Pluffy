@@ -3,20 +3,20 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:15.015Z
+// Generated: 2026-10-09T14:13:12.469Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
-import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
 import { SectionHeader } from '@/arkzen/generated/components/jo-payroll/SectionHeader'
 import { Spinner } from '@/arkzen/generated/components/jo-payroll/Spinner'
 import { API_BASE } from '@/arkzen/generated/components/jo-payroll/constants'
 import { usePayrollStore } from '@/arkzen/generated/components/jo-payroll/hooks'
-import { formatPeso, getAvatarColor, getInitials } from '@/arkzen/generated/components/jo-payroll/utils'
 import type { JobOrder } from '@/arkzen/generated/components/jo-payroll/types'
-import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
+import { formatPeso, getAvatarColor, getInitials } from '@/arkzen/generated/components/jo-payroll/utils'
+import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 
 // Page component code (from @arkzen:page:payslip)
 const PayslipPage = () => {

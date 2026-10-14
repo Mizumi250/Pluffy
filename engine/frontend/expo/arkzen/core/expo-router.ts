@@ -251,10 +251,20 @@ function resolveImports(
   // the user has already explicitly claimed for a different module — the
   // user's own written import always wins.
   const rawNamedImportRe = /^\s*import\s+(?:[A-Za-z_$][A-Za-z0-9_$]*\s*,\s*)?\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const rawDefaultImportRe = /^\s*import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*(?:,\s*\{[^}]*\})?\s+from\s+['"]([^'"]+)['"]\s*;?/
   const explicitRawImports = new Map<string, string>() // name → module
   for (const source of sources) {
     for (const rawLine of flattenMultilineImports(source).split('\n')) {
-      const m = rawLine.trim().match(rawNamedImportRe)
+      const line = rawLine.trim()
+      const defaultMatch = line.match(rawDefaultImportRe)
+      if (defaultMatch && defaultMatch[1] !== 'React') {
+        const mod = defaultMatch[2].replace(/^@\/arkzen\//, '../../../arkzen/')
+        if (!explicitRawImports.has(defaultMatch[1])) {
+          explicitRawImports.set(defaultMatch[1], mod)
+        }
+      }
+
+      const m = line.match(rawNamedImportRe)
       if (!m) continue
       const [, namedStr, rawMod] = m
       const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
@@ -452,7 +462,7 @@ function extractNativeComponentNames(tatemono: ParsedTatemono): Set<string> {
     const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
     for (const match of constMatches) {
       const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
+      if (name && !/^[A-Z0-9_]+$/.test(name)) names.add(name)
     }
     const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
     for (const match of fnMatches) {
@@ -647,7 +657,7 @@ const RN_CORE_COMPONENTS = new Set([
   'View', 'Text', 'ScrollView', 'TouchableOpacity', 'Pressable',
   'TextInput', 'Image', 'ImageBackground', 'FlatList', 'SectionList',
   'Switch', 'ActivityIndicator', 'Modal', 'KeyboardAvoidingView',
-  'Platform', 'Dimensions', 'StyleSheet', 'Alert', 'Linking',
+  'Platform', 'Dimensions', 'StyleSheet', 'Alert', 'Linking', 'Animated', 'Easing',
   'Keyboard', 'RefreshControl',
 ])
 
@@ -777,7 +787,33 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
 
   // Resolve imports across ALL native component blocks
   const rawSources = nativeComponents.map(c => c.raw.trim())
-  const { canonicalBlock, strippedSources } = resolveImports(rawSources)
+  const componentImportsIcon = rawSources.some(source => /<Icon\b/.test(source))
+  const componentSource = rawSources.map(stripTemplateLiterals).join('\n')
+  const componentImportSources = [
+    ...rawSources,
+    ...(tatemono.nativePages ?? []).filter(page => isExpoTargeted(page.raw)).map(page => page.raw),
+    ...(tatemono.nativeLayouts ?? []).map(layout => layout.raw),
+    ...(tatemono.nativeErrorHandlers ?? []).map(handler => handler.raw),
+    ...(tatemono.nativeStyleGlobal ? [tatemono.nativeStyleGlobal.raw] : []),
+    ...(tatemono.nativeStyles ?? []).map(style => style.raw),
+    ...(tatemono.nativeAnimationExpo
+      ? [tatemono.nativeAnimationExpo.raw]
+      : tatemono.nativeAnimationRN
+        ? [tatemono.nativeAnimationRN.raw]
+        : []),
+    ...(tatemono.nativeScriptExpo ? [tatemono.nativeScriptExpo.raw] : []),
+    ...(tatemono.nativeScriptsExpo ?? []).map(script => script.raw),
+  ]
+  const componentImports = {
+    reactHooks: findReferencedNames(componentSource, REACT_HOOKS),
+    engineNamed: {
+      'react-native': findReferencedNames(componentSource, RN_CORE_COMPONENTS),
+      ...(componentImportsIcon
+        ? { '../../../arkzen/core/components/Icon': ['Icon'] }
+        : {}),
+    },
+  }
+  const { canonicalBlock, strippedSources } = resolveImports(componentImportSources, componentImports)
 
   // Normalise @/arkzen/* paths — components/components/index.ts is 4 levels deep:
   // src/screens/{tat}/components/{Name}.tsx → 4 levels up = expo root
@@ -785,6 +821,8 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
   const normalisedCanonicalBlock = canonicalBlock
     .replace(/from\s+'@\/arkzen\//g, `from '../../../../arkzen/`)
     .replace(/from\s+"@\/arkzen\//g, `from "../../../../arkzen/`)
+    .replace(/from\s+'\.\.\/\.\.\/\.\.\/arkzen\//g, `from '../../../../arkzen/`)
+    .replace(/from\s+"\.\.\/\.\.\/\.\.\/arkzen\//g, `from "../../../../arkzen/`)
 
   const extractedComponents = extractNativeComponentNames(tatemono)
   const sharedConstants     = extractNativeSharedConstantNames(tatemono)
@@ -800,8 +838,9 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
   // call these hooks directly without their own import, relying on the same
   // module-scope availability the original single-file generation provided.
   // Track their names so each component file can import what it uses.
+  const animationBlock = tatemono.nativeAnimationExpo ?? tatemono.nativeAnimationRN
   const animationHookNames = new Set(
-    tatemono.nativeAnimationRN ? extractExportNames(tatemono.nativeAnimationRN.raw) : []
+    animationBlock ? extractExportNames(animationBlock.raw) : []
   )
 
   // Same issue for @arkzen:native:style — emitted as the `s` export of
@@ -862,6 +901,11 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
       const canonicalBlockFixed   = fixRequireDepth(normalisedCanonicalBlock)
 
       const allConstChunks = [...constChunksFixed, ...destructuredChunksFixed]
+      const constSource = allConstChunks.join('\n\n')
+      const referencedTypes = findReferencedNames(constSource, sharedTypes)
+      const typesImport = referencedTypes.length > 0
+        ? `import type { ${referencedTypes.sort().join(', ')} } from './types'\n`
+        : ''
 
       const content = `// ============================================================
 // ARKZEN GENERATED NATIVE CONSTANTS — ${tatemono.meta.name} [Expo]
@@ -871,6 +915,7 @@ function generateIndividualNativeComponentFiles(tatemono: ParsedTatemono, screen
 // ============================================================
 
 ${canonicalBlockFixed}
+${typesImport}
 
 ${allConstChunks.join('\n\n')}
 `
@@ -904,6 +949,10 @@ ${allConstChunks.join('\n\n')}
       })
     if (hookChunks.length > 0) {
       const hookChunksJoined = hookChunks.join('\n\n')
+      const hooksUseZustand = /\bcreate(?:<[^>]+>)?\s*\(/.test(hookChunksJoined)
+      const zustandImport = hooksUseZustand && !/from\s+['"]zustand['"]/.test(normalisedCanonicalBlock)
+        ? `import { create } from 'zustand'\n`
+        : ''
 
       const hookReferencedConstants = findReferencedNames(hookChunksJoined, sharedConstants)
       const hookConstantsImport = hookReferencedConstants.length > 0
@@ -923,6 +972,7 @@ ${allConstChunks.join('\n\n')}
 // ============================================================
 
 ${normalisedCanonicalBlock}
+${zustandImport}
 ${hookConstantsImport}${hookTypesImport}
 ${hookChunksJoined}
 `
@@ -1184,7 +1234,7 @@ function buildNativeLayoutJSX(
     for (const name of resolveNativeLayoutChain(decl.layout, nativeLayouts)) {
       imports.push(getNativeLayoutImport(name, tatName))
       const comp = getNativeLayoutComponent(name)
-      opens.push(`<${comp} tatSlug="${tatName}">`)
+      opens.push(`<${comp}>`)
       closes.unshift(`</${comp}>`)
     }
   }
@@ -1222,7 +1272,7 @@ import React from 'react'
 import { View, Text, ScrollView } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 ${layoutImport}
 
 export function ${wrapperName}() {
@@ -1230,7 +1280,7 @@ export function ${wrapperName}() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       ${layoutOpen}
       <ScrollView className="flex-1">
         <View className="flex-1 items-center justify-center p-6">
@@ -1306,6 +1356,7 @@ const allSources = [
 
   const extraLines = [
     ...nativeLayoutImports,
+    `import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'`,
     animImportLine,
     styleImportLine,
     componentImportLines,
@@ -1342,7 +1393,7 @@ const allSources = [
   const expoRouterNamed = ['useRouter']
 
   // expo-status-bar: always inject StatusBar
-  const expoStatusBarNamed = ['StatusBar']
+  const expoStatusBarNamed: string[] = []
 
   // react-native-safe-area-context: always inject SafeAreaView
   const safeAreaNamed = ['SafeAreaView']
@@ -1367,6 +1418,10 @@ const allSources = [
     'expo-status-bar':                 expoStatusBarNamed,
     'react-native-safe-area-context':  safeAreaNamed,
     '../../../arkzen/core/stores/authStore': authStoreNamed,
+  }
+  const declaresIcon = /^(?:export\s+)?(?:const|function|class)\s+Icon\b/m.test(pageStrippedForRefs)
+  if (!declaresIcon && findReferencedNames(pageStrippedForRefs, new Set(['Icon'])).length > 0) {
+    engineNamed['../../../arkzen/core/components/Icon'] = ['Icon']
   }
   for (const [rawMod, names] of namedImportsByModule) {
     const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
@@ -1429,7 +1484,7 @@ export function ${wrapperName}() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       ${layoutOpen}
       <ScrollView
         className="flex-1"
@@ -1588,6 +1643,18 @@ function writeIfChanged(filePath: string, content: string): void {
   fs.writeFileSync(filePath, content, 'utf-8')
 }
 
+function getNativeErrorComponent(source: string, preferredName: string): string {
+  const declarations = [...source.matchAll(
+    /^(?:export\s+)?(?:const|function)\s+([A-Z][A-Za-z0-9_$]*)\b/gm,
+  )]
+    .map(match => match[1])
+    .filter(name => !/^[A-Z0-9_]+$/.test(name))
+
+  return declarations.includes(preferredName)
+    ? preferredName
+    : declarations[declarations.length - 1] ?? preferredName
+}
+
 // ─── Not-found file generator (+not-found.tsx) ────────────────────────────────
 
 function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHandler): string {
@@ -1615,6 +1682,7 @@ function generateNotFoundFile(tatemono: ParsedTatemono, handler: ArkzenErrorHand
   const handlerCode = strippedSources[0]
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
+  const notFoundComponent = getNativeErrorComponent(handlerCode, 'NativeNotFoundScreen')
 
   return `// ============================================================
 // ARKZEN EXPO ROUTE — ${tatName}/+not-found
@@ -1625,7 +1693,7 @@ ${cb}
 ${componentImportLines}
 ${handlerCode}
 
-export default NativeNotFoundScreen
+export default ${notFoundComponent}
 `
 }
 
@@ -1655,6 +1723,8 @@ function generateErrorBoundaryFile(tatemono: ParsedTatemono, handler: ArkzenErro
   const handlerCode = strippedSources[0]
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
+  const serverErrorComponent = getNativeErrorComponent(handlerCode, 'NativeServerErrorScreen')
+  const resetProp = /\(\s*\{[^}]*\breset\b/.test(handlerCode) ? ' reset={this.reset}' : ''
 
   return `// ============================================================
 // ARKZEN EXPO SCREEN — ${tatName}/error-boundary
@@ -1682,7 +1752,7 @@ export class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      return <NativeServerErrorScreen reset={this.reset} />
+      return <${serverErrorComponent}${resetProp} />
     }
     return this.props.children
   }
@@ -1706,14 +1776,23 @@ function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
     ? '@arkzen:native:animation:expo'
     : '@arkzen:native:animation:rn (legacy fallback)'
 
-  const { strippedSources } = resolveImports([animBlock.raw])
+  const reanimatedExports = new Set([
+    'Easing', 'cancelAnimation', 'interpolate', 'interpolateColor',
+    'runOnJS', 'runOnUI', 'useAnimatedProps', 'useAnimatedReaction',
+    'useAnimatedStyle', 'useSharedValue', 'withDelay', 'withRepeat',
+    'withSequence', 'withSpring', 'withTiming',
+  ])
+  const reactHooks = findReferencedNames(animBlock.raw, REACT_HOOKS)
+  const reanimatedImports = findReferencedNames(animBlock.raw, reanimatedExports)
+  const { strippedSources, canonicalBlock } = resolveImports([animBlock.raw], {
+    reactHooks,
+    engineNamed: { 'react-native-reanimated': reanimatedImports },
+  })
   const clean = strippedSources[0]
     .replace(/\*\/\s*$/, '')
     .trim()
 
   if (!clean) return null
-
-  const { canonicalBlock } = resolveImports([animBlock.raw])
 
   return `// ============================================================
 // ARKZEN GENERATED NATIVE ANIMATIONS — ${tatemono.meta.name}

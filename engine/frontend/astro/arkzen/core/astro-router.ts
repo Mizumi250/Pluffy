@@ -49,6 +49,14 @@ function toCamelCase(str: string): string {
   return pascal.charAt(0).toLowerCase() + pascal.slice(1)
 }
 
+function getAnimationFunctionName(tatemono: ParsedTatemono): string | null {
+  if (!tatemono.animation) return null
+  const name = `${toCamelCase(tatemono.meta.name)}Animations`
+  return new RegExp(`\\b(?:export\\s+)?const\\s+${name}\\b`).test(tatemono.animation.raw)
+    ? name
+    : null
+}
+
 function ensureDir(dir: string): void {
   fs.mkdirSync(dir, { recursive: true })
 }
@@ -65,7 +73,7 @@ function stripNextImports(raw: string): string {
 
 function stripReactRouterImports(raw: string): string {
   return raw
-    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router-dom['"][ \t]*;?[ \t]*\r?\n?/gm, '')
+    .replace(/^[ \t]*import\s+\{[^}]*\}\s+from\s+['"]react-router(?:-dom)?['"][ \t]*;?[ \t]*\r?\n?/gm, '')
 }
 
 function normalizeRouterCalls(raw: string): string {
@@ -113,6 +121,7 @@ function normalizeForAstro(raw: string): string {
         .replace(/\busePathname\(\)/g, 'useArkzenPathname()')
         .replace(/\buseRouter\b/g, 'useArkzenRouter')
         .replace(/\buseNavigate\b/g, 'useArkzenRouter')
+        .replace(/(<Link\b[^>]*?)\bto=/g, '$1href=')
         .replace(/process\.env\.NEXT_PUBLIC_(\w+)/g, 'import.meta.env.PUBLIC_$1')
       // Astro uses PUBLIC_ prefix instead of Vite's VITE_
     )
@@ -181,9 +190,9 @@ function resolveImports(
     forceReact?: boolean
   } = {}
 ): ResolvedImports {
-  const importMap = new Map<string, { defaultImport?: string; named: Set<string> }>()
+  const importMap = new Map<string, { defaultImport?: string; named: Set<string>; typeNamed: Set<string> }>()
   const getEntry = (mod: string) => {
-    if (!importMap.has(mod)) importMap.set(mod, { named: new Set() })
+    if (!importMap.has(mod)) importMap.set(mod, { named: new Set(), typeNamed: new Set() })
     return importMap.get(mod)!
   }
 
@@ -194,6 +203,7 @@ function resolveImports(
   ;(engineRequired.framerNamed ?? ['motion']).forEach(n => framerEntry.named.add(n))
 
   const defaultImportRe   = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
+  const namedTypeImportRe = /^import\s+type\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
   const namedImportRe     = /^import\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
   const mixedImportRe     = /^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/
   const namespaceImportRe = /^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from\s+['"]([^'"]+)['"]\s*;?/
@@ -201,13 +211,24 @@ function resolveImports(
 
   const sideEffects: string[] = []
 
-  for (const source of sources) {
+  const importSources = engineRequired.extra
+    ? [...sources, engineRequired.extra]
+    : sources
+
+  for (const source of importSources) {
     const flattened = flattenMultilineImports(source)
     for (const rawLine of flattened.split('\n')) {
       const line = rawLine.trim()
       if (!line.startsWith('import ')) continue
 
       let m: RegExpMatchArray | null
+
+      m = line.match(namedTypeImportRe)
+      if (m) {
+        const [, namedStr, mod] = m
+        namedStr.split(',').map(s => s.trim()).filter(Boolean).forEach(n => getEntry(mod).typeNamed.add(n))
+        continue
+      }
 
       m = line.match(mixedImportRe)
       if (m) {
@@ -280,7 +301,7 @@ function resolveImports(
     .sort()
 
   for (const mod of otherModules) {
-    const { defaultImport, named } = importMap.get(mod)!
+    const { defaultImport, named, typeNamed } = importMap.get(mod)!
     const namedArr = [...named].sort()
     if (defaultImport?.startsWith('* as ')) {
       lines.push(`import ${defaultImport} from '${mod}'`)
@@ -291,10 +312,13 @@ function resolveImports(
     } else if (namedArr.length > 0) {
       lines.push(`import { ${namedArr.join(', ')} } from '${mod}'`)
     }
+    const typeNamedArr = [...typeNamed].sort()
+    if (typeNamedArr.length > 0) {
+      lines.push(`import type { ${typeNamedArr.join(', ')} } from '${mod}'`)
+    }
   }
 
   sideEffects.forEach(s => lines.push(s))
-  if (engineRequired.extra) lines.push(engineRequired.extra)
 
   const canonicalBlock = lines.filter(Boolean).join('\n')
 
@@ -819,8 +843,8 @@ function generateIslandFile(
     }
   }
 
-  const animImportLine = animationFnName
-    ? `import { ${animationFnName}, pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
+  const animImportLine = tatemono.animation
+    ? `import { ${animationFnName ? `${animationFnName}, ` : ''}pageVariants } from '@/arkzen/generated/${tatemono.meta.name}.animations'`
     : ''
 
   const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildLayoutJSX(page, tatemono)
@@ -838,6 +862,12 @@ function generateIslandFile(
   const customHooks         = extractCustomHookNames(tatemono)
   const sharedTypes         = extractSharedTypeNames(tatemono)
   const utilityFunctions    = extractUtilityFunctionNames(tatemono)
+  const sharedDeclarations  = new Set([
+    ...sharedConstants,
+    ...customHooks,
+    ...sharedTypes,
+    ...utilityFunctions,
+  ])
 
   // resolvedUtilityFunctions: only names that have an actual top-level declaration
   // chunk — mirrors the filtering in generateIndividualComponentFiles(). Without
@@ -858,6 +888,7 @@ function generateIslandFile(
   )
 
   const componentImportLines = [...extractedComponents]
+    .filter(name => !sharedDeclarations.has(name))
     .filter(name => utilDeclarationNames.has(name))
     .filter(name => findReferencedNames(pageSource, new Set([name])).length > 0)
     .sort()
@@ -909,10 +940,10 @@ function generateIslandFile(
         if (/from\s+['"](react|framer-motion)['"]/.test(line)) continue
 
         const idents: string[] = []
-        let m = line.match(/^import\s+([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from/)
+        let m = line.match(/^import\s+(?:type\s+)?([A-Za-z_$][A-Za-z0-9_$]*)\s*,\s*\{([^}]*)\}\s+from/)
         if (m) {
           idents.push(m[1], ...m[2].split(',').map((s: string) => s.trim()).filter(Boolean))
-        } else if ((m = line.match(/^import\s+\{([^}]*)\}\s+from/))) {
+        } else if ((m = line.match(/^import\s+(?:type\s+)?\{([^}]*)\}\s+from/))) {
           idents.push(...m[1].split(',').map((s: string) => s.trim()).filter(Boolean))
         } else if ((m = line.match(/^import\s+\*\s+as\s+([A-Za-z_$][A-Za-z0-9_$]*)\s+from/))) {
           idents.push(m[1])
@@ -960,6 +991,7 @@ function generateIslandFile(
   )
 
   const strippedPageCode = strippedSources[0]
+    .replace(/^\s*export\s+default\s+[A-Za-z_$][\w$]*\s*;?\s*$/gm, '')
     .replace(
       /useEffect\(\(\)\s*=>\s*\{\s*\n?\s*return\s*\(\)\s*=>\s*\{\s*isMounted\.current\s*=\s*false\s*\}\s*\n?\s*\},\s*\[\]\)/g,
       `useEffect(() => {\n    isMounted.current = true\n    return () => { isMounted.current = false }\n  }, [])`
@@ -991,7 +1023,7 @@ const ArkzenIsland_${toPascalCase(tatemono.meta.name)}_${toPascalCase(page.name)
     ${layoutOpen}
       <motion.div
         ref={pageRef}
-        variants={${animationFnName ? 'pageVariants' : '{}'}}
+        variants={${tatemono.animation ? 'pageVariants' : '{}'}}
         initial="initial"
         animate="animate"
         exit="exit"
@@ -1249,8 +1281,9 @@ function generateNotFoundPage(tatemono: ParsedTatemono, handler: ArkzenErrorHand
   const islandContent = `// ARKZEN GENERATED 404 ISLAND — ${tatemono.meta.name}
 // DO NOT EDIT DIRECTLY.
 
-import React from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'
+${raw.includes('ErrorScreen')
+    ? `import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'`
+    : ''}
 ${adapterImports.join('\n')}
 
 ${raw}
@@ -1301,7 +1334,9 @@ function generateErrorBoundaryPage(tatemono: ParsedTatemono, handler: ArkzenErro
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'
-import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'
+${raw.includes('ErrorScreen')
+    ? `import { ErrorScreen } from '@/arkzen/generated/components/${tatemono.meta.name}/ErrorScreen'`
+    : ''}
 ${adapterImports.join('\n')}
 
 ${raw}
@@ -1481,9 +1516,7 @@ function extractComponentName(pageName: string, raw: string): string {
 const _allRoutes: AstroRoute[] = []
 
 export function registerAstroPages(tatemono: ParsedTatemono): void {
-  const animFnName = tatemono.animation
-    ? toCamelCase(tatemono.meta.name) + 'Animations'
-    : null
+  const animFnName = getAnimationFunctionName(tatemono)
 
   console.log(`[Arkzen Astro Router] Registering ${tatemono.pages.length} page(s) for: ${tatemono.meta.name}`)
 

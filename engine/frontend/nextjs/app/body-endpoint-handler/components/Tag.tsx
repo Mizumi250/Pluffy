@@ -3,12 +3,13 @@
 // ARKZEN GENERATED COMPONENT — Tag
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:06.994Z
+// Generated: 2026-10-09T13:50:33.671Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import type { ProbeResult, Stats } from './types'
 
 export const Tag = ({ label, color }: { label: string; color: string }) => (
   <span style={{

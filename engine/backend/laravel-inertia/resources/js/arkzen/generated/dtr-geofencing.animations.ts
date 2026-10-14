@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — dtr-geofencing [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:19.226Z
+// Generated: 2026-10-13T17:05:20.409Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,7 +10,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const dtrGeofencingAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+export const dtrGeofencingAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.dtr-header',
       { opacity: 0, y: -18 },

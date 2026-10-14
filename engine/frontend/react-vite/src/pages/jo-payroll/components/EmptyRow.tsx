@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EmptyRow [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.855Z
+// Generated: 2026-10-13T14:10:32.961Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -18,6 +18,4 @@ export const EmptyRow = ({ message }: { message: string }) => (
     <p className="text-sm font-medium text-neutral-500">{message}</p>
     <p className="text-xs text-neutral-400 mt-1">Try adjusting your filters or add a new entry.</p>
   </div>
-)
-
-// Stat card — matches the "11 Courses completed / 4 in progress" chips from the reference UI
+);

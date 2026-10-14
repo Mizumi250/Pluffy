@@ -3,16 +3,16 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:12.508Z
+// Generated: 2026-10-09T13:50:36.215Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { FEATURES, LOCATIONS, MARQUEE_WORDS, MENU_ITEMS, NAV_LINKS, PROCESS_STEPS, STATS, TESTIMONIALS } from './components/constants'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Coffee, Menu, X, Sun, Moon, ArrowRight, Star, MapPin, Clock, Phone, Mail, Instagram, Facebook, ChevronDown, Leaf, Award, Heart, Zap, ArrowUpRight, Minus, Plus, Quote, Wifi, Utensils, Music, Camera, ExternalLink, Twitter, Youtube } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Award, Camera, Camera as Instagram, ChevronDown, CirclePlay as Youtube, Clock, Coffee, ExternalLink, Heart, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Send as Twitter, Star, Sun, UsersRound as Facebook, Utensils, Wifi, X, Zap } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -1707,7 +1707,7 @@ const ArkzenPage_HwCoffee_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

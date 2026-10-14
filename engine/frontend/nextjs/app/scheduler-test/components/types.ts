@@ -2,8 +2,15 @@
 // ARKZEN GENERATED TYPES — scheduler-test
 // Source: @arkzen:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:16.964Z
+// Generated: 2026-10-09T13:50:39.691Z
 // ============================================================
+
+import React, { useEffect, useRef } from 'react'
+import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 
 export interface CommandRun {
   id:           number

@@ -2,15 +2,15 @@
 // ARKZEN GENERATED PAGE — middleware-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.006Z
+// Generated: 2026-10-13T17:05:21.646Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
 import { ShieldCheck } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
@@ -175,7 +175,7 @@ function ArkzenPage_MiddlewareTest_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -190,7 +190,11 @@ function ArkzenPage_MiddlewareTest_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_MiddlewareTest_Index

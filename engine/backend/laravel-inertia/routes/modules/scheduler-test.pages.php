@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — scheduler-test [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.561Z
+// Generated: 2026-10-13T17:05:22.058Z
 // Pages: dashboard
 // ============================================================
 

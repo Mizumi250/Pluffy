@@ -36,6 +36,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
+import * as ts   from 'typescript'
 import type { ParsedTatemono, ArkzenPage, ArkzenLayout, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
@@ -169,7 +170,8 @@ function resolveImports(
 
   const sideEffects: string[] = []
 
-  for (const source of sources) {
+  const importSources = engineRequired.extra ? [...sources, engineRequired.extra] : sources
+  for (const source of importSources) {
     const flattened = flattenMultilineImports(source)
     for (const rawLine of flattened.split('\n')) {
       let line = rawLine.trim()
@@ -286,11 +288,6 @@ function resolveImports(
 
   // 4. Side-effects last
   sideEffects.forEach(s => lines.push(s))
-
-  // 5. Verbatim extra (layout import, animation import, inertia import, etc.)
-  if (engineRequired.extra) {
-    lines.push(engineRequired.extra)
-  }
 
   const canonicalBlock = lines.filter(Boolean).join('\n')
 
@@ -535,23 +532,35 @@ function stripTemplateLiterals(src: string): string {
 
 // ─── Component / declaration name extractors (ported from vite-router.ts v2.1) ─
 
+function getTopLevelDeclarations(tatemono: ParsedTatemono): { name: string; kind: 'variable' | 'function' | 'type' }[] {
+  const declarations: { name: string; kind: 'variable' | 'function' | 'type' }[] = []
+
+  for (const component of tatemono.components) {
+    const source = ts.createSourceFile('components.tsx', component.raw, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+    for (const statement of source.statements) {
+      if (ts.isVariableStatement(statement)) {
+        for (const declaration of statement.declarationList.declarations) {
+          if (ts.isIdentifier(declaration.name)) declarations.push({ name: declaration.name.text, kind: 'variable' })
+        }
+      } else if (ts.isFunctionDeclaration(statement) && statement.name) {
+        declarations.push({ name: statement.name.text, kind: 'function' })
+      } else if ((ts.isTypeAliasDeclaration(statement) || ts.isInterfaceDeclaration(statement)) && statement.name) {
+        declarations.push({ name: statement.name.text, kind: 'type' })
+      }
+    }
+  }
+  return declarations
+}
+
 /**
  * Extracts PascalCase component names from @arkzen:components blocks.
  * Skips ALL_CAPS constants and anything inside template literals.
  */
 function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of constMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
-    }
-    const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
-    for (const match of fnMatches) {
-      const name = match.match(/function\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (/^[A-Z][A-Za-z0-9_$]*$/.test(declaration.name) && !/^[A-Z0-9_]+$/.test(declaration.name) && declaration.kind !== 'type') {
+      names.add(declaration.name)
     }
   }
   return names
@@ -625,29 +634,9 @@ function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  const componentNames = extractComponentNames(tatemono)
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    let src = stripped
-    for (const compName of componentNames) {
-      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      src = src.replace(
-        new RegExp(
-          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
-          'g'
-        ),
-        ''
-      )
-    }
-    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of constMatches) {
-      const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^use[A-Z]/.test(name)) names.add(name)
-    }
-    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
-    for (const match of fnMatches) {
-      const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (declaration.kind !== 'type' && /^[a-z][A-Za-z0-9_$]*$/.test(declaration.name) && !/^use[A-Z]/.test(declaration.name)) {
+      names.add(declaration.name)
     }
   }
   return names
@@ -1284,6 +1273,9 @@ function generateInertiaPageFile(
   const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildLayoutJSX(page, tatemono)
 
   const animFnName = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
+  const hasAnimationFunction = !!animFnName && !!tatemono.animation?.raw.match(
+    new RegExp(`(?:export\\s+)?(?:const|function)\\s+${animFnName}\\b`)
+  )
 
   // Page sources ONLY — no component blocks merged in
   const allSources = [normalizeForInertia(page.raw.trim())]
@@ -1300,7 +1292,7 @@ function generateInertiaPageFile(
   }
 
   const animImportLine = animFnName
-    ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
+    ? `import { ${hasAnimationFunction ? `${animFnName}, ` : ''}pageVariants } from '@/arkzen/generated/${tatName}.animations'`
     : ''
 
   // Inertia-specific imports always injected by engine
@@ -1432,7 +1424,7 @@ import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/route
 
   return `// ============================================================
 // ARKZEN GENERATED PAGE — ${tatName}/${page.name} [React+Inertia]
-// Layout: ${layout} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
+// Layout: ${decl.layout ?? decl.guard ?? 'none'} | Auth: ${isAuthLayout} | Guest-only: ${isGuestOnly}
 // DO NOT EDIT — edit tatemono instead
 // Generated: ${new Date().toISOString()}
 // ============================================================
@@ -1457,7 +1449,7 @@ function ${wrapperName}() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    ${animFnName ? `const cleanup = ${animFnName}(pageRef)\n    return cleanup` : '// No animations'}
+    ${hasAnimationFunction ? `const cleanup = ${animFnName}(pageRef)\n    return cleanup` : '// No animation initializer'}
   }, [])
 
   const content = (

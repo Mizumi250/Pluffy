@@ -10,13 +10,11 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Navbar styles */
 .navbar {
   background: white;
   border-bottom: 1px solid #e5e7eb;
@@ -33,15 +31,8 @@ body {
   display: inline-block;
 }
 
-.navbar-link:hover {
-  color: #111827;
-  background: #f3f4f6;
-}
-
-.navbar-link-active {
-  color: var(--color-primary);
-  background: #dbeafe;
-}
+.navbar-link:hover        { color: #111827; background: #f3f4f6; }
+.navbar-link-active       { color: var(--color-primary); background: #dbeafe; }
 
 .navbar-mobile {
   display: flex;
@@ -61,15 +52,8 @@ body {
   display: block;
 }
 
-.navbar-mobile-link:hover {
-  color: #111827;
-  background: #f3f4f6;
-}
-
-.navbar-mobile-link-active {
-  color: var(--color-primary);
-  background: #dbeafe;
-}
+.navbar-mobile-link:hover       { color: #111827; background: #f3f4f6; }
+.navbar-mobile-link-active      { color: var(--color-primary); background: #dbeafe; }
 
 .arkzen-btn {
   padding: calc(var(--spacing-unit) * 3) calc(var(--spacing-unit) * 6);
@@ -82,15 +66,8 @@ body {
   cursor: pointer;
 }
 
-.arkzen-btn:hover {
-  background: var(--color-secondary);
-  box-shadow: var(--shadow-lg);
-  transform: translateY(-2px);
-}
-
-.arkzen-btn:active {
-  transform: translateY(0);
-}
+.arkzen-btn:hover  { background: var(--color-secondary); box-shadow: var(--shadow-lg); transform: translateY(-2px); }
+.arkzen-btn:active { transform: translateY(0); }
 
 .arkzen-input {
   padding: calc(var(--spacing-unit) * 2.5) calc(var(--spacing-unit) * 3);

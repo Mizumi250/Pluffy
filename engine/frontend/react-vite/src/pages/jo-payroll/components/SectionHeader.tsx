@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SectionHeader [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.857Z
+// Generated: 2026-10-13T14:10:32.964Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { create } from 'zustand'
 
-// Page section header — matching the reference UI style
 export const SectionHeader = ({
   title, subtitle, action
 }: {
@@ -25,6 +24,4 @@ export const SectionHeader = ({
     </div>
     {action}
   </div>
-)
-
-// Tab pills — matching the "All Courses / The Newest / Top Rated" row from reference
+);

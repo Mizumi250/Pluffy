@@ -2,13 +2,12 @@
 // ARKZEN GENERATED SCREEN — shan-shan/index
 // ============================================================
 
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
-import { Image, Linking, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { Animated, Dimensions, Image, Linking, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { GuestLayout } from '@/layouts/GuestLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { shanShanNativeAnimations } from '../../arkzen/generated/shan-shan.native-animations'
 import { s } from '../../arkzen/generated/shan-shan.native-styles'
 import { BurgerNav } from './components/BurgerNav'
@@ -22,12 +21,12 @@ import { StaggerReveal } from './components/StaggerReveal'
 import { CHAPTERS, PERSONAL_INFO, SKILLS, SKILLS_MARQUEE } from './components/constants'
 
 // User screen (from @arkzen:native:page:index)
-const IndexScreen = () => {
+/* @arkzen:resolved:import expo */
+const IndexScreenExpo = () => {
   const scrollRef = useRef<ScrollView>(null)
   const [loaded,  setLoaded]  = useState(false)
   const [marqueeWidth, setMarqueeWidth] = useState(0)
 
-  // Section ref Y positions for nav scroll
   const sectionY = useRef<Record<string, number>>({
     work: 0, skills: 0, about: 0, contact: 0,
   }).current
@@ -45,10 +44,8 @@ const IndexScreen = () => {
     <View style={{ flex: 1 }}>
       <StatusBar barStyle="light-content" backgroundColor="#CC0000" />
 
-      {/* Loader */}
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
-      {/* Burger (absolute over everything) */}
       <BurgerNav onNavigate={handleNavigate} darkBg={false} />
 
       <ScrollView
@@ -59,13 +56,12 @@ const IndexScreen = () => {
         scrollEventThrottle={16}
       >
 
-        {/* ── HERO ── */}
+        {/* HERO */}
         <View style={s.heroWrap}>
           <FadeIn delay={300}>
             <Text style={s.heroEyebrow}>DESIGNER · DOCUMENT SPECIALIST · RESEARCHER</Text>
           </FadeIn>
 
-          {/* Shan photo half */}
           <FadeIn delay={200} from="none">
             <Image
               source={require('../../../assets/tatemonos/shan-shan/images/shan5.jpg')}
@@ -89,11 +85,10 @@ const IndexScreen = () => {
             </View>
           </FadeIn>
 
-          {/* Watermark */}
-          <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
+          <Text style={s.heroWatermark} aria-hidden={true}>SHAN</Text>
         </View>
 
-        {/* ── INTRO ── */}
+        {/* INTRO */}
         <View style={s.introWrap}>
           <FadeIn>
             <Text style={s.introPre}>[Intro]</Text>
@@ -113,7 +108,7 @@ const IndexScreen = () => {
           </FadeIn>
         </View>
 
-        {/* ── SKILLS MARQUEE STRIP ── */}
+        {/* SKILLS MARQUEE */}
         <View
           style={s.marqueeWrap}
           onLayout={(e) => setMarqueeWidth(e.nativeEvent.layout.width)}
@@ -130,7 +125,7 @@ const IndexScreen = () => {
           </ScrollView>
         </View>
 
-        {/* ── CHAPTERS SECTION ── */}
+        {/* CHAPTERS */}
         <View
           onLayout={(e) => { sectionY['work'] = e.nativeEvent.layout.y }}
         >
@@ -153,7 +148,7 @@ const IndexScreen = () => {
           ))}
         </View>
 
-        {/* ── SKILLS ── */}
+        {/* SKILLS */}
         <View
           style={s.skillsSection}
           onLayout={(e) => { sectionY['skills'] = e.nativeEvent.layout.y }}
@@ -175,7 +170,7 @@ const IndexScreen = () => {
           </View>
         </View>
 
-        {/* ── ABOUT ── */}
+        {/* ABOUT */}
         <View
           style={s.aboutWrap}
           onLayout={(e) => { sectionY['about'] = e.nativeEvent.layout.y }}
@@ -196,7 +191,6 @@ const IndexScreen = () => {
               <Text style={s.aboutName}>Shan{'\n'}Sabal{'\n'}Cezar</Text>
             </FadeIn>
 
-            {/* Info rows */}
             {PERSONAL_INFO.map((row, i) => (
               <FadeIn key={row.label} delay={i * 60}>
                 <View style={s.aboutInfoRow}>
@@ -207,7 +201,6 @@ const IndexScreen = () => {
               </FadeIn>
             ))}
 
-            {/* About CTA */}
             <View style={{ marginTop: 36, gap: 12 }}>
               <FadeIn delay={360}>
                 <TouchableOpacity
@@ -231,7 +224,7 @@ const IndexScreen = () => {
           </View>
         </View>
 
-        {/* ── CONTACT ── */}
+        {/* CONTACT */}
         <View
           style={s.contactWrap}
           onLayout={(e) => { sectionY['contact'] = e.nativeEvent.layout.y }}
@@ -270,7 +263,7 @@ const IndexScreen = () => {
           <Text style={s.contactWatermark}>SHAN</Text>
         </View>
 
-        {/* ── FOOTER ── */}
+        {/* FOOTER */}
         <View style={s.footerWrap}>
           <Text style={s.footerLogo}>SHAN.</Text>
           <View style={s.dividerDark} />
@@ -307,17 +300,17 @@ export function ArkzenScreen_ShanShan_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <GuestLayout tatSlug="shan-shan" dashboardRoute="/shan-shan/dashboard">
+      <ArkzenStatusBar style="dark" />
+      
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <IndexScreen />
+        <IndexScreenExpo />
       </ScrollView>
-      </GuestLayout>
+      
     </SafeAreaView>
   )
 }

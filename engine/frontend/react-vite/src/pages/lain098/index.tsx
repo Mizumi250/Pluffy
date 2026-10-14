@@ -2,15 +2,11 @@
 // ARKZEN GENERATED PAGE — lain098/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.338Z
+// Generated: 2026-10-13T14:10:33.338Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { lain098Animations, pageVariants } from '@/arkzen/generated/lain098.animations'
-import { useNavigate } from 'react-router'
-import './styles/global.css'
 import { AboutSection } from './components/AboutSection'
 import { ArtCarousel } from './components/ArtCarousel'
 import { CommissionsSection } from './components/CommissionsSection'
@@ -29,9 +25,12 @@ import { WorkChapter } from './components/WorkChapter'
 import { WorksSection } from './components/WorksSection'
 import { ZenSection } from './components/ZenSection'
 import { CAROUSEL_ITEMS } from './components/constants'
-import { ctx, items, ref } from './components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { lain098Animations, pageVariants } from '@/arkzen/generated/lain098.animations'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { useNavigate } from 'react-router'
+import './styles/global.css'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -141,8 +140,7 @@ const ArkzenPage_Lain098_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = lain098Animations(pageRef)
-    return cleanup
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

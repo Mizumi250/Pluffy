@@ -11,10 +11,11 @@
 // Validates WITHOUT building. Safe to run at any time.
 // ============================================================
 
-const path = require('path')
-const fs   = require('fs')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT_DIR    = path.resolve(__dirname, '..', '..')
+const ROOT_DIR    = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 const tatemononName = process.argv[2]
@@ -32,23 +33,13 @@ if (!fs.existsSync(filePath)) {
   process.exit(1)
 }
 
-// Dynamically require the compiled validator
-// (ts-node or compiled JS)
 try {
-  // Try ts-node first (dev environment)
-  require('ts-node').register({ transpileOnly: true })
-  const { validateTatemono } = require('./arkzen/core/validator')
+  const { tsImport } = await import('tsx/esm/api')
+  const { validateTatemono } = await tsImport('./arkzen/core/validator.ts', import.meta.url)
   const result = validateTatemono(filePath)
   process.exit(result.valid ? 0 : 1)
 } catch (e) {
-  // Try compiled JS
-  try {
-    const { validateTatemono } = require('./dist/arkzen/core/validator')
-    const result = validateTatemono(filePath)
-    process.exit(result.valid ? 0 : 1)
-  } catch (e2) {
-    console.error('\n  ✗ Could not load validator. Make sure ts-node is installed:')
-    console.error('    npm install -D ts-node\n')
-    process.exit(1)
-  }
+  console.error('\n  ✗ Could not load the Arkzen validator:')
+  console.error(`    ${e instanceof Error ? e.message : String(e)}\n`)
+  process.exit(1)
 }

@@ -2,11 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NativeLayerBadge [Expo]
 // Source: @arkzen:native:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.233Z
+// Generated: 2026-10-09T14:43:20.100Z
 // ============================================================
 
 import React from 'react'
-import { Text, View } from 'react-native'
+import { usePathname, useRouter } from 'expo-router'
+import { StatusBar } from 'expo-status-bar'
+import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { NATIVE_COLORS } from './constants'
 
 export const NativeLayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (

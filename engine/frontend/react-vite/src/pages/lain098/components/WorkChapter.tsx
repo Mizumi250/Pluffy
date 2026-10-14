@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — WorkChapter [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.306Z
+// Generated: 2026-10-13T14:10:33.274Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,9 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { WORKS } from './constants'
-import { isEven, ref, y } from './utils'
-
-// ─── WORK CHAPTER ─────────────────────────────────────────────
 
 export const WorkChapter = ({ work, index }: { work: typeof WORKS[0], index: number }) => {
   const ref = useRef<HTMLDivElement>(null)
@@ -51,6 +48,4 @@ export const WorkChapter = ({ work, index }: { work: typeof WORKS[0], index: num
       </div>
     </div>
   )
-}
-
-// ─── WORKS SECTION ────────────────────────────────────────────
+};

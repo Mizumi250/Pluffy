@@ -1,20 +1,21 @@
 #!/usr/bin/env node
 
 // ============================================================
-// ARKZEN ENGINE — SETUP SCRIPT
-// Run this ONCE to set up the Arkzen Engine on your machine.
+// PLUFF — SETUP SCRIPT
+// Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
 // ============================================================
 
-const { execSync } = require('child_process')
-const fs   = require('fs')
-const path = require('path')
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 // ─────────────────────────────────────────────
 // PATHS
 // ─────────────────────────────────────────────
 
-const ROOT_DIR      = __dirname
+const ROOT_DIR      = path.dirname(fileURLToPath(import.meta.url))
 const ENGINE_DIR    = path.join(ROOT_DIR, 'engine')
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend')
 const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend')
@@ -35,6 +36,7 @@ if (fs.existsSync(arkzenJsonPath)) {
 // Mobile stacks — no backend needed
 const MOBILE_STACKS = ['expo', 'react-native', 'lynx']
 const isMobile = MOBILE_STACKS.includes(activeStack)
+const isTauri = activeStack === 'tauri'
 
 // Stack → backend mapping
 const ACTIVE_BACKEND_DIR = activeStack === 'react-inertia'
@@ -68,7 +70,8 @@ function commandExists(cmd) {
     return true
   } catch {
     try {
-      execSync(`command -v ${cmd}`, { stdio: 'ignore', shell: true })
+      const finder = process.platform === 'win32' ? 'where' : 'command -v'
+      execSync(`${finder} ${cmd}`, { stdio: 'ignore', shell: true })
       return true
     } catch {
       return false
@@ -82,7 +85,7 @@ function commandExists(cmd) {
 
 function checkRequirements() {
   divider()
-  console.log('\n  ARKZEN ENGINE — SETUP\n')
+  console.log('\n  PLUFF — SETUP\n')
   console.log(`  Active Stack: ${activeStack}`)
   divider()
 
@@ -97,6 +100,10 @@ function checkRequirements() {
   if (!isMobile) {
     checks.push({ cmd: 'php',      name: 'PHP' })
     checks.push({ cmd: 'composer', name: 'Composer' })
+  }
+  if (isTauri) {
+    checks.push({ cmd: 'rustc', name: 'Rust compiler' })
+    checks.push({ cmd: 'cargo', name: 'Cargo' })
   }
 
   let allGood = true
@@ -121,7 +128,7 @@ function checkRequirements() {
 
 function ensureStructure() {
   divider()
-  log('Ensuring Arkzen folder structure...')
+  log('Ensuring Pluff folder structure...')
 
   const dirs = [ENGINE_DIR, FRONTEND_DIR, BACKEND_DIR, TATEMONOS_DIR]
   for (const dir of dirs) {
@@ -206,6 +213,24 @@ function setupFrontend() {
       warn('laravel-inertia/package.json not found — skipping')
     }
   }
+}
+
+function setupTauriRenderer() {
+  if (!isTauri) return
+
+  const rendererDir = path.join(FRONTEND_DIR, 'react-vite')
+  const rendererPkg = path.join(rendererDir, 'package.json')
+  if (!fs.existsSync(rendererPkg)) {
+    error('React+Vite renderer not found at engine/frontend/react-vite')
+    process.exit(1)
+  }
+
+  log('Installing React+Vite renderer packages for Tauri...')
+  if (!run('npm install --no-fund --no-audit --legacy-peer-deps', rendererDir)) {
+    error('React+Vite renderer npm install failed. Try manually: cd engine/frontend/react-vite && npm install --legacy-peer-deps')
+    process.exit(1)
+  }
+  success('React+Vite renderer packages installed for Tauri')
 }
 
 // ─────────────────────────────────────────────
@@ -312,7 +337,7 @@ function setupBackend() {
     .replace(/DB_CONNECTION=.*/,  'DB_CONNECTION=sqlite')
     .replace(/DB_HOST=.*/,        '# DB_HOST=')
     .replace(/DB_PORT=.*/,        '# DB_PORT=')
-    .replace(/DB_DATABASE=.*/,    `DB_DATABASE=${dbPath}`)
+    .replace(/DB_DATABASE=.*/,    `DB_DATABASE=${dbPath.replace(/\\/g, '/')}`)
     .replace(/DB_USERNAME=.*/,    '# DB_USERNAME=')
     .replace(/DB_PASSWORD=.*/,    '# DB_PASSWORD=')
 
@@ -437,6 +462,7 @@ function initRegistry() {
         'react-inertia':  'engine/frontend/react-inertia',
         'astro':          'engine/frontend/astro',
         'tanstack-start': 'engine/frontend/tanstack-start',
+        'tauri':          'engine/frontend/tauri',
         'expo':           'engine/frontend/expo',
         'react-native':   'engine/frontend/react-native',
       },
@@ -455,7 +481,7 @@ function initRegistry() {
 function printDone() {
   divider()
   console.log(`
-  ✓ ARKZEN ENGINE SETUP COMPLETE
+  ✓ PLUFF SETUP COMPLETE
 
   Active Stack: ${activeStack}
 
@@ -465,6 +491,9 @@ function printDone() {
     engine/frontend/react-inertia/  ← Inertia builder/watcher
     engine/frontend/astro/          ← Astro
     engine/frontend/tanstack-start/ ← TanStack Start
+
+  Desktop:
+    engine/frontend/tauri/          ← Tauri desktop shell (React+Vite renderer)
 
   Mobile Stacks:
     engine/frontend/expo/           ← Expo (SDK 53, Expo Go)
@@ -494,6 +523,7 @@ checkRequirements()
 ensureStructure()
 initRegistry()
 setupFrontend()
+setupTauriRenderer()
 setupAppStack()
 if (!isMobile) setupBackend()
 printDone()

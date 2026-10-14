@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — ethan-pool [React+Vite]
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.047Z
+// Generated: 2026-10-13T14:10:32.065Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-// ─── DATA ─────────────────────────────────────────────────────────────────────
 
 export const NAV_LINKS = [
   { label: 'Rooms', href: '#rooms' },
@@ -18,7 +17,7 @@ export const NAV_LINKS = [
   { label: 'Rooftop Pool', href: '#rooftop' },
   { label: 'Gallery', href: '#gallery' },
   { label: 'Offers', href: '#offers' },
-]
+];
 
 export const ROOMS = [
   {
@@ -57,7 +56,7 @@ export const ROOMS = [
     name: 'Sunrise Pool Suite',
     img: 'https://images.unsplash.com/photo-1564501049412-61c2a3083791?q=80&w=900&auto=format&fit=crop',
   },
-]
+];
 
 export const AMENITIES = [
   {
@@ -72,7 +71,7 @@ export const AMENITIES = [
     label: 'Poolside Spa & Wellness',
     img: 'https://images.unsplash.com/photo-1540555700478-4be289fbecef?q=80&w=600&auto=format&fit=crop',
   },
-]
+];
 
 export const GALLERY_MEDIA = [
   'https://images.unsplash.com/photo-1600965962102-9d260a71890d?q=80&w=700&auto=format&fit=crop',
@@ -82,7 +81,7 @@ export const GALLERY_MEDIA = [
   'https://images.unsplash.com/photo-1540541338287-41700207dee6?q=80&w=700&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1564501049412-61c2a3083791?q=80&w=700&auto=format&fit=crop',
   'https://images.unsplash.com/photo-1611892440504-42a792e24d32?q=80&w=700&auto=format&fit=crop',
-]
+];
 
 export const BLOG_POSTS = [
   {
@@ -115,8 +114,6 @@ export const BLOG_POSTS = [
     img: 'https://images.unsplash.com/photo-1571896349842-33c89424de2d?q=80&w=700&auto=format&fit=crop',
     href: '#blog-5',
   },
-]
+];
 
-export const LOGOS = ['AQUA AWARDS', 'WELLNESS+', 'RESORT GUIDE', 'BLUE STAR', 'TRAVEL CIRCLE', 'SPA SELECT']
-
-// ─── HELPERS ──────────────────────────────────────────────────────────────────
+export const LOGOS = ['AQUA AWARDS', 'WELLNESS+', 'RESORT GUIDE', 'BLUE STAR', 'TRAVEL CIRCLE', 'SPA SELECT'];

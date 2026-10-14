@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:40.276Z
+// Generated: 2026-10-09T13:50:32.808Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
-import { containerVariants, fadeSlide, itemVariants, opacity, rotateIn, scale, scaleBounce, x, y } from './utils'
+import type { AnimLabState } from './types'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
@@ -27,31 +27,31 @@ export const FramerVariantsSection = () => {
       transition: { staggerChildren: 0.12, delayChildren: 0.1 }
     },
     exit: { opacity: 0, transition: { staggerChildren: 0.05, staggerDirection: -1 } }
-  }
+  } as const
 
   const itemVariants = {
     hidden: { opacity: 0, y: 24, scale: 0.9 },
     visible: { opacity: 1, y: 0, scale: 1, transition: { type: 'spring', stiffness: 300, damping: 24 } },
     exit: { opacity: 0, y: -16, scale: 0.9 }
-  }
+  } as const
 
   const fadeSlide = {
     initial: { opacity: 0, x: -40 },
     animate: { opacity: 1, x: 0 },
     exit: { opacity: 0, x: 40 },
-  }
+  } as const
 
   const scaleBounce = {
     initial: { scale: 0, opacity: 0 },
     animate: { scale: 1, opacity: 1, transition: { type: 'spring', stiffness: 400, damping: 20 } },
     exit: { scale: 0, opacity: 0 }
-  }
+  } as const
 
   const rotateIn = {
     initial: { rotate: -180, opacity: 0 },
     animate: { rotate: 0, opacity: 1, transition: { type: 'spring', stiffness: 200 } },
     exit: { rotate: 180, opacity: 0 }
-  }
+  } as const
 
   return (
     <div>

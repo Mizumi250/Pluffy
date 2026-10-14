@@ -2,13 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:10.053Z
+// Generated: 2026-10-09T13:52:30.119Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useToast } from '@/arkzen/core/components/Toast'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import type { ErrorDef } from './types'
+
 
 export const ERRORS: ErrorDef[] = [
   { code: 400, title: 'Bad Request',         message: 'The server could not understand your request. Check the data you sent and try again.',         color: 'text-yellow-700',  bg: 'bg-yellow-50',  border: 'border-yellow-100', btnColor: 'bg-yellow-700 hover:bg-yellow-800',  action: { label: 'Go back',      href: 'javascript:history.back()' } },

@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — notification-test/login (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:51.586Z
+// Generated: 2026-10-14T08:58:41.612Z
 import { useAuthStore } from '../../../arkzen/core/stores/authStore'
 
 /* @arkzen:native:page:layout:guest */

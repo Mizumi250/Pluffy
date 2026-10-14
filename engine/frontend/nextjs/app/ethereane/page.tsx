@@ -3,13 +3,14 @@
 // ARKZEN GENERATED PAGE — ethereane/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:11.563Z
+// Generated: 2026-10-09T13:50:35.791Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { EtheraneGame } from './components/EtheraneGame'
+import type { ThreeState } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -22,7 +23,7 @@ const ArkzenPage_Ethereane_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

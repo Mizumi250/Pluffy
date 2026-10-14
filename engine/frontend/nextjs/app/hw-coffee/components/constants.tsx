@@ -2,14 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — hw-coffee
 // Source: @arkzen:components (hw-coffee)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:12.437Z
+// Generated: 2026-10-09T13:50:36.140Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, Award, Camera, ChevronDown, Clock, Coffee, ExternalLink, Facebook, Heart, Instagram, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Star, Sun, Twitter, Utensils, Wifi, X, Youtube, Zap } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Award, Camera, Camera as Instagram, ChevronDown, CirclePlay as Youtube, Clock, Coffee, ExternalLink, Heart, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Send as Twitter, Star, Sun, UsersRound as Facebook, Utensils, Wifi, X, Zap } from 'lucide-react'
+
 
 // ─── REAL H&W DATA (Gingoog City) ─────────────────────────────────────────────
 

@@ -2,11 +2,12 @@
 // ARKZEN GENERATED SHARED CONSTANTS — asset-hub [React+Vite]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.425Z
+// Generated: 2026-10-13T14:10:30.442Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import type { AssetCategory, AssetItem } from './types'
 
 export const ASSET_REGISTRY: AssetItem[] = [
   // ── Drop files in tatemonos/asset-hub/assets/images/ ──
@@ -22,7 +23,7 @@ export const ASSET_REGISTRY: AssetItem[] = [
 
   // ── Drop files in tatemonos/asset-hub/assets/data/ ──
   { name: 'sample.json', path: '/tatemonos/asset-hub/assets/data/sample.json',   category: 'data',   ext: 'json' },
-]
+];
 
 export const CATEGORY_EMOJI: Record<AssetCategory, string> = {
   images: '🖼',
@@ -32,4 +33,4 @@ export const CATEGORY_EMOJI: Record<AssetCategory, string> = {
   video:  '🎬',
   audio:  '🎵',
   data:   '📄',
-}
+};

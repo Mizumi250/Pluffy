@@ -2,14 +2,14 @@
 // ARKZEN GENERATED PAGE — layout-test/guard-guest [React+Vite]
 // Layout: +guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.394Z
+// Generated: 2026-10-13T14:10:33.407Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { LayerBadge } from './components/LayerBadge'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { useNavigate } from 'react-router'
-import { LayerBadge } from './components/LayerBadge'
 
 // ── Page component from @arkzen:page:guard-guest ─────────────────────────────
 const GuardGuestPage = () => (
@@ -29,7 +29,7 @@ const ArkzenPage_LayoutTest_GuardGuest = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

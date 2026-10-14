@@ -2,13 +2,14 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — portfolio-test [Expo]
 // Source: @arkzen:native:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:00.090Z
+// Generated: 2026-10-09T14:43:20.686Z
 // ============================================================
 
 import React, { useState } from 'react'
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
+
 
 export const PROJECTS = [
   { id: 1, title: 'E-commerce',  description: 'Full-stack e-commerce',     image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel']   },

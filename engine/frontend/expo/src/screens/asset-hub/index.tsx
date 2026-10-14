@@ -5,9 +5,9 @@
 import React from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { Image, ScrollView, Text, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { AssetRow } from './components/AssetRow'
 import { CatBadge } from './components/CatBadge'
 import { GuideRow } from './components/GuideRow'
@@ -66,7 +66,7 @@ export function ArkzenScreen_AssetHub_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LayerBadge [React+Vite]
 // Source: @arkzen:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.386Z
+// Generated: 2026-10-13T14:10:33.381Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -21,4 +21,4 @@ export const LayerBadge: React.FC<{ layers: string[] }> = ({ layers }) => (
       </span>
     ))}
   </div>
-)
+);

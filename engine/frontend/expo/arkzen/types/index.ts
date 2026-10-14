@@ -307,16 +307,18 @@ export interface ArkzenMail {
 }
 
 export interface ArkzenConsole {
-  signature: string
-  description: string
+  signature?: string
+  description?: string
   schedule?: string
   [key: string]: unknown
 }
 
 export interface ArkzenSection {
+  name?: string
   raw: string
   start: number
   end: number
+  [key: string]: unknown
 }
 
 export type ArkzenPageLayout = 'guest' | 'auth' | string

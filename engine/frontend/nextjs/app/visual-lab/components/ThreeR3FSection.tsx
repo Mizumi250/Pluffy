@@ -3,18 +3,18 @@
 // ARKZEN GENERATED COMPONENT — ThreeR3FSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:17.950Z
+// Generated: 2026-10-09T13:50:41.181Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { ambient, animate, app, camera, canvas, canvasRef, geo, mat, mesh, point, point2, rafRef, render, renderer, scene, t, torus, torusGeo, torusMat } from './utils'
+import type { VisualLabState } from './types'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'
@@ -99,7 +99,6 @@ export const ThreeR3FSection = () => {
             <PackageBadge name="@react-three/drei" />
             <PackageBadge name="@react-three/postprocessing" />
             <PackageBadge name="@react-three/uikit" />
-            <PackageBadge name="@react-three/flex" />
             <PackageBadge name="maath" />
             <p className="vl-placeholder-note">Import + Canvas verified — use in your page JSX directly</p>
           </div>

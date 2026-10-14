@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:48.518Z
+// Generated: 2026-10-09T13:50:39.430Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,11 +12,9 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
 import { fmtWait } from './utils'
-import type { MyTicketResponse } from './types'
+import type { MyTicketResponse, Queue, QueueStatus, QueueStore, Ticket } from './types'
 
-// ✅ FIX: Add safe guard for missing ticket
 export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
-  // If data or data.ticket is missing, show loading fallback
   if (!data || !data.ticket) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>

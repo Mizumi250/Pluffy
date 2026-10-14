@@ -1,8 +1,8 @@
-# Arkzen Engine — React+Inertia.js Stack (v8)
+# Pluff — React+Inertia.js Stack (v8)
 
 ## Status: Foundation / Partial
 
-This is the Inertia.js frontend stack for Arkzen v8.
+This is the Inertia.js frontend stack for Pluff v8.
 Same tatemono DSL — different architecture.
 
 ---
@@ -35,7 +35,7 @@ cd engine/backend/laravel
 php artisan serve
 ```
 
-### 2. Start Arkzen Inertia engine (watches tatemonos/)
+### 2. Start the Pluff Inertia engine (watches tatemonos/)
 ```bash
 cd engine/frontend/react-inertia
 npm install

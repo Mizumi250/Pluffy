@@ -2,18 +2,18 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:55.851Z
+// Generated: 2026-10-13T14:10:30.747Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
 import { InjectedBadge } from './components/InjectedBadge'
 import { Tag } from './components/Tag'
 import { useToast } from './components/hooks'
-import type { ProbeResult, Stats } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useNavigate } from 'react-router'
+import type { ProbeResult, Stats } from './components/types'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -310,7 +310,7 @@ const ArkzenPage_BodyEndpointHandler_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

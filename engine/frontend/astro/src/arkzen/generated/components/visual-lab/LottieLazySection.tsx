@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LottieLazySection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:18.173Z
+// Generated: 2026-10-09T14:13:14.467Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -22,7 +22,7 @@ export const LottieLazySection = () => {
   const lottieRef = useRef<any>(null)
 
   useEffect(() => {
-    import('lottie-react').then(mod => setLottieComp(() => mod.default))
+    import('lottie-react').then(mod => setLottieComp(() => mod.Lottie))
     // Built-in demo animation — a simple spinning arc (no external fetch needed)
     setAnimData({
       v: '5.5.7', fr: 60, ip: 0, op: 120, w: 200, h: 200, nm: 'Spinner', ddd: 0,

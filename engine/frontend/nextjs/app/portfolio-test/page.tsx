@@ -3,14 +3,14 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:15.601Z
+// Generated: 2026-10-09T13:50:39.297Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { PROJECTS, SKILLS } from './components/constants'
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { BriefcaseBusiness as Linkedin, Code2, CodeXml as Github, ExternalLink, Mail, Star } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const PortfolioPage = () => {
@@ -97,7 +97,7 @@ const ArkzenPage_PortfolioTest_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

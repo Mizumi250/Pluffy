@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shikaku [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:09:02.734Z
+// Generated: 2026-10-13T14:10:34.219Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,8 +10,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// GSAP — pixel scatter entrance on editor canvas load
-if (typeof window !== 'undefined') {
+// GSAP — pixel scatter entrance on editor canvas loadif (typeof window !== 'undefined') {
   // Animate tool buttons into view on mount
   document.addEventListener('DOMContentLoaded', () => {
     const tools = document.querySelectorAll('.sk-tool-btn')
@@ -43,4 +42,4 @@ export const pageVariants = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
   exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
-}
+} as const

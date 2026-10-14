@@ -2,12 +2,11 @@
 // ARKZEN GENERATED — new-updates-styles/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-06-21T12:05:14.967Z
+// Generated: 2026-10-09T13:50:39.046Z
 // ============================================================
 
 import React from 'react'
 import Link from 'next/link'
-import { ErrorScreen } from './components/ErrorScreen'
 
 const NotFoundPage = () => (
   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-8">

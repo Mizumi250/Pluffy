@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — ethan-pool
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:11.207Z
+// Generated: 2026-10-09T13:50:35.206Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,8 +10,9 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const ethanPoolAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+export const ethanPoolAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   
+
   const ctx = gsap.context(() => {
     // ── data-fade entrance system (mirrors source data-fade / data-fade-delay / data-fade-duration) ──
     const fadeEls = gsap.utils.toArray<HTMLElement>('[data-fade]')
@@ -123,4 +124,4 @@ export const pageVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.5 } },
   exit:    { opacity: 0, transition: { duration: 0.25 } },
-}
+} as const

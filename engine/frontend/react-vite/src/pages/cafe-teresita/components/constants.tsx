@@ -2,14 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — cafe-teresita [React+Vite]
 // Source: @arkzen:components (cafe-teresita)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.175Z
+// Generated: 2026-10-13T14:10:31.103Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, CalendarCheck, Clock, Coffee, CupSoda, ExternalLink, Facebook, Instagram, MapPin, Menu as MenuIcon, Soup, Star, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CalendarCheck, Camera as Instagram, Clock, Coffee, CupSoda, ExternalLink, MapPin, Menu as MenuIcon, Soup, Star, UsersRound as Facebook, X } from 'lucide-react'
+
 
 export const NAV_LINKS = [
   { label: 'Homepage', href: '#ct-hero' },
@@ -18,9 +19,9 @@ export const NAV_LINKS = [
   { label: 'Locations', href: '#ct-visit' },
   { label: 'Catering', href: '#ct-catering' },
   { label: 'Contact', href: '#ct-footer' },
-]
+];
 
-export const MENU_CATEGORIES = ['Coffee & Drinks', 'Rice Meals', 'Snacks & Pastries']
+export const MENU_CATEGORIES = ['Coffee & Drinks', 'Rice Meals', 'Snacks & Pastries'];
 
 export const MENU_ITEMS: Record<string, { id: string; name: string; desc: string; price: string; img: string; tag?: string }[]> = {
   'Coffee & Drinks': [
@@ -116,7 +117,7 @@ export const MENU_ITEMS: Record<string, { id: string; name: string; desc: string
       img: 'https://images.pexels.com/photos/2067396/pexels-photo-2067396.jpeg?w=900&q=80',
     },
   ],
-}
+};
 
 export const FEATURED_DRINKS = [
   {
@@ -137,7 +138,7 @@ export const FEATURED_DRINKS = [
     sub: 'Fresh coconut',
     img: 'https://images.pexels.com/photos/1435706/pexels-photo-1435706.jpeg?w=600&q=80',
   },
-]
+];
 
 export const CATERING_PACKAGES = [
   {
@@ -165,7 +166,7 @@ export const CATERING_PACKAGES = [
     includes: ['Full buffet menu', 'On-site coffee station', 'Staff service', 'Tent & seating add-ons available'],
     img: 'https://images.pexels.com/photos/1405528/pexels-photo-1405528.jpeg?w=1200&q=80',
   },
-]
+];
 
 export const VISIT_HOURS = [
   { day: 'Monday', hours: '10:00 AM – 10:00 PM' },
@@ -175,7 +176,7 @@ export const VISIT_HOURS = [
   { day: 'Friday', hours: '10:00 AM – 10:00 PM' },
   { day: 'Saturday', hours: '10:00 AM – 10:00 PM' },
   { day: 'Sunday', hours: '10:00 AM – 10:00 PM' },
-]
+];
 
 export const TESTIMONIALS = [
   {
@@ -188,4 +189,4 @@ export const TESTIMONIALS = [
     name: 'Local Guest',
     role: 'Google Review · 4★',
   },
-]
+];

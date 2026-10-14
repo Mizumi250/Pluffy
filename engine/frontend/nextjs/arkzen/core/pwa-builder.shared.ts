@@ -19,7 +19,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import type { ParsedTatemono } from './parser'
+import type { ParsedTatemono } from '../types'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 

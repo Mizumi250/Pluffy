@@ -2,12 +2,14 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — errors-test [Expo]
 // Source: @arkzen:native:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.760Z
+// Generated: 2026-10-09T14:43:18.523Z
 // ============================================================
 
 import React, { useState } from 'react'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import type { NativeErrorDef } from './types'
+
 
 /* @arkzen:resolved:import expo */
 export const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'

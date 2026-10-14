@@ -1065,7 +1065,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement>) => {
+export const joPayrollAnimations = (ref: React.RefObject<HTMLDivElement | null>) => {
   if (!ref.current) return () => {}
 
   const ctx = gsap.context(() => {

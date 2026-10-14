@@ -1145,7 +1145,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <View
       style={{
         flex: 1,
-        background: 'linear-gradient(165deg, #e8f2ff 0%, #d0e5ff 18%, #b8d4f8 36%, #a4c5f5 52%, #b0cef7 68%, #c4daff 84%, #daeeff 100%)',
+        backgroundColor: '#b8d4f8',
       }}
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />

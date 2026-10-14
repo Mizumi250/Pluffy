@@ -2,14 +2,13 @@
 // ARKZEN GENERATED COMPONENT — StatChip [React+Inertia]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:20.364Z
+// Generated: 2026-10-13T17:05:21.164Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { create } from 'zustand'
-import { accents, iconAccents } from './utils'
 
 // Stat card — matches the "11 Courses completed / 4 in progress" chips from the reference UI
 export const StatChip = ({

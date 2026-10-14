@@ -2,12 +2,13 @@
 // ARKZEN GENERATED UTILITIES — crud-test
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:09.023Z
+// Generated: 2026-10-09T13:50:34.702Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Boxes } from 'lucide-react'
+import type { FormData, Item } from './types'
 
 export const emptyForm: FormData = { name: '', description: '', status: 'active', priority: 0, tags: '' }

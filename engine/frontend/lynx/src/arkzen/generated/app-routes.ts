@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx App Routes (src/arkzen/generated/app-routes.ts)
 // DO NOT EDIT DIRECTLY. Managed by arkzen lynx-router.
-// Generated: 2026-06-22T07:06:53.374Z
+// Generated: 2026-10-14T08:58:42.148Z
 //
 // Pure data — component imports + the route table. Mirrors React+Vite's
 // src/arkzen/generated/routes.ts. src/App.tsx is static and imports from
@@ -54,9 +54,12 @@ import { NewUpdatesStylesFeatures } from '../../pages/new-updates-styles/feature
 import { BroadcastTestLogin } from '../../pages/broadcast-test/login'
 import { BroadcastTestRegister } from '../../pages/broadcast-test/register'
 import { BroadcastTestDashboard } from '../../pages/broadcast-test/dashboard'
+import { AnimationLabIndex } from '../../pages/animation-lab/index'
 import { default as ErrorsTestError404 } from '../../pages/errors-test/error-404'
 import { default as ErrorsTestError500 } from '../../pages/errors-test/error-500'
 import { default as LayoutTestError404 } from '../../pages/layout-test/error-404'
+import { default as AnimationLabError404 } from '../../pages/animation-lab/error-404'
+import { default as AnimationLabError500 } from '../../pages/animation-lab/error-500'
 
 export interface LynxAppRoute {
   module:         string
@@ -123,15 +126,18 @@ export const LYNX_ROUTES: LynxAppRoute[] = [
   { module: 'broadcast-test', page: 'register', component: BroadcastTestRegister, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'dashboard', component: BroadcastTestDashboard, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
   { module: 'broadcast-test', page: 'index', component: BroadcastTestLogin, layout: null, loginRoute: '/broadcast-test/login', dashboardRoute: '/broadcast-test/dashboard' },
+  { module: 'animation-lab', page: 'index', component: AnimationLabIndex, layout: null, loginRoute: '/animation-lab/index', dashboardRoute: '/animation-lab/index' },
 ]
 
 export const LYNX_ERROR_404: Record<string, any> = {
   'errors-test': ErrorsTestError404,
   'layout-test': LayoutTestError404,
+  'animation-lab': AnimationLabError404,
 }
 
 export const LYNX_ERROR_500: Record<string, any> = {
   'errors-test': ErrorsTestError500,
+  'animation-lab': AnimationLabError500,
 }
 
 // NOTE on error-500 wiring: Lynx renders through a custom dual-thread

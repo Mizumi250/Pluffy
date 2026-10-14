@@ -2,12 +2,13 @@
 // ARKZEN GENERATED HOOKS — body-mail-notification [React+Vite]
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:56.073Z
+// Generated: 2026-10-13T14:10:30.799Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+
 
 export function useToast() {
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
@@ -20,8 +21,4 @@ export function useToast() {
     success: (msg: string) => show('success', msg),
     error:   (msg: string) => show('error', msg),
   }
-}
-
-if (typeof window !== 'undefined') {
-  setActiveTatemono('body-mail-notification')
 }

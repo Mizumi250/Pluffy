@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — inventory-management [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:58.658Z
+// Generated: 2026-10-13T14:10:32.795Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,7 +10,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const inventoryManagementAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+export const inventoryManagementAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.inventory-header', { opacity: 0, y: -24 }, { opacity: 1, y: 0, duration: 0.6, ease: 'power3.out' })
     gsap.fromTo('.inventory-stats > *', { opacity: 0, y: 20, scale: 0.97 }, { opacity: 1, y: 0, scale: 1, duration: 0.5, stagger: 0.08, ease: 'power2.out', delay: 0.2 })
@@ -23,4 +23,4 @@ export const pageVariants = {
   initial: { opacity: 0, y: 16 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' } },
   exit:    { opacity: 0, y: -8, transition: { duration: 0.25 } },
-}
+} as const

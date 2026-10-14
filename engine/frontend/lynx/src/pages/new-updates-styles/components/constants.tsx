@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:native:components:lynx:* (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:51.420Z
+// Generated: 2026-10-14T08:58:41.517Z
 // ============================================================
 
 import { type ReactNode, useState } from '@lynx-js/react'

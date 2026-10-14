@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerDragSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:11.221Z
+// Generated: 2026-10-09T14:13:11.076Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -16,7 +16,6 @@ import { SectionHeader } from './SectionHeader'
 
 // ─── FRAMER DRAG ──────────────────────────────────────────────────────────────
 export const FramerDragSection = () => {
-  const [pos, setPos] = useState({ x: 0, y: 0 })
   const constraintsRef = useRef<HTMLDivElement>(null)
 
   return (

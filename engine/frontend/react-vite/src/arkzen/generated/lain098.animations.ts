@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — lain098 [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.318Z
+// Generated: 2026-10-13T14:10:33.301Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -11,7 +11,7 @@ import React from 'react'
 gsap.registerPlugin(ScrollTrigger)
 
 export const lain098Animations = (
-  pageRef: React.RefObject<HTMLDivElement>,
+  pageRef: React.RefObject<HTMLDivElement | null>,
   onAvatarReady: () => void,
   onOrbitReady: () => void,
   onNavReady: () => void,
@@ -54,4 +54,4 @@ export const pageVariants = {
   initial: { opacity: 0 },
   animate: { opacity: 1, transition: { duration: 0.2 } },
   exit:    { opacity: 0, transition: { duration: 0.1 } },
-}
+} as const

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — inventory-management
 // Source: @arkzen:native:components:lynx:* (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:48.759Z
+// Generated: 2026-10-14T08:58:40.695Z
 // ============================================================
 
 export interface InventoryItem {

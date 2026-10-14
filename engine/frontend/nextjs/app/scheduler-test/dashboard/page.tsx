@@ -3,17 +3,17 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:16.968Z
+// Generated: 2026-10-09T13:50:39.713Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import type { CommandRun } from '../components/types'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { useToast } from '@/arkzen/core/components/Toast'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
-import { useToast } from '@/arkzen/core/components/Toast'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 
 // Page component code (from @arkzen:page:dashboard)
 const DashboardPage = () => {
@@ -89,7 +89,7 @@ const DashboardPage = () => {
             <div className="flex gap-3">
               <button className="text-xs text-neutral-400" onClick={refetch}>Refresh</button>
               {runs.length > 0 && (
-                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs')} disabled={clearing}>
+                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs', undefined)} disabled={clearing}>
                   {clearing ? '...' : 'Clear'}
                 </button>
               )}
@@ -145,7 +145,7 @@ const ArkzenPage_SchedulerTest_Dashboard = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

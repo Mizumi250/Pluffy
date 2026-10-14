@@ -29,7 +29,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   Coffee, X, ArrowRight, Star, MapPin, Clock,
-  Instagram, Facebook, Menu as MenuIcon, ArrowUpRight,
+  Camera as Instagram, UsersRound as Facebook, Menu as MenuIcon, ArrowUpRight,
   CalendarCheck, Soup, CupSoda, ExternalLink
 } from 'lucide-react'
 

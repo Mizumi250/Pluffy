@@ -2,11 +2,13 @@
 // ARKZEN GENERATED SHARED CONSTANTS — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:05.877Z
+// Generated: 2026-10-09T13:50:33.038Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import type { AssetCategory, AssetItem } from './types'
+
 
 export const ASSET_REGISTRY: AssetItem[] = [
   // ── Drop files in tatemonos/asset-hub/assets/images/ ──

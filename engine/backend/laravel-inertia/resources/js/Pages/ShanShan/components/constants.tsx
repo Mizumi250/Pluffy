@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — shan-shan [React+Inertia]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.848Z
+// Generated: 2026-10-13T17:05:22.153Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

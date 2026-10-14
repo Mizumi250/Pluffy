@@ -2,8 +2,14 @@
 // ARKZEN GENERATED TYPES — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:08.296Z
+// Generated: 2026-10-09T13:50:33.987Z
 // ============================================================
+
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { Radio } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 // ── ChannelPanel — top-level memo so it never remounts on parent re-render.
 // Defined outside DashboardPage to preserve input focus on mobile (Android keyboard

@@ -717,7 +717,7 @@ const CommissionsSection = () => {
               initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-              transition={{ duration: 0.4, ease: 'power3.out' }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               className="commission-active-text"
             >
               <p className="commission-active-title">{items[hoveredIndex !== null ? hoveredIndex : 0].title}</p>
@@ -2131,7 +2131,7 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import React from 'react'
 
 export const lain098Animations = (
-  pageRef: React.RefObject<HTMLDivElement>,
+  pageRef: React.RefObject<HTMLDivElement | null>,
   onAvatarReady: () => void,
   onOrbitReady: () => void,
   onNavReady: () => void,

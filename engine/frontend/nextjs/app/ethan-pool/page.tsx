@@ -3,23 +3,23 @@
 // ARKZEN GENERATED PAGE — ethan-pool/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:11.297Z
+// Generated: 2026-10-09T13:50:35.352Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { ethanPoolAnimations, pageVariants } from '@/arkzen/generated/ethan-pool.animations'
 import { EpGalleryModal } from './components/EpGalleryModal'
 import { EpHeader } from './components/EpHeader'
 import { EpNavDrawer } from './components/EpNavDrawer'
 import { EpPromoModal } from './components/EpPromoModal'
 import { AMENITIES, BLOG_POSTS, GALLERY_MEDIA, LOGOS, ROOMS } from './components/constants'
 import { useMounted } from './components/hooks'
-import { prev, t } from './components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { ethanPoolAnimations, pageVariants } from '@/arkzen/generated/ethan-pool.animations'
 
 // Page component code (from @arkzen:page:index)
 const clamp = (min: number, max: number, value: number) => Math.min(Math.max(value, min), max)
+
 
 const IndexPage = () => {
   const mounted = useMounted()
@@ -547,16 +547,13 @@ const EpBookingBarInner = () => {
   )
 }
 
-export default IndexPage
-
 // Wrapper for animation + layout
 const ArkzenPage_EthanPool_Index = () => {
   const pageRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = ethanPoolAnimations(pageRef)
-    return cleanup
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

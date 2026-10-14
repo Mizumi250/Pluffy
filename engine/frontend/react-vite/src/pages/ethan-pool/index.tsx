@@ -2,25 +2,25 @@
 // ARKZEN GENERATED PAGE — ethan-pool/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:58.083Z
+// Generated: 2026-10-13T14:10:32.130Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { ethanPoolAnimations, pageVariants } from '@/arkzen/generated/ethan-pool.animations'
-import { useNavigate } from 'react-router'
-import './styles/global.css'
 import { EpGalleryModal } from './components/EpGalleryModal'
 import { EpHeader } from './components/EpHeader'
 import { EpNavDrawer } from './components/EpNavDrawer'
 import { EpPromoModal } from './components/EpPromoModal'
 import { AMENITIES, BLOG_POSTS, GALLERY_MEDIA, LOGOS, ROOMS } from './components/constants'
 import { useMounted } from './components/hooks'
-import { prev, t } from './components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { ethanPoolAnimations, pageVariants } from '@/arkzen/generated/ethan-pool.animations'
+import { useNavigate } from 'react-router'
+import './styles/global.css'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const clamp = (min: number, max: number, value: number) => Math.min(Math.max(value, min), max)
+
 
 const IndexPage = () => {
   const mounted = useMounted()
@@ -554,8 +554,7 @@ const ArkzenPage_EthanPool_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = ethanPoolAnimations(pageRef)
-    return cleanup
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

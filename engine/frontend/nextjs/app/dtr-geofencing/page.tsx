@@ -3,13 +3,11 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:09.645Z
+// Generated: 2026-10-09T13:50:34.990Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
-import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
 import { EmployeeDropdown } from './components/EmployeeDropdown'
 import { GeofenceBadge } from './components/GeofenceBadge'
 import { GeofenceMap } from './components/GeofenceMap'
@@ -17,10 +15,12 @@ import { LocationWidget } from './components/LocationWidget'
 import { RecordRow } from './components/RecordRow'
 import { Skeleton } from './components/Skeleton'
 import { useDtrStore } from './components/hooks'
-import { a, fmtDuration, fmtTime, map, parseSettings, within } from './components/utils'
-import type { Employee } from './components/types'
-import { MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw, User as UserIcon, Clock, Loader2, Navigation, TrendingUp, ChevronDown, LogIn, LogOut } from 'lucide-react'
+import type { DtrSettings, DtrStore, Employee, TimeRecord } from './components/types'
+import { fmtDuration, fmtTime, parseSettings } from './components/utils'
+import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -207,8 +207,7 @@ const ArkzenPage_DtrGeofencing_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = dtrGeofencingAnimations(pageRef)
-    return cleanup
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — OGLSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.441Z
+// Generated: 2026-10-13T17:05:22.572Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { animate, camera, canvas, canvasRef, fragment, geo, gl, light, mesh, prog, rafRef, render, renderer, scene, t, vertex } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 

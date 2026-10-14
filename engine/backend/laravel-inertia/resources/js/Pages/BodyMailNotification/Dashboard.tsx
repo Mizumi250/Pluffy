@@ -2,20 +2,19 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:18.202Z
+// Generated: 2026-10-13T17:05:20.072Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { KindBadge } from './components/KindBadge'
 import { StatusDot } from './components/StatusDot'
 import { useToast } from './components/hooks'
-import type { SendLogEntry } from './components/types'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 
 // Props passed from Laravel via Inertia::render()
 export type BodyMailNotificationDashboardProps = {
@@ -218,7 +217,7 @@ function ArkzenPage_BodyMailNotification_Dashboard() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -233,7 +232,11 @@ function ArkzenPage_BodyMailNotification_Dashboard() {
     </motion.div>
   )
 
-  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
+  return (
+    <AuthLayout requireAuth={true}>
+    {content}
+    </AuthLayout>
+  )
 }
 
 export default ArkzenPage_BodyMailNotification_Dashboard

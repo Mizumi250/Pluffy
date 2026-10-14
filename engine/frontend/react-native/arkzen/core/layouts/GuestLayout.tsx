@@ -17,11 +17,9 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-import { 
-  useAuthStore, 
-  setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'
+import { ParamListBase, useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
 interface GuestLayoutProps {
   children:       React.ReactNode
@@ -30,7 +28,7 @@ interface GuestLayoutProps {
 }
 
 export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutProps) {
-  const router          = useRouter()
+  const navigation      = useNavigation<NativeStackNavigationProp<ParamListBase>>()
   const isLoading       = useAuthStore(s => s.isLoading)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const fetchMe         = useAuthStore(s => s.fetchMe)
@@ -57,7 +55,7 @@ export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutPr
       // 2. After fetchMe completes, check final auth state
       const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
       if (!finalLoading && finalAuth) {
-        router.replace(dashboardRoute as any)
+        navigation.replace(dashboardRoute)
       }
 
       isRedirectingRef.current = false
@@ -65,7 +63,7 @@ export function GuestLayout({ children, tatSlug, dashboardRoute }: GuestLayoutPr
 
     restoreAndRedirect()
     return () => { active = false }
-  }, [tatSlug, dashboardRoute])
+  }, [tatSlug, dashboardRoute, fetchMe, navigation])
 
   // Show loader while restoring or redirecting
   if (isLoading) {

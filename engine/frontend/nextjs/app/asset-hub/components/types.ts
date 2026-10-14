@@ -2,8 +2,11 @@
 // ARKZEN GENERATED TYPES — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:05.881Z
+// Generated: 2026-10-09T13:50:33.043Z
 // ============================================================
+
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
 
 // ─── ASSET REGISTRY ───────────────────────────────────────────────────────────
 // Add an entry here after dropping a file into tatemonos/asset-hub/assets/<category>/

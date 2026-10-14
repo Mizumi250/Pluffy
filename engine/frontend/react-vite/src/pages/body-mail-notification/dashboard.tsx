@@ -2,18 +2,18 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:56.084Z
+// Generated: 2026-10-13T14:10:30.828Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { useNavigate } from 'react-router'
 import { KindBadge } from './components/KindBadge'
 import { StatusDot } from './components/StatusDot'
 import { useToast } from './components/hooks'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { useNavigate } from 'react-router'
 import type { SendLogEntry } from './components/types'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
@@ -207,7 +207,7 @@ const ArkzenPage_BodyMailNotification_Dashboard = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

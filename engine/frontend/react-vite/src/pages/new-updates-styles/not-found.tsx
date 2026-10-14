@@ -3,11 +3,12 @@
 // Rendered by the wildcard route /new-updates-styles/* for any
 // unmatched sub-path under this tatemono prefix.
 // DO NOT EDIT — edit @arkzen:error:404 in tatemono instead
-// Generated: 2026-06-26T07:08:59.871Z
+// Generated: 2026-10-13T14:10:33.578Z
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
+
+import { Link } from 'react-router'
 
 const NotFoundPage = () => (
   <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center p-8">

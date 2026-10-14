@@ -5,9 +5,9 @@
 import React, { useEffect, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { GhostBtn } from './components/GhostBtn'
 import { PrimaryBtn } from './components/PrimaryBtn'
 import { ResultBox } from './components/ResultBox'
@@ -166,7 +166,7 @@ export function ArkzenScreen_MiddlewareTest_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

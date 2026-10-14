@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — BurgerNav [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:31.799Z
+// Generated: 2026-10-09T14:43:21.237Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
+import { Animated, Dimensions, Image, Linking, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { NAV_LINKS } from './constants'
 import { s } from '../../../arkzen/generated/shan-shan.native-styles'
 
@@ -74,7 +75,6 @@ export const BurgerNav = ({
     }, 340)
   }
 
-  // Burger lines
   const line1Rotate    = useRef(new Animated.Value(0)).current
   const line2Opacity   = useRef(new Animated.Value(1)).current
   const line3Rotate    = useRef(new Animated.Value(0)).current
@@ -99,7 +99,6 @@ export const BurgerNav = ({
 
   return (
     <>
-      {/* Burger button */}
       <TouchableOpacity
         style={s.burgerBtn}
         onPress={openNav}
@@ -128,15 +127,12 @@ export const BurgerNav = ({
         }} />
       </TouchableOpacity>
 
-      {/* Full-screen nav overlay */}
       <Modal visible={open} transparent animationType="none" statusBarTranslucent>
         <Animated.View style={[s.navOverlay, { opacity: overlayOpacity }]}>
-          {/* Close button */}
           <TouchableOpacity style={s.navCloseBtn} onPress={closeNav} activeOpacity={0.7}>
             <Text style={s.navCloseText}>×</Text>
           </TouchableOpacity>
 
-          {/* Nav links */}
           <View style={{ width: '100%', gap: 4 }}>
             {NAV_LINKS.map((link, i) => (
               <Animated.View
@@ -158,7 +154,6 @@ export const BurgerNav = ({
             ))}
           </View>
 
-          {/* Bottom micro info */}
           <View style={{ position: 'absolute', bottom: 48, left: 40 }}>
             <Text style={{ fontSize: 9, letterSpacing: 3, color: 'rgba(255,255,255,0.2)' }}>
               SHAN SABAL CEZAR · PORTFOLIO

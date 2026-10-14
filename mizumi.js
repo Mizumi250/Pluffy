@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 // ============================================================
-//  みずみ CLI — ARKZEN ENGINE
+//  みずみ CLI — PLUFF
 //  Interactive prompt selector + direct command mode
 //  Usage:
 //    node mizumi.js              ← interactive picker
@@ -17,12 +17,13 @@
 //    node mizumi.js modules      ← list registered tatemonos
 // ============================================================
 
-const { spawn } = require('child_process')
-const readline  = require('readline')
-const fs        = require('fs')
-const path      = require('path')
+import { spawn } from 'node:child_process'
+import readline from 'node:readline'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT_DIR  = __dirname
+const ROOT_DIR  = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH = path.join(ROOT_DIR, 'arkzen.json')
 
 // ─── KAOMOJI POOL ─────────────────────────────────────────────
@@ -65,6 +66,7 @@ const WEB_STACKS = {
   'react-inertia':  'engine/frontend/react-inertia',
   'astro':          'engine/frontend/astro',
   'tanstack-start': 'engine/frontend/tanstack-start',
+  'tauri':          'engine/frontend/tauri',
 }
 const APP_STACKS = {
   'expo':         'engine/frontend/expo',
@@ -77,6 +79,7 @@ const WEB_LABELS = {
   'react-inertia':  'React + Inertia (Laravel monolith)',
   'astro':          'Astro',
   'tanstack-start': 'TanStack Start',
+  'tauri':          'Tauri desktop (React + Vite)',
 }
 const APP_LABELS = {
   'expo':         'Expo (SDK 53, Expo Go)',
@@ -174,9 +177,9 @@ async function prompt(question, defaultVal = '') {
 
 function cmdStart() {
   console.log()
-  log(`エンジン起動中... Starting Arkzen Engine ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  log(`エンジン起動中... Starting Pluff ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn('node', ['start.js'], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const child = spawn(process.execPath, ['start.js'], { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', code => { if (code !== 0) error(`Engine exited with code ${code}`) })
 }
 
@@ -184,7 +187,7 @@ function cmdSetup() {
   console.log()
   log(`セットアップ中... Running setup ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn('node', ['setup.js'], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const child = spawn(process.execPath, ['setup.js'], { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', code => {
     if (code === 0) success('Setup complete!')
     else error(`Setup exited with code ${code}`)
@@ -234,7 +237,7 @@ async function cmdExport(tatName, stackArg) {
   console.log()
   log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn('node', ['export.js', tatName, `--stack=${stack}`], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const child = spawn(process.execPath, ['export.js', tatName, `--stack=${stack}`], { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', code => {
     if (code === 0) success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
     else error(`Export failed with code ${code}`)
@@ -419,7 +422,7 @@ function printHelp() {
     console.log(`  ${paint(c.cyan, cmd.padEnd(30))} ${paint(c.gray, desc)}`)
   })
   console.log()
-  console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
+  console.log(`  ${paint(c.gray, 'Web/Desktop:')} nextjs, react-vite, react-inertia, astro, tanstack-start, tauri`)
   console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
   console.log()
 }

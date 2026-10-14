@@ -2,19 +2,19 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.296Z
+// Generated: 2026-10-13T17:05:21.726Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import './styles/global.css'
 import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type NewUpdatesStylesAboutProps = {
@@ -51,17 +51,11 @@ const AboutPage = () => {
         <p className="text-xl text-neutral-600">
           This tatemono demonstrates all the new features added to Arkzen v2.0
         </p>
-
         <div className="space-y-4">
           {sections.map(section => (
-            <div
-              key={section.title}
-              className="rounded-lg border-2 border-neutral-200 p-6"
-            >
+            <div key={section.title} className="rounded-lg border-2 border-neutral-200 p-6">
               <button
-                onClick={() => setExpandedSection(
-                  expandedSection === section.title ? null : section.title
-                )}
+                onClick={() => setExpandedSection(expandedSection === section.title ? null : section.title)}
                 className="flex w-full items-center justify-between text-lg font-bold hover:text-blue-600"
               >
                 {section.title}
@@ -85,7 +79,7 @@ function ArkzenPage_NewUpdatesStyles_About() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -100,7 +94,11 @@ function ArkzenPage_NewUpdatesStyles_About() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_NewUpdatesStyles_About

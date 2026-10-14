@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PrimaryBtn [Expo]
 // Source: @arkzen:native:components (auth-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:54.968Z
+// Generated: 2026-10-09T14:43:16.947Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono, useAuthStore, useAuthStoreHydrated } from '../../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 

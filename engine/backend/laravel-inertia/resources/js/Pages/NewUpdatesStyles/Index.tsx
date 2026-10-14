@@ -2,21 +2,21 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.285Z
+// Generated: 2026-10-13T17:05:21.720Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import './styles/global.css'
 import { FeatureCard } from './components/FeatureCard'
 import { HeroSection } from './components/HeroSection'
 import { Navbar } from './components/Navbar'
 import { FEATURES } from './components/constants'
 import { getIconComponent } from './components/utils'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type NewUpdatesStylesIndexProps = {
@@ -86,7 +86,7 @@ function ArkzenPage_NewUpdatesStyles_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -101,7 +101,11 @@ function ArkzenPage_NewUpdatesStyles_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_NewUpdatesStyles_Index

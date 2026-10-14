@@ -2,14 +2,13 @@
 // ARKZEN GENERATED COMPONENT — Loader [React+Inertia]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.852Z
+// Generated: 2026-10-13T17:05:22.155Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { barRef, countRef, fallback, screenRef, tl } from './utils'
 
 // ─── LOADER ───────────────────────────────────────────────────────────────────
 
@@ -19,7 +18,6 @@ export const Loader = ({ onComplete }: { onComplete: () => void }) => {
   const countRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Safety fallback — if GSAP stalls for any reason, force-complete after 3s
     const fallback = setTimeout(() => onComplete(), 3000)
 
     const tl = gsap.timeline({
@@ -29,7 +27,6 @@ export const Loader = ({ onComplete }: { onComplete: () => void }) => {
       },
     })
 
-    // Count up 0–100
     let count = { val: 0 }
     tl.to(count, {
       val: 100,
@@ -40,21 +37,18 @@ export const Loader = ({ onComplete }: { onComplete: () => void }) => {
       },
     }, 0)
 
-    // Bar sweeps across top
     tl.to(barRef.current, {
       width: '100%',
       duration: 1.4,
       ease: 'power2.inOut',
     }, 0)
 
-    // Bar expands downward
     .to(barRef.current, {
       height: '100vh',
       duration: 0.4,
       ease: 'power3.in',
     })
 
-    // Red flood fades out
     .to(screenRef.current, {
       opacity: 0,
       duration: 0.5,

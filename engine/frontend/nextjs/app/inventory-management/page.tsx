@@ -3,23 +3,23 @@
 // ARKZEN GENERATED PAGE — inventory-management/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:12.815Z
+// Generated: 2026-10-09T13:50:36.550Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
 import { InventoryRow } from './components/InventoryRow'
 import { StatCard } from './components/StatCard'
-import { emptyForm } from './components/utils'
 import type { FormState, InventoryItem } from './components/types'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
-import { Modal } from '@/arkzen/core/components/Modal'
+import { emptyForm } from './components/utils'
 import { Dialog } from '@/arkzen/core/components/Dialog'
+import { Modal } from '@/arkzen/core/components/Modal'
 import { useToast } from '@/arkzen/core/components/Toast'
-import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
+import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

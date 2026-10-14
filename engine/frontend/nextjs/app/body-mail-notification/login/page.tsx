@@ -3,17 +3,18 @@
 // ARKZEN GENERATED PAGE — body-mail-notification/login
 // Layout: guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:07.442Z
+// Generated: 2026-10-09T13:50:33.810Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { KindBadge } from '../components/KindBadge'
 import { StatusDot } from '../components/StatusDot'
 import { useToast } from '../components/hooks'
+import type { SendLogEntry } from '../components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { useRouter } from 'next/navigation'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:login)
 const LoginPage = () => {
@@ -60,7 +61,7 @@ const ArkzenPage_BodyMailNotification_Login = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

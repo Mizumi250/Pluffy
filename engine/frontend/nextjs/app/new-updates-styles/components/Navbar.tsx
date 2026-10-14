@@ -3,14 +3,14 @@
 // ARKZEN GENERATED COMPONENT — Navbar
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.961Z
+// Generated: 2026-10-09T13:50:39.018Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
-import { links } from './utils'
+import type { Feature, FeatureCardProps, HeroSectionProps } from './types'
 
 export const Navbar = ({ currentPath }: { currentPath: string }) => {
   const [isOpen, setIsOpen] = useState(false)

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.474Z
+// Generated: 2026-10-13T17:05:22.592Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,6 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { curtains, curtainsRef, fragment, fs, mountRef, planeEl, vertex, vs } from './utils'
 import { SectionHeader } from './SectionHeader'
 
 // ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
@@ -66,7 +65,7 @@ export const CurtainsSection = () => {
           })
         }
         curtains.onRender(() => {
-          curtains.planes?.forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
+          Array.from(curtains.planes ?? []).forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
         })
         setLoaded(true)
       } catch (e: any) {

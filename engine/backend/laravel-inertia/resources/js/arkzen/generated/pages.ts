@@ -35,6 +35,8 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'AnimationLab/Index': () => import('../../Pages/AnimationLab/Index'),
   // PAGE:AssetHub/Index
   'AssetHub/Index': () => import('../../Pages/AssetHub/Index'),
+  // PAGE:Atelier/Index
+  'Atelier/Index': () => import('../../Pages/Atelier/Index'),
   // PAGE:AuthTest/Login
   'AuthTest/Login': () => import('../../Pages/AuthTest/Login'),
   // PAGE:AuthTest/Register
@@ -55,6 +57,8 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'BroadcastTest/Register': () => import('../../Pages/BroadcastTest/Register'),
   // PAGE:BroadcastTest/Dashboard
   'BroadcastTest/Dashboard': () => import('../../Pages/BroadcastTest/Dashboard'),
+  // PAGE:CafeTeresita/Index
+  'CafeTeresita/Index': () => import('../../Pages/CafeTeresita/Index'),
   // PAGE:CrudTest/Index
   'CrudTest/Index': () => import('../../Pages/CrudTest/Index'),
   // PAGE:DtrGeofencing/Index
@@ -63,8 +67,14 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'DtrGeofencing/Admin': () => import('../../Pages/DtrGeofencing/Admin'),
   // PAGE:ErrorsTest/Index
   'ErrorsTest/Index': () => import('../../Pages/ErrorsTest/Index'),
+  // PAGE:EthanPool/Index
+  'EthanPool/Index': () => import('../../Pages/EthanPool/Index'),
+  // PAGE:Ethereane/Index
+  'Ethereane/Index': () => import('../../Pages/Ethereane/Index'),
   // PAGE:EventsTest/Index
   'EventsTest/Index': () => import('../../Pages/EventsTest/Index'),
+  // PAGE:HwCoffee/Index
+  'HwCoffee/Index': () => import('../../Pages/HwCoffee/Index'),
   // PAGE:InventoryManagement/Index
   'InventoryManagement/Index': () => import('../../Pages/InventoryManagement/Index'),
   // PAGE:JoPayroll/Index
@@ -83,6 +93,22 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'JoPayroll/Payslip': () => import('../../Pages/JoPayroll/Payslip'),
   // PAGE:JobTest/Dashboard
   'JobTest/Dashboard': () => import('../../Pages/JobTest/Dashboard'),
+  // PAGE:Lain098/Index
+  'Lain098/Index': () => import('../../Pages/Lain098/Index'),
+  // PAGE:LayoutTest/Index
+  'LayoutTest/Index': () => import('../../Pages/LayoutTest/Index'),
+  // PAGE:LayoutTest/Panel
+  'LayoutTest/Panel': () => import('../../Pages/LayoutTest/Panel'),
+  // PAGE:LayoutTest/Deep
+  'LayoutTest/Deep': () => import('../../Pages/LayoutTest/Deep'),
+  // PAGE:LayoutTest/GuardAuth
+  'LayoutTest/GuardAuth': () => import('../../Pages/LayoutTest/GuardAuth'),
+  // PAGE:LayoutTest/ChainAuth
+  'LayoutTest/ChainAuth': () => import('../../Pages/LayoutTest/ChainAuth'),
+  // PAGE:LayoutTest/GuardGuest
+  'LayoutTest/GuardGuest': () => import('../../Pages/LayoutTest/GuardGuest'),
+  // PAGE:LayoutTest/ChainGuest
+  'LayoutTest/ChainGuest': () => import('../../Pages/LayoutTest/ChainGuest'),
   // PAGE:MailTest/Login
   'MailTest/Login': () => import('../../Pages/MailTest/Login'),
   // PAGE:MailTest/Register
@@ -121,6 +147,10 @@ export const ARKZEN_INERTIA_PAGES: InertiaPageResolver = {
   'SchedulerTest/Dashboard': () => import('../../Pages/SchedulerTest/Dashboard'),
   // PAGE:ShanShan/Index
   'ShanShan/Index': () => import('../../Pages/ShanShan/Index'),
+  // PAGE:Shikaku/Index
+  'Shikaku/Index': () => import('../../Pages/Shikaku/Index'),
+  // PAGE:Shikaku/Editor
+  'Shikaku/Editor': () => import('../../Pages/Shikaku/Editor'),
   // PAGE:UploadTest/Dashboard
   'UploadTest/Dashboard': () => import('../../Pages/UploadTest/Dashboard'),
   // PAGE:VisualLab/Index

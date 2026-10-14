@@ -2,19 +2,19 @@
 // ARKZEN GENERATED COMPONENT — EtheraneGame [React+Vite]
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.193Z
+// Generated: 2026-10-13T14:10:32.299Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_FOLLOW_LERP, CAM_FOLLOW_LERP_RUN, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_RUN_MULT, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, Npc, PROP_DEFS, Prop, RUN_WALK_RATE, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, compositeSkyLayers, createShadowTexture, createSkyDome, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs, updateSkyScroll } from '@/arkzen/generated/ethereane.scripts'
+import { ASSETS, BLOCK_HEIGHT, CAM_DIST_DEFAULT, CAM_DIST_MAX, CAM_DIST_MIN, CAM_FOLLOW_LERP, CAM_FOLLOW_LERP_RUN, CAM_LERP, CAM_LOOK_HEIGHT, CAM_POLAR_DEFAULT, CAM_POLAR_MAX, CAM_POLAR_MIN, CAM_ROTATE_SPEED, CAM_ZOOM_SPEED, CHAR_PLANE_H, CHAR_PLANE_W, CHAR_RUN_MULT, CHAR_SPEED, DIR_DOWN, DIR_LEFT, DIR_RIGHT, DIR_UP, GAME_H, GAME_W, IDLE_FRAMES, IDLE_FRAME_RATE, IDLE_PAUSE, NPC_DIALOGUES, PROP_DEFS, RUN_WALK_RATE, TILE_SIZE, WALK_FRAMES, WALK_FRAME_RATE, WALK_ROW_OFFSET, WORLD_D, WORLD_MARGIN, WORLD_W, billboardInstances, buildGroundData, calcScale, clamp, compositeSkyLayers, createShadowTexture, createSkyDome, faceCamera, findNearbyNpc, generateNpcs, generateProps, initSheetTexture, lerp, lerpAngle, loadTexture, orbitCameraPosition, renderMinimap, resolveCollision, setSheetFrame, updateNpcs, updateSkyScroll } from '@/arkzen/generated/ethereane.scripts'
 import * as THREE from 'three'
 import { EffectComposer } from 'three/examples/jsm/postprocessing/EffectComposer.js'
 import { OutputPass } from 'three/examples/jsm/postprocessing/OutputPass.js'
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass.js'
 import { UnrealBloomPass } from 'three/examples/jsm/postprocessing/UnrealBloomPass.js'
+import type { Prop, Npc } from '@/arkzen/generated/ethereane.scripts'
 import { JOY_RADIUS, KNOB_MAX, UP_AXIS } from './constants'
-import { angle, applyScale, blockGeo, bloomPass, bush1Mat, bush1Mesh, bush1Props, bush2Mat, bush2Mesh, bush2Props, bushGeo, camAzimuth, camAzimuthTarget, camDist, camDistTarget, camFollowX, camFollowZ, camForward, camPolar, camPolarTarget, camPos, camRight, camera, canvas, canvasRef, charGeo, charMat, charMesh, charPos, charShadow, closeDialogue, composer, ctx2, dirRow, dist, dragPointerId, dragging, dummy, dx, dy, followLerp, frameIndex, frameTick, fwdDot, gameLoop, grassMesh, h, halfD, halfW, handleInteract, hemi, idlePausing, isRunning, isWalking, joyActive, joyOrigin, joyPointerId, joyVec, joyZoneRef, keys, keysHeld, knob, knobRef, lastPointer, loader, m, mag, makeShadow, mat, mesh, minimapCanvas, minimapRef, moveX, moveZ, moving, nearby, nearbyNpcRef, npc, npcMeshes, npcMoving, npcShadows, npcTexes, npcsRef, onCamPointerDown, onCamPointerMove, onCamPointerUp, onCamWheel, onJoyPointerDown, onJoyPointerMove, onJoyPointerUp, onKeyDown, onKeyUp, outputPass, plainMesh, propsRef, rafRef, rate, rawDx, rawDy, renderPass, renderer, resetKnob, resolved, rightDot, row, running, s, scene, setKnobPos, shadow, shadowGeo, shadowTex, sheetRow, skyMesh, startPos, sun, t, tex, three, viewport, viewportRef, w, walkRate, zone } from './utils'
 import type { ThreeState } from './types'
 
 export const EtheraneGame = () => {
@@ -618,4 +618,4 @@ export const EtheraneGame = () => {
       )}
     </div>
   )
-}
+};

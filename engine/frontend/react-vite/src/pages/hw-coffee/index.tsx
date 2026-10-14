@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — hw-coffee/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:58.583Z
+// Generated: 2026-10-13T14:10:32.687Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
 import { FEATURES, LOCATIONS, MARQUEE_WORDS, MENU_ITEMS, NAV_LINKS, PROCESS_STEPS, STATS, TESTIMONIALS } from './components/constants'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Coffee, Menu, X, Sun, Moon, ArrowRight, Star, MapPin, Clock, Phone, Mail, Instagram, Facebook, ChevronDown, Leaf, Award, Heart, Zap, ArrowUpRight, Minus, Plus, Quote, Wifi, Utensils, Music, Camera, ExternalLink, Twitter, Youtube } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Award, Camera, Camera as Instagram, ChevronDown, CirclePlay as Youtube, Clock, Coffee, ExternalLink, Heart, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Send as Twitter, Star, Sun, UsersRound as Facebook, Utensils, Wifi, X, Zap } from 'lucide-react'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -1707,7 +1707,7 @@ const ArkzenPage_HwCoffee_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

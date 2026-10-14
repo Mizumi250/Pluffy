@@ -6,13 +6,13 @@ import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import * as Location from 'expo-location'
 import { usePathname, useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { AlertCircle, CalendarClock, CheckCircle, ChevronDown, LogIn, LogOut, MapPin, Navigation, RefreshCw, Settings, XCircle } from 'lucide-react-native'
 import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { FadeInDown } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/dtr-geofencing-app'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { usePageFadeIn } from '../../arkzen/generated/dtr-geofencing.native-animations'
 import { s } from '../../arkzen/generated/dtr-geofencing.native-styles'
 import { EmployeeDropdown } from './components/EmployeeDropdown'
@@ -212,8 +212,8 @@ export function ArkzenScreen_DtrGeofencing_Admin() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <AppLayout tatSlug="dtr-geofencing">
+      <ArkzenStatusBar style="dark" />
+      <AppLayout>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}

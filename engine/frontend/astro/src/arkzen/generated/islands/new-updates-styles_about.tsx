@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:15.630Z
+// Generated: 2026-10-09T14:13:13.246Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -38,17 +38,11 @@ const AboutPage = () => {
         <p className="text-xl text-neutral-600">
           This tatemono demonstrates all the new features added to Arkzen v2.0
         </p>
-
         <div className="space-y-4">
           {sections.map(section => (
-            <div
-              key={section.title}
-              className="rounded-lg border-2 border-neutral-200 p-6"
-            >
+            <div key={section.title} className="rounded-lg border-2 border-neutral-200 p-6">
               <button
-                onClick={() => setExpandedSection(
-                  expandedSection === section.title ? null : section.title
-                )}
+                onClick={() => setExpandedSection(expandedSection === section.title ? null : section.title)}
                 className="flex w-full items-center justify-between text-lg font-bold hover:text-blue-600"
               >
                 {section.title}

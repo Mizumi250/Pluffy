@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:16.881Z
+// Generated: 2026-10-13T17:05:19.581Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
-import { opacity, scale, scaleX } from './utils'
 import { DemoCard } from './DemoCard'
 import { ParallaxDemo } from './ParallaxDemo'
 import { ScrollTransformDemo } from './ScrollTransformDemo'
@@ -30,7 +29,6 @@ export const FramerScrollSection = () => {
         subtitle="useScroll, useTransform, useSpring — scroll-linked animations"
         color="#0ea5e9"
       />
-      {/* Progress bar */}
       <motion.div
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, height: 4,

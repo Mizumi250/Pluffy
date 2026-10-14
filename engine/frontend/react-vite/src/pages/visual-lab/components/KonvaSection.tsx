@@ -2,22 +2,20 @@
 // ARKZEN GENERATED COMPONENT — KonvaSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:03.307Z
+// Generated: 2026-10-13T14:10:34.581Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { anim, canvas, circle, label, layer, mount, mountRef, rect, shapes, stage, stageRef, star, transform } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
-// ─── SECTION: KONVA ───────────────────────────────────────────────────────────
 export const KonvaSection = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const stageRef = useRef<any>(null)
@@ -96,6 +94,4 @@ export const KonvaSection = () => {
       </DemoCard>
     </div>
   )
-}
-
-// ─── SECTION: FABRIC.JS ───────────────────────────────────────────────────────
+};

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Footer [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.316Z
+// Generated: 2026-10-13T14:10:33.289Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,8 +11,6 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { BURST_IMGS } from './constants'
 import { SignatureLogo } from './SignatureLogo'
-
-// ─── FOOTER (NO SMALL SIGNATURE, BIG CENTER LOGO WITH MIZUMI) ─
 
 export const Footer = () => (
   <footer className="footer scrapbook-footer">
@@ -48,4 +46,4 @@ export const Footer = () => (
       © 2026 Lain098_ · site by mizumi
     </div>
   </footer>
-)
+);

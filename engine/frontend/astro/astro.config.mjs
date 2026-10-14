@@ -1,8 +1,9 @@
 // ============================================================
 // ASTRO CONFIG — Arkzen Astro Stack
-// Astro v6.3.8 | React 19 | Tailwind v4 | Node SSR
+// Astro v7 | React 19 | Tailwind v4 | Node SSR
 // ============================================================
 
+import { fileURLToPath } from 'node:url'
 import { defineConfig }  from 'astro/config'
 import react             from '@astrojs/react'
 import node              from '@astrojs/node'
@@ -53,8 +54,8 @@ export default defineConfig({
     },
     resolve: {
       alias: {
-        '@':             new URL('./src', import.meta.url).pathname,
-        '@/arkzen/core': new URL('./arkzen/core', import.meta.url).pathname,
+        '@/arkzen/core': fileURLToPath(new URL('./arkzen/core', import.meta.url)),
+        '@':             fileURLToPath(new URL('./src', import.meta.url)),
       },
     },
   },

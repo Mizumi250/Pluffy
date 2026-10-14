@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatCard
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:12.796Z
+// Generated: 2026-10-09T13:50:36.389Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,6 +15,7 @@ import { Badge } from '@/arkzen/core/components/utils'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
+import type { FormState, InventoryItem } from './types'
 
 export const StatCard = ({ label, value, icon, color }: { label: string; value: string | number; icon: React.ReactNode; color: string }) => (
   <div className="arkzen-card p-5 flex items-center gap-4">

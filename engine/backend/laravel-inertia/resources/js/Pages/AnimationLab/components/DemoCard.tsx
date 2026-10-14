@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — DemoCard [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:16.852Z
+// Generated: 2026-10-13T17:05:19.557Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

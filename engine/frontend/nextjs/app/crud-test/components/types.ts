@@ -2,8 +2,13 @@
 // ARKZEN GENERATED TYPES — crud-test
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:09.024Z
+// Generated: 2026-10-09T13:50:34.712Z
 // ============================================================
+
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Boxes } from 'lucide-react'
 
 export type Item = {
   id:          number

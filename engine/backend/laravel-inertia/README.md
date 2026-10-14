@@ -1,4 +1,4 @@
-# ARKZEN ENGINE — BACKEND SETUP
+# PLUFF — BACKEND SETUP
 ## Phase 3: Laravel Backend Engine
 
 ---
@@ -8,7 +8,7 @@
 ```
 backend/
 ├── config/
-│   └── arkzen.php                           → Arkzen config (copy to Laravel /config/)
+│   └── arkzen.php                           → Pluff config (copy to Laravel /config/)
 ├── routes/
 │   └── arkzen.php                           → Engine internal routes
 └── app/
@@ -38,7 +38,7 @@ backend/
 ### 1. Copy files into Laravel
 
 ```bash
-# Copy all Arkzen backend files into your Laravel project
+# Copy all Pluff backend files into your Laravel project
 cp -r backend/app/Arkzen app/Arkzen
 cp -r backend/app/Http/Controllers/Arkzen app/Http/Controllers/Arkzen
 cp -r backend/app/Http/Middleware/ArkzenEngineMiddleware.php app/Http/Middleware/

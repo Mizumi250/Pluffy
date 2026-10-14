@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterHead [React+Inertia]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.860Z
+// Generated: 2026-10-13T17:05:22.164Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -26,15 +26,12 @@ export const ChapterHead = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => (
         {chapter.headline.split('\n').map((l, i) => <React.Fragment key={i}>{l}<br /></React.Fragment>)}
       </p>
       <div className="chapter-head-content">
-        {/* Side col 1 */}
         <div className="chapter-side-col">
           <img src={chapter.gallery[1]} alt={chapter.coverLabel} className="chapter-side-img" />
         </div>
-        {/* Main image */}
         <div className="chapter-main-img-wrap">
           <img src={chapter.img} alt={chapter.coverLabel} className="chapter-main-img" />
         </div>
-        {/* Side col 2 */}
         <div className="chapter-side-col">
           <img src={chapter.gallery[2] || chapter.gallery[0]} alt="" className="chapter-side-img chapter-side-img--offset" />
         </div>

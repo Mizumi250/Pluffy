@@ -2,8 +2,10 @@
 // ARKZEN GENERATED TYPES — body-mail-notification [React+Vite]
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:56.074Z
+// Generated: 2026-10-13T14:10:30.801Z
 // ============================================================
+
+
 
 export type SendLogEntry = {
   id:         number

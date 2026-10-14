@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX SHARED TYPES — crud-test
 // Source: @arkzen:native:components:lynx:* (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:47.556Z
+// Generated: 2026-10-14T08:58:40.046Z
 // ============================================================
 
 export type Item = {

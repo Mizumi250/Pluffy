@@ -3,17 +3,17 @@
 // ARKZEN GENERATED PAGE — errors-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:10.066Z
+// Generated: 2026-10-09T13:52:30.163Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { ErrorScreen } from './components/ErrorScreen'
 import { ERRORS } from './components/constants'
-import { err } from './components/utils'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import type { ErrorDef } from './components/types'
 import { useToast } from '@/arkzen/core/components/Toast'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -140,7 +140,7 @@ const ArkzenPage_ErrorsTest_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

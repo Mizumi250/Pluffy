@@ -29,10 +29,10 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import {
   Coffee, Menu, X, Sun, Moon, ArrowRight, Star, MapPin,
-  Clock, Phone, Mail, Instagram, Facebook, ChevronDown,
+  Clock, Phone, Mail, Camera as Instagram, UsersRound as Facebook, ChevronDown,
   Leaf, Award, Heart, Zap, ArrowUpRight, Minus, Plus,
   Quote, Wifi, Utensils, Music, Camera, ExternalLink,
-  Twitter, Youtube
+  Send as Twitter, CirclePlay as Youtube
 } from 'lucide-react'
 
 // ─── REAL H&W DATA (Gingoog City) ─────────────────────────────────────────────

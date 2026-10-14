@@ -3,13 +3,14 @@
 // ARKZEN GENERATED COMPONENT — KindBadge
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:07.432Z
+// Generated: 2026-10-09T13:50:33.784Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { useRouter } from 'next/navigation'
+import type { SendLogEntry } from './types'
 
 export const KindBadge = ({ kind }: { kind: string }) => (
   <span style={{

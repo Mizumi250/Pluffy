@@ -2,19 +2,18 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:57.003Z
+// Generated: 2026-10-13T14:10:30.991Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { useNavigate } from 'react-router'
 import { ChannelPanel } from './components/ChannelPanel'
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
-import { val } from './components/utils'
-import type { Message, WsStatus } from './components/types'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { useNavigate } from 'react-router'
+import type { Message, WsStatus } from './components/types'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
@@ -301,7 +300,7 @@ const ArkzenPage_BroadcastTest_Dashboard = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

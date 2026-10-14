@@ -2,15 +2,11 @@
 // ARKZEN GENERATED PAGE — queue-flow/join [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.638Z
+// Generated: 2026-10-13T17:05:21.965Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { AdminCallButton } from './components/AdminCallButton'
 import { AnnounceBadge } from './components/AnnounceBadge'
 import { BigTicketDisplay } from './components/BigTicketDisplay'
@@ -19,9 +15,12 @@ import { NowServingCard } from './components/NowServingCard'
 import { StatPill } from './components/StatPill'
 import { TicketRow } from './components/TicketRow'
 import { useQueueStore } from './components/hooks'
-import type { MyTicketResponse, Queue, Ticket } from './components/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type QueueFlowJoinProps = {
@@ -44,7 +43,6 @@ const JoinPage = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as MyTicketResponse
-        // ✅ Only set if ticket exists
         if (parsed && parsed.ticket) {
           setMyTicket(parsed)
           setStep('ticket')
@@ -105,7 +103,6 @@ const JoinPage = () => {
     setName('')
   }
 
-  // ✅ Extra safety: only render BigTicketDisplay when ticket exists
   if (step === 'ticket' && myTicket && myTicket.ticket) {
     return (
       <div style={{ maxWidth: 390, margin: '0 auto' }}>
@@ -169,7 +166,7 @@ function ArkzenPage_QueueFlow_Join() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -184,7 +181,11 @@ function ArkzenPage_QueueFlow_Join() {
     </motion.div>
   )
 
-  return <AppLayout>{content}</AppLayout>
+  return (
+    <AppLayout>
+    {content}
+    </AppLayout>
+  )
 }
 
 export default ArkzenPage_QueueFlow_Join

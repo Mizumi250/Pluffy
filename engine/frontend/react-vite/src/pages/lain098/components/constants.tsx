@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — lain098 [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.292Z
+// Generated: 2026-10-13T14:10:33.260Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-// ─── DATA ──────────────────────────────────────────────────────
 
 export const WORKS = [
   {
@@ -45,7 +44,7 @@ export const WORKS = [
     headline: 'Still frames\nset in motion.',
     img: 'https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=800&q=80',
   },
-]
+];
 
 export const COMMISSION_TIERS = [
   {
@@ -81,14 +80,14 @@ export const COMMISSION_TIERS = [
     desc: 'Short looping animation, 4–8 frames. Perfect for Discord, Twitch, or Telegram.',
     features: ['1 character / emoji', '4–8 frame loop', 'GIF + APNG delivery', '1 revision'],
   },
-]
+];
 
 export const NAV_LINKS = [
   { label: 'WORKS', href: '#works' },
   { label: 'COMMISSIONS', href: '#commissions' },
   { label: 'ABOUT', href: '#about' },
   { label: 'CONTACT', href: '#contact' },
-]
+];
 
 export const CAROUSEL_ITEMS = [
   { id: 'fanart',     label: 'Fanart',              img: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1200&q=80' },
@@ -99,9 +98,9 @@ export const CAROUSEL_ITEMS = [
   { id: 'oc2',       label: 'Original Character',   img: 'https://images.unsplash.com/photo-1501366062246-723b4d3e4eb6?w=1200&q=80' },
   { id: 'illus',     label: 'Illustration',         img: 'https://images.unsplash.com/photo-1526289034009-0240ddb68ce3?w=1200&q=80' },
   { id: 'sketch',    label: 'Sketch',               img: 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=1200&q=80' },
-]
+];
 
-export const FULL_CAROUSEL = [...CAROUSEL_ITEMS, ...CAROUSEL_ITEMS, ...CAROUSEL_ITEMS.slice(0, 6)]
+export const FULL_CAROUSEL = [...CAROUSEL_ITEMS, ...CAROUSEL_ITEMS, ...CAROUSEL_ITEMS.slice(0, 6)];
 
 export const BURST_IMGS = [
   'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&q=80',
@@ -112,6 +111,4 @@ export const BURST_IMGS = [
   'https://images.unsplash.com/photo-1501366062246-723b4d3e4eb6?w=200&q=80',
   'https://images.unsplash.com/photo-1526289034009-0240ddb68ce3?w=200&q=80',
   'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=200&q=80',
-]
-
-// ─── SIGNATURE LOGO SVG ───────────────────────────────────────
+];

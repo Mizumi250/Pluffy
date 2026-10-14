@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — asset-hub [React+Inertia]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:16.999Z
+// Generated: 2026-10-13T17:05:19.696Z
 // ============================================================
 
 // ─── ASSET REGISTRY ───────────────────────────────────────────────────────────

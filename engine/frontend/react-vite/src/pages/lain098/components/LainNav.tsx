@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LainNav [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.299Z
+// Generated: 2026-10-13T14:10:33.267Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,10 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { NAV_LINKS } from './constants'
-import { onScroll, x } from './utils'
 import { SignatureLogo } from './SignatureLogo'
-
-// ─── NAV ──────────────────────────────────────────────────────
 
 export const LainNav = ({ visible }: { visible: boolean }) => {
   const [open, setOpen] = useState(false)
@@ -71,8 +68,4 @@ export const LainNav = ({ visible }: { visible: boolean }) => {
       </AnimatePresence>
     </>
   )
-}
-
-// ─── HERO SCRIPT SVG (BACKGROUND) ────────────────────────────
-
-// (Script path is kept as a subtle decorative element over the sky)
+};

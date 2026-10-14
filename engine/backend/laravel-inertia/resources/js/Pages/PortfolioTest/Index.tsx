@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — portfolio-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.495Z
+// Generated: 2026-10-13T17:05:21.850Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { PROJECTS, SKILLS } from './components/constants'
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
+import { BriefcaseBusiness as Linkedin, Code2, CodeXml as Github, ExternalLink, Mail, Star } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type PortfolioTestIndexProps = {
@@ -108,7 +108,7 @@ function ArkzenPage_PortfolioTest_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -123,7 +123,11 @@ function ArkzenPage_PortfolioTest_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_PortfolioTest_Index

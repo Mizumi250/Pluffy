@@ -1,7 +1,7 @@
 {
   "name": "arkzen-react-inertia-engine",
   "version": "1.0.0",
-  "description": "Arkzen Engine — React+Inertia stack. Builder/watcher only. Pages land in laravel-inertia/resources/js/Pages/.",
+  "description": "Pluff — React+Inertia stack. Builder/watcher only. Pages land in laravel-inertia/resources/js/Pages/.",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,13 +10,13 @@
     "watch": "npm run sync:shared && npm run arkzen"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
-    "js-yaml": "^4.1.0",
-    "tsx": "^4.0.0",
-    "typescript": "^5.0.0"
+    "chokidar": "^5.0.0",
+    "js-yaml": "^5.4.3",
+    "tsx": "^4.23.15",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/js-yaml": "^4.0.0",
-    "@types/node": "^20.0.0"
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^26.6.4"
   }
 }

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LiveStudioCard [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.591Z
+// Generated: 2026-10-13T14:10:30.577Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -33,4 +33,4 @@ export const LiveStudioCard = ({ studio }: { studio: typeof LIVE_STUDIOS[0] }) =
       </button>
     </div>
   </div>
-)
+);

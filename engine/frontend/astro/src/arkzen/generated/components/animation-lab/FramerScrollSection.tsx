@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:11.224Z
+// Generated: 2026-10-09T14:13:11.077Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -29,7 +29,6 @@ export const FramerScrollSection = () => {
         subtitle="useScroll, useTransform, useSpring — scroll-linked animations"
         color="#0ea5e9"
       />
-      {/* Progress bar */}
       <motion.div
         style={{
           position: 'fixed', top: 0, left: 0, right: 0, height: 4,

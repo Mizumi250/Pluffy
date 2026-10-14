@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 // User screen (from @arkzen:native:page:native-guest)
@@ -32,7 +33,7 @@ export function ArkzenScreen_LayoutTest_NativeGuest() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       <GuestLayout tatSlug="layout-test" dashboardRoute="/layout-test/dashboard">
       <ScrollView
         className="flex-1"

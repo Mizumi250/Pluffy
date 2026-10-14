@@ -280,7 +280,7 @@ const DashboardPage = () => {
             <div className="flex gap-3">
               <button className="text-xs text-neutral-400" onClick={refetch}>Refresh</button>
               {runs.length > 0 && (
-                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs')} disabled={clearing}>
+                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs', undefined)} disabled={clearing}>
                   {clearing ? '...' : 'Clear'}
                 </button>
               )}
@@ -467,12 +467,12 @@ const DashboardScreen = () => {
                 <Text className="text-xs text-neutral-500">{cmd.schedule}</Text>
               </View>
               <TouchableOpacity
-                onPress={() => runCommand(cmd.key)}
+                onPress={() => runCommand('/api/scheduler-test/run', { command: cmd.key, triggered_by: 'manual' })}
                 disabled={!!running}
                 activeOpacity={0.8}
-                className={`py-2 rounded-xl items-center ${running === cmd.key ? 'bg-neutral-200' : 'bg-neutral-900'}`}
+                className={`py-2 rounded-xl items-center ${runningKey?.command === cmd.key ? 'bg-neutral-200' : 'bg-neutral-900'}`}
               >
-                {running === cmd.key
+                {runningKey?.command === cmd.key
                   ? <ActivityIndicator size="small" color="#737373" />
                   : <Text className="text-white text-xs font-semibold">Run now</Text>
                 }
@@ -668,12 +668,12 @@ const DashboardLynxPage = () => {
                   <text className="text-xs text-neutral-500">{cmd.schedule}</text>
                 </view>
                 <view
-                  bindtap={running === cmd.key ? undefined : () => runCommand(cmd.key)}
+                  bindtap={runningKey?.command === cmd.key ? undefined : () => runCommand('/api/scheduler-test/run', { command: cmd.key, triggered_by: 'manual' })}
                   className="w-full py-2 rounded-xl items-center"
-                  style={{ backgroundColor: running === cmd.key ? '#e5e5e5' : '#171717' }}
+                  style={{ backgroundColor: runningKey?.command === cmd.key ? '#e5e5e5' : '#171717' }}
                 >
-                  <text className={`text-sm font-semibold ${running === cmd.key ? 'text-neutral-700' : 'text-white'}`}>
-                    {running === cmd.key ? '...' : 'Run now'}
+                  <text className={`text-sm font-semibold ${runningKey?.command === cmd.key ? 'text-neutral-700' : 'text-white'}`}>
+                    {runningKey?.command === cmd.key ? '...' : 'Run now'}
                   </text>
                 </view>
               </view>

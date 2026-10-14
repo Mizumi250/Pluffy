@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow [React+Inertia]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.279Z
+// Generated: 2026-10-13T17:05:20.444Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -1,6 +1,6 @@
-# Arkzen Engine v9.0
+# Pluff v9.0
 
-Arkzen is a full-stack scaffolding engine. Write one Tatemono file — get a complete, isolated, production-ready system.
+Pluff is a full-stack scaffolding engine. Write one Tatemono file — get a complete, isolated, production-ready system.
 
 > **One Tatemono = one complete client system. No shared anything.**
 
@@ -31,11 +31,13 @@ Stack is chosen per-project, not per-tatemono. Tatemono syntax is identical acro
 | `astro` | Astro + React islands + TypeScript + Tailwind | Laravel 13 | Decoupled |
 | `react-inertia` | React 18 + Inertia.js + TypeScript | Laravel 13 | Monolithic |
 | `native` *(partial)* | React Native + React Navigation | Laravel 13 | Decoupled |
+| `tauri` | Tauri desktop shell + existing React/Vite renderer | Laravel 13 | Desktop |
 
 Switch stack:
 ```bash
 node arkzen.js switch nextjs
 node arkzen.js stacks        # list all + status
+node arkzen.js switch tauri  # desktop app using the React+Vite renderer
 ```
 
 ---
@@ -102,6 +104,31 @@ node start.js          # start everything
 node mizumi.js         # interactive picker — setup / start / export / switch
 ```
 
+### Windows setup
+
+Pluff supports Windows as well as Termux/Linux. Install Node.js with npm first.
+Web stacks also need PHP and Composer available on `PATH`; native-only stacks do not
+need the Laravel backend. Then open PowerShell in the Pluff folder:
+
+The Tauri target additionally requires Rust/Cargo and Tauri's platform prerequisites
+(on Windows, Microsoft C++ Build Tools and WebView2). It uses the existing
+`react-vite` frontend as its renderer; select it with `node .\mizumi.js web tauri`.
+
+```powershell
+node .\setup.js
+node .\start.js
+```
+
+Use `node .\mizumi.js` for the interactive CLI. Stack commands and Tatemono paths
+are resolved from the project location, so the registry works after moving Pluff
+between machines. On Windows, Expo device previews still require the Expo Go app;
+Android builds may additionally require Android Studio and its SDK.
+Pluff's command-line scripts use native ES modules; the root `package.json`
+declares that module format explicitly. The engine validator and generated
+standalone project scripts also use ES modules. Framework configuration files
+that their loaders expect in CommonJS format retain that format in their
+framework-local package scopes.
+
 ---
 
 ## Engine Commands
@@ -109,7 +136,7 @@ node mizumi.js         # interactive picker — setup / start / export / switch
 ```bash
 node setup.js                  # one-time setup (PHP deps, npm, .env, migrations)
 node start.js                  # start Laravel + queue worker + Reverb + frontend
-node arkzen.js switch <stack>  # switch active frontend stack
+node arkzen.js switch <stack>  # switch active frontend/desktop stack
 node arkzen.js stacks          # list stacks + install status
 node export.js <tatemono>      # export one tatemono as standalone deployable project
 node mizumi.js                 # interactive CLI picker (setup / start / export / switch / list)
@@ -121,6 +148,10 @@ node mizumi.js stack           # show current active stack
 node mizumi.js stacks          # list all stacks + install status
 node mizumi.js modules         # list all registered tatemonos
 ```
+
+For a Tauri desktop development run, choose `tauri` as the active stack, run
+`node setup.js`, then `node start.js`. The Tauri shell launches the React+Vite
+renderer and Laravel-backed engine together.
 
 ---
 
@@ -223,5 +254,4 @@ import { useEditor, EditorContent } from '@tiptap/react'
 
 ## Documentation
 
-- **ARKZEN_GUIDELINES_v9.0.md** — Complete DSL reference for generating tatemonos. Paste into any AI.
-- **ARKZEN_ROADMAP.md** — Planned features and next versions.
+- **PLUFF_GUIDELINES_v10.md** — Complete DSL reference for generating tatemonos. Paste into any AI.

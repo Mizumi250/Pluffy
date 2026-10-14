@@ -71,6 +71,20 @@ const NATIVE_CORE_COMPATIBLE_STACKS = new Set(['expo'])
 // mobile stacks outside NATIVE_CORE_COMPATIBLE_STACKS
 const NATIVE_CORE_EXPO_ONLY_FOLDERS = new Set(['components', 'layouts'])
 
+// Mobile stacks with an actual React Native runtime underneath (AsyncStorage,
+// require()-based asset imports, react-native StyleSheet.create). Expo and bare
+// RN both qualify — Lynx does not (no react-native at all: lynx.localStorage,
+// ES-import assets via Rspeedy/Rsbuild, fully inline styles via @lynx-js/react).
+const NATIVE_CORE_RN_RUNTIME_STACKS = new Set(['expo', 'react-native'])
+
+// Entries inside native-core that assume a real RN runtime and must not be
+// force-fed to mobile stacks outside NATIVE_CORE_RN_RUNTIME_STACKS (i.e. lynx).
+// assets.ts   — require()-based, Lynx uses ES imports instead
+// stores/     — authStore.ts uses @react-native-async-storage, Lynx has no RN at all
+// lib/        — dsl-native-style-emitter.ts emits StyleSheet.create(), meaningless
+//               to Lynx which has its own dsl-lynx-style-emitter.ts (inline styles)
+const NATIVE_CORE_RN_RUNTIME_ONLY = new Set(['assets.ts', 'stores', 'lib'])
+
 export function syncSharedCoreToCurrentStack(label: string): void {
   const rootDir       = path.resolve(process.cwd(), '..', '..', '..')
   const sharedDir     = path.join(rootDir, 'engine', 'shared', 'arkzen')
@@ -115,8 +129,14 @@ if (fs.existsSync(webCoreDir)) {
     // hand-written, never touched by this sync, exactly like adapters/ for web stacks.
     const inheritsExpoUI = NATIVE_CORE_COMPATIBLE_STACKS.has(stackName)
 
+    // Only stacks with a real RN runtime (expo, react-native) get assets.ts,
+    // stores/, and lib/ verbatim. Lynx skips all three and keeps its own
+    // hand-written versions under arkzen/core/ — never touched by this sync.
+    const hasRNRuntime = NATIVE_CORE_RN_RUNTIME_STACKS.has(stackName)
+
     for (const entry of fs.readdirSync(nativeCoreDir, { withFileTypes: true })) {
       if (!inheritsExpoUI && NATIVE_CORE_EXPO_ONLY_FOLDERS.has(entry.name)) continue
+      if (!hasRNRuntime && NATIVE_CORE_RN_RUNTIME_ONLY.has(entry.name)) continue
 
       const src  = path.join(nativeCoreDir, entry.name)
       const dest = path.join(stackCoreDir, entry.name)
@@ -127,9 +147,12 @@ if (fs.existsSync(webCoreDir)) {
       }
     }
 
-    const syncedLabel = inheritsExpoUI
+    const excluded: string[] = []
+    if (!inheritsExpoUI) excluded.push('components/', 'layouts/')
+    if (!hasRNRuntime)   excluded.push('assets.ts', 'stores/', 'lib/')
+    const syncedLabel = excluded.length === 0
       ? 'native-core/*'
-      : 'native-core/* (excl. components/, layouts/ — stack-owned)'
+      : `native-core/* (excl. ${excluded.join(', ')} — stack-owned)`
     console.log(`[${label}] ✓ Synced shared core (${[...ENGINE_FILES, ...CROSS_PLATFORM_FOLDERS, syncedLabel].join(', ')})`)
   } else if (!isMobile && fs.existsSync(webCoreDir)) {
     // Web stacks: sync web-only folders (components, layouts)
@@ -137,7 +160,7 @@ if (fs.existsSync(webCoreDir)) {
       const src  = path.join(webCoreDir, folder)
       const dest = path.join(stackCoreDir, folder)
       if (!fs.existsSync(src)) continue
-      syncDirectoryIfChanged(src, dest, folder === 'adapters' ? ADAPTER_PROTECTED : new Set())
+      syncDirectoryIfChanged(src, dest, new Set())
     }
 
     for (const file of WEB_FILES) {

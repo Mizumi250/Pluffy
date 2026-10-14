@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Chapter [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-16T14:29:31.806Z
+// Generated: 2026-10-09T14:43:21.241Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
-import { Animated, Dimensions, Image, Linking, Modal, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
+import { Animated, Dimensions, Image, Linking, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { SafeAreaView } from 'react-native-safe-area-context'
 import { CHAPTERS } from './constants'
 import { s } from '../../../arkzen/generated/shan-shan.native-styles'
 import { GalleryStrip } from './GalleryStrip'
@@ -44,7 +45,6 @@ export const Chapter = ({
     ]).start()
   }, [revealed])
 
-  // Subtle cover scale pulse on mount
   useEffect(() => {
     Animated.loop(
       Animated.sequence([
@@ -61,7 +61,6 @@ export const Chapter = ({
       style={s.chapterWrap}
       onLayout={revealBody}
     >
-      {/* ── Cover image ── */}
       <View style={{ overflow: 'hidden', height: 260 }}>
         <Animated.Image
           source={chapter.img}
@@ -70,35 +69,29 @@ export const Chapter = ({
         />
         <View style={s.chapterCoverOverlay} />
 
-        {/* Num watermark */}
         <View style={{ position: 'absolute', bottom: 8, right: 16 }}>
           <Text style={s.chapterCoverNum}>{chapter.num}</Text>
         </View>
 
-        {/* Chapter label badge */}
         <View style={[s.chapterCoverBadge]}>
           <View style={s.redPill}>
             <Text style={s.redPillText}>[{chapter.coverLabel.toUpperCase()}]</Text>
           </View>
         </View>
 
-        {/* Bottom cover label */}
         <View style={s.chapterCoverLabel}>
           <Text style={s.chapterCoverLabelText}>[{chapter.num}] [CHAPTER]</Text>
         </View>
       </View>
 
-      {/* ── Chapter body (animated in) ── */}
       <Animated.View style={{ opacity: bodyOpacity, transform: [{ translateY: bodyTranslate }] }}>
 
-        {/* Header */}
         <View style={s.chapterBody}>
           <Text style={s.chapterTagline}>{chapter.tagline}</Text>
           <Text style={s.chapterTitle}>{chapter.coverLabel.toUpperCase()}</Text>
           <Text style={s.chapterHeadline}>{chapter.headline}</Text>
           <Text style={s.chapterDesc}>{chapter.desc}</Text>
 
-          {/* Tags row */}
           <View style={s.chapterTagsWrap}>
             {chapter.tags.map((tag) => (
               <View key={tag} style={s.tagPill}>
@@ -110,14 +103,12 @@ export const Chapter = ({
 
         <View style={s.chapterDivider} />
 
-        {/* Gallery strip */}
         <View style={{ marginVertical: 2 }}>
           <GalleryStrip images={chapter.gallery} />
         </View>
 
         <View style={s.chapterDivider} />
 
-        {/* Craft quote */}
         <View style={s.chapterCraftWrap}>
           <Text style={s.chapterCraftLabel}>[MY APPROACH]</Text>
           <Text style={s.chapterCraftText}>{chapter.craft}</Text>
@@ -125,14 +116,12 @@ export const Chapter = ({
 
         <View style={s.chapterDivider} />
 
-        {/* Sound strip */}
         <View style={s.chapterSoundStrip}>
           <Text style={s.chapterSoundLabel}>THE SOUND WITHIN</Text>
           <Text style={s.chapterSoundTitle}>{chapter.sound}</Text>
           <SoundBars />
         </View>
 
-        {/* Outro */}
         <View style={s.chapterOutroWrap}>
           <Text style={s.chapterOutroDesc}>{chapter.desc.slice(0, 90)}…</Text>
 

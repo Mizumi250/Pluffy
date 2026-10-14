@@ -3,17 +3,17 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:16.083Z
+// Generated: 2026-10-09T14:13:13.689Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { BigTicketDisplay } from '@/arkzen/generated/components/queue-flow/BigTicketDisplay'
 import { useQueueStore } from '@/arkzen/generated/components/queue-flow/hooks'
 import type { MyTicketResponse, Queue, Ticket } from '@/arkzen/generated/components/queue-flow/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Page component code (from @arkzen:page:join)
 const JoinPage = () => {
@@ -28,7 +28,6 @@ const JoinPage = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as MyTicketResponse
-        // ✅ Only set if ticket exists
         if (parsed && parsed.ticket) {
           setMyTicket(parsed)
           setStep('ticket')
@@ -89,7 +88,6 @@ const JoinPage = () => {
     setName('')
   }
 
-  // ✅ Extra safety: only render BigTicketDisplay when ticket exists
   if (step === 'ticket' && myTicket && myTicket.ticket) {
     return (
       <div style={{ maxWidth: 390, margin: '0 auto' }}>

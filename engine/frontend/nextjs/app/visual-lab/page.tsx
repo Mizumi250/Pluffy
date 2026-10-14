@@ -3,13 +3,11 @@
 // ARKZEN GENERATED PAGE — visual-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:18.018Z
+// Generated: 2026-10-09T13:50:41.376Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { visualLabAnimations, pageVariants } from '@/arkzen/generated/visual-lab.animations'
 import { BabylonSection } from './components/BabylonSection'
 import { CurtainsSection } from './components/CurtainsSection'
 import { DemoCard } from './components/DemoCard'
@@ -25,7 +23,6 @@ import { ParticlesSection } from './components/ParticlesSection'
 import { PhaserSection } from './components/PhaserSection'
 import { PixiSection } from './components/PixiSection'
 import { PlayCanvasSection } from './components/PlayCanvasSection'
-import { Proton } from './components/Proton'
 import { REGLSection } from './components/REGLSection'
 import { RapierSection } from './components/RapierSection'
 import { ResetBtn } from './components/ResetBtn'
@@ -36,10 +33,11 @@ import { TWGLSection } from './components/TWGLSection'
 import { TextFXSection } from './components/TextFXSection'
 import { ThreeR3FSection } from './components/ThreeR3FSection'
 import { UXSection } from './components/UXSection'
-import { VanillaTilt } from './components/VanillaTilt'
 import { NAV_SECTIONS } from './components/constants'
 import { useVisualLabStore } from './components/hooks'
-import { animate, canvas, curtains, label, lenis, proton, regl } from './components/utils'
+import type { VisualLabState } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { pageVariants, visualLabAnimations } from '@/arkzen/generated/visual-lab.animations'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -136,8 +134,7 @@ const ArkzenPage_VisualLab_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = visualLabAnimations(pageRef)
-    return cleanup
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

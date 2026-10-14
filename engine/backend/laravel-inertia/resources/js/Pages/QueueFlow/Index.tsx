@@ -2,15 +2,11 @@
 // ARKZEN GENERATED PAGE — queue-flow/index [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.628Z
+// Generated: 2026-10-13T17:05:21.954Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { AdminCallButton } from './components/AdminCallButton'
 import { AnnounceBadge } from './components/AnnounceBadge'
 import { BigTicketDisplay } from './components/BigTicketDisplay'
@@ -19,10 +15,13 @@ import { NowServingCard } from './components/NowServingCard'
 import { StatPill } from './components/StatPill'
 import { TicketRow } from './components/TicketRow'
 import { useAnnounce, useQueueStore } from './components/hooks'
-import { announce, fmtWait, id } from './components/utils'
-import type { Queue, QueueStatus } from './components/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import { fmtWait } from './components/utils'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type QueueFlowIndexProps = {
@@ -148,7 +147,7 @@ function ArkzenPage_QueueFlow_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -163,7 +162,11 @@ function ArkzenPage_QueueFlow_Index() {
     </motion.div>
   )
 
-  return <AppLayout>{content}</AppLayout>
+  return (
+    <AppLayout>
+    {content}
+    </AppLayout>
+  )
 }
 
 export default ArkzenPage_QueueFlow_Index

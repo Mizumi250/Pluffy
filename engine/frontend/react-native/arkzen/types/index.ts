@@ -299,16 +299,18 @@ export interface ArkzenMail {
 }
 
 export interface ArkzenConsole {
-  signature: string
-  description: string
+  signature?: string
+  description?: string
   schedule?: string
   [key: string]: unknown
 }
 
 export interface ArkzenSection {
+  name?: string
   raw: string
   start: number
   end: number
+  [key: string]: unknown
 }
 
 export type ArkzenPageLayout = 'guest' | 'auth' | string
@@ -384,7 +386,8 @@ export interface ParsedTatemono {
   nativePages:      ArkzenPage[]     // @arkzen:native:page:name
   nativeComponents: ArkzenSection[]  // @arkzen:native:components:name
   nativeLayouts:    ArkzenSection[]  // @arkzen:native:layout:name
-  nativeStyles:     ArkzenSection[]  // @arkzen:native:style:name
+  nativeStyleGlobal?: ArkzenSection    // @arkzen:native:style (global, unnamed)
+  nativeStyles:       ArkzenSection[]  // @arkzen:native:style:name
 
   // ── Bare RN-specific blocks ────────────────────────────────────
   nativeAnimationRN?:  ArkzenSection  // @arkzen:native:animation:rn

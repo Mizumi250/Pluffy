@@ -9,93 +9,108 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as UploadTest_root_redirectRouteImport } from './routes/upload-test/__root_redirect'
-import { Route as SchedulerTest_root_redirectRouteImport } from './routes/scheduler-test/__root_redirect'
-import { Route as RolesTest_root_redirectRouteImport } from './routes/roles-test/__root_redirect'
-import { Route as NotificationTest_root_redirectRouteImport } from './routes/notification-test/__root_redirect'
-import { Route as MailTest_root_redirectRouteImport } from './routes/mail-test/__root_redirect'
-import { Route as JobTest_root_redirectRouteImport } from './routes/job-test/__root_redirect'
-import { Route as Certflow_root_redirectRouteImport } from './routes/certflow/__root_redirect'
-import { Route as BroadcastTest_root_redirectRouteImport } from './routes/broadcast-test/__root_redirect'
-import { Route as BodyMailNotification_root_redirectRouteImport } from './routes/body-mail-notification/__root_redirect'
 import { Route as AuthTest_root_redirectRouteImport } from './routes/auth-test/__root_redirect'
+import { Route as BodyMailNotification_root_redirectRouteImport } from './routes/body-mail-notification/__root_redirect'
+import { Route as BroadcastTest_root_redirectRouteImport } from './routes/broadcast-test/__root_redirect'
+import { Route as Certflow_root_redirectRouteImport } from './routes/certflow/__root_redirect'
+import { Route as JobTest_root_redirectRouteImport } from './routes/job-test/__root_redirect'
+import { Route as MailTest_root_redirectRouteImport } from './routes/mail-test/__root_redirect'
+import { Route as NotificationTest_root_redirectRouteImport } from './routes/notification-test/__root_redirect'
+import { Route as RolesTest_root_redirectRouteImport } from './routes/roles-test/__root_redirect'
+import { Route as SchedulerTest_root_redirectRouteImport } from './routes/scheduler-test/__root_redirect'
+import { Route as UploadTest_root_redirectRouteImport } from './routes/upload-test/__root_redirect'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as VisualLabIndexRouteImport } from './routes/visual-lab/index'
-import { Route as ShanShanIndexRouteImport } from './routes/shan-shan/index'
-import { Route as QueueFlowIndexRouteImport } from './routes/queue-flow/index'
-import { Route as PortfolioTestIndexRouteImport } from './routes/portfolio-test/index'
-import { Route as NewUpdatesStylesIndexRouteImport } from './routes/new-updates-styles/index'
-import { Route as MiddlewareTestIndexRouteImport } from './routes/middleware-test/index'
-import { Route as JoPayrollIndexRouteImport } from './routes/jo-payroll/index'
-import { Route as InventoryManagementIndexRouteImport } from './routes/inventory-management/index'
-import { Route as EventsTestIndexRouteImport } from './routes/events-test/index'
-import { Route as ErrorsTestIndexRouteImport } from './routes/errors-test/index'
-import { Route as DtrGeofencingIndexRouteImport } from './routes/dtr-geofencing/index'
-import { Route as CrudTestIndexRouteImport } from './routes/crud-test/index'
-import { Route as ChurchCommunityIndexRouteImport } from './routes/church-community/index'
-import { Route as BodyEndpointHandlerIndexRouteImport } from './routes/body-endpoint-handler/index'
-import { Route as AssetHubIndexRouteImport } from './routes/asset-hub/index'
 import { Route as AnimationLabIndexRouteImport } from './routes/animation-lab/index'
-import { Route as UploadTestDashboardRouteImport } from './routes/upload-test/dashboard'
-import { Route as SchedulerTestDashboardRouteImport } from './routes/scheduler-test/dashboard'
-import { Route as RolesTestRegisterRouteImport } from './routes/roles-test/register'
-import { Route as RolesTestLoginRouteImport } from './routes/roles-test/login'
-import { Route as RolesTestDashboardRouteImport } from './routes/roles-test/dashboard'
-import { Route as QueueFlowJoinRouteImport } from './routes/queue-flow/join'
-import { Route as QueueFlowAdminRouteImport } from './routes/queue-flow/admin'
-import { Route as QueueFlowSplatRouteImport } from './routes/queue-flow/$'
-import { Route as NotificationTestRegisterRouteImport } from './routes/notification-test/register'
-import { Route as NotificationTestLoginRouteImport } from './routes/notification-test/login'
-import { Route as NotificationTestDashboardRouteImport } from './routes/notification-test/dashboard'
-import { Route as NewUpdatesStylesFeaturesRouteImport } from './routes/new-updates-styles/features'
-import { Route as NewUpdatesStylesAboutRouteImport } from './routes/new-updates-styles/about'
-import { Route as MailTestRegisterRouteImport } from './routes/mail-test/register'
-import { Route as MailTestLoginRouteImport } from './routes/mail-test/login'
-import { Route as MailTestDashboardRouteImport } from './routes/mail-test/dashboard'
-import { Route as JobTestDashboardRouteImport } from './routes/job-test/dashboard'
-import { Route as JoPayrollSssRouteImport } from './routes/jo-payroll/sss'
-import { Route as JoPayrollPayslipRouteImport } from './routes/jo-payroll/payslip'
-import { Route as JoPayrollJobDatabaseRouteImport } from './routes/jo-payroll/job-database'
-import { Route as JoPayrollHdmfRouteImport } from './routes/jo-payroll/hdmf'
-import { Route as JoPayrollCashAtmRouteImport } from './routes/jo-payroll/cash-atm'
-import { Route as JoPayrollAppointmentsRouteImport } from './routes/jo-payroll/appointments'
-import { Route as JoPayrollSplatRouteImport } from './routes/jo-payroll/$'
-import { Route as ErrorsTestSplatRouteImport } from './routes/errors-test/$'
-import { Route as DtrGeofencingAdminRouteImport } from './routes/dtr-geofencing/admin'
-import { Route as ChurchCommunityRegisterRouteImport } from './routes/church-community/register'
-import { Route as ChurchCommunityMembersRouteImport } from './routes/church-community/members'
-import { Route as ChurchCommunityLoginRouteImport } from './routes/church-community/login'
-import { Route as ChurchCommunityInventoryRouteImport } from './routes/church-community/inventory'
-import { Route as ChurchCommunityAdminRouteImport } from './routes/church-community/admin'
-import { Route as CertflowVerifyRouteImport } from './routes/certflow/verify'
-import { Route as CertflowLoginRouteImport } from './routes/certflow/login'
-import { Route as CertflowFillRouteImport } from './routes/certflow/fill'
-import { Route as CertflowDashboardRouteImport } from './routes/certflow/dashboard'
-import { Route as BroadcastTestRegisterRouteImport } from './routes/broadcast-test/register'
-import { Route as BroadcastTestLoginRouteImport } from './routes/broadcast-test/login'
-import { Route as BroadcastTestDashboardRouteImport } from './routes/broadcast-test/dashboard'
-import { Route as BodyMailNotificationRegisterRouteImport } from './routes/body-mail-notification/register'
-import { Route as BodyMailNotificationLoginRouteImport } from './routes/body-mail-notification/login'
-import { Route as BodyMailNotificationDashboardRouteImport } from './routes/body-mail-notification/dashboard'
-import { Route as AuthTestRegisterRouteImport } from './routes/auth-test/register'
-import { Route as AuthTestLoginRouteImport } from './routes/auth-test/login'
+import { Route as AssetHubIndexRouteImport } from './routes/asset-hub/index'
 import { Route as AuthTestDashboardRouteImport } from './routes/auth-test/dashboard'
+import { Route as AuthTestLoginRouteImport } from './routes/auth-test/login'
+import { Route as AuthTestRegisterRouteImport } from './routes/auth-test/register'
+import { Route as BodyEndpointHandlerIndexRouteImport } from './routes/body-endpoint-handler/index'
+import { Route as BodyMailNotificationDashboardRouteImport } from './routes/body-mail-notification/dashboard'
+import { Route as BodyMailNotificationLoginRouteImport } from './routes/body-mail-notification/login'
+import { Route as BodyMailNotificationRegisterRouteImport } from './routes/body-mail-notification/register'
+import { Route as BroadcastTestDashboardRouteImport } from './routes/broadcast-test/dashboard'
+import { Route as BroadcastTestLoginRouteImport } from './routes/broadcast-test/login'
+import { Route as BroadcastTestRegisterRouteImport } from './routes/broadcast-test/register'
+import { Route as CertflowDashboardRouteImport } from './routes/certflow/dashboard'
+import { Route as CertflowFillRouteImport } from './routes/certflow/fill'
+import { Route as CertflowLoginRouteImport } from './routes/certflow/login'
+import { Route as CertflowVerifyRouteImport } from './routes/certflow/verify'
+import { Route as ChurchCommunityIndexRouteImport } from './routes/church-community/index'
+import { Route as ChurchCommunityAdminRouteImport } from './routes/church-community/admin'
+import { Route as ChurchCommunityInventoryRouteImport } from './routes/church-community/inventory'
+import { Route as ChurchCommunityLoginRouteImport } from './routes/church-community/login'
+import { Route as ChurchCommunityMembersRouteImport } from './routes/church-community/members'
+import { Route as ChurchCommunityRegisterRouteImport } from './routes/church-community/register'
+import { Route as CrudTestIndexRouteImport } from './routes/crud-test/index'
+import { Route as DtrGeofencingIndexRouteImport } from './routes/dtr-geofencing/index'
+import { Route as DtrGeofencingAdminRouteImport } from './routes/dtr-geofencing/admin'
+import { Route as ErrorsTestIndexRouteImport } from './routes/errors-test/index'
+import { Route as ErrorsTestSplatRouteImport } from './routes/errors-test/$'
+import { Route as EventsTestIndexRouteImport } from './routes/events-test/index'
+import { Route as InventoryManagementIndexRouteImport } from './routes/inventory-management/index'
+import { Route as JoPayrollIndexRouteImport } from './routes/jo-payroll/index'
+import { Route as JoPayrollSplatRouteImport } from './routes/jo-payroll/$'
+import { Route as JoPayrollAppointmentsRouteImport } from './routes/jo-payroll/appointments'
+import { Route as JoPayrollCashAtmRouteImport } from './routes/jo-payroll/cash-atm'
+import { Route as JoPayrollHdmfRouteImport } from './routes/jo-payroll/hdmf'
+import { Route as JoPayrollJobDatabaseRouteImport } from './routes/jo-payroll/job-database'
+import { Route as JoPayrollPayslipRouteImport } from './routes/jo-payroll/payslip'
+import { Route as JoPayrollSssRouteImport } from './routes/jo-payroll/sss'
+import { Route as JobTestDashboardRouteImport } from './routes/job-test/dashboard'
+import { Route as MailTestDashboardRouteImport } from './routes/mail-test/dashboard'
+import { Route as MailTestLoginRouteImport } from './routes/mail-test/login'
+import { Route as MailTestRegisterRouteImport } from './routes/mail-test/register'
+import { Route as MiddlewareTestIndexRouteImport } from './routes/middleware-test/index'
+import { Route as NewUpdatesStylesIndexRouteImport } from './routes/new-updates-styles/index'
+import { Route as NewUpdatesStylesAboutRouteImport } from './routes/new-updates-styles/about'
+import { Route as NewUpdatesStylesFeaturesRouteImport } from './routes/new-updates-styles/features'
+import { Route as NotificationTestDashboardRouteImport } from './routes/notification-test/dashboard'
+import { Route as NotificationTestLoginRouteImport } from './routes/notification-test/login'
+import { Route as NotificationTestRegisterRouteImport } from './routes/notification-test/register'
+import { Route as PortfolioTestIndexRouteImport } from './routes/portfolio-test/index'
+import { Route as QueueFlowIndexRouteImport } from './routes/queue-flow/index'
+import { Route as QueueFlowSplatRouteImport } from './routes/queue-flow/$'
+import { Route as QueueFlowAdminRouteImport } from './routes/queue-flow/admin'
+import { Route as QueueFlowJoinRouteImport } from './routes/queue-flow/join'
+import { Route as RolesTestDashboardRouteImport } from './routes/roles-test/dashboard'
+import { Route as RolesTestLoginRouteImport } from './routes/roles-test/login'
+import { Route as RolesTestRegisterRouteImport } from './routes/roles-test/register'
+import { Route as SchedulerTestDashboardRouteImport } from './routes/scheduler-test/dashboard'
+import { Route as ShanShanIndexRouteImport } from './routes/shan-shan/index'
+import { Route as UploadTestDashboardRouteImport } from './routes/upload-test/dashboard'
+import { Route as VisualLabIndexRouteImport } from './routes/visual-lab/index'
 
-const UploadTest_root_redirectRoute =
-  UploadTest_root_redirectRouteImport.update({
-    id: '/upload-test/__root_redirect',
-    path: '/upload-test',
+const AuthTest_root_redirectRoute = AuthTest_root_redirectRouteImport.update({
+  id: '/auth-test/__root_redirect',
+  path: '/auth-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BodyMailNotification_root_redirectRoute =
+  BodyMailNotification_root_redirectRouteImport.update({
+    id: '/body-mail-notification/__root_redirect',
+    path: '/body-mail-notification',
     getParentRoute: () => rootRouteImport,
   } as any)
-const SchedulerTest_root_redirectRoute =
-  SchedulerTest_root_redirectRouteImport.update({
-    id: '/scheduler-test/__root_redirect',
-    path: '/scheduler-test',
+const BroadcastTest_root_redirectRoute =
+  BroadcastTest_root_redirectRouteImport.update({
+    id: '/broadcast-test/__root_redirect',
+    path: '/broadcast-test',
     getParentRoute: () => rootRouteImport,
   } as any)
-const RolesTest_root_redirectRoute = RolesTest_root_redirectRouteImport.update({
-  id: '/roles-test/__root_redirect',
-  path: '/roles-test',
+const Certflow_root_redirectRoute = Certflow_root_redirectRouteImport.update({
+  id: '/certflow/__root_redirect',
+  path: '/certflow',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobTest_root_redirectRoute = JobTest_root_redirectRouteImport.update({
+  id: '/job-test/__root_redirect',
+  path: '/job-test',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailTest_root_redirectRoute = MailTest_root_redirectRouteImport.update({
+  id: '/mail-test/__root_redirect',
+  path: '/mail-test',
   getParentRoute: () => rootRouteImport,
 } as any)
 const NotificationTest_root_redirectRoute =
@@ -104,107 +119,51 @@ const NotificationTest_root_redirectRoute =
     path: '/notification-test',
     getParentRoute: () => rootRouteImport,
   } as any)
-const MailTest_root_redirectRoute = MailTest_root_redirectRouteImport.update({
-  id: '/mail-test/__root_redirect',
-  path: '/mail-test',
+const RolesTest_root_redirectRoute = RolesTest_root_redirectRouteImport.update({
+  id: '/roles-test/__root_redirect',
+  path: '/roles-test',
   getParentRoute: () => rootRouteImport,
 } as any)
-const JobTest_root_redirectRoute = JobTest_root_redirectRouteImport.update({
-  id: '/job-test/__root_redirect',
-  path: '/job-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const Certflow_root_redirectRoute = Certflow_root_redirectRouteImport.update({
-  id: '/certflow/__root_redirect',
-  path: '/certflow',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BroadcastTest_root_redirectRoute =
-  BroadcastTest_root_redirectRouteImport.update({
-    id: '/broadcast-test/__root_redirect',
-    path: '/broadcast-test',
+const SchedulerTest_root_redirectRoute =
+  SchedulerTest_root_redirectRouteImport.update({
+    id: '/scheduler-test/__root_redirect',
+    path: '/scheduler-test',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BodyMailNotification_root_redirectRoute =
-  BodyMailNotification_root_redirectRouteImport.update({
-    id: '/body-mail-notification/__root_redirect',
-    path: '/body-mail-notification',
+const UploadTest_root_redirectRoute =
+  UploadTest_root_redirectRouteImport.update({
+    id: '/upload-test/__root_redirect',
+    path: '/upload-test',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthTest_root_redirectRoute = AuthTest_root_redirectRouteImport.update({
-  id: '/auth-test/__root_redirect',
-  path: '/auth-test',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const VisualLabIndexRoute = VisualLabIndexRouteImport.update({
-  id: '/visual-lab/',
-  path: '/visual-lab/',
+const AnimationLabIndexRoute = AnimationLabIndexRouteImport.update({
+  id: '/animation-lab/',
+  path: '/animation-lab/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ShanShanIndexRoute = ShanShanIndexRouteImport.update({
-  id: '/shan-shan/',
-  path: '/shan-shan/',
+const AssetHubIndexRoute = AssetHubIndexRouteImport.update({
+  id: '/asset-hub/',
+  path: '/asset-hub/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const QueueFlowIndexRoute = QueueFlowIndexRouteImport.update({
-  id: '/queue-flow/',
-  path: '/queue-flow/',
+const AuthTestDashboardRoute = AuthTestDashboardRouteImport.update({
+  id: '/auth-test/dashboard',
+  path: '/auth-test/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const PortfolioTestIndexRoute = PortfolioTestIndexRouteImport.update({
-  id: '/portfolio-test/',
-  path: '/portfolio-test/',
+const AuthTestLoginRoute = AuthTestLoginRouteImport.update({
+  id: '/auth-test/login',
+  path: '/auth-test/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const NewUpdatesStylesIndexRoute = NewUpdatesStylesIndexRouteImport.update({
-  id: '/new-updates-styles/',
-  path: '/new-updates-styles/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MiddlewareTestIndexRoute = MiddlewareTestIndexRouteImport.update({
-  id: '/middleware-test/',
-  path: '/middleware-test/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollIndexRoute = JoPayrollIndexRouteImport.update({
-  id: '/jo-payroll/',
-  path: '/jo-payroll/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const InventoryManagementIndexRoute =
-  InventoryManagementIndexRouteImport.update({
-    id: '/inventory-management/',
-    path: '/inventory-management/',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const EventsTestIndexRoute = EventsTestIndexRouteImport.update({
-  id: '/events-test/',
-  path: '/events-test/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ErrorsTestIndexRoute = ErrorsTestIndexRouteImport.update({
-  id: '/errors-test/',
-  path: '/errors-test/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DtrGeofencingIndexRoute = DtrGeofencingIndexRouteImport.update({
-  id: '/dtr-geofencing/',
-  path: '/dtr-geofencing/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CrudTestIndexRoute = CrudTestIndexRouteImport.update({
-  id: '/crud-test/',
-  path: '/crud-test/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChurchCommunityIndexRoute = ChurchCommunityIndexRouteImport.update({
-  id: '/church-community/',
-  path: '/church-community/',
+const AuthTestRegisterRoute = AuthTestRegisterRouteImport.update({
+  id: '/auth-test/register',
+  path: '/auth-test/register',
   getParentRoute: () => rootRouteImport,
 } as any)
 const BodyEndpointHandlerIndexRoute =
@@ -213,214 +172,10 @@ const BodyEndpointHandlerIndexRoute =
     path: '/body-endpoint-handler/',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AssetHubIndexRoute = AssetHubIndexRouteImport.update({
-  id: '/asset-hub/',
-  path: '/asset-hub/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const AnimationLabIndexRoute = AnimationLabIndexRouteImport.update({
-  id: '/animation-lab/',
-  path: '/animation-lab/',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const UploadTestDashboardRoute = UploadTestDashboardRouteImport.update({
-  id: '/upload-test/dashboard',
-  path: '/upload-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const SchedulerTestDashboardRoute = SchedulerTestDashboardRouteImport.update({
-  id: '/scheduler-test/dashboard',
-  path: '/scheduler-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RolesTestRegisterRoute = RolesTestRegisterRouteImport.update({
-  id: '/roles-test/register',
-  path: '/roles-test/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RolesTestLoginRoute = RolesTestLoginRouteImport.update({
-  id: '/roles-test/login',
-  path: '/roles-test/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const RolesTestDashboardRoute = RolesTestDashboardRouteImport.update({
-  id: '/roles-test/dashboard',
-  path: '/roles-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QueueFlowJoinRoute = QueueFlowJoinRouteImport.update({
-  id: '/queue-flow/join',
-  path: '/queue-flow/join',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QueueFlowAdminRoute = QueueFlowAdminRouteImport.update({
-  id: '/queue-flow/admin',
-  path: '/queue-flow/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const QueueFlowSplatRoute = QueueFlowSplatRouteImport.update({
-  id: '/queue-flow/$',
-  path: '/queue-flow/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationTestRegisterRoute =
-  NotificationTestRegisterRouteImport.update({
-    id: '/notification-test/register',
-    path: '/notification-test/register',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const NotificationTestLoginRoute = NotificationTestLoginRouteImport.update({
-  id: '/notification-test/login',
-  path: '/notification-test/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const NotificationTestDashboardRoute =
-  NotificationTestDashboardRouteImport.update({
-    id: '/notification-test/dashboard',
-    path: '/notification-test/dashboard',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const NewUpdatesStylesFeaturesRoute =
-  NewUpdatesStylesFeaturesRouteImport.update({
-    id: '/new-updates-styles/features',
-    path: '/new-updates-styles/features',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const NewUpdatesStylesAboutRoute = NewUpdatesStylesAboutRouteImport.update({
-  id: '/new-updates-styles/about',
-  path: '/new-updates-styles/about',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MailTestRegisterRoute = MailTestRegisterRouteImport.update({
-  id: '/mail-test/register',
-  path: '/mail-test/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MailTestLoginRoute = MailTestLoginRouteImport.update({
-  id: '/mail-test/login',
-  path: '/mail-test/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const MailTestDashboardRoute = MailTestDashboardRouteImport.update({
-  id: '/mail-test/dashboard',
-  path: '/mail-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JobTestDashboardRoute = JobTestDashboardRouteImport.update({
-  id: '/job-test/dashboard',
-  path: '/job-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollSssRoute = JoPayrollSssRouteImport.update({
-  id: '/jo-payroll/sss',
-  path: '/jo-payroll/sss',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollPayslipRoute = JoPayrollPayslipRouteImport.update({
-  id: '/jo-payroll/payslip',
-  path: '/jo-payroll/payslip',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollJobDatabaseRoute = JoPayrollJobDatabaseRouteImport.update({
-  id: '/jo-payroll/job-database',
-  path: '/jo-payroll/job-database',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollHdmfRoute = JoPayrollHdmfRouteImport.update({
-  id: '/jo-payroll/hdmf',
-  path: '/jo-payroll/hdmf',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollCashAtmRoute = JoPayrollCashAtmRouteImport.update({
-  id: '/jo-payroll/cash-atm',
-  path: '/jo-payroll/cash-atm',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollAppointmentsRoute = JoPayrollAppointmentsRouteImport.update({
-  id: '/jo-payroll/appointments',
-  path: '/jo-payroll/appointments',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const JoPayrollSplatRoute = JoPayrollSplatRouteImport.update({
-  id: '/jo-payroll/$',
-  path: '/jo-payroll/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ErrorsTestSplatRoute = ErrorsTestSplatRouteImport.update({
-  id: '/errors-test/$',
-  path: '/errors-test/$',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DtrGeofencingAdminRoute = DtrGeofencingAdminRouteImport.update({
-  id: '/dtr-geofencing/admin',
-  path: '/dtr-geofencing/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChurchCommunityRegisterRoute = ChurchCommunityRegisterRouteImport.update({
-  id: '/church-community/register',
-  path: '/church-community/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChurchCommunityMembersRoute = ChurchCommunityMembersRouteImport.update({
-  id: '/church-community/members',
-  path: '/church-community/members',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChurchCommunityLoginRoute = ChurchCommunityLoginRouteImport.update({
-  id: '/church-community/login',
-  path: '/church-community/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const ChurchCommunityInventoryRoute =
-  ChurchCommunityInventoryRouteImport.update({
-    id: '/church-community/inventory',
-    path: '/church-community/inventory',
-    getParentRoute: () => rootRouteImport,
-  } as any)
-const ChurchCommunityAdminRoute = ChurchCommunityAdminRouteImport.update({
-  id: '/church-community/admin',
-  path: '/church-community/admin',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CertflowVerifyRoute = CertflowVerifyRouteImport.update({
-  id: '/certflow/verify',
-  path: '/certflow/verify',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CertflowLoginRoute = CertflowLoginRouteImport.update({
-  id: '/certflow/login',
-  path: '/certflow/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CertflowFillRoute = CertflowFillRouteImport.update({
-  id: '/certflow/fill',
-  path: '/certflow/fill',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CertflowDashboardRoute = CertflowDashboardRouteImport.update({
-  id: '/certflow/dashboard',
-  path: '/certflow/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BroadcastTestRegisterRoute = BroadcastTestRegisterRouteImport.update({
-  id: '/broadcast-test/register',
-  path: '/broadcast-test/register',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BroadcastTestLoginRoute = BroadcastTestLoginRouteImport.update({
-  id: '/broadcast-test/login',
-  path: '/broadcast-test/login',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BroadcastTestDashboardRoute = BroadcastTestDashboardRouteImport.update({
-  id: '/broadcast-test/dashboard',
-  path: '/broadcast-test/dashboard',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const BodyMailNotificationRegisterRoute =
-  BodyMailNotificationRegisterRouteImport.update({
-    id: '/body-mail-notification/register',
-    path: '/body-mail-notification/register',
+const BodyMailNotificationDashboardRoute =
+  BodyMailNotificationDashboardRouteImport.update({
+    id: '/body-mail-notification/dashboard',
+    path: '/body-mail-notification/dashboard',
     getParentRoute: () => rootRouteImport,
   } as any)
 const BodyMailNotificationLoginRoute =
@@ -429,25 +184,270 @@ const BodyMailNotificationLoginRoute =
     path: '/body-mail-notification/login',
     getParentRoute: () => rootRouteImport,
   } as any)
-const BodyMailNotificationDashboardRoute =
-  BodyMailNotificationDashboardRouteImport.update({
-    id: '/body-mail-notification/dashboard',
-    path: '/body-mail-notification/dashboard',
+const BodyMailNotificationRegisterRoute =
+  BodyMailNotificationRegisterRouteImport.update({
+    id: '/body-mail-notification/register',
+    path: '/body-mail-notification/register',
     getParentRoute: () => rootRouteImport,
   } as any)
-const AuthTestRegisterRoute = AuthTestRegisterRouteImport.update({
-  id: '/auth-test/register',
-  path: '/auth-test/register',
+const BroadcastTestDashboardRoute = BroadcastTestDashboardRouteImport.update({
+  id: '/broadcast-test/dashboard',
+  path: '/broadcast-test/dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthTestLoginRoute = AuthTestLoginRouteImport.update({
-  id: '/auth-test/login',
-  path: '/auth-test/login',
+const BroadcastTestLoginRoute = BroadcastTestLoginRouteImport.update({
+  id: '/broadcast-test/login',
+  path: '/broadcast-test/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const AuthTestDashboardRoute = AuthTestDashboardRouteImport.update({
-  id: '/auth-test/dashboard',
-  path: '/auth-test/dashboard',
+const BroadcastTestRegisterRoute = BroadcastTestRegisterRouteImport.update({
+  id: '/broadcast-test/register',
+  path: '/broadcast-test/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertflowDashboardRoute = CertflowDashboardRouteImport.update({
+  id: '/certflow/dashboard',
+  path: '/certflow/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertflowFillRoute = CertflowFillRouteImport.update({
+  id: '/certflow/fill',
+  path: '/certflow/fill',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertflowLoginRoute = CertflowLoginRouteImport.update({
+  id: '/certflow/login',
+  path: '/certflow/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertflowVerifyRoute = CertflowVerifyRouteImport.update({
+  id: '/certflow/verify',
+  path: '/certflow/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchCommunityIndexRoute = ChurchCommunityIndexRouteImport.update({
+  id: '/church-community/',
+  path: '/church-community/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchCommunityAdminRoute = ChurchCommunityAdminRouteImport.update({
+  id: '/church-community/admin',
+  path: '/church-community/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchCommunityInventoryRoute =
+  ChurchCommunityInventoryRouteImport.update({
+    id: '/church-community/inventory',
+    path: '/church-community/inventory',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ChurchCommunityLoginRoute = ChurchCommunityLoginRouteImport.update({
+  id: '/church-community/login',
+  path: '/church-community/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchCommunityMembersRoute = ChurchCommunityMembersRouteImport.update({
+  id: '/church-community/members',
+  path: '/church-community/members',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ChurchCommunityRegisterRoute = ChurchCommunityRegisterRouteImport.update({
+  id: '/church-community/register',
+  path: '/church-community/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CrudTestIndexRoute = CrudTestIndexRouteImport.update({
+  id: '/crud-test/',
+  path: '/crud-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DtrGeofencingIndexRoute = DtrGeofencingIndexRouteImport.update({
+  id: '/dtr-geofencing/',
+  path: '/dtr-geofencing/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DtrGeofencingAdminRoute = DtrGeofencingAdminRouteImport.update({
+  id: '/dtr-geofencing/admin',
+  path: '/dtr-geofencing/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorsTestIndexRoute = ErrorsTestIndexRouteImport.update({
+  id: '/errors-test/',
+  path: '/errors-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ErrorsTestSplatRoute = ErrorsTestSplatRouteImport.update({
+  id: '/errors-test/$',
+  path: '/errors-test/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EventsTestIndexRoute = EventsTestIndexRouteImport.update({
+  id: '/events-test/',
+  path: '/events-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const InventoryManagementIndexRoute =
+  InventoryManagementIndexRouteImport.update({
+    id: '/inventory-management/',
+    path: '/inventory-management/',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const JoPayrollIndexRoute = JoPayrollIndexRouteImport.update({
+  id: '/jo-payroll/',
+  path: '/jo-payroll/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollSplatRoute = JoPayrollSplatRouteImport.update({
+  id: '/jo-payroll/$',
+  path: '/jo-payroll/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollAppointmentsRoute = JoPayrollAppointmentsRouteImport.update({
+  id: '/jo-payroll/appointments',
+  path: '/jo-payroll/appointments',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollCashAtmRoute = JoPayrollCashAtmRouteImport.update({
+  id: '/jo-payroll/cash-atm',
+  path: '/jo-payroll/cash-atm',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollHdmfRoute = JoPayrollHdmfRouteImport.update({
+  id: '/jo-payroll/hdmf',
+  path: '/jo-payroll/hdmf',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollJobDatabaseRoute = JoPayrollJobDatabaseRouteImport.update({
+  id: '/jo-payroll/job-database',
+  path: '/jo-payroll/job-database',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollPayslipRoute = JoPayrollPayslipRouteImport.update({
+  id: '/jo-payroll/payslip',
+  path: '/jo-payroll/payslip',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoPayrollSssRoute = JoPayrollSssRouteImport.update({
+  id: '/jo-payroll/sss',
+  path: '/jo-payroll/sss',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JobTestDashboardRoute = JobTestDashboardRouteImport.update({
+  id: '/job-test/dashboard',
+  path: '/job-test/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailTestDashboardRoute = MailTestDashboardRouteImport.update({
+  id: '/mail-test/dashboard',
+  path: '/mail-test/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailTestLoginRoute = MailTestLoginRouteImport.update({
+  id: '/mail-test/login',
+  path: '/mail-test/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MailTestRegisterRoute = MailTestRegisterRouteImport.update({
+  id: '/mail-test/register',
+  path: '/mail-test/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MiddlewareTestIndexRoute = MiddlewareTestIndexRouteImport.update({
+  id: '/middleware-test/',
+  path: '/middleware-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewUpdatesStylesIndexRoute = NewUpdatesStylesIndexRouteImport.update({
+  id: '/new-updates-styles/',
+  path: '/new-updates-styles/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewUpdatesStylesAboutRoute = NewUpdatesStylesAboutRouteImport.update({
+  id: '/new-updates-styles/about',
+  path: '/new-updates-styles/about',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NewUpdatesStylesFeaturesRoute =
+  NewUpdatesStylesFeaturesRouteImport.update({
+    id: '/new-updates-styles/features',
+    path: '/new-updates-styles/features',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const NotificationTestDashboardRoute =
+  NotificationTestDashboardRouteImport.update({
+    id: '/notification-test/dashboard',
+    path: '/notification-test/dashboard',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const NotificationTestLoginRoute = NotificationTestLoginRouteImport.update({
+  id: '/notification-test/login',
+  path: '/notification-test/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const NotificationTestRegisterRoute =
+  NotificationTestRegisterRouteImport.update({
+    id: '/notification-test/register',
+    path: '/notification-test/register',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const PortfolioTestIndexRoute = PortfolioTestIndexRouteImport.update({
+  id: '/portfolio-test/',
+  path: '/portfolio-test/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueFlowIndexRoute = QueueFlowIndexRouteImport.update({
+  id: '/queue-flow/',
+  path: '/queue-flow/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueFlowSplatRoute = QueueFlowSplatRouteImport.update({
+  id: '/queue-flow/$',
+  path: '/queue-flow/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueFlowAdminRoute = QueueFlowAdminRouteImport.update({
+  id: '/queue-flow/admin',
+  path: '/queue-flow/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueFlowJoinRoute = QueueFlowJoinRouteImport.update({
+  id: '/queue-flow/join',
+  path: '/queue-flow/join',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesTestDashboardRoute = RolesTestDashboardRouteImport.update({
+  id: '/roles-test/dashboard',
+  path: '/roles-test/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesTestLoginRoute = RolesTestLoginRouteImport.update({
+  id: '/roles-test/login',
+  path: '/roles-test/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RolesTestRegisterRoute = RolesTestRegisterRouteImport.update({
+  id: '/roles-test/register',
+  path: '/roles-test/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SchedulerTestDashboardRoute = SchedulerTestDashboardRouteImport.update({
+  id: '/scheduler-test/dashboard',
+  path: '/scheduler-test/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ShanShanIndexRoute = ShanShanIndexRouteImport.update({
+  id: '/shan-shan/',
+  path: '/shan-shan/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const UploadTestDashboardRoute = UploadTestDashboardRouteImport.update({
+  id: '/upload-test/dashboard',
+  path: '/upload-test/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VisualLabIndexRoute = VisualLabIndexRouteImport.update({
+  id: '/visual-lab/',
+  path: '/visual-lab/',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -969,60 +969,11 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/upload-test/__root_redirect': {
-      id: '/upload-test/__root_redirect'
-      path: '/upload-test'
-      fullPath: '/upload-test'
-      preLoaderRoute: typeof UploadTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scheduler-test/__root_redirect': {
-      id: '/scheduler-test/__root_redirect'
-      path: '/scheduler-test'
-      fullPath: '/scheduler-test'
-      preLoaderRoute: typeof SchedulerTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/roles-test/__root_redirect': {
-      id: '/roles-test/__root_redirect'
-      path: '/roles-test'
-      fullPath: '/roles-test'
-      preLoaderRoute: typeof RolesTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notification-test/__root_redirect': {
-      id: '/notification-test/__root_redirect'
-      path: '/notification-test'
-      fullPath: '/notification-test'
-      preLoaderRoute: typeof NotificationTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mail-test/__root_redirect': {
-      id: '/mail-test/__root_redirect'
-      path: '/mail-test'
-      fullPath: '/mail-test'
-      preLoaderRoute: typeof MailTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/job-test/__root_redirect': {
-      id: '/job-test/__root_redirect'
-      path: '/job-test'
-      fullPath: '/job-test'
-      preLoaderRoute: typeof JobTest_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certflow/__root_redirect': {
-      id: '/certflow/__root_redirect'
-      path: '/certflow'
-      fullPath: '/certflow'
-      preLoaderRoute: typeof Certflow_root_redirectRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broadcast-test/__root_redirect': {
-      id: '/broadcast-test/__root_redirect'
-      path: '/broadcast-test'
-      fullPath: '/broadcast-test'
-      preLoaderRoute: typeof BroadcastTest_root_redirectRouteImport
+    '/auth-test/__root_redirect': {
+      id: '/auth-test/__root_redirect'
+      path: '/auth-test'
+      fullPath: '/auth-test'
+      preLoaderRoute: typeof AuthTest_root_redirectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/body-mail-notification/__root_redirect': {
@@ -1032,11 +983,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BodyMailNotification_root_redirectRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth-test/__root_redirect': {
-      id: '/auth-test/__root_redirect'
-      path: '/auth-test'
-      fullPath: '/auth-test'
-      preLoaderRoute: typeof AuthTest_root_redirectRouteImport
+    '/broadcast-test/__root_redirect': {
+      id: '/broadcast-test/__root_redirect'
+      path: '/broadcast-test'
+      fullPath: '/broadcast-test'
+      preLoaderRoute: typeof BroadcastTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/__root_redirect': {
+      id: '/certflow/__root_redirect'
+      path: '/certflow'
+      fullPath: '/certflow'
+      preLoaderRoute: typeof Certflow_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/job-test/__root_redirect': {
+      id: '/job-test/__root_redirect'
+      path: '/job-test'
+      fullPath: '/job-test'
+      preLoaderRoute: typeof JobTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail-test/__root_redirect': {
+      id: '/mail-test/__root_redirect'
+      path: '/mail-test'
+      fullPath: '/mail-test'
+      preLoaderRoute: typeof MailTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notification-test/__root_redirect': {
+      id: '/notification-test/__root_redirect'
+      path: '/notification-test'
+      fullPath: '/notification-test'
+      preLoaderRoute: typeof NotificationTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles-test/__root_redirect': {
+      id: '/roles-test/__root_redirect'
+      path: '/roles-test'
+      fullPath: '/roles-test'
+      preLoaderRoute: typeof RolesTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scheduler-test/__root_redirect': {
+      id: '/scheduler-test/__root_redirect'
+      path: '/scheduler-test'
+      fullPath: '/scheduler-test'
+      preLoaderRoute: typeof SchedulerTest_root_redirectRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upload-test/__root_redirect': {
+      id: '/upload-test/__root_redirect'
+      path: '/upload-test'
+      fullPath: '/upload-test'
+      preLoaderRoute: typeof UploadTest_root_redirectRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -1046,102 +1046,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/visual-lab/': {
-      id: '/visual-lab/'
-      path: '/visual-lab'
-      fullPath: '/visual-lab/'
-      preLoaderRoute: typeof VisualLabIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/shan-shan/': {
-      id: '/shan-shan/'
-      path: '/shan-shan'
-      fullPath: '/shan-shan/'
-      preLoaderRoute: typeof ShanShanIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/queue-flow/': {
-      id: '/queue-flow/'
-      path: '/queue-flow'
-      fullPath: '/queue-flow/'
-      preLoaderRoute: typeof QueueFlowIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/portfolio-test/': {
-      id: '/portfolio-test/'
-      path: '/portfolio-test'
-      fullPath: '/portfolio-test/'
-      preLoaderRoute: typeof PortfolioTestIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new-updates-styles/': {
-      id: '/new-updates-styles/'
-      path: '/new-updates-styles'
-      fullPath: '/new-updates-styles/'
-      preLoaderRoute: typeof NewUpdatesStylesIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/middleware-test/': {
-      id: '/middleware-test/'
-      path: '/middleware-test'
-      fullPath: '/middleware-test/'
-      preLoaderRoute: typeof MiddlewareTestIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/': {
-      id: '/jo-payroll/'
-      path: '/jo-payroll'
-      fullPath: '/jo-payroll/'
-      preLoaderRoute: typeof JoPayrollIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/inventory-management/': {
-      id: '/inventory-management/'
-      path: '/inventory-management'
-      fullPath: '/inventory-management/'
-      preLoaderRoute: typeof InventoryManagementIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/events-test/': {
-      id: '/events-test/'
-      path: '/events-test'
-      fullPath: '/events-test/'
-      preLoaderRoute: typeof EventsTestIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/errors-test/': {
-      id: '/errors-test/'
-      path: '/errors-test'
-      fullPath: '/errors-test/'
-      preLoaderRoute: typeof ErrorsTestIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dtr-geofencing/': {
-      id: '/dtr-geofencing/'
-      path: '/dtr-geofencing'
-      fullPath: '/dtr-geofencing/'
-      preLoaderRoute: typeof DtrGeofencingIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/crud-test/': {
-      id: '/crud-test/'
-      path: '/crud-test'
-      fullPath: '/crud-test/'
-      preLoaderRoute: typeof CrudTestIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/': {
-      id: '/church-community/'
-      path: '/church-community'
-      fullPath: '/church-community/'
-      preLoaderRoute: typeof ChurchCommunityIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/body-endpoint-handler/': {
-      id: '/body-endpoint-handler/'
-      path: '/body-endpoint-handler'
-      fullPath: '/body-endpoint-handler/'
-      preLoaderRoute: typeof BodyEndpointHandlerIndexRouteImport
+    '/animation-lab/': {
+      id: '/animation-lab/'
+      path: '/animation-lab'
+      fullPath: '/animation-lab/'
+      preLoaderRoute: typeof AnimationLabIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/asset-hub/': {
@@ -1151,305 +1060,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AssetHubIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/animation-lab/': {
-      id: '/animation-lab/'
-      path: '/animation-lab'
-      fullPath: '/animation-lab/'
-      preLoaderRoute: typeof AnimationLabIndexRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/upload-test/dashboard': {
-      id: '/upload-test/dashboard'
-      path: '/upload-test/dashboard'
-      fullPath: '/upload-test/dashboard'
-      preLoaderRoute: typeof UploadTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/scheduler-test/dashboard': {
-      id: '/scheduler-test/dashboard'
-      path: '/scheduler-test/dashboard'
-      fullPath: '/scheduler-test/dashboard'
-      preLoaderRoute: typeof SchedulerTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/roles-test/register': {
-      id: '/roles-test/register'
-      path: '/roles-test/register'
-      fullPath: '/roles-test/register'
-      preLoaderRoute: typeof RolesTestRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/roles-test/login': {
-      id: '/roles-test/login'
-      path: '/roles-test/login'
-      fullPath: '/roles-test/login'
-      preLoaderRoute: typeof RolesTestLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/roles-test/dashboard': {
-      id: '/roles-test/dashboard'
-      path: '/roles-test/dashboard'
-      fullPath: '/roles-test/dashboard'
-      preLoaderRoute: typeof RolesTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/queue-flow/join': {
-      id: '/queue-flow/join'
-      path: '/queue-flow/join'
-      fullPath: '/queue-flow/join'
-      preLoaderRoute: typeof QueueFlowJoinRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/queue-flow/admin': {
-      id: '/queue-flow/admin'
-      path: '/queue-flow/admin'
-      fullPath: '/queue-flow/admin'
-      preLoaderRoute: typeof QueueFlowAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/queue-flow/$': {
-      id: '/queue-flow/$'
-      path: '/queue-flow/$'
-      fullPath: '/queue-flow/$'
-      preLoaderRoute: typeof QueueFlowSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notification-test/register': {
-      id: '/notification-test/register'
-      path: '/notification-test/register'
-      fullPath: '/notification-test/register'
-      preLoaderRoute: typeof NotificationTestRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notification-test/login': {
-      id: '/notification-test/login'
-      path: '/notification-test/login'
-      fullPath: '/notification-test/login'
-      preLoaderRoute: typeof NotificationTestLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/notification-test/dashboard': {
-      id: '/notification-test/dashboard'
-      path: '/notification-test/dashboard'
-      fullPath: '/notification-test/dashboard'
-      preLoaderRoute: typeof NotificationTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new-updates-styles/features': {
-      id: '/new-updates-styles/features'
-      path: '/new-updates-styles/features'
-      fullPath: '/new-updates-styles/features'
-      preLoaderRoute: typeof NewUpdatesStylesFeaturesRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/new-updates-styles/about': {
-      id: '/new-updates-styles/about'
-      path: '/new-updates-styles/about'
-      fullPath: '/new-updates-styles/about'
-      preLoaderRoute: typeof NewUpdatesStylesAboutRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mail-test/register': {
-      id: '/mail-test/register'
-      path: '/mail-test/register'
-      fullPath: '/mail-test/register'
-      preLoaderRoute: typeof MailTestRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mail-test/login': {
-      id: '/mail-test/login'
-      path: '/mail-test/login'
-      fullPath: '/mail-test/login'
-      preLoaderRoute: typeof MailTestLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/mail-test/dashboard': {
-      id: '/mail-test/dashboard'
-      path: '/mail-test/dashboard'
-      fullPath: '/mail-test/dashboard'
-      preLoaderRoute: typeof MailTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/job-test/dashboard': {
-      id: '/job-test/dashboard'
-      path: '/job-test/dashboard'
-      fullPath: '/job-test/dashboard'
-      preLoaderRoute: typeof JobTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/sss': {
-      id: '/jo-payroll/sss'
-      path: '/jo-payroll/sss'
-      fullPath: '/jo-payroll/sss'
-      preLoaderRoute: typeof JoPayrollSssRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/payslip': {
-      id: '/jo-payroll/payslip'
-      path: '/jo-payroll/payslip'
-      fullPath: '/jo-payroll/payslip'
-      preLoaderRoute: typeof JoPayrollPayslipRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/job-database': {
-      id: '/jo-payroll/job-database'
-      path: '/jo-payroll/job-database'
-      fullPath: '/jo-payroll/job-database'
-      preLoaderRoute: typeof JoPayrollJobDatabaseRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/hdmf': {
-      id: '/jo-payroll/hdmf'
-      path: '/jo-payroll/hdmf'
-      fullPath: '/jo-payroll/hdmf'
-      preLoaderRoute: typeof JoPayrollHdmfRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/cash-atm': {
-      id: '/jo-payroll/cash-atm'
-      path: '/jo-payroll/cash-atm'
-      fullPath: '/jo-payroll/cash-atm'
-      preLoaderRoute: typeof JoPayrollCashAtmRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/appointments': {
-      id: '/jo-payroll/appointments'
-      path: '/jo-payroll/appointments'
-      fullPath: '/jo-payroll/appointments'
-      preLoaderRoute: typeof JoPayrollAppointmentsRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/jo-payroll/$': {
-      id: '/jo-payroll/$'
-      path: '/jo-payroll/$'
-      fullPath: '/jo-payroll/$'
-      preLoaderRoute: typeof JoPayrollSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/errors-test/$': {
-      id: '/errors-test/$'
-      path: '/errors-test/$'
-      fullPath: '/errors-test/$'
-      preLoaderRoute: typeof ErrorsTestSplatRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/dtr-geofencing/admin': {
-      id: '/dtr-geofencing/admin'
-      path: '/dtr-geofencing/admin'
-      fullPath: '/dtr-geofencing/admin'
-      preLoaderRoute: typeof DtrGeofencingAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/register': {
-      id: '/church-community/register'
-      path: '/church-community/register'
-      fullPath: '/church-community/register'
-      preLoaderRoute: typeof ChurchCommunityRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/members': {
-      id: '/church-community/members'
-      path: '/church-community/members'
-      fullPath: '/church-community/members'
-      preLoaderRoute: typeof ChurchCommunityMembersRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/login': {
-      id: '/church-community/login'
-      path: '/church-community/login'
-      fullPath: '/church-community/login'
-      preLoaderRoute: typeof ChurchCommunityLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/inventory': {
-      id: '/church-community/inventory'
-      path: '/church-community/inventory'
-      fullPath: '/church-community/inventory'
-      preLoaderRoute: typeof ChurchCommunityInventoryRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/church-community/admin': {
-      id: '/church-community/admin'
-      path: '/church-community/admin'
-      fullPath: '/church-community/admin'
-      preLoaderRoute: typeof ChurchCommunityAdminRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certflow/verify': {
-      id: '/certflow/verify'
-      path: '/certflow/verify'
-      fullPath: '/certflow/verify'
-      preLoaderRoute: typeof CertflowVerifyRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certflow/login': {
-      id: '/certflow/login'
-      path: '/certflow/login'
-      fullPath: '/certflow/login'
-      preLoaderRoute: typeof CertflowLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certflow/fill': {
-      id: '/certflow/fill'
-      path: '/certflow/fill'
-      fullPath: '/certflow/fill'
-      preLoaderRoute: typeof CertflowFillRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/certflow/dashboard': {
-      id: '/certflow/dashboard'
-      path: '/certflow/dashboard'
-      fullPath: '/certflow/dashboard'
-      preLoaderRoute: typeof CertflowDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broadcast-test/register': {
-      id: '/broadcast-test/register'
-      path: '/broadcast-test/register'
-      fullPath: '/broadcast-test/register'
-      preLoaderRoute: typeof BroadcastTestRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broadcast-test/login': {
-      id: '/broadcast-test/login'
-      path: '/broadcast-test/login'
-      fullPath: '/broadcast-test/login'
-      preLoaderRoute: typeof BroadcastTestLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/broadcast-test/dashboard': {
-      id: '/broadcast-test/dashboard'
-      path: '/broadcast-test/dashboard'
-      fullPath: '/broadcast-test/dashboard'
-      preLoaderRoute: typeof BroadcastTestDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/body-mail-notification/register': {
-      id: '/body-mail-notification/register'
-      path: '/body-mail-notification/register'
-      fullPath: '/body-mail-notification/register'
-      preLoaderRoute: typeof BodyMailNotificationRegisterRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/body-mail-notification/login': {
-      id: '/body-mail-notification/login'
-      path: '/body-mail-notification/login'
-      fullPath: '/body-mail-notification/login'
-      preLoaderRoute: typeof BodyMailNotificationLoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/body-mail-notification/dashboard': {
-      id: '/body-mail-notification/dashboard'
-      path: '/body-mail-notification/dashboard'
-      fullPath: '/body-mail-notification/dashboard'
-      preLoaderRoute: typeof BodyMailNotificationDashboardRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/auth-test/register': {
-      id: '/auth-test/register'
-      path: '/auth-test/register'
-      fullPath: '/auth-test/register'
-      preLoaderRoute: typeof AuthTestRegisterRouteImport
+    '/auth-test/dashboard': {
+      id: '/auth-test/dashboard'
+      path: '/auth-test/dashboard'
+      fullPath: '/auth-test/dashboard'
+      preLoaderRoute: typeof AuthTestDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth-test/login': {
@@ -1459,11 +1074,396 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthTestLoginRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/auth-test/dashboard': {
-      id: '/auth-test/dashboard'
-      path: '/auth-test/dashboard'
-      fullPath: '/auth-test/dashboard'
-      preLoaderRoute: typeof AuthTestDashboardRouteImport
+    '/auth-test/register': {
+      id: '/auth-test/register'
+      path: '/auth-test/register'
+      fullPath: '/auth-test/register'
+      preLoaderRoute: typeof AuthTestRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/body-endpoint-handler/': {
+      id: '/body-endpoint-handler/'
+      path: '/body-endpoint-handler'
+      fullPath: '/body-endpoint-handler/'
+      preLoaderRoute: typeof BodyEndpointHandlerIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/body-mail-notification/dashboard': {
+      id: '/body-mail-notification/dashboard'
+      path: '/body-mail-notification/dashboard'
+      fullPath: '/body-mail-notification/dashboard'
+      preLoaderRoute: typeof BodyMailNotificationDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/body-mail-notification/login': {
+      id: '/body-mail-notification/login'
+      path: '/body-mail-notification/login'
+      fullPath: '/body-mail-notification/login'
+      preLoaderRoute: typeof BodyMailNotificationLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/body-mail-notification/register': {
+      id: '/body-mail-notification/register'
+      path: '/body-mail-notification/register'
+      fullPath: '/body-mail-notification/register'
+      preLoaderRoute: typeof BodyMailNotificationRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broadcast-test/dashboard': {
+      id: '/broadcast-test/dashboard'
+      path: '/broadcast-test/dashboard'
+      fullPath: '/broadcast-test/dashboard'
+      preLoaderRoute: typeof BroadcastTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broadcast-test/login': {
+      id: '/broadcast-test/login'
+      path: '/broadcast-test/login'
+      fullPath: '/broadcast-test/login'
+      preLoaderRoute: typeof BroadcastTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/broadcast-test/register': {
+      id: '/broadcast-test/register'
+      path: '/broadcast-test/register'
+      fullPath: '/broadcast-test/register'
+      preLoaderRoute: typeof BroadcastTestRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/dashboard': {
+      id: '/certflow/dashboard'
+      path: '/certflow/dashboard'
+      fullPath: '/certflow/dashboard'
+      preLoaderRoute: typeof CertflowDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/fill': {
+      id: '/certflow/fill'
+      path: '/certflow/fill'
+      fullPath: '/certflow/fill'
+      preLoaderRoute: typeof CertflowFillRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/login': {
+      id: '/certflow/login'
+      path: '/certflow/login'
+      fullPath: '/certflow/login'
+      preLoaderRoute: typeof CertflowLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certflow/verify': {
+      id: '/certflow/verify'
+      path: '/certflow/verify'
+      fullPath: '/certflow/verify'
+      preLoaderRoute: typeof CertflowVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/': {
+      id: '/church-community/'
+      path: '/church-community'
+      fullPath: '/church-community/'
+      preLoaderRoute: typeof ChurchCommunityIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/admin': {
+      id: '/church-community/admin'
+      path: '/church-community/admin'
+      fullPath: '/church-community/admin'
+      preLoaderRoute: typeof ChurchCommunityAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/inventory': {
+      id: '/church-community/inventory'
+      path: '/church-community/inventory'
+      fullPath: '/church-community/inventory'
+      preLoaderRoute: typeof ChurchCommunityInventoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/login': {
+      id: '/church-community/login'
+      path: '/church-community/login'
+      fullPath: '/church-community/login'
+      preLoaderRoute: typeof ChurchCommunityLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/members': {
+      id: '/church-community/members'
+      path: '/church-community/members'
+      fullPath: '/church-community/members'
+      preLoaderRoute: typeof ChurchCommunityMembersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/church-community/register': {
+      id: '/church-community/register'
+      path: '/church-community/register'
+      fullPath: '/church-community/register'
+      preLoaderRoute: typeof ChurchCommunityRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/crud-test/': {
+      id: '/crud-test/'
+      path: '/crud-test'
+      fullPath: '/crud-test/'
+      preLoaderRoute: typeof CrudTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dtr-geofencing/': {
+      id: '/dtr-geofencing/'
+      path: '/dtr-geofencing'
+      fullPath: '/dtr-geofencing/'
+      preLoaderRoute: typeof DtrGeofencingIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dtr-geofencing/admin': {
+      id: '/dtr-geofencing/admin'
+      path: '/dtr-geofencing/admin'
+      fullPath: '/dtr-geofencing/admin'
+      preLoaderRoute: typeof DtrGeofencingAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/errors-test/': {
+      id: '/errors-test/'
+      path: '/errors-test'
+      fullPath: '/errors-test/'
+      preLoaderRoute: typeof ErrorsTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/errors-test/$': {
+      id: '/errors-test/$'
+      path: '/errors-test/$'
+      fullPath: '/errors-test/$'
+      preLoaderRoute: typeof ErrorsTestSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/events-test/': {
+      id: '/events-test/'
+      path: '/events-test'
+      fullPath: '/events-test/'
+      preLoaderRoute: typeof EventsTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/inventory-management/': {
+      id: '/inventory-management/'
+      path: '/inventory-management'
+      fullPath: '/inventory-management/'
+      preLoaderRoute: typeof InventoryManagementIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/': {
+      id: '/jo-payroll/'
+      path: '/jo-payroll'
+      fullPath: '/jo-payroll/'
+      preLoaderRoute: typeof JoPayrollIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/$': {
+      id: '/jo-payroll/$'
+      path: '/jo-payroll/$'
+      fullPath: '/jo-payroll/$'
+      preLoaderRoute: typeof JoPayrollSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/appointments': {
+      id: '/jo-payroll/appointments'
+      path: '/jo-payroll/appointments'
+      fullPath: '/jo-payroll/appointments'
+      preLoaderRoute: typeof JoPayrollAppointmentsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/cash-atm': {
+      id: '/jo-payroll/cash-atm'
+      path: '/jo-payroll/cash-atm'
+      fullPath: '/jo-payroll/cash-atm'
+      preLoaderRoute: typeof JoPayrollCashAtmRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/hdmf': {
+      id: '/jo-payroll/hdmf'
+      path: '/jo-payroll/hdmf'
+      fullPath: '/jo-payroll/hdmf'
+      preLoaderRoute: typeof JoPayrollHdmfRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/job-database': {
+      id: '/jo-payroll/job-database'
+      path: '/jo-payroll/job-database'
+      fullPath: '/jo-payroll/job-database'
+      preLoaderRoute: typeof JoPayrollJobDatabaseRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/payslip': {
+      id: '/jo-payroll/payslip'
+      path: '/jo-payroll/payslip'
+      fullPath: '/jo-payroll/payslip'
+      preLoaderRoute: typeof JoPayrollPayslipRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/jo-payroll/sss': {
+      id: '/jo-payroll/sss'
+      path: '/jo-payroll/sss'
+      fullPath: '/jo-payroll/sss'
+      preLoaderRoute: typeof JoPayrollSssRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/job-test/dashboard': {
+      id: '/job-test/dashboard'
+      path: '/job-test/dashboard'
+      fullPath: '/job-test/dashboard'
+      preLoaderRoute: typeof JobTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail-test/dashboard': {
+      id: '/mail-test/dashboard'
+      path: '/mail-test/dashboard'
+      fullPath: '/mail-test/dashboard'
+      preLoaderRoute: typeof MailTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail-test/login': {
+      id: '/mail-test/login'
+      path: '/mail-test/login'
+      fullPath: '/mail-test/login'
+      preLoaderRoute: typeof MailTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mail-test/register': {
+      id: '/mail-test/register'
+      path: '/mail-test/register'
+      fullPath: '/mail-test/register'
+      preLoaderRoute: typeof MailTestRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/middleware-test/': {
+      id: '/middleware-test/'
+      path: '/middleware-test'
+      fullPath: '/middleware-test/'
+      preLoaderRoute: typeof MiddlewareTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-updates-styles/': {
+      id: '/new-updates-styles/'
+      path: '/new-updates-styles'
+      fullPath: '/new-updates-styles/'
+      preLoaderRoute: typeof NewUpdatesStylesIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-updates-styles/about': {
+      id: '/new-updates-styles/about'
+      path: '/new-updates-styles/about'
+      fullPath: '/new-updates-styles/about'
+      preLoaderRoute: typeof NewUpdatesStylesAboutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/new-updates-styles/features': {
+      id: '/new-updates-styles/features'
+      path: '/new-updates-styles/features'
+      fullPath: '/new-updates-styles/features'
+      preLoaderRoute: typeof NewUpdatesStylesFeaturesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notification-test/dashboard': {
+      id: '/notification-test/dashboard'
+      path: '/notification-test/dashboard'
+      fullPath: '/notification-test/dashboard'
+      preLoaderRoute: typeof NotificationTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notification-test/login': {
+      id: '/notification-test/login'
+      path: '/notification-test/login'
+      fullPath: '/notification-test/login'
+      preLoaderRoute: typeof NotificationTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/notification-test/register': {
+      id: '/notification-test/register'
+      path: '/notification-test/register'
+      fullPath: '/notification-test/register'
+      preLoaderRoute: typeof NotificationTestRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portfolio-test/': {
+      id: '/portfolio-test/'
+      path: '/portfolio-test'
+      fullPath: '/portfolio-test/'
+      preLoaderRoute: typeof PortfolioTestIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-flow/': {
+      id: '/queue-flow/'
+      path: '/queue-flow'
+      fullPath: '/queue-flow/'
+      preLoaderRoute: typeof QueueFlowIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-flow/$': {
+      id: '/queue-flow/$'
+      path: '/queue-flow/$'
+      fullPath: '/queue-flow/$'
+      preLoaderRoute: typeof QueueFlowSplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-flow/admin': {
+      id: '/queue-flow/admin'
+      path: '/queue-flow/admin'
+      fullPath: '/queue-flow/admin'
+      preLoaderRoute: typeof QueueFlowAdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue-flow/join': {
+      id: '/queue-flow/join'
+      path: '/queue-flow/join'
+      fullPath: '/queue-flow/join'
+      preLoaderRoute: typeof QueueFlowJoinRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles-test/dashboard': {
+      id: '/roles-test/dashboard'
+      path: '/roles-test/dashboard'
+      fullPath: '/roles-test/dashboard'
+      preLoaderRoute: typeof RolesTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles-test/login': {
+      id: '/roles-test/login'
+      path: '/roles-test/login'
+      fullPath: '/roles-test/login'
+      preLoaderRoute: typeof RolesTestLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/roles-test/register': {
+      id: '/roles-test/register'
+      path: '/roles-test/register'
+      fullPath: '/roles-test/register'
+      preLoaderRoute: typeof RolesTestRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/scheduler-test/dashboard': {
+      id: '/scheduler-test/dashboard'
+      path: '/scheduler-test/dashboard'
+      fullPath: '/scheduler-test/dashboard'
+      preLoaderRoute: typeof SchedulerTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/shan-shan/': {
+      id: '/shan-shan/'
+      path: '/shan-shan'
+      fullPath: '/shan-shan/'
+      preLoaderRoute: typeof ShanShanIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/upload-test/dashboard': {
+      id: '/upload-test/dashboard'
+      path: '/upload-test/dashboard'
+      fullPath: '/upload-test/dashboard'
+      preLoaderRoute: typeof UploadTestDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/visual-lab/': {
+      id: '/visual-lab/'
+      path: '/visual-lab'
+      fullPath: '/visual-lab/'
+      preLoaderRoute: typeof VisualLabIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
   }

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterStory
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T05:02:57.113Z
+// Generated: 2026-10-09T14:13:13.964Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -26,7 +26,6 @@ export const ChapterStory = ({ chapter }: { chapter: (typeof CHAPTERS)[0] }) => 
           <p>{chapter.craft}</p>
         </div>
       </div>
-      {/* Sound-within strip */}
       <div className="chapter-sound-strip">
         <span className="chapter-sound-label">THE SOUND WITHIN</span>
         <span className="chapter-sound-title">{chapter.sound}</span>

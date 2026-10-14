@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — AssetCard [React+Vite]
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.428Z
+// Generated: 2026-10-13T14:10:30.445Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -19,4 +19,4 @@ export const AssetCard = ({ asset }: { asset: AssetItem }) => (
     </div>
     <span className="ah-card-ext">.{asset.ext}</span>
   </div>
-)
+);

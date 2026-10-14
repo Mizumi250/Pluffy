@@ -1,5 +1,55 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v10.1
+// ARKZEN ENGINE — PARSER v10.6
+//
+// v10.6: Global (unnamed) native style block for Expo + Bare RN.
+//        New parser: parseGlobalNativeStyle() — @arkzen:native:style
+//        ParsedTatemono: nativeStyleGlobal? added (ArkzenSection | undefined).
+//        emitNativeStyles() in expo-router now merges nativeStyleGlobal into
+//        the generated .native-styles.ts file alongside named blocks.
+//        featureMap: nativeStyleGlobal key added.
+//        Mirrors the existing nativeLynxStyleGlobal pattern introduced in v10.3.
+//
+// v10.4: Stack-split animation and script parsers.
+//        animation was previously split as :rn / :lynx only — Expo lacked its own tag.
+//        scripts had no stack split at all (single generic native:script).
+//        Both are now fully split across all three stacks.
+//        New parsers:
+//          parseNativeAnimationExpo()          — @arkzen:native:animation:expo
+//          parseGlobalNativeScriptExpo/RN/Lynx() — @arkzen:native:script:expo/rn/lynx
+//          parseAllNamedNativeScriptsExpo/RN/Lynx() — @arkzen:native:script:expo/rn/lynx:name
+//        Removed: parseGlobalNativeScript(), parseAllNamedNativeScripts()
+//          (old generic native:script — replaced by stack-specific parsers above)
+//        ParsedTatemono: nativeAnimationExpo, nativeScriptExpo, nativeScriptRN,
+//          nativeScriptLynx, nativeScriptsExpo, nativeScriptsRN, nativeScriptsLynx added.
+//          nativeAnimationRN kept (now strictly Bare RN, not shared with Expo).
+//        CODE_BLOCK_TAGS: native:animation:expo, native:script:expo,
+//          native:script:rn, native:script:lynx added. Old native:script removed.
+//        hasSections() updated: nativeAnimationExpo, nativeScriptExpo, nativeScriptRN,
+//          nativeScriptLynx, nativeAnimationLynx added. Old nativeScript removed.
+//
+// v10.3: Full Lynx parser support — all Lynx-specific DSL blocks.
+//        Lynx is a separate renderer (not React Native). Its blocks live under
+//        the :lynx: namespace and are self-contained (no embedded import line).
+//        New parsers:
+//          parseAllNativeLynxPages()         — @arkzen:native:page:lynx:name
+//          parseAllNativeLynxLayouts()       — @arkzen:native:layout:lynx:name
+//          parseAllNativeLynxComponents()    — @arkzen:native:components:lynx:name
+//          parseGlobalNativeLynxStyle()      — @arkzen:native:style:lynx (global)
+//          parseAllNativeLynxStyles()        — @arkzen:native:style:lynx:name
+//          parseAllNativeLynxErrorHandlers() — @arkzen:native:error:404:lynx / :500:lynx
+//        Import line extraction (extractNativeImportLine) added for Expo/Bare RN blocks:
+//          @arkzen:native:page:name, @arkzen:native:layout:name,
+//          @arkzen:native:components:name, @arkzen:native:error:404, @arkzen:native:error:500
+//        Expo/Bare RN import line re-embedded as /* @arkzen:resolved:import expo|rn */
+//        so builders can detect stack without new type fields.
+//        CODE_BLOCK_TAGS: native:page:lynx, native:layout:lynx, native:components:lynx,
+//          native:style:lynx, native:error:lynx added.
+//        ParsedTatemono: nativeLynxPages, nativeLynxLayouts, nativeLynxComponents,
+//          nativeLynxStyleGlobal, nativeLynxStyles, nativeLynxErrorHandlers added.
+//        validatePages() updated: nativeLynxPages counts as valid, duplicate check added.
+//        hasSections() updated: all Lynx keys added.
+//        Log block split: ── Native (Expo / Bare RN) ── and ── Native (Lynx) ──
+//
 // v6.3: Body injection support for middleware, custom route handlers,
 //       and custom controller endpoints.
 //       - parseAllMiddlewareSnippets(): @arkzen:middleware:name ... :end
@@ -78,7 +128,6 @@ import type {
   ArkzenPage,
   ArkzenLayout,
   ArkzenStyle,
-  ArkzenScript,
   ArkzenErrorHandler,
   ArkzenErrorHandlerType,
 } from '../types'
@@ -283,6 +332,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
     const openCommentEnd = findOpeningCommentEnd(safe, openIdx, openIdx + openPattern.length)
     if (openCommentEnd === -1) break
 
+    const target = marker === 'native:page'
+      ? content.slice(openIdx, openCommentEnd).match(/@arkzen:import:(expo|rn)/)?.[1]
+      : undefined
+
     // Find closing marker: /* @arkzen:marker:identifier:end */
     const closeMarker = `/* @arkzen:${marker}:${identifier}:end */`
     const closeIdx = safe.indexOf(closeMarker, openCommentEnd)
@@ -290,7 +343,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Extract raw content between opening comment close and closing marker
     // Also handle per-page layout declarations inside the block
-    const raw = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const body = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const raw = target
+      ? `/* @arkzen:resolved:import ${target} */\n${body}`
+      : body
 
     results.push({
       raw,
@@ -489,12 +545,114 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
   return yaml.load(raw) as ArkzenNativeConfig
 }
 
+// ─────────────────────────────────────────────
+// NATIVE IMPORT LINE EXTRACTOR — v10.3
+//
+// Strips the @arkzen:import:expo or @arkzen:import:rn line from a block's
+// raw content and re-embeds it as a leading resolved-import marker so each
+// stack's builder can detect it without needing a new type field yet.
+//
+// DSL blocks that carry an embedded import line (the + in the plan table):
+//   @arkzen:native:page:name        (Expo + Bare RN only — NOT Lynx)
+//   @arkzen:native:layout:name      (Expo + Bare RN only)
+//   @arkzen:native:components:name  (Expo + Bare RN only)
+//   @arkzen:native:error:404        (Expo + Bare RN only)
+//   @arkzen:native:error:500        (Expo + Bare RN only)
+//
+// Lynx variants (@arkzen:native:page:lynx:name etc.) are self-contained
+// and never carry an import line — they are parsed separately.
+//
+// The resolved marker format:
+//   /* @arkzen:resolved:import expo */   ← Expo
+//   /* @arkzen:resolved:import rn */     ← Bare React Native
+// ─────────────────────────────────────────────
+
+// ─────────────────────────────────────────────
+// NATIVE IMPORT LINE EXTRACTOR — v10.3 / v10.5
+//
+// v10.5: @arkzen:import:expo and @arkzen:import:rn are now proper open+close
+// blocks (with :end tags), not self-closing inline markers.
+//
+// DSL format (inside a page/layout/component/error block body):
+//   /* @arkzen:import:expo */
+//   ...expo-targeted code...
+//   /* @arkzen:import:expo:end */
+//
+//   /* @arkzen:import:rn */
+//   ...rn-targeted code...
+//   /* @arkzen:import:rn:end */
+//
+// v10.6: a single DSL block may legitimately contain MULTIPLE expo/rn
+// sub-block pairs side by side (e.g. one pair for imports, another pair
+// wrapping the actual component/handler) — this is intentional dual-target
+// authoring from one tatemono source, not a duplicate. Since this exact
+// file is byte-for-byte synced (see shared-sync.ts) into every stack's
+// arkzen/core/, it cannot hardcode which target it's resolving for — it
+// must detect its own stack the same way shared-sync.ts does, via the
+// folder name under engine/frontend/ it's currently running in
+// (process.cwd() at build time is that stack's directory).
+//
+// Resolution: keep every sub-block matching THIS stack's target (strip
+// just its markers), and fully delete (markers + body) every sub-block
+// matching the other target. Stacks with no native target (lynx, web
+// stacks) never see these markers in their own DSL content, so this is a
+// no-op for them.
+//
+// Self-closing form (v10.3 legacy, no :end) is still accepted as fallback
+// so old tatemonos don't break before migration.
+// ─────────────────────────────────────────────
+
+function detectNativeTarget(): 'expo' | 'rn' | null {
+  const stackName = path.basename(process.cwd())
+  if (stackName === 'expo')         return 'expo'
+  if (stackName === 'react-native') return 'rn'
+  return null
+}
+
+function extractNativeImportLine(raw: string): { cleanRaw: string; importStack: 'expo' | 'rn' | null } {
+  const target = detectNativeTarget()
+
+  // Legacy self-closing fallback / non-native stacks: no open+close pair detection possible,
+  // leave content untouched (old behavior preserved for stacks without a native target).
+  if (!target) return { cleanRaw: raw, importStack: null }
+
+  const blockRe = /\/\*\s*@arkzen:import:(expo|rn)\s*\*\/([\s\S]*?)\/\*\s*@arkzen:import:\1:end\s*\*\//g
+
+  let found: 'expo' | 'rn' | null = null
+  const cleanRaw = raw.replace(blockRe, (_match, stack: 'expo' | 'rn', body: string) => {
+    if (stack !== target) return '' // discard the other target's block entirely
+    found = target
+    return body.trim()
+  }).trim()
+
+  if (!found) return { cleanRaw: raw, importStack: null }
+  return { cleanRaw: `/* @arkzen:resolved:import ${target} */\n${cleanRaw}`, importStack: found }
+}
+
 function parseAllNativeComponents(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'native:components')
+  const sections = extractAllNamedSections(content, 'native:components')
+  return sections.map(section => {
+    const { cleanRaw } = extractNativeImportLine(section.raw)
+    return { ...section, raw: cleanRaw }
+  })
 }
 
 function parseAllNativeLayouts(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'native:layout')
+  const currentTarget = detectNativeTarget()
+  const sections = extractAllNamedSections(content, 'native:layout')
+  return sections.flatMap(section => {
+    const { cleanRaw, importStack } = extractNativeImportLine(section.raw)
+    return !currentTarget || !importStack || importStack === currentTarget
+      ? [{ ...section, raw: cleanRaw }]
+      : []
+  })
+}
+
+// v10.6: Global (unnamed) native:style block — @arkzen:native:style
+// Mirrors parseGlobalNativeLynxStyle() for the Expo/Bare RN target.
+// Content is styles-only (no StyleSheet wrapper); the emitter wraps automatically.
+function parseGlobalNativeStyle(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:style') ?? undefined
 }
 
 function parseAllNativeStyles(content: string): ArkzenSection[] {
@@ -502,13 +660,42 @@ function parseAllNativeStyles(content: string): ArkzenSection[] {
 }
 
 function parseAllNativePages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page')
+  const currentTarget = detectNativeTarget()
+  const sections = extractAllNamedSections(content, 'native:page').filter(section => {
+    const target = section.raw.match(/@arkzen:resolved:import (expo|rn)/)?.[1]
+    return !currentTarget || !target || target === currentTarget
+  })
   return sections.map(section => {
     // v11.0: layout declaration allows + prefix and chained names
     // e.g. +auth:tab-shell, +guest:app, app, guest, auth
     const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
-    const raw = layoutMatch
+    let raw = layoutMatch
       ? section.raw.replace(/\/\* @arkzen:native:page:layout:\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)? \*\/\n?/, '').trim()
+      : section.raw
+    // v10.3: extract @arkzen:import:expo / @arkzen:import:rn from block body
+    // Expo + Bare RN pages carry an import line; Lynx pages use a separate tag and never appear here
+    const { cleanRaw } = extractNativeImportLine(raw)
+    raw = cleanRaw
+    return {
+      name:   section.name!,
+      raw,
+      layout: layoutMatch?.[1] ?? 'default',
+      start:  section.start,
+      end:    section.end,
+    }
+  })
+}
+
+// v10.3: Lynx pages — @arkzen:native:page:lynx:name
+// Lynx is a separate renderer (not React Native). Its pages, layouts, components,
+// and error handlers all live under the :lynx: namespace and are self-contained
+// (no embedded import line). Parsed into nativeLynxPages on ParsedTatemono.
+function parseAllNativeLynxPages(content: string): ArkzenPage[] {
+  const sections = extractAllNamedSections(content, 'native:page:lynx')
+  return sections.map(section => {
+    const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:lynx:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
+    const raw = layoutMatch
+      ? section.raw.replace(/\/\* @arkzen:native:page:lynx:layout:\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)? \*\/\n?/, '').trim()
       : section.raw
     return {
       name:   section.name!,
@@ -520,6 +707,65 @@ function parseAllNativePages(content: string): ArkzenPage[] {
   })
 }
 
+// v10.3: Lynx layouts — @arkzen:native:layout:lynx:name
+// Self-contained, no embedded import line.
+function parseAllNativeLynxLayouts(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:layout:lynx')
+}
+
+// v10.3: Lynx components — @arkzen:native:components:lynx:name
+// Self-contained, no embedded import line.
+function parseAllNativeLynxComponents(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:components:lynx')
+}
+
+// v10.3: Lynx styles — global @arkzen:native:style:lynx and named @arkzen:native:style:lynx:name
+// Global variant (no name suffix) is used for Lynx-wide stylesheet injection.
+// Named variant scoped per component/page.
+function parseGlobalNativeLynxStyle(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:style:lynx') ?? undefined
+}
+
+function parseAllNativeLynxStyles(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:style:lynx')
+}
+
+// v10.3: Lynx error handlers — @arkzen:native:error:404:lynx and @arkzen:native:error:500:lynx
+// Separate from Expo/Bare RN error handlers. No embedded import line.
+function parseAllNativeLynxErrorHandlers(content: string): ArkzenErrorHandler[] {
+  const results: ArkzenErrorHandler[] = []
+  const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
+
+  for (const type of validTypes) {
+    const openMarker  = `/* @arkzen:native:error:${type}:lynx */`
+    const closeMarker = `/* @arkzen:native:error:${type}:lynx:end */`
+
+    const openIdx = content.indexOf(openMarker)
+    if (openIdx === -1) continue
+
+    const closeIdx = content.indexOf(closeMarker, openIdx)
+    if (closeIdx === -1) continue
+
+    const raw = content.slice(openIdx + openMarker.length, closeIdx).trim()
+    if (!raw) continue
+
+    results.push({ type, raw })
+  }
+
+  return results
+}
+
+// ─────────────────────────────────────────────
+// NATIVE ANIMATION — v10.4: stack-split
+// @arkzen:native:animation:expo  — Expo (Reanimated / Moti, managed workflow)
+// @arkzen:native:animation:rn    — Bare React Native (Reanimated / Moti, bare workflow)
+// @arkzen:native:animation:lynx  — Lynx (CSS keyframes / lynx.createAnimation)
+// ─────────────────────────────────────────────
+
+function parseNativeAnimationExpo(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:animation:expo') ?? undefined
+}
+
 function parseNativeAnimationRN(content: string): ArkzenSection | undefined {
   return extractSectionWithPosition(content, 'native:animation:rn') ?? undefined
 }
@@ -528,10 +774,26 @@ function parseNativeAnimationLynx(content: string): ArkzenSection | undefined {
   return extractSectionWithPosition(content, 'native:animation:lynx') ?? undefined
 }
 
-function parseGlobalNativeScript(content: string): ArkzenSection | undefined {
-  const globalMarker  = `/* @arkzen:native:script`
-  const safe          = stripTemplateLiterals(content)
-  const globalIdx     = safe.indexOf(globalMarker)
+// ─────────────────────────────────────────────
+// NATIVE SCRIPT — v10.4: stack-split
+//
+// Global variants (no name suffix):
+//   @arkzen:native:script:expo        — Expo global utility block
+//   @arkzen:native:script:rn          — Bare RN global utility block
+//   @arkzen:native:script:lynx        — Lynx global utility block
+//
+// Named variants:
+//   @arkzen:native:script:expo:name   — Expo named utility block
+//   @arkzen:native:script:rn:name     — Bare RN named utility block
+//   @arkzen:native:script:lynx:name   — Lynx named utility block
+//
+// Helper used by all three global script parsers.
+// ─────────────────────────────────────────────
+
+function parseGlobalNativeScriptByStack(content: string, stack: 'expo' | 'rn' | 'lynx'): ArkzenSection | undefined {
+  const globalMarker = `/* @arkzen:native:script:${stack}`
+  const safe         = stripTemplateLiterals(content)
+  const globalIdx    = safe.indexOf(globalMarker)
   if (globalIdx === -1) return undefined
 
   const afterMarker = content.slice(globalIdx + globalMarker.length)
@@ -540,16 +802,36 @@ function parseGlobalNativeScript(content: string): ArkzenSection | undefined {
   const openCommentEnd = safe.indexOf('*/', globalIdx)
   if (openCommentEnd === -1) return undefined
 
-  const endMarker = `/* @arkzen:native:script:end */`
-  const endIdx = safe.indexOf(endMarker, openCommentEnd)
+  const endMarker = `/* @arkzen:native:script:${stack}:end */`
+  const endIdx    = safe.indexOf(endMarker, openCommentEnd)
   if (endIdx === -1) return undefined
 
   const raw = content.slice(openCommentEnd + 2, endIdx).trim()
   return { raw, start: globalIdx, end: endIdx + endMarker.length }
 }
 
-function parseAllNamedNativeScripts(content: string): ArkzenSection[] {
-  return extractAllNamedSections(content, 'native:script')
+function parseGlobalNativeScriptExpo(content: string): ArkzenSection | undefined {
+  return parseGlobalNativeScriptByStack(content, 'expo')
+}
+
+function parseGlobalNativeScriptRN(content: string): ArkzenSection | undefined {
+  return parseGlobalNativeScriptByStack(content, 'rn')
+}
+
+function parseGlobalNativeScriptLynx(content: string): ArkzenSection | undefined {
+  return parseGlobalNativeScriptByStack(content, 'lynx')
+}
+
+function parseAllNamedNativeScriptsExpo(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:script:expo')
+}
+
+function parseAllNamedNativeScriptsRN(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:script:rn')
+}
+
+function parseAllNamedNativeScriptsLynx(content: string): ArkzenSection[] {
+  return extractAllNamedSections(content, 'native:script:lynx')
 }
 
 // ─────────────────────────────────────────────
@@ -651,9 +933,9 @@ function parseAllApis(content: string): ArkzenApi[] {
       prefix:     String(parsed.prefix),
       middleware: (parsed.middleware as string[]) ?? [],
       endpoints:  (parsed.endpoints  as ArkzenApi['endpoints']) ?? {},
-      resource:   parsed.resource ?? false,
-      policy:     parsed.policy ?? false,
-      factory:    parsed.factory ?? false,
+      resource:   typeof parsed.resource === 'boolean' ? parsed.resource : false,
+      policy:     typeof parsed.policy === 'boolean' ? parsed.policy : false,
+      factory:    typeof parsed.factory === 'boolean' ? parsed.factory : false,
     })
   }
 
@@ -1811,6 +2093,8 @@ function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
   const results: ArkzenErrorHandler[] = []
   const validTypes: ArkzenErrorHandlerType[] = ['404', '500']
   // v10.2: @arkzen:native:error: — mirrors parseAllErrorHandlers for native platform
+  // v10.3: import line (@arkzen:import:expo / @arkzen:import:rn) extracted from body
+  //        Expo + Bare RN error blocks carry an import line; Lynx errors use :lynx suffix (separate)
   const prefix = 'native:error'
 
   for (const type of validTypes) {
@@ -1823,10 +2107,14 @@ function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
     const closeIdx = content.indexOf(closeMarker, openIdx)
     if (closeIdx === -1) continue
 
-    const raw = content.slice(openIdx + openMarker.length, closeIdx).trim()
-    if (!raw) continue
+    const rawBody = content.slice(openIdx + openMarker.length, closeIdx).trim()
+    if (!rawBody) continue
 
-    results.push({ type, raw })
+    const { cleanRaw, importStack } = extractNativeImportLine(rawBody)
+    const target = detectNativeTarget()
+    if (!target || !importStack || importStack === target) {
+      results.push({ type, raw: cleanRaw })
+    }
   }
 
   return results
@@ -1854,8 +2142,12 @@ interface DslTagError {
 const CODE_BLOCK_TAGS = [
   // web
   'web:components', 'web:layout', 'web:animation', 'web:script', 'web:page', 'web:style', 'web:error',
-  // native — v10.0
-  'native:components', 'native:layout', 'native:animation:rn', 'native:animation:lynx', 'native:script', 'native:page', 'native:style', 'native:error',
+  // native — v10.0 / v10.4
+  'native:components', 'native:layout', 'native:page', 'native:style', 'native:error',
+  'native:animation:expo', 'native:animation:rn', 'native:animation:lynx',
+  'native:script:expo', 'native:script:rn', 'native:script:lynx',
+  // native Lynx — v10.3
+  'native:page:lynx', 'native:layout:lynx', 'native:components:lynx', 'native:style:lynx', 'native:error:lynx',
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -2028,14 +2320,16 @@ function validateNoDuplicateControllers(apis: ArkzenApi[]): void {
 }
 
 function validatePages(
-  pages:         ArkzenPage[],
-  errorHandlers: ArkzenErrorHandler[],
-  nativePages:   ArkzenPage[]
+  pages:           ArkzenPage[],
+  errorHandlers:   ArkzenErrorHandler[],
+  nativePages:     ArkzenPage[],
+  nativeLynxPages: ArkzenPage[]
 ): void {
   // v10.0: valid if has web pages, native pages, or error handlers
+  // v10.3: nativeLynxPages also counts as valid
   // A native-only tatemono has zero web pages — that's fine
-  if (pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0) {
-    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name or @arkzen:native:page:name section is required')
+  if (pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
+    throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
   const seen = new Set<string>()
   for (const page of pages) {
@@ -2044,12 +2338,21 @@ function validatePages(
     }
     seen.add(page.name)
   }
-  const nativeSeen = new Set<string>()
+  const nativeSeen = new Map<string, 'expo' | 'rn' | null>()
   for (const page of nativePages) {
-    if (nativeSeen.has(page.name)) {
+    const target = page.raw.match(/@arkzen:(?:resolved:import|import:)\s*:?\s*(expo|rn)/)?.[1] as 'expo' | 'rn' | undefined
+    const previousTarget = nativeSeen.get(page.name)
+    if (nativeSeen.has(page.name) && (!target || !previousTarget || target === previousTarget)) {
       throw new Error(`[Arkzen Parser] Duplicate native page declared: "${page.name}"`)
     }
-    nativeSeen.add(page.name)
+    nativeSeen.set(page.name, target ?? null)
+  }
+  const lynxSeen = new Set<string>()
+  for (const page of nativeLynxPages) {
+    if (lynxSeen.has(page.name)) {
+      throw new Error(`[Arkzen Parser] Duplicate native Lynx page declared: "${page.name}"`)
+    }
+    lynxSeen.add(page.name)
   }
 }
 
@@ -2119,16 +2422,29 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const script  = parseGlobalScript(content)
   const scripts = parseAllNamedScripts(content)
 
-  // v10.0: native blocks
-  const nativeComponents = parseAllNativeComponents(content)
-  const nativeLayouts    = parseAllNativeLayouts(content)
-  const nativeStyles     = parseAllNativeStyles(content)
-  const nativePages      = parseAllNativePages(content)
-  const nativeAnimationRN         = parseNativeAnimationRN(content)
-  const nativeAnimationLynx       = parseNativeAnimationLynx(content)
-  const nativeScript          = parseGlobalNativeScript(content)
-  const nativeScripts         = parseAllNamedNativeScripts(content)
-  const nativeErrorHandlers   = parseAllNativeErrorHandlers(content)  // v10.2
+  // v10.0 / v10.4: native blocks
+  const nativeComponents     = parseAllNativeComponents(content)
+  const nativeLayouts        = parseAllNativeLayouts(content)
+  const nativeStyleGlobal    = parseGlobalNativeStyle(content)         // v10.6: @arkzen:native:style (global)
+  const nativeStyles         = parseAllNativeStyles(content)
+  const nativePages          = parseAllNativePages(content)
+  const nativeAnimationExpo  = parseNativeAnimationExpo(content)   // v10.4: Expo-specific
+  const nativeAnimationRN    = parseNativeAnimationRN(content)     // v10.4: Bare RN-specific
+  const nativeAnimationLynx  = parseNativeAnimationLynx(content)
+  const nativeScriptExpo     = parseGlobalNativeScriptExpo(content)  // v10.4
+  const nativeScriptRN       = parseGlobalNativeScriptRN(content)    // v10.4
+  const nativeScriptLynx     = parseGlobalNativeScriptLynx(content)  // v10.4
+  const nativeScriptsExpo    = parseAllNamedNativeScriptsExpo(content)  // v10.4
+  const nativeScriptsRN      = parseAllNamedNativeScriptsRN(content)    // v10.4
+  const nativeScriptsLynx    = parseAllNamedNativeScriptsLynx(content)  // v10.4
+  const nativeErrorHandlers  = parseAllNativeErrorHandlers(content)  // v10.2
+  // v10.3: Lynx-only blocks
+  const nativeLynxPages        = parseAllNativeLynxPages(content)
+  const nativeLynxLayouts      = parseAllNativeLynxLayouts(content)
+  const nativeLynxComponents   = parseAllNativeLynxComponents(content)
+  const nativeLynxStyleGlobal  = parseGlobalNativeLynxStyle(content)
+  const nativeLynxStyles       = parseAllNativeLynxStyles(content)
+  const nativeLynxErrorHandlers = parseAllNativeLynxErrorHandlers(content)
 
 
 
@@ -2145,7 +2461,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers, nativePages)
+  validatePages(pages, errorHandlers, nativePages, nativeLynxPages)
 
   const hasBackend =
     databases.length     > 0 ||
@@ -2189,16 +2505,29 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     animation,
     script,
     scripts,
-    // v10.0: native platform blocks
+    // v10.0 / v10.4: native platform blocks
     nativePages,
     nativeLayouts,
     nativeComponents,
+    nativeStyleGlobal,        // v10.6: @arkzen:native:style (global)
     nativeStyles,
-    nativeAnimationRN,
+    nativeAnimationExpo,      // v10.4: @arkzen:native:animation:expo
+    nativeAnimationRN,        // v10.4: @arkzen:native:animation:rn
     nativeAnimationLynx,
-    nativeScript,
-    nativeScripts,
-    nativeErrorHandlers,   // v10.2
+    nativeScriptExpo,         // v10.4: global @arkzen:native:script:expo
+    nativeScriptRN,           // v10.4: global @arkzen:native:script:rn
+    nativeScriptLynx,         // v10.4: global @arkzen:native:script:lynx
+    nativeScriptsExpo,        // v10.4: named @arkzen:native:script:expo:name
+    nativeScriptsRN,          // v10.4: named @arkzen:native:script:rn:name
+    nativeScriptsLynx,        // v10.4: named @arkzen:native:script:lynx:name
+    nativeErrorHandlers,      // v10.2
+    // v10.3: Lynx-only blocks
+    nativeLynxPages,
+    nativeLynxLayouts,
+    nativeLynxComponents,
+    nativeLynxStyleGlobal,
+    nativeLynxStyles,
+    nativeLynxErrorHandlers,
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2234,16 +2563,31 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   if (script)                console.log(`[Arkzen Parser]   Script: global web`)
   if (scripts.length > 0)   console.log(`[Arkzen Parser]   Scripts (${scripts.length}): named web blocks`)
   if (nativePages.length > 0 || nativeComponents.length > 0 || nativeMeta) {
-    console.log(`[Arkzen Parser]   ── Native (Expo) ──`)
+    console.log(`[Arkzen Parser]   ── Native (Expo / Bare RN) ──`)
     if (nativeMeta)                      console.log(`[Arkzen Parser]   Native meta: ${nativeMeta.expo?.bundle_id ?? 'present'}`)
     if (nativePages.length)              console.log(`[Arkzen Parser]   Native pages (${nativePages.length}): ${nativePages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
     if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
     if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
+    if (nativeStyleGlobal)               console.log(`[Arkzen Parser]   Native style (global)`)
     if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
-    if (nativeAnimationRN)                   console.log(`[Arkzen Parser]   Native animation: :rn block`)
-    if (nativeAnimationLynx)                 console.log(`[Arkzen Parser]   Native animation: :lynx block`)
-    if (nativeScript)                    console.log(`[Arkzen Parser]   Native script: global`)
-    if (nativeScripts.length)            console.log(`[Arkzen Parser]   Native scripts (${nativeScripts.length}): named blocks`)
+    if (nativeAnimationExpo)             console.log(`[Arkzen Parser]   Native animation: :expo block`)
+    if (nativeAnimationRN)               console.log(`[Arkzen Parser]   Native animation: :rn block`)
+    if (nativeScriptExpo)                console.log(`[Arkzen Parser]   Native script: global :expo`)
+    if (nativeScriptRN)                  console.log(`[Arkzen Parser]   Native script: global :rn`)
+    if (nativeScriptsExpo.length)        console.log(`[Arkzen Parser]   Native scripts expo (${nativeScriptsExpo.length}): named blocks`)
+    if (nativeScriptsRN.length)          console.log(`[Arkzen Parser]   Native scripts rn (${nativeScriptsRN.length}): named blocks`)
+  }
+  if (nativeLynxPages.length > 0 || nativeLynxLayouts.length > 0 || nativeLynxComponents.length > 0 || nativeLynxStyleGlobal || nativeLynxStyles.length > 0 || nativeLynxErrorHandlers.length > 0 || nativeAnimationLynx || nativeScriptLynx || nativeScriptsLynx.length > 0) {
+    console.log(`[Arkzen Parser]   ── Native (Lynx) ──`)
+    if (nativeLynxPages.length)         console.log(`[Arkzen Parser]   Lynx pages (${nativeLynxPages.length}): ${nativeLynxPages.map(p => p.name).join(', ')}`)
+    if (nativeLynxLayouts.length)       console.log(`[Arkzen Parser]   Lynx layouts (${nativeLynxLayouts.length})`)
+    if (nativeLynxComponents.length)    console.log(`[Arkzen Parser]   Lynx components (${nativeLynxComponents.length})`)
+    if (nativeLynxStyleGlobal)          console.log(`[Arkzen Parser]   Lynx style: global`)
+    if (nativeLynxStyles.length)        console.log(`[Arkzen Parser]   Lynx styles (${nativeLynxStyles.length}): named blocks`)
+    if (nativeAnimationLynx)            console.log(`[Arkzen Parser]   Lynx animation: :lynx block`)
+    if (nativeScriptLynx)               console.log(`[Arkzen Parser]   Lynx script: global`)
+    if (nativeScriptsLynx.length)       console.log(`[Arkzen Parser]   Lynx scripts (${nativeScriptsLynx.length}): named blocks`)
+    if (nativeLynxErrorHandlers.length) console.log(`[Arkzen Parser]   Lynx error handlers (${nativeLynxErrorHandlers.length}): ${nativeLynxErrorHandlers.map(e => e.type).join(', ')}`)
   }
 
   return parsed
@@ -2266,15 +2610,26 @@ export function hasSections(filePath: string) {
     animation:          content.includes('/* @arkzen:web:animation'),
     script:             content.includes('/* @arkzen:web:script'),
     errorHandler:       content.includes('/* @arkzen:web:error:'),
-    // native — v10.0
-    metaNative:         content.includes('/* @arkzen:meta:native'),
-    nativeConfig:       content.includes('/* @arkzen:native:config'),
-    nativeComponents:   content.includes('/* @arkzen:native:components:'),
-    nativePage:         content.includes('/* @arkzen:native:page:'),
-    nativeAnimationRN:    content.includes('/* @arkzen:native:animation:rn'),
-    nativeAnimationLynx:  content.includes('/* @arkzen:native:animation:lynx'),
-    nativeScript:       content.includes('/* @arkzen:native:script'),
-    nativeLayout:       content.includes('/* @arkzen:native:layout:'),
-    nativeStyle:        content.includes('/* @arkzen:native:style:'),
+    // native — v10.0 / v10.4
+    metaNative:              content.includes('/* @arkzen:meta:native'),
+    nativeConfig:            content.includes('/* @arkzen:native:config'),
+    nativeComponents:        content.includes('/* @arkzen:native:components:'),
+    nativePage:              content.includes('/* @arkzen:native:page:') && !content.includes('/* @arkzen:native:page:lynx:'),
+    nativeLayout:            content.includes('/* @arkzen:native:layout:') && !content.includes('/* @arkzen:native:layout:lynx:'),
+    nativeStyle:             content.includes('/* @arkzen:native:style:') && !content.includes('/* @arkzen:native:style:lynx'),
+    nativeStyleGlobal:       content.includes('/* @arkzen:native:style */'),      // v10.6: global unnamed
+    nativeAnimationExpo:     content.includes('/* @arkzen:native:animation:expo'),
+    nativeAnimationRN:       content.includes('/* @arkzen:native:animation:rn'),
+    nativeScriptExpo:        content.includes('/* @arkzen:native:script:expo'),
+    nativeScriptRN:          content.includes('/* @arkzen:native:script:rn'),
+    // native Lynx — v10.3 / v10.4
+    nativeLynxPage:          content.includes('/* @arkzen:native:page:lynx:'),
+    nativeLynxLayout:        content.includes('/* @arkzen:native:layout:lynx:'),
+    nativeLynxComponents:    content.includes('/* @arkzen:native:components:lynx:'),
+    nativeLynxStyleGlobal:   content.includes('/* @arkzen:native:style:lynx */'),
+    nativeLynxStyle:         content.includes('/* @arkzen:native:style:lynx:'),
+    nativeLynxErrorHandler:  content.includes('/* @arkzen:native:error:') && content.includes(':lynx */'),
+    nativeAnimationLynx:     content.includes('/* @arkzen:native:animation:lynx'),
+    nativeScriptLynx:        content.includes('/* @arkzen:native:script:lynx'),
   }
 }

@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NTabBar [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:54.843Z
+// Generated: 2026-10-09T14:43:16.878Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'
-import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
+import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { Dimensions, FlatList, Image, Pressable, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { C } from './constants'

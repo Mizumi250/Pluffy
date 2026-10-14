@@ -3,12 +3,11 @@
 // ARKZEN GENERATED PAGE — queue-flow/index
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:48.535Z
+// Generated: 2026-10-09T13:50:39.480Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { AdminCallButton } from './components/AdminCallButton'
 import { AnnounceBadge } from './components/AnnounceBadge'
 import { BigTicketDisplay } from './components/BigTicketDisplay'
@@ -17,10 +16,11 @@ import { NowServingCard } from './components/NowServingCard'
 import { StatPill } from './components/StatPill'
 import { TicketRow } from './components/TicketRow'
 import { useAnnounce, useQueueStore } from './components/hooks'
-import { announce, fmtWait, id } from './components/utils'
-import type { Queue, QueueStatus } from './components/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import type { MyTicketResponse, Queue, QueueStatus, QueueStore, Ticket } from './components/types'
+import { fmtWait } from './components/utils'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -137,7 +137,7 @@ const ArkzenPage_QueueFlow_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

@@ -2,16 +2,10 @@
 // ARKZEN GENERATED TYPES — shikaku [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:02.693Z
+// Generated: 2026-10-13T14:10:34.203Z
 // ============================================================
 
-export type Tool =
-  | 'pencil' | 'eraser' | 'fill' | 'eyedropper'
-  | 'select' | 'move' | 'line' | 'rect' | 'circle' | 'text'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-// ─── Types ────────────────────────────────────────────────────────────────────
 
 export interface Pixel {
   [key: string]: string // "x,y" -> hex color
@@ -43,7 +37,9 @@ export interface Project {
   updated_at: string
 }
 
-// ─── Canvas Engine Component ───────────────────────────────────────────────────
+export type Tool =
+  | 'pencil' | 'eraser' | 'fill' | 'eyedropper'
+  | 'select' | 'move' | 'line' | 'rect' | 'circle' | 'text'
 
 export interface CanvasEngineProps {
   frames: Frame[]
@@ -65,8 +61,6 @@ export interface CanvasEngineProps {
   onionSkin: boolean
 }
 
-// ─── Layer Panel ───────────────────────────────────────────────────────────────
-
 export interface LayerPanelProps {
   layers: Layer[]
   currentIdx: number
@@ -79,8 +73,6 @@ export interface LayerPanelProps {
   onOpacityChange: (idx: number, v: number) => void
   onBlendChange: (idx: number, mode: string) => void
 }
-
-// ─── Palette Panel ─────────────────────────────────────────────────────────────
 
 export interface PalettePanelProps {
   palette: string[]

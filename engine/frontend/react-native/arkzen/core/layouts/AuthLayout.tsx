@@ -16,11 +16,9 @@ import {
   ActivityIndicator,
 } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
-import { useRouter } from 'expo-router'
-import { 
-  useAuthStore, 
-  setActiveTatemono 
-} from '../../arkzen/core/stores/authStore'  // import setActiveTatemono
+import { ParamListBase, useNavigation } from '@react-navigation/native'
+import { NativeStackNavigationProp } from '@react-navigation/native-stack'
+import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
 interface AuthLayoutProps {
   children:   React.ReactNode
@@ -29,7 +27,7 @@ interface AuthLayoutProps {
 }
 
 export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
-  const router          = useRouter()
+  const navigation      = useNavigation<NativeStackNavigationProp<ParamListBase>>()
   const isLoading       = useAuthStore(s => s.isLoading)
   const isAuthenticated = useAuthStore(s => s.isAuthenticated)
   const user            = useAuthStore(s => s.user)
@@ -59,7 +57,7 @@ export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
       // 2. After fetchMe completes, check final auth state
       const { isAuthenticated: finalAuth, isLoading: finalLoading } = useAuthStore.getState()
       if (!finalLoading && !finalAuth) {
-        router.replace(loginRoute as any)
+        navigation.replace(loginRoute)
       }
 
       isRedirectingRef.current = false
@@ -67,7 +65,7 @@ export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
 
     restoreAndRedirect()
     return () => { active = false }
-  }, [tatSlug, loginRoute]) // re-run if slug or loginRoute changes
+  }, [tatSlug, loginRoute, fetchMe, navigation]) // re-run if slug or loginRoute changes
 
   // Show loader while restoring or redirecting
   if (isLoading) {

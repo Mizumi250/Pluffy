@@ -27,11 +27,11 @@ import { registerExpoScreens, unregisterExpoScreens } from './expo-router'
 import { updateExpoRegistry, removeFromExpoRegistry } from './expo-registry'
 import { triggerBackendBuild, triggerBackendRemove }  from './backend-bridge'
 import { syncSharedCoreToCurrentStack }               from './shared-sync'
-import type { ExpoBuildResult }                       from '../types'
+import type { BuildResult }                           from '../types'
 
 // ─── Build ────────────────────────────────────────────────────────────────────
 
-export async function buildExpoTatemono(corePath: string): Promise<ExpoBuildResult> {
+export async function buildExpoTatemono(corePath: string): Promise<BuildResult> {
   syncSharedCoreToCurrentStack('Arkzen Expo Builder')
 
   const fileName     = path.basename(corePath, '.tsx')
@@ -39,7 +39,7 @@ export async function buildExpoTatemono(corePath: string): Promise<ExpoBuildResu
     ? path.basename(path.dirname(corePath))
     : fileName
 
-  const steps: ExpoBuildResult['steps'] = []
+  const steps: BuildResult['steps'] = []
   const errors: string[] = []
 
   console.log(`\n[Arkzen Expo] ════════════════════════════════`)
@@ -148,7 +148,7 @@ export async function buildExpoTatemono(corePath: string): Promise<ExpoBuildResu
 
 // ─── Rebuild ──────────────────────────────────────────────────────────────────
 
-export async function rebuildExpoTatemono(corePath: string): Promise<ExpoBuildResult> {
+export async function rebuildExpoTatemono(corePath: string): Promise<BuildResult> {
   const fileName     = path.basename(corePath, '.tsx')
   const tatemonoName = fileName === 'core'
     ? path.basename(path.dirname(corePath))

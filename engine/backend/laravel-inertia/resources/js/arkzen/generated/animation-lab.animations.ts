@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — animation-lab [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:16.734Z
+// Generated: 2026-10-13T17:05:19.388Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,19 +10,16 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const animationLabAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+export const animationLabAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
-    // Logo entrance
     gsap.fromTo('.anim-lab-logo',
       { opacity: 0, x: -20 },
       { opacity: 1, x: 0, duration: 0.6, ease: 'power3.out', delay: 0.05 }
     )
-    // Sidebar nav items stagger
     gsap.fromTo('.nav-item',
       { opacity: 0, x: -16 },
       { opacity: 1, x: 0, duration: 0.4, stagger: 0.04, ease: 'power2.out', delay: 0.2 }
     )
-    // Section header
     gsap.fromTo('.section-header',
       { opacity: 0, y: -12 },
       { opacity: 1, y: 0, duration: 0.5, ease: 'power3.out', delay: 0.5 }

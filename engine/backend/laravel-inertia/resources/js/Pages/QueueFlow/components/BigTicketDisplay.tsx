@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:21.601Z
+// Generated: 2026-10-13T17:05:21.940Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -13,9 +13,7 @@ import { create } from 'zustand'
 import { fmtWait } from './utils'
 import type { MyTicketResponse } from './types'
 
-// ✅ FIX: Add safe guard for missing ticket
 export const BigTicketDisplay = ({ data }: { data: MyTicketResponse }) => {
-  // If data or data.ticket is missing, show loading fallback
   if (!data || !data.ticket) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', padding: '60px 0' }}>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ArtCarousel [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.302Z
+// Generated: 2026-10-13T14:10:33.270Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,9 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CAROUSEL_ITEMS, FULL_CAROUSEL } from './constants'
-import { id, interval, total } from './utils'
-
-// ─── ORBIT CAROUSEL ──────────────────────────────────────────
 
 export const ArtCarousel = ({
   onPreview,
@@ -51,6 +48,4 @@ export const ArtCarousel = ({
       </div>
     </div>
   )
-}
-
-// ─── FULLSCREEN SLIDER ────────────────────────────────────────
+};

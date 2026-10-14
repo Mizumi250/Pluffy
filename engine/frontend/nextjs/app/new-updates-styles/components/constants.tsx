@@ -2,13 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — new-updates-styles
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.952Z
+// Generated: 2026-10-09T13:50:38.999Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
+import type { Feature, FeatureCardProps, HeroSectionProps } from './types'
+
 
 export const FEATURES: Feature[] = [
   { id: 1, icon: 'zap',     title: 'Component Separation', description: 'Individual component files with shared utilities backend',          color: 'blue'   },

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — roles-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:22.051Z
+// Generated: 2026-10-13T17:05:22.019Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 import { Shield } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type RolesTestDashboardProps = {
@@ -245,7 +245,7 @@ function ArkzenPage_RolesTest_Dashboard() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -260,7 +260,11 @@ function ArkzenPage_RolesTest_Dashboard() {
     </motion.div>
   )
 
-  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
+  return (
+    <AuthLayout requireAuth={true}>
+    {content}
+    </AuthLayout>
+  )
 }
 
 export default ArkzenPage_RolesTest_Dashboard

@@ -14,14 +14,8 @@ export interface ArkzenRoute {
   auth:      boolean
 }
 
-// ROUTE:coveo:index:/coveo:false
-const ArkzenPage_Coveo_Index = lazy(() => import('@/pages/coveo/index'))
-// ROUTE:coveo:not-found:/coveo/*:false
-const ArkzenPage_Coveo_NotFound = lazy(() => import('@/pages/coveo/not-found'))
-// ROUTE:lain:index:/lain:false
-const ArkzenPage_Lain_Index = lazy(() => import('@/pages/lain/index'))
-// ROUTE:lain:not-found:/lain/*:false
-const ArkzenPage_Lain_NotFound = lazy(() => import('@/pages/lain/not-found'))
+// ROUTE:animation-lab:index:/animation-lab:false
+const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:atelier:index:/atelier:false
@@ -142,6 +136,14 @@ const ArkzenPage_NotificationTest_Dashboard = lazy(() => import('@/pages/notific
 const ArkzenPage_NotificationTest_RootRedirect = lazy(() => import('@/pages/notification-test/__root_redirect'))
 // ROUTE:portfolio-test:index:/portfolio-test:false
 const ArkzenPage_PortfolioTest_Index = lazy(() => import('@/pages/portfolio-test/index'))
+// ROUTE:queue-flow:index:/queue-flow:false
+const ArkzenPage_QueueFlow_Index = lazy(() => import('@/pages/queue-flow/index'))
+// ROUTE:queue-flow:join:/queue-flow/join:false
+const ArkzenPage_QueueFlow_Join = lazy(() => import('@/pages/queue-flow/join'))
+// ROUTE:queue-flow:admin:/queue-flow/admin:false
+const ArkzenPage_QueueFlow_Admin = lazy(() => import('@/pages/queue-flow/admin'))
+// ROUTE:queue-flow:not-found:/queue-flow/*:false
+const ArkzenPage_QueueFlow_NotFound = lazy(() => import('@/pages/queue-flow/not-found'))
 // ROUTE:roles-test:login:/roles-test/login:true
 const ArkzenPage_RolesTest_Login = lazy(() => import('@/pages/roles-test/login'))
 // ROUTE:roles-test:register:/roles-test/register:true
@@ -154,6 +156,8 @@ const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/
 const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
 // ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
 const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
+// ROUTE:shan-shan:index:/shan-shan:false
+const ArkzenPage_ShanShan_Index = lazy(() => import('@/pages/shan-shan/index'))
 // ROUTE:shikaku:index:/shikaku:true
 const ArkzenPage_Shikaku_Index = lazy(() => import('@/pages/shikaku/index'))
 // ROUTE:shikaku:editor:/shikaku/editor:true
@@ -172,10 +176,7 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 }
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
-  { path: '/coveo', name: 'index', tatemono: 'coveo', component: ArkzenPage_Coveo_Index, auth: false },
-  { path: '/coveo/*', name: 'not-found', tatemono: 'coveo', component: ArkzenPage_Coveo_NotFound, auth: false },
-  { path: '/lain', name: 'index', tatemono: 'lain', component: ArkzenPage_Lain_Index, auth: false },
-  { path: '/lain/*', name: 'not-found', tatemono: 'lain', component: ArkzenPage_Lain_NotFound, auth: false },
+  { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/atelier', name: 'index', tatemono: 'atelier', component: ArkzenPage_Atelier_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
@@ -236,12 +237,17 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/notification-test/dashboard', name: 'dashboard', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Dashboard, auth: true },
   { path: '/notification-test', name: '__root_redirect', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_RootRedirect, auth: true },
   { path: '/portfolio-test', name: 'index', tatemono: 'portfolio-test', component: ArkzenPage_PortfolioTest_Index, auth: false },
+  { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
+  { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
+  { path: '/queue-flow/admin', name: 'admin', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Admin, auth: false },
+  { path: '/queue-flow/*', name: 'not-found', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_NotFound, auth: false },
   { path: '/roles-test/login', name: 'login', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Login, auth: true },
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
   { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
+  { path: '/shan-shan', name: 'index', tatemono: 'shan-shan', component: ArkzenPage_ShanShan_Index, auth: false },
   { path: '/shikaku', name: 'index', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Index, auth: true },
   { path: '/shikaku/editor', name: 'editor', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Editor, auth: true },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — asset-hub/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:55.442Z
+// Generated: 2026-10-13T14:10:30.454Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
-import './styles/global.css'
 import { AssetCard } from './components/AssetCard'
 import { ASSET_REGISTRY, CATEGORY_EMOJI } from './components/constants'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { useNavigate } from 'react-router'
 import type { AssetCategory } from './components/types'
+import './styles/global.css'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const IndexPage = () => {
@@ -83,7 +83,7 @@ const ArkzenPage_AssetHub_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

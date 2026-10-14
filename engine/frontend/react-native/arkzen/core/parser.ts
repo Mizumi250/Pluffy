@@ -1,5 +1,13 @@
 // ============================================================
-// ARKZEN ENGINE — PARSER v10.4
+// ARKZEN ENGINE — PARSER v10.6
+//
+// v10.6: Global (unnamed) native style block for Expo + Bare RN.
+//        New parser: parseGlobalNativeStyle() — @arkzen:native:style
+//        ParsedTatemono: nativeStyleGlobal? added (ArkzenSection | undefined).
+//        emitNativeStyles() in expo-router now merges nativeStyleGlobal into
+//        the generated .native-styles.ts file alongside named blocks.
+//        featureMap: nativeStyleGlobal key added.
+//        Mirrors the existing nativeLynxStyleGlobal pattern introduced in v10.3.
 //
 // v10.4: Stack-split animation and script parsers.
 //        animation was previously split as :rn / :lynx only — Expo lacked its own tag.
@@ -120,7 +128,6 @@ import type {
   ArkzenPage,
   ArkzenLayout,
   ArkzenStyle,
-  ArkzenScript,
   ArkzenErrorHandler,
   ArkzenErrorHandlerType,
 } from '../types'
@@ -325,6 +332,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
     const openCommentEnd = findOpeningCommentEnd(safe, openIdx, openIdx + openPattern.length)
     if (openCommentEnd === -1) break
 
+    const target = marker === 'native:page'
+      ? content.slice(openIdx, openCommentEnd).match(/@arkzen:import:(expo|rn)/)?.[1]
+      : undefined
+
     // Find closing marker: /* @arkzen:marker:identifier:end */
     const closeMarker = `/* @arkzen:${marker}:${identifier}:end */`
     const closeIdx = safe.indexOf(closeMarker, openCommentEnd)
@@ -332,7 +343,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Extract raw content between opening comment close and closing marker
     // Also handle per-page layout declarations inside the block
-    const raw = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const body = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const raw = target
+      ? `/* @arkzen:resolved:import ${target} */\n${body}`
+      : body
 
     results.push({
       raw,
@@ -561,44 +575,58 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
 //
 // DSL format (inside a page/layout/component/error block body):
 //   /* @arkzen:import:expo */
+//   ...expo-targeted code...
 //   /* @arkzen:import:expo:end */
 //
-// The content between open and :end is intentionally empty — the block
-// serves only as a stack-targeting flag. The parser strips the entire
-// block (open tag + :end tag) from the raw body and re-embeds a resolved
-// marker at the top so builders can detect the target stack.
+//   /* @arkzen:import:rn */
+//   ...rn-targeted code...
+//   /* @arkzen:import:rn:end */
+//
+// v10.6: a single DSL block may legitimately contain MULTIPLE expo/rn
+// sub-block pairs side by side (e.g. one pair for imports, another pair
+// wrapping the actual component/handler) — this is intentional dual-target
+// authoring from one tatemono source, not a duplicate. Since this exact
+// file is byte-for-byte synced (see shared-sync.ts) into every stack's
+// arkzen/core/, it cannot hardcode which target it's resolving for — it
+// must detect its own stack the same way shared-sync.ts does, via the
+// folder name under engine/frontend/ it's currently running in
+// (process.cwd() at build time is that stack's directory).
+//
+// Resolution: keep every sub-block matching THIS stack's target (strip
+// just its markers), and fully delete (markers + body) every sub-block
+// matching the other target. Stacks with no native target (lynx, web
+// stacks) never see these markers in their own DSL content, so this is a
+// no-op for them.
 //
 // Self-closing form (v10.3 legacy, no :end) is still accepted as fallback
 // so old tatemonos don't break before migration.
 // ─────────────────────────────────────────────
 
-const NATIVE_IMPORT_EXPO_OPEN  = '/* @arkzen:import:expo */'
-const NATIVE_IMPORT_EXPO_END   = '/* @arkzen:import:expo:end */'
-const NATIVE_IMPORT_RN_OPEN    = '/* @arkzen:import:rn */'
-const NATIVE_IMPORT_RN_END     = '/* @arkzen:import:rn:end */'
+function detectNativeTarget(): 'expo' | 'rn' | null {
+  const stackName = path.basename(process.cwd())
+  if (stackName === 'expo')         return 'expo'
+  if (stackName === 'react-native') return 'rn'
+  return null
+}
 
 function extractNativeImportLine(raw: string): { cleanRaw: string; importStack: 'expo' | 'rn' | null } {
-  // Expo — try open+close first, then self-closing fallback
-  if (raw.includes(NATIVE_IMPORT_EXPO_OPEN)) {
-    let cleanRaw = raw
-    // Strip :end tag if present
-    if (cleanRaw.includes(NATIVE_IMPORT_EXPO_END)) {
-      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_END, '')
-    }
-    // Strip open tag
-    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_EXPO_OPEN, '').trim()
-    return { cleanRaw: `/* @arkzen:resolved:import expo */\n${cleanRaw}`, importStack: 'expo' }
-  }
-  // RN — try open+close first, then self-closing fallback
-  if (raw.includes(NATIVE_IMPORT_RN_OPEN)) {
-    let cleanRaw = raw
-    if (cleanRaw.includes(NATIVE_IMPORT_RN_END)) {
-      cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_END, '')
-    }
-    cleanRaw = cleanRaw.replace(NATIVE_IMPORT_RN_OPEN, '').trim()
-    return { cleanRaw: `/* @arkzen:resolved:import rn */\n${cleanRaw}`, importStack: 'rn' }
-  }
-  return { cleanRaw: raw, importStack: null }
+  const target = detectNativeTarget()
+
+  // Legacy self-closing fallback / non-native stacks: no open+close pair detection possible,
+  // leave content untouched (old behavior preserved for stacks without a native target).
+  if (!target) return { cleanRaw: raw, importStack: null }
+
+  const blockRe = /\/\*\s*@arkzen:import:(expo|rn)\s*\*\/([\s\S]*?)\/\*\s*@arkzen:import:\1:end\s*\*\//g
+
+  let found: 'expo' | 'rn' | null = null
+  const cleanRaw = raw.replace(blockRe, (_match, stack: 'expo' | 'rn', body: string) => {
+    if (stack !== target) return '' // discard the other target's block entirely
+    found = target
+    return body.trim()
+  }).trim()
+
+  if (!found) return { cleanRaw: raw, importStack: null }
+  return { cleanRaw: `/* @arkzen:resolved:import ${target} */\n${cleanRaw}`, importStack: found }
 }
 
 function parseAllNativeComponents(content: string): ArkzenSection[] {
@@ -610,11 +638,21 @@ function parseAllNativeComponents(content: string): ArkzenSection[] {
 }
 
 function parseAllNativeLayouts(content: string): ArkzenSection[] {
+  const currentTarget = detectNativeTarget()
   const sections = extractAllNamedSections(content, 'native:layout')
-  return sections.map(section => {
-    const { cleanRaw } = extractNativeImportLine(section.raw)
-    return { ...section, raw: cleanRaw }
+  return sections.flatMap(section => {
+    const { cleanRaw, importStack } = extractNativeImportLine(section.raw)
+    return !currentTarget || !importStack || importStack === currentTarget
+      ? [{ ...section, raw: cleanRaw }]
+      : []
   })
+}
+
+// v10.6: Global (unnamed) native:style block — @arkzen:native:style
+// Mirrors parseGlobalNativeLynxStyle() for the Expo/Bare RN target.
+// Content is styles-only (no StyleSheet wrapper); the emitter wraps automatically.
+function parseGlobalNativeStyle(content: string): ArkzenSection | undefined {
+  return extractSectionWithPosition(content, 'native:style') ?? undefined
 }
 
 function parseAllNativeStyles(content: string): ArkzenSection[] {
@@ -622,7 +660,11 @@ function parseAllNativeStyles(content: string): ArkzenSection[] {
 }
 
 function parseAllNativePages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page')
+  const currentTarget = detectNativeTarget()
+  const sections = extractAllNamedSections(content, 'native:page').filter(section => {
+    const target = section.raw.match(/@arkzen:resolved:import (expo|rn)/)?.[1]
+    return !currentTarget || !target || target === currentTarget
+  })
   return sections.map(section => {
     // v11.0: layout declaration allows + prefix and chained names
     // e.g. +auth:tab-shell, +guest:app, app, guest, auth
@@ -663,19 +705,6 @@ function parseAllNativeLynxPages(content: string): ArkzenPage[] {
       end:    section.end,
     }
   })
-}
-
-// v10.3: Lynx pages — @arkzen:native:page:lynx:name
-// Lynx is a separate renderer (not React Native). Self-contained, no embedded import line.
-function parseAllNativeLynxPages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page:lynx')
-  return sections.map(section => ({
-    name:   section.name!,
-    raw:    section.raw,
-    layout: 'default',
-    start:  section.start,
-    end:    section.end,
-  }))
 }
 
 // v10.3: Lynx layouts — @arkzen:native:layout:lynx:name
@@ -904,9 +933,9 @@ function parseAllApis(content: string): ArkzenApi[] {
       prefix:     String(parsed.prefix),
       middleware: (parsed.middleware as string[]) ?? [],
       endpoints:  (parsed.endpoints  as ArkzenApi['endpoints']) ?? {},
-      resource:   parsed.resource ?? false,
-      policy:     parsed.policy ?? false,
-      factory:    parsed.factory ?? false,
+      resource:   typeof parsed.resource === 'boolean' ? parsed.resource : false,
+      policy:     typeof parsed.policy === 'boolean' ? parsed.policy : false,
+      factory:    typeof parsed.factory === 'boolean' ? parsed.factory : false,
     })
   }
 
@@ -2081,8 +2110,11 @@ function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
     const rawBody = content.slice(openIdx + openMarker.length, closeIdx).trim()
     if (!rawBody) continue
 
-    const { cleanRaw } = extractNativeImportLine(rawBody)
-    results.push({ type, raw: cleanRaw })
+    const { cleanRaw, importStack } = extractNativeImportLine(rawBody)
+    const target = detectNativeTarget()
+    if (!target || !importStack || importStack === target) {
+      results.push({ type, raw: cleanRaw })
+    }
   }
 
   return results
@@ -2306,12 +2338,14 @@ function validatePages(
     }
     seen.add(page.name)
   }
-  const nativeSeen = new Set<string>()
+  const nativeSeen = new Map<string, 'expo' | 'rn' | null>()
   for (const page of nativePages) {
-    if (nativeSeen.has(page.name)) {
+    const target = page.raw.match(/@arkzen:(?:resolved:import|import:)\s*:?\s*(expo|rn)/)?.[1] as 'expo' | 'rn' | undefined
+    const previousTarget = nativeSeen.get(page.name)
+    if (nativeSeen.has(page.name) && (!target || !previousTarget || target === previousTarget)) {
       throw new Error(`[Arkzen Parser] Duplicate native page declared: "${page.name}"`)
     }
-    nativeSeen.add(page.name)
+    nativeSeen.set(page.name, target ?? null)
   }
   const lynxSeen = new Set<string>()
   for (const page of nativeLynxPages) {
@@ -2391,6 +2425,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   // v10.0 / v10.4: native blocks
   const nativeComponents     = parseAllNativeComponents(content)
   const nativeLayouts        = parseAllNativeLayouts(content)
+  const nativeStyleGlobal    = parseGlobalNativeStyle(content)         // v10.6: @arkzen:native:style (global)
   const nativeStyles         = parseAllNativeStyles(content)
   const nativePages          = parseAllNativePages(content)
   const nativeAnimationExpo  = parseNativeAnimationExpo(content)   // v10.4: Expo-specific
@@ -2474,6 +2509,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativePages,
     nativeLayouts,
     nativeComponents,
+    nativeStyleGlobal,        // v10.6: @arkzen:native:style (global)
     nativeStyles,
     nativeAnimationExpo,      // v10.4: @arkzen:native:animation:expo
     nativeAnimationRN,        // v10.4: @arkzen:native:animation:rn
@@ -2532,6 +2568,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativePages.length)              console.log(`[Arkzen Parser]   Native pages (${nativePages.length}): ${nativePages.map(p => `${p.name}[${p.layout}]`).join(', ')}`)
     if (nativeComponents.length)         console.log(`[Arkzen Parser]   Native components (${nativeComponents.length})`)
     if (nativeLayouts.length)            console.log(`[Arkzen Parser]   Native layouts (${nativeLayouts.length})`)
+    if (nativeStyleGlobal)               console.log(`[Arkzen Parser]   Native style (global)`)
     if (nativeStyles.length)             console.log(`[Arkzen Parser]   Native styles (${nativeStyles.length})`)
     if (nativeAnimationExpo)             console.log(`[Arkzen Parser]   Native animation: :expo block`)
     if (nativeAnimationRN)               console.log(`[Arkzen Parser]   Native animation: :rn block`)
@@ -2580,6 +2617,7 @@ export function hasSections(filePath: string) {
     nativePage:              content.includes('/* @arkzen:native:page:') && !content.includes('/* @arkzen:native:page:lynx:'),
     nativeLayout:            content.includes('/* @arkzen:native:layout:') && !content.includes('/* @arkzen:native:layout:lynx:'),
     nativeStyle:             content.includes('/* @arkzen:native:style:') && !content.includes('/* @arkzen:native:style:lynx'),
+    nativeStyleGlobal:       content.includes('/* @arkzen:native:style */'),      // v10.6: global unnamed
     nativeAnimationExpo:     content.includes('/* @arkzen:native:animation:expo'),
     nativeAnimationRN:       content.includes('/* @arkzen:native:animation:rn'),
     nativeScriptExpo:        content.includes('/* @arkzen:native:script:expo'),

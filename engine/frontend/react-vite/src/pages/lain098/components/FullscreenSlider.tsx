@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FullscreenSlider [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.303Z
+// Generated: 2026-10-13T14:10:33.271Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,9 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { CAROUSEL_ITEMS } from './constants'
-import { currentItem, goTo, handleKeyDown, items, x, y } from './utils'
-
-// ─── FULLSCREEN SLIDER ────────────────────────────────────────
 
 export const FullscreenSlider = ({
   items,
@@ -97,6 +94,4 @@ export const FullscreenSlider = ({
       </div>
     </motion.div>
   )
-}
-
-// ─── HERO SECTION (100vh STATIC, NO PINNING) ─────────────────
+};

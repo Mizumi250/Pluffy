@@ -3,16 +3,16 @@
 // ARKZEN GENERATED PAGE — crud-test/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:09.030Z
+// Generated: 2026-10-09T13:50:34.733Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { emptyForm } from './components/utils'
 import type { FormData, Item } from './components/types'
-import { Boxes } from 'lucide-react'
+import { emptyForm } from './components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Boxes } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -215,7 +215,7 @@ const ArkzenPage_CrudTest_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

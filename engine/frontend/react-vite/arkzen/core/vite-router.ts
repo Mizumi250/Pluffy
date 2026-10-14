@@ -39,6 +39,7 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
+import ts from 'typescript'
 import type { ParsedTatemono, ArkzenPage, ArkzenLayout, ArkzenErrorHandler } from '../types'
 import { emitTatemonoStyles } from './lib/dsl-style-emitter'
 import { copyAssetsToPublic, cleanOldAssets } from './assets'
@@ -189,15 +190,25 @@ function resolveImports(
   // 5. import 'module'  (side-effect)
   const sideEffectRe      = /^import\s+['"]([^'"]+)['"]\s*;?/
 
-  const sideEffects: string[] = []
+  const sideEffects = new Set<string>()
+  const typeImports = new Set<string>()
 
-  for (const source of sources) {
+  const importSources = engineRequired.extra
+    ? [...sources, engineRequired.extra]
+    : sources
+  for (const source of importSources) {
     const flattened = flattenMultilineImports(source)
     for (const rawLine of flattened.split('\n')) {
       const line = rawLine.trim()
       if (!line.startsWith('import ')) continue
 
       let m: RegExpMatchArray | null
+
+      m = line.match(/^import\s+type\s+\{([^}]*)\}\s+from\s+['"]([^'"]+)['"]\s*;?/)
+      if (m) {
+        typeImports.add(`import type { ${m[1].split(',').map(s => s.trim()).filter(Boolean).join(', ')} } from '${m[2]}'`)
+        continue
+      }
 
       // mixed: import Default, { a, b } from 'mod'
       m = line.match(mixedImportRe)
@@ -242,7 +253,7 @@ function resolveImports(
       // side-effect: import 'mod'
       m = line.match(sideEffectRe)
       if (m) {
-        sideEffects.push(`import '${m[1]}'`)
+        sideEffects.add(`import '${m[1]}'`)
         continue
       }
     }
@@ -303,12 +314,10 @@ function resolveImports(
   }
 
   // 4. Side-effects last
+  typeImports.forEach(s => lines.push(s))
   sideEffects.forEach(s => lines.push(s))
 
-  // 5. Verbatim extra (e.g. layout import, animation import)
-  if (engineRequired.extra) {
-    lines.push(engineRequired.extra)
-  }
+  // 5. Imports supplied by the caller are parsed and merged above.
 
   const canonicalBlock = lines.filter(Boolean).join('\n')
 
@@ -323,6 +332,46 @@ function resolveImports(
   const strippedSources = sources.map(stripRaw)
 
   return { canonicalBlock, strippedSources }
+}
+
+function collectTypeImports(importBlock: string, source: string): string {
+  const imports: string[] = []
+
+  for (const line of importBlock.split('\n')) {
+    const match = line.match(/^import\s+(.+?)\s+from\s+(['"])([^'"]+)\2$/)
+    if (!match) continue
+
+    const [, rawClause, , moduleName] = match
+    const clause = rawClause.replace(/^type\s+/, '')
+    if (clause.startsWith('* as ')) {
+      const localName = clause.slice(5).trim()
+      if (findReferencedNames(source, new Set([localName])).length) {
+        imports.push(`import type ${clause} from '${moduleName}'`)
+      }
+      continue
+    }
+
+    const namedMatch = clause.match(/^(.*?)\{([^}]*)\}$/)
+    const defaultName = namedMatch ? namedMatch[1].replace(/,$/, '').trim() : clause.trim()
+    const namedSpecifiers = namedMatch
+      ? namedMatch[2].split(',').map(specifier => specifier.trim()).filter(Boolean)
+      : []
+    const usedNamed = namedSpecifiers.filter(specifier => {
+      const parts = specifier.split(/\s+as\s+/)
+      const localName = parts[parts.length - 1]
+      return findReferencedNames(source, new Set([localName])).length > 0
+    })
+    const usedDefault = defaultName && findReferencedNames(source, new Set([defaultName])).length > 0
+
+    if (!usedDefault && usedNamed.length === 0) continue
+    const usedClause = [
+      usedDefault ? defaultName : '',
+      usedNamed.length ? `{ ${usedNamed.join(', ')} }` : '',
+    ].filter(Boolean).join(', ')
+    imports.push(`import type ${usedClause} from '${moduleName}'`)
+  }
+
+  return imports.join('\n')
 }
 
 function flattenMultilineImports(code: string): string {
@@ -502,23 +551,73 @@ function stripTemplateLiterals(src: string): string {
 
 // ─── Component / declaration name extractors (ported from Next.js router) ────
 
+interface TopLevelDeclaration {
+  name: string
+  kind: 'variable' | 'function' | 'type'
+  text: string
+}
+
+function getTopLevelDeclarations(tatemono: ParsedTatemono): TopLevelDeclaration[] {
+  const declarations: TopLevelDeclaration[] = []
+
+  for (const component of tatemono.components) {
+    const source = ts.createSourceFile(
+      'components.tsx',
+      component.raw,
+      ts.ScriptTarget.Latest,
+      true,
+      ts.ScriptKind.TSX
+    )
+
+    for (const statement of source.statements) {
+      if (ts.isVariableStatement(statement)) {
+        const keyword = statement.declarationList.flags & ts.NodeFlags.Const
+          ? 'const'
+          : statement.declarationList.flags & ts.NodeFlags.Let ? 'let' : 'var'
+        const modifiers = statement.modifiers?.map(modifier => modifier.getText(source)).join(' ')
+        const prefix = modifiers ? `${modifiers} ` : ''
+
+        for (const declaration of statement.declarationList.declarations) {
+          if (!ts.isIdentifier(declaration.name)) continue
+          declarations.push({
+            name: declaration.name.text,
+            kind: 'variable',
+            text: `${prefix}${keyword} ${declaration.getText(source)};`,
+          })
+        }
+      } else if (ts.isFunctionDeclaration(statement) && statement.name) {
+        declarations.push({
+          name: statement.name.text,
+          kind: 'function',
+          text: statement.getText(source),
+        })
+      } else if ((ts.isTypeAliasDeclaration(statement) || ts.isInterfaceDeclaration(statement)) && statement.name) {
+        declarations.push({
+          name: statement.name.text,
+          kind: 'type',
+          text: statement.getText(source),
+        })
+      }
+    }
+  }
+
+  return declarations
+}
+
 /**
  * Extracts PascalCase component names from @arkzen:components blocks.
- * Skips ALL_CAPS constants and anything inside template literals.
+ * Only top-level declarations are considered, so component-local state is
+ * never emitted as a shared utility.
  */
 function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const constMatches = stripped.match(/(?:export\s+)?const\s+([A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of constMatches) {
-      const name = match.match(/const\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^[A-Z_]+$/.test(name)) names.add(name)
-    }
-    const fnMatches = stripped.match(/(?:export\s+)?function\s+([A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
-    for (const match of fnMatches) {
-      const name = match.match(/function\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (
+      /^[A-Z][A-Za-z0-9_$]*$/.test(declaration.name) &&
+      !/^[A-Z0-9_]+$/.test(declaration.name) &&
+      declaration.kind !== 'type'
+    ) {
+      names.add(declaration.name)
     }
   }
   return names
@@ -530,12 +629,9 @@ function extractComponentNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const matches = stripped.match(/^(?:export\s+)?const\s+([A-Z][A-Z0-9_]*)\s*[=:]/gm) || []
-    for (const match of matches) {
-      const name = match.match(/const\s+([A-Z][A-Z0-9_]*)/)?.[1]
-      if (name) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (declaration.kind === 'variable' && /^[A-Z][A-Z0-9_]*$/.test(declaration.name)) {
+      names.add(declaration.name)
     }
   }
   return names
@@ -547,17 +643,9 @@ function extractSharedConstantNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractCustomHookNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const fnMatches = stripped.match(/(?:export\s+)?function\s+(use[A-Z][A-Za-z0-9_$]*)\s*[(<]/g) || []
-    for (const match of fnMatches) {
-      const name = match.match(/function\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
-    }
-    const constMatches = stripped.match(/(?:export\s+)?const\s+(use[A-Z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of constMatches) {
-      const name = match.match(/const\s+(use[A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (declaration.kind !== 'type' && /^use[A-Z]/.test(declaration.name)) {
+      names.add(declaration.name)
     }
   }
   return names
@@ -569,18 +657,8 @@ function extractCustomHookNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    const typeMatches = stripped.match(/(?:export\s+)?type\s+([A-Z][A-Za-z0-9_$]*)\s*[=<{]/g) || []
-    for (const match of typeMatches) {
-      const name = match.match(/type\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
-    }
-    const ifaceMatches = stripped.match(/(?:export\s+)?interface\s+([A-Z][A-Za-z0-9_$]*)\s*[{<]/g) || []
-    for (const match of ifaceMatches) {
-      const name = match.match(/interface\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
-      if (name) names.add(name)
-    }
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (declaration.kind === 'type') names.add(declaration.name)
   }
   return names
 }
@@ -592,29 +670,13 @@ function extractSharedTypeNames(tatemono: ParsedTatemono): Set<string> {
  */
 function extractUtilityFunctionNames(tatemono: ParsedTatemono): Set<string> {
   const names = new Set<string>()
-  const componentNames = extractComponentNames(tatemono)
-  for (const component of tatemono.components) {
-    const stripped = stripTemplateLiterals(component.raw)
-    let src = stripped
-    for (const compName of componentNames) {
-      const esc = compName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-      src = src.replace(
-        new RegExp(
-          `(?:export\\s+)?const\\s+${esc}\\s*=[\\s\\S]*?(?=(?:export\\s+)?(?:const|function|type|interface)\\s+[A-Za-z_$]|$)`,
-          'g'
-        ),
-        ''
-      )
-    }
-    const constMatches = src.match(/(?:export\s+)?const\s+([a-z][A-Za-z0-9_$]*)\s*[=:(]/g) || []
-    for (const match of constMatches) {
-      const name = match.match(/const\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^use[A-Z]/.test(name)) names.add(name)
-    }
-    const fnMatches = src.match(/(?:export\s+)?function\s+([a-z][A-Za-z0-9_$]*)\s*[(<]/g) || []
-    for (const match of fnMatches) {
-      const name = match.match(/function\s+([a-z][A-Za-z0-9_$]*)/)?.[1]
-      if (name && !/^use[A-Z]/.test(name)) names.add(name)
+  for (const declaration of getTopLevelDeclarations(tatemono)) {
+    if (
+      declaration.kind !== 'type' &&
+      /^[a-z][A-Za-z0-9_$]*$/.test(declaration.name) &&
+      !/^use[A-Z]/.test(declaration.name)
+    ) {
+      names.add(declaration.name)
     }
   }
   return names
@@ -643,37 +705,38 @@ function splitComponentDeclarations(rawSource: string, names: Set<string>): Map<
   const out = new Map<string, string>()
   if (names.size === 0) return out
 
-  const scanSource = stripTemplateLiterals(rawSource)
-  const nameAlt = [...names].map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')
-  const re = new RegExp(`^(?:export\\s+)?(?:async\\s+)?(const|function|interface|type)\\s+(${nameAlt})\\b`, 'gm')
+  const source = ts.createSourceFile(
+    'components.tsx',
+    rawSource,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  )
 
-  const starts: { index: number; name: string }[] = []
-  let m: RegExpExecArray | null
-  while ((m = re.exec(scanSource)) !== null) {
-    starts.push({ index: m.index, name: m[2] })
-  }
-  if (starts.length === 0) return out
+  for (const statement of source.statements) {
+    if (ts.isVariableStatement(statement)) {
+      const keyword = statement.declarationList.flags & ts.NodeFlags.Const
+        ? 'const'
+        : statement.declarationList.flags & ts.NodeFlags.Let ? 'let' : 'var'
+      const modifiers = statement.modifiers?.map(modifier => modifier.getText(source)).join(' ')
+      const prefix = modifiers ? `${modifiers} ` : ''
 
-  for (let i = 0; i < starts.length; i++) {
-    const { index, name } = starts[i]
-    let chunkStart = index
-    const before = scanSource.slice(0, index)
-    const lines = before.split('\n')
-    let li = lines.length - 1
-    let consumed = 0
-    while (li >= 0) {
-      const line = lines[li].trim()
-      if (line === '' || line.startsWith('//') || line.startsWith('/*') || line.startsWith('*')) {
-        consumed += lines[li].length + 1
-        li--
-      } else {
-        break
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name) && names.has(declaration.name.text)) {
+          out.set(declaration.name.text, `${prefix}${keyword} ${declaration.getText(source)};`)
+        }
       }
+    } else if (ts.isFunctionDeclaration(statement) && statement.name && names.has(statement.name.text)) {
+      out.set(statement.name.text, statement.getText(source))
+    } else if (
+      (ts.isTypeAliasDeclaration(statement) || ts.isInterfaceDeclaration(statement)) &&
+      statement.name &&
+      names.has(statement.name.text)
+    ) {
+      out.set(statement.name.text, statement.getText(source))
     }
-    if (consumed > 0) chunkStart = Math.max(0, index - consumed)
-    const chunkEnd = i + 1 < starts.length ? starts[i + 1].index : rawSource.length
-    out.set(name, rawSource.slice(chunkStart, chunkEnd).trim())
   }
+
   return out
 }
 
@@ -729,7 +792,11 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: stri
     ? [routerImportExtra, ...rawSources]
     : rawSources
 
-  const { canonicalBlock, strippedSources: allStripped } = resolveImports(sourcesWithRouter)
+  const { canonicalBlock: rawCanonicalBlock, strippedSources: allStripped } = resolveImports(sourcesWithRouter)
+  const canonicalBlock = rawCanonicalBlock.replace(
+    new RegExp(`from\\s+['"]\\./${tatemono.meta.name}\\.scripts['"]`, 'g'),
+    `from '@/arkzen/generated/${tatemono.meta.name}.scripts'`
+  )
   // Drop the synthetic router-import source from strippedSources — it was only
   // needed for deduplication, not for actual code output.
   const strippedSources = routerImportExtra ? allStripped.slice(1) : allStripped
@@ -746,6 +813,10 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: stri
   const sharedTypes         = extractSharedTypeNames(tatemono)
   const utilityFunctions    = extractUtilityFunctionNames(tatemono)
   const allDeclaredNames    = new Set([...extractedComponents, ...sharedConstants, ...customHooks, ...sharedTypes, ...utilityFunctions])
+  const typeImportFor = (source: string): string => {
+    const names = findReferencedNames(source, sharedTypes).sort()
+    return names.length > 0 ? `import type { ${names.join(', ')} } from './types'` : ''
+  }
 
   // Split each stripped source into per-declaration chunks
   const declarationsByName = new Map<string, string>()
@@ -768,6 +839,7 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: stri
         )
       })
     if (constChunks.length > 0) {
+      const typeImport = typeImportFor(constChunks.join('\n'))
       const content = `// ============================================================
 // ARKZEN GENERATED SHARED CONSTANTS — ${tatemono.meta.name} [React+Vite]
 // Source: @arkzen:components (${tatemono.meta.name})
@@ -776,6 +848,7 @@ function generateIndividualComponentFiles(tatemono: ParsedTatemono, tatDir: stri
 // ============================================================
 
 ${canonicalBlock}
+${typeImport}
 
 ${constChunks.join('\n\n')}
 `
@@ -802,6 +875,7 @@ ${constChunks.join('\n\n')}
         )
       })
     if (hookChunks.length > 0) {
+      const typeImport = typeImportFor(hookChunks.join('\n'))
       const content = `// ============================================================
 // ARKZEN GENERATED HOOKS — ${tatemono.meta.name} [React+Vite]
 // Source: @arkzen:components (${tatemono.meta.name})
@@ -810,6 +884,7 @@ ${constChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
+${typeImport}
 
 ${hookChunks.join('\n\n')}
 `
@@ -836,6 +911,7 @@ ${hookChunks.join('\n\n')}
         )
       })
     if (utilChunks.length > 0) {
+      const typeImport = typeImportFor(utilChunks.join('\n'))
       const content = `// ============================================================
 // ARKZEN GENERATED UTILITIES — ${tatemono.meta.name} [React+Vite]
 // Source: @arkzen:components (${tatemono.meta.name})
@@ -844,6 +920,7 @@ ${hookChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
+${typeImport}
 
 ${utilChunks.join('\n\n')}
 `
@@ -870,12 +947,15 @@ ${utilChunks.join('\n\n')}
         )
       })
     if (typeChunks.length > 0) {
+      const typeImports = collectTypeImports(canonicalBlock, typeChunks.join('\n'))
       const content = `// ============================================================
 // ARKZEN GENERATED TYPES — ${tatemono.meta.name} [React+Vite]
 // Source: @arkzen:components (${tatemono.meta.name})
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================
+
+${typeImports}
 
 ${typeChunks.join('\n\n')}
 `
@@ -989,9 +1069,17 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
   const isAuthLayout = decl.guard === 'auth'
   const isGuestLayout = decl.guard === 'guest'
   const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildLayoutJSX(page, tatemono)
-  const animFnName   = tatemono.animation ? toCamelCase(tatName) + 'Animations' : null
-  const animImport   = animFnName
-    ? `import { ${animFnName}, pageVariants } from '@/arkzen/generated/${tatName}.animations'`
+  const candidateAnimFnName = toCamelCase(tatName) + 'Animations'
+  const animFnName = tatemono.animation &&
+    new RegExp(`\\b(?:const|function)\\s+${candidateAnimFnName}\\b`).test(tatemono.animation.raw)
+    ? candidateAnimFnName
+    : null
+  const autoAnimFnName = animFnName &&
+    !new RegExp(`\\b${animFnName}\\s*\\(`).test(page.raw)
+    ? animFnName
+    : null
+  const animImport = tatemono.animation
+    ? `import { ${[animFnName, 'pageVariants'].filter(Boolean).join(', ')} } from '@/arkzen/generated/${tatName}.animations'`
     : ''
   const styleImport  = hasGlobalStyle ? `import './styles/global.css'` : ''
 
@@ -1112,10 +1200,12 @@ function generatePageFile(tatemono: ParsedTatemono, page: ArkzenPage, hasGlobalS
     hooksImportLine,
     utilsImportLine,
     typesImportLine,
-    forwardedImportLines,
   ].filter(Boolean).join('\n')
 
-  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(allSources, {
+  const importSources = forwardedImportLines
+    ? [...allSources, forwardedImportLines]
+    : allSources
+  const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports(importSources, {
     reactHooks:  ['useRef', 'useEffect', 'useState', ...usedReactHooks],
     framerNamed: [...framerNeeded],
     extra:       extraLines,
@@ -1158,7 +1248,7 @@ const ${wrapperName} = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    ${animFnName ? `const cleanup = ${animFnName}(pageRef)\n    return cleanup` : '// No animations'}
+    ${autoAnimFnName ? `const cleanup = ${autoAnimFnName}(pageRef)\n    return cleanup` : '// Animation is managed by the page or not defined'}
   }, [])
 
   return (
@@ -1203,6 +1293,11 @@ function generateAnimationFile(tatemono: ParsedTatemono): string | null {
     .replace(/\*\/\s*$/, '')
     .trim()
 
+  clean = clean.replace(
+    /(export\s+const\s+pageVariants\s*=\s*\{[\s\S]*?^\})(?!\s*as const)/m,
+    '$1 as const'
+  )
+
   // FIX v1.3: auto-inject pageVariants when the tatemono didn't define one.
   const hasPageVariants = /export\s+const\s+pageVariants\b/.test(clean)
   const pageVariantsBlock = hasPageVariants ? '' : `
@@ -1210,7 +1305,7 @@ export const pageVariants = {
   initial: { opacity: 0, y: 12 },
   animate: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut' } },
   exit:    { opacity: 0, y: -8, transition: { duration: 0.2 } },
-}`
+} as const`
 
   return `// ============================================================
 // ARKZEN GENERATED ANIMATIONS — ${tatemono.meta.name} [React+Vite]
@@ -1345,7 +1440,7 @@ ${importsBlock}${cleanScript}
 function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string): void {
   for (const section of tatemono.scripts) {
     const fileContent = fs.readFileSync(tatemono.filePath, 'utf-8')
-    const openPattern = `/* @arkzen:script:`
+    const openPattern = `/* @arkzen:web:script:`
     let searchFrom = 0
     let scriptName: string | null = null
 
@@ -1365,7 +1460,7 @@ function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string
 
     if (!scriptName) continue
 
-    const { canonicalBlock, strippedSources } = resolveImports([section.raw], {
+    const { canonicalBlock: rawCanonicalBlock, strippedSources } = resolveImports([section.raw], {
       reactHooks:  [],
       framerNamed: [],
       forceReact:  false,
@@ -1375,6 +1470,10 @@ function generateNamedScriptFiles(tatemono: ParsedTatemono, generatedDir: string
       .replace(/\*\/\s*$/, '')
       .trim()
 
+    const canonicalBlock = rawCanonicalBlock.replace(
+      new RegExp(`from\\s+['"]\\./${tatemono.meta.name}\\.scripts['"]`, 'g'),
+      `from '@/arkzen/generated/${tatemono.meta.name}.scripts'`
+    )
     const importsBlock = canonicalBlock ? `${canonicalBlock}\n\n` : ''
 
     const fileName = `${tatemono.meta.name}.${scriptName}.script.ts`
@@ -1444,11 +1543,20 @@ function generateErrorPages(
   let has404 = false
   let has500 = false
   let boundaryClassName: string | null = null
+  const errorScreenImport = extractComponentNames(tatemono).has('ErrorScreen')
+    ? `import { ErrorScreen } from './components/ErrorScreen'\n`
+    : ''
 
   for (const handler of tatemono.errorHandlers) {
-    const { strippedSources } = resolveImports(
+    const needsLink = /<Link\b/.test(normalizeForVite(handler.raw))
+    const { canonicalBlock: handlerImports, strippedSources } = resolveImports(
       [normalizeForVite(handler.raw)],
-      { reactHooks: [], framerNamed: [] }
+      {
+        reactHooks: [],
+        framerNamed: [],
+        forceReact: false,
+        extra: needsLink ? `import { Link } from 'react-router'` : undefined,
+      }
     )
     const cleanRaw = strippedSources[0].trim()
 
@@ -1465,7 +1573,8 @@ function generateErrorPages(
 // ============================================================
 
 import React from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
+${errorScreenImport}
+${handlerImports}
 
 ${cleanRaw}
 
@@ -1489,7 +1598,8 @@ export default NotFoundPage
 // ============================================================
 
 import React, { Component, ReactNode } from 'react'
-import { ErrorScreen } from './components/ErrorScreen'
+${errorScreenImport}
+${handlerImports}
 
 ${cleanRaw}
 

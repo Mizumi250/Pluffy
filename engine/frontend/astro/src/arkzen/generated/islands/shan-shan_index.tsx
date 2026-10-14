@@ -3,13 +3,12 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T05:02:57.141Z
+// Generated: 2026-10-09T14:13:13.992Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { shanShanAnimations, pageVariants } from '@/arkzen/generated/shan-shan.animations'
 import { BurgerMenu } from '@/arkzen/generated/components/shan-shan/BurgerMenu'
 import { Chapter } from '@/arkzen/generated/components/shan-shan/Chapter'
 import { Loader } from '@/arkzen/generated/components/shan-shan/Loader'
@@ -17,6 +16,7 @@ import { MaskBottom } from '@/arkzen/generated/components/shan-shan/MaskBottom'
 import { MaskTop } from '@/arkzen/generated/components/shan-shan/MaskTop'
 import { ShanHeroLogo } from '@/arkzen/generated/components/shan-shan/ShanHeroLogo'
 import { CHAPTERS, PERSONAL_INFO, SKILLS_MARQUEE } from '@/arkzen/generated/components/shan-shan/constants'
+import { pageVariants, shanShanAnimations } from '@/arkzen/generated/shan-shan.animations'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -28,7 +28,6 @@ const IndexPage = () => {
   const cursorRingRef = useRef<HTMLDivElement>(null)
   const scrollThumbRef = useRef<HTMLDivElement>(null)
 
-  // ── custom cursor ───────────────────────────────────────────────────────────
   useEffect(() => {
     const onMove = (e: MouseEvent) => {
       if (cursorRef.current) {
@@ -36,7 +35,6 @@ const IndexPage = () => {
         cursorRef.current.style.top  = e.clientY + 'px'
       }
       if (cursorRingRef.current) {
-        // ring lags slightly
         setTimeout(() => {
           if (cursorRingRef.current) {
             cursorRingRef.current.style.left = e.clientX + 'px'
@@ -49,7 +47,6 @@ const IndexPage = () => {
     return () => window.removeEventListener('mousemove', onMove)
   }, [])
 
-  // ── scrollbar thumb ─────────────────────────────────────────────────────────
   useEffect(() => {
     const onScroll = () => {
       const ratio = window.scrollY / (document.body.scrollHeight - window.innerHeight)
@@ -57,7 +54,6 @@ const IndexPage = () => {
         scrollThumbRef.current.style.height = (ratio * 100) + 'vh'
         scrollThumbRef.current.style.opacity = '1'
       }
-      // burger color
       const kvH = (document.getElementById('kv')?.offsetHeight ?? 0) - 80
       document.body.classList.toggle('scrolled', window.scrollY > kvH)
     }
@@ -65,14 +61,11 @@ const IndexPage = () => {
     return () => window.removeEventListener('scroll', onScroll)
   }, [])
 
-  // ── scroll animations (after loader) ───────────────────────────────────────
   useEffect(() => {
     if (!loaded) return
     gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
 
-      // ── KV: logo already handled inside ShanHeroLogo on mount
-      // ── KV photo parallax
       gsap.to('.kv-photo-half img', {
         yPercent: 18, ease: 'none',
         scrollTrigger: {
@@ -81,7 +74,6 @@ const IndexPage = () => {
         },
       })
 
-      // ── Intro text stagger
       gsap.fromTo('.intro-pre, .intro-title, .intro-abstract, .intro-caption',
         { opacity: 0, y: 40 },
         {
@@ -91,19 +83,16 @@ const IndexPage = () => {
         }
       )
 
-      // ── Per-chapter animations
       CHAPTERS.forEach((ch) => {
         const tale = document.getElementById(`tale-${ch.id}`)
         if (!tale) return
 
-        // Cover bg parallax (zoom-in on scroll-to)
         gsap.fromTo(tale.querySelector('.chapter-cover-bg') as HTMLElement,
           { scale: 1.0 },
           {
             scale: 1.12, ease: 'none',
             scrollTrigger: {
               trigger: `.chapter-cover`,
-              containerAnimation: undefined,
               start: 'top top',
               end: 'bottom top',
               scrub: true,
@@ -111,7 +100,6 @@ const IndexPage = () => {
           }
         )
 
-        // Chapter title — clip reveal (lines slide up)
         const titleEl = tale.querySelector('.chapter-head-title') as HTMLElement
         if (titleEl) {
           gsap.fromTo(titleEl,
@@ -123,7 +111,6 @@ const IndexPage = () => {
           )
         }
 
-        // Head pre + tagline + abstract
         gsap.fromTo(tale.querySelectorAll('.chapter-head-pre, .chapter-head-tagline, .chapter-head-abstract'),
           { opacity: 0, y: 28 },
           {
@@ -132,7 +119,6 @@ const IndexPage = () => {
           }
         )
 
-        // Side images — stagger from sides
         const sides = tale.querySelectorAll('.chapter-side-img')
         sides.forEach((el, idx) => {
           gsap.fromTo(el,
@@ -145,7 +131,6 @@ const IndexPage = () => {
           )
         })
 
-        // Lookbook images slide-in
         gsap.fromTo(tale.querySelector('.chapter-lookbook-secondary'),
           { opacity: 0, x: -56 },
           {
@@ -170,7 +155,6 @@ const IndexPage = () => {
           }
         )
 
-        // Overview tags stagger
         gsap.fromTo(tale.querySelectorAll('.chapter-overview-tags li'),
           { opacity: 0, y: 20 },
           {
@@ -180,7 +164,6 @@ const IndexPage = () => {
           }
         )
 
-        // Story columns
         gsap.fromTo(tale.querySelectorAll('.chapter-story-col'),
           { opacity: 0, x: -32 },
           {
@@ -189,7 +172,6 @@ const IndexPage = () => {
           }
         )
 
-        // Sound strip
         gsap.fromTo(tale.querySelector('.chapter-sound-strip'),
           { opacity: 0, y: 20 },
           {
@@ -199,7 +181,6 @@ const IndexPage = () => {
         )
       })
 
-      // ── Skills marquee reveal
       gsap.fromTo('#skills-marquee',
         { opacity: 0, y: 30 },
         {
@@ -208,7 +189,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── About — photo + table
       gsap.fromTo('.about-photo-col',
         { opacity: 0, x: -60 },
         {
@@ -223,7 +203,6 @@ const IndexPage = () => {
           scrollTrigger: { trigger: '#about', start: 'top 78%' },
         }
       )
-      // Table rows stagger
       gsap.fromTo('.info-table tr',
         { opacity: 0, y: 12 },
         {
@@ -232,7 +211,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Contact
       gsap.fromTo('.contact-label, .contact-headline, .contact-links',
         { opacity: 0, y: 40 },
         {
@@ -241,7 +219,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Footer logo
       gsap.fromTo('.footer-logo',
         { opacity: 0, scale: 0.9 },
         {
@@ -250,7 +227,6 @@ const IndexPage = () => {
         }
       )
 
-      // ── Mask parallax
       gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
         gsap.to(el.querySelector('svg'), {
           yPercent: 14, ease: 'none',
@@ -266,29 +242,23 @@ const IndexPage = () => {
     return () => ctx.revert()
   }, [loaded])
 
-  // ── duplicate marquee items so it scrolls seamlessly ───────────────────────
   const marqueeItems = [...SKILLS_MARQUEE, ...SKILLS_MARQUEE]
 
   return (
     <div ref={pageRef}>
-      {/* Custom cursor */}
       <div className="shan-cursor" ref={cursorRef} />
       <div className="shan-cursor-ring" ref={cursorRingRef} />
 
-      {/* Scrollbar */}
       <div className="shan-scrollbar">
         <div className="shan-scrollbar-thumb" ref={scrollThumbRef} />
       </div>
 
-      {/* LOADER */}
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
 
-      {/* BURGER */}
       <BurgerMenu />
 
       <div id="shan-wrapper">
 
-        {/* ── HERO / KV ── */}
         <div id="kv">
           <MaskBottom fill="#f5f0eb" />
           <div className="kv-inner">
@@ -306,7 +276,6 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── INTRO ── */}
         <div id="shan-intro">
           <div className="intro-side-imgs" aria-hidden="true">
             <img src="/tatemonos/shan-shan/assets/images/shan2.jpg" className="intro-side-img intro-side-img--l" alt="" />
@@ -324,12 +293,10 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── 4 CHAPTERS ── */}
         {CHAPTERS.map((chapter, index) => (
           <Chapter key={chapter.id} chapter={chapter} index={index} />
         ))}
 
-        {/* ── SKILLS MARQUEE ── */}
         <div id="skills-marquee">
           <div className="marquee-track">
             {marqueeItems.map((s, i) => (
@@ -338,7 +305,6 @@ const IndexPage = () => {
           </div>
         </div>
 
-        {/* ── ABOUT ── */}
         <div id="about">
           <MaskTop fill="#f5f0eb" />
           <div className="about-inner">
@@ -363,7 +329,6 @@ const IndexPage = () => {
           <MaskBottom fill="#f5f0eb" />
         </div>
 
-        {/* ── CONTACT ── */}
         <div id="contact">
           <div className="contact-inner">
             <p className="contact-label">[Contact]</p>
@@ -385,7 +350,6 @@ const IndexPage = () => {
           <div className="contact-deco" aria-hidden="true">SHAN</div>
         </div>
 
-        {/* ── FOOTER ── */}
         <div id="shan-footer">
           <div className="footer-inner">
             <div className="footer-logo">SHAN.</div>

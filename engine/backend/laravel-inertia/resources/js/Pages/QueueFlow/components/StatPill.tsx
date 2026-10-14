@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill [React+Inertia]
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:21.599Z
+// Generated: 2026-10-13T17:05:21.938Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { create } from 'zustand'
-import { c, colors } from './utils'
 
 export const StatPill = ({ icon: Icon, label, value, color = 'blue' }: {
   icon: React.ElementType
@@ -36,5 +35,3 @@ export const StatPill = ({ icon: Icon, label, value, color = 'blue' }: {
     </div>
   )
 }
-
-// ✅ FIX: Add safe guard for missing ticket

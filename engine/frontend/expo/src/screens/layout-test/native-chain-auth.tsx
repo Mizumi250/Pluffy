@@ -10,6 +10,7 @@ import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { TabPanelLayout } from '../../../arkzen/core/layouts/custom/layout-test-tab-panel'
 import { AuthLayout }  from '@/layouts/AuthLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 // User screen (from @arkzen:native:page:native-chain-auth)
@@ -34,8 +35,8 @@ export function ArkzenScreen_LayoutTest_NativeChainAuth() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <TabPanelLayout tatSlug="layout-test">
+      <ArkzenStatusBar style="dark" />
+      <TabPanelLayout>
       <AuthLayout tatSlug="layout-test" loginRoute="/layout-test/login">
       <ScrollView
         className="flex-1"

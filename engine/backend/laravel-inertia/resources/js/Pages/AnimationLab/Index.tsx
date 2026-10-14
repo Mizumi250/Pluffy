@@ -2,17 +2,11 @@
 // ARKZEN GENERATED PAGE — animation-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:16.945Z
+// Generated: 2026-10-13T17:05:19.647Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import './styles/global.css'
 import { CSSCustomPropsSection } from './components/CSSCustomPropsSection'
 import { CSSKeyframesSection } from './components/CSSKeyframesSection'
 import { CSSTransformsSection } from './components/CSSTransformsSection'
@@ -36,8 +30,13 @@ import { ScrollTransformDemo } from './components/ScrollTransformDemo'
 import { SectionHeader } from './components/SectionHeader'
 import { NAV_SECTIONS } from './components/constants'
 import { useAnimLabStore } from './components/hooks'
-import { opacity, ref, y } from './components/utils'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
+import { router, usePage } from '@inertiajs/react'
 import { gsap } from 'gsap'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type AnimationLabIndexProps = {
@@ -80,7 +79,6 @@ const IndexPage = () => {
 
   return (
     <div ref={pageRef} className="anim-lab-root">
-      {/* Sidebar */}
       <aside className="anim-lab-sidebar">
         <div className="anim-lab-logo">
           <h1>🎬 Animation Lab</h1>
@@ -98,7 +96,6 @@ const IndexPage = () => {
         ))}
       </aside>
 
-      {/* Content */}
       <main className="anim-lab-content">
         <AnimatePresence mode="wait">
           <motion.div
@@ -139,7 +136,11 @@ function ArkzenPage_AnimationLab_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_AnimationLab_Index

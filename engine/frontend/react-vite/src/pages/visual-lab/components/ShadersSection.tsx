@@ -2,20 +2,18 @@
 // ARKZEN GENERATED COMPONENT — ShadersSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:03.328Z
+// Generated: 2026-10-13T14:10:34.602Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { canvas, canvasStyle, curtains, demos, label, renderDemo } from './utils'
 import { SectionHeader } from './SectionHeader'
 
-// ─── SECTION: SHADERS (shaders.com) ──────────────────────────────────────────
 export const ShadersSection = () => {
   const [ShaderMod, setShaderMod] = useState<any>(null)
   const [activeDemo, setActiveDemo] = useState<'aurora' | 'plasma' | 'cursor' | 'glitch'>('aurora')
@@ -117,6 +115,4 @@ export const ShadersSection = () => {
       </p>
     </div>
   )
-}
-
-// ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
+};

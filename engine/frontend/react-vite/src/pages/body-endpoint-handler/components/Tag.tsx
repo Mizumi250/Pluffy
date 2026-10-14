@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Tag [React+Vite]
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.840Z
+// Generated: 2026-10-13T14:10:30.735Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -15,4 +15,4 @@ export const Tag = ({ label, color }: { label: string; color: string }) => (
     fontSize: 10, fontWeight: 700, letterSpacing: 0.5,
     background: color + '22', color,
   }}>{label}</span>
-)
+);

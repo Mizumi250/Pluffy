@@ -1182,7 +1182,7 @@ const AdminPage = () => {
 /* @arkzen:web:animation */
 import { gsap } from 'gsap'
 
-const dtrGeofencingAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+const dtrGeofencingAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.dtr-header',
       { opacity: 0, y: -18 },

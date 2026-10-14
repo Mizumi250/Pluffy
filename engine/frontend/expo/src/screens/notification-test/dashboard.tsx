@@ -6,10 +6,10 @@ import React, { useEffect, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { AuthLayout }  from '@/layouts/AuthLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { PrimaryBtn } from './components/PrimaryBtn'
@@ -370,7 +370,7 @@ export function ArkzenScreen_NotificationTest_Dashboard() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       <AuthLayout tatSlug="notification-test" loginRoute="/notification-test/login">
       <ScrollView
         className="flex-1"

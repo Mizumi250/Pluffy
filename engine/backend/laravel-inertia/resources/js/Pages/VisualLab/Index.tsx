@@ -2,17 +2,11 @@
 // ARKZEN GENERATED PAGE — visual-lab/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:24.560Z
+// Generated: 2026-10-13T17:05:22.640Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { visualLabAnimations, pageVariants } from '@/arkzen/generated/visual-lab.animations'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import './styles/global.css'
 import { BabylonSection } from './components/BabylonSection'
 import { CurtainsSection } from './components/CurtainsSection'
 import { DemoCard } from './components/DemoCard'
@@ -28,7 +22,6 @@ import { ParticlesSection } from './components/ParticlesSection'
 import { PhaserSection } from './components/PhaserSection'
 import { PixiSection } from './components/PixiSection'
 import { PlayCanvasSection } from './components/PlayCanvasSection'
-import { Proton } from './components/Proton'
 import { REGLSection } from './components/REGLSection'
 import { RapierSection } from './components/RapierSection'
 import { ResetBtn } from './components/ResetBtn'
@@ -39,10 +32,14 @@ import { TWGLSection } from './components/TWGLSection'
 import { TextFXSection } from './components/TextFXSection'
 import { ThreeR3FSection } from './components/ThreeR3FSection'
 import { UXSection } from './components/UXSection'
-import { VanillaTilt } from './components/VanillaTilt'
 import { NAV_SECTIONS } from './components/constants'
 import { useVisualLabStore } from './components/hooks'
-import { animate, canvas, curtains, label, lenis, proton, regl } from './components/utils'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { pageVariants, visualLabAnimations } from '@/arkzen/generated/visual-lab.animations'
+import { router, usePage } from '@inertiajs/react'
+import './styles/global.css'
 
 // Props passed from Laravel via Inertia::render()
 export type VisualLabIndexProps = {
@@ -164,7 +161,11 @@ function ArkzenPage_VisualLab_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_VisualLab_Index

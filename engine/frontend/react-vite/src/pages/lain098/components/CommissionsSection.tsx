@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CommissionsSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.310Z
+// Generated: 2026-10-13T14:10:33.282Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,9 +10,6 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { BURST_IMGS, COMMISSION_TIERS } from './constants'
-import { id, isHovered, items, y } from './utils'
-
-// ─── COMMISSIONS (FIXED CARD CLIPPING) ───────────────────────
 
 export const CommissionsSection = () => {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
@@ -57,7 +54,7 @@ export const CommissionsSection = () => {
               initial={{ opacity: 0, y: 20, filter: 'blur(8px)' }}
               animate={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
               exit={{ opacity: 0, y: 10, filter: 'blur(8px)' }}
-              transition={{ duration: 0.4, ease: 'power3.out' }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
               className="commission-active-text"
             >
               <p className="commission-active-title">{items[hoveredIndex !== null ? hoveredIndex : 0].title}</p>
@@ -68,6 +65,4 @@ export const CommissionsSection = () => {
       </div>
     </section>
   )
-}
-
-// ─── ABOUT ────────────────────────────────────────────────────
+};

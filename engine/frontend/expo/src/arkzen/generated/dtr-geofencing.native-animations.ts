@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE ANIMATIONS — dtr-geofencing
 // Source: @arkzen:native:animation:rn (legacy fallback)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.461Z
+// Generated: 2026-10-09T14:43:18.217Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,
@@ -11,7 +11,7 @@
 //   Both can coexist freely in this file.
 // ============================================================
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 
 export const usePageFadeIn = (delay = 0) => {

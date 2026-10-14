@@ -5,10 +5,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { ErrorBox } from './components/ErrorBox'
 import { Field } from './components/Field'
 import { KindBadge } from './components/KindBadge'
@@ -96,7 +96,7 @@ export function ArkzenScreen_BodyMailNotification_Login() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       <GuestLayout tatSlug="body-mail-notification" dashboardRoute="/body-mail-notification/dashboard">
       <ScrollView
         className="flex-1"

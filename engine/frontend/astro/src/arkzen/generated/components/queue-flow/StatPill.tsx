@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:16.018Z
+// Generated: 2026-10-09T14:13:13.639Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -35,5 +35,3 @@ export const StatPill = ({ icon: Icon, label, value, color = 'blue' }: {
     </div>
   )
 }
-
-// ✅ FIX: Add safe guard for missing ticket

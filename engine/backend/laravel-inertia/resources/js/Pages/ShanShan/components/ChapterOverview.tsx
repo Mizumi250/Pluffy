@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ChapterOverview [React+Inertia]
 // Source: @arkzen:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:23.863Z
+// Generated: 2026-10-13T17:05:22.168Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

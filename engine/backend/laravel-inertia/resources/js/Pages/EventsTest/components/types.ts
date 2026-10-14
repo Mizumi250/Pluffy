@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — events-test [React+Inertia]
 // Source: @arkzen:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.768Z
+// Generated: 2026-10-13T17:05:20.818Z
 // ============================================================
 
 export interface EventLogEntry {

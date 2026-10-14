@@ -2,16 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — hw-coffee [React+Vite]
 // Source: @arkzen:components (hw-coffee)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.552Z
+// Generated: 2026-10-13T14:10:32.649Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, Award, Camera, ChevronDown, Clock, Coffee, ExternalLink, Facebook, Heart, Instagram, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Star, Sun, Twitter, Utensils, Wifi, X, Youtube, Zap } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, Award, Camera, Camera as Instagram, ChevronDown, CirclePlay as Youtube, Clock, Coffee, ExternalLink, Heart, Leaf, Mail, MapPin, Menu, Minus, Moon, Music, Phone, Plus, Quote, Send as Twitter, Star, Sun, UsersRound as Facebook, Utensils, Wifi, X, Zap } from 'lucide-react'
 
-// ─── REAL H&W DATA (Gingoog City) ─────────────────────────────────────────────
 
 export const NAV_LINKS = [
   { label: 'Story', href: '#story' },
@@ -19,7 +18,7 @@ export const NAV_LINKS = [
   { label: 'Process', href: '#process' },
   { label: 'Visits', href: '#visits' },
   { label: 'Contact', href: '#contact' },
-]
+];
 
 export const MENU_ITEMS = [
   {
@@ -121,7 +120,7 @@ export const MENU_ITEMS = [
       },
     ],
   },
-]
+];
 
 export const PROCESS_STEPS = [
   {
@@ -152,7 +151,7 @@ export const PROCESS_STEPS = [
     sub: 'To You',
     desc: 'Every cup that leaves our bar is a promise: made with care, from Gingoog\'s best ingredients, straight to your hands.',
   },
-]
+];
 
 export const TESTIMONIALS = [
   {
@@ -191,7 +190,7 @@ export const TESTIMONIALS = [
     text: 'The frappes here are something else. And the staff? Genuinely the friendliest service I\'ve encountered in any café.',
     stars: 5,
   },
-]
+];
 
 export const MARQUEE_WORDS = [
   'Specialty Coffee', '·', 'Gingoog City', '·',
@@ -199,21 +198,21 @@ export const MARQUEE_WORDS = [
   'Chorizo Pasta', '·', 'French Toast', '·',
   'Cold Brew', '·', 'H&W Coffee', '·',
   '#1 in Gingoog', '·', 'Cagayan de Oro', '·',
-]
+];
 
 export const FEATURES = [
   { icon: Wifi, label: 'Free WiFi' },
   { icon: Music, label: 'Ambient Music' },
   { icon: Utensils, label: 'Full Food Menu' },
   { icon: Camera, label: 'Instagrammable' },
-]
+];
 
 export const STATS = [
   { num: '4.7★', label: 'Google Rating' },
   { num: '180+', label: 'Reviews' },
   { num: '#1', label: 'Café in Gingoog' },
   { num: '2+', label: 'Branches' },
-]
+];
 
 export const LOCATIONS = [
   {
@@ -232,4 +231,4 @@ export const LOCATIONS = [
     img: 'https://images.unsplash.com/photo-1501339847302-ac426a4a7cbb?w=800&q=80',
     tag: 'New',
   },
-]
+];

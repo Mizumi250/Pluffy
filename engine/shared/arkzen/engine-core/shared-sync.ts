@@ -160,7 +160,7 @@ if (fs.existsSync(webCoreDir)) {
       const src  = path.join(webCoreDir, folder)
       const dest = path.join(stackCoreDir, folder)
       if (!fs.existsSync(src)) continue
-      syncDirectoryIfChanged(src, dest, folder === 'adapters' ? ADAPTER_PROTECTED : new Set())
+      syncDirectoryIfChanged(src, dest, new Set())
     }
 
     for (const file of WEB_FILES) {

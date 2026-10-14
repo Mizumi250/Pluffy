@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.432Z
+// Generated: 2026-10-13T17:05:22.566Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -13,7 +13,6 @@ import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, C
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { app, appRef, box, boxMat, camera, canvas, canvasRef, el, light, mat, render, scene, sphere } from './utils'
 import { DemoCard } from './DemoCard'
 import { PackageBadge } from './PackageBadge'
 import { SectionHeader } from './SectionHeader'
@@ -46,7 +45,7 @@ export const PlayCanvasSection = () => {
 
       // Light
       const light = new pc.Entity('light')
-      light.addComponent('light', { type: pc.LIGHTTYPE_DIRECTIONAL, color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
+      light.addComponent('light', { type: 'directional', color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
       light.setEulerAngles(45, 30, 0)
       app.root.addChild(light)
 

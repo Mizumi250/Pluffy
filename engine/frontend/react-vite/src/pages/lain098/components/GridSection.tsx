@@ -2,16 +2,13 @@
 // ARKZEN GENERATED COMPONENT — GridSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.315Z
+// Generated: 2026-10-13T14:10:33.288Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ref, y } from './utils'
-
-// ─── BLUE GRID SCRAPBOOK SECTION ────────────────────────────
 
 export const GridSection = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -60,6 +57,4 @@ export const GridSection = () => {
       </div>
     </section>
   )
-}
-
-// ─── FOOTER (NO SMALL SIGNATURE, BIG CENTER LOGO WITH MIZUMI) ─
+};

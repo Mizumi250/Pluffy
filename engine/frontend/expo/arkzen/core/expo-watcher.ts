@@ -145,7 +145,7 @@ export async function startExpoWatcher(): Promise<void> {
     })
   })
 
-  watcher.on('error', (error: Error) => console.error(`[Arkzen Expo Watcher] ✗ Error:`, error))
+  watcher.on('error', (error: unknown) => console.error(`[Arkzen Expo Watcher] ✗ Error:`, error))
 
   process.on('SIGINT',  () => { watcher.close(); process.exit(0) })
   process.on('SIGTERM', () => { watcher.close(); process.exit(0) })

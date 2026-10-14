@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — KindBadge [React+Vite]
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:56.074Z
+// Generated: 2026-10-13T14:10:30.802Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -22,4 +22,4 @@ export const KindBadge = ({ kind }: { kind: string }) => (
   }}>
     {kind === 'mail' ? '✉ MAIL' : '🔔 NOTIF'}
   </span>
-)
+);

@@ -7,6 +7,7 @@ import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
 import { Dimensions, FlatList, Image, Pressable, RefreshControl, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NBadge } from './components/NBadge'
 import { NContinuationCard } from './components/NContinuationCard'
 import { NProgressBar } from './components/NProgressBar'
@@ -381,7 +382,7 @@ export function ArkzenScreen_Atelier_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

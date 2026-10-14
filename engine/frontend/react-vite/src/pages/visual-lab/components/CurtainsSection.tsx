@@ -2,20 +2,18 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:03.329Z
+// Generated: 2026-10-13T14:10:34.603Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { curtains, curtainsRef, fragment, fs, mountRef, planeEl, vertex, vs } from './utils'
 import { SectionHeader } from './SectionHeader'
 
-// ─── SECTION: CURTAINS ───────────────────────────────────────────────────────
 export const CurtainsSection = () => {
   const mountRef = useRef<HTMLDivElement>(null)
   const curtainsRef = useRef<any>(null)
@@ -66,7 +64,7 @@ export const CurtainsSection = () => {
           })
         }
         curtains.onRender(() => {
-          curtains.planes?.forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
+          Array.from(curtains.planes ?? []).forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
         })
         setLoaded(true)
       } catch (e: any) {
@@ -100,6 +98,4 @@ export const CurtainsSection = () => {
       </p>
     </div>
   )
-}
-
-// ─── SECTION: HTML-IN-CANVAS (Google Chrome 148+) ────────────────────────────
+};

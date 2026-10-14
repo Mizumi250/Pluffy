@@ -2,11 +2,11 @@
 // ARKZEN GENERATED NATIVE UTILITIES — job-test [Expo]
 // Source: @arkzen:native:components (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.920Z
+// Generated: 2026-10-09T14:43:19.813Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
-import { arkzenFetch } from '../../../arkzen/core/stores/authStore'
+import { arkzenFetch } from '../../../../arkzen/core/stores/authStore'
 import { Cpu, RefreshCw } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 

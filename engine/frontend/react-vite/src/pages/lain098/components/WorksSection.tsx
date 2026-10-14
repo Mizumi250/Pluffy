@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — WorksSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.307Z
+// Generated: 2026-10-13T14:10:33.277Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,10 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { WORKS } from './constants'
-import { headRef, id, ref, y } from './utils'
 import { WorkChapter } from './WorkChapter'
-
-// ─── WORKS SECTION ────────────────────────────────────────────
 
 export const WorksSection = () => {
   const headRef = useRef<HTMLDivElement>(null)
@@ -38,6 +35,4 @@ export const WorksSection = () => {
       <div className="works-chapters">{WORKS.map((w, i) => <WorkChapter key={w.id} work={w} index={i} />)}</div>
     </section>
   )
-}
-
-// ─── GALLERY STRIP ────────────────────────────────────────────
+};

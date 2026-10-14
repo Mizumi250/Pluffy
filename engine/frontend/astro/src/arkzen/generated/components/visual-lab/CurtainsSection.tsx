@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:18.180Z
+// Generated: 2026-10-09T14:13:14.469Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -65,7 +65,7 @@ export const CurtainsSection = () => {
           })
         }
         curtains.onRender(() => {
-          curtains.planes?.forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
+          Array.from(curtains.planes ?? []).forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
         })
         setLoaded(true)
       } catch (e: any) {

@@ -2,14 +2,15 @@
 // ARKZEN GENERATED SHARED CONSTANTS — cafe-teresita
 // Source: @arkzen:components (cafe-teresita)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:08.686Z
+// Generated: 2026-10-09T13:50:34.412Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ArrowRight, ArrowUpRight, CalendarCheck, Clock, Coffee, CupSoda, ExternalLink, Facebook, Instagram, MapPin, Menu as MenuIcon, Soup, Star, X } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CalendarCheck, Camera as Instagram, Clock, Coffee, CupSoda, ExternalLink, MapPin, Menu as MenuIcon, Soup, Star, UsersRound as Facebook, X } from 'lucide-react'
+
 
 export const NAV_LINKS = [
   { label: 'Homepage', href: '#ct-hero' },

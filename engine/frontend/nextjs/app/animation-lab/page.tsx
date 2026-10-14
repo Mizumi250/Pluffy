@@ -3,13 +3,11 @@
 // ARKZEN GENERATED PAGE — animation-lab/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:40.445Z
+// Generated: 2026-10-09T13:50:33.011Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { AnimatePresence, motion, useInView, useMotionValue, useScroll, useSpring, useTransform } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 import { CSSCustomPropsSection } from './components/CSSCustomPropsSection'
 import { CSSKeyframesSection } from './components/CSSKeyframesSection'
 import { CSSTransformsSection } from './components/CSSTransformsSection'
@@ -33,7 +31,9 @@ import { ScrollTransformDemo } from './components/ScrollTransformDemo'
 import { SectionHeader } from './components/SectionHeader'
 import { NAV_SECTIONS } from './components/constants'
 import { useAnimLabStore } from './components/hooks'
-import { opacity, ref, y } from './components/utils'
+import type { AnimLabState } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { animationLabAnimations, pageVariants } from '@/arkzen/generated/animation-lab.animations'
 import { gsap } from 'gsap'
 
 // Page component code (from @arkzen:page:index)
@@ -69,7 +69,6 @@ const IndexPage = () => {
 
   return (
     <div ref={pageRef} className="anim-lab-root">
-      {/* Sidebar */}
       <aside className="anim-lab-sidebar">
         <div className="anim-lab-logo">
           <h1>🎬 Animation Lab</h1>
@@ -87,7 +86,6 @@ const IndexPage = () => {
         ))}
       </aside>
 
-      {/* Content */}
       <main className="anim-lab-content">
         <AnimatePresence mode="wait">
           <motion.div
@@ -111,8 +109,7 @@ const ArkzenPage_AnimationLab_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = animationLabAnimations(pageRef)
-    return cleanup
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

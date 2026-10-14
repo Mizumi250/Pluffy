@@ -5,10 +5,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { Cpu, RefreshCw } from 'lucide-react-native'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { BACKEND_URL } from './components/constants'
 import { dotColor, statusStyle } from './components/utils'
 import type { JobResult } from './components/types'
@@ -171,7 +171,7 @@ export function ArkzenScreen_JobTest_Dashboard() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

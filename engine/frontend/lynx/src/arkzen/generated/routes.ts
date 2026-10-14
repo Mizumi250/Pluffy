@@ -10,6 +10,9 @@ export interface LynxRouteEntry {
 }
 
 export const lynxRoutes: Record<string, LynxRouteEntry[]> = {
+  'animation-lab': [
+    { page: 'index', layout: 'default' },
+  ],
   'asset-hub': [
     { page: 'index', layout: 'default' },
   ],
@@ -101,6 +104,7 @@ export const lynxRoutes: Record<string, LynxRouteEntry[]> = {
 }
 
 export const lynxErrorFlags: Record<string, { has404: boolean; has500: boolean }> = {
+  'animation-lab': { has404: true, has500: true },
   'asset-hub': { has404: false, has500: false },
   'auth-test': { has404: false, has500: false },
   'body-endpoint-handler': { has404: false, has500: false },

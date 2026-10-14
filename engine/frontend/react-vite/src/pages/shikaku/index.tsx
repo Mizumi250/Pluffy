@@ -2,24 +2,21 @@
 // ARKZEN GENERATED PAGE — shikaku/index [React+Vite]
 // Layout: +auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:09:02.759Z
+// Generated: 2026-10-13T14:10:34.271Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { shikakuAnimations, pageVariants } from '@/arkzen/generated/shikaku.animations'
-import { useNavigate } from 'react-router'
-import './styles/global.css'
 import { CanvasEngine } from './components/CanvasEngine'
 import { LayerPanel } from './components/LayerPanel'
-import { PICO8_PALETTE } from './components/PICO8_PALETTE'
 import { PalettePanel } from './components/PalettePanel'
-import { SWEETIE16_PALETTE } from './components/SWEETIE16_PALETTE'
-import { color, i, id, key, px, skFetch, target } from './components/utils'
+import { skFetch } from './components/utils'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { pageVariants } from '@/arkzen/generated/shikaku.animations'
+import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
+import { useNavigate } from 'react-router'
 import type { Project } from './components/types'
-import { Pencil, Eraser, Pipette, Move, Square, Circle, Minus, Type, Trash2, Plus, Eye, EyeOff, Lock, Unlock, ChevronDown, Play, Pause, SkipBack, SkipForward, Undo2, Redo2, Download, Share2, Settings, ArrowLeft, Layers, Palette, Sparkles, Film, Grid3x3, FlipHorizontal, FlipVertical, RotateCcw, Copy, Crosshair, Bucket, Save, RefreshCw, Check, X } from 'lucide-react'
-import { Pencil, Eraser, Bucket, Pipette, Move, Square, Minus, Type, Trash2, Plus, Eye, EyeOff, Lock, ChevronDown, Play, Pause, SkipBack, SkipForward, Undo2, Redo2, Download, Share2, ArrowLeft, Layers, Palette, Sparkles, Film, Grid3x3, FlipHorizontal, FlipVertical, Save, Check, RotateCcw } from 'lucide-react'
+import './styles/global.css'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const DashboardPage = () => {
@@ -201,15 +198,14 @@ const ArkzenPage_Shikaku_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    const cleanup = shikakuAnimations(pageRef)
-    return cleanup
+    // Animation is managed by the page or not defined
   }, [])
 
   return (
     <AuthLayout requireAuth={true}>
       <motion.div
         ref={pageRef}
-        variants={pageVariants}
+        variants={{}}
         initial="initial"
         animate="animate"
         exit="exit"

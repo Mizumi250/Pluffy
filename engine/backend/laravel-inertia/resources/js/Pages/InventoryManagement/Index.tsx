@@ -2,26 +2,25 @@
 // ARKZEN GENERATED PAGE — inventory-management/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:20.067Z
+// Generated: 2026-10-13T17:05:21.005Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { InventoryRow } from './components/InventoryRow'
 import { StatCard } from './components/StatCard'
 import { emptyForm } from './components/utils'
-import type { FormState, InventoryItem } from './components/types'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
-import { Modal } from '@/arkzen/core/components/Modal'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { Dialog } from '@/arkzen/core/components/Dialog'
+import { Modal } from '@/arkzen/core/components/Modal'
 import { useToast } from '@/arkzen/core/components/Toast'
-import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
+import { router, usePage } from '@inertiajs/react'
+import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type InventoryManagementIndexProps = {
@@ -219,7 +218,11 @@ function ArkzenPage_InventoryManagement_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_InventoryManagement_Index

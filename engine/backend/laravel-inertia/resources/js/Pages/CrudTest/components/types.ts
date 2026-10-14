@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — crud-test [React+Inertia]
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:18.957Z
+// Generated: 2026-10-13T17:05:20.336Z
 // ============================================================
 
 export type Item = {

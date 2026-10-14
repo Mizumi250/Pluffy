@@ -2,16 +2,11 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm [React+Inertia]
 // Layout: app | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:20.423Z
+// Generated: 2026-10-13T17:05:21.255Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
-import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { EmptyRow } from './components/EmptyRow'
 import { FundingBar } from './components/FundingBar'
 import { JOFormModal } from './components/JOFormModal'
@@ -23,8 +18,12 @@ import { TabPills } from './components/TabPills'
 import { API_BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
 import { formatPeso, getAvatarColor, getInitials } from './components/utils'
-import type { JobOrder } from './components/types'
-import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
+import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+import { router, usePage } from '@inertiajs/react'
+import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type JoPayrollCashAtmProps = {
@@ -160,7 +159,11 @@ function ArkzenPage_JoPayroll_CashAtm() {
     </motion.div>
   )
 
-  return <AppLayout>{content}</AppLayout>
+  return (
+    <AppLayout>
+    {content}
+    </AppLayout>
+  )
 }
 
 export default ArkzenPage_JoPayroll_CashAtm

@@ -70,12 +70,39 @@ const UNSUPPORTED_PROPS = new Set([
   'transition', 'animation', 'animation-name', 'animation-duration',
   'animation-timing-function', 'animation-iteration-count', 'animation-fill-mode',
   'animation-delay', 'cursor', 'pointer-events', 'user-select',
+  'white-space',
   '-webkit-background-clip', '-webkit-text-fill-color',
   'background-clip', 'grid-template-columns', 'grid-column',
   'grid-row', 'list-style', 'appearance', 'content',
   'transform-origin', 'transform-style', 'perspective',
   'will-change', 'filter', 'backdrop-filter',
 ])
+
+function parseBoxShadow(value: string): Record<string, string | number> {
+  if (value.trim() === 'none') return {}
+
+  const colorMatch = value.match(/rgba?\([^)]*\)|#[\da-fA-F]{3,8}/)
+  const numericValues = value
+    .replace(colorMatch?.[0] ?? '', '')
+    .match(/-?\d+(?:\.\d+)?/g)
+    ?.map(Number) ?? []
+
+  if (numericValues.length < 2) return {}
+
+  const [offsetX, offsetY, blur = 0] = numericValues
+  const alphaMatch = colorMatch?.[0].match(/rgba\([^,]+,[^,]+,[^,]+,\s*([\d.]+)\)/)
+  const opacity = alphaMatch ? Number(alphaMatch[1]) : 0.25
+  const shadowColor = colorMatch ? `'${colorMatch[0]}'` : "'black'"
+  const shadowOffset = `{ width: ${offsetX}, height: ${offsetY} }`
+
+  return {
+    shadowColor,
+    shadowOffset,
+    shadowOpacity: opacity,
+    shadowRadius: Math.max(0, blur),
+    elevation: Math.max(1, Math.round(Math.max(0, blur) / 2 + Math.abs(offsetY))),
+  }
+}
 
 // ─── Parse one CSS rule block into RN style object entries ────────────────────
 
@@ -93,6 +120,10 @@ function parseCssBlock(declarations: string): Record<string, string | number> {
     const cssProp  = trimmed.slice(0, colonIdx).trim()
     const cssValue = trimmed.slice(colonIdx + 1).trim()
 
+    if (cssProp === 'box-shadow') {
+      Object.assign(result, parseBoxShadow(cssValue))
+      continue
+    }
     if (UNSUPPORTED_PROPS.has(cssProp)) continue
     if (cssProp.startsWith('@') || cssProp.startsWith('//')) continue
 
@@ -118,8 +149,8 @@ function formatStyleObject(obj: Record<string, string | number>): string {
 
 // ─── Convert full CSS block string to StyleSheet.create content ───────────────
 
-function cssToStyleSheet(css: string): string {
-  const styleEntries: string[] = []
+function cssToStyleSheet(css: string): Map<string, Record<string, string | number>> {
+  const styleEntries = new Map<string, Record<string, string | number>>()
 
   // Match .className { ... } blocks
   const ruleRe = /\.([a-zA-Z0-9_-]+)\s*\{([^}]*)\}/g
@@ -131,23 +162,30 @@ function cssToStyleSheet(css: string): string {
     const declarations = m[2]
     const obj        = parseCssBlock(declarations)
     if (Object.keys(obj).length === 0) continue
-    styleEntries.push(`  ${rnKey}: ${formatStyleObject(obj)}`)
+    styleEntries.set(rnKey, { ...styleEntries.get(rnKey), ...obj })
   }
 
-  return styleEntries.join(',\n')
+  return styleEntries
 }
 
 // ─── Main emitter ─────────────────────────────────────────────────────────────
 
 export function emitNativeStyles(
-  tatName:      string,
-  nativeStyles: ArkzenSection[],
-  generatedDir: string,
+  tatName:          string,
+  nativeStyles:     ArkzenSection[],
+  generatedDir:     string,
   label = 'Arkzen Native Style',
+  nativeStyleGlobal?: ArkzenSection,  // v10.6: optional global (unnamed) block
 ): void {
   const outPath = path.join(generatedDir, `${tatName}.native-styles.ts`)
 
-  if (!nativeStyles || nativeStyles.length === 0) {
+  // v10.6: merge global block + named blocks into one list for processing
+  const allBlocks: ArkzenSection[] = [
+    ...(nativeStyleGlobal ? [nativeStyleGlobal] : []),
+    ...(nativeStyles ?? []),
+  ]
+
+  if (allBlocks.length === 0) {
     if (fs.existsSync(outPath)) {
       fs.unlinkSync(outPath)
       console.log(`[${label}] ✓ Removed stale: ${tatName}.native-styles.ts`)
@@ -155,21 +193,24 @@ export function emitNativeStyles(
     return
   }
 
-  // Merge all named style blocks into one StyleSheet.create call
-  const allEntries: string[] = []
+  // Merge all style blocks into one StyleSheet.create call
+  const stylesByName = new Map<string, Record<string, string | number>>()
 
-  for (const block of nativeStyles) {
-    const entries = cssToStyleSheet(block.raw)
-    if (entries) allEntries.push(entries)
+  for (const block of allBlocks) {
+    for (const [name, styles] of cssToStyleSheet(block.raw)) {
+      stylesByName.set(name, { ...stylesByName.get(name), ...styles })
+    }
   }
 
-  if (allEntries.length === 0) return
+  if (stylesByName.size === 0) return
 
-  const body = allEntries.join(',\n')
+  const body = [...stylesByName]
+    .map(([name, styles]) => `  ${name}: ${formatStyleObject(styles)}`)
+    .join(',\n')
 
   const output = `// ============================================================
 // ARKZEN GENERATED NATIVE STYLES — ${tatName}
-// Source: @arkzen:native:style:*
+// Source: @arkzen:native:style / @arkzen:native:style:*
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
 // Generated: ${new Date().toISOString()}
 // ============================================================

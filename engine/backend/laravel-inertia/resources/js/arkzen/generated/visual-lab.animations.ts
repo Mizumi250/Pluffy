@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — visual-lab [React+Inertia]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:24.222Z
+// Generated: 2026-10-13T17:05:22.476Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,7 +10,7 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-export const visualLabAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+export const visualLabAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.vl-logo', { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out', delay: 0.05 })
     gsap.fromTo('.vl-nav-item', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.025, ease: 'power2.out', delay: 0.15 })

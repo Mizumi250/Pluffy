@@ -207,7 +207,6 @@ export const ThreeR3FSection = () => {
             <PackageBadge name="@react-three/drei" />
             <PackageBadge name="@react-three/postprocessing" />
             <PackageBadge name="@react-three/uikit" />
-            <PackageBadge name="@react-three/flex" />
             <PackageBadge name="maath" />
             <p className="vl-placeholder-note">Import + Canvas verified — use in your page JSX directly</p>
           </div>
@@ -321,7 +320,7 @@ export const PlayCanvasSection = () => {
 
       // Light
       const light = new pc.Entity('light')
-      light.addComponent('light', { type: pc.LIGHTTYPE_DIRECTIONAL, color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
+      light.addComponent('light', { type: 'directional', color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
       light.setEulerAngles(45, 30, 0)
       app.root.addChild(light)
 
@@ -1537,7 +1536,7 @@ export const LottieLazySection = () => {
   const lottieRef = useRef<any>(null)
 
   useEffect(() => {
-    import('lottie-react').then(mod => setLottieComp(() => mod.default))
+    import('lottie-react').then(mod => setLottieComp(() => mod.Lottie))
     // Built-in demo animation — a simple spinning arc (no external fetch needed)
     setAnimData({
       v: '5.5.7', fr: 60, ip: 0, op: 120, w: 200, h: 200, nm: 'Spinner', ddd: 0,
@@ -1752,7 +1751,7 @@ export const CurtainsSection = () => {
           })
         }
         curtains.onRender(() => {
-          curtains.planes?.forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
+          Array.from(curtains.planes ?? []).forEach((p: any) => { if (p.uniforms?.uTime) p.uniforms.uTime.value++ })
         })
         setLoaded(true)
       } catch (e: any) {
@@ -2425,7 +2424,7 @@ export const HTMLCanvasSection = () => {
 import { gsap } from 'gsap'
 import React from 'react'
 
-const visualLabAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+const visualLabAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   const ctx = gsap.context(() => {
     gsap.fromTo('.vl-logo', { opacity: 0, x: -16 }, { opacity: 1, x: 0, duration: 0.5, ease: 'power3.out', delay: 0.05 })
     gsap.fromTo('.vl-nav-item', { opacity: 0, x: -12 }, { opacity: 1, x: 0, duration: 0.35, stagger: 0.025, ease: 'power2.out', delay: 0.15 })
@@ -2441,7 +2440,7 @@ export const pageVariants = {
 }
 /* @arkzen:web:animation:end */
 
-/* @arkzen:script */
+/* @arkzen:web:script */
 import * as THREE from 'three'
 
 // ─── VISUAL LAB GLOBAL CONSTANTS ─────────────────────────────────────────────
@@ -2499,9 +2498,9 @@ export function createRenderLoop(
 
   return () => cancelAnimationFrame(rafId)
 }
-/* @arkzen:script:end */
+/* @arkzen:web:script:end */
 
-/* @arkzen:script:three-scene */
+/* @arkzen:web:script:three-scene */
 import * as THREE from 'three'
 
 // ─── THREE SCENE HELPERS — named script for visual-lab ───────────────────────
@@ -2538,9 +2537,9 @@ export function makePointCloud(scene: THREE.Scene, count = 200) {
   scene.add(points)
   return points
 }
-/* @arkzen:script:three-scene:end */
+/* @arkzen:web:script:three-scene:end */
 
-/* @arkzen:script:particles-config */
+/* @arkzen:web:script:particles-config */
 // ─── PARTICLE SYSTEM CONFIG — named script for visual-lab ────────────────────
 // Generated as: visual-lab.particles-config.script.ts
 // Import: import { defaultParticleConfig, tsParticlesConfig } from '@/arkzen/generated/visual-lab.particles-config.script'
@@ -2574,7 +2573,7 @@ export const tsParticlesConfig = {
 export function getEmitterConfig(origin: { x: number; y: number }) {
   return { ...defaultParticleConfig, origin }
 }
-/* @arkzen:script:particles-config:end */
+/* @arkzen:web:script:particles-config:end */
 
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:guest */

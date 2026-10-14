@@ -3,14 +3,14 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:15.793Z
+// Generated: 2026-10-09T14:13:13.482Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { PROJECTS, SKILLS } from '@/arkzen/generated/components/portfolio-test/constants'
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
+import { BriefcaseBusiness as Linkedin, Code2, CodeXml as Github, ExternalLink, Mail, Star } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const PortfolioPage = () => {

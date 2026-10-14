@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-mail-notification
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:12.045Z
+// Generated: 2026-10-09T14:13:11.446Z
 // ============================================================
 
 export type SendLogEntry = {

@@ -8,6 +8,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 import type { ArkzenRegistry, ArkzenRegistryEntry, ParsedTatemono } from '../types'
 
+const MONOREPO_ROOT = path.resolve(process.cwd(), '..', '..', '..')
 const REGISTRY_PATH = path.resolve(process.cwd(), 'arkzen.json')
 const AUTH_MANIFEST_PATH = path.resolve(process.cwd(), 'arkzen', 'generated', 'auth-tatemonos.ts')
 
@@ -70,7 +71,7 @@ export function updateRegistry(tatemono: ParsedTatemono): void {
     name:        tatemono.meta.name,
     version:     tatemono.meta.version,
     status:      'active',
-    filePath:    tatemono.filePath,
+    filePath:    path.relative(MONOREPO_ROOT, tatemono.filePath).replace(/\\/g, '/'),
     pages:       tatemono.pages.map(p => p.name),
     registered:  existingIndex === -1 ? now : registry.modules[existingIndex].registered,
     lastUpdated: now,

@@ -3,19 +3,19 @@
 // ARKZEN GENERATED PAGE — atelier/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:06.360Z
+// Generated: 2026-10-09T13:50:33.544Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { ContinuationCard } from './components/ContinuationCard'
 import { LiveStudioCard } from './components/LiveStudioCard'
 import { MobileNav } from './components/MobileNav'
 import { Sidebar } from './components/Sidebar'
 import { SpaceCard } from './components/SpaceCard'
 import { COMMISSIONS, CONTINUATIONS, CR_POSTS, CURRENT_USER, LIVE_STUDIOS, MESSAGES, PEOPLE, PROFILE_JOURNEY, SPACES, SUPPORTER_DATA, TIMELINE_ENTRIES } from './components/constants'
-import { Home, Layers, Users, Coffee, Radio, Briefcase, Heart, MessageCircle, Bell, User, Settings, Search, Plus, ArrowRight, ChevronRight, MoreHorizontal, Eye, Clock, Pencil, Image, FileText, Download, Share2, Play, Pause, Mic, Camera, Star, TrendingUp, Send, X, Check, Smile, Paperclip, Grid, List, Filter, ExternalLink, GitCommit, Folders, Globe, Lock, Zap, Music, Film, Book, Sparkles, Award, RefreshCw, ChevronLeft, ArrowLeft, Info, AlertCircle, Tag, Hash, Activity, LogOut, Link, } from 'lucide-react'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { Activity, AlertCircle, ArrowLeft, ArrowRight, Award, Bell, Book, Briefcase, Camera, Check, ChevronLeft, ChevronRight, Clock, Coffee, Download, ExternalLink, Eye, FileText, Film, Filter, Folders, GitCommit, Globe, Grid, Hash, Heart, Home, Image, Info, Layers, Link, List, Lock, LogOut, MessageCircle, Mic, MoreHorizontal, Music, Paperclip, Pause, Pencil, Play, Plus, Radio, RefreshCw, Search, Send, Settings, Share2, Smile, Sparkles, Star, Tag, TrendingUp, User, Users, X, Zap } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const AtelierPage = () => {
@@ -1179,7 +1179,7 @@ const ArkzenPage_Atelier_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

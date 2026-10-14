@@ -7,8 +7,8 @@
 
 import React, { createContext, useContext, useState, useCallback, useRef } from 'react'
 import { View, Text, TouchableOpacity, Dimensions } from 'react-native'
-import Animated, { FadeInUp, FadeOutUp, FadeInDown, FadeOutDown, Layout } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import Animated, { FadeInUp, FadeOutUp, Layout } from 'react-native-reanimated'
+import { AlertCircle, CircleCheck, CircleX, Info, X } from 'lucide-react-native'
 
 type ToastType = 'success' | 'error' | 'warning' | 'info'
 type ToastPosition = 'top-right' | 'top-left' | 'top-center' | 'bottom-right' | 'bottom-left'
@@ -33,10 +33,10 @@ interface ToastContextValue {
 const ToastContext = createContext<ToastContextValue | null>(null)
 
 const toastConfig = {
-  success: { icon: 'checkmark-circle' as const, bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', icon_color: '#10b981' },
-  error:   { icon: 'close-circle' as const,     bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-800',     icon_color: '#ef4444' },
-  warning: { icon: 'alert-circle' as const,     bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-800',   icon_color: '#f59e0b' },
-  info:    { icon: 'information-circle' as const, bg: 'bg-blue-50',  border: 'border-blue-200',    text: 'text-blue-800',    icon_color: '#3b82f6' },
+  success: { icon: CircleCheck,  bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-800', icon_color: '#10b981' },
+  error:   { icon: CircleX,      bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-800',     icon_color: '#ef4444' },
+  warning: { icon: AlertCircle,  bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-800',   icon_color: '#f59e0b' },
+  info:    { icon: Info,         bg: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-800',    icon_color: '#3b82f6' },
 }
 
 const positionStyles: Record<ToastPosition, object> = {
@@ -49,6 +49,7 @@ const positionStyles: Record<ToastPosition, object> = {
 
 const DefaultToastItem: React.FC<{ toast: ToastItem; onDismiss: (id: string) => void }> = ({ toast, onDismiss }) => {
   const config = toastConfig[toast.type]
+  const Icon = config.icon
   return (
     <Animated.View
       entering={FadeInUp.springify().damping(15)}
@@ -56,10 +57,10 @@ const DefaultToastItem: React.FC<{ toast: ToastItem; onDismiss: (id: string) => 
       layout={Layout.springify()}
       className={`flex-row items-start w-80 px-4 py-3.5 rounded-xl border shadow-lg ${config.bg} ${config.border}`}
     >
-      <Ionicons name={config.icon} size={18} color={config.icon_color} style={{ marginTop: 2 }} />
+      <Icon size={18} color={config.icon_color} style={{ marginTop: 2 }} />
       <Text className={`flex-1 text-sm font-medium leading-snug ml-3 ${config.text}`}>{toast.message}</Text>
       <TouchableOpacity onPress={() => onDismiss(toast.id)} style={{ marginTop: 2 }}>
-        <Ionicons name="close" size={14} color={config.icon_color} style={{ opacity: 0.6 }} />
+        <X size={14} color={config.icon_color} style={{ opacity: 0.6 }} />
       </TouchableOpacity>
     </Animated.View>
   )

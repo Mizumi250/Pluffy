@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow [React+Vite]
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.656Z
+// Generated: 2026-10-13T14:10:32.789Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,7 +14,6 @@ import { Badge } from '@/arkzen/core/components/utils'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
-import { stockLabel, stockVariant } from './utils'
 import type { InventoryItem } from './types'
 
 export const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit: (i: InventoryItem) => void; onDelete: (i: InventoryItem) => void }) => {
@@ -38,4 +37,4 @@ export const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; 
       </td>
     </tr>
   )
-}
+};

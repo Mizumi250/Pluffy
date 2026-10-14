@@ -1,20 +1,22 @@
 #!/usr/bin/env node
 
 // ============================================================
-// ARKZEN CLI — Stack switcher + utilities
+// PLUFF CLI — Stack switcher + utilities
 // Usage:
 //   node arkzen.js switch nextjs
 //   node arkzen.js switch react-vite
 //   node arkzen.js switch react-inertia
+//   node arkzen.js switch tauri
 //   node arkzen.js switch native
 //   node arkzen.js stack          ← show current stack
 //   node arkzen.js stacks         ← list all available stacks
 // ============================================================
 
-const fs   = require('fs')
-const path = require('path')
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT_DIR   = __dirname
+const ROOT_DIR   = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH  = path.join(ROOT_DIR, 'arkzen.json')
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
 
@@ -25,6 +27,8 @@ const VALID_STACKS = {
   'native':        path.join(ENGINE_DIR, 'frontend', 'react-native'),
   'astro':         path.join(ENGINE_DIR, 'frontend', 'astro'),
   'tanstack-start': path.join(ENGINE_DIR, 'frontend', 'tanstack-start'),
+  'tauri':          path.join(ENGINE_DIR, 'frontend', 'tauri'),
+  'lynx':          path.join(ENGINE_DIR, 'frontend', 'lynx'),
 }
 
 function readConfig() {
@@ -36,11 +40,11 @@ function writeConfig(config) {
 }
 
 function log(msg) {
-  console.log(`\x1b[36m[Arkzen]\x1b[0m ${msg}`)
+  console.log(`\x1b[36m[Pluff]\x1b[0m ${msg}`)
 }
 
 function err(msg) {
-  console.error(`\x1b[31m[Arkzen]\x1b[0m ${msg}`)
+  console.error(`\x1b[31m[Pluff]\x1b[0m ${msg}`)
 }
 
 const [,, command, arg] = process.argv
@@ -74,9 +78,7 @@ switch (command) {
     writeConfig(config)
 
     log(`Stack switched: ${prev} → ${stack}`)
-    log(`Restart Arkzen to apply: node start.js`)
-    log(`Or send signal to running process:`)
-    log(`  kill -USR1 $(cat .arkzen.pid 2>/dev/null || echo 0)`)
+    log(`Restart the engine with: node start.js`)
     break
   }
 
@@ -99,10 +101,10 @@ switch (command) {
   }
 
   default: {
-    console.log('\nArkzen CLI\n')
+    console.log('\nPluff CLI\n')
     console.log('  node arkzen.js switch <stack>   Switch active stack')
     console.log('  node arkzen.js stack             Show current stack')
     console.log('  node arkzen.js stacks            List all stacks\n')
-    console.log('Available stacks: nextjs, react-vite, react-inertia, native, astro, tanstack-start\n')
+    console.log('Available stacks: nextjs, react-vite, react-inertia, native, astro, tanstack-start, tauri\n')
   }
 }

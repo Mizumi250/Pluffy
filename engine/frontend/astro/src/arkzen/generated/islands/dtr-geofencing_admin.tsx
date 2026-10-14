@@ -3,19 +3,19 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:14.063Z
+// Generated: 2026-10-09T14:13:11.723Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/dtr-geofencing-app'
-import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Skeleton } from '@/arkzen/generated/components/dtr-geofencing/Skeleton'
 import { useDtrStore } from '@/arkzen/generated/components/dtr-geofencing/hooks'
-import { parseSettings } from '@/arkzen/generated/components/dtr-geofencing/utils'
 import type { Employee, TimeRecord } from '@/arkzen/generated/components/dtr-geofencing/types'
-import { MapPin, CheckCircle, XCircle, AlertCircle, RefreshCw, User as UserIcon, Clock, Loader2, Navigation, TrendingUp, ChevronDown, LogIn, LogOut } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { parseSettings } from '@/arkzen/generated/components/dtr-geofencing/utils'
+import { dtrGeofencingAnimations, pageVariants } from '@/arkzen/generated/dtr-geofencing.animations'
+import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 
 // Page component code (from @arkzen:page:admin)
 const AdminPage = () => {

@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — hello-native [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.921Z
+// Generated: 2026-10-13T17:05:20.852Z
 // Pages: 
 // ============================================================
 

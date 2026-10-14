@@ -182,8 +182,31 @@ export async function rebuildAll(modulesDir: string): Promise<void> {
   }
 
   console.log(`[Arkzen Builder] Found ${files.length} tatemono(s). Building...`)
+  const activeTatemonoNames = new Set(files.map(filePath =>
+    path.basename(path.dirname(filePath)) === 'tatemonos'
+      ? path.basename(filePath, '.tsx')
+      : path.basename(path.dirname(filePath))
+  ))
   for (const file of files) {
     await buildTatemono(file)
+  }
+
+  const customLayoutsDir = path.resolve(process.cwd(), 'arkzen', 'core', 'layouts', 'custom')
+  if (fs.existsSync(customLayoutsDir)) {
+    for (const file of fs.readdirSync(customLayoutsDir)) {
+      const filePath = path.join(customLayoutsDir, file)
+      if (!file.endsWith('.tsx')) continue
+      const content = fs.readFileSync(filePath, 'utf-8')
+      const owner = content.match(/^\/\/ ARKZEN CUSTOM LAYOUT — ([\w-]+)/m)?.[1]
+        ?? content.match(/^\/\/ Generated from tatemono: ([\w-]+)/m)?.[1]
+      if (!owner) continue
+
+      const belongsToActiveTatemono = activeTatemonoNames.has(owner)
+      if (!belongsToActiveTatemono) {
+        fs.unlinkSync(filePath)
+        console.log(`[Arkzen Builder] 🧹 Removed stale custom layout: ${file}`)
+      }
+    }
   }
   console.log(`\n[Arkzen Builder] ✓ All tatemonos rebuilt`)
 }

@@ -8,7 +8,7 @@
 import React from 'react'
 import { View, Text, TouchableOpacity, Modal as RNModal, Pressable } from 'react-native'
 import Animated, { FadeIn, FadeOut, SlideInDown, SlideOutDown } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import { X } from 'lucide-react-native'
 
 export interface NativeModalProps {
   open: boolean
@@ -84,7 +84,7 @@ export const NativeModal: React.FC<NativeModalProps> = ({
           onPress={onClose}
           className="ml-4 p-1.5 rounded-lg"
         >
-          <Ionicons name="close" size={18} color="#737373" />
+          <X size={18} color="#737373" />
         </TouchableOpacity>
       )}
     </View>

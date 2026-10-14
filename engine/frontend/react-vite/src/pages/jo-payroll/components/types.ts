@@ -2,10 +2,11 @@
 // ARKZEN GENERATED TYPES — jo-payroll [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.849Z
+// Generated: 2026-10-13T14:10:32.956Z
 // ============================================================
 
-// ─── Types ─────────────────────────────────────────────────────────────────
+
+
 export interface JobOrder {
   id: number
   jor_number: number
@@ -47,9 +48,6 @@ export interface PayrollSummary {
   group_breakdown?: Record<string, number>
 }
 
-// ─── Store ──────────────────────────────────────────────────────────────────
-
-// ─── Store ──────────────────────────────────────────────────────────────────
 export interface PayrollState {
   jobOrders: JobOrder[]
   summary: PayrollSummary | null

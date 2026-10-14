@@ -3,12 +3,13 @@
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
+import { Icon } from '../../../arkzen/core/components/Icon'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { AlertTriangle, ChevronRight, DollarSign, Edit2, Package, Plus, Search, Trash2, TrendingUp, X } from 'lucide-react-native'
 import { ActivityIndicator, Alert, KeyboardAvoidingView, Modal, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { Field } from './components/Field'
 import { ItemFormModal } from './components/ItemFormModal'
 import { StatCard } from './components/StatCard'
@@ -238,7 +239,7 @@ export function ArkzenScreen_InventoryManagement_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

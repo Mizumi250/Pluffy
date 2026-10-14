@@ -821,10 +821,8 @@ import {
   DIR_RIGHT,
   DIR_UP,
   ASSETS,
-  Prop,
   PROP_DEFS,
   generateProps,
-  Npc,
   NPC_DIALOGUES,
   generateNpcs,
   updateNpcs,
@@ -859,6 +857,7 @@ import {
   CAM_FOLLOW_LERP,
   CAM_FOLLOW_LERP_RUN,
 } from '@/arkzen/generated/ethereane.scripts'
+import type { Prop, Npc } from '@/arkzen/generated/ethereane.scripts'
 
 const JOY_RADIUS = 60
 const KNOB_MAX   = 38

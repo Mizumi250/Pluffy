@@ -5,10 +5,10 @@
 import React, { useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { Linking, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { GuestLayout } from '@/layouts/GuestLayout'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { CATEGORIES, PROJECTS, SKILLS } from './components/constants'
 
 // User screen (from @arkzen:native:page:index)
@@ -177,7 +177,7 @@ export function ArkzenScreen_PortfolioTest_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       <GuestLayout tatSlug="portfolio-test" dashboardRoute="/portfolio-test/dashboard">
       <ScrollView
         className="flex-1"

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ItemFormModal [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.147Z
+// Generated: 2026-10-09T14:43:17.935Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

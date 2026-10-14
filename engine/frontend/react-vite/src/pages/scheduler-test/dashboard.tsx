@@ -2,18 +2,18 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:09:01.313Z
+// Generated: 2026-10-13T14:10:33.949Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { useNavigate } from 'react-router'
-import type { CommandRun } from './components/types'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { useToast } from '@/arkzen/core/components/Toast'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
-import { useToast } from '@/arkzen/core/components/Toast'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { useNavigate } from 'react-router'
+import type { CommandRun } from './components/types'
 
 // ── Page component from @arkzen:page:dashboard ─────────────────────────────
 const DashboardPage = () => {
@@ -89,7 +89,7 @@ const DashboardPage = () => {
             <div className="flex gap-3">
               <button className="text-xs text-neutral-400" onClick={refetch}>Refresh</button>
               {runs.length > 0 && (
-                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs')} disabled={clearing}>
+                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs', undefined)} disabled={clearing}>
                   {clearing ? '...' : 'Clear'}
                 </button>
               )}
@@ -145,7 +145,7 @@ const ArkzenPage_SchedulerTest_Dashboard = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

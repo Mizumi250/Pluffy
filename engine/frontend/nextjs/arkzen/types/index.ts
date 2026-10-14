@@ -54,6 +54,31 @@ export interface ArkzenWebMeta {
   pwa?:         ArkzenPWAMeta
 }
 
+export interface ArkzenNativeMeta {
+  label?: string
+  description?: string
+  expo?: {
+    bundle_id?: string
+    icon?: string
+    scheme?: string
+    version?: string
+    orientation?: 'portrait' | 'landscape' | 'default'
+    status_bar_style?: 'default' | 'light-content' | 'dark-content'
+    permissions?: string[]
+    splash?: {
+      image?: string
+      background_color?: string
+      resize_mode?: string
+    }
+  }
+}
+
+export interface ArkzenNativeConfig {
+  theme?: Record<string, unknown>
+  fonts?: Record<string, string>
+  [key: string]: unknown
+}
+
 export interface ArkzenMeta {
   name:         string
   version:      string
@@ -266,16 +291,18 @@ export interface ArkzenMail {
 }
 
 export interface ArkzenConsole {
-  signature: string
-  description: string
+  signature?: string
+  description?: string
   schedule?: string
   [key: string]: unknown
 }
 
 export interface ArkzenSection {
+  name?: string
   raw: string
   start: number
   end: number
+  [key: string]: unknown
 }
 
 export type ArkzenPageLayout = 'guest' | 'auth' | string
@@ -315,7 +342,9 @@ export interface ParsedTatemono {
   fileName: string
   meta:     ArkzenMeta
   webMeta?: ArkzenWebMeta    // v6.0: from @arkzen:meta:web block
+  nativeMeta?: ArkzenNativeMeta
   config?:  ArkzenConfigOverride
+  nativeConfig?: ArkzenNativeConfig
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
@@ -324,6 +353,7 @@ export interface ParsedTatemono {
   layouts:            ArkzenLayout[]
 
   errorHandlers:      ArkzenErrorHandler[]
+  nativeErrorHandlers: ArkzenErrorHandler[]
 
   stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
@@ -342,6 +372,27 @@ export interface ParsedTatemono {
   // v8.0: @arkzen:web:script (global) + @arkzen:web:script:name (named, multiple)
   script?:  ArkzenSection        // global web script block
   scripts:  ArkzenSection[]      // named web script blocks
+
+  nativePages: ArkzenPage[]
+  nativeComponents: ArkzenSection[]
+  nativeLayouts: ArkzenSection[]
+  nativeStyleGlobal?: ArkzenSection
+  nativeStyles: ArkzenSection[]
+  nativeAnimationExpo?: ArkzenSection
+  nativeScriptExpo?: ArkzenSection
+  nativeScriptsExpo: ArkzenSection[]
+  nativeAnimationRN?: ArkzenSection
+  nativeScriptRN?: ArkzenSection
+  nativeScriptsRN: ArkzenSection[]
+  nativeLynxPages: ArkzenPage[]
+  nativeLynxLayouts: ArkzenSection[]
+  nativeLynxComponents: ArkzenSection[]
+  nativeLynxStyleGlobal?: ArkzenSection
+  nativeLynxStyles: ArkzenSection[]
+  nativeLynxErrorHandlers: ArkzenErrorHandler[]
+  nativeAnimationLynx?: ArkzenSection
+  nativeScriptLynx?: ArkzenSection
+  nativeScriptsLynx: ArkzenSection[]
 }
 
 export interface ArkzenRegistry {

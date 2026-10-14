@@ -2,14 +2,11 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:58.878Z
+// Generated: 2026-10-13T14:10:33.005Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
-import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
-import { useNavigate } from 'react-router'
 import { EmptyRow } from './components/EmptyRow'
 import { FundingBar } from './components/FundingBar'
 import { JOFormModal } from './components/JOFormModal'
@@ -20,8 +17,11 @@ import { StatChip } from './components/StatChip'
 import { TabPills } from './components/TabPills'
 import { API_BASE } from './components/constants'
 import { usePayrollStore } from './components/hooks'
-import { colors, deductions, formatPeso } from './components/utils'
-import { Plus, Search, Edit2, Trash2, X, Check, ChevronDown, Users, Banknote, CreditCard, Building2, Landmark, TrendingUp, TrendingDown, Wallet, AlertCircle, Download, FileText, Filter, MoreHorizontal, Eye, CalendarDays, ArrowUpRight, ArrowDownRight, Clock, CheckCircle, XCircle, RefreshCw, Printer } from 'lucide-react'
+import { formatPeso } from './components/utils'
+import { AppLayout } from '@/arkzen/core/layouts/custom/jo-payroll-app'
+import { joPayrollAnimations, pageVariants } from '@/arkzen/generated/jo-payroll.animations'
+import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:index ─────────────────────────────
 const DashboardPage = () => {

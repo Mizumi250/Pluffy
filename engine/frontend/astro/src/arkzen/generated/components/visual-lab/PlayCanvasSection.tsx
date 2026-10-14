@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — PlayCanvasSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:18.102Z
+// Generated: 2026-10-09T14:13:14.450Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -45,7 +45,7 @@ export const PlayCanvasSection = () => {
 
       // Light
       const light = new pc.Entity('light')
-      light.addComponent('light', { type: pc.LIGHTTYPE_DIRECTIONAL, color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
+      light.addComponent('light', { type: 'directional', color: new pc.Color(0.7, 0.5, 1), intensity: 2 })
       light.setEulerAngles(45, 30, 0)
       app.root.addChild(light)
 

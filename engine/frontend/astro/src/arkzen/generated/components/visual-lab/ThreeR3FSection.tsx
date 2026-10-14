@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ThreeR3FSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:18.095Z
+// Generated: 2026-10-09T14:13:14.447Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -97,7 +97,6 @@ export const ThreeR3FSection = () => {
             <PackageBadge name="@react-three/drei" />
             <PackageBadge name="@react-three/postprocessing" />
             <PackageBadge name="@react-three/uikit" />
-            <PackageBadge name="@react-three/flex" />
             <PackageBadge name="maath" />
             <p className="vl-placeholder-note">Import + Canvas verified — use in your page JSX directly</p>
           </div>

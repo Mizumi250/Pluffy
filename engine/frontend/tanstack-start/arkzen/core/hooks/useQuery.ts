@@ -159,8 +159,12 @@ export function useQuery<T = unknown>(
   useEffect(() => {
     if (!refetchOnFocus || !enabled) return
     const handler = () => { if (cache.isStale(key)) fetchData(true) }
-    window.addEventListener('focus', handler)
-    return () => window.removeEventListener('focus', handler)
+    const focusEvents = globalThis as typeof globalThis & {
+      addEventListener?: (type: string, listener: () => void) => void
+      removeEventListener?: (type: string, listener: () => void) => void
+    }
+    focusEvents.addEventListener?.('focus', handler)
+    return () => focusEvents.removeEventListener?.('focus', handler)
   }, [key, enabled, refetchOnFocus])
 
   return {

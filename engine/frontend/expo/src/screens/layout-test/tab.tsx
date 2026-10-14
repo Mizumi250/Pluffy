@@ -9,6 +9,7 @@ import { StatusBar } from 'expo-status-bar'
 import { Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { TabPanelLayout } from '../../../arkzen/core/layouts/custom/layout-test-tab-panel'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NativeLayerBadge } from './components/NativeLayerBadge'
 
 // User screen (from @arkzen:native:page:tab)
@@ -32,8 +33,8 @@ export function ArkzenScreen_LayoutTest_Tab() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <TabPanelLayout tatSlug="layout-test">
+      <ArkzenStatusBar style="dark" />
+      <TabPanelLayout>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}

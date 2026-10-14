@@ -4,10 +4,9 @@
 // Badge, Avatar, EmptyState, Loading, Pagination, Field, Form
 // ============================================================
 
-import React, { useState } from 'react'
-import { View, Text, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native'
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated'
-import { Ionicons } from '@expo/vector-icons'
+import React from 'react'
+import { View, Text, ActivityIndicator } from 'react-native'
+import { FolderOpen } from 'lucide-react-native'
 
 // ─────────────────────────────────────────────
 // BADGE
@@ -96,7 +95,7 @@ export interface EmptyStateProps {
 export const EmptyState: React.FC<EmptyStateProps> = ({ title, description, action, icon, renderIcon, renderTitle, renderContent }) => (
   <View className="items-center justify-center py-12 px-4">
     <View className="w-14 h-14 rounded-2xl bg-neutral-100 items-center justify-center mb-4">
-      {renderIcon ? renderIcon() : (icon ?? <Ionicons name="folder-open-outline" size={24} color="#a3a3a3" />)}
+      {renderIcon ? renderIcon() : (icon ?? <FolderOpen size={24} color="#a3a3a3" />)}
     </View>
     {renderContent ? renderContent(title, description) : (
       <View className="items-center">

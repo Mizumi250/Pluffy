@@ -3,12 +3,11 @@
 // ARKZEN GENERATED PAGE — queue-flow/join
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:48.545Z
+// Generated: 2026-10-09T13:50:39.520Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { AdminCallButton } from '../components/AdminCallButton'
 import { AnnounceBadge } from '../components/AnnounceBadge'
 import { BigTicketDisplay } from '../components/BigTicketDisplay'
@@ -17,9 +16,10 @@ import { NowServingCard } from '../components/NowServingCard'
 import { StatPill } from '../components/StatPill'
 import { TicketRow } from '../components/TicketRow'
 import { useQueueStore } from '../components/hooks'
-import type { MyTicketResponse, Queue, Ticket } from '../components/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
+import type { MyTicketResponse, Queue, QueueStatus, QueueStore, Ticket } from '../components/types'
+import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Page component code (from @arkzen:page:join)
 const JoinPage = () => {
@@ -34,7 +34,6 @@ const JoinPage = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved) as MyTicketResponse
-        // ✅ Only set if ticket exists
         if (parsed && parsed.ticket) {
           setMyTicket(parsed)
           setStep('ticket')
@@ -95,7 +94,6 @@ const JoinPage = () => {
     setName('')
   }
 
-  // ✅ Extra safety: only render BigTicketDisplay when ticket exists
   if (step === 'ticket' && myTicket && myTicket.ticket) {
     return (
       <div style={{ maxWidth: 390, margin: '0 auto' }}>
@@ -158,7 +156,7 @@ const ArkzenPage_QueueFlow_Join = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

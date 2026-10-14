@@ -27,12 +27,12 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
+import * as ts   from 'typescript'
 import type {
   ParsedTatemono,
   ArkzenPage,
   ArkzenLayout,
   ArkzenErrorHandler,
-  ArkzenSection,
 } from '../types'
 import { emitNativeStyles } from './lib/dsl-native-style-emitter'
 
@@ -66,8 +66,8 @@ function writeIfChanged(filePath: string, content: string): void {
 // and user-declared imports.
 
 function flattenMultilineImports(code: string): string {
-  return code.replace(/import\s+(\{[^}]*\})\s+from\s+(['"`][^'"`]+['"`])/gs, (_, named, mod) => {
-    const flat = named.replace(/\s*\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim()
+  return code.replace(/import\s+((?:[\w$]+\s*,\s*)?\{[^}]*\})\s+from\s+(['"`][^'"`]+['"`])/gs, (_, specifiers, mod) => {
+    const flat = specifiers.replace(/\s*\n\s*/g, ' ').replace(/\s{2,}/g, ' ').trim()
     return `import ${flat} from ${mod}`
   })
 }
@@ -101,29 +101,50 @@ interface ResolveImportsOptions {
   reactHooks?:       string[]        // explicit list of hooks to include
   engineNamed?:      Record<string, string[]>
   engineNamespaces?: Record<string, string>  // alias → module
+  arkzenImportPrefix?: string
 }
 
 function resolveImports(
   sources: string[],
   options: ResolveImportsOptions = {},
 ): { canonicalBlock: string; strippedSources: string[] } {
-  const { extra = '', reactHooks = [], engineNamed = {}, engineNamespaces = {} } = options
+  const {
+    extra = '',
+    reactHooks = [],
+    engineNamed = {},
+    engineNamespaces = {},
+    arkzenImportPrefix = '../../../arkzen/',
+  } = options
 
   // importMap: module → Set<named export>
   const importMap = new Map<string, Set<string>>()
+  const typeImportMap = new Map<string, Set<string>>()
   // namespaceMap: alias → module
   const namespaceMap = new Map<string, string>()
   // defaultMap: module → default import alias
   const defaultMap = new Map<string, string>()
 
   function normaliseMod(raw: string): string {
-    return raw.replace(/^@\/arkzen\//, '../../../arkzen/')
+    return raw.replace(/^@\/arkzen\//, arkzenImportPrefix)
   }
 
   function addNamed(mod: string, names: string[]): void {
     const m = normaliseMod(mod)
     if (!importMap.has(m)) importMap.set(m, new Set())
-    names.forEach(n => importMap.get(m)!.add(n.trim()))
+    names.forEach(n => {
+      const name = n.trim()
+      importMap.get(m)!.add(name)
+      typeImportMap.get(m)?.delete(name)
+    })
+  }
+
+  function addTypeNamed(mod: string, names: string[]): void {
+    const m = normaliseMod(mod)
+    if (!typeImportMap.has(m)) typeImportMap.set(m, new Set())
+    names.forEach(n => {
+      const name = n.trim()
+      if (!importMap.get(m)?.has(name)) typeImportMap.get(m)!.add(name)
+    })
   }
 
   function addNamespace(alias: string, mod: string): void {
@@ -131,6 +152,7 @@ function resolveImports(
   }
 
   function addDefault(mod: string, alias: string): void {
+    if (mod === 'react' && alias === 'React') return
     defaultMap.set(normaliseMod(mod), alias)
   }
 
@@ -146,6 +168,14 @@ function resolveImports(
   if (extra) {
     const flat = flattenMultilineImports(extra)
     for (const line of flat.split('\n')) {
+      const typeNamed = line.match(/^import\s+type\s+\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
+      if (typeNamed) { addTypeNamed(typeNamed[2], typeNamed[1].split(',').map(s => s.trim()).filter(Boolean)); continue }
+      const mixed = line.match(/^import\s+(\w+)\s*,\s*\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
+      if (mixed) {
+        addDefault(mixed[3], mixed[1])
+        addNamed(mixed[3], mixed[2].split(',').map(s => s.trim()).filter(Boolean))
+        continue
+      }
       const named = line.match(/^import\s+\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
       if (named) { addNamed(named[2], named[1].split(',').map(s => s.trim()).filter(Boolean)); continue }
       const ns = line.match(/^import\s+\*\s+as\s+(\w+)\s+from\s+['"`]([^'"`]+)['"`]/)
@@ -159,6 +189,17 @@ function resolveImports(
   const strippedSources = sources.map(src => {
     const flat = flattenMultilineImports(src)
     return flat.split('\n').filter(line => {
+      const typeNamed = line.match(/^import\s+type\s+\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
+      if (typeNamed) {
+        addTypeNamed(typeNamed[2], typeNamed[1].split(',').map(s => s.trim()).filter(Boolean))
+        return false
+      }
+      const mixed = line.match(/^import\s+(\w+)\s*,\s*\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
+      if (mixed) {
+        addDefault(mixed[3], mixed[1])
+        addNamed(mixed[3], mixed[2].split(',').map(s => s.trim()).filter(Boolean))
+        return false
+      }
       const named = line.match(/^import\s+\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
       if (named) { addNamed(named[2], named[1].split(',').map(s => s.trim()).filter(Boolean)); return false }
       const ns = line.match(/^import\s+\*\s+as\s+(\w+)\s+from\s+['"`]([^'"`]+)['"`]/)
@@ -195,6 +236,12 @@ function resolveImports(
     lines.push(`import { ${sorted.join(', ')} } from '${mod}'`)
   }
 
+  for (const [mod, names] of Array.from(typeImportMap.entries()).sort(([a], [b]) => a.localeCompare(b))) {
+    if (names.size > 0) {
+      lines.push(`import type { ${Array.from(names).sort().join(', ')} } from '${mod}'`)
+    }
+  }
+
   // Namespace imports
   for (const [alias, mod] of Array.from(namespaceMap.entries()).sort()) {
     lines.push(`import * as ${alias} from '${mod}'`)
@@ -227,10 +274,13 @@ function extractExportNames(raw: string): string[] {
 }
 
 function extractNativeComponentNames(tatemono: ParsedTatemono): Set<string> {
+  const constants = extractNativeSharedConstantNames(tatemono)
   const names = new Set<string>()
   for (const block of (tatemono.nativeComponents ?? [])) {
     const matches = [...block.raw.matchAll(/^(?:export\s+)?(?:const|function)\s+([A-Z][A-Za-z0-9_$]*)/gm)]
-    matches.forEach(m => names.add(m[1]))
+    matches.forEach(m => {
+      if (!constants.has(m[1])) names.add(m[1])
+    })
   }
   return names
 }
@@ -276,7 +326,7 @@ function extractNativeNamedImportsByModule(tatemono: ParsedTatemono): Map<string
   for (const block of (tatemono.nativeComponents ?? [])) {
     const flat = flattenMultilineImports(block.raw)
     for (const line of flat.split('\n')) {
-      const m = line.match(/^import\s+\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
+      const m = line.match(/^import\s+(?:\w+\s*,\s*)?\{([^}]+)\}\s+from\s+['"`]([^'"`]+)['"`]/)
       if (!m) continue
       const mod   = m[2]
       const names = m[1].split(',').map(s => s.trim()).filter(Boolean)
@@ -299,34 +349,83 @@ function extractNativeNamespaceImports(tatemono: ParsedTatemono): Map<string, st
   return result
 }
 
+function extractNativeDefaultImports(tatemono: ParsedTatemono): Map<string, string> {
+  const result = new Map<string, string>()
+  for (const block of (tatemono.nativeComponents ?? [])) {
+    const flat = flattenMultilineImports(block.raw)
+    for (const line of flat.split('\n')) {
+      const match = line.match(/^import\s+(\w+)(?:\s*,\s*\{[^}]+\})?\s+from\s+['"`]([^'"`]+)['"`]/)
+      if (match) result.set(match[1], match[2])
+    }
+  }
+  return result
+}
+
 function splitNativeComponentDeclarations(rawSource: string, names: Set<string>): Map<string, string> {
   const result = new Map<string, string>()
-  const lines  = rawSource.split('\n')
-  let current: string | null = null
-  let buf: string[] = []
+  const sourceFile = ts.createSourceFile('native-components.tsx', rawSource, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
 
-  function flush() {
-    if (current && buf.length) {
-      result.set(current, buf.join('\n').trim())
+  for (const statement of sourceFile.statements) {
+    const declarationNames: string[] = []
+    if (ts.isVariableStatement(statement)) {
+      for (const declaration of statement.declarationList.declarations) {
+        if (ts.isIdentifier(declaration.name)) declarationNames.push(declaration.name.text)
+      }
+    } else if (
+      (ts.isFunctionDeclaration(statement) || ts.isClassDeclaration(statement) ||
+        ts.isTypeAliasDeclaration(statement) || ts.isInterfaceDeclaration(statement)) &&
+      statement.name
+    ) {
+      declarationNames.push(statement.name.text)
+    }
+
+    const matchedNames = declarationNames.filter(name => names.has(name))
+    if (matchedNames.length === 0) continue
+
+    const declaration = rawSource.slice(statement.getStart(sourceFile), statement.end).trim()
+    for (const name of matchedNames) {
+      result.set(name, declaration)
     }
   }
-
-  for (const line of lines) {
-    let matched: string | null = null
-    for (const name of names) {
-      const re = new RegExp(`^(?:export\\s+)?(?:const|function|class)\\s+${name}\\b`)
-      if (re.test(line.trim())) { matched = name; break }
-    }
-    if (matched) {
-      flush()
-      current = matched
-      buf = [line]
-    } else if (current) {
-      buf.push(line)
-    }
-  }
-  flush()
   return result
+}
+
+function exportNativeDeclarations(source: string): string {
+  const sourceFile = ts.createSourceFile('native-declarations.tsx', source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TSX)
+  return sourceFile.statements.map(statement => {
+    const declaration = source.slice(statement.getStart(sourceFile), statement.end)
+    const modifiers = ts.canHaveModifiers(statement) ? ts.getModifiers(statement) : undefined
+    return modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword)
+      ? declaration
+      : `export ${declaration}`
+  }).join('\n\n')
+}
+
+function extractNativeAnimationExportNames(tatemono: ParsedTatemono): Set<string> {
+  const names = new Set(tatemono.nativeAnimationRN
+    ? extractExportNames(tatemono.nativeAnimationRN.raw)
+    : [])
+  if (!tatemono.nativeAnimationRN) return names
+
+  const sourceFile = ts.createSourceFile(
+    'native-animation.ts',
+    tatemono.nativeAnimationRN.raw,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement) ||
+        !statement.moduleSpecifier ||
+        !ts.isStringLiteral(statement.moduleSpecifier) ||
+        statement.moduleSpecifier.text !== '@arkzen:native:animation:expo' ||
+        !statement.exportClause ||
+        !ts.isNamedExports(statement.exportClause)) continue
+    for (const specifier of statement.exportClause.elements) {
+      names.add(specifier.name.text)
+    }
+  }
+  return names
 }
 
 // ─── Per-component file generator ─────────────────────────────────────────────
@@ -351,18 +450,18 @@ function generateIndividualNativeComponentFiles(
   const utilNames      = extractNativeUtilityFunctionNames(tatemono)
 
   // Animation hook names (for injection into per-component files)
-  const animExports = tatemono.nativeAnimationRN
-    ? new Set(extractExportNames(tatemono.nativeAnimationRN.raw))
-    : new Set<string>()
+  const animExports = extractNativeAnimationExportNames(tatemono)
 
   // Style presence
-  const hasNativeStyles = !!(tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
+  const hasNativeStyles = Boolean(tatemono.nativeStyleGlobal) ||
+    !!(tatemono.nativeStyles && tatemono.nativeStyles.length > 0)
 
   const tatName      = tatemono.meta.name
   const animImport   = `import { ${Array.from(animExports).join(', ')} } from '../../../arkzen/generated/${tatName}.native-animations'`
   const styleImport  = `import { s } from '../../../arkzen/generated/${tatName}.native-styles'`
 
   const namedByModule = extractNativeNamedImportsByModule(tatemono)
+  const defaultImports = extractNativeDefaultImports(tatemono)
   const nsImports     = extractNativeNamespaceImports(tatemono)
 
   // Helper: build engineNamed for one component's source
@@ -373,13 +472,15 @@ function generateIndividualNativeComponentFiles(
       if (mod === 'react-native') continue
       findReferencedNames(stripped, names).forEach(n => explicitlyOwned.add(n))
     }
+    findReferencedNames(stripped, new Set(defaultImports.keys())).forEach(n => explicitlyOwned.add(n))
     const rnCore = findReferencedNames(stripped, RN_CORE_COMPONENTS)
       .filter(n => !explicitlyOwned.has(n))
     const result: Record<string, string[]> = {
       'react-native': Array.from(new Set(['StyleSheet', ...rnCore])),
-      '../../../arkzen/core/stores/authStore': Array.from(
-        new Set(['setActiveTatemono', ...findReferencedNames(stripped, AUTH_STORE_EXPORTS)])
-      ),
+    }
+    const authStoreExports = findReferencedNames(stripped, AUTH_STORE_EXPORTS)
+    if (authStoreExports.length > 0) {
+      result['../../../../arkzen/core/stores/authStore'] = authStoreExports
     }
     for (const [mod, names] of namedByModule) {
       const ref = findReferencedNames(stripped, names)
@@ -389,14 +490,20 @@ function generateIndividualNativeComponentFiles(
   }
 
   const declMap = splitNativeComponentDeclarations(combinedRaw, new Set([
-    ...componentNames, ...hookNames,
+    ...componentNames,
+    ...hookNames,
+    ...typeNames,
+    ...constNames,
+    ...utilNames,
   ]))
 
   // ── constants.tsx ──────────────────────────────────────────
   const constDecls = splitNativeComponentDeclarations(combinedRaw, constNames)
   if (constDecls.size > 0) {
-    const constSrc = Array.from(constDecls.values()).join('\n\n')
-    const { canonicalBlock, strippedSources } = resolveImports([constSrc])
+    const constSrc = exportNativeDeclarations(Array.from(new Set(constDecls.values())).join('\n\n'))
+    const { canonicalBlock, strippedSources } = resolveImports([constSrc], {
+      arkzenImportPrefix: '../../../../arkzen/',
+    })
     const out = `// ARKZEN GENERATED — ${tatName}/components/constants\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
     const sibling = path.join(componentsDir, 'constants.ts')
     if (fs.existsSync(sibling)) fs.unlinkSync(sibling)
@@ -409,14 +516,15 @@ function generateIndividualNativeComponentFiles(
   }
 
   // ── types.ts ───────────────────────────────────────────────
-  const typeSrc = rawSources.map(r =>
-    r.split('\n')
-      .filter(l => /^(?:export\s+)?(?:type|interface)\s+[A-Z]/.test(l.trim()) ||
-                   (typeNames.size > 0 && [...typeNames].some(n => l.includes(n))))
-      .join('\n')
-  ).join('\n').trim()
+  const typeSrc = exportNativeDeclarations(Array.from(typeNames)
+    .map(name => declMap.get(name))
+    .filter((source): source is string => Boolean(source))
+    .join('\n\n')
+    .trim())
   if (typeSrc) {
-    const { canonicalBlock, strippedSources } = resolveImports([typeSrc])
+    const { canonicalBlock, strippedSources } = resolveImports([typeSrc], {
+      arkzenImportPrefix: '../../../../arkzen/',
+    })
     const out = `// ARKZEN GENERATED — ${tatName}/components/types\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
     const sibling = path.join(componentsDir, 'types.tsx')
     if (fs.existsSync(sibling)) fs.unlinkSync(sibling)
@@ -426,16 +534,19 @@ function generateIndividualNativeComponentFiles(
   // ── utils.tsx ──────────────────────────────────────────────
   const utilDecls = splitNativeComponentDeclarations(combinedRaw, utilNames)
   if (utilDecls.size > 0) {
-    const utilSrc = Array.from(utilDecls.values()).join('\n\n')
+    const utilSrc = exportNativeDeclarations(Array.from(new Set(utilDecls.values())).join('\n\n'))
     const stripped = stripTemplateLiterals(utilSrc)
     const extra = [
       ...(animExports.size && findReferencedNames(stripped, animExports).length ? [animImport] : []),
       ...(hasNativeStyles && /\bs\./.test(stripped) ? [styleImport] : []),
+      ...findReferencedNames(stripped, new Set(defaultImports.keys()))
+        .map(name => `import ${name} from '${defaultImports.get(name)}'`),
     ].join('\n')
     const { canonicalBlock, strippedSources } = resolveImports([utilSrc], {
       extra,
       engineNamed: buildEngineNamed(utilSrc),
       engineNamespaces: Object.fromEntries(nsImports),
+      arkzenImportPrefix: '../../../../arkzen/',
     })
     const out = `// ARKZEN GENERATED — ${tatName}/components/utils\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
     const sibling = path.join(componentsDir, 'utils.ts')
@@ -445,15 +556,30 @@ function generateIndividualNativeComponentFiles(
 
   // ── hooks.tsx ──────────────────────────────────────────────
   if (hookNames.size > 0) {
-    const hookDecls = Array.from(hookNames)
+    const hookDecls = exportNativeDeclarations(Array.from(hookNames)
       .map(name => declMap.get(name))
       .filter(Boolean)
       .join('\n\n')
+    )
     if (hookDecls) {
       const stripped = stripTemplateLiterals(hookDecls)
+      const referencedTypes = findReferencedNames(stripped, typeNames)
+      const referencedConstants = findReferencedNames(stripped, constNames)
+      const referencedUtils = findReferencedNames(stripped, utilNames)
       const extra = [
         ...(animExports.size && findReferencedNames(stripped, animExports).length ? [animImport] : []),
         ...(hasNativeStyles && /\bs\./.test(stripped) ? [styleImport] : []),
+        ...findReferencedNames(stripped, new Set(defaultImports.keys()))
+          .map(name => `import ${name} from '${defaultImports.get(name)}'`),
+        ...(referencedTypes.length
+          ? [`import type { ${referencedTypes.sort().join(', ')} } from './types'`]
+          : []),
+        ...(referencedConstants.length
+          ? [`import { ${referencedConstants.sort().join(', ')} } from './constants'`]
+          : []),
+        ...(referencedUtils.length
+          ? [`import { ${referencedUtils.sort().join(', ')} } from './utils'`]
+          : []),
       ].join('\n')
       const hookedHooks = findReferencedNames(stripped, REACT_HOOKS)
       const { canonicalBlock, strippedSources } = resolveImports([hookDecls], {
@@ -461,6 +587,7 @@ function generateIndividualNativeComponentFiles(
         reactHooks:      hookedHooks,
         engineNamed:     buildEngineNamed(hookDecls),
         engineNamespaces: Object.fromEntries(nsImports),
+        arkzenImportPrefix: '../../../../arkzen/',
       })
       const out = `// ARKZEN GENERATED — ${tatName}/components/hooks\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
       const sibling = path.join(componentsDir, 'hooks.ts')
@@ -472,12 +599,37 @@ function generateIndividualNativeComponentFiles(
   // ── Individual component files ─────────────────────────────
   const writtenFiles = new Set<string>(['constants.tsx', 'types.ts', 'utils.tsx', 'hooks.tsx'])
   for (const name of componentNames) {
-    const src = declMap.get(name)
-    if (!src) continue
+    const declaration = declMap.get(name)
+    if (!declaration) continue
+    const src = exportNativeDeclarations(declaration)
     const stripped = stripTemplateLiterals(src)
+    const siblingComponents = findReferencedNames(stripped, componentNames)
+      .filter(componentName => componentName !== name)
+    const referencedConstants = findReferencedNames(stripped, constNames)
+    const referencedHooks = findReferencedNames(stripped, hookNames)
+    const referencedUtils = findReferencedNames(stripped, utilNames)
+    const referencedTypes = findReferencedNames(stripped, typeNames)
     const extra = [
       ...(animExports.size && findReferencedNames(stripped, animExports).length ? [animImport] : []),
       ...(hasNativeStyles && /\bs\./.test(stripped) ? [styleImport] : []),
+      ...findReferencedNames(stripped, new Set(defaultImports.keys()))
+        .map(importName => `import ${importName} from '${defaultImports.get(importName)}'`),
+      ...(siblingComponents.length
+        ? siblingComponents.sort().map(componentName =>
+            `import { ${componentName} } from './${componentName}'`)
+        : []),
+      ...(referencedConstants.length
+        ? [`import { ${referencedConstants.sort().join(', ')} } from './constants'`]
+        : []),
+      ...(referencedHooks.length
+        ? [`import { ${referencedHooks.sort().join(', ')} } from './hooks'`]
+        : []),
+      ...(referencedUtils.length
+        ? [`import { ${referencedUtils.sort().join(', ')} } from './utils'`]
+        : []),
+      ...(referencedTypes.length
+        ? [`import type { ${referencedTypes.sort().join(', ')} } from './types'`]
+        : []),
     ].join('\n')
     const hookedHooks = findReferencedNames(stripped, REACT_HOOKS)
     const { canonicalBlock, strippedSources } = resolveImports([src], {
@@ -485,6 +637,7 @@ function generateIndividualNativeComponentFiles(
       reactHooks:      hookedHooks,
       engineNamed:     buildEngineNamed(src),
       engineNamespaces: Object.fromEntries(nsImports),
+      arkzenImportPrefix: '../../../../arkzen/',
     })
     const fileName = `${name}.tsx`
     const out = `// ARKZEN GENERATED — ${tatName}/components/${name}\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
@@ -509,7 +662,45 @@ function generateIndividualNativeComponentFiles(
 function generateNativeAnimationFile(tatemono: ParsedTatemono): string | null {
   if (!tatemono.nativeAnimationRN) return null
 
-  const { canonicalBlock, strippedSources } = resolveImports([tatemono.nativeAnimationRN.raw])
+  const animationSource = ts.createSourceFile(
+    'native-animation.ts',
+    tatemono.nativeAnimationRN.raw,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX,
+  )
+  const expoExports = new Set<string>()
+  const reexportRanges: Array<[number, number]> = []
+  for (const statement of animationSource.statements) {
+    if (!ts.isExportDeclaration(statement) ||
+        !statement.moduleSpecifier ||
+        !ts.isStringLiteral(statement.moduleSpecifier) ||
+        statement.moduleSpecifier.text !== '@arkzen:native:animation:expo' ||
+        !statement.exportClause ||
+        !ts.isNamedExports(statement.exportClause)) continue
+    reexportRanges.push([statement.getStart(animationSource), statement.end])
+    statement.exportClause.elements.forEach(specifier => expoExports.add(specifier.propertyName?.text ?? specifier.name.text))
+  }
+
+  let animationRaw = tatemono.nativeAnimationRN.raw
+  for (const [start, end] of reexportRanges.sort((a, b) => b[0] - a[0])) {
+    animationRaw = animationRaw.slice(0, start) + animationRaw.slice(end)
+  }
+  if (expoExports.size > 0) {
+    if (!tatemono.nativeAnimationExpo) {
+      throw new Error(`Bare RN animation exports Expo hooks for ${tatemono.meta.name}, but no Expo animation block exists`)
+    }
+    const implementations = splitNativeComponentDeclarations(tatemono.nativeAnimationExpo.raw, expoExports)
+    const missing = [...expoExports].filter(name => !implementations.has(name))
+    if (missing.length > 0) {
+      throw new Error(`Bare RN animation block for ${tatemono.meta.name} re-exports missing Expo hooks: ${missing.join(', ')}`)
+    }
+    animationRaw += '\n\n' + Array.from(new Set(implementations.values())).join('\n\n')
+  }
+
+  const { canonicalBlock, strippedSources } = resolveImports([animationRaw], {
+    reactHooks: findReferencedNames(animationRaw, REACT_HOOKS),
+  })
   const clean = strippedSources[0].replace(/\*\/\s*$/, '').trim()
   if (!clean) return null
 
@@ -606,16 +797,18 @@ function buildNativeLayoutJSX(
     // Built-in layouts: 'guest' | 'auth'
     const guard = decl.guard ?? (layoutRaw === 'auth' ? 'auth' : layoutRaw === 'guest' ? 'guest' : null)
     if (guard === 'auth') {
+      const loginRoute = `${tatemono.meta.name}/login`
       return {
         imports:   [`import { AuthLayout } from '../../layouts/AuthLayout'`],
-        openTags:  `<AuthLayout tatSlug="${tatemono.meta.name}">`,
+        openTags:  `<AuthLayout tatSlug=${JSON.stringify(tatemono.meta.name)} loginRoute=${JSON.stringify(loginRoute)}>`,
         closeTags: `</AuthLayout>`,
       }
     }
     if (guard === 'guest') {
+      const dashboardRoute = `${tatemono.meta.name}/dashboard`
       return {
         imports:   [`import { GuestLayout } from '../../layouts/GuestLayout'`],
-        openTags:  `<GuestLayout tatSlug="${tatemono.meta.name}">`,
+        openTags:  `<GuestLayout tatSlug=${JSON.stringify(tatemono.meta.name)} dashboardRoute=${JSON.stringify(dashboardRoute)}>`,
         closeTags: `</GuestLayout>`,
       }
     }
@@ -648,7 +841,7 @@ function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string 
 
 import React from 'react'
 import { View, Text, ScrollView, StyleSheet, StatusBar } from 'react-native'
-import { setActiveTatemono } from '../../arkzen/core/stores/authStore'
+import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 ${layoutImports.join('\n')}
 
 export function ${wrapperName}({ navigation }: any) {
@@ -693,9 +886,7 @@ const allSources = [
 ].filter(Boolean)
   const pageStripped = stripTemplateLiterals(page.raw)
 
-  const animExports = tatemono.nativeAnimationRN
-    ? extractExportNames(tatemono.nativeAnimationRN.raw)
-    : []
+  const animExports = [...extractNativeAnimationExportNames(tatemono)]
   const animImportLine = animExports.length > 0
     ? `import { ${animExports.join(', ')} } from '../../arkzen/generated/${tatName}.native-animations'`
     : ''
@@ -748,11 +939,14 @@ const allSources = [
 
   // Explicit named imports from components block
   const namedByModule = extractNativeNamedImportsByModule(tatemono)
+  const defaultImports = extractNativeDefaultImports(tatemono)
   const explicitlyOwned = new Set<string>()
   for (const [mod, names] of namedByModule) {
     if (mod === 'react-native') continue
     findReferencedNames(pageStripped, names).forEach(n => explicitlyOwned.add(n))
   }
+  findReferencedNames(pageStripped, new Set(defaultImports.keys()))
+    .forEach(name => explicitlyOwned.add(name))
 
   const rnCore = findReferencedNames(pageStripped, RN_CORE_COMPONENTS)
     .filter(n => !explicitlyOwned.has(n))
@@ -771,10 +965,10 @@ const allSources = [
   // Bare RN uses react-native StatusBar and @react-navigation/native-stack navigation
   const engineNamed: Record<string, string[]> = {
     'react-native':                         rnRequired,
-    '../../arkzen/core/stores/authStore':   authStoreNamed,
+    '../../../arkzen/core/stores/authStore':   authStoreNamed,
   }
   for (const [rawMod, names] of namedByModule) {
-    const mod = rawMod.replace(/^@\/arkzen\//, '../../arkzen/')
+    const mod = rawMod.replace(/^@\/arkzen\//, '../../../arkzen/')
     const ref = findReferencedNames(pageStripped, names)
     if (ref.length) {
       engineNamed[mod] = Array.from(new Set([...(engineNamed[mod] ?? []), ...ref]))
@@ -810,6 +1004,12 @@ const allSources = [
   }
 
   const wrapperName = `ArkzenScreen_${toPascalCase(tatName)}_${toPascalCase(page.name)}`
+  const componentSignature = componentDefinition.match(
+    new RegExp(`(?:function\\s+${componentName}\\s*|const\\s+${componentName}\\s*=\\s*(?:async\\s*)?)\\(([^)]*)\\)`),
+  )?.[1] ?? ''
+  const screenProps = /\b(navigation|route)\b/.test(componentSignature)
+    ? ' navigation={navigation} route={route}'
+    : ''
 
   return `// ============================================================
 // ARKZEN GENERATED SCREEN — ${tatName}/${page.name}
@@ -836,7 +1036,7 @@ export function ${wrapperName}({ navigation, route }: any) {
         showsVerticalScrollIndicator={false}
         keyboardShouldPersistTaps="handled"
       >
-        <${componentName} navigation={navigation} route={route} />
+        <${componentName}${screenProps} />
       </ScrollView>
       ${layoutClose}
     </>
@@ -869,6 +1069,13 @@ function generateErrorBoundaryFile(
   const handlerCode = strippedSources[0]
     .replace(/^export\s+default\s+\w[\w]*\s*;?\s*$/gm, '')
     .trim()
+  const errorScreenName = handlerCode.match(/(?:const|function)\s+([A-Z][A-Za-z0-9_$]*)/)?.[1]
+  const errorScreen = errorScreenName
+    ? `<${errorScreenName} />`
+    : `<View style={styles.fallback}><Text>Something went wrong.</Text></View>`
+  const fallbackStyles = errorScreenName
+    ? ''
+    : `\nconst styles = StyleSheet.create({ fallback: { flex: 1, alignItems: 'center', justifyContent: 'center' } })\n`
 
   return `// ============================================================
 // ARKZEN NATIVE SCREEN — ${tatName}/error-boundary
@@ -878,6 +1085,7 @@ function generateErrorBoundaryFile(
 ${canonicalBlock}
 ${compImports}
 ${handlerCode}
+${fallbackStyles}
 
 export class ErrorBoundary extends React.Component<
   { children: React.ReactNode },
@@ -896,7 +1104,7 @@ export class ErrorBoundary extends React.Component<
 
   render() {
     if (this.state.hasError) {
-      return <NativeServerErrorScreen reset={this.reset} />
+      return ${errorScreen}
     }
     return this.props.children
   }
@@ -932,9 +1140,9 @@ function readExistingRoutes(): NativeRoute[] {
 function writeRouteRegistry(routes: NativeRoute[]): void {
   ensureDir(GENERATED_DIR)
 
-  const paramListEntries = routes.map(r =>
-    `  '${r.routeKey}': undefined`
-  ).join('\n')
+  const paramListEntries = routes.length > 0
+    ? routes.map(r => `  '${r.routeKey}': undefined`).join('\n')
+    : '  [routeName: string]: undefined'
 
   const imports = routes.map(r => {
     const screenComp = toPascalCase(r.tatName) + toPascalCase(r.screenName) + 'Screen'
@@ -952,6 +1160,7 @@ function writeRouteRegistry(routes: NativeRoute[]): void {
     component: ${screenComp},
     auth:      ${r.auth},
     tatemono:  '${r.tatName}',
+    screenName: '${r.screenName}',
     layout:    '${r.layout}',
   }`
   }).join(',\n')
@@ -974,6 +1183,7 @@ export interface ArkzenNativeRoute {
   component: React.ComponentType<any>
   auth:      boolean
   tatemono:  string
+  screenName: string
   layout:    string
 }
 
@@ -982,17 +1192,17 @@ ${screenDefs}
 ]
 
 export function getFirstRouteForTat(tatName: string): string | undefined {
-  return ARKZEN_NATIVE_ROUTES.find(r => r.tatName === tatName)?.name
+  return ARKZEN_NATIVE_ROUTES.find(r => r.tatemono === tatName)?.name
 }
 
 export function getLoginRoute(tatName: string): string {
-  const login = ARKZEN_NATIVE_ROUTES.find(r => r.tatName === tatName && r.screenName === 'login')
+  const login = ARKZEN_NATIVE_ROUTES.find(r => r.tatemono === tatName && r.screenName === 'login')
   return login?.name ?? \`\${tatName}/login\`
 }
 
 export function getDashboardRoute(tatName: string): string {
   const dash = ARKZEN_NATIVE_ROUTES.find(
-    r => r.tatName === tatName && (r.screenName === 'dashboard' || r.screenName === 'index') && r.auth
+    r => r.tatemono === tatName && (r.screenName === 'dashboard' || r.screenName === 'index') && r.auth
   )
   return dash?.name ?? \`\${tatName}/dashboard\`
 }
@@ -1011,7 +1221,13 @@ export function registerNativeScreens(tatemono: ParsedTatemono): void {
   generateIndividualNativeComponentFiles(tatemono, screenDir)
 
   // Native style emission (→ src/arkzen/generated/{tat}.native-styles.ts)
-  emitNativeStyles(tatName, tatemono.nativeStyles ?? [], GENERATED_DIR, 'Arkzen Native Router')
+  emitNativeStyles(
+    tatName,
+    tatemono.nativeStyles ?? [],
+    GENERATED_DIR,
+    'Arkzen Native Router',
+    tatemono.nativeStyleGlobal,
+  )
 
   // Native animation file
   if (tatemono.nativeAnimationRN) {
@@ -1033,7 +1249,7 @@ export function registerNativeScreens(tatemono: ParsedTatemono): void {
   for (const page of tatemono.nativePages) {
     const screenName = page.name
     const routeKey   = `${tatName}/${screenName}`
-    const layout     = (page as any).layout ?? 'default'
+    const layout     = page.layout ?? 'default'
     const isAuth     = tatemono.meta.auth && layout === 'auth'
 
     writeIfChanged(

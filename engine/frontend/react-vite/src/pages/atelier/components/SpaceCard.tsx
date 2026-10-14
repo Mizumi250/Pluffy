@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — SpaceCard [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.591Z
+// Generated: 2026-10-13T14:10:30.576Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -27,4 +27,4 @@ export const SpaceCard = ({ space, onJoin }: { space: typeof SPACES[0]; onJoin: 
       </button>
     </div>
   </div>
-)
+);

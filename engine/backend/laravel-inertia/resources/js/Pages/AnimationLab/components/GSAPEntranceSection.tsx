@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPEntranceSection [React+Inertia]
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:16.860Z
+// Generated: 2026-10-13T17:05:19.564Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,6 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
 import { useAnimLabStore } from './hooks'
-import { boxes, ctx, opacity, ref, scale, scaleX, sectionRef, x, y } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
@@ -26,39 +25,31 @@ export const GSAPEntranceSection = () => {
 
   useEffect(() => {
     const ctx = gsap.context(() => {
-      // from (entrance from invisible)
       gsap.from('.gsap-from-demo', {
         opacity: 0, y: 60, duration: 0.8, ease: 'power3.out', delay: 0.1
       })
-      // fromTo (full control)
       gsap.fromTo('.gsap-fromto-demo',
         { opacity: 0, scaleX: 0, transformOrigin: 'left center' },
         { opacity: 1, scaleX: 1, duration: 0.7, ease: 'elastic.out(1, 0.5)', delay: 0.3 }
       )
-      // to (animate existing state)
       gsap.to('.gsap-to-demo', {
         x: 80, rotation: 360, duration: 0.9, ease: 'back.out(1.7)', delay: 0.5
       })
-      // blur reveal
       gsap.fromTo('.gsap-blur-demo',
         { opacity: 0, filter: 'blur(20px)' },
         { opacity: 1, filter: 'blur(0px)', duration: 1, ease: 'power2.out', delay: 0.6 }
       )
-      // clip reveal
       gsap.fromTo('.gsap-clip-demo',
         { clipPath: 'inset(0 100% 0 0)' },
         { clipPath: 'inset(0 0% 0 0)', duration: 0.9, ease: 'power4.inOut', delay: 0.7 }
       )
-      // scale + fade
       gsap.from('.gsap-scale-demo', {
         opacity: 0, scale: 0.3, duration: 0.7, ease: 'back.out(2)', delay: 0.9
       })
-      // rotate entrance
       gsap.fromTo('.gsap-rotate-demo',
         { opacity: 0, rotation: -90, transformOrigin: 'bottom left' },
         { opacity: 1, rotation: 0, duration: 0.8, ease: 'power3.out', delay: 1.0 }
       )
-      // slide from right
       gsap.from('.gsap-slide-right-demo', {
         opacity: 0, x: 100, duration: 0.7, ease: 'power2.out', delay: 1.1
       })

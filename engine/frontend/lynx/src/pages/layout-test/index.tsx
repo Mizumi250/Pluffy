@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — layout-test/index (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:50.480Z
+// Generated: 2026-10-14T08:58:41.217Z
 
 const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (
   <scroll-view className="flex-1 p-4 gap-y-3 pb-10">

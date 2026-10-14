@@ -3,12 +3,13 @@
 // ARKZEN GENERATED COMPONENT — InjectedBadge
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:07.001Z
+// Generated: 2026-10-09T13:50:33.674Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import type { ProbeResult, Stats } from './types'
 import { Tag } from './Tag'
 
 export const InjectedBadge = ({ injected }: { injected: boolean }) => (

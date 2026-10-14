@@ -2,12 +2,12 @@
 // ARKZEN GENERATED SHARED CONSTANTS — portfolio-test
 // Source: @arkzen:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:15.789Z
+// Generated: 2026-10-09T14:13:13.477Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Code2, ExternalLink, Github, Linkedin, Mail, Star } from 'lucide-react'
+import { BriefcaseBusiness as Linkedin, Code2, CodeXml as Github, ExternalLink, Mail, Star } from 'lucide-react'
 
 export const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },

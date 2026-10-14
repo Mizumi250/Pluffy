@@ -2,18 +2,18 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard [React+Inertia]
 // Layout: auth | Auth: true | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.353Z
+// Generated: 2026-10-13T17:05:21.818Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { APP_KEY, REVERB_HOST, REVERB_PORT, REVERB_SCHEME } from './components/constants'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type NotificationTestDashboardProps = {
@@ -365,7 +365,7 @@ function ArkzenPage_NotificationTest_Dashboard() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -380,7 +380,11 @@ function ArkzenPage_NotificationTest_Dashboard() {
     </motion.div>
   )
 
-  return <AuthLayout requireAuth={true}>{content}</AuthLayout>
+  return (
+    <AuthLayout requireAuth={true}>
+    {content}
+    </AuthLayout>
+  )
 }
 
 export default ArkzenPage_NotificationTest_Dashboard

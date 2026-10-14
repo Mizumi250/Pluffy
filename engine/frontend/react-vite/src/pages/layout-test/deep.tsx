@@ -2,16 +2,16 @@
 // ARKZEN GENERATED PAGE — layout-test/deep [React+Vite]
 // Layout: modal | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-26T07:08:59.391Z
+// Generated: 2026-10-13T14:10:33.399Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
-import { PanelLayout } from '@/arkzen/core/layouts/custom/layout-test-panel'
-import { ModalLayout } from '@/arkzen/core/layouts/custom/layout-test-modal'
-import { useNavigate } from 'react-router'
 import { LayerBadge } from './components/LayerBadge'
+import { ModalLayout } from '@/arkzen/core/layouts/custom/layout-test-modal'
+import { PanelLayout } from '@/arkzen/core/layouts/custom/layout-test-panel'
+import { ShellLayout } from '@/arkzen/core/layouts/custom/layout-test-shell'
+import { useNavigate } from 'react-router'
 
 // ── Page component from @arkzen:page:deep ─────────────────────────────
 const DeepPage = () => (
@@ -31,7 +31,7 @@ const ArkzenPage_LayoutTest_Deep = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animation is managed by the page or not defined
   }, [])
 
   return (

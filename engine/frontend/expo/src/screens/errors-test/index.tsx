@@ -5,9 +5,9 @@
 import React, { useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { NativeErrorScreen } from './components/NativeErrorScreen'
 import { ResultBanner } from './components/ResultBanner'
 import { BACKEND_URL, NATIVE_ERRORS } from './components/constants'
@@ -157,7 +157,7 @@ export function ArkzenScreen_ErrorsTest_Index() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

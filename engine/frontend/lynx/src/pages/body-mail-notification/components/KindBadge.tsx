@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX COMPONENT — KindBadge
 // Source: @arkzen:native:components:lynx:* (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:46.031Z
+// Generated: 2026-10-14T08:58:39.676Z
 // ============================================================
 
 import { useCallback, useEffect, useState } from '@lynx-js/react'

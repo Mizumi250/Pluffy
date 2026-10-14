@@ -6,7 +6,7 @@ import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react-native'
 import { AppState, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-const NAV = [
+/* @arkzen:native:layout:app + @arkzen:import:rn */const NAV = [
   { href: '/queue-flow',       icon: LayoutGrid, label: 'Display' },
   { href: '/queue-flow/join',  icon: Ticket,     label: 'Join'    },
   { href: '/queue-flow/admin', icon: Settings,   label: 'Admin'   },
@@ -40,14 +40,13 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
     <View
       style={{
         flex: 1,
-        // @ts-ignore — experimental_backgroundImage supported in Expo SDK 50+
-        experimental_backgroundImage: 'linear-gradient(165deg, #e8f2ff 0%, #d0e5ff 18%, #b8d4f8 36%, #a4c5f5 52%, #b0cef7 68%, #c4daff 84%, #daeeff 100%)',
+        backgroundColor: '#b8d4f8',
       }}
     >
       <StatusBar barStyle="dark-content" backgroundColor="transparent" translucent />
       <SafeAreaView style={{ flex: 1 }} edges={['top']}>
 
-        {/* Offline banner — mirrors web WifiOff banner */}
+        {/* Offline banner */}
         {!online && (
           <View style={{
             backgroundColor: 'rgba(251,191,36,0.12)',
@@ -71,7 +70,7 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
           {children}
         </View>
 
-        {/* Bottom nav — frosted glass mirroring web */}
+        {/* Bottom nav */}
         <View style={{
           backgroundColor: 'rgba(255,255,255,0.60)',
           borderTopWidth: 1,

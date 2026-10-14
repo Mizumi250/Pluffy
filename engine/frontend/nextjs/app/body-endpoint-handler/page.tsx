@@ -3,16 +3,16 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:07.018Z
+// Generated: 2026-10-09T13:50:33.691Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { InjectedBadge } from './components/InjectedBadge'
 import { Tag } from './components/Tag'
 import { useToast } from './components/hooks'
 import type { ProbeResult, Stats } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Page component code (from @arkzen:page:index)
@@ -310,7 +310,7 @@ const ArkzenPage_BodyEndpointHandler_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

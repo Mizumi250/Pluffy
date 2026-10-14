@@ -21,7 +21,7 @@ const DOMAIN =
   'http://localhost:3000'
 
 export function generateSitemap(registry: ArkzenRegistry): string {
-  const urls: string[] = []
+  const urls: { loc: string; changefreq: string; priority: number }[] = []
 
   // Add root
   urls.push({

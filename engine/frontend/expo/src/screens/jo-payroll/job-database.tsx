@@ -5,12 +5,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { setActiveTatemono } from '../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
-import { StatusBar } from 'expo-status-bar'
 import { AlertCircle, Banknote, Building2, CalendarDays, CreditCard, FileText, Landmark, LayoutDashboard, Search, TrendingDown, TrendingUp, Users, Wallet } from 'lucide-react-native'
 import { ActivityIndicator, SafeAreaView, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { create } from 'zustand'
 import { AppLayout } from '../../../arkzen/core/layouts/custom/jo-payroll-app'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { useSlideIn } from '../../arkzen/generated/jo-payroll.native-animations'
 import { Avatar } from './components/Avatar'
 import { SearchBar } from './components/SearchBar'
@@ -139,8 +139,8 @@ export function ArkzenScreen_JoPayroll_JobDatabase() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
-      <AppLayout tatSlug="jo-payroll">
+      <ArkzenStatusBar style="dark" />
+      <AppLayout>
       <ScrollView
         className="flex-1"
         contentContainerStyle={{ flexGrow: 1 }}

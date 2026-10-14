@@ -3,22 +3,22 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:16.105Z
+// Generated: 2026-10-09T14:13:13.700Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AdminCallButton } from '@/arkzen/generated/components/queue-flow/AdminCallButton'
 import { AnnounceBadge } from '@/arkzen/generated/components/queue-flow/AnnounceBadge'
 import { NowServingCard } from '@/arkzen/generated/components/queue-flow/NowServingCard'
 import { StatPill } from '@/arkzen/generated/components/queue-flow/StatPill'
 import { TicketRow } from '@/arkzen/generated/components/queue-flow/TicketRow'
 import { useAnnounce, useQueueStore } from '@/arkzen/generated/components/queue-flow/hooks'
-import { fmtWait } from '@/arkzen/generated/components/queue-flow/utils'
 import type { QueueStatus } from '@/arkzen/generated/components/queue-flow/types'
-import { Users, Clock, CheckCircle, SkipForward, Volume2, Loader2, ArrowRight, Pause, Calendar } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { fmtWait } from '@/arkzen/generated/components/queue-flow/utils'
+import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 
 // Page component code (from @arkzen:page:admin)
 const AdminPage = () => {

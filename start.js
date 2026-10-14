@@ -1,16 +1,17 @@
 #!/usr/bin/env node
 
 // ============================================================
-// ARKZEN ENGINE — START SCRIPT
-// Starts the Arkzen Engine (frontend + backend + queue worker + reverb)
+// PLUFF — START SCRIPT
+// Starts Pluff (frontend + backend + queue worker + reverb)
 // Usage: node start.js
 // ============================================================
 
-const { spawn } = require('child_process')
-const path = require('path')
-const fs = require('fs')
+import { execSync, spawn } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
-const ROOT_DIR   = __dirname
+const ROOT_DIR   = path.dirname(fileURLToPath(import.meta.url))
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
 const STACKS_DIR = path.join(ENGINE_DIR, 'frontend')
 
@@ -26,8 +27,22 @@ const BACKEND_DIR = activeStack === 'react-inertia'
   ? INERTIA_BACKEND_DIR
   : path.join(ENGINE_DIR, 'backend', 'laravel')
 
-const WEB_DIR = path.join(STACKS_DIR, activeStack)
+const isTauri = activeStack === 'tauri'
+const WEB_DIR = path.join(STACKS_DIR, isTauri ? 'react-vite' : activeStack)
+const TAURI_DIR = path.join(STACKS_DIR, 'tauri')
 const APP_DIR = path.join(STACKS_DIR, activeAppStack)
+
+function spawnCli(command, args, options) {
+  if (process.platform === 'win32' && (command === 'npm' || command === 'npx')) {
+    return spawn(process.env.ComSpec || 'cmd.exe', [
+      '/d',
+      '/s',
+      '/c',
+      `${command}.cmd ${args.join(' ')}`,
+    ], options)
+  }
+  return spawn(command, args, options)
+}
 
 function log(src, msg) {
   let prefix = ''
@@ -47,7 +62,12 @@ function checkSetup() {
   }
 
   if (!fs.existsSync(path.join(WEB_DIR, 'node_modules'))) {
-    console.log(`\n  ✗ Web stack packages not installed (${activeStack}). Run: node setup.js\n`)
+    console.log(`\n  ✗ Web stack packages not installed (${isTauri ? 'react-vite renderer' : activeStack}). Run: node setup.js\n`)
+    process.exit(1)
+  }
+
+  if (isTauri && !fs.existsSync(path.join(TAURI_DIR, 'node_modules'))) {
+    console.log('\n  ✗ Tauri packages not installed. Run: node setup.js\n')
     process.exit(1)
   }
 
@@ -158,10 +178,21 @@ function pipeLog(src, tag, proc) {
 }
 
 function startWebStack() {
+  if (isTauri) {
+    log('frontend', 'Starting Tauri desktop app with the React+Vite renderer')
+    const tauri = spawnCli('npm', ['run', 'dev'], {
+      cwd: TAURI_DIR,
+      stdio: 'pipe',
+      env: { ...process.env, FORCE_COLOR: '1' },
+    })
+    pipeLog('frontend', '[Tauri]', tauri)
+    return tauri
+  }
+
   // ── REACT-INERTIA ─────────────────────────────────────────
   if (activeStack === 'react-inertia') {
     log('frontend', 'Starting Inertia Vite (laravel-inertia) on http://localhost:5173')
-    const vite = spawn('npm', ['run', 'dev'], {
+    const vite = spawnCli('npm', ['run', 'dev'], {
       cwd: BACKEND_DIR,
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
@@ -169,7 +200,7 @@ function startWebStack() {
     pipeLog('frontend', '[Vite]', vite)
 
     log('frontend', 'Starting Inertia builder watcher')
-    const watcher = spawn('npm', ['run', 'watch'], {
+    const watcher = spawnCli('npm', ['run', 'watch'], {
       cwd: WEB_DIR,
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
@@ -182,7 +213,7 @@ function startWebStack() {
   // ── ASTRO ─────────────────────────────────────────────────
   if (activeStack === 'astro') {
     log('frontend', 'Starting Astro on http://localhost:3000')
-    const astro = spawn('npm', ['run', 'dev'], {
+    const astro = spawnCli('npm', ['run', 'dev'], {
       cwd: WEB_DIR,
       stdio: 'pipe',
       env: { ...process.env, FORCE_COLOR: '1' },
@@ -193,7 +224,7 @@ function startWebStack() {
 
   // ── ALL OTHER WEB STACKS (nextjs, react-vite, tanstack-start) ─
   log('frontend', `Starting ${activeStack} on http://localhost:3000`)
-  const proc = spawn('npm', ['run', 'dev'], {
+  const proc = spawnCli('npm', ['run', 'dev'], {
     cwd: WEB_DIR,
     stdio: 'pipe',
     env: { ...process.env, FORCE_COLOR: '1' },
@@ -206,7 +237,7 @@ function startAppStack() {
   // Process 1: sync shared core + start arkzen watcher
   // (dev script = "npm run sync:shared && npm run arkzen")
   log('app', `Starting ${activeAppStack} dev (sync + watcher)`)
-  const watcher = spawn('npm', ['run', 'dev'], {
+  const watcher = spawnCli('npm', ['run', 'dev'], {
     cwd: APP_DIR,
     stdio: 'pipe',
     env: { ...process.env, FORCE_COLOR: '1' },
@@ -238,7 +269,7 @@ function startAppStack() {
   }
 
   log('app', `Starting ${activeAppStack} (${bundlerLabel})`)
-  const bundler = spawn('npx', bundlerArgs, {
+  const bundler = spawnCli('npx', bundlerArgs, {
     cwd: APP_DIR,
     stdio: 'pipe',
     env: bundlerEnv,
@@ -251,14 +282,14 @@ function startAppStack() {
 // ── BOOT ──────────────────────────────────────────────────────
 
 console.log('\n╔════════════════════════════════════════╗')
-console.log('║         ARKZEN ENGINE STARTING         ║')
+console.log('║            PLUFF STARTING              ║')
 console.log('╚════════════════════════════════════════╝\n')
 
 checkSetup()
 
 // Storage symlink
 try {
-  require('child_process').execSync('php artisan storage:link --force', {
+  execSync('php artisan storage:link --force', {
     cwd: BACKEND_DIR,
     stdio: 'pipe'
   })
@@ -284,7 +315,7 @@ if (hasAppStack) {
 
 // ── SHUTDOWN ──────────────────────────────────────────────────
 process.on('SIGINT', () => {
-  console.log('\n\n  Shutting down Arkzen Engine...')
+  console.log('\n\n  Shutting down Pluff...')
   ;[backend, queue, reverb, web, app].flat().filter(Boolean).forEach(p => p?.kill())
   process.exit(0)
 })
@@ -292,6 +323,10 @@ process.on('SIGINT', () => {
 // ── FOOTER ────────────────────────────────────────────────────
 console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
 console.log(`  Web stack:        ${activeStack}  → engine/frontend/${activeStack}/`)
+if (isTauri) {
+  console.log('  Renderer:         react-vite  → engine/frontend/react-vite/')
+  console.log('  Desktop:          Tauri window')
+}
 if (hasAppStack) {
   console.log(`  App stack:        ${activeAppStack}  → engine/frontend/${activeAppStack}/`)
 }

@@ -2,22 +2,20 @@
 // ARKZEN GENERATED COMPONENT — RapierSection [React+Vite]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:03.318Z
+// Generated: 2026-10-13T14:10:34.592Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { VisualLabColors } from './visual-lab.scripts'
+import { VisualLabColors } from '@/arkzen/generated/visual-lab.scripts'
 import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
 import { useVisualLabStore } from './hooks'
-import { ball, balls, canvas, canvasRef, colors, config, ctx, engine, gravity, groundBody, rafRef, rb, render, t, toScreen, wallL, wallR, world } from './utils'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
-// ─── SECTION: RAPIER ─────────────────────────────────────────────────────────
 export const RapierSection = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef = useRef<number>(0)
@@ -112,6 +110,4 @@ export const RapierSection = () => {
       </DemoCard>
     </div>
   )
-}
-
-// ─── SECTION: PARTICLES + PROTON ─────────────────────────────────────────────
+};

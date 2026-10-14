@@ -10,9 +10,9 @@ import { Image } from 'expo-image'
 import * as ImagePicker from 'expo-image-picker'
 import { useRouter } from 'expo-router'
 import * as Sharing from 'expo-sharing'
-import { StatusBar } from 'expo-status-bar'
 import { ActivityIndicator, Alert, Dimensions, Modal, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
+import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
 import { FileMime } from './components/FileMime'
 import { ImageViewerModal } from './components/ImageViewerModal'
 import { BACKEND_URL } from './components/constants'
@@ -250,7 +250,7 @@ export function ArkzenScreen_UploadTest_Dashboard() {
   const router = useRouter()
   return (
     <SafeAreaView className="flex-1 bg-neutral-50">
-      <StatusBar style="dark" />
+      <ArkzenStatusBar style="dark" />
       
       <ScrollView
         className="flex-1"

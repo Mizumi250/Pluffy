@@ -2,20 +2,19 @@
 // ARKZEN GENERATED PAGE — errors-test/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:19.602Z
+// Generated: 2026-10-13T17:05:20.565Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { ErrorScreen } from './components/ErrorScreen'
 import { ERRORS } from './components/constants'
-import { err } from './components/utils'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { useToast } from '@/arkzen/core/components/Toast'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 
 // Props passed from Laravel via Inertia::render()
 export type ErrorsTestIndexProps = {
@@ -151,7 +150,7 @@ function ArkzenPage_ErrorsTest_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -166,7 +165,11 @@ function ArkzenPage_ErrorsTest_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_ErrorsTest_Index

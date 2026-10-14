@@ -1598,7 +1598,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import React from 'react'
 
-const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   gsap.registerPlugin(ScrollTrigger)
   const ctx = gsap.context(() => {
     gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
@@ -3336,7 +3336,7 @@ const Chapter = ({
 // ─────────────────────────────────────────────────────────────────────────────
 
 /* @arkzen:native:animation:rn */
-import Animated as RAnimated, {
+import { default as RAnimated,
   useSharedValue,
   useAnimatedStyle,
   withRepeat,
@@ -3475,7 +3475,7 @@ const IndexScreenExpo = () => {
             </View>
           </FadeIn>
 
-          <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
+          <Text style={s.heroWatermark} aria-hidden={true}>SHAN</Text>
         </View>
 
         {/* INTRO */}
@@ -3756,7 +3756,7 @@ const IndexScreenRN = () => {
             </View>
           </FadeIn>
 
-          <Text style={s.heroWatermark} aria-hidden="true">SHAN</Text>
+          <Text style={s.heroWatermark} aria-hidden={true}>SHAN</Text>
         </View>
 
         <View style={s.introWrap}>

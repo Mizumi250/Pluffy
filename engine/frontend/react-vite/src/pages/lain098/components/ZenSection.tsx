@@ -2,16 +2,13 @@
 // ARKZEN GENERATED COMPONENT — ZenSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.314Z
+// Generated: 2026-10-13T14:10:33.286Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { ref, y } from './utils'
-
-// ─── ZEN TYPOGRAPHY SECTION ──────────────────────────────────
 
 export const ZenSection = () => {
   const ref = useRef<HTMLDivElement>(null)
@@ -52,6 +49,4 @@ export const ZenSection = () => {
       </div>
     </section>
   )
-}
-
-// ─── BLUE GRID SCRAPBOOK SECTION ────────────────────────────
+};

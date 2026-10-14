@@ -12,8 +12,8 @@ export interface ArkzenExpoRoute {
 }
 
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
-// ROUTE:shan-shan:index:/shan-shan:guest:false
-  { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'guest', auth: false },
+// ROUTE:animation-lab:index:/animation-lab:default:false
+  { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
 // ROUTE:asset-hub:index:/asset-hub:default:false
   { tatName: 'asset-hub', screenName: 'index', routePath: '/asset-hub', layout: 'default', auth: false },
 // ROUTE:atelier:index:/atelier:default:false
@@ -110,6 +110,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'notification-test', screenName: 'index', routePath: '/notification-test', layout: 'guest', auth: false },
 // ROUTE:portfolio-test:index:/portfolio-test:guest:false
   { tatName: 'portfolio-test', screenName: 'index', routePath: '/portfolio-test', layout: 'guest', auth: false },
+// ROUTE:queue-flow:index:/queue-flow:default:false
+  { tatName: 'queue-flow', screenName: 'index', routePath: '/queue-flow', layout: 'default', auth: false },
+// ROUTE:queue-flow:join:/queue-flow/join:default:false
+  { tatName: 'queue-flow', screenName: 'join', routePath: '/queue-flow/join', layout: 'default', auth: false },
+// ROUTE:queue-flow:admin:/queue-flow/admin:default:false
+  { tatName: 'queue-flow', screenName: 'admin', routePath: '/queue-flow/admin', layout: 'default', auth: false },
 // ROUTE:roles-test:login:/roles-test/login:guest:false
   { tatName: 'roles-test', screenName: 'login', routePath: '/roles-test/login', layout: 'guest', auth: false },
 // ROUTE:roles-test:register:/roles-test/register:guest:false
@@ -122,6 +128,8 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'scheduler-test', screenName: 'dashboard', routePath: '/scheduler-test/dashboard', layout: 'default', auth: false },
 // ROUTE:scheduler-test:index:/scheduler-test:default:false
   { tatName: 'scheduler-test', screenName: 'index', routePath: '/scheduler-test', layout: 'default', auth: false },
+// ROUTE:shan-shan:index:/shan-shan:default:false
+  { tatName: 'shan-shan', screenName: 'index', routePath: '/shan-shan', layout: 'default', auth: false },
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:default:false
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false

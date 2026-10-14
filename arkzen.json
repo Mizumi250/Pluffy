@@ -6,7 +6,7 @@
       "name": "auth-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/auth-test/core.tsx",
+      "filePath": "tatemonos/auth-test/core.tsx",
       "pages": [
         "login",
         "register",
@@ -20,7 +20,7 @@
       "name": "barbershop-booking",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/barbershop-booking/core.tsx",
+      "filePath": "tatemonos/barbershop-booking/core.tsx",
       "pages": [
         "index"
       ],
@@ -32,7 +32,7 @@
       "name": "body-endpoint-handler",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-endpoint-handler/core.tsx",
+      "filePath": "tatemonos/body-endpoint-handler/core.tsx",
       "pages": [
         "index"
       ],
@@ -44,7 +44,7 @@
       "name": "body-mail-notification",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-mail-notification/core.tsx",
+      "filePath": "tatemonos/body-mail-notification/core.tsx",
       "pages": [
         "login",
         "register",
@@ -58,7 +58,7 @@
       "name": "broadcast-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/broadcast-test/core.tsx",
+      "filePath": "tatemonos/broadcast-test/core.tsx",
       "pages": [
         "login",
         "register",
@@ -72,7 +72,7 @@
       "name": "crud-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/crud-test/core.tsx",
+      "filePath": "tatemonos/crud-test/core.tsx",
       "pages": [
         "index"
       ],
@@ -84,7 +84,7 @@
       "name": "dtr-geofencing",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/dtr-geofencing/core.tsx",
+      "filePath": "tatemonos/dtr-geofencing/core.tsx",
       "pages": [
         "index",
         "admin"
@@ -97,7 +97,7 @@
       "name": "errors-test",
       "version": "1.2.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/errors-test/core.tsx",
+      "filePath": "tatemonos/errors-test/core.tsx",
       "pages": [
         "index"
       ],
@@ -109,7 +109,7 @@
       "name": "events-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/events-test/core.tsx",
+      "filePath": "tatemonos/events-test/core.tsx",
       "pages": [
         "index"
       ],
@@ -121,7 +121,7 @@
       "name": "inventory-management",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/inventory-management/core.tsx",
+      "filePath": "tatemonos/inventory-management/core.tsx",
       "pages": [
         "index"
       ],
@@ -133,7 +133,7 @@
       "name": "jo-payroll",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/jo-payroll/core.tsx",
+      "filePath": "tatemonos/jo-payroll/core.tsx",
       "pages": [
         "index",
         "job-database",
@@ -151,7 +151,7 @@
       "name": "job-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/job-test/core.tsx",
+      "filePath": "tatemonos/job-test/core.tsx",
       "pages": [
         "dashboard"
       ],
@@ -163,7 +163,7 @@
       "name": "mail-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/mail-test/core.tsx",
+      "filePath": "tatemonos/mail-test/core.tsx",
       "pages": [
         "login",
         "register",
@@ -177,7 +177,7 @@
       "name": "middleware-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/middleware-test/core.tsx",
+      "filePath": "tatemonos/middleware-test/core.tsx",
       "pages": [
         "index"
       ],
@@ -189,7 +189,7 @@
       "name": "new-updates-styles",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/new-updates-styles/core.tsx",
+      "filePath": "tatemonos/new-updates-styles/core.tsx",
       "pages": [
         "index",
         "about",
@@ -203,7 +203,7 @@
       "name": "notification-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/notification-test/core.tsx",
+      "filePath": "tatemonos/notification-test/core.tsx",
       "pages": [
         "login",
         "register",
@@ -217,7 +217,7 @@
       "name": "portfolio-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/portfolio-test/core.tsx",
+      "filePath": "tatemonos/portfolio-test/core.tsx",
       "pages": [
         "index"
       ],
@@ -229,7 +229,7 @@
       "name": "queue-flow",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/queue-flow/core.tsx",
+      "filePath": "tatemonos/queue-flow/core.tsx",
       "pages": [
         "index",
         "join",
@@ -243,7 +243,7 @@
       "name": "roles-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/roles-test/core.tsx",
+      "filePath": "tatemonos/roles-test/core.tsx",
       "pages": [
         "login",
         "register",
@@ -257,19 +257,19 @@
       "name": "scheduler-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/scheduler-test/core.tsx",
+      "filePath": "tatemonos/scheduler-test/core.tsx",
       "pages": [
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.447Z",
-      "lastUpdated": "2026-06-26T07:09:02.325Z",
+      "lastUpdated": "2026-10-09T07:54:06.686Z",
       "auth": false
     },
     {
       "name": "upload-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
+      "filePath": "tatemonos/upload-test/core.tsx",
       "pages": [
         "dashboard"
       ],
@@ -281,19 +281,19 @@
       "name": "animation-lab",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/animation-lab/core.tsx",
+      "filePath": "tatemonos/animation-lab/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-05-15T01:38:01.134Z",
-      "lastUpdated": "2026-06-16T14:29:21.364Z",
+      "lastUpdated": "2026-10-09T07:54:05.900Z",
       "auth": false
     },
     {
       "name": "asset-hub",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/asset-hub/core.tsx",
+      "filePath": "tatemonos/asset-hub/core.tsx",
       "pages": [
         "index"
       ],
@@ -305,19 +305,19 @@
       "name": "visual-lab",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/visual-lab/core.tsx",
+      "filePath": "tatemonos/visual-lab/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-05-23T08:37:02.596Z",
-      "lastUpdated": "2026-06-26T07:09:03.374Z",
+      "lastUpdated": "2026-10-09T07:56:28.551Z",
       "auth": false
     },
     {
       "name": "shan-shan",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/shan-shan/core.tsx",
+      "filePath": "tatemonos/shan-shan/core.tsx",
       "pages": [
         "index"
       ],
@@ -329,7 +329,7 @@
       "name": "hello-native",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hello-native/core.tsx",
+      "filePath": "tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-06-04T00:45:44.271Z",
       "lastUpdated": "2026-06-26T07:08:58.458Z",
@@ -339,7 +339,7 @@
       "name": "layout-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/layout-test/core.tsx",
+      "filePath": "tatemonos/layout-test/core.tsx",
       "pages": [
         "index",
         "panel",
@@ -357,7 +357,7 @@
       "name": "hw-coffee",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hw-coffee/core.tsx",
+      "filePath": "tatemonos/hw-coffee/core.tsx",
       "pages": [
         "index"
       ],
@@ -369,7 +369,7 @@
       "name": "cafe-teresita",
       "version": "3.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/cafe-teresita/core.tsx",
+      "filePath": "tatemonos/cafe-teresita/core.tsx",
       "pages": [
         "index"
       ],
@@ -381,7 +381,7 @@
       "name": "atelier",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/atelier/core.tsx",
+      "filePath": "tatemonos/atelier/core.tsx",
       "pages": [
         "index"
       ],
@@ -393,7 +393,7 @@
       "name": "ethan-pool",
       "version": "1.0.1",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/ethan-pool/core.tsx",
+      "filePath": "tatemonos/ethan-pool/core.tsx",
       "pages": [
         "index"
       ],
@@ -405,7 +405,7 @@
       "name": "ethereane",
       "version": "2.0.2",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/ethereane/core.tsx",
+      "filePath": "tatemonos/ethereane/core.tsx",
       "pages": [
         "index"
       ],
@@ -417,32 +417,32 @@
       "name": "shikaku",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/shikaku/core.tsx",
+      "filePath": "tatemonos/shikaku/core.tsx",
       "pages": [
         "index",
         "editor"
       ],
       "registered": "2026-06-22T11:43:30.168Z",
-      "lastUpdated": "2026-06-26T07:09:03.034Z",
+      "lastUpdated": "2026-10-09T07:54:07.720Z",
       "auth": true
     },
     {
       "name": "lain098",
       "version": "4.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/lain098/core.tsx",
+      "filePath": "tatemonos/lain098/core.tsx",
       "pages": [
         "index"
       ],
       "registered": "2026-06-25T01:16:58.270Z",
-      "lastUpdated": "2026-06-26T07:08:59.345Z",
+      "lastUpdated": "2026-10-09T07:54:06.277Z",
       "auth": false
     },
     {
       "name": "coveo",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/lain098/core.tsx",
+      "filePath": "tatemonos/coveo/core.tsx",
       "pages": [
         "index"
       ],
@@ -454,7 +454,7 @@
       "name": "lain",
       "version": "4.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/lain098/core.tsx",
+      "filePath": "tatemonos/lain/core.tsx",
       "pages": [
         "index"
       ],
@@ -463,14 +463,15 @@
       "auth": false
     }
   ],
-  "activeStack": "react-vite",
-  "activeAppStack": "expo",
+  "activeStack": "nextjs",
+  "activeAppStack": null,
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",
     "react-inertia": "engine/frontend/react-inertia",
     "astro": "engine/frontend/astro",
     "tanstack-start": "engine/frontend/tanstack-start",
+    "tauri": "engine/frontend/tauri",
     "expo": "engine/frontend/expo",
     "react-native": "engine/frontend/react-native",
     "lynx": "engine/frontend/lynx"

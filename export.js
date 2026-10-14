@@ -24,11 +24,12 @@
 // Output: projects/<tatemono-name>/
 // ============================================================
 
-const { execSync, spawnSync } = require('child_process')
-const fs   = require('fs')
-const path = require('path')
+import { execSync, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
 
-const ROOT_DIR   = __dirname
+const ROOT_DIR   = path.dirname(fileURLToPath(import.meta.url))
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
 
 // Read active stack from arkzen.json — overridable via --stack=<name>
@@ -42,10 +43,11 @@ const activeStack = stackFlag
 
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
-const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native'
+const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
+const isTauri   = activeStack === 'tauri'
 
 // Paths — backend is stack-aware
-const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', activeStack)
+const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isTauri ? 'react-vite' : activeStack)
 const BACKEND_DIR   = isInertia
   ? path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
   : path.join(ENGINE_DIR, 'backend', 'laravel')
@@ -124,6 +126,7 @@ console.log(`  Realtime: ${hasRealtime}`)
 console.log(`  Jobs:     ${hasJobs}`)
 if (isInertia) console.log(`  Mode:     Inertia monolith — backend IS the project (no frontend/ folder)`)
 if (isNative)  console.log(`  Mode:     React Native (frontend only, no backend)`)
+if (isTauri)   console.log(`  Mode:     Tauri desktop — React+Vite renderer`)
 
 // ─────────────────────────────────────────────
 // CLEAN OUTPUT DIRECTORY
@@ -150,6 +153,7 @@ log(`Triggering engine build for ${tatName}...`)
 const BUILDER_MAP = {
   'nextjs':        { file: './arkzen/core/builder',        fn: 'buildTatemono'        },
   'react-vite':    { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
+  'tauri':         { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
   'react-inertia': { file: './arkzen/core/inertia-builder',fn: 'buildInertiaTatemono' },
   'astro':         { file: './arkzen/core/astro-builder',  fn: 'buildAstroTatemono'   },
   'tanstack-start':{ file: './arkzen/core/tanstack-builder',fn:'buildTanstackTatemono'},
@@ -171,8 +175,8 @@ ${builderEntry.fn}(${JSON.stringify(tatPath)})
 const tmpScript = path.join(FRONTEND_DIR, '__export_build_tmp.ts')
 fs.writeFileSync(tmpScript, buildScript)
 
-const tsxBin = path.join(FRONTEND_DIR, 'node_modules', '.bin', 'tsx')
-const buildResult = spawnSync(tsxBin, [tmpScript], {
+const tsxCli = path.join(FRONTEND_DIR, 'node_modules', 'tsx', 'dist', 'cli.mjs')
+const buildResult = spawnSync(process.execPath, [tsxCli, tmpScript], {
   cwd:     FRONTEND_DIR,
   stdio:   'pipe',
   env:     { ...process.env, ARKZEN_BACKEND_URL: 'http://localhost:8000', ARKZEN_ENGINE_SECRET: 'arkzen-engine-secret' },
@@ -351,6 +355,29 @@ if (isInertia) {
   })
   success('Frontend base copied')
 
+  if (isTauri) {
+    const engineTauriDir = path.join(ENGINE_DIR, 'frontend', 'tauri', 'src-tauri')
+    const projectTauriDir = path.join(PROJ_FRONT, 'src-tauri')
+    fs.cpSync(engineTauriDir, projectTauriDir, { recursive: true })
+
+    const configPath = path.join(projectTauriDir, 'tauri.conf.json')
+    const tauriConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    tauriConfig.productName = tatName
+    tauriConfig.identifier = `com.pluff.${tatName.replace(/[^A-Za-z0-9.-]/g, '-')}`
+    tauriConfig.build = {
+      ...tauriConfig.build,
+      beforeDevCommand: { script: 'npm run dev', cwd: '..', wait: false },
+      devUrl: 'http://localhost:3001',
+      beforeBuildCommand: { script: 'npm run build', cwd: '..' },
+      frontendDist: '../dist',
+    }
+    if (tauriConfig.app?.windows?.[0]) {
+      tauriConfig.app.windows[0].title = tatName
+    }
+    fs.writeFileSync(configPath, JSON.stringify(tauriConfig, null, 2))
+    success('Tauri shell copied and configured for this exported Tatemono')
+  }
+
   // ── Regenerate src/arkzen/generated/routes.ts for this tatemono only
   // Parse the engine's routes.ts to extract only this tatemono's ROUTE entries,
   // then regenerate the file from scratch — no other tatemono imports, no
@@ -464,7 +491,7 @@ if (isInertia) {
 
 
   // node_modules — copy as-is (Native: skip, Expo manages its own deps)
-  if (!isNative) {
+  if (!isNative && !isTauri) {
     log('Copying node_modules...')
     fs.cpSync(
       path.join(FRONTEND_DIR, 'node_modules'),
@@ -472,6 +499,8 @@ if (isInertia) {
       { recursive: true }
     )
     success('Frontend node_modules copied')
+  } else if (isTauri) {
+    skip('node_modules (Tauri export — run npm install in frontend)')
   } else {
     skip('node_modules (Native — run: npm install inside exported project)')
   }
@@ -500,7 +529,7 @@ if (isInertia) {
   }
 
   // Patch vite.config.ts alias to point at local copy instead of ../../../shared
-  if (activeStack === 'react-vite' || activeStack === 'tanstack-start') {
+  if (activeStack === 'react-vite' || activeStack === 'tanstack-start' || isTauri) {
     const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
     if (fs.existsSync(vcPath)) {
       let vc = fs.readFileSync(vcPath, 'utf-8')
@@ -861,7 +890,7 @@ const nextConfig = {
     ]
   },
 }
-module.exports = nextConfig
+export default nextConfig
 `)
   success('next.config.js (proxy → localhost:8001)')
 
@@ -889,7 +918,7 @@ module.exports = nextConfig
     success('.env.local (Reverb config)')
   }
 
-} else if (activeStack === 'react-vite') {
+} else if (activeStack === 'react-vite' || isTauri) {
 
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
   if (fs.existsSync(pkgPath)) {
@@ -899,6 +928,14 @@ module.exports = nextConfig
       dev:     'vite --port 3001',
       build:   'vite build',
       preview: 'vite preview --port 3001',
+    }
+    if (isTauri) {
+      pkg.scripts['tauri:dev'] = 'tauri dev'
+      pkg.scripts['tauri:build'] = 'tauri build'
+      pkg.devDependencies = {
+        ...pkg.devDependencies,
+        '@tauri-apps/cli': '^2.5.0',
+      }
     }
     fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2))
     success('package.json (name + scripts updated)')
@@ -1251,15 +1288,20 @@ if (!isNative && hasBackend) {
 log('Writing start.js...')
 
 const startLines = [
-  `const { spawn } = require('child_process')`,
-  `const path      = require('path')`,
+  `import { spawn } from 'node:child_process'`,
+  `import path from 'node:path'`,
+  `import { fileURLToPath } from 'node:url'`,
+  `const __dirname = path.dirname(fileURLToPath(import.meta.url))`,
   !isInertia && !isNative ? `const FRONT = path.join(__dirname, 'frontend')` : null,
   hasBackend && !isInertia ? `const BACK  = path.join(__dirname, 'backend')` : null,
   ``,
   `function run(label, cmd, args, cwd, color) {`,
   `  const colors = { frontend:'\\x1b[36m', backend:'\\x1b[35m', queue:'\\x1b[33m', reverb:'\\x1b[34m' }`,
   `  const c = colors[color] || '', r = '\\x1b[0m'`,
-  `  const p = spawn(cmd, args, { cwd, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '1' } })`,
+  `  const windowsScript = process.platform === 'win32' && (cmd === 'npm' || cmd === 'npx')`,
+  `  const executable = windowsScript ? (process.env.ComSpec || 'cmd.exe') : cmd`,
+  `  const commandArgs = windowsScript ? ['/d', '/s', '/c', cmd + '.cmd ' + args.map(arg => JSON.stringify(arg)).join(' ')] : args`,
+  `  const p = spawn(executable, commandArgs, { cwd, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '1' } })`,
   `  const out = d => String(d).trim().split('\\n').forEach(l => l && console.log(\`\${c}[\${label}]\${r} \${l}\`))`,
   `  p.stdout?.on('data', out)`,
   `  p.stderr?.on('data', out)`,
@@ -1272,7 +1314,8 @@ const startLines = [
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
   hasBackend && hasRealtime ? `console.log('  Reverb:   ws://localhost:8081')` : null,
-  !isInertia && !isNative ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
+  isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
+  !isInertia && !isNative && !isTauri ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
   isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
   ``,
   // Backend process
@@ -1294,7 +1337,9 @@ const startLines = [
     ? `const frontend = run('frontend', 'npx', ['react-native', 'start'], __dirname, 'frontend')` : null,
   isNative && activeStack !== 'react-native'
     ? `const frontend = run('frontend', 'npx', ['expo', 'start'], __dirname, 'frontend')` : null,
-  !isInertia && !isNative
+  isTauri
+    ? `const frontend = run('desktop', 'npm', ['run', 'tauri:dev'], FRONT, 'frontend')` : null,
+  !isInertia && !isNative && !isTauri
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
   ``,
   `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs ? ' queue,' : ''}${hasBackend && hasRealtime ? ' reverb,' : ''} frontend].filter(Boolean)`,
@@ -1308,6 +1353,14 @@ const startLines = [
 fs.writeFileSync(path.join(PROJECT_DIR, 'start.js'), startLines)
 success('start.js')
 
+const projectPackagePath = path.join(PROJECT_DIR, 'package.json')
+const projectPackage = fs.existsSync(projectPackagePath)
+  ? JSON.parse(fs.readFileSync(projectPackagePath, 'utf-8'))
+  : { private: true }
+projectPackage.type = 'module'
+fs.writeFileSync(projectPackagePath, JSON.stringify(projectPackage, null, 2))
+success('package.json (ES module project scripts)')
+
 // ─────────────────────────────────────────────
 // STEP 15 — SITEMAP GENERATION
 // ─────────────────────────────────────────────
@@ -1318,8 +1371,7 @@ try {
     : path.join(PROJ_FRONT, 'arkzen', 'core', 'sitemap.ts')
 
   if (fs.existsSync(sitemapPath)) {
-    delete require.cache[require.resolve(sitemapPath)]
-    const sitemapModule = require(sitemapPath)
+    const sitemapModule = await import(pathToFileURL(sitemapPath).href)
     if (sitemapModule.writeSitemap) {
       const publicDir = isInertia
         ? path.join(PROJECT_DIR, 'public')
@@ -1343,11 +1395,14 @@ const inertiaNote = isInertia
 const nativeNote = isNative
   ? `\n> **React Native stack:** No backend in this export. Run \`npm install\` then \`npx expo start\`.\n`
   : ''
+const tauriNote = isTauri
+  ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
+  : ''
 
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
 
 Generated by Arkzen export.js v10.
-${inertiaNote}${nativeNote}
+${inertiaNote}${nativeNote}${tauriNote}
 ## Start
 
 \`\`\`bash
@@ -1355,7 +1410,7 @@ node start.js
 \`\`\`
 
 | Service  | URL                                          |
-|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${!isInertia && !isNative ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime ? '\n| Reverb   | ws://localhost:8081                          |' : ''}
+|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime ? '\n| Reverb   | ws://localhost:8081                          |' : ''}
 ${hasBackend && !isInertia ? `
 ## Manual backend setup (if needed)
 

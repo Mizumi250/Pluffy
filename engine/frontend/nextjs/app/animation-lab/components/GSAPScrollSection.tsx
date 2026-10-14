@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:40.255Z
+// Generated: 2026-10-09T13:50:32.795Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
-import { ctx, hTrack, i, opacity, ref, scale, sectionRef, y } from './utils'
+import type { AnimLabState } from './types'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
@@ -23,7 +23,6 @@ export const GSAPScrollSection = () => {
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
     const ctx = gsap.context(() => {
-      // Fade + slide on scroll
       gsap.fromTo('.scroll-fade-item',
         { opacity: 0, y: 50 },
         {
@@ -31,7 +30,6 @@ export const GSAPScrollSection = () => {
           scrollTrigger: { trigger: '.scroll-fade-group', start: 'top 85%', toggleActions: 'play none none reset' }
         }
       )
-      // Scrub (parallax)
       gsap.to('.scroll-parallax-bg', {
         yPercent: -30,
         ease: 'none',
@@ -42,7 +40,6 @@ export const GSAPScrollSection = () => {
           scrub: true,
         }
       })
-      // Pin + reveal
       gsap.fromTo('.scroll-pin-text',
         { opacity: 0, letterSpacing: '0.5em' },
         {
@@ -54,7 +51,6 @@ export const GSAPScrollSection = () => {
           }
         }
       )
-      // Scale on scroll
       gsap.fromTo('.scroll-scale-card',
         { scale: 0.6, opacity: 0 },
         {
@@ -62,7 +58,6 @@ export const GSAPScrollSection = () => {
           scrollTrigger: { trigger: '.scroll-scale-group', start: 'top 80%', toggleActions: 'play none none reset' }
         }
       )
-      // Horizontal scrub
       const hTrack = document.querySelector('.scroll-h-track')
       if (hTrack) {
         gsap.to('.scroll-h-inner', {
@@ -88,8 +83,6 @@ export const GSAPScrollSection = () => {
         subtitle="Scroll-driven animations — scrub, pin, stagger reveal, parallax"
         color="#10b981"
       />
-
-      {/* Fade stagger group */}
       <DemoCard title="Scroll Stagger Reveal" description="Elements fade in staggered as they enter viewport">
         <div className="scroll-fade-group" style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
           {['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'].map(w => (
@@ -97,8 +90,6 @@ export const GSAPScrollSection = () => {
           ))}
         </div>
       </DemoCard>
-
-      {/* Parallax */}
       <DemoCard title="Parallax Scrub" description="Background moves at different speed (scrub:true)">
         <div className="scroll-parallax-wrap" style={{ height: 120, overflow: 'hidden', borderRadius: 12, position: 'relative' }}>
           <div className="scroll-parallax-bg" style={{
@@ -110,8 +101,6 @@ export const GSAPScrollSection = () => {
           </div>
         </div>
       </DemoCard>
-
-      {/* Letter spacing reveal */}
       <DemoCard title="Letter Spacing Reveal" description="Text compresses into view on scroll">
         <div className="scroll-pin-wrap" style={{ padding: '24px 0', display: 'flex', justifyContent: 'center' }}>
           <h3 className="scroll-pin-text" style={{ fontSize: 28, fontWeight: 900, color: '#10b981', letterSpacing: '0.5em' }}>
@@ -119,8 +108,6 @@ export const GSAPScrollSection = () => {
           </h3>
         </div>
       </DemoCard>
-
-      {/* Scale group */}
       <DemoCard title="Scale Entrance on Scroll" description="Cards scale + fade in as they enter viewport">
         <div className="scroll-scale-group" style={{ display: 'flex', gap: 10, justifyContent: 'center', flexWrap: 'wrap' }}>
           {['Card 1', 'Card 2', 'Card 3'].map(c => (
@@ -133,8 +120,6 @@ export const GSAPScrollSection = () => {
           ))}
         </div>
       </DemoCard>
-
-      {/* Horizontal scrub */}
       <DemoCard title="Horizontal Scroll (Scrub)" description="Scrubs horizontal slide as user scrolls vertically">
         <div className="scroll-h-track" style={{ overflow: 'hidden', borderRadius: 10 }}>
           <div className="scroll-h-inner" style={{ display: 'flex', gap: 12, width: 'max-content' }}>

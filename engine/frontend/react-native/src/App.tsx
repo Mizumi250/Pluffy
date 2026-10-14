@@ -27,10 +27,10 @@ import { NavigationContainer, NavigationContainerRef } from '@react-navigation/n
 import { createNativeStackNavigator } from '@react-navigation/native-stack'
 import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
-import AsyncStorage from '@react-native-async-storage/async-storage'
 
 import { ARKZEN_NATIVE_ROUTES } from './arkzen/generated/routes'
 import type { ArkzenRootStackParamList } from './arkzen/generated/routes'
+import { getTokenForSlug } from '../arkzen/core/stores/authStore'
 
 const Stack = createNativeStackNavigator<ArkzenRootStackParamList>()
 
@@ -40,22 +40,23 @@ const Stack = createNativeStackNavigator<ArkzenRootStackParamList>()
 // If it does and no token exists for that tatemono, navigate to the tatemono's
 // login screen. Mirrors how Expo's AuthLayout works but at the navigator level.
 
-function useAuthGuard(navRef: React.RefObject<NavigationContainerRef<ArkzenRootStackParamList>>) {
+function useAuthGuard(
+  navRef: React.RefObject<NavigationContainerRef<ArkzenRootStackParamList> | null>,
+) {
   const handleNavigate = async (routeName: string | undefined) => {
     if (!routeName) return
 
     const route = ARKZEN_NATIVE_ROUTES.find(r => r.name === routeName)
     if (!route?.auth) return
 
-    const tokenKey = `arkzen-token-${route.tatemono}`
-    const token    = await AsyncStorage.getItem(tokenKey)
+    const token = await getTokenForSlug(route.tatemono)
     if (!token && navRef.current) {
       // Resolve the login route for this tatemono
       const loginRoute = ARKZEN_NATIVE_ROUTES.find(
         r => r.tatemono === route.tatemono && r.screenName === 'login'
       )
       if (loginRoute) {
-        navRef.current.navigate(loginRoute.name as keyof ArkzenRootStackParamList)
+        navRef.current.navigate(loginRoute.name as never)
       }
     }
   }
@@ -85,7 +86,8 @@ export default function App() {
     setReady(true)
   }, [])
 
-  if (ARKZEN_NATIVE_ROUTES.length === 0 || !ready) {
+  const initialRoute = ARKZEN_NATIVE_ROUTES[0]?.name
+  if (!initialRoute || !ready) {
     return (
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
@@ -95,12 +97,10 @@ export default function App() {
     )
   }
 
-  const initialRoute = ARKZEN_NATIVE_ROUTES[0].name
-
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
-        <StatusBar barStyle="dark-content" backgroundColor="#f5f5f0" />
+        <StatusBar barStyle="dark-content" />
         <NavigationContainer
           ref={navRef}
           onStateChange={() => {
@@ -109,7 +109,7 @@ export default function App() {
           }}
         >
           <Stack.Navigator
-            initialRouteName={initialRoute as keyof ArkzenRootStackParamList}
+            initialRouteName={initialRoute as Extract<keyof ArkzenRootStackParamList, string>}
             screenOptions={{
               headerShown:  false,
               animation:    'slide_from_right',

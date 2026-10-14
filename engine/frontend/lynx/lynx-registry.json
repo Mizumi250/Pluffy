@@ -6,19 +6,19 @@
       "name": "asset-hub",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/asset-hub/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\asset-hub\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:48.084Z",
-      "lastUpdated": "2026-06-22T07:06:44.760Z"
+      "lastUpdated": "2026-10-14T08:58:39.198Z"
     },
     {
       "name": "auth-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/auth-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\auth-test\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -26,25 +26,25 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:48.282Z",
-      "lastUpdated": "2026-06-22T07:06:44.997Z"
+      "lastUpdated": "2026-10-14T08:58:39.428Z"
     },
     {
       "name": "body-endpoint-handler",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-endpoint-handler/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\body-endpoint-handler\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:48.973Z",
-      "lastUpdated": "2026-06-22T07:06:45.944Z"
+      "lastUpdated": "2026-10-14T08:58:39.617Z"
     },
     {
       "name": "body-mail-notification",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/body-mail-notification/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\body-mail-notification\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -52,13 +52,13 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:49.812Z",
-      "lastUpdated": "2026-06-22T07:06:46.907Z"
+      "lastUpdated": "2026-10-14T08:58:39.782Z"
     },
     {
       "name": "broadcast-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/broadcast-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\broadcast-test\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -66,74 +66,74 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:50.132Z",
-      "lastUpdated": "2026-06-22T07:06:47.438Z"
+      "lastUpdated": "2026-10-14T08:58:39.933Z"
     },
     {
       "name": "crud-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/crud-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\crud-test\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:50.689Z",
-      "lastUpdated": "2026-06-22T07:06:48.140Z"
+      "lastUpdated": "2026-10-14T08:58:40.175Z"
     },
     {
       "name": "errors-test",
       "version": "1.2.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/errors-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\errors-test\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:50.912Z",
-      "lastUpdated": "2026-06-22T07:06:48.395Z"
+      "lastUpdated": "2026-10-14T08:58:40.307Z"
     },
     {
       "name": "events-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/events-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\events-test\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:51.442Z",
-      "lastUpdated": "2026-06-22T07:06:48.642Z"
+      "lastUpdated": "2026-10-14T08:58:40.556Z"
     },
     {
       "name": "hello-native",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/hello-native/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\hello-native\\core.tsx",
       "pages": [
         "index",
         "about"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:51.486Z",
-      "lastUpdated": "2026-06-22T07:06:48.672Z"
+      "lastUpdated": "2026-10-14T08:58:40.595Z"
     },
     {
       "name": "inventory-management",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/inventory-management/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\inventory-management\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:51.767Z",
-      "lastUpdated": "2026-06-22T07:06:49.340Z"
+      "lastUpdated": "2026-10-14T08:58:40.788Z"
     },
     {
       "name": "jo-payroll",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/jo-payroll/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\jo-payroll\\core.tsx",
       "pages": [
         "index",
         "job-database",
@@ -143,25 +143,25 @@
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:52.404Z",
-      "lastUpdated": "2026-06-22T07:06:50.126Z"
+      "lastUpdated": "2026-10-14T08:58:41.024Z"
     },
     {
       "name": "job-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/job-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\job-test\\core.tsx",
       "pages": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:52.645Z",
-      "lastUpdated": "2026-06-22T07:06:50.389Z"
+      "lastUpdated": "2026-10-14T08:58:41.123Z"
     },
     {
       "name": "layout-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/layout-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\layout-test\\core.tsx",
       "pages": [
         "index",
         "single",
@@ -173,13 +173,13 @@
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:52.725Z",
-      "lastUpdated": "2026-06-22T07:06:50.517Z"
+      "lastUpdated": "2026-10-14T08:58:41.238Z"
     },
     {
       "name": "mail-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/mail-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\mail-test\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -187,25 +187,25 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:53.009Z",
-      "lastUpdated": "2026-06-22T07:06:50.744Z"
+      "lastUpdated": "2026-10-14T08:58:41.378Z"
     },
     {
       "name": "middleware-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/middleware-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\middleware-test\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:53.421Z",
-      "lastUpdated": "2026-06-22T07:06:51.329Z"
+      "lastUpdated": "2026-10-14T08:58:41.482Z"
     },
     {
       "name": "new-updates-styles",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/new-updates-styles/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\new-updates-styles\\core.tsx",
       "pages": [
         "index",
         "about",
@@ -213,13 +213,13 @@
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:53.530Z",
-      "lastUpdated": "2026-06-22T07:06:51.492Z"
+      "lastUpdated": "2026-10-14T08:58:41.549Z"
     },
     {
       "name": "notification-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/notification-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\notification-test\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -227,25 +227,25 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:53.753Z",
-      "lastUpdated": "2026-06-22T07:06:51.734Z"
+      "lastUpdated": "2026-10-14T08:58:41.714Z"
     },
     {
       "name": "portfolio-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/portfolio-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\portfolio-test\\core.tsx",
       "pages": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:53.808Z",
-      "lastUpdated": "2026-06-22T07:06:51.797Z"
+      "lastUpdated": "2026-10-14T08:58:41.746Z"
     },
     {
       "name": "roles-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/roles-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\roles-test\\core.tsx",
       "pages": [
         "login",
         "register",
@@ -253,31 +253,43 @@
       ],
       "auth": true,
       "registered": "2026-06-20T06:17:54.833Z",
-      "lastUpdated": "2026-06-22T07:06:52.922Z"
+      "lastUpdated": "2026-10-14T08:58:42.106Z"
     },
     {
       "name": "scheduler-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/scheduler-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\scheduler-test\\core.tsx",
       "pages": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:55.005Z",
-      "lastUpdated": "2026-06-22T07:06:53.117Z"
+      "lastUpdated": "2026-10-14T07:33:16.725Z"
     },
     {
       "name": "upload-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "/data/data/com.termux/files/home/arkzen/tatemonos/upload-test/core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\upload-test\\core.tsx",
       "pages": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-06-20T06:17:55.316Z",
-      "lastUpdated": "2026-06-22T07:06:54.188Z"
+      "lastUpdated": "2026-10-14T07:33:16.961Z"
+    },
+    {
+      "name": "animation-lab",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\animation-lab\\core.tsx",
+      "pages": [
+        "index"
+      ],
+      "auth": false,
+      "registered": "2026-10-14T07:33:12.931Z",
+      "lastUpdated": "2026-10-14T08:58:39.133Z"
     }
   ]
 }

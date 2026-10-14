@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — LottieLazySection [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.464Z
+// Generated: 2026-10-13T17:05:22.588Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,6 @@ import { gsap } from 'gsap'
 import { Activity, AlertCircle, Atom, Box, Check, ChevronRight, Circle, Code2, Cpu, Eye, FlaskConical, Globe, Info, Layers, Monitor, MousePointer2, Palette, Play, RefreshCw, Sparkles, Square, Triangle, Wind, X, Zap } from 'lucide-react'
 import * as THREE from 'three'
 import { create } from 'zustand'
-import { el, lottieRef, shapes, t } from './utils'
 import { SectionHeader } from './SectionHeader'
 
 // ─── SECTION: LOTTIE ─────────────────────────────────────────────────────────
@@ -23,7 +22,7 @@ export const LottieLazySection = () => {
   const lottieRef = useRef<any>(null)
 
   useEffect(() => {
-    import('lottie-react').then(mod => setLottieComp(() => mod.default))
+    import('lottie-react').then(mod => setLottieComp(() => mod.Lottie))
     // Built-in demo animation — a simple spinning arc (no external fetch needed)
     setAnimData({
       v: '5.5.7', fr: 60, ip: 0, op: 120, w: 200, h: 200, nm: 'Spinner', ddd: 0,

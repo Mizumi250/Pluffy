@@ -2,14 +2,14 @@
 // ARKZEN GENERATED COMPONENT — ChannelPanel [React+Vite]
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:56.987Z
+// Generated: 2026-10-13T14:10:30.935Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Radio } from 'lucide-react'
-import { dot, handleSend, inputRef, val } from './utils'
+import { dot } from './utils'
 import type { Message, WsStatus } from './types'
 
 export const ChannelPanel = memo(({
@@ -77,5 +77,4 @@ export const ChannelPanel = memo(({
       </div>
     </div>
   )
-})
-ChannelPanel.displayName = 'ChannelPanel'
+});

@@ -2,17 +2,17 @@
 // ARKZEN GENERATED PAGE — notification-test/register [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:21.347Z
+// Generated: 2026-10-13T17:05:21.813Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
-import { useAuthStore, setActiveTatemono, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // Props passed from Laravel via Inertia::render()
 export type NotificationTestRegisterProps = {
@@ -109,7 +109,7 @@ function ArkzenPage_NotificationTest_Register() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -124,7 +124,11 @@ function ArkzenPage_NotificationTest_Register() {
     </motion.div>
   )
 
-  return <GuestLayout guestOnly={true}>{content}</GuestLayout>
+  return (
+    <GuestLayout guestOnly={true}>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_NotificationTest_Register

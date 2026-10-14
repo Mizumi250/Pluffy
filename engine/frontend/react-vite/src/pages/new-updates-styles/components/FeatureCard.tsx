@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — FeatureCard [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.870Z
+// Generated: 2026-10-13T14:10:33.571Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { Link } from 'react-router'
 import styles from '../styles/FeatureCard.module.css'
-import { bgColors } from './utils'
 import type { FeatureCardProps } from './types'
 
 export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, description, color }) => {
@@ -27,4 +26,4 @@ export const FeatureCard: React.FC<FeatureCardProps> = ({ icon, title, descripti
       <p className="text-sm opacity-80">{description}</p>
     </div>
   )
-}
+};

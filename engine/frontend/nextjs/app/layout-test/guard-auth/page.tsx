@@ -3,13 +3,13 @@
 // ARKZEN GENERATED PAGE — layout-test/guard-auth
 // Layout: +auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.035Z
+// Generated: 2026-10-09T13:50:38.639Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { AuthLayout }  from '@/arkzen/core/layouts/AuthLayout'
 import { LayerBadge } from '../components/LayerBadge'
+import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 
 // Page component code (from @arkzen:page:guard-auth)
 const GuardAuthPage = () => (
@@ -29,7 +29,7 @@ const ArkzenPage_LayoutTest_GuardAuth = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

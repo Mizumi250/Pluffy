@@ -308,5 +308,15 @@
     ],
     "has404": false,
     "has500": false
+  },
+  "animation-lab": {
+    "pages": [
+      {
+        "page": "index",
+        "layout": "default"
+      }
+    ],
+    "has404": true,
+    "has500": true
   }
 }

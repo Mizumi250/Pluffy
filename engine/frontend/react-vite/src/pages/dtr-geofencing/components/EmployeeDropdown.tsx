@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — EmployeeDropdown [React+Vite]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.549Z
+// Generated: 2026-10-13T14:10:31.747Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -11,7 +11,6 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
 import { useDtrStore } from './hooks'
-import { map } from './utils'
 
 export const EmployeeDropdown = () => {
   const { employees, selectedEmployee, setSelectedEmployee } = useDtrStore()
@@ -59,4 +58,4 @@ export const EmployeeDropdown = () => {
       )}
     </div>
   )
-}
+};

@@ -2,11 +2,13 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — asset-hub [Expo]
 // Source: @arkzen:native:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:54.629Z
+// Generated: 2026-10-09T14:43:16.737Z
 // ============================================================
 
 import React from 'react'
 import { Image, ScrollView, Text, View } from 'react-native'
+import type { NativeAssetItem } from './types'
+
 
 /* @arkzen:resolved:import expo */
 // ─── NATIVE ASSET REGISTRY ────────────────────────────────────────────────────

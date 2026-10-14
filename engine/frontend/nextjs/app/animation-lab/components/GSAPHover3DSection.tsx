@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPHover3DSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:26:40.271Z
+// Generated: 2026-10-09T13:50:32.804Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,7 +12,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import { ArrowDown, Box, ChevronRight, Cpu, Eye, Layers, Maximize2, MousePointer2, Move, Pause, Play, RefreshCw, RotateCcw, Sparkles, Type, Wind, Zap } from 'lucide-react'
 import { create } from 'zustand'
-import { cardRef, handleFlip, handleMagnet, handleMagnetLeave, handleMorphEnter, handleMorphLeave, handleTilt, handleTiltLeave, magnetRef, morphRef, newFlipped, r, ref, scale, x, y } from './utils'
+import type { AnimLabState } from './types'
 import { DemoCard } from './DemoCard'
 import { SectionHeader } from './SectionHeader'
 
@@ -23,7 +23,6 @@ export const GSAPHover3DSection = () => {
   const morphRef = useRef<HTMLDivElement>(null)
   const [flipped, setFlipped] = useState(false)
 
-  // 3D tilt card
   const handleTilt = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const x = ((e.clientY - r.top) / r.height - 0.5) * 20
@@ -34,7 +33,6 @@ export const GSAPHover3DSection = () => {
     gsap.to(e.currentTarget, { rotationX: 0, rotationY: 0, duration: 0.5, ease: 'elastic.out(1, 0.5)' })
   }
 
-  // Magnetic button
   const handleMagnet = (e: React.MouseEvent<HTMLButtonElement>) => {
     const r = e.currentTarget.getBoundingClientRect()
     const x = (e.clientX - r.left - r.width / 2) * 0.35
@@ -45,7 +43,6 @@ export const GSAPHover3DSection = () => {
     gsap.to(magnetRef.current, { x: 0, y: 0, duration: 0.5, ease: 'elastic.out(1, 0.4)' })
   }
 
-  // Flip card
   const handleFlip = () => {
     const newFlipped = !flipped
     setFlipped(newFlipped)
@@ -55,7 +52,6 @@ export const GSAPHover3DSection = () => {
     })
   }
 
-  // Morph hover
   const handleMorphEnter = () => {
     gsap.to(morphRef.current, { borderRadius: '50%', scale: 1.2, rotation: 45, duration: 0.4, ease: 'power2.inOut' })
   }

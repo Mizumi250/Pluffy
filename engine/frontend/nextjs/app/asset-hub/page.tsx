@@ -3,15 +3,15 @@
 // ARKZEN GENERATED PAGE — asset-hub/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:05.906Z
+// Generated: 2026-10-09T13:50:33.058Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { AssetCard } from './components/AssetCard'
 import { ASSET_REGISTRY, CATEGORY_EMOJI } from './components/constants'
-import type { AssetCategory } from './components/types'
+import type { AssetCategory, AssetItem } from './components/types'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -82,7 +82,7 @@ const ArkzenPage_AssetHub_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

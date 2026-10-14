@@ -36,6 +36,7 @@ export interface UseMutationOptions<TData, TVariables> {
 export interface UseMutationResult<TData, TVariables> {
   mutate:     (url: string, variables: TVariables) => Promise<TData | null>
   isLoading:  boolean
+  variables:  TVariables | null
   isError:    boolean
   isSuccess:  boolean
   error:      string | null
@@ -65,13 +66,16 @@ export function useMutation<TData = unknown, TVariables = unknown>(
   const [isLoading, setIsLoading] = useState(false)
   const [isError,   setIsError]   = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
+  const [variables, setVariables] = useState<TVariables | null>(null)
   const [error,     setError]     = useState<string | null>(null)
   const [data,      setData]      = useState<TData | null>(null)
 
   const mutate = useCallback(async (url: string, variables: TVariables): Promise<TData | null> => {
     setIsLoading(true)
+    setVariables(variables)
     setIsError(false)
     setIsSuccess(false)
+    setVariables(null)
     setError(null)
 
     // Optimistic update before request
@@ -141,5 +145,5 @@ export function useMutation<TData = unknown, TVariables = unknown>(
     setData(null)
   }, [])
 
-  return { mutate, isLoading, isError, isSuccess, error, data, reset }
+  return { mutate, isLoading, variables, isError, isSuccess, error, data, reset }
 }

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — notification-test
 // Source: @arkzen:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:15.248Z
+// Generated: 2026-10-09T13:50:39.215Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -10,6 +10,7 @@ import { motion } from 'framer-motion'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
 import { Bell, BellRing, Database, Globe, Mail, Radio } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+
 
 // ─────────────────────────────────────────────
 // REVERB CONFIG — read from env, same as useWebSocket.ts

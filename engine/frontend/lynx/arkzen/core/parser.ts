@@ -128,7 +128,6 @@ import type {
   ArkzenPage,
   ArkzenLayout,
   ArkzenStyle,
-  ArkzenScript,
   ArkzenErrorHandler,
   ArkzenErrorHandlerType,
 } from '../types'
@@ -333,6 +332,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
     const openCommentEnd = findOpeningCommentEnd(safe, openIdx, openIdx + openPattern.length)
     if (openCommentEnd === -1) break
 
+    const target = marker === 'native:page'
+      ? content.slice(openIdx, openCommentEnd).match(/@arkzen:import:(expo|rn)/)?.[1]
+      : undefined
+
     // Find closing marker: /* @arkzen:marker:identifier:end */
     const closeMarker = `/* @arkzen:${marker}:${identifier}:end */`
     const closeIdx = safe.indexOf(closeMarker, openCommentEnd)
@@ -340,7 +343,10 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Extract raw content between opening comment close and closing marker
     // Also handle per-page layout declarations inside the block
-    const raw = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const body = content.slice(openCommentEnd + 2, closeIdx).trim()
+    const raw = target
+      ? `/* @arkzen:resolved:import ${target} */\n${body}`
+      : body
 
     results.push({
       raw,
@@ -632,10 +638,13 @@ function parseAllNativeComponents(content: string): ArkzenSection[] {
 }
 
 function parseAllNativeLayouts(content: string): ArkzenSection[] {
+  const currentTarget = detectNativeTarget()
   const sections = extractAllNamedSections(content, 'native:layout')
-  return sections.map(section => {
-    const { cleanRaw } = extractNativeImportLine(section.raw)
-    return { ...section, raw: cleanRaw }
+  return sections.flatMap(section => {
+    const { cleanRaw, importStack } = extractNativeImportLine(section.raw)
+    return !currentTarget || !importStack || importStack === currentTarget
+      ? [{ ...section, raw: cleanRaw }]
+      : []
   })
 }
 
@@ -651,7 +660,11 @@ function parseAllNativeStyles(content: string): ArkzenSection[] {
 }
 
 function parseAllNativePages(content: string): ArkzenPage[] {
-  const sections = extractAllNamedSections(content, 'native:page')
+  const currentTarget = detectNativeTarget()
+  const sections = extractAllNamedSections(content, 'native:page').filter(section => {
+    const target = section.raw.match(/@arkzen:resolved:import (expo|rn)/)?.[1]
+    return !currentTarget || !target || target === currentTarget
+  })
   return sections.map(section => {
     // v11.0: layout declaration allows + prefix and chained names
     // e.g. +auth:tab-shell, +guest:app, app, guest, auth
@@ -920,9 +933,9 @@ function parseAllApis(content: string): ArkzenApi[] {
       prefix:     String(parsed.prefix),
       middleware: (parsed.middleware as string[]) ?? [],
       endpoints:  (parsed.endpoints  as ArkzenApi['endpoints']) ?? {},
-      resource:   parsed.resource ?? false,
-      policy:     parsed.policy ?? false,
-      factory:    parsed.factory ?? false,
+      resource:   typeof parsed.resource === 'boolean' ? parsed.resource : false,
+      policy:     typeof parsed.policy === 'boolean' ? parsed.policy : false,
+      factory:    typeof parsed.factory === 'boolean' ? parsed.factory : false,
     })
   }
 
@@ -2097,8 +2110,11 @@ function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
     const rawBody = content.slice(openIdx + openMarker.length, closeIdx).trim()
     if (!rawBody) continue
 
-    const { cleanRaw } = extractNativeImportLine(rawBody)
-    results.push({ type, raw: cleanRaw })
+    const { cleanRaw, importStack } = extractNativeImportLine(rawBody)
+    const target = detectNativeTarget()
+    if (!target || !importStack || importStack === target) {
+      results.push({ type, raw: cleanRaw })
+    }
   }
 
   return results
@@ -2322,12 +2338,14 @@ function validatePages(
     }
     seen.add(page.name)
   }
-  const nativeSeen = new Set<string>()
+  const nativeSeen = new Map<string, 'expo' | 'rn' | null>()
   for (const page of nativePages) {
-    if (nativeSeen.has(page.name)) {
+    const target = page.raw.match(/@arkzen:(?:resolved:import|import:)\s*:?\s*(expo|rn)/)?.[1] as 'expo' | 'rn' | undefined
+    const previousTarget = nativeSeen.get(page.name)
+    if (nativeSeen.has(page.name) && (!target || !previousTarget || target === previousTarget)) {
       throw new Error(`[Arkzen Parser] Duplicate native page declared: "${page.name}"`)
     }
-    nativeSeen.add(page.name)
+    nativeSeen.set(page.name, target ?? null)
   }
   const lynxSeen = new Set<string>()
   for (const page of nativeLynxPages) {

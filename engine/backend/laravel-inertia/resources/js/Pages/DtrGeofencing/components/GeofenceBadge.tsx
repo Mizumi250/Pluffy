@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — GeofenceBadge [React+Inertia]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:19.271Z
+// Generated: 2026-10-13T17:05:20.439Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -10,7 +10,6 @@ import { motion } from 'framer-motion'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { AlertCircle, CheckCircle, ChevronDown, Clock, Loader2, LogIn, LogOut, MapPin, Navigation, RefreshCw, TrendingUp, User as UserIcon, XCircle } from 'lucide-react'
 import { create } from 'zustand'
-import { within } from './utils'
 
 export const GeofenceBadge = ({ within, enabled }: { within: boolean; enabled: boolean }) => {
   if (!enabled) return (

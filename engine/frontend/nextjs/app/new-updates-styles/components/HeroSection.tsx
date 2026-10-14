@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:14.965Z
+// Generated: 2026-10-09T13:50:39.032Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -11,7 +11,7 @@ import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import Link from 'next/link'
 import styles from '../styles/HeroSection.module.css'
-import type { HeroSectionProps } from './types'
+import type { Feature, FeatureCardProps, HeroSectionProps } from './types'
 
 export const HeroSection: React.FC<HeroSectionProps> = ({ title, subtitle, ctaText, onCta }) => (
   <div className="space-y-4 py-16 text-center">

@@ -2,16 +2,14 @@
 // ARKZEN GENERATED COMPONENT — StatChip [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.856Z
+// Generated: 2026-10-13T14:10:32.963Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { create } from 'zustand'
-import { accents, iconAccents } from './utils'
 
-// Stat card — matches the "11 Courses completed / 4 in progress" chips from the reference UI
 export const StatChip = ({
   value, label, icon: Icon, accent = 'neutral'
 }: {
@@ -45,6 +43,4 @@ export const StatChip = ({
       <p className="text-xs text-neutral-500 mt-0.5 font-medium">{label}</p>
     </div>
   )
-}
-
-// Page section header — matching the reference UI style
+};

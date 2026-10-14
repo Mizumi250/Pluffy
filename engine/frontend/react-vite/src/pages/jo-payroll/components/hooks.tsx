@@ -2,13 +2,14 @@
 // ARKZEN GENERATED HOOKS — jo-payroll [React+Vite]
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.847Z
+// Generated: 2026-10-13T14:10:32.951Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { AlertCircle, ArrowDownRight, ArrowUpRight, Banknote, Building2, CalendarDays, Check, CheckCircle, ChevronDown, Clock, CreditCard, Download, Edit2, Eye, FileText, Filter, Landmark, MoreHorizontal, Plus, Printer, RefreshCw, Search, Trash2, TrendingDown, TrendingUp, Users, Wallet, X, XCircle } from 'lucide-react'
 import { create } from 'zustand'
+import type { PayrollState } from './types'
 
 export const usePayrollStore = create<PayrollState>((set) => ({
   jobOrders: [],
@@ -24,6 +25,4 @@ export const usePayrollStore = create<PayrollState>((set) => ({
   addJobOrder: (order) => set((s) => ({ jobOrders: [...s.jobOrders, order] })),
   updateJobOrder: (id, order) => set((s) => ({ jobOrders: s.jobOrders.map(j => j.id === id ? order : j) })),
   removeJobOrder: (id) => set((s) => ({ jobOrders: s.jobOrders.filter(j => j.id !== id) })),
-}))
-
-// ─── Constants ──────────────────────────────────────────────────────────────
+}));

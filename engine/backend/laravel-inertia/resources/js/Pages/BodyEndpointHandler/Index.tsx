@@ -2,20 +2,19 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:17.476Z
+// Generated: 2026-10-13T17:05:19.996Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
-import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { InjectedBadge } from './components/InjectedBadge'
 import { Tag } from './components/Tag'
 import { useToast } from './components/hooks'
-import type { ProbeResult, Stats } from './components/types'
+import { Link } from '@/arkzen/core/adapters/Link'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { router, usePage } from '@inertiajs/react'
 
 // Props passed from Laravel via Inertia::render()
 export type BodyEndpointHandlerIndexProps = {
@@ -321,7 +320,7 @@ function ArkzenPage_BodyEndpointHandler_Index() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -336,7 +335,11 @@ function ArkzenPage_BodyEndpointHandler_Index() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_BodyEndpointHandler_Index

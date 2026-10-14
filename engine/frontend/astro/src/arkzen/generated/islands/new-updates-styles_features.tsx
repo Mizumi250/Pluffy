@@ -3,7 +3,7 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:15.643Z
+// Generated: 2026-10-09T14:13:13.254Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -23,7 +23,7 @@ const FeaturesPage = () => {
       <Navbar currentPath="/new-updates-styles/features" />
       <div className="container mx-auto px-4 space-y-8 py-8">
         <h1 className="text-4xl font-bold">All Features</h1>
-        
+
         <div className="flex gap-4 flex-wrap">
           {(['blue', 'purple', 'green', 'orange'] as const).map(color => (
             <button

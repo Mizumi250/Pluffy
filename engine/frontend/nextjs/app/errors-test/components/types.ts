@@ -2,8 +2,13 @@
 // ARKZEN GENERATED TYPES — errors-test
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:10.056Z
+// Generated: 2026-10-09T13:52:30.126Z
 // ============================================================
+
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 export type ErrorDef = {
   code: number

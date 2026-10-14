@@ -2,14 +2,13 @@
 // ARKZEN GENERATED COMPONENT — Navbar [React+Vite]
 // Source: @arkzen:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.870Z
+// Generated: 2026-10-13T14:10:33.569Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Code, Layers, Menu, Palette, X, Zap } from 'lucide-react'
 import { Link } from 'react-router'
-import { links } from './utils'
 
 export const Navbar = ({ currentPath }: { currentPath: string }) => {
   const [isOpen, setIsOpen] = useState(false)
@@ -64,4 +63,4 @@ export const Navbar = ({ currentPath }: { currentPath: string }) => {
       )}
     </nav>
   )
-}
+};

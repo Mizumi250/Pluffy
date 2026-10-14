@@ -2,18 +2,15 @@
 // ARKZEN GENERATED COMPONENT — HeroSection [React+Vite]
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.304Z
+// Generated: 2026-10-13T14:10:33.272Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { bgCloudRef, bgImgRef, ctx, heroRef, ref } from './utils'
 import { ArtCarousel } from './ArtCarousel'
 import { HeroScript } from './HeroScript'
-
-// ─── HERO SECTION (100vh STATIC, NO PINNING) ─────────────────
 
 export const HeroSection = ({
   onPreview,
@@ -98,6 +95,4 @@ export const HeroSection = ({
       </div>
     </section>
   )
-}
-
-// ─── INTRO STRIP ──────────────────────────────────────────────
+};

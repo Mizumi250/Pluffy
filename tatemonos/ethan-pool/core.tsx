@@ -889,7 +889,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 import React from 'react'
 
-const ethanPoolAnimations = (pageRef: React.RefObject<HTMLDivElement>) => {
+const ethanPoolAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
   gsap.registerPlugin(ScrollTrigger)
 
   const ctx = gsap.context(() => {

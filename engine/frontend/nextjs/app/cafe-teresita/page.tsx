@@ -3,16 +3,16 @@
 // ARKZEN GENERATED PAGE — cafe-teresita/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:08.744Z
+// Generated: 2026-10-09T13:50:34.621Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { CATERING_PACKAGES, FEATURED_DRINKS, MENU_CATEGORIES, MENU_ITEMS, NAV_LINKS, TESTIMONIALS, VISIT_HOURS } from './components/constants'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
-import { Coffee, X, ArrowRight, Star, MapPin, Clock, Instagram, Facebook, Menu as MenuIcon, ArrowUpRight, CalendarCheck, Soup, CupSoda, ExternalLink } from 'lucide-react'
+import { ArrowRight, ArrowUpRight, CalendarCheck, Camera as Instagram, Clock, Coffee, CupSoda, ExternalLink, MapPin, Menu as MenuIcon, Soup, Star, UsersRound as Facebook, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {
@@ -1591,7 +1591,7 @@ const ArkzenPage_CafeTeresita_Index = () => {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // Animations are managed by the page or not defined
   }, [])
 
   return (

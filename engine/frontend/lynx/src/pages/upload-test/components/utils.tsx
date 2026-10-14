@@ -2,7 +2,7 @@
 // ARKZEN GENERATED LYNX UTILITY FUNCTIONS — upload-test
 // Source: @arkzen:native:components:lynx:* (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:53.363Z
+// Generated: 2026-10-14T07:33:16.893Z
 // ============================================================
 
 import { openURL, pickFiles } from '../../../../arkzen/core/native-bridge'

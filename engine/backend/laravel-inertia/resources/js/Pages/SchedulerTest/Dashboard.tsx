@@ -2,20 +2,19 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard [React+Inertia]
 // Layout: guest | Auth: false | Guest-only: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-06-14T02:27:23.560Z
+// Generated: 2026-10-13T17:05:22.056Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { usePage, router } from '@inertiajs/react'
 import { Link } from '@/arkzen/core/adapters/Link'
-import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
-import type { CommandRun } from './components/types'
-import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
+import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { useToast } from '@/arkzen/core/components/Toast'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
-import { useToast } from '@/arkzen/core/components/Toast'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { router, usePage } from '@inertiajs/react'
+import { Activity, BarChart3, Clock3, RefreshCw, Trash2 } from 'lucide-react'
 
 // Props passed from Laravel via Inertia::render()
 export type SchedulerTestDashboardProps = {
@@ -99,7 +98,7 @@ const DashboardPage = () => {
             <div className="flex gap-3">
               <button className="text-xs text-neutral-400" onClick={refetch}>Refresh</button>
               {runs.length > 0 && (
-                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs')} disabled={clearing}>
+                <button className="text-xs text-red-400" onClick={() => clearRuns('/api/scheduler-test/runs', undefined)} disabled={clearing}>
                   {clearing ? '...' : 'Clear'}
                 </button>
               )}
@@ -156,7 +155,7 @@ function ArkzenPage_SchedulerTest_Dashboard() {
 
   useEffect(() => {
     if (!pageRef.current) return
-    // No animations
+    // No animation initializer
   }, [])
 
   const content = (
@@ -171,7 +170,11 @@ function ArkzenPage_SchedulerTest_Dashboard() {
     </motion.div>
   )
 
-  return <GuestLayout>{content}</GuestLayout>
+  return (
+    <GuestLayout>
+    {content}
+    </GuestLayout>
+  )
 }
 
 export default ArkzenPage_SchedulerTest_Dashboard

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — Skeleton [React+Vite]
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:57.554Z
+// Generated: 2026-10-13T14:10:31.758Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -19,4 +19,4 @@ export const Skeleton = () => (
       <div className="h-2.5 bg-white/[0.04] rounded w-1/3" />
     </div>
   </div>
-)
+);

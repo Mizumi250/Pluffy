@@ -2,14 +2,13 @@
 // ARKZEN GENERATED UTILITIES — shikaku [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:09:02.690Z
+// Generated: 2026-10-13T14:10:34.200Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowLeft, Bucket, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
-
-// ─── Utils ────────────────────────────────────────────────────────────────────
+import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
+import type { Frame, Layer, Pixel } from './types'
 
 export function createEmptyLayer(name: string, id?: string): Layer {
   return {
@@ -76,9 +75,6 @@ export function drawLine(x0: number, y0: number, x1: number, y1: number): [numbe
   return pts
 }
 
-// Render all visible layers to a flat RGBA Uint8ClampedArray
-
-// Render all visible layers to a flat RGBA Uint8ClampedArray
 export function flattenFrame(frame: Frame, width: number, height: number): ImageData {
   const buf = new Uint8ClampedArray(width * height * 4)
   // Checkerboard
@@ -111,9 +107,6 @@ export function flattenFrame(frame: Frame, width: number, height: number): Image
   return new ImageData(buf, width, height)
 }
 
-// Render a frame to a small canvas for thumbnails
-
-// Render a frame to a small canvas for thumbnails
 export function renderFrameThumb(frame: Frame, width: number, height: number, size: number): string {
   const c = document.createElement('canvas')
   c.width = width; c.height = height
@@ -128,9 +121,6 @@ export function renderFrameThumb(frame: Frame, width: number, height: number, si
   return out.toDataURL('image/png')
 }
 
-// arkzen fetch helper
-
-// arkzen fetch helper
 export async function skFetch(url: string, options?: RequestInit) {
   const base = import.meta.env.VITE_API_URL || 'http://localhost:8000'
   const token = typeof window !== 'undefined' ? localStorage.getItem('shikaku_token') : null

@@ -4,8 +4,8 @@
     "composite": true,
 
     // Rspeedy uses Node.js's module resolution
-    "module": "node16",
-    "moduleResolution": "node16",
+    "module": "commonjs",
+    "moduleResolution": "bundler",
     "erasableSyntaxOnly": true,
 
     // Node.js 18+

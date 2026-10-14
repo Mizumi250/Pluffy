@@ -19,7 +19,7 @@ layout:
 'use client'
 
 import React from 'react'
-import { Code2, Mail, Github, Linkedin, ExternalLink, Star } from 'lucide-react'
+import { Code2, Mail, CodeXml as Github, BriefcaseBusiness as Linkedin, ExternalLink, Star } from 'lucide-react'
 
 const PROJECTS = [
   { id: 1, title: 'E-commerce', description: 'Full-stack e-commerce', image: '🛒', url: 'https://example.com', tags: ['Next.js', 'Laravel'] },

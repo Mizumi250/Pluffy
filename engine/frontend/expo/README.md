@@ -1,8 +1,8 @@
-# Arkzen Engine — Expo Stack (v9.5)
+# Pluff — Expo Stack (v9.5)
 
 ## Status: Active — First Native Platform
 
-The Expo stack is Arkzen's **default mobile platform**.
+The Expo stack is Pluff's **default mobile platform**.
 Same tatemono DSL → Expo Go native output.
 Same Laravel backend → API is completely shared.
 

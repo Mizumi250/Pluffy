@@ -1,6 +1,6 @@
 // ARKZEN GENERATED — broadcast-test/dashboard (Lynx page)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-22T07:06:46.969Z
+// Generated: 2026-10-14T08:58:39.847Z
 import { ChannelCard } from './components/ChannelCard'
 import { BACKEND_URL, POLL_INTERVAL_MS } from './components/constants'
 import type { LynxMessage, WsStatus } from './components/types'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE ANIMATIONS — jo-payroll
 // Source: @arkzen:native:animation:expo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:58.605Z
+// Generated: 2026-10-09T14:43:19.587Z
 //
 // Supported patterns:
 //   Reanimated — useSharedValue, useAnimatedStyle, withTiming, withSpring,
@@ -11,7 +11,7 @@
 //   Both can coexist freely in this file.
 // ============================================================
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 
 export const useSlideIn = (delay = 0) => {

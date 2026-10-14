@@ -2,7 +2,7 @@
 // ============================================================
 // ARKZEN GENERATED PAGE ROUTES — new-updates-styles [Inertia/Web]
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:21.306Z
+// Generated: 2026-10-13T17:05:21.758Z
 // Pages: index, about, features
 // ============================================================
 
@@ -24,5 +24,10 @@ Route::middleware(['web'])->group(function () {
     Route::get('/new-updates-styles/features', function () {
         return \Inertia\Inertia::render('NewUpdatesStyles/Features');
     });
+
+    // Catch-all 404 — mirrors Next.js [...catchAll] and Vite wildcard route
+    Route::get('/new-updates-styles/{any}', function () {
+        return \Inertia\Inertia::render('NewUpdatesStyles/NotFound');
+    })->where('any', '.*');
 
 });

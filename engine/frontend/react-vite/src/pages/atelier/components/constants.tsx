@@ -2,15 +2,14 @@
 // ARKZEN GENERATED SHARED CONSTANTS — atelier [React+Vite]
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:55.585Z
+// Generated: 2026-10-13T14:10:30.569Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { Activity, AlertCircle, ArrowLeft, ArrowRight, Award, Bell, Book, Briefcase, Camera, Check, ChevronLeft, ChevronRight, Clock, Coffee, Download, ExternalLink, Eye, FileText, Film, Filter, Folders, GitCommit, Globe, Grid, Hash, Heart, Home, Image, Info, Layers, Link, List, Lock, LogOut, MessageCircle, Mic, MoreHorizontal, Music, Paperclip, Pause, Pencil, Play, Plus, Radio, RefreshCw, Search, Send, Settings, Share2, Smile, Sparkles, Star, Tag, TrendingUp, User, Users, X, Zap } from 'lucide-react'
 
-// ── Mock data ─────────────────────────────────────────────────────────────────
- 
+
 export const CURRENT_USER = {
   name: 'Mizu',
   handle: '@mizu_art',
@@ -19,7 +18,7 @@ export const CURRENT_USER = {
   bio: 'I draw slow, murals, and stories.',
   location: 'Cloud City',
   joinYear: 2023,
-}
+};
 
 export const CONTINUATIONS = [
   {
@@ -82,7 +81,7 @@ export const CONTINUATIONS = [
     note: 'Initial sketching phase.',
     status: 'active',
   },
-]
+];
 
 export const SPACES = [
   {
@@ -149,33 +148,33 @@ export const SPACES = [
     joined: false,
     category: 'Art Style',
   },
-]
+];
 
 export const PEOPLE = [
   { name: 'Daro',  handle: '@daro_env',  role: 'Environment Artist', avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face', online: true },
   { name: 'Ash',   handle: '@ash_illus', role: 'Illustrator',        avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face', online: false },
   { name: 'Reiko', handle: '@reiko_art', role: 'Character Designer',  avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=40&h=40&fit=crop&crop=face', online: true },
   { name: 'Yuki',  handle: '@yuki_draw', role: 'Manga Artist',        avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=40&h=40&fit=crop&crop=face', online: false },
-]
+];
 
 export const LIVE_STUDIOS = [
   { artist: 'Daro',  handle: '@daro_env',  type: 'Environment Painting', viewers: 23, avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=40&h=40&fit=crop&crop=face', thumb: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=200&h=120&fit=crop' },
   { artist: 'Reiko', handle: '@reiko_art', type: 'Character Sketching',  viewers: 18, avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=40&h=40&fit=crop&crop=face', thumb: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=200&h=120&fit=crop' },
   { artist: 'Ash',   handle: '@ash_illus', type: 'Blender 3D Modeling',  viewers: 14, avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=40&h=40&fit=crop&crop=face', thumb: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=200&h=120&fit=crop' },
-]
+];
 
 export const TIMELINE_ENTRIES = [
   { version: 'v4', label: 'Final lighting', time: '14:20', note: 'Refined the shape', img: 'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=120&h=80&fit=crop', isNow: true },
   { version: 'v3', label: 'Composition',    time: '11:47', note: 'Changed composition', img: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=120&h=80&fit=crop', isNow: false },
   { version: 'v2', label: 'Blocking',       time: '09:10', note: 'Initial sketch',       img: 'https://images.unsplash.com/photo-1518709766631-a6a7f45921c3?w=120&h=80&fit=crop', isNow: false },
   { version: 'v1', label: 'Initial sketch', time: 'Yesterday', note: 'Concept phase',    img: 'https://images.unsplash.com/photo-1547036967-23d11aacaee0?w=120&h=80&fit=crop', isNow: false },
-]
+];
 
 export const COMMISSIONS = [
   { id: 1, title: 'Character Illustration', client: '@hollow_fox', status: 'In Progress', progress: 60, steps: ['Sketch', 'Lineart', 'Color', 'Shading', 'Final'], currentStep: 2, price: '$120', due: 'Mar 14' },
   { id: 2, title: 'VTuber Model',           client: '@vlunar',     status: 'Pending',     progress: 10, steps: ['Concept', 'Design', 'Rig', 'Final'], currentStep: 0, price: '$400', due: 'Mar 30' },
   { id: 3, title: 'Background Art',         client: '@gameblue',   status: 'In Progress', progress: 50, steps: ['Sketch', 'Lineart', 'Color', 'Final'], currentStep: 2, price: '$80', due: 'Mar 12' },
-]
+];
 
 export const CR_POSTS = [
   {
@@ -200,7 +199,7 @@ export const CR_POSTS = [
     hearts: 76,
     comments: 12,
   },
-]
+];
 
 export const SUPPORTER_DATA = {
   goal: { current: 1200, target: 2000, label: 'Monthly Goal' },
@@ -211,7 +210,7 @@ export const SUPPORTER_DATA = {
     { name: 'ArtLover',    amount: '$15/mo',  avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=36&h=36&fit=crop&crop=face' },
     { name: 'VTuber Hub',  amount: '$10/mo',  avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=36&h=36&fit=crop&crop=face' },
   ],
-}
+};
 
 export const PROFILE_JOURNEY = [
   'https://images.unsplash.com/photo-1614851099511-773084f6911d?w=160&h=160&fit=crop',
@@ -222,13 +221,11 @@ export const PROFILE_JOURNEY = [
   'https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=160&h=160&fit=crop',
   'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=160&h=160&fit=crop',
   'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=160&h=160&fit=crop',
-]
+];
 
 export const MESSAGES = [
   { id: 1, from: 'Daro',  avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=36&h=36&fit=crop&crop=face', text: 'The atmosphere is amazing!', time: '2m ago', own: false },
   { id: 2, from: 'Reiko', avatar: 'https://images.unsplash.com/photo-1531746020798-e6953c6e8e04?w=36&h=36&fit=crop&crop=face', text: 'Love the lighting', time: '1m ago', own: false },
   { id: 3, from: 'Ash',   avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=36&h=36&fit=crop&crop=face', text: 'What brush are you using?', time: '1m ago', own: false },
   { id: 4, from: 'Mizu',  avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=36&h=36&fit=crop&crop=face', text: "It's custom", time: '58s ago', own: true },
-]
- 
-// ── Shared UI components ──────────────────────────────────────────────────────
+];

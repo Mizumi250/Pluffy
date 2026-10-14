@@ -3,23 +3,23 @@
 // React island component. Hydrated with client:load in .astro page shell.
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:28:14.568Z
+// Generated: 2026-10-09T14:13:12.098Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Dialog } from '@/arkzen/core/components/Dialog'
+import { Modal } from '@/arkzen/core/components/Modal'
+import { useToast } from '@/arkzen/core/components/Toast'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
-import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
 import { InventoryRow } from '@/arkzen/generated/components/inventory-management/InventoryRow'
 import { StatCard } from '@/arkzen/generated/components/inventory-management/StatCard'
-import { emptyForm } from '@/arkzen/generated/components/inventory-management/utils'
 import type { FormState, InventoryItem } from '@/arkzen/generated/components/inventory-management/types'
-import { Package, TrendingUp, AlertTriangle, DollarSign, Edit2, Trash2, Plus } from 'lucide-react'
-import { Modal } from '@/arkzen/core/components/Modal'
-import { Dialog } from '@/arkzen/core/components/Dialog'
-import { useToast } from '@/arkzen/core/components/Toast'
-import { useQuery } from '@/arkzen/core/hooks/useQuery'
-import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { emptyForm } from '@/arkzen/generated/components/inventory-management/utils'
+import { inventoryManagementAnimations, pageVariants } from '@/arkzen/generated/inventory-management.animations'
+import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
 
 // Page component code (from @arkzen:page:index)
 const IndexPage = () => {

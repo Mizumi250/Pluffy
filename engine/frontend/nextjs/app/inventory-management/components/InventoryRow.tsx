@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InventoryRow
 // Source: @arkzen:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-21T12:05:12.802Z
+// Generated: 2026-10-09T13:50:36.409Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -15,8 +15,7 @@ import { Badge } from '@/arkzen/core/components/utils'
 import { useMutation } from '@/arkzen/core/hooks/useMutation'
 import { useQuery } from '@/arkzen/core/hooks/useQuery'
 import { AlertTriangle, DollarSign, Edit2, Package, Plus, Trash2, TrendingUp } from 'lucide-react'
-import { stockLabel, stockVariant } from './utils'
-import type { InventoryItem } from './types'
+import type { FormState, InventoryItem } from './types'
 
 export const InventoryRow = ({ item, onEdit, onDelete }: { item: InventoryItem; onEdit: (i: InventoryItem) => void; onDelete: (i: InventoryItem) => void }) => {
   const stockVariant = item.quantity === 0 ? 'error' : item.quantity < 20 ? 'warning' : 'success'

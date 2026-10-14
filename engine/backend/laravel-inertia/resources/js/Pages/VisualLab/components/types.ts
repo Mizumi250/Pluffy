@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — visual-lab [React+Inertia]
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-14T02:27:24.405Z
+// Generated: 2026-10-13T17:05:22.546Z
 // ============================================================
 
 // ─── STORE ────────────────────────────────────────────────────────────────────
