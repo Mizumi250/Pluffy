@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FullscreenSlider
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T13:50:38.286Z
+// Generated: 2026-10-18T15:59:25.998Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

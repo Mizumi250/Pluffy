@@ -638,10 +638,13 @@ function parseAllNativeComponents(content: string): ArkzenSection[] {
 }
 
 function parseAllNativeLayouts(content: string): ArkzenSection[] {
+  const currentTarget = detectNativeTarget()
   const sections = extractAllNamedSections(content, 'native:layout')
-  return sections.map(section => {
-    const { cleanRaw } = extractNativeImportLine(section.raw)
-    return { ...section, raw: cleanRaw }
+  return sections.flatMap(section => {
+    const { cleanRaw, importStack } = extractNativeImportLine(section.raw)
+    return !currentTarget || !importStack || importStack === currentTarget
+      ? [{ ...section, raw: cleanRaw }]
+      : []
   })
 }
 
@@ -2107,8 +2110,11 @@ function parseAllNativeErrorHandlers(content: string): ArkzenErrorHandler[] {
     const rawBody = content.slice(openIdx + openMarker.length, closeIdx).trim()
     if (!rawBody) continue
 
-    const { cleanRaw } = extractNativeImportLine(rawBody)
-    results.push({ type, raw: cleanRaw })
+    const { cleanRaw, importStack } = extractNativeImportLine(rawBody)
+    const target = detectNativeTarget()
+    if (!target || !importStack || importStack === target) {
+      results.push({ type, raw: cleanRaw })
+    }
   }
 
   return results

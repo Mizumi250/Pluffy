@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — animation-lab [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T14:43:16.637Z
+// Generated: 2026-10-18T15:59:01.547Z
 // ============================================================
 
 /* @arkzen:resolved:import expo */

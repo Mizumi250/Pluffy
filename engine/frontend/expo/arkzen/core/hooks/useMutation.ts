@@ -75,7 +75,6 @@ export function useMutation<TData = unknown, TVariables = unknown>(
     setVariables(variables)
     setIsError(false)
     setIsSuccess(false)
-    setVariables(null)
     setError(null)
 
     // Optimistic update before request
@@ -88,9 +87,10 @@ export function useMutation<TData = unknown, TVariables = unknown>(
         ? variables
         : JSON.stringify(variables)
 
-      const headers: HeadersInit = variables instanceof FormData
-        ? {}
-        : { 'Content-Type': 'application/json' }
+      const headers: Record<string, string> = {}
+      if (!(variables instanceof FormData)) {
+        headers['Content-Type'] = 'application/json'
+      }
 
       const res = await arkzenFetch(url, {
         method,
@@ -141,6 +141,7 @@ export function useMutation<TData = unknown, TVariables = unknown>(
     setIsLoading(false)
     setIsError(false)
     setIsSuccess(false)
+    setVariables(null)
     setError(null)
     setData(null)
   }, [])

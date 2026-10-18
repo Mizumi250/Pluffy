@@ -2,12 +2,13 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SkillBar [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T14:43:21.240Z
+// Generated: 2026-10-18T15:59:21.573Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { setActiveTatemono } from '../../../../arkzen/core/stores/authStore'
 import { Animated, Dimensions, Image, Linking, Modal, ScrollView, StatusBar, Text, TouchableOpacity, View } from 'react-native'
+import { Easing, default as RAnimated, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { SCREEN_W } from './constants'
 import { s } from '../../../arkzen/generated/shan-shan.native-styles'

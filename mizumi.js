@@ -94,8 +94,17 @@ const DESKTOP_LABELS = {
   'tauri':    'Tauri desktop (wraps the running web stack)',
   'electron': 'Electron desktop (wraps the running web stack)',
 }
-const ALL_STACKS = { ...WEB_STACKS, ...APP_STACKS, ...DESKTOP_STACKS }
-const ALL_LABELS = { ...WEB_LABELS, ...APP_LABELS, ...DESKTOP_LABELS }
+const BACKEND_STACKS = {
+  'laravel':         'engine/backend/laravel',
+  'laravel-inertia': 'engine/backend/laravel-inertia',
+}
+const BACKEND_LABELS = {
+  'laravel':         'Laravel backend (API for web stacks)',
+  'laravel-inertia': 'Laravel + Inertia backend (react-inertia)',
+}
+const activeBackendFor = webStack => webStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
+const ALL_STACKS = { ...WEB_STACKS, ...APP_STACKS, ...DESKTOP_STACKS, ...BACKEND_STACKS }
+const ALL_LABELS = { ...WEB_LABELS, ...APP_LABELS, ...DESKTOP_LABELS, ...BACKEND_LABELS }
 
 function stackDir(stack) {
   return ALL_STACKS[stack] ? path.join(ROOT_DIR, ALL_STACKS[stack]) : null
@@ -103,6 +112,7 @@ function stackDir(stack) {
 
 function isStackInstalled(stack) {
   const dir = stackDir(stack)
+  if (dir && BACKEND_STACKS[stack]) return fs.existsSync(path.join(dir, 'vendor', 'autoload.php'))
   return !!(dir && fs.existsSync(path.join(dir, 'node_modules')))
 }
 
@@ -137,6 +147,7 @@ function printBanner() {
   console.log(`  ${paint(c.gray, 'Web スタック:')}  ${paint(c.cyan + c.bold, webStack)}  ${paint(c.gray, WEB_LABELS[webStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'Desktop:')}       ${paint(c.magenta + c.bold, deskStack)}  ${paint(c.gray, DESKTOP_LABELS[deskStack] ?? '')}`)
+  console.log(`  ${paint(c.gray, 'Backend:')}       ${paint(c.yellow + c.bold, activeBackendFor(webStack))}${isStackInstalled(activeBackendFor(webStack)) ? '' : paint(c.red, '  (vendor missing)')}`)
   console.log(`  ${paint(c.gray, 'モジュール:')}    ${paint(c.yellow, String(mods))} tatemonos`)
   console.log(`  ${paint(c.gray, emoji)}`)
   console.log()
@@ -446,12 +457,24 @@ function cmdStacks() {
     const tag    = isCurrent ? paint(c.magenta, ' (active)') : ''
     console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, DESKTOP_LABELS[key] ?? '')}${tag}`)
   }
+  console.log()
+  console.log(`  ${paint(c.white + c.bold, 'Backend:')}`)
+  console.log()
+  const activeBackend = activeBackendFor(activeWeb)
+  for (const key of Object.keys(BACKEND_STACKS)) {
+    const isCurrent = key === activeBackend
+    const arrow  = isCurrent ? paint(c.yellow + c.bold, '→') : ' '
+    const name   = isCurrent ? paint(c.yellow + c.bold, key.padEnd(18)) : paint(c.gray, key.padEnd(18))
+    const status = isStackInstalled(key) ? paint(c.green, '✓') : paint(c.red, '✗')
+    const tag    = isCurrent ? paint(c.yellow, ' (active)') : ''
+    console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, BACKEND_LABELS[key] ?? '')}${tag}`)
+  }
   divider()
 }
 
 async function cmdDeps(actionArg, stackArg) {
   const config = readConfig()
-  const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack].filter(Boolean))
+  const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack, activeBackendFor(config.activeStack ?? 'nextjs')].filter(Boolean))
   const stackOptions = Object.keys(ALL_STACKS).map(key => ({
     label: `${isStackInstalled(key) ? '✓' : '✗'}  ${ALL_LABELS[key] ?? key}`,
     sub:   `${key}${active.has(key) ? '  (active)' : isStackInstalled(key) ? '  installed' : '  not installed'}`,
@@ -463,9 +486,9 @@ async function cmdDeps(actionArg, stackArg) {
     divider()
     const chosen = await picker('node_modules — install / free disk space?', [
       { label: 'Show disk usage',                 sub: 'which stacks are installed', value: 'status' },
-      { label: 'Install a stack',                 sub: 'npm install for one frontend', value: 'install' },
-      { label: 'Uninstall a stack',               sub: 'delete that stack\'s node_modules', value: 'uninstall' },
-      { label: 'Prune unused',                    sub: 'keep only active web + app + desktop', value: 'prune' },
+      { label: 'Install a stack',                 sub: 'npm install (frontend) / composer install (backend)', value: 'install' },
+      { label: 'Uninstall a stack',               sub: 'delete node_modules (frontend) / vendor (backend)', value: 'uninstall' },
+      { label: 'Prune unused',                    sub: 'keep only active web + app + desktop + backend', value: 'prune' },
     ])
     action = chosen.value
   }
@@ -477,7 +500,7 @@ async function cmdDeps(actionArg, stackArg) {
 
   if (action === 'prune') {
     console.log()
-    log('Removing node_modules from stacks that are not active...')
+    log('Removing deps from stacks that are not active...')
     info(`Keeping: ${[...active].join(', ') || '(none)'}`)
     await runSetup(['--prune-unused'])
     return
@@ -552,7 +575,7 @@ async function interactiveMenu() {
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
-    { label: 'パッケージ管理    Install / uninstall deps', sub: 'node_modules per frontend stack', value: 'deps' },
+    { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
@@ -596,10 +619,10 @@ function printHelp() {
     ['mizumi web <stack>',       '→ Switch web stack'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
-    ['mizumi deps',              '→ Install / uninstall node_modules'],
-    ['mizumi deps prune',        '→ Delete unused frontend node_modules'],
-    ['mizumi deps install <stack>', '→ Install one frontend'],
-    ['mizumi deps uninstall <stack>', '→ Remove one frontend\'s node_modules'],
+    ['mizumi deps',              '→ Install / uninstall deps (frontend + backend)'],
+    ['mizumi deps prune',        '→ Delete deps of unused stacks'],
+    ['mizumi deps install <stack>', '→ Install one stack (e.g. nextjs, laravel)'],
+    ['mizumi deps uninstall <stack>', '→ Remove one stack\'s node_modules / vendor'],
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
@@ -611,6 +634,7 @@ function printHelp() {
   console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
   console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
   console.log(`  ${paint(c.gray, 'Desktop:')} tauri, electron`)
+  console.log(`  ${paint(c.gray, 'Backend:')} laravel, laravel-inertia`)
   console.log()
 }
 

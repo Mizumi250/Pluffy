@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — queue-flow [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T14:43:20.779Z
+// Generated: 2026-10-18T15:59:16.987Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

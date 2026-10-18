@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — JobResultController
 // Tatemono: job-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-06-26T07:08:59.168857Z
+// Generated: 2026-10-18T15:59:25.235447Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\JobTest;

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LoopSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T14:43:16.652Z
+// Generated: 2026-10-18T15:59:01.583Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'
@@ -79,14 +79,18 @@ export const LoopSection = () => {
           <MotiView
             from={{ backgroundColor: '#f43f5e' }}
             animate={{ backgroundColor: ['#f43f5e','#f97316','#eab308','#22c55e','#0ea5e9','#a855f7','#f43f5e'] }}
-            transition={{ loop: true, duration: 4000, type: 'timing' }}
+            transition={{
+              backgroundColor: { loop: true, duration: 4000, type: 'timing' },
+            }}
             style={{ width: 72, height: 72, borderRadius: 12 }}
           />
         </DemoCardNative>
         <DemoCardNative title="Border Radius Morph" desc="shape morphs via MotiView loop">
           <MotiView
             animate={{ borderRadius: [12, 26, 6, 26, 12] }}
-            transition={{ loop: true, duration: 2500, type: 'timing' }}
+            transition={{
+              borderRadius: { loop: true, duration: 2500, type: 'timing' },
+            }}
             style={{ width: 64, height: 64, backgroundColor: '#a855f7' }}
           />
         </DemoCardNative>

@@ -71,7 +71,7 @@ function checkSetup() {
   if (!fs.existsSync(path.join(BACKEND_DIR, 'vendor', 'autoload.php'))) {
     console.log('\n  ✗ Laravel packages missing (vendor/autoload.php).')
     console.log('    Frontends were installed, but the PHP backend was not.')
-    console.log('    Run:  node setup.js --backend\n')
+    console.log(`    Run:  node mizumi.js deps install ${path.basename(BACKEND_DIR)}\n`)
     process.exit(1)
   }
 

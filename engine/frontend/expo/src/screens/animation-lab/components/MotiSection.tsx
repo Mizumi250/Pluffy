@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — MotiSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-09T14:43:16.650Z
+// Generated: 2026-10-18T15:59:01.569Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'
@@ -39,7 +39,10 @@ export const MotiSection = () => {
                 key={w}
                 from={{ opacity: 0, translateY: 20 }}
                 animate={{ opacity: 1, translateY: 0 }}
-                transition={{ type: 'spring', delay: i * 100, damping: 14 }}
+                transition={{
+                  opacity: { type: 'spring', delay: i * 100, damping: 14 },
+                  translateY: { type: 'spring', delay: i * 100, damping: 14 },
+                }}
                 style={[nativeStyles.animPill, { backgroundColor: '#f59e0b' }]}
               >
                 <Text style={nativeStyles.animPillLabel}>{w}</Text>
@@ -71,7 +74,10 @@ export const MotiSection = () => {
                 from={{ opacity: 0, scale: 0 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                transition={{
+                  opacity: { type: 'spring', stiffness: 400, damping: 20 },
+                  scale: { type: 'spring', stiffness: 400, damping: 20 },
+                }}
                 style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#10b981' }}
               />
             )}
@@ -87,7 +93,10 @@ export const MotiSection = () => {
                 from={{ opacity: 0, rotate: '-180deg' }}
                 animate={{ opacity: 1, rotate: '0deg' }}
                 exit={{ opacity: 0, rotate: '180deg' }}
-                transition={{ type: 'spring', stiffness: 200 }}
+                transition={{
+                  opacity: { type: 'spring', stiffness: 200 },
+                  rotate: { type: 'spring', stiffness: 200 },
+                }}
                 style={{ width: 56, height: 56, borderRadius: 10, backgroundColor: '#a855f7' }}
               />
             )}
@@ -100,7 +109,10 @@ export const MotiSection = () => {
           <MotiView
             from={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ type: 'spring', stiffness: 200, damping: 18 }}
+            transition={{
+              opacity: { type: 'spring', stiffness: 200, damping: 18 },
+              scale: { type: 'spring', stiffness: 200, damping: 18 },
+            }}
             style={{ width: 100, height: 44, borderRadius: 10, backgroundColor: '#0ea5e9', alignItems: 'center', justifyContent: 'center' }}
           >
             <Text style={{ color: 'white', fontWeight: '700', fontSize: 12 }}>In View!</Text>

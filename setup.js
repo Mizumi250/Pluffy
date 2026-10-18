@@ -4,6 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
+//        node setup.js --backend [laravel|laravel-inertia]
 // ============================================================
 
 import { execSync } from 'node:child_process'
@@ -38,10 +39,14 @@ if (fs.existsSync(arkzenJsonPath)) {
 const DESKTOP_STACKS = ['tauri', 'electron']
 const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeDesktopStack)
 
-// Stack → backend mapping
-const ACTIVE_BACKEND_DIR = activeStack === 'react-inertia'
-  ? path.join(BACKEND_DIR, 'laravel-inertia')
-  : path.join(BACKEND_DIR, 'laravel')
+// Stack → backend mapping (setupBackend can retarget this via useBackend)
+const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
+let backendName = ACTIVE_BACKEND
+let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
+function useBackend(name) {
+  backendName = name
+  ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, name)
+}
 
 const ACTIVE_FRONTEND_DIR = path.join(FRONTEND_DIR, activeStack)
 
@@ -92,11 +97,22 @@ const FRONTEND_STACKS = {
   'electron':       { category: 'desktop', dir: path.join(FRONTEND_DIR, 'electron') },
 }
 
+// PHP backends — "installed" means composer vendor/ exists
+const BACKEND_STACKS = {
+  'laravel':         { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel') },
+  'laravel-inertia': { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel-inertia') },
+}
+const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
+
 function activeStackSet() {
-  return new Set([activeStack, activeAppStack, activeDesktopStack].filter(Boolean))
+  return new Set([activeStack, activeAppStack, activeDesktopStack, ACTIVE_BACKEND].filter(Boolean))
 }
 
 function cacheDirsFor(stack) {
+  if (BACKEND_STACKS[stack]) {
+    const dir = BACKEND_STACKS[stack].dir
+    return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
+  }
   const meta = FRONTEND_STACKS[stack]
   if (!meta) return []
   const dirs = [path.join(meta.dir, 'node_modules')]
@@ -136,6 +152,7 @@ function formatBytes(n) {
 }
 
 function stackInstalled(stack) {
+  if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
   return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
 }
@@ -175,7 +192,23 @@ function installNpm(dir, label) {
   return true
 }
 
+function installBackend(name, { force = false } = {}) {
+  if (stackInstalled(name) && !force) {
+    success(`${name} already installed — skip (use --force to reinstall)`)
+    return true
+  }
+  checkRequirements()
+  useBackend(name)
+  setupBackend()
+  if (name === 'laravel-inertia' && activeStack === 'react-inertia') {
+    const nm = path.join(ACTIVE_BACKEND_DIR, 'node_modules')
+    if (!fs.existsSync(nm) || force) installNpm(ACTIVE_BACKEND_DIR, 'laravel-inertia')
+  }
+  return true
+}
+
 function installStack(stack, { force = false } = {}) {
+  if (BACKEND_STACKS[stack]) return installBackend(stack, { force })
   const meta = FRONTEND_STACKS[stack]
   if (!meta) { error(`Unknown stack: ${stack}`); return false }
   if (!fs.existsSync(meta.dir)) { error(`Stack folder missing: engine/frontend/${stack}`); return false }
@@ -203,7 +236,7 @@ function installStack(stack, { force = false } = {}) {
 }
 
 function uninstallStack(stack, { force = false } = {}) {
-  const meta = FRONTEND_STACKS[stack]
+  const meta = ALL_DEP_STACKS[stack]
   if (!meta) { error(`Unknown stack: ${stack}`); return 0 }
   if (!force && activeStackSet().has(stack)) {
     warn(`Skip ${stack} — it is currently active. Switch away first, or pass --force.`)
@@ -216,17 +249,18 @@ function uninstallStack(stack, { force = false } = {}) {
     freed += removeDir(dir)
   }
   if (freed > 0) success(`Uninstalled ${stack} (${formatBytes(freed)} freed)`)
-  else success(`${stack} had no node_modules / cache to remove`)
+  else success(`${stack} had no ${BACKEND_STACKS[stack] ? 'vendor / node_modules' : 'node_modules / cache'} to remove`)
+  if (freed > 0 && BACKEND_STACKS[stack]) console.log(`  · .env, database and app code kept. Reinstall: node setup.js --install ${stack}`)
   return freed
 }
 
 function printDepsStatus() {
   divider()
-  console.log('\n  Frontend package status (node_modules + rebuild caches)\n')
+  console.log('\n  Package status (frontend node_modules + backend vendor)\n')
   const keep = activeStackSet()
   let total = 0
   let unused = 0
-  for (const [stack, meta] of Object.entries(FRONTEND_STACKS)) {
+  for (const [stack, meta] of Object.entries(ALL_DEP_STACKS)) {
     const size = stackCacheSize(stack)
     total += size
     const installed = stackInstalled(stack)
@@ -243,9 +277,9 @@ function printDepsStatus() {
 
 function pruneUnusedStacks({ force = false } = {}) {
   divider()
-  log('Pruning node_modules for stacks that are not active...')
+  log('Pruning deps for stacks that are not active...')
   let freed = 0
-  for (const stack of Object.keys(FRONTEND_STACKS)) {
+  for (const stack of Object.keys(ALL_DEP_STACKS)) {
     if (activeStackSet().has(stack)) continue
     if (!cacheDirsFor(stack).some(fs.existsSync)) continue
     freed += uninstallStack(stack, { force: true })
@@ -292,9 +326,11 @@ function parseCli(argv) {
       flags.uninstall.push(...names)
       flags.fullSetup = false
       i = next
-    } else if (a === '--backend' || a === 'backend') {
+    } else if (a === '--backend' || a === 'backend' || a.startsWith('--backend=')) {
       flags.backendOnly = true
       flags.fullSetup = false
+      if (a.includes('=')) flags.backendName = a.split('=')[1]
+      else if (argv[i + 1] && !argv[i + 1].startsWith('-')) flags.backendName = argv[++i]
     } else if (a === '--help' || a === '-h') {
       flags.help = true
       flags.fullSetup = false
@@ -322,12 +358,13 @@ function printSetupHelp() {
     node setup.js
 
   PHP backend only (composer vendor):
-    node setup.js --backend
+    node setup.js --backend                    (active backend)
+    node setup.js --backend laravel-inertia
 
   Package manager:
     node setup.js --deps-status
-    node setup.js --install nextjs expo electron
-    node setup.js --uninstall astro react-vite tanstack-start
+    node setup.js --install nextjs expo electron laravel
+    node setup.js --uninstall astro react-vite tanstack-start laravel-inertia
     node setup.js --prune-unused
     node setup.js --uninstall astro --force
 `)
@@ -470,7 +507,6 @@ function setupAppStack() {
 
 function setupBackend() {
   divider()
-  const backendName = activeStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
   log(`Setting up backend: ${backendName}...`)
 
   const artisanPath = path.join(ACTIVE_BACKEND_DIR, 'artisan')
@@ -499,6 +535,25 @@ function setupBackend() {
     success(`Laravel already installed in engine/backend/${backendName}`)
   }
 
+  // Gitignored dirs Laravel needs before composer's package:discover runs
+  for (const dir of [
+    ['bootstrap', 'cache'],
+    ['storage', 'framework', 'cache', 'data'],
+    ['storage', 'framework', 'sessions'],
+    ['storage', 'framework', 'views'],
+    ['storage', 'logs'],
+  ]) {
+    fs.mkdirSync(path.join(ACTIVE_BACKEND_DIR, ...dir), { recursive: true })
+  }
+
+  const envPath   = path.join(ACTIVE_BACKEND_DIR, '.env')
+  const envExPath = path.join(ACTIVE_BACKEND_DIR, '.env.example')
+  const dbPath    = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
+
+  if (!fs.existsSync(envPath) && fs.existsSync(envExPath)) {
+    fs.copyFileSync(envExPath, envPath)
+  }
+
   log('Installing composer packages...')
   const composerOk = run('composer install --no-interaction', ACTIVE_BACKEND_DIR)
     || run('composer update --no-interaction --with-all-dependencies', ACTIVE_BACKEND_DIR)
@@ -509,16 +564,12 @@ function setupBackend() {
   }
   success('Composer packages installed')
 
-  log('Generating Laravel app key...')
-  run('php artisan key:generate --force', ACTIVE_BACKEND_DIR)
-  success('App key generated')
-
-  const envPath   = path.join(ACTIVE_BACKEND_DIR, '.env')
-  const envExPath = path.join(ACTIVE_BACKEND_DIR, '.env.example')
-  const dbPath    = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
-
-  if (!fs.existsSync(envPath) && fs.existsSync(envExPath)) {
-    fs.copyFileSync(envExPath, envPath)
+  if (/^APP_KEY=base64:/m.test(fs.readFileSync(envPath, 'utf-8'))) {
+    success('App key already set')
+  } else {
+    log('Generating Laravel app key...')
+    run('php artisan key:generate --force', ACTIVE_BACKEND_DIR)
+    success('App key generated')
   }
 
   let envContent = fs.readFileSync(envPath, 'utf-8')
@@ -725,7 +776,12 @@ if (cli.depsStatus) {
 }
 
 if (cli.backendOnly) {
+  if (cli.backendName && !BACKEND_STACKS[cli.backendName]) {
+    error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
+    process.exit(1)
+  }
   checkRequirements()
+  useBackend(cli.backendName ?? ACTIVE_BACKEND)
   setupBackend()
   process.exit(0)
 }
@@ -739,13 +795,13 @@ if (cli.emptyInstall || cli.emptyUninstall) {
 if (cli.install.length || cli.uninstall.length || cli.pruneUnused) {
   if (cli.install.length) {
     for (const stack of cli.install) {
-      if (!FRONTEND_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
+      if (!ALL_DEP_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
       installStack(stack, { force: cli.force })
     }
   }
   if (cli.uninstall.length) {
     for (const stack of cli.uninstall) {
-      if (!FRONTEND_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
+      if (!ALL_DEP_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
       uninstallStack(stack, { force: cli.force })
     }
   }
