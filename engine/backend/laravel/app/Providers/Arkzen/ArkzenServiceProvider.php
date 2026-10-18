@@ -15,36 +15,9 @@ class ArkzenServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->ensureDirectories();
-        $this->registerSqliteConnections();
+        \App\Arkzen\Support\ArkzenDatabase::registerAll();
         $this->ensureReverbConfig();
         $this->bootActiveTatemonos();
-    }
-
-    private function registerSqliteConnections(): void
-    {
-        $arkzenDbDir = database_path('arkzen');
-        
-        if (!File::exists($arkzenDbDir)) {
-            return;
-        }
-        
-        $dbFiles = File::glob($arkzenDbDir . '/*.sqlite');
-        
-        foreach ($dbFiles as $dbFile) {
-            $slug = basename($dbFile, '.sqlite');
-            $connection = str_replace('-', '_', $slug);
-            
-            if (!Config::has("database.connections.{$connection}")) {
-                Config::set("database.connections.{$connection}", [
-                    'driver' => 'sqlite',
-                    'database' => $dbFile,
-                    'prefix' => '',
-                    'foreign_key_constraints' => true,
-                ]);
-                
-                \Log::info("[Arkzen] Registered SQLite connection: {$connection} → {$slug}.sqlite");
-            }
-        }
     }
 
     private function ensureReverbConfig(): void

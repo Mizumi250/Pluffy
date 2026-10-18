@@ -54,12 +54,26 @@ class MigrationBuilder
         $dbConn    = ModelBuilder::slugToConnection($name);
         $timestamp = date('Y_m_d_His');
 
-        // Ensure the isolated SQLite file exists and is configured
+        // Ensure the isolated database exists and is configured
         self::ensureDatabase($name, $dbConn);
 
         // Check table on the correct connection
         if (Schema::connection($dbConn)->hasTable($tableName)) {
             self::buildUpdateMigration($module, $tableName, $dbConn, $name);
+            return;
+        }
+
+        // The per-tatemono databases are not committed, so on a fresh machine the
+        // table is missing even though its create migration is. Re-run that file
+        // instead of generating a duplicate.
+        $existing = self::existingCreateMigration($name, $tableName);
+        if ($existing) {
+            self::runMigration($existing, $name);
+            if (Schema::connection($dbConn)->hasTable($tableName)) {
+                self::buildUpdateMigration($module, $tableName, $dbConn, $name);
+            } else {
+                Log::warning("[Arkzen Migration] {$tableName} still missing after running " . basename($existing));
+            }
             return;
         }
 
@@ -77,28 +91,12 @@ class MigrationBuilder
     }
 
     // ─────────────────────────────────────────────
-    // ENSURE ISOLATED SQLITE DB EXISTS + CONFIGURED
+    // ENSURE ISOLATED DB EXISTS + CONFIGURED (sqlite file or pgsql database)
     // ─────────────────────────────────────────────
 
     public static function ensureDatabase(string $tatSlug, string $dbConn): void
     {
-        $dbDir  = database_path('arkzen');
-        $dbFile = "{$dbDir}/{$tatSlug}.sqlite";
-
-        File::ensureDirectoryExists($dbDir);
-
-        if (!file_exists($dbFile)) {
-            file_put_contents($dbFile, '');
-            Log::info("[Arkzen DB] ✓ Created isolated DB: database/arkzen/{$tatSlug}.sqlite");
-        }
-
-        // Register connection at runtime so migrations and models can use it
-        Config::set("database.connections.{$dbConn}", [
-            'driver'   => 'sqlite',
-            'database' => $dbFile,
-            'prefix'   => '',
-            'foreign_key_constraints' => true,
-        ]);
+        \App\Arkzen\Support\ArkzenDatabase::ensure($tatSlug);
     }
 
     // ─────────────────────────────────────────────
@@ -302,8 +300,9 @@ return new class extends Migration
         Log::info("[Arkzen Migration] Running migration for: {$name}");
     
         $exitCode = Artisan::call('migrate', [
-            '--path'  => str_replace(base_path() . '/', '', $filePath),
-            '--force' => true,
+            '--path'     => $filePath,
+            '--realpath' => true,
+            '--force'    => true,
         ]);
     
         $output = Artisan::output();
@@ -319,6 +318,13 @@ return new class extends Migration
     // ─────────────────────────────────────────────
     // HELPERS
     // ─────────────────────────────────────────────
+
+    private static function existingCreateMigration(string $name, string $tableName): ?string
+    {
+        $files = glob(database_path("migrations/arkzen/{$name}") . DIRECTORY_SEPARATOR . "*_create_{$tableName}_table.php") ?: [];
+        sort($files);
+        return $files[0] ?? null;
+    }
 
     private static function toClassName(string $tableName): string
     {

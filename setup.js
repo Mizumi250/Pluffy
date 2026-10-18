@@ -7,7 +7,8 @@
 //        node setup.js --backend [laravel|laravel-inertia]
 // ============================================================
 
-import { execSync } from 'node:child_process'
+import { execSync, spawnSync } from 'node:child_process'
+import os from 'node:os'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -26,6 +27,7 @@ const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 let activeStack = 'nextjs'
 let activeAppStack = null
 let activeDesktopStack = null
+let activeDatabase = 'sqlite'
 const arkzenJsonPath = path.join(ROOT_DIR, 'arkzen.json')
 if (fs.existsSync(arkzenJsonPath)) {
   try {
@@ -33,6 +35,7 @@ if (fs.existsSync(arkzenJsonPath)) {
     activeStack    = json.activeStack    ?? 'nextjs'
     activeAppStack = json.activeAppStack ?? null
     activeDesktopStack = json.activeDesktopStack ?? null
+    activeDatabase = json.activeDatabase === 'pgsql' ? 'pgsql' : 'sqlite'
   } catch {}
 }
 
@@ -331,12 +334,15 @@ function parseCli(argv) {
       flags.fullSetup = false
       if (a.includes('=')) flags.backendName = a.split('=')[1]
       else if (argv[i + 1] && !argv[i + 1].startsWith('-')) flags.backendName = argv[++i]
+    } else if (a === '--database' || a === 'database') {
+      flags.databaseOnly = true
+      flags.fullSetup = false
     } else if (a === '--help' || a === '-h') {
       flags.help = true
       flags.fullSetup = false
     }
   }
-  if (flags.install.length || flags.uninstall.length || flags.pruneUnused || flags.depsStatus || flags.backendOnly) {
+  if (flags.install.length || flags.uninstall.length || flags.pruneUnused || flags.depsStatus || flags.backendOnly || flags.databaseOnly) {
     flags.fullSetup = argv.includes('--with-setup')
   }
   if ((argv.includes('--install') || argv.includes('install')) && flags.install.length === 0) {
@@ -360,6 +366,7 @@ function printSetupHelp() {
   PHP backend only (composer vendor):
     node setup.js --backend                    (active backend)
     node setup.js --backend laravel-inertia
+    node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
   Package manager:
     node setup.js --deps-status
@@ -505,6 +512,119 @@ function setupAppStack() {
 // BACKEND SETUP (web stacks only)
 // ─────────────────────────────────────────────
 
+// ─────────────────────────────────────────────
+// DATABASE (sqlite | pgsql) — arkzen.json "activeDatabase"
+// Each tatemono gets its own isolated database either way:
+//   sqlite → database/arkzen/<name>.sqlite
+//   pgsql  → Postgres database <ARKZEN_DB_PREFIX>_<name>
+// ─────────────────────────────────────────────
+
+function getEnvValue(content, key) {
+  const m = content.match(new RegExp(`^${key}=(.*)$`, 'm'))
+  return m ? m[1].trim().replace(/^"(.*)"$/, '$1') : null
+}
+
+function setEnvValue(content, key, value) {
+  const re   = new RegExp(`^#?[ \\t]*${key}=.*$`, 'm')
+  const safe = value !== null && /[\s#"']/.test(value) ? `"${value.replace(/"/g, '\\"')}"` : value
+  const line = value === null ? `# ${key}=` : `${key}=${safe}`
+  return re.test(content) ? content.replace(re, () => line) : `${content.replace(/\s*$/, '')}\n${line}\n`
+}
+
+function phpHasExtension(name) {
+  try {
+    return execSync('php -m', { encoding: 'utf-8' }).toLowerCase().split(/\r?\n/).map(l => l.trim()).includes(name)
+  } catch {
+    return false
+  }
+}
+
+function pgSettings(envContent) {
+  const wasPg = getEnvValue(envContent, 'DB_CONNECTION') === 'pgsql'
+  const cur   = key => (wasPg ? getEnvValue(envContent, key) : null)
+  return {
+    host:     process.env.PLUFF_DB_HOST     || cur('DB_HOST')     || '127.0.0.1',
+    port:     process.env.PLUFF_DB_PORT     || cur('DB_PORT')     || '5432',
+    database: process.env.PLUFF_DB_DATABASE || cur('DB_DATABASE') || 'pluff',
+    username: process.env.PLUFF_DB_USERNAME || cur('DB_USERNAME') || 'postgres',
+    password: process.env.PLUFF_DB_PASSWORD ?? cur('DB_PASSWORD') ?? '',
+  }
+}
+
+function ensurePgDatabase(pg) {
+  const script = path.join(os.tmpdir(), `pluff-pg-${process.pid}.php`)
+  fs.writeFileSync(script, `<?php
+try {
+    $pdo = new PDO('pgsql:host=' . getenv('PG_HOST') . ';port=' . getenv('PG_PORT') . ';dbname=postgres',
+        getenv('PG_USER'), getenv('PG_PASS'), [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
+    $db = getenv('PG_DB');
+    $st = $pdo->prepare('select 1 from pg_database where datname = ?');
+    $st->execute([$db]);
+    if ($st->fetchColumn()) { echo "exists"; exit(0); }
+    $pdo->exec('create database "' . str_replace('"', '""', $db) . '"');
+    echo "created";
+} catch (Throwable $e) {
+    fwrite(STDERR, $e->getMessage());
+    exit(1);
+}
+`)
+  const res = spawnSync('php', [script], {
+    encoding: 'utf-8',
+    env: { ...process.env, PG_HOST: pg.host, PG_PORT: pg.port, PG_USER: pg.username, PG_PASS: pg.password, PG_DB: pg.database },
+  })
+  fs.rmSync(script, { force: true })
+  if (res.status === 0) {
+    success(`Postgres database "${pg.database}" ${res.stdout.trim() === 'created' ? 'created' : 'ready'}`)
+    return true
+  }
+  error(`Could not connect to PostgreSQL at ${pg.host}:${pg.port} as "${pg.username}"`)
+  error((res.stderr || res.error?.message || '').trim())
+  error('Is PostgreSQL running and is the password right? Re-enter it with: node mizumi.js db postgresql')
+  return false
+}
+
+function configureDatabase() {
+  const envPath = path.join(ACTIVE_BACKEND_DIR, '.env')
+  let env = fs.readFileSync(envPath, 'utf-8')
+
+  if (activeDatabase === 'pgsql') {
+    if (!phpHasExtension('pdo_pgsql')) {
+      error('PHP extension pdo_pgsql is not enabled.')
+      error('Enable it in php.ini (remove the ";"):  extension=pdo_pgsql  and  extension=pgsql')
+      process.exit(1)
+    }
+    const pg = pgSettings(env)
+    env = setEnvValue(env, 'DB_CONNECTION', 'pgsql')
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+    env = setEnvValue(env, 'ARKZEN_DB_DRIVER', 'pgsql')
+    fs.writeFileSync(envPath, env)
+    success(`.env configured for PostgreSQL (${pg.username}@${pg.host}:${pg.port}/${pg.database})`)
+    if (!ensurePgDatabase(pg)) process.exit(1)
+    return
+  }
+
+  const dbPath = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
+  env = setEnvValue(env, 'DB_CONNECTION', 'sqlite')
+  env = setEnvValue(env, 'DB_HOST', null)
+  env = setEnvValue(env, 'DB_PORT', null)
+  env = setEnvValue(env, 'DB_DATABASE', dbPath.replace(/\\/g, '/'))
+  env = setEnvValue(env, 'DB_USERNAME', null)
+  env = setEnvValue(env, 'DB_PASSWORD', null)
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', 'sqlite')
+  fs.writeFileSync(envPath, env)
+  success('.env configured for SQLite')
+
+  if (!fs.existsSync(dbPath)) {
+    fs.mkdirSync(path.dirname(dbPath), { recursive: true })
+    fs.writeFileSync(dbPath, '')
+    success('SQLite database file created')
+  }
+}
+
 function setupBackend() {
   divider()
   log(`Setting up backend: ${backendName}...`)
@@ -548,7 +668,6 @@ function setupBackend() {
 
   const envPath   = path.join(ACTIVE_BACKEND_DIR, '.env')
   const envExPath = path.join(ACTIVE_BACKEND_DIR, '.env.example')
-  const dbPath    = path.join(ACTIVE_BACKEND_DIR, 'database', 'database.sqlite')
 
   if (!fs.existsSync(envPath) && fs.existsSync(envExPath)) {
     fs.copyFileSync(envExPath, envPath)
@@ -573,26 +692,12 @@ function setupBackend() {
   }
 
   let envContent = fs.readFileSync(envPath, 'utf-8')
-  envContent = envContent
-    .replace(/DB_CONNECTION=.*/,  'DB_CONNECTION=sqlite')
-    .replace(/DB_HOST=.*/,        '# DB_HOST=')
-    .replace(/DB_PORT=.*/,        '# DB_PORT=')
-    .replace(/DB_DATABASE=.*/,    `DB_DATABASE=${dbPath.replace(/\\/g, '/')}`)
-    .replace(/DB_USERNAME=.*/,    '# DB_USERNAME=')
-    .replace(/DB_PASSWORD=.*/,    '# DB_PASSWORD=')
-
   if (!envContent.includes('ARKZEN_ENGINE_SECRET')) {
     envContent += '\nARKZEN_ENGINE_SECRET=arkzen-secret-123\n'
+    fs.writeFileSync(envPath, envContent)
   }
 
-  fs.writeFileSync(envPath, envContent)
-  success('.env configured for SQLite')
-
-  if (!fs.existsSync(dbPath)) {
-    fs.mkdirSync(path.dirname(dbPath), { recursive: true })
-    fs.writeFileSync(dbPath, '')
-    success('SQLite database file created')
-  }
+  configureDatabase()
 
   registerServiceProvider()
   fixAppPhp()
@@ -783,6 +888,26 @@ if (cli.backendOnly) {
   checkRequirements()
   useBackend(cli.backendName ?? ACTIVE_BACKEND)
   setupBackend()
+  process.exit(0)
+}
+
+if (cli.databaseOnly) {
+  divider()
+  log(`Database: ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'} (one isolated database per tatemono)`)
+  const installed = Object.keys(BACKEND_STACKS).filter(name =>
+    fs.existsSync(path.join(BACKEND_STACKS[name].dir, 'vendor', 'autoload.php')) &&
+    fs.existsSync(path.join(BACKEND_STACKS[name].dir, '.env')))
+  if (!installed.length) {
+    warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
+    process.exit(0)
+  }
+  for (const name of installed) {
+    useBackend(name)
+    log(`Applying to ${name}...`)
+    configureDatabase()
+    run('php artisan config:clear', ACTIVE_BACKEND_DIR)
+    run('php artisan migrate --force', ACTIVE_BACKEND_DIR)
+  }
   process.exit(0)
 }
 

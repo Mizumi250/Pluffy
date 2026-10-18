@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — ShikakuProjectStoreRequest
 // Tatemono: shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T15:59:48.938889Z
+// Generated: 2026-10-18T17:15:11.931608Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\Shikaku;

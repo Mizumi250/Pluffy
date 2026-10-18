@@ -54,6 +54,11 @@ const BACKEND_DIR   = isInertia
   ? path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
   : path.join(ENGINE_DIR, 'backend', 'laravel')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
+
+// Database — each tatemono has its own sqlite file or Postgres database
+const isPg      = arkzenJson.activeDatabase === 'pgsql'
+const engineEnv = fs.existsSync(path.join(BACKEND_DIR, '.env')) ? fs.readFileSync(path.join(BACKEND_DIR, '.env'), 'utf-8') : ''
+const engineEnvValue = (key, def) => engineEnv.match(new RegExp(`^${key}=(.*)$`, 'm'))?.[1]?.trim() || def
 const PROJECTS_DIR  = path.join(ROOT_DIR, 'projects')
 
 // ─────────────────────────────────────────────
@@ -116,6 +121,7 @@ const hasBackend  = content.includes('auth: true')
 const hasRealtime = content.includes('@arkzen:realtime') || content.includes('@arkzen:notifications')
 const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events')
 const tatSnake    = tatName.replace(/-/g, '_')
+const pgDatabaseName = `${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}_${tatSnake}`.toLowerCase()
 
 divider()
 console.log(`\n  ARKZEN — Exporting tatemono: ${tatName}\n`)
@@ -573,7 +579,9 @@ if (isInertia) {
 // Native:  skip (no backend)
 // ─────────────────────────────────────────────
 
-if (!isNative && hasBackend) {
+if (!isNative && hasBackend && isPg) {
+  skip(`SQLite copy (PostgreSQL — export uses database ${pgDatabaseName})`)
+} else if (!isNative && hasBackend) {
   log('Copying SQLite database...')
 
   const engSqlite  = path.join(BACKEND_DIR, 'database', 'arkzen', `${tatName}.sqlite`)
@@ -642,6 +650,14 @@ if (!isNative && !isInertia && hasBackend) {
   log('Writing standalone bootstrap/app.php...')
 
   fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
+  const dbConnectionPhp = isPg
+    ? `config('database.connections.pgsql')`
+    : `[
+        'driver'   => 'sqlite',
+        'database' => base_path('database/arkzen/${tatName}.sqlite'),
+        'prefix'   => '',
+        'foreign_key_constraints' => true,
+    ]`
   fs.writeFileSync(path.join(PROJ_BACK, 'bootstrap', 'app.php'), `<?php
 
 use Illuminate\\Foundation\\Application;
@@ -663,12 +679,7 @@ $app = Application::configure(basePath: dirname(__DIR__))
     })->create();
 
 $app->booted(function () {
-    \\Illuminate\\Support\\Facades\\Config::set('database.connections.${tatSnake}', [
-        'driver'   => 'sqlite',
-        'database' => base_path('database/arkzen/${tatName}.sqlite'),
-        'prefix'   => '',
-        'foreign_key_constraints' => true,
-    ]);
+    \\Illuminate\\Support\\Facades\\Config::set('database.connections.${tatSnake}', ${dbConnectionPhp});
 });
 
 return $app;
@@ -799,6 +810,17 @@ if (!isNative && hasBackend) {
     .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
     .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
+  if (isPg) {
+    env = env
+      .replace(/^DB_CONNECTION=.*$/m,       'DB_CONNECTION=pgsql')
+      .replace(/^#?[ \t]*DB_HOST=.*$/m,     `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`)
+      .replace(/^#?[ \t]*DB_PORT=.*$/m,     `DB_PORT=${engineEnvValue('DB_PORT', '5432')}`)
+      .replace(/^#?[ \t]*DB_DATABASE=.*$/m, `DB_DATABASE=${pgDatabaseName}`)
+      .replace(/^#?[ \t]*DB_USERNAME=.*$/m, `DB_USERNAME=${engineEnvValue('DB_USERNAME', 'postgres')}`)
+      .replace(/^#?[ \t]*DB_PASSWORD=.*$/m, () => `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`)
+    env += '\nARKZEN_DB_DRIVER=pgsql\n'
+  }
+
   if (hasRealtime && !env.includes('REVERB_APP_ID=')) {
     env += [
       '',
@@ -812,7 +834,7 @@ if (!isNative && hasBackend) {
   }
 
   fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-  success(`.env written (DB → ${relativeSqlitePath}, port → ${backendPort})`)
+  success(`.env written (DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
 } else {
   skip('.env (Native)')
 }

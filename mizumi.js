@@ -102,6 +102,11 @@ const BACKEND_LABELS = {
   'laravel':         'Laravel backend (API for web stacks)',
   'laravel-inertia': 'Laravel + Inertia backend (react-inertia)',
 }
+const DATABASES = {
+  'sqlite': 'SQLite (one .sqlite file per tatemono)',
+  'pgsql':  'PostgreSQL (one database per tatemono)',
+}
+const DB_ALIASES = { sqlite: 'sqlite', pgsql: 'pgsql', postgres: 'pgsql', postgresql: 'pgsql', pg: 'pgsql' }
 const activeBackendFor = webStack => webStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
 const ALL_STACKS = { ...WEB_STACKS, ...APP_STACKS, ...DESKTOP_STACKS, ...BACKEND_STACKS }
 const ALL_LABELS = { ...WEB_LABELS, ...APP_LABELS, ...DESKTOP_LABELS, ...BACKEND_LABELS }
@@ -122,9 +127,9 @@ function hintIfMissing(stack) {
   info(`Install: node mizumi.js deps install ${stack}`)
 }
 
-function runSetup(args) {
+function runSetup(args, extraEnv = {}) {
   return new Promise((resolve) => {
-    const child = spawn(process.execPath, ['setup.js', ...args], { cwd: ROOT_DIR, stdio: 'inherit' })
+    const child = spawn(process.execPath, ['setup.js', ...args], { cwd: ROOT_DIR, stdio: 'inherit', env: { ...process.env, ...extraEnv } })
     child.on('exit', code => resolve(code ?? 1))
   })
 }
@@ -148,6 +153,7 @@ function printBanner() {
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'Desktop:')}       ${paint(c.magenta + c.bold, deskStack)}  ${paint(c.gray, DESKTOP_LABELS[deskStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'Backend:')}       ${paint(c.yellow + c.bold, activeBackendFor(webStack))}${isStackInstalled(activeBackendFor(webStack)) ? '' : paint(c.red, '  (vendor missing)')}`)
+  console.log(`  ${paint(c.gray, 'Database:')}      ${paint(c.cyan + c.bold, config.activeDatabase ?? 'sqlite')}  ${paint(c.gray, DATABASES[config.activeDatabase ?? 'sqlite'] ?? '')}`)
   console.log(`  ${paint(c.gray, 'モジュール:')}    ${paint(c.yellow, String(mods))} tatemonos`)
   console.log(`  ${paint(c.gray, emoji)}`)
   console.log()
@@ -564,6 +570,54 @@ function cmdModules() {
 }
 
 // ─── INTERACTIVE MENU ─────────────────────────────────────────
+function readEnvFile(file) {
+  const out = {}
+  if (!fs.existsSync(file)) return out
+  for (const line of fs.readFileSync(file, 'utf-8').split(/\r?\n/)) {
+    const m = line.match(/^([A-Z0-9_]+)=(.*)$/)
+    if (m) out[m[1]] = m[2].trim().replace(/^"(.*)"$/, '$1')
+  }
+  return out
+}
+
+async function cmdSwitchDatabase(dbArg) {
+  let db = dbArg ? DB_ALIASES[dbArg.toLowerCase()] : null
+  if (dbArg && !db) { error(`Unknown database: "${dbArg}" (use: sqlite, postgresql)`); return }
+  const config  = readConfig()
+  const current = config.activeDatabase ?? 'sqlite'
+  if (!db) {
+    divider()
+    const chosen = await picker('Database 切替 — Which database?',
+      Object.entries(DATABASES).map(([key, label]) => ({
+        label: `${key === current ? paint(c.cyan, '→ ') : '  '}${label}`,
+        sub:   key === current ? paint(c.cyan, '(current)') : key,
+        value: key,
+      }))
+    )
+    db = chosen.value
+  }
+
+  const env = {}
+  if (db === 'pgsql') {
+    const backend = activeBackendFor(config.activeStack ?? 'nextjs')
+    const cur     = readEnvFile(path.join(ROOT_DIR, BACKEND_STACKS[backend], '.env'))
+    const wasPg   = cur.DB_CONNECTION === 'pgsql'
+    info('PostgreSQL connection — press Enter to keep the value in brackets')
+    env.PLUFF_DB_HOST     = await prompt('Host', (wasPg && cur.DB_HOST) || '127.0.0.1')
+    env.PLUFF_DB_PORT     = await prompt('Port', (wasPg && cur.DB_PORT) || '5432')
+    env.PLUFF_DB_USERNAME = await prompt('Username', (wasPg && cur.DB_USERNAME) || 'postgres')
+    const curPw           = (wasPg && cur.DB_PASSWORD) || ''
+    env.PLUFF_DB_PASSWORD = (await prompt(curPw ? 'Password (Enter = keep current)' : 'Password', '')) || curPw
+    env.PLUFF_DB_DATABASE = await prompt('Main database name', (wasPg && cur.DB_DATABASE) || 'pluff')
+  }
+
+  config.activeDatabase = db
+  writeConfig(config)
+  success(`Database 切替完了！ ${paint(c.yellow, current)} → ${paint(c.cyan + c.bold, db)}`)
+  const code = await runSetup(['--database'], env)
+  if (code === 0) info('Restart: node mizumi.js start  (each tatemono gets its database on the next build)')
+}
+
 async function interactiveMenu() {
   printBanner()
 
@@ -575,6 +629,7 @@ async function interactiveMenu() {
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
+    { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
@@ -591,6 +646,7 @@ async function interactiveMenu() {
     case 'web':       await cmdSwitchWeb();    break
     case 'app':       await cmdSwitchApp();    break
     case 'desktop':   await cmdSwitchDesktop(); break
+    case 'db':        await cmdSwitchDatabase(); break
     case 'deps':      await cmdDeps();         break
     case 'stacks':    cmdStacks();             break
     case 'modules':   cmdModules();            break
@@ -619,6 +675,7 @@ function printHelp() {
     ['mizumi web <stack>',       '→ Switch web stack'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
+    ['mizumi db <sqlite|postgresql>', '→ Switch database (one isolated DB per tatemono)'],
     ['mizumi deps',              '→ Install / uninstall deps (frontend + backend)'],
     ['mizumi deps prune',        '→ Delete deps of unused stacks'],
     ['mizumi deps install <stack>', '→ Install one stack (e.g. nextjs, laravel)'],
@@ -650,6 +707,8 @@ switch (command) {
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break
   case 'desktop': cmdSwitchDesktop(arg);       break
+  case 'db':
+  case 'database': cmdSwitchDatabase(arg);     break
   case 'deps':    cmdDeps(arg, args[2]);       break
   case 'stack':   cmdStack();                  break
   case 'stacks':  cmdStacks();                 break

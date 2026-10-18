@@ -8,6 +8,7 @@
 
 import { execSync, spawn } from 'node:child_process'
 import fs from 'node:fs'
+import os from 'node:os'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -303,6 +304,16 @@ function startAppStack() {
   if (activeAppStack === 'expo') {
     bundlerArgs  = ['expo', 'start', '--clear', '--lan']
     bundlerLabel = 'Metro bundler — scan QR with Expo Go'
+    // On a phone, "localhost" is the phone itself, so point the app at this PC's LAN IP
+    // unless the user already configured EXPO_PUBLIC_ARKZEN_BACKEND_URL.
+    const expoEnvFile = path.join(APP_DIR, '.env')
+    const configured  = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ||
+      (fs.existsSync(expoEnvFile) && /^EXPO_PUBLIC_ARKZEN_BACKEND_URL=\S/m.test(fs.readFileSync(expoEnvFile, 'utf-8')))
+    const ip = lanIp()
+    if (!configured && ip) {
+      bundlerEnv.EXPO_PUBLIC_ARKZEN_BACKEND_URL = `http://${ip}:8000`
+      log('app', `Expo backend URL: http://${ip}:8000`)
+    }
   } else if (activeAppStack === 'lynx') {
     // Lynx's `npm run dev` already invokes rspeedy dev and binds the dev
     // server port — spawning a second `npx rspeedy dev` causes EADDRINUSE.
@@ -323,6 +334,13 @@ function startAppStack() {
   pipeLog('app', '[Bundler]', bundler)
 
   return [watcher, bundler]
+}
+
+function lanIp() {
+  const ips = Object.values(os.networkInterfaces()).flat()
+    .filter(a => a && a.family === 'IPv4' && !a.internal)
+    .map(a => a.address)
+  return ips.find(a => a.startsWith('192.168.')) ?? ips.find(a => a.startsWith('10.')) ?? ips[0] ?? null
 }
 
 // ── BOOT ──────────────────────────────────────────────────────

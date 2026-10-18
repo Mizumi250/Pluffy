@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LocationWidget
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T15:59:15.227Z
+// Generated: 2026-10-18T17:14:25.390Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

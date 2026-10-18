@@ -320,12 +320,8 @@ class ArkzenEngineController extends Controller
             }
         }
 
-        // 5. Isolated SQLite DB file
-        $dbFile = database_path("arkzen/{$name}.sqlite");
-        if (File::exists($dbFile)) {
-            File::delete($dbFile);
-            Log::info("[Arkzen] ✓ Deleted isolated DB: database/arkzen/{$name}.sqlite");
-        }
+        // 5. Isolated DB (sqlite file or pgsql database)
+        \App\Arkzen\Support\ArkzenDatabase::drop($name);
 
         // 6. Channel authorizations — v6.0 FIX: correct regex
         // Matches: \n// Module: name\nBroadcast::channel(...)...});

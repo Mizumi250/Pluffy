@@ -477,5 +477,6 @@
     "lynx": "engine/frontend/lynx",
     "tauri": "engine/frontend/tauri",
     "electron": "engine/frontend/electron"
-  }
+  },
+  "activeDatabase": "pgsql"
 }

@@ -66,7 +66,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/shikaku/auth')->group(f
 // ============================================================
 // ARKZEN GENERATED ROUTES — shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T15:59:49.047901Z
+// Generated: 2026-10-18T17:15:11.993826Z
 // Resources: ShikakuProject, ShikakuSave
 // Custom controllers: 
 // ============================================================
