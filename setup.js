@@ -24,19 +24,19 @@ const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 // Read active stack from arkzen.json (default: nextjs)
 let activeStack = 'nextjs'
 let activeAppStack = null
+let activeDesktopStack = null
 const arkzenJsonPath = path.join(ROOT_DIR, 'arkzen.json')
 if (fs.existsSync(arkzenJsonPath)) {
   try {
     const json = JSON.parse(fs.readFileSync(arkzenJsonPath, 'utf-8'))
     activeStack    = json.activeStack    ?? 'nextjs'
     activeAppStack = json.activeAppStack ?? null
+    activeDesktopStack = json.activeDesktopStack ?? null
   } catch {}
 }
 
-// Mobile stacks — no backend needed
-const MOBILE_STACKS = ['expo', 'react-native', 'lynx']
-const isMobile = MOBILE_STACKS.includes(activeStack)
-const isTauri = activeStack === 'tauri'
+const DESKTOP_STACKS = ['tauri', 'electron']
+const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeDesktopStack)
 
 // Stack → backend mapping
 const ACTIVE_BACKEND_DIR = activeStack === 'react-inertia'
@@ -79,6 +79,260 @@ function commandExists(cmd) {
   }
 }
 
+const FRONTEND_STACKS = {
+  'nextjs':         { category: 'web',     dir: path.join(FRONTEND_DIR, 'nextjs') },
+  'react-vite':     { category: 'web',     dir: path.join(FRONTEND_DIR, 'react-vite') },
+  'react-inertia':  { category: 'web',     dir: path.join(FRONTEND_DIR, 'react-inertia') },
+  'astro':          { category: 'web',     dir: path.join(FRONTEND_DIR, 'astro') },
+  'tanstack-start': { category: 'web',     dir: path.join(FRONTEND_DIR, 'tanstack-start') },
+  'expo':           { category: 'app',     dir: path.join(FRONTEND_DIR, 'expo') },
+  'react-native':   { category: 'app',     dir: path.join(FRONTEND_DIR, 'react-native') },
+  'lynx':           { category: 'app',     dir: path.join(FRONTEND_DIR, 'lynx') },
+  'tauri':          { category: 'desktop', dir: path.join(FRONTEND_DIR, 'tauri') },
+  'electron':       { category: 'desktop', dir: path.join(FRONTEND_DIR, 'electron') },
+}
+
+function activeStackSet() {
+  return new Set([activeStack, activeAppStack, activeDesktopStack].filter(Boolean))
+}
+
+function cacheDirsFor(stack) {
+  const meta = FRONTEND_STACKS[stack]
+  if (!meta) return []
+  const dirs = [path.join(meta.dir, 'node_modules')]
+  if (stack === 'nextjs') dirs.push(path.join(meta.dir, '.next'))
+  if (stack === 'react-inertia') {
+    dirs.push(path.join(BACKEND_DIR, 'laravel-inertia', 'node_modules'))
+  }
+  if (stack === 'tauri') dirs.push(path.join(meta.dir, 'src-tauri', 'target'))
+  return dirs
+}
+
+function dirSize(dir) {
+  if (!fs.existsSync(dir)) return 0
+  let total = 0
+  const stack = [dir]
+  while (stack.length) {
+    const cur = stack.pop()
+    let entries
+    try { entries = fs.readdirSync(cur, { withFileTypes: true }) } catch { continue }
+    for (const entry of entries) {
+      const full = path.join(cur, entry.name)
+      if (entry.isSymbolicLink()) continue
+      if (entry.isDirectory()) stack.push(full)
+      else if (entry.isFile()) {
+        try { total += fs.statSync(full).size } catch {}
+      }
+    }
+  }
+  return total
+}
+
+function formatBytes(n) {
+  if (n < 1024) return `${n} B`
+  if (n < 1024 ** 2) return `${(n / 1024).toFixed(1)} KB`
+  if (n < 1024 ** 3) return `${(n / 1024 ** 2).toFixed(1)} MB`
+  return `${(n / 1024 ** 3).toFixed(2)} GB`
+}
+
+function stackInstalled(stack) {
+  const meta = FRONTEND_STACKS[stack]
+  return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
+}
+
+function stackCacheSize(stack) {
+  return cacheDirsFor(stack).reduce((sum, dir) => sum + dirSize(dir), 0)
+}
+
+function removeDir(dir) {
+  if (!fs.existsSync(dir)) return 0
+  const size = dirSize(dir)
+  try {
+    fs.rmSync(dir, { recursive: true, force: true })
+    return size
+  } catch (e) {
+    warn(`Could not remove ${dir}: ${e.message}`)
+    return 0
+  }
+}
+
+function installNpm(dir, label) {
+  const pkgPath = path.join(dir, 'package.json')
+  if (!fs.existsSync(pkgPath)) {
+    warn(`No package.json in ${label} — skipping`)
+    return false
+  }
+  log(`Installing npm packages for ${label}...`)
+  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', dir)
+  if (!ok) {
+    const ok2 = run('npm install --force --no-fund --no-audit --legacy-peer-deps', dir)
+    if (!ok2) {
+      error(`npm install failed for ${label}`)
+      return false
+    }
+  }
+  success(`Installed ${label}`)
+  return true
+}
+
+function installStack(stack, { force = false } = {}) {
+  const meta = FRONTEND_STACKS[stack]
+  if (!meta) { error(`Unknown stack: ${stack}`); return false }
+  if (!fs.existsSync(meta.dir)) { error(`Stack folder missing: engine/frontend/${stack}`); return false }
+
+  if (stack === 'expo') ensureExpoPlaceholderAssets(meta.dir)
+
+  const nm = path.join(meta.dir, 'node_modules')
+  if (fs.existsSync(nm) && !force) {
+    success(`${stack} already installed — skip (use --force to reinstall)`)
+  } else {
+    if (force && fs.existsSync(nm)) fs.rmSync(nm, { recursive: true, force: true })
+    if (!installNpm(meta.dir, stack)) return false
+  }
+
+  if (stack === 'react-inertia') {
+    const inertiaDir = path.join(BACKEND_DIR, 'laravel-inertia')
+    if (fs.existsSync(path.join(inertiaDir, 'package.json'))) {
+      const inertiaNm = path.join(inertiaDir, 'node_modules')
+      if (!fs.existsSync(inertiaNm) || force) {
+        installNpm(inertiaDir, 'laravel-inertia')
+      }
+    }
+  }
+  return true
+}
+
+function uninstallStack(stack, { force = false } = {}) {
+  const meta = FRONTEND_STACKS[stack]
+  if (!meta) { error(`Unknown stack: ${stack}`); return 0 }
+  if (!force && activeStackSet().has(stack)) {
+    warn(`Skip ${stack} — it is currently active. Switch away first, or pass --force.`)
+    return 0
+  }
+  let freed = 0
+  for (const dir of cacheDirsFor(stack)) {
+    if (!fs.existsSync(dir)) continue
+    log(`Removing ${dir.replace(ROOT_DIR + path.sep, '')}...`)
+    freed += removeDir(dir)
+  }
+  if (freed > 0) success(`Uninstalled ${stack} (${formatBytes(freed)} freed)`)
+  else success(`${stack} had no node_modules / cache to remove`)
+  return freed
+}
+
+function printDepsStatus() {
+  divider()
+  console.log('\n  Frontend package status (node_modules + rebuild caches)\n')
+  const keep = activeStackSet()
+  let total = 0
+  let unused = 0
+  for (const [stack, meta] of Object.entries(FRONTEND_STACKS)) {
+    const size = stackCacheSize(stack)
+    total += size
+    const installed = stackInstalled(stack)
+    const isActive = keep.has(stack)
+    if (installed && !isActive) unused += size
+    const mark = installed ? '✓' : '✗'
+    const tag = isActive ? 'active' : (installed ? 'unused' : 'not installed')
+    console.log(`    ${mark}  ${stack.padEnd(16)} ${meta.category.padEnd(8)} ${formatBytes(size).padStart(10)}  ${tag}`)
+  }
+  console.log(`\n  Total:  ${formatBytes(total)}`)
+  console.log(`  Unused: ${formatBytes(unused)}  (prune with: node setup.js --prune-unused)\n`)
+  divider()
+}
+
+function pruneUnusedStacks({ force = false } = {}) {
+  divider()
+  log('Pruning node_modules for stacks that are not active...')
+  let freed = 0
+  for (const stack of Object.keys(FRONTEND_STACKS)) {
+    if (activeStackSet().has(stack)) continue
+    if (!cacheDirsFor(stack).some(fs.existsSync)) continue
+    freed += uninstallStack(stack, { force: true })
+  }
+  success(`Prune complete — ${formatBytes(freed)} freed`)
+  console.log(`  Kept active: ${[...activeStackSet()].join(', ') || '(none)'}\n`)
+  return freed
+}
+
+function parseCli(argv) {
+  const flags = {
+    install: [],
+    uninstall: [],
+    pruneUnused: false,
+    depsStatus: false,
+    force: false,
+    fullSetup: true,
+  }
+  const takeNames = (i) => {
+    const names = []
+    let j = i + 1
+    while (j < argv.length && !argv[j].startsWith('-')) {
+      names.push(argv[j])
+      j++
+    }
+    return { names, next: j - 1 }
+  }
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i]
+    if (a === '--force') flags.force = true
+    else if (a === '--prune-unused' || a === 'prune') {
+      flags.pruneUnused = true
+      flags.fullSetup = false
+    } else if (a === '--deps-status' || a === 'status') {
+      flags.depsStatus = true
+      flags.fullSetup = false
+    } else if (a === '--install' || a === 'install') {
+      const { names, next } = takeNames(i)
+      flags.install.push(...names)
+      flags.fullSetup = false
+      i = next
+    } else if (a === '--uninstall' || a === 'uninstall') {
+      const { names, next } = takeNames(i)
+      flags.uninstall.push(...names)
+      flags.fullSetup = false
+      i = next
+    } else if (a === '--backend' || a === 'backend') {
+      flags.backendOnly = true
+      flags.fullSetup = false
+    } else if (a === '--help' || a === '-h') {
+      flags.help = true
+      flags.fullSetup = false
+    }
+  }
+  if (flags.install.length || flags.uninstall.length || flags.pruneUnused || flags.depsStatus || flags.backendOnly) {
+    flags.fullSetup = argv.includes('--with-setup')
+  }
+  if ((argv.includes('--install') || argv.includes('install')) && flags.install.length === 0) {
+    flags.emptyInstall = true
+    flags.fullSetup = false
+  }
+  if ((argv.includes('--uninstall') || argv.includes('uninstall')) && flags.uninstall.length === 0) {
+    flags.emptyUninstall = true
+    flags.fullSetup = false
+  }
+  return flags
+}
+
+function printSetupHelp() {
+  console.log(`
+  PLUFF setup / deps
+
+  Full setup (active stacks only — does not install every frontend):
+    node setup.js
+
+  PHP backend only (composer vendor):
+    node setup.js --backend
+
+  Package manager:
+    node setup.js --deps-status
+    node setup.js --install nextjs expo electron
+    node setup.js --uninstall astro react-vite tanstack-start
+    node setup.js --prune-unused
+    node setup.js --uninstall astro --force
+`)
+}
+
 // ─────────────────────────────────────────────
 // CHECKS
 // ─────────────────────────────────────────────
@@ -94,14 +348,11 @@ function checkRequirements() {
   const checks = [
     { cmd: 'node', name: 'Node.js' },
     { cmd: 'npm',  name: 'npm' },
+    { cmd: 'php',      name: 'PHP' },
+    { cmd: 'composer', name: 'Composer' },
   ]
 
-  // Backend requirements only for web stacks
-  if (!isMobile) {
-    checks.push({ cmd: 'php',      name: 'PHP' })
-    checks.push({ cmd: 'composer', name: 'Composer' })
-  }
-  if (isTauri) {
+  if (isDesktop && activeDesktopStack === 'tauri') {
     checks.push({ cmd: 'rustc', name: 'Rust compiler' })
     checks.push({ cmd: 'cargo', name: 'Cargo' })
   }
@@ -175,62 +426,14 @@ function setupFrontend() {
     return
   }
 
-  const nodeModulesPath = path.join(ACTIVE_FRONTEND_DIR, 'node_modules')
-  if (fs.existsSync(nodeModulesPath)) {
-    log('Cleaning old node_modules...')
-    fs.rmSync(nodeModulesPath, { recursive: true, force: true })
-  }
-
-  // Expo: ensure placeholder assets exist before install
-  if (activeStack === 'expo') {
-    ensureExpoPlaceholderAssets(ACTIVE_FRONTEND_DIR)
-  }
-
-  log(`Installing npm packages for ${activeStack}...`)
-  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', ACTIVE_FRONTEND_DIR)
-  if (!ok) {
-    const ok2 = run('npm install --force --no-fund --no-audit --legacy-peer-deps', ACTIVE_FRONTEND_DIR)
-    if (!ok2) {
-      error(`npm install failed for ${activeStack}. Try manually: cd engine/frontend/${activeStack} && npm install --legacy-peer-deps`)
-      process.exit(1)
-    }
-  }
-
-  success(`Frontend packages installed for ${activeStack}`)
-
-  // react-inertia: also install laravel-inertia npm deps
-  if (activeStack === 'react-inertia') {
-    log('Installing laravel-inertia npm packages (Vite + Inertia monolith)...')
-    const inertiaBackendPkg = path.join(BACKEND_DIR, 'laravel-inertia', 'package.json')
-    if (fs.existsSync(inertiaBackendPkg)) {
-      const ok3 = run('npm install --no-fund --no-audit --legacy-peer-deps', path.join(BACKEND_DIR, 'laravel-inertia'))
-      if (ok3) {
-        success('laravel-inertia npm packages installed')
-      } else {
-        warn('laravel-inertia npm install failed — try manually: cd engine/backend/laravel-inertia && npm install --legacy-peer-deps')
-      }
-    } else {
-      warn('laravel-inertia/package.json not found — skipping')
-    }
-  }
+  if (!installStack(activeStack)) process.exit(1)
 }
 
-function setupTauriRenderer() {
-  if (!isTauri) return
-
-  const rendererDir = path.join(FRONTEND_DIR, 'react-vite')
-  const rendererPkg = path.join(rendererDir, 'package.json')
-  if (!fs.existsSync(rendererPkg)) {
-    error('React+Vite renderer not found at engine/frontend/react-vite')
-    process.exit(1)
-  }
-
-  log('Installing React+Vite renderer packages for Tauri...')
-  if (!run('npm install --no-fund --no-audit --legacy-peer-deps', rendererDir)) {
-    error('React+Vite renderer npm install failed. Try manually: cd engine/frontend/react-vite && npm install --legacy-peer-deps')
-    process.exit(1)
-  }
-  success('React+Vite renderer packages installed for Tauri')
+function setupDesktopStack() {
+  if (!activeDesktopStack) return
+  divider()
+  log(`Setting up desktop stack: ${activeDesktopStack}...`)
+  if (!installStack(activeDesktopStack)) process.exit(1)
 }
 
 // ─────────────────────────────────────────────
@@ -258,27 +461,7 @@ function setupAppStack() {
     return
   }
 
-  const nodeModulesPath = path.join(appDir, 'node_modules')
-  if (fs.existsSync(nodeModulesPath)) {
-    log('Cleaning old node_modules...')
-    fs.rmSync(nodeModulesPath, { recursive: true, force: true })
-  }
-
-  if (activeAppStack === 'expo') {
-    ensureExpoPlaceholderAssets(appDir)
-  }
-
-  log(`Installing npm packages for ${activeAppStack}...`)
-  const ok = run('npm install --no-fund --no-audit --legacy-peer-deps', appDir)
-  if (!ok) {
-    const ok2 = run('npm install --force --no-fund --no-audit --legacy-peer-deps', appDir)
-    if (!ok2) {
-      error(`npm install failed for ${activeAppStack}. Try manually: cd engine/frontend/${activeAppStack} && npm install --legacy-peer-deps`)
-      return
-    }
-  }
-
-  success(`App stack packages installed for ${activeAppStack}`)
+  installStack(activeAppStack)
 }
 
 // ─────────────────────────────────────────────
@@ -317,7 +500,13 @@ function setupBackend() {
   }
 
   log('Installing composer packages...')
-  run('composer install --quiet', ACTIVE_BACKEND_DIR)
+  const composerOk = run('composer install --no-interaction', ACTIVE_BACKEND_DIR)
+    || run('composer update --no-interaction --with-all-dependencies', ACTIVE_BACKEND_DIR)
+  if (!composerOk || !fs.existsSync(path.join(ACTIVE_BACKEND_DIR, 'vendor', 'autoload.php'))) {
+    error('Composer install failed. Laravel vendor/ is missing.')
+    error(`Try manually: cd engine/backend/${backendName} && composer update`)
+    process.exit(1)
+  }
   success('Composer packages installed')
 
   log('Generating Laravel app key...')
@@ -463,6 +652,7 @@ function initRegistry() {
         'astro':          'engine/frontend/astro',
         'tanstack-start': 'engine/frontend/tanstack-start',
         'tauri':          'engine/frontend/tauri',
+        'electron':       'engine/frontend/electron',
         'expo':           'engine/frontend/expo',
         'react-native':   'engine/frontend/react-native',
       },
@@ -493,7 +683,8 @@ function printDone() {
     engine/frontend/tanstack-start/ ← TanStack Start
 
   Desktop:
-    engine/frontend/tauri/          ← Tauri desktop shell (React+Vite renderer)
+    engine/frontend/tauri/          ← Tauri desktop shell
+    engine/frontend/electron/       ← Electron desktop shell
 
   Mobile Stacks:
     engine/frontend/expo/           ← Expo (SDK 53, Expo Go)
@@ -509,8 +700,10 @@ function printDone() {
   To start:
     node start.js
 
-  To switch stack (edit arkzen.json → activeStack), then:
-    node setup.js
+  Packages: only the active web / app / desktop stacks are installed.
+  Free space from unused frontends:
+    node mizumi.js deps
+    node setup.js --prune-unused
   `)
   divider()
 }
@@ -519,11 +712,53 @@ function printDone() {
 // RUN
 // ─────────────────────────────────────────────
 
+const cli = parseCli(process.argv.slice(2))
+
+if (cli.help) {
+  printSetupHelp()
+  process.exit(0)
+}
+
+if (cli.depsStatus) {
+  printDepsStatus()
+  process.exit(0)
+}
+
+if (cli.backendOnly) {
+  checkRequirements()
+  setupBackend()
+  process.exit(0)
+}
+
+if (cli.emptyInstall || cli.emptyUninstall) {
+  error(cli.emptyInstall ? 'Usage: node setup.js --install <stack> [stack...]' : 'Usage: node setup.js --uninstall <stack> [stack...]')
+  printSetupHelp()
+  process.exit(1)
+}
+
+if (cli.install.length || cli.uninstall.length || cli.pruneUnused) {
+  if (cli.install.length) {
+    for (const stack of cli.install) {
+      if (!FRONTEND_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
+      installStack(stack, { force: cli.force })
+    }
+  }
+  if (cli.uninstall.length) {
+    for (const stack of cli.uninstall) {
+      if (!FRONTEND_STACKS[stack]) { error(`Unknown stack: ${stack}`); process.exit(1) }
+      uninstallStack(stack, { force: cli.force })
+    }
+  }
+  if (cli.pruneUnused) pruneUnusedStacks({ force: cli.force })
+  if (!cli.fullSetup) process.exit(0)
+}
+
 checkRequirements()
 ensureStructure()
 initRegistry()
 setupFrontend()
-setupTauriRenderer()
-setupAppStack()
-if (!isMobile) setupBackend()
+if (activeDesktopStack) setupDesktopStack()
+if (activeAppStack) setupAppStack()
+setupBackend()
+if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

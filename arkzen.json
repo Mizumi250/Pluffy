@@ -464,16 +464,18 @@
     }
   ],
   "activeStack": "nextjs",
-  "activeAppStack": null,
+  "activeAppStack": "expo",
+  "activeDesktopStack": "electron",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",
     "react-inertia": "engine/frontend/react-inertia",
     "astro": "engine/frontend/astro",
     "tanstack-start": "engine/frontend/tanstack-start",
-    "tauri": "engine/frontend/tauri",
     "expo": "engine/frontend/expo",
     "react-native": "engine/frontend/react-native",
-    "lynx": "engine/frontend/lynx"
+    "lynx": "engine/frontend/lynx",
+    "tauri": "engine/frontend/tauri",
+    "electron": "engine/frontend/electron"
   }
 }

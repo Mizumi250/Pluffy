@@ -1,0 +1,16 @@
+{
+  "name": "pluff-electron-engine",
+  "version": "1.0.0",
+  "description": "Pluff — Electron desktop shell + React+Vite renderer",
+  "private": true,
+  "type": "module",
+  "main": "electron/main.js",
+  "scripts": {
+    "dev": "electron .",
+    "build": "electron-builder"
+  },
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  }
+}

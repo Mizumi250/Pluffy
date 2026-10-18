@@ -12,7 +12,9 @@
 //    node mizumi.js export <name>
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
-//    node mizumi.js stack        ← show active web + app stack
+//    node mizumi.js desktop <stack> ← switch desktop stack
+//    node mizumi.js deps         ← install / uninstall node_modules
+//    node mizumi.js stack        ← show active web + app + desktop stack
 //    node mizumi.js stacks       ← list all stacks
 //    node mizumi.js modules      ← list registered tatemonos
 // ============================================================
@@ -53,7 +55,7 @@ const divider = ()  => console.log(`\n${paint(c.gray, '  ' + '─'.repeat(46))}\
 // ─── ARKZEN.JSON ──────────────────────────────────────────────
 function readConfig() {
   try { return JSON.parse(fs.readFileSync(JSON_PATH, 'utf-8')) }
-  catch { return { engine: '?', activeStack: 'nextjs', activeAppStack: 'expo', modules: [], stacks: {} } }
+  catch { return { engine: '?', activeStack: 'nextjs', activeAppStack: 'expo', activeDesktopStack: null, modules: [], stacks: {} } }
 }
 function writeConfig(config) {
   fs.writeFileSync(JSON_PATH, JSON.stringify(config, null, 2), 'utf-8')
@@ -66,12 +68,15 @@ const WEB_STACKS = {
   'react-inertia':  'engine/frontend/react-inertia',
   'astro':          'engine/frontend/astro',
   'tanstack-start': 'engine/frontend/tanstack-start',
-  'tauri':          'engine/frontend/tauri',
 }
 const APP_STACKS = {
   'expo':         'engine/frontend/expo',
   'react-native': 'engine/frontend/react-native',
   'lynx':         'engine/frontend/lynx',
+}
+const DESKTOP_STACKS = {
+  'tauri':    'engine/frontend/tauri',
+  'electron': 'engine/frontend/electron',
 }
 const WEB_LABELS = {
   'nextjs':         'Next.js',
@@ -79,19 +84,47 @@ const WEB_LABELS = {
   'react-inertia':  'React + Inertia (Laravel monolith)',
   'astro':          'Astro',
   'tanstack-start': 'TanStack Start',
-  'tauri':          'Tauri desktop (React + Vite)',
 }
 const APP_LABELS = {
   'expo':         'Expo (SDK 53, Expo Go)',
   'react-native': 'React Native (bare)',
   'lynx':         'Lynx (Rspeedy / ReactLynx)',
 }
+const DESKTOP_LABELS = {
+  'tauri':    'Tauri desktop (wraps the running web stack)',
+  'electron': 'Electron desktop (wraps the running web stack)',
+}
+const ALL_STACKS = { ...WEB_STACKS, ...APP_STACKS, ...DESKTOP_STACKS }
+const ALL_LABELS = { ...WEB_LABELS, ...APP_LABELS, ...DESKTOP_LABELS }
+
+function stackDir(stack) {
+  return ALL_STACKS[stack] ? path.join(ROOT_DIR, ALL_STACKS[stack]) : null
+}
+
+function isStackInstalled(stack) {
+  const dir = stackDir(stack)
+  return !!(dir && fs.existsSync(path.join(dir, 'node_modules')))
+}
+
+function hintIfMissing(stack) {
+  if (!stack || stack === 'none' || isStackInstalled(stack)) return
+  info(`node_modules missing for ${stack}`)
+  info(`Install: node mizumi.js deps install ${stack}`)
+}
+
+function runSetup(args) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, ['setup.js', ...args], { cwd: ROOT_DIR, stdio: 'inherit' })
+    child.on('exit', code => resolve(code ?? 1))
+  })
+}
 
 // ─── BANNER ───────────────────────────────────────────────────
 function printBanner() {
   const config   = readConfig()
   const webStack = config.activeStack    ?? 'nextjs'
-  const appStack = config.activeAppStack ?? 'expo'
+  const appStack = config.activeAppStack ?? 'none'
+  const deskStack = config.activeDesktopStack ?? 'none'
   const mods     = (config.modules ?? []).length
   const emoji    = pick(KAOMOJI_BANNER)
 
@@ -103,6 +136,7 @@ function printBanner() {
   console.log()
   console.log(`  ${paint(c.gray, 'Web スタック:')}  ${paint(c.cyan + c.bold, webStack)}  ${paint(c.gray, WEB_LABELS[webStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
+  console.log(`  ${paint(c.gray, 'Desktop:')}       ${paint(c.magenta + c.bold, deskStack)}  ${paint(c.gray, DESKTOP_LABELS[deskStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'モジュール:')}    ${paint(c.yellow, String(mods))} tatemonos`)
   console.log(`  ${paint(c.gray, emoji)}`)
   console.log()
@@ -206,25 +240,26 @@ async function cmdExport(tatName, stackArg) {
     tatName = chosen.value
   }
 
-  // Step 2 — pick platform (web or app), Step 3 — pick stack for that platform
+  // Step 2 — pick platform (web, app, or desktop), Step 3 — pick stack for that platform
   // This is purely for export.js's --stack=<name> override — it does NOT
-  // touch arkzen.json, so the live activeStack/activeAppStack used by
+  // touch arkzen.json, so the live activeStack/activeAppStack/activeDesktopStack used by
   // `node start.js` / `node mizumi.js start` is left untouched.
   let stack = stackArg
   if (!stack) {
     divider()
     const platform = await picker('どのプラットフォーム？ Export for which platform?', [
-      { label: 'Web',  sub: `current: ${config.activeStack ?? 'nextjs'}`,     value: 'web' },
-      { label: 'App',  sub: `current: ${config.activeAppStack ?? 'expo'}`,    value: 'app' },
+      { label: 'Web',     sub: `current: ${config.activeStack ?? 'nextjs'}`,         value: 'web' },
+      { label: 'App',     sub: `current: ${config.activeAppStack ?? 'expo'}`,        value: 'app' },
+      { label: 'Desktop', sub: `current: ${config.activeDesktopStack ?? 'none'}`,    value: 'desktop' },
     ])
 
-    const STACKS = platform.value === 'web' ? WEB_STACKS : APP_STACKS
-    const LABELS = platform.value === 'web' ? WEB_LABELS : APP_LABELS
-    const current = platform.value === 'web' ? (config.activeStack ?? 'nextjs') : (config.activeAppStack ?? 'expo')
+    const STACKS = platform.value === 'web' ? WEB_STACKS : (platform.value === 'app' ? APP_STACKS : DESKTOP_STACKS)
+    const LABELS = platform.value === 'web' ? WEB_LABELS : (platform.value === 'app' ? APP_LABELS : DESKTOP_LABELS)
+    const current = platform.value === 'web' ? (config.activeStack ?? 'nextjs') : (platform.value === 'app' ? (config.activeAppStack ?? 'expo') : (config.activeDesktopStack ?? 'none'))
 
     divider()
     const chosenStack = await picker(
-      `${platform.value === 'web' ? 'Web' : 'App'} スタック — Export with which stack?`,
+      `${platform.value === 'web' ? 'Web' : platform.value === 'app' ? 'App' : 'Desktop'} スタック — Export with which stack?`,
       Object.entries(STACKS).map(([key]) => ({
         label: `${key === current ? '→ ' : '  '}${LABELS[key] ?? key}`,
         sub:   key === current ? '(active)' : key,
@@ -270,6 +305,7 @@ async function cmdSwitchWeb(stackArg) {
   config.activeStack = stack
   writeConfig(config)
   success(`Web スタック切替完了！ ${paint(c.yellow, prev)} → ${paint(c.cyan + c.bold, stack)}`)
+  hintIfMissing(stack)
   info(`Restart: node mizumi.js start  (runs web + app together)`)
 }
 
@@ -277,45 +313,103 @@ async function cmdSwitchApp(stackArg) {
   let stack = stackArg
   if (!stack) {
     const config  = readConfig()
-    const current = config.activeAppStack ?? 'expo'
+    const current = config.activeAppStack ?? 'none'
     divider()
     const chosen = await picker(
       'App スタック切替 — Switch app stack?',
-      Object.entries(APP_STACKS).map(([key]) => ({
-        label: `${key === current ? paint(c.green, '→ ') : '  '}${APP_LABELS[key] ?? key}`,
-        sub:   key === current ? paint(c.green, '(current)') : key,
-        value: key,
-      }))
+      [
+        ...Object.entries(APP_STACKS).map(([key]) => ({
+          label: `${key === current ? paint(c.green, '→ ') : '  '}${APP_LABELS[key] ?? key}`,
+          sub:   key === current ? paint(c.green, '(current)') : key,
+          value: key,
+        })),
+        { label: 'None', sub: 'app off', value: 'none' },
+      ]
     )
     stack = chosen.value
+  }
+  if (stack === 'none' || stack === 'off') {
+    const config = readConfig()
+    const prev = config.activeAppStack ?? 'none'
+    config.activeAppStack = null
+    writeConfig(config)
+    success(`App スタックオフ！ ${paint(c.yellow, prev)} → ${paint(c.gray, 'none')}`)
+    info(`Restart: node mizumi.js start  (runs web + desktop)`)
+    return
   }
   if (!APP_STACKS[stack]) { error(`Unknown app stack: "${stack}"`); return }
   const stackDir = path.join(ROOT_DIR, APP_STACKS[stack])
   if (!fs.existsSync(stackDir)) { error(`Stack not found at: ${APP_STACKS[stack]}`); return }
 
   const config = readConfig()
-  const prev   = config.activeAppStack ?? 'expo'
+  const prev   = config.activeAppStack ?? 'none'
   if (prev === stack) { warn(`すでに ${stack} です — Already on app stack: ${stack}`); return }
   config.activeAppStack = stack
   writeConfig(config)
   success(`App スタック切替完了！ ${paint(c.yellow, prev)} → ${paint(c.green + c.bold, stack)}`)
-  info(`Restart: node mizumi.js start  (runs web + app together)`)
+  hintIfMissing(stack)
+  info(`Restart: node mizumi.js start  (runs web + app + desktop together)`)
+}
+
+async function cmdSwitchDesktop(stackArg) {
+  let stack = stackArg
+  if (!stack) {
+    const config  = readConfig()
+    const current = config.activeDesktopStack ?? 'none'
+    divider()
+    const chosen = await picker(
+      'Desktop スタック切替 — Switch desktop stack?',
+      [
+        ...Object.entries(DESKTOP_STACKS).map(([key]) => ({
+          label: `${key === current ? paint(c.cyan, '→ ') : '  '}${DESKTOP_LABELS[key] ?? key}`,
+          sub:   key === current ? paint(c.cyan, '(current)') : key,
+          value: key,
+        })),
+        { label: 'None', sub: 'desktop off', value: 'none' },
+      ]
+    )
+    stack = chosen.value
+  }
+  if (stack === 'none' || stack === 'off') {
+    const config = readConfig()
+    const prev = config.activeDesktopStack ?? 'none'
+    config.activeDesktopStack = null
+    writeConfig(config)
+    success(`Desktop スタックオフ！ ${paint(c.yellow, prev)} → ${paint(c.gray, 'none')}`)
+    info(`Restart: node mizumi.js start  (runs web + app)`)
+    return
+  }
+  if (!DESKTOP_STACKS[stack]) { error(`Unknown desktop stack: "${stack}"`); return }
+  const stackDir = path.join(ROOT_DIR, DESKTOP_STACKS[stack])
+  if (!fs.existsSync(stackDir)) { error(`Stack not found at: ${DESKTOP_STACKS[stack]}`); return }
+
+  const config = readConfig()
+  const prev   = config.activeDesktopStack ?? 'none'
+  if (prev === stack) { warn(`すでに ${stack} です — Already on desktop stack: ${stack}`); return }
+  config.activeDesktopStack = stack
+  writeConfig(config)
+  success(`Desktop スタック切替完了！ ${paint(c.yellow, prev)} → ${paint(c.magenta + c.bold, stack)}`)
+  hintIfMissing(stack)
+  info(`Restart: node mizumi.js start  (runs web + app + desktop together)`)
 }
 
 function cmdStack() {
   const config   = readConfig()
   const webStack = config.activeStack    ?? 'nextjs'
-  const appStack = config.activeAppStack ?? 'expo'
+  const appStack = config.activeAppStack ?? 'none'
+  const desktopStack = config.activeDesktopStack ?? 'none'
   divider()
   console.log(`  ${paint(c.gray, 'Web スタック:')}  ${paint(c.cyan + c.bold, webStack)}  ${paint(c.gray, WEB_LABELS[webStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
+  console.log(`  ${paint(c.gray, 'Desktop スタック:')}  ${paint(c.magenta + c.bold, desktopStack)}  ${paint(c.gray, DESKTOP_LABELS[desktopStack] ?? '')}`)
   divider()
 }
 
 function cmdStacks() {
   const config   = readConfig()
   const activeWeb = config.activeStack    ?? 'nextjs'
-  const activeApp = config.activeAppStack ?? 'expo'
+  const activeApp = config.activeAppStack ?? 'none'
+  const activeDesktop = config.activeDesktopStack ?? 'none'
   divider()
   console.log(`  ${paint(c.white + c.bold, 'Web スタック:')}`)
   console.log()
@@ -340,7 +434,90 @@ function cmdStacks() {
     const tag    = isCurrent ? paint(c.green, ' (active)') : ''
     console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, APP_LABELS[key] ?? '')}${tag}`)
   }
+  console.log()
+  console.log(`  ${paint(c.white + c.bold, 'Desktop スタック:')}`)
+  console.log()
+  for (const [key, dir] of Object.entries(DESKTOP_STACKS)) {
+    const installed = fs.existsSync(path.join(ROOT_DIR, dir, 'node_modules'))
+    const isCurrent = key === activeDesktop
+    const arrow  = isCurrent ? paint(c.magenta + c.bold, '→') : ' '
+    const name   = isCurrent ? paint(c.magenta + c.bold, key.padEnd(18)) : paint(c.gray, key.padEnd(18))
+    const status = installed ? paint(c.green, '✓') : paint(c.red, '✗')
+    const tag    = isCurrent ? paint(c.magenta, ' (active)') : ''
+    console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, DESKTOP_LABELS[key] ?? '')}${tag}`)
+  }
   divider()
+}
+
+async function cmdDeps(actionArg, stackArg) {
+  const config = readConfig()
+  const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack].filter(Boolean))
+  const stackOptions = Object.keys(ALL_STACKS).map(key => ({
+    label: `${isStackInstalled(key) ? '✓' : '✗'}  ${ALL_LABELS[key] ?? key}`,
+    sub:   `${key}${active.has(key) ? '  (active)' : isStackInstalled(key) ? '  installed' : '  not installed'}`,
+    value: key,
+  }))
+
+  let action = actionArg
+  if (!action) {
+    divider()
+    const chosen = await picker('node_modules — install / free disk space?', [
+      { label: 'Show disk usage',                 sub: 'which stacks are installed', value: 'status' },
+      { label: 'Install a stack',                 sub: 'npm install for one frontend', value: 'install' },
+      { label: 'Uninstall a stack',               sub: 'delete that stack\'s node_modules', value: 'uninstall' },
+      { label: 'Prune unused',                    sub: 'keep only active web + app + desktop', value: 'prune' },
+    ])
+    action = chosen.value
+  }
+
+  if (action === 'status') {
+    await runSetup(['--deps-status'])
+    return
+  }
+
+  if (action === 'prune') {
+    console.log()
+    log('Removing node_modules from stacks that are not active...')
+    info(`Keeping: ${[...active].join(', ') || '(none)'}`)
+    await runSetup(['--prune-unused'])
+    return
+  }
+
+  if (action === 'install' || action === 'uninstall') {
+    let stack = stackArg
+    if (!stack) {
+      divider()
+      const chosen = await picker(
+        action === 'install' ? 'どのスタックをインストール？ Install which stack?' : 'どのスタックを削除？ Uninstall which stack?',
+        stackOptions
+      )
+      stack = chosen.value
+    }
+    if (!ALL_STACKS[stack]) { error(`Unknown stack: "${stack}"`); return }
+    if (action === 'uninstall' && active.has(stack)) {
+      warn(`${stack} is active. Switch away first, or run: node setup.js --uninstall ${stack} --force`)
+      return
+    }
+    console.log()
+    const code = await runSetup(action === 'install' ? ['--install', stack] : ['--uninstall', stack])
+    if (action === 'install' && code === 0) {
+      const next = readConfig()
+      if (APP_STACKS[stack] && !next.activeAppStack) {
+        next.activeAppStack = stack
+        writeConfig(next)
+        success(`App stack was none — now using ${stack}`)
+      }
+      if (DESKTOP_STACKS[stack] && !next.activeDesktopStack) {
+        next.activeDesktopStack = stack
+        writeConfig(next)
+        success(`Desktop stack was none — now using ${stack}`)
+      }
+    }
+    return
+  }
+
+  error(`Unknown deps action: "${action}"`)
+  info('Use: deps status | deps install <stack> | deps uninstall <stack> | deps prune')
 }
 
 function cmdModules() {
@@ -368,13 +545,15 @@ async function interactiveMenu() {
   printBanner()
 
   const MENU = [
-    { label: 'エンジン起動     Start engine',           sub: 'web + app simultaneously',  value: 'start'      },
+    { label: 'エンジン起動     Start engine',           sub: 'web + app + desktop simultaneously',  value: 'start'      },
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
-    { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app → stack',value: 'export'     },
+    { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop → stack',value: 'export'     },
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
-    { label: 'スタック情報     Stack info',              sub: 'web + app active stacks',    value: 'stacks'     },
+    { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
+    { label: 'パッケージ管理    Install / uninstall deps', sub: 'node_modules per frontend stack', value: 'deps' },
+    { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
   ]
@@ -388,6 +567,8 @@ async function interactiveMenu() {
     case 'export':    await cmdExport();       break
     case 'web':       await cmdSwitchWeb();    break
     case 'app':       await cmdSwitchApp();    break
+    case 'desktop':   await cmdSwitchDesktop(); break
+    case 'deps':      await cmdDeps();         break
     case 'stacks':    cmdStacks();             break
     case 'modules':   cmdModules();            break
     case 'exit':
@@ -405,7 +586,7 @@ function printHelp() {
   console.log()
   const cmds = [
     ['mizumi',                   '→ Interactive menu'],
-    ['mizumi start',             '→ Start engine (web mode)'],
+    ['mizumi start',             '→ Start engine (web + app + desktop)'],
 
 
     ['mizumi setup',             '→ Run setup'],
@@ -414,7 +595,12 @@ function printHelp() {
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
     ['mizumi web <stack>',       '→ Switch web stack'],
     ['mizumi app <stack>',       '→ Switch app stack'],
-    ['mizumi stack',             '→ Show active web + app stack'],
+    ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
+    ['mizumi deps',              '→ Install / uninstall node_modules'],
+    ['mizumi deps prune',        '→ Delete unused frontend node_modules'],
+    ['mizumi deps install <stack>', '→ Install one frontend'],
+    ['mizumi deps uninstall <stack>', '→ Remove one frontend\'s node_modules'],
+    ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
   ]
@@ -422,8 +608,9 @@ function printHelp() {
     console.log(`  ${paint(c.cyan, cmd.padEnd(30))} ${paint(c.gray, desc)}`)
   })
   console.log()
-  console.log(`  ${paint(c.gray, 'Web/Desktop:')} nextjs, react-vite, react-inertia, astro, tanstack-start, tauri`)
+  console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
   console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
+  console.log(`  ${paint(c.gray, 'Desktop:')} tauri, electron`)
   console.log()
 }
 
@@ -438,6 +625,8 @@ switch (command) {
   case 'export':  cmdExport(arg, args[2]);     break
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break
+  case 'desktop': cmdSwitchDesktop(arg);       break
+  case 'deps':    cmdDeps(arg, args[2]);       break
   case 'stack':   cmdStack();                  break
   case 'stacks':  cmdStacks();                 break
   case 'modules': cmdModules();                break

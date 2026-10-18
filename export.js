@@ -40,14 +40,16 @@ const stackFlag   = process.argv.find(a => a.startsWith('--stack='))
 const activeStack = stackFlag
   ? stackFlag.slice('--stack='.length)
   : (arkzenJson.activeStack ?? 'nextjs')
+const isTauri    = activeStack === 'tauri'
+const isElectron = activeStack === 'electron'
+const isDesktop  = isTauri || isElectron
 
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
-const isTauri   = activeStack === 'tauri'
 
 // Paths — backend is stack-aware
-const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isTauri ? 'react-vite' : activeStack)
+const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isDesktop ? 'react-vite' : activeStack)
 const BACKEND_DIR   = isInertia
   ? path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
   : path.join(ENGINE_DIR, 'backend', 'laravel')
@@ -126,7 +128,8 @@ console.log(`  Realtime: ${hasRealtime}`)
 console.log(`  Jobs:     ${hasJobs}`)
 if (isInertia) console.log(`  Mode:     Inertia monolith — backend IS the project (no frontend/ folder)`)
 if (isNative)  console.log(`  Mode:     React Native (frontend only, no backend)`)
-if (isTauri)   console.log(`  Mode:     Tauri desktop — React+Vite renderer`)
+if (isTauri)    console.log(`  Mode:     Tauri desktop — React+Vite renderer`)
+if (isElectron) console.log(`  Mode:     Electron desktop — React+Vite renderer`)
 
 // ─────────────────────────────────────────────
 // CLEAN OUTPUT DIRECTORY
@@ -154,6 +157,7 @@ const BUILDER_MAP = {
   'nextjs':        { file: './arkzen/core/builder',        fn: 'buildTatemono'        },
   'react-vite':    { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
   'tauri':         { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
+  'electron':      { file: './arkzen/core/vite-builder',   fn: 'buildViteTatemono'    },
   'react-inertia': { file: './arkzen/core/inertia-builder',fn: 'buildInertiaTatemono' },
   'astro':         { file: './arkzen/core/astro-builder',  fn: 'buildAstroTatemono'   },
   'tanstack-start':{ file: './arkzen/core/tanstack-builder',fn:'buildTanstackTatemono'},
@@ -378,6 +382,16 @@ if (isInertia) {
     success('Tauri shell copied and configured for this exported Tatemono')
   }
 
+  if (isElectron) {
+    const engineElectronDir = path.join(ENGINE_DIR, 'frontend', 'electron')
+    const projectElectronDir = path.join(PROJ_FRONT, 'electron-shell')
+    fs.cpSync(engineElectronDir, projectElectronDir, {
+      recursive: true,
+      filter: (src) => !src.includes('node_modules'),
+    })
+    success('Electron shell copied for this exported Tatemono')
+  }
+
   // ── Regenerate src/arkzen/generated/routes.ts for this tatemono only
   // Parse the engine's routes.ts to extract only this tatemono's ROUTE entries,
   // then regenerate the file from scratch — no other tatemono imports, no
@@ -491,7 +505,7 @@ if (isInertia) {
 
 
   // node_modules — copy as-is (Native: skip, Expo manages its own deps)
-  if (!isNative && !isTauri) {
+  if (!isNative && !isDesktop) {
     log('Copying node_modules...')
     fs.cpSync(
       path.join(FRONTEND_DIR, 'node_modules'),
@@ -499,8 +513,8 @@ if (isInertia) {
       { recursive: true }
     )
     success('Frontend node_modules copied')
-  } else if (isTauri) {
-    skip('node_modules (Tauri export — run npm install in frontend)')
+  } else if (isDesktop) {
+    skip('node_modules (Desktop export — run npm install in frontend)')
   } else {
     skip('node_modules (Native — run: npm install inside exported project)')
   }
@@ -529,7 +543,7 @@ if (isInertia) {
   }
 
   // Patch vite.config.ts alias to point at local copy instead of ../../../shared
-  if (activeStack === 'react-vite' || activeStack === 'tanstack-start' || isTauri) {
+  if (activeStack === 'react-vite' || activeStack === 'tanstack-start' || isDesktop) {
     const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
     if (fs.existsSync(vcPath)) {
       let vc = fs.readFileSync(vcPath, 'utf-8')
@@ -918,7 +932,7 @@ export default nextConfig
     success('.env.local (Reverb config)')
   }
 
-} else if (activeStack === 'react-vite' || isTauri) {
+} else if (activeStack === 'react-vite' || isDesktop) {
 
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
   if (fs.existsSync(pkgPath)) {

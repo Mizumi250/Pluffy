@@ -1,0 +1,26 @@
+{
+  "appId": "com.pluff.desktop",
+  "productName": "Pluff",
+  "directories": {
+    "output": "dist"
+  },
+  "files": [
+    "electron/**/*",
+    "package.json"
+  ],
+  "extraResources": [
+    {
+      "from": "../react-vite/dist",
+      "to": "dist"
+    }
+  ],
+  "win": {
+    "target": ["nsis"]
+  },
+  "mac": {
+    "target": ["dmg"]
+  },
+  "linux": {
+    "target": ["AppImage"]
+  }
+}

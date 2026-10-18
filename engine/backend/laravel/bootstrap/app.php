@@ -25,11 +25,6 @@ return Application::configure(basePath: dirname(__DIR__))
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // CRITICAL: Prepend ArkzenSanctumTokenResolver BEFORE auth:sanctum runs
-        // so that tatemono-specific PersonalAccessToken models are resolved first.
-        // Without this, all auth:sanctum routes return 401 Unauthorized.
-        $middleware->prepend(\App\Http\Middleware\ArkzenSanctumTokenResolver::class);
-
         $middleware->alias([
             'arkzen.engine' => \App\Http\Middleware\ArkzenEngineMiddleware::class,
         ]);
