@@ -216,10 +216,20 @@ function startDesktopStack() {
 
   if (activeDesktopStack === 'tauri') {
     log('desktop', `Starting Tauri window → ${WEB_DEV_URL}`)
-    const tauri = spawnCli('npm', ['run', 'dev'], {
+    const runtimeConfigPath = path.join(TAURI_DIR, 'tauri.runtime.conf.json')
+    fs.writeFileSync(runtimeConfigPath, JSON.stringify({ build: { devUrl: WEB_DEV_URL } }))
+    const tauri = spawnCli('npm', ['run', 'dev', '--', '--config', 'tauri.runtime.conf.json'], {
       cwd: TAURI_DIR,
       stdio: 'pipe',
       env: desktopEnv,
+    })
+    const removeRuntimeConfig = () => {
+      fs.rmSync(runtimeConfigPath, { force: true })
+    }
+    tauri.once('exit', removeRuntimeConfig)
+    tauri.once('error', (error) => {
+      removeRuntimeConfig()
+      log('desktop', `[Tauri] Failed to launch: ${error.message}`)
     })
     pipeLog('desktop', '[Tauri]', tauri)
     return tauri

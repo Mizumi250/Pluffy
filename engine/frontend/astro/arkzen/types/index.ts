@@ -138,10 +138,23 @@ export interface ArkzenErrorHandler { type: ArkzenErrorHandlerType; raw: string 
 export interface ArkzenLayout { name: string; raw: string; parent?: string; start: number; end: number }
 export interface ArkzenStyle { name?: string; raw: string; start: number; end: number }
 
+export interface ArkzenDesktopConfig {
+  window?: {
+    width?: number
+    height?: number
+    min_width?: number
+    min_height?: number
+    resizable?: boolean
+    fullscreenable?: boolean
+    title?: string
+  }
+}
+
 export interface ParsedTatemono {
   filePath: string; fileName: string; meta: ArkzenMeta
   webMeta?: ArkzenWebMeta  // v6.0: from @arkzen:meta:web block — parser.ts: parseWebMeta()
   config?: ArkzenConfigOverride
+  desktopConfig?: ArkzenDesktopConfig
   databases: ArkzenDatabase[]; apis: ArkzenApi[]; customRoutes: ArkzenCustomRoute[]
   pages: ArkzenPage[]; layouts: ArkzenLayout[]; errorHandlers: ArkzenErrorHandler[]
   stores: ArkzenStore[]; realtimes: ArkzenRealtime[]; events: ArkzenEvent[]
@@ -159,6 +172,7 @@ export interface ArkzenRegistry { engine: string; project: string; modules: Arkz
 export interface ArkzenRegistryEntry {
   name: string; version: string; status: 'active' | 'inactive' | 'error'
   filePath: string; pages: string[]; registered: string; lastUpdated: string; auth?: boolean
+  desktopConfig?: ArkzenDesktopConfig
 }
 
 export interface BuildResult { success: boolean; tatemono: string; steps: BuildStep[]; errors: string[] }

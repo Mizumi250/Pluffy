@@ -109,8 +109,7 @@ columns:
     type: string
     nullable: true
   status:
-    type: enum
-    values: [waiting, serving, done, skipped]
+    type: string
     default: waiting
   position:
     type: integer

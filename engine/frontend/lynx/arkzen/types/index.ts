@@ -89,6 +89,18 @@ export interface ArkzenNativeConfig {
   [key: string]: unknown
 }
 
+export interface ArkzenDesktopConfig {
+  window?: {
+    width?: number
+    height?: number
+    min_width?: number
+    min_height?: number
+    resizable?: boolean
+    fullscreenable?: boolean
+    title?: string
+  }
+}
+
 export interface ArkzenMeta {
   name:         string
   version:      string
@@ -325,6 +337,7 @@ export interface ParsedTatemono {
   nativeMeta?:   ArkzenNativeMeta
   config?:       ArkzenConfigOverride
   nativeConfig?: ArkzenNativeConfig
+  desktopConfig?: ArkzenDesktopConfig
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
@@ -395,6 +408,7 @@ export interface ArkzenRegistryEntry {
   registered: string
   lastUpdated: string
   auth?: boolean
+  desktopConfig?: ArkzenDesktopConfig
 }
 
 export interface BuildResult {

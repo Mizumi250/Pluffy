@@ -280,12 +280,25 @@ export interface ArkzenStyle {
   end: number
 }
 
+export interface ArkzenDesktopConfig {
+  window?: {
+    width?: number
+    height?: number
+    min_width?: number
+    min_height?: number
+    resizable?: boolean
+    fullscreenable?: boolean
+    title?: string
+  }
+}
+
 export interface ParsedTatemono {
   filePath: string
   fileName: string
   meta: ArkzenMeta
   webMeta?: ArkzenWebMeta    // v6.0: from @arkzen:meta:web block
   config?: ArkzenConfigOverride
+  desktopConfig?: ArkzenDesktopConfig
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]
@@ -329,6 +342,7 @@ export interface ArkzenRegistryEntry {
   registered: string
   lastUpdated: string
   auth?: boolean
+  desktopConfig?: ArkzenDesktopConfig
 }
 
 export interface BuildResult {

@@ -77,6 +77,7 @@ export function updateRegistry(tatemono: ParsedTatemono): void {
     lastUpdated: now,
     // v5.1: store auth flag for manifest generation
     auth:        tatemono.meta.auth,
+    desktopConfig: tatemono.desktopConfig,
   }
 
   if (existingIndex === -1) {

@@ -1,4 +1,5 @@
 import { app, BrowserWindow } from 'electron'
+import { loadDesktopWindowOptions } from './desktop-config.js'
 
 const DEV_URL = process.env.DESKTOP_DEV_URL || 'http://localhost:3000'
 
@@ -21,10 +22,7 @@ async function createWindow() {
   await waitForUrl(DEV_URL)
 
   mainWindow = new BrowserWindow({
-    width: 1280,
-    height: 800,
-    minWidth: 800,
-    minHeight: 600,
+    ...loadDesktopWindowOptions(),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

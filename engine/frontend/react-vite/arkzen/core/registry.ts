@@ -91,6 +91,7 @@ export function updateRegistry(tatemono: ParsedTatemono): void {
     registered:  existingIndex === -1 ? now : registry.modules[existingIndex].registered,
     lastUpdated: now,
     auth:        tatemono.meta.auth,
+    desktopConfig: tatemono.desktopConfig,
   }
 
   if (existingIndex === -1) {

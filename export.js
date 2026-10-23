@@ -372,6 +372,9 @@ if (isInertia) {
 
     const configPath = path.join(projectTauriDir, 'tauri.conf.json')
     const tauriConfig = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+    const desktopWindow = arkzenJson.modules
+      ?.find(module => module.name === tatName && module.status === 'active')
+      ?.desktopConfig?.window ?? {}
     tauriConfig.productName = tatName
     tauriConfig.identifier = `com.pluff.${tatName.replace(/[^A-Za-z0-9.-]/g, '-')}`
     tauriConfig.build = {
@@ -382,8 +385,32 @@ if (isInertia) {
       frontendDist: '../dist',
     }
     if (tauriConfig.app?.windows?.[0]) {
-      tauriConfig.app.windows[0].title = tatName
+      const tauriWindow = tauriConfig.app.windows[0]
+      tauriWindow.title = desktopWindow.title ?? tatName
+      const windowProperties = {
+        width: 'width',
+        height: 'height',
+        min_width: 'minWidth',
+        min_height: 'minHeight',
+        resizable: 'resizable',
+      }
+      for (const [dslProperty, tauriProperty] of Object.entries(windowProperties)) {
+        if (desktopWindow[dslProperty] !== undefined) {
+          tauriWindow[tauriProperty] = desktopWindow[dslProperty]
+        }
+      }
+      if (desktopWindow.fullscreenable === false) {
+        warn('Tauri cannot portably disable the platform fullscreen controls')
+      }
     }
+    fs.writeFileSync(
+      path.join(projectTauriDir, 'desktop-config.json'),
+      JSON.stringify({
+        modules: Object.keys(desktopWindow).length
+          ? [{ name: tatName, status: 'active', desktopConfig: { window: desktopWindow } }]
+          : [],
+      }, null, 2)
+    )
     fs.writeFileSync(configPath, JSON.stringify(tauriConfig, null, 2))
     success('Tauri shell copied and configured for this exported Tatemono')
   }

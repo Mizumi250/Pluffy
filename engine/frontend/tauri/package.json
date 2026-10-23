@@ -1,0 +1,14 @@
+{
+  "name": "pluff-tauri-engine",
+  "version": "1.0.0",
+  "description": "Pluff Tauri desktop shell",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tauri dev",
+    "build": "tauri build"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.5.0"
+  }
+}

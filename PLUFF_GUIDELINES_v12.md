@@ -1,13 +1,13 @@
-# PLUFF GUIDELINES v11.0
+# PLUFF GUIDELINES v12.0
 
 ## For AI — Generating & Editing Tatemono Files
 
-**VERSION:** 11.0
-**VERIFIED AGAINST:** engine source (parser v10.6 + layout chains v11.0, validator, Laravel builders, `mizumi.js`, `arkzen.js`) and the 33 tatemonos in `tatemonos/` — repo commit `d7812cd` (2026-10-18).
+**VERSION:** 12.0
+**VERIFIED AGAINST:** shared engine parser and validator, desktop Electron and Tauri shells, Laravel builders, `mizumi.js`, `arkzen.js`, and the 33 tatemonos in `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
 
-**WHAT'S NEW IN v11.0 (vs v10.0):**
+**WHAT'S NEW IN v12.0 (vs v11.0):**
 
 - **Three stack categories** — `web`, `app`, `desktop` — can all be active at once. New stacks: `react-native` (bare), `lynx`, `tauri`, `electron`.
 - **Native DSL is now per-target.** Expo, bare React Native, and Lynx each have their own blocks. Expo/RN blocks use dual-target `@arkzen:import:expo` / `@arkzen:import:rn` pairs. Lynx blocks are separate, self-contained `:lynx` blocks.
@@ -17,6 +17,7 @@
 - **Special endpoint `type:` values** (`upload`, `broadcast`, `mail_send`, `notification_trigger`, ...) and role endpoint names, documented.
 - **`@arkzen:meta`** gained `dependencies` and `auth_seed`; **`@arkzen:meta:web`** gained `og`, `twitter`, `pwa`, `label`; `favicon`/`pwa` inside `@arkzen:meta` are deprecated.
 - **Lynx realtime:** an SSE bridge controller is auto-generated for Lynx when a tatemono has realtime + a `type: broadcast` endpoint.
+- **Desktop window configuration:** `@arkzen:desktop:config` supports shared window sizing, minimum dimensions, title, resizing, and fullscreen behavior. Electron and Tauri apply the settings from the active Tatemono registry; if configured Tatemonos conflict, the alphabetically earlier value wins with a warning.
 - **33 tatemonos** (new: `ethereane`, `lain098`, `shikaku`). A "Known engine quirks" section lists behaviors worth double-checking.
 
 * * *
@@ -60,7 +61,7 @@ Stacks are chosen **per project**, in three independent categories.
 
 Backends: `laravel` (all decoupled web stacks, and app stacks) · `laravel-inertia` (react-inertia only; chosen automatically).
 
-There is **no desktop DSL** — desktop targets reuse the web blocks.
+Desktop targets reuse the web blocks for their rendered UI. A small desktop-specific config block controls the desktop shell window; it does not create separate desktop pages or components.
 
 **CLI (interactive: `node mizumi.js`):**
 
@@ -93,6 +94,29 @@ Every tatemono gets its own isolated database. The driver is a **project setting
 Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both.
 
 Supabase and other backend targets (Express, Python, Java, C#) are **planned only** (`TEMP_PLUFF_FEATURE_PLAN.md`), not implemented. Never generate DSL for them.
+
+* * *
+
+## SECTION 1D — DESKTOP WINDOW CONFIGURATION
+
+Use one optional `@arkzen:desktop:config` YAML block to configure the shared desktop shell window. Omit it to use the shell defaults. This first version supports window settings only; menus and IPC are not part of the DSL yet.
+
+```tsx
+/* @arkzen:desktop:config
+window:
+  width: 1280
+  height: 800
+  min_width: 800
+  min_height: 600
+  resizable: true
+  fullscreenable: true
+  title: Pluff
+*/
+```
+
+`width`, `height`, `min_width`, and `min_height` must be positive integers. Minimum dimensions cannot exceed their corresponding starting dimensions. `resizable` and `fullscreenable` must be booleans. `title` must be a non-empty string.
+
+The Electron and Tauri shells wrap the whole web app, so this setting is shared rather than isolated to a single route. Partial settings from active Tatemonos are combined; if two Tatemonos set different values for the same property, the alphabetically earlier Tatemono wins and the shell logs a warning. Tauri applies the size, minimum size, title, and resizing settings. A Tauri export includes only its selected Tatemono's settings. Tauri has no portable API for disabling a window's fullscreen controls, so `fullscreenable: false` is warned about but cannot be enforced.
 
 * * *
 
@@ -1561,15 +1585,14 @@ const DashboardPage = () => <div>protected</div>
 These come from reading the engine source. They are not hypothetical — but test them in your build before relying on them, and fix the engine or the doc when resolved.
 
 1. **`foreign:` prefix vs auto relations.** The migration builder uses `foreign:` literally as the table name, so a real FK constraint needs the **prefixed** name (`queue_flow_queues.id`, as `queue-flow` does). The model builder, however, matches `foreign:` against the *raw* table name when generating `belongsTo`/`hasMany`. With prefixed references the auto-generated relation methods may be missing or oddly named. `dtr-geofencing` uses unprefixed `employees.id` instead. Check generated models/migrations after the first build.
-2. **`validate.js` / `validator.ts` is advisory and out of date.** It rejects `foreignId` and `enum` as unknown types, and it demands `@arkzen:import:*` on native pages that actually build fine. The DSL tag validator inside the parser is the real gate.
+2. **`type: enum` is unsupported.** The migration builder turns unknown types into `string` and ignores `values:`; use `type: string` with validation rules for allowed values. The shared validator accepts `foreignId`, slug-prefixed foreign keys, legacy shared native blocks, and guarded layout chains.
 3. **`command_run`, `job_dispatch`, `event_fire` endpoint types are hardcoded** to the test tatemonos' command/job/event names. Use custom endpoint bodies for real apps.
 4. **Plural `@arkzen:listeners:` blocks (legacy)** in `events-test` are not read; bodies come from singular `@arkzen:listener:`.
 5. **Lynx page layout line.** Parser: `@arkzen:native:page:lynx:layout:<name>`. `layout-test` uses `@arkzen:native:page:layout:<name>` in Lynx pages.
 6. **Mail/notification/job class names append a suffix** to the studly identifier (`welcome-mail` → `WelcomeMailMail`). Prefer short identifiers (`welcome`).
 7. **`type: enum`** appears in `queue-flow` but is silently a `string` column; `values:` is ignored.
 8. **Update migrations add new columns only** — they never alter or drop existing columns.
-9. **Tag regex accepts a `desktop:` prefix**, but no desktop blocks are parsed. Desktop targets wrap the web stack.
-10. **README is outdated** (still says v9.0, 26 tatemonos, 6 stacks). This guideline and the parser are the references.
+9. **README is outdated** (still says v9.0, 26 tatemonos, 6 stacks). This guideline and the parser are the references.
 
 * * *
 
@@ -1677,4 +1700,4 @@ Before finalizing any tatemono, verify:
 
 * * *
 
-_End of PLUFF GUIDELINES v11.0._
+_End of PLUFF GUIDELINES v12.0._

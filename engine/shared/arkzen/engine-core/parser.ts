@@ -1,6 +1,7 @@
 // ============================================================
 // ARKZEN ENGINE — PARSER v10.6
 //
+// v12.0: Shared desktop window config from @arkzen:desktop:config.
 // v10.6: Global (unnamed) native style block for Expo + Bare RN.
 //        New parser: parseGlobalNativeStyle() — @arkzen:native:style
 //        ParsedTatemono: nativeStyleGlobal? added (ArkzenSection | undefined).
@@ -118,6 +119,7 @@ import type {
   ArkzenWebMeta,
   ArkzenNativeMeta,
   ArkzenNativeConfig,
+  ArkzenDesktopConfig,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -543,6 +545,20 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
   const raw = extractSection(content, 'native:config')
   if (!raw) return undefined
   return yaml.load(raw) as ArkzenNativeConfig
+}
+
+function parseDesktopConfig(content: string): ArkzenDesktopConfig | undefined {
+  const matches = content.match(/^[ \t]*\/\*\s*@arkzen:desktop:config(?:\s|\*\/)/gm) ?? []
+  if (matches.length > 1) {
+    throw new Error('[Arkzen Parser] Only one @arkzen:desktop:config block is allowed per Tatemono')
+  }
+  const raw = extractSection(content, 'desktop:config')
+  if (!raw) return undefined
+  const parsed = yaml.load(raw)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('[Arkzen Parser] @arkzen:desktop:config must contain a YAML mapping')
+  }
+  return parsed as ArkzenDesktopConfig
 }
 
 // ─────────────────────────────────────────────
@@ -2152,7 +2168,7 @@ const CODE_BLOCK_TAGS = [
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
   'meta', 'meta:web', 'meta:native',
-  'web:config', 'native:config',
+  'web:config', 'native:config', 'desktop:config',
   'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail',
 ]
 
@@ -2379,6 +2395,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const nativeMeta   = parseNativeMeta(content)   // v10.0: @arkzen:meta:native
   const config       = parseConfig(content)
   const nativeConfig = parseNativeConfig(content) // v10.0: @arkzen:native:config
+  const desktopConfig = parseDesktopConfig(content)
   const databases    = parseAllDatabases(content)
   const customRoutes = parseAllCustomRoutes(content)  // internally calls parseAllHandlerSnippets
   const pages        = parseAllPages(content)
@@ -2485,6 +2502,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeMeta,    // v10.0
     config,
     nativeConfig,  // v10.0
+    desktopConfig,
     databases,
     apis,
     customRoutes,
