@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — asset-hub
 // Source: @arkzen:components (asset-hub)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:10.372Z
+// Generated: 2026-10-24T13:18:24.035Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — job-test [Expo]
 // Source: @arkzen:native:components (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:33.439Z
+// Generated: 2026-10-24T13:18:31.994Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

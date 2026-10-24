@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ItemController
 // Tatemono: crud-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:23.706093Z
+// Generated: 2026-10-24T13:18:33.653305Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\CrudTest;

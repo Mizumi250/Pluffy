@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LayerBadge
 // Source: @arkzen:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:46.291Z
+// Generated: 2026-10-24T13:18:47.016Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

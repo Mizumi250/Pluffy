@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — shikaku/index
 // Layout: +auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:15:11.256Z
+// Generated: 2026-10-24T13:18:53.894Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -14,12 +14,14 @@ import { PalettePanel } from './components/PalettePanel'
 import type { CanvasEngineProps, Frame, Layer, LayerPanelProps, PalettePanelProps, Pixel, Project, Tool } from './components/types'
 import { skFetch } from './components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
+import { useAuthStore } from '@/arkzen/core/stores/authStore'
 import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 // Page component code (from @arkzen:page:index)
 const DashboardPage = () => {
   const router = useRouter()
+  const { logout } = useAuthStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showNew, setShowNew] = useState(false)
@@ -76,6 +78,9 @@ const DashboardPage = () => {
           Shikaku
         </div>
         <div className="sk-dash-actions">
+          <button className="sk-btn sk-btn-ghost" onClick={async () => { await logout(); router.push('/shikaku/login') }}>
+            Sign out
+          </button>
           <button className="sk-btn sk-btn-primary" onClick={() => setShowNew(true)}>
             <Plus size={14} /> New Project
           </button>

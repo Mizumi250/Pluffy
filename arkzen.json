@@ -463,9 +463,9 @@
       "auth": false
     }
   ],
-  "activeStack": "nextjs",
-  "activeAppStack": "expo",
-  "activeDesktopStack": "electron",
+  "activeStack": "react-vite",
+  "activeAppStack": "react-native",
+  "activeDesktopStack": "tauri",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",
@@ -478,5 +478,5 @@
     "tauri": "engine/frontend/tauri",
     "electron": "engine/frontend/electron"
   },
-  "activeDatabase": "pgsql"
+  "activeDatabase": "sqlite"
 }

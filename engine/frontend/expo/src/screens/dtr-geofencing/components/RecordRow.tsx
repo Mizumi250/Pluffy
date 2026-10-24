@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — RecordRow [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:18.472Z
+// Generated: 2026-10-24T13:18:24.661Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventLogController
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:33.808289Z
+// Generated: 2026-10-24T13:18:40.033190Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\EventsTest;

@@ -6,32 +6,32 @@
       "name": "hello-native",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\hello-native\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\hello-native\\core.tsx",
       "screens": [
         "index",
         "about"
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-10-18T17:14:25.395Z"
+      "lastUpdated": "2026-10-24T13:18:27.917Z"
     },
     {
       "name": "crud-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\crud-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\crud-test\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-10-18T17:14:18.256Z"
+      "lastUpdated": "2026-10-24T13:18:24.476Z"
     },
     {
       "name": "auth-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\auth-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\auth-test\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -39,25 +39,25 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-10-18T17:14:09.863Z"
+      "lastUpdated": "2026-10-24T13:18:07.030Z"
     },
     {
       "name": "upload-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\upload-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\upload-test\\core.tsx",
       "screens": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-05-30T07:24:49.161Z",
-      "lastUpdated": "2026-10-18T17:15:06.261Z"
+      "lastUpdated": "2026-10-24T13:18:45.889Z"
     },
     {
       "name": "mail-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\mail-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\mail-test\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -65,61 +65,61 @@
       ],
       "auth": true,
       "registered": "2026-05-30T13:43:13.671Z",
-      "lastUpdated": "2026-10-18T17:14:36.074Z"
+      "lastUpdated": "2026-10-24T13:18:34.962Z"
     },
     {
       "name": "inventory-management",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\inventory-management\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\inventory-management\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-05-30T13:54:53.420Z",
-      "lastUpdated": "2026-10-18T17:14:30.358Z"
+      "lastUpdated": "2026-10-24T13:18:29.539Z"
     },
     {
       "name": "events-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\events-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\events-test\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-05-30T14:20:09.470Z",
-      "lastUpdated": "2026-10-18T17:14:25.137Z"
+      "lastUpdated": "2026-10-24T13:18:27.812Z"
     },
     {
       "name": "job-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\job-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\job-test\\core.tsx",
       "screens": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-05-30T14:41:59.405Z",
-      "lastUpdated": "2026-10-18T17:14:34.322Z"
+      "lastUpdated": "2026-10-24T13:18:33.447Z"
     },
     {
       "name": "scheduler-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\scheduler-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\scheduler-test\\core.tsx",
       "screens": [
         "dashboard"
       ],
       "auth": false,
       "registered": "2026-05-30T14:56:22.878Z",
-      "lastUpdated": "2026-10-18T17:15:03.766Z"
+      "lastUpdated": "2026-10-24T13:18:43.907Z"
     },
     {
       "name": "broadcast-test",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\broadcast-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\broadcast-test\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -127,13 +127,13 @@
       ],
       "auth": true,
       "registered": "2026-05-31T11:11:11.611Z",
-      "lastUpdated": "2026-10-18T17:14:16.189Z"
+      "lastUpdated": "2026-10-24T13:18:16.515Z"
     },
     {
       "name": "roles-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\roles-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\roles-test\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -141,37 +141,37 @@
       ],
       "auth": true,
       "registered": "2026-06-05T13:13:33.603Z",
-      "lastUpdated": "2026-10-18T17:15:02.011Z"
+      "lastUpdated": "2026-10-24T13:18:42.208Z"
     },
     {
       "name": "middleware-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\middleware-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\middleware-test\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-06T03:52:09.579Z",
-      "lastUpdated": "2026-10-18T17:14:38.544Z"
+      "lastUpdated": "2026-10-24T13:18:36.924Z"
     },
     {
       "name": "errors-test",
       "version": "1.2.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\errors-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\errors-test\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-06T04:12:10.162Z",
-      "lastUpdated": "2026-10-18T17:14:23.136Z"
+      "lastUpdated": "2026-10-24T13:18:26.037Z"
     },
     {
       "name": "notification-test",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\notification-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\notification-test\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -179,25 +179,25 @@
       ],
       "auth": true,
       "registered": "2026-06-09T02:47:31.378Z",
-      "lastUpdated": "2026-10-18T17:14:41.980Z"
+      "lastUpdated": "2026-10-24T13:18:37.657Z"
     },
     {
       "name": "body-endpoint-handler",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\body-endpoint-handler\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\body-endpoint-handler\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-09T09:27:00.701Z",
-      "lastUpdated": "2026-10-18T17:14:12.208Z"
+      "lastUpdated": "2026-10-24T13:18:11.865Z"
     },
     {
       "name": "body-mail-notification",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\body-mail-notification\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\body-mail-notification\\core.tsx",
       "screens": [
         "login",
         "register",
@@ -205,25 +205,25 @@
       ],
       "auth": true,
       "registered": "2026-06-09T10:16:50.282Z",
-      "lastUpdated": "2026-10-18T17:14:14.472Z"
+      "lastUpdated": "2026-10-24T13:18:15.031Z"
     },
     {
       "name": "portfolio-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\portfolio-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\portfolio-test\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-09T10:31:21.465Z",
-      "lastUpdated": "2026-10-18T17:14:42.444Z"
+      "lastUpdated": "2026-10-24T13:18:37.773Z"
     },
     {
       "name": "queue-flow",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\queue-flow\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\queue-flow\\core.tsx",
       "screens": [
         "index",
         "join",
@@ -231,25 +231,25 @@
       ],
       "auth": false,
       "registered": "2026-06-09T11:29:50.908Z",
-      "lastUpdated": "2026-10-18T17:14:59.787Z"
+      "lastUpdated": "2026-10-24T13:18:39.819Z"
     },
     {
       "name": "animation-lab",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\animation-lab\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\animation-lab\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-10T10:31:43.017Z",
-      "lastUpdated": "2026-10-18T17:14:09.078Z"
+      "lastUpdated": "2026-10-24T13:18:06.344Z"
     },
     {
       "name": "new-updates-styles",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\new-updates-styles\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\new-updates-styles\\core.tsx",
       "screens": [
         "index",
         "about",
@@ -257,26 +257,26 @@
       ],
       "auth": false,
       "registered": "2026-06-10T18:08:22.665Z",
-      "lastUpdated": "2026-10-18T17:14:38.895Z"
+      "lastUpdated": "2026-10-24T13:18:37.124Z"
     },
     {
       "name": "dtr-geofencing",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\dtr-geofencing\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\dtr-geofencing\\core.tsx",
       "screens": [
         "index",
         "admin"
       ],
       "auth": false,
       "registered": "2026-06-10T18:18:17.210Z",
-      "lastUpdated": "2026-10-18T17:14:22.674Z"
+      "lastUpdated": "2026-10-24T13:18:25.910Z"
     },
     {
       "name": "jo-payroll",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\jo-payroll\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\jo-payroll\\core.tsx",
       "screens": [
         "index",
         "job-database",
@@ -286,37 +286,37 @@
       ],
       "auth": false,
       "registered": "2026-06-11T01:13:19.471Z",
-      "lastUpdated": "2026-10-18T17:14:33.374Z"
+      "lastUpdated": "2026-10-24T13:18:31.884Z"
     },
     {
       "name": "asset-hub",
       "version": "2.1.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\asset-hub\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\asset-hub\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-11T02:43:24.186Z",
-      "lastUpdated": "2026-10-18T17:14:09.225Z"
+      "lastUpdated": "2026-10-24T13:18:06.592Z"
     },
     {
       "name": "shan-shan",
       "version": "2.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\shan-shan\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\shan-shan\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-11T07:04:18.295Z",
-      "lastUpdated": "2026-10-18T17:15:04.327Z"
+      "lastUpdated": "2026-10-24T13:18:44.598Z"
     },
     {
       "name": "layout-test",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\layout-test\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\layout-test\\core.tsx",
       "screens": [
         "index",
         "tab",
@@ -327,19 +327,19 @@
       ],
       "auth": false,
       "registered": "2026-06-14T03:49:00.806Z",
-      "lastUpdated": "2026-10-18T17:14:34.707Z"
+      "lastUpdated": "2026-10-24T13:18:33.964Z"
     },
     {
       "name": "atelier",
       "version": "1.0.0",
       "status": "active",
-      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluff\\tatemonos\\atelier\\core.tsx",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\atelier\\core.tsx",
       "screens": [
         "index"
       ],
       "auth": false,
       "registered": "2026-06-14T15:57:51.242Z",
-      "lastUpdated": "2026-10-18T17:14:09.618Z"
+      "lastUpdated": "2026-10-24T13:18:06.871Z"
     }
   ]
 }

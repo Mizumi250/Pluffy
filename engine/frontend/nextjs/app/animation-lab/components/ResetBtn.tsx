@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ResetBtn
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:09.708Z
+// Generated: 2026-10-24T13:18:18.574Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

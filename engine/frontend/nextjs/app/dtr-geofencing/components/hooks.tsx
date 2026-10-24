@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — dtr-geofencing
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:25.328Z
+// Generated: 2026-10-24T13:18:34.740Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

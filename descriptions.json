@@ -194,6 +194,23 @@
     "lines": 1790,
     "estimated_tokens": 27812
   },
+  "clinic-appointment-booking": {
+    "description": "Book clinic appointments — CRUD for patients and appointments",
+    "meta_description": "Book clinic appointments — CRUD for patients and appointments",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "database:patients",
+      "database:appointments",
+      "api:patients",
+      "api:appointments",
+      "web:components:shared",
+      "web:page:index",
+      "web:page:appointments"
+    ],
+    "lines": 423,
+    "estimated_tokens": 4972
+  },
   "crud-test": {
     "description": "Build an admin dashboard for testing a full resource workflow: create, view, edit, and delete records, with validation and clear status feedback.",
     "meta_description": "Tests the full CRUD pipeline — Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.",
@@ -779,12 +796,14 @@
       "web:style",
       "web:components:shared",
       "web:components:editor",
+      "web:page:login",
+      "web:page:register",
       "web:page:index",
       "web:page:editor",
       "web:animation"
     ],
-    "lines": 2496,
-    "estimated_tokens": 22994
+    "lines": 2613,
+    "estimated_tokens": 25116
   },
   "upload-test": {
     "description": "Create a file-upload dashboard that supports single and multiple uploads, previews images, lists stored files, and lets users download or delete them.",

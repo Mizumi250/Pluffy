@@ -80,8 +80,7 @@ shan-shan: @arkzen:web:page:index is approximately 4150 tokens (limit 3000); exc
 shan-shan: @arkzen:native:components:shared is approximately 6888 tokens (limit 3000); excluded from block training
 shan-shan: @arkzen:native:page:index is approximately 3228 tokens (limit 3000); excluded from block training
 shan-shan: @arkzen:native:page:index is approximately 3162 tokens (limit 3000); excluded from block training
-shikaku: engine warnings: auth: true is set but no guest (public) pages found. Users will have no way to log in. Add @arkzen:web:page:layout:guest to a login page.
-shikaku: complete app is approximately 22994 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+shikaku: complete app is approximately 25116 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
 shikaku: @arkzen:web:style is approximately 6582 tokens (limit 3000); excluded from block training
 shikaku: @arkzen:web:components:editor is approximately 5430 tokens (limit 3000); excluded from block training
 shikaku: @arkzen:web:page:editor is approximately 5723 tokens (limit 3000); excluded from block training

@@ -2,11 +2,12 @@
 // ARKZEN GENERATED UTILITIES — shikaku
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:15:11.118Z
+// Generated: 2026-10-24T13:18:53.663Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useAuthStore } from '@/arkzen/core/stores/authStore'
 import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import type { CanvasEngineProps, Frame, Layer, LayerPanelProps, PalettePanelProps, Pixel, Project, Tool } from './types'
@@ -135,7 +136,7 @@ export function renderFrameThumb(frame: Frame, width: number, height: number, si
 // arkzen fetch helper
 export async function skFetch(url: string, options?: RequestInit) {
   const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  const token = typeof window !== 'undefined' ? localStorage.getItem('shikaku_token') : null
+  const token = typeof window !== 'undefined' ? useAuthStore.getState().token : null
   const res = await fetch(`${base}${url}`, {
     ...options,
     headers: {

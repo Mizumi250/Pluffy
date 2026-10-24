@@ -6,7 +6,7 @@
 // Channels: mail, database
 // Broadcast channel type: private
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:17.290068Z
+// Generated: 2026-10-24T13:18:28.621810Z
 // ============================================================
 
 namespace App\Notifications\Arkzen\BodyMailNotification;

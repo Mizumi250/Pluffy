@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — inventory-management [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-18T17:14:26.515Z
+// Generated: 2026-10-24T13:18:28.837Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'
