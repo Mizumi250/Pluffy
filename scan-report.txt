@@ -1,96 +1,91 @@
-animation-lab: full file is approximately 48913 tokens (limit 3000); excluded from complete-file training
-animation-lab: @arkzen:web:components:shared is approximately 18726 tokens (limit 3000); excluded from block training
-animation-lab: @arkzen:web:style is approximately 3618 tokens (limit 3000); excluded from block training
-animation-lab: @arkzen:native:animation:expo is approximately 4407 tokens (limit 3000); excluded from block training
-animation-lab: @arkzen:native:components:sections is approximately 9281 tokens (limit 3000); excluded from block training
-animation-lab: @arkzen:native:components:lynx:shared is approximately 4853 tokens (limit 3000); excluded from block training
-asset-hub: full file is approximately 6534 tokens (limit 3000); excluded from complete-file training
-atelier: full file is approximately 48244 tokens (limit 3000); excluded from complete-file training
-atelier: @arkzen:web:style is approximately 10768 tokens (limit 3000); excluded from block training
-atelier: @arkzen:web:components:shared is approximately 6365 tokens (limit 3000); excluded from block training
-atelier: @arkzen:web:page:index is approximately 20288 tokens (limit 3000); excluded from block training
-atelier: @arkzen:native:components:shared is approximately 3063 tokens (limit 3000); excluded from block training
-atelier: @arkzen:native:page:index is approximately 7164 tokens (limit 3000); excluded from block training
-auth-test: full file is approximately 8758 tokens (limit 3000); excluded from complete-file training
-body-endpoint-handler: full file is approximately 20061 tokens (limit 3000); excluded from complete-file training
-body-endpoint-handler: @arkzen:web:page:index is approximately 5292 tokens (limit 3000); excluded from block training
-body-endpoint-handler: @arkzen:native:page:index is approximately 5658 tokens (limit 3000); excluded from block training
-body-endpoint-handler: @arkzen:native:page:lynx:index is approximately 5471 tokens (limit 3000); excluded from block training
+animation-lab: complete app is approximately 48881 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+animation-lab: @arkzen:web:components:shared is approximately 18694 tokens (limit 3000); excluded from block training
+animation-lab: @arkzen:web:style is approximately 3585 tokens (limit 3000); excluded from block training
+animation-lab: @arkzen:native:animation:expo is approximately 4374 tokens (limit 3000); excluded from block training
+animation-lab: @arkzen:native:components:sections is approximately 9248 tokens (limit 3000); excluded from block training
+animation-lab: @arkzen:native:components:lynx:shared is approximately 4821 tokens (limit 3000); excluded from block training
+atelier: complete app is approximately 48234 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+atelier: @arkzen:web:style is approximately 10758 tokens (limit 3000); excluded from block training
+atelier: @arkzen:web:components:shared is approximately 6355 tokens (limit 3000); excluded from block training
+atelier: @arkzen:web:page:index is approximately 20278 tokens (limit 3000); excluded from block training
+atelier: @arkzen:native:components:shared is approximately 3053 tokens (limit 3000); excluded from block training
+atelier: @arkzen:native:page:index is approximately 7154 tokens (limit 3000); excluded from block training
+auth-test: complete app is approximately 8778 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+body-endpoint-handler: complete app is approximately 19993 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+body-endpoint-handler: @arkzen:web:page:index is approximately 5224 tokens (limit 3000); excluded from block training
+body-endpoint-handler: @arkzen:native:page:index is approximately 5590 tokens (limit 3000); excluded from block training
+body-endpoint-handler: @arkzen:native:page:lynx:index is approximately 5403 tokens (limit 3000); excluded from block training
 body-mail-notification: engine warnings: Table "send_log" should be plural snake_case (e.g., "send_logs")
-body-mail-notification: full file is approximately 21423 tokens (limit 3000); excluded from complete-file training
-body-mail-notification: @arkzen:web:page:dashboard is approximately 3257 tokens (limit 3000); excluded from block training
-body-mail-notification: @arkzen:native:page:dashboard is approximately 3697 tokens (limit 3000); excluded from block training
-body-mail-notification: @arkzen:native:page:lynx:dashboard is approximately 3724 tokens (limit 3000); excluded from block training
-broadcast-test: full file is approximately 20597 tokens (limit 3000); excluded from complete-file training
-broadcast-test: @arkzen:web:page:dashboard is approximately 4066 tokens (limit 3000); excluded from block training
-broadcast-test: @arkzen:native:page:dashboard is approximately 3629 tokens (limit 3000); excluded from block training
-cafe-teresita: full file is approximately 27897 tokens (limit 3000); excluded from complete-file training
-cafe-teresita: @arkzen:web:page:index is approximately 25321 tokens (limit 3000); excluded from block training
-crud-test: full file is approximately 13190 tokens (limit 3000); excluded from complete-file training
+body-mail-notification: complete app is approximately 21360 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+body-mail-notification: @arkzen:web:page:dashboard is approximately 3193 tokens (limit 3000); excluded from block training
+body-mail-notification: @arkzen:native:page:dashboard is approximately 3633 tokens (limit 3000); excluded from block training
+body-mail-notification: @arkzen:native:page:lynx:dashboard is approximately 3660 tokens (limit 3000); excluded from block training
+broadcast-test: complete app is approximately 20577 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+broadcast-test: @arkzen:web:page:dashboard is approximately 4046 tokens (limit 3000); excluded from block training
+broadcast-test: @arkzen:native:page:dashboard is approximately 3609 tokens (limit 3000); excluded from block training
+cafe-teresita: complete app is approximately 27812 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+cafe-teresita: @arkzen:web:page:index is approximately 25236 tokens (limit 3000); excluded from block training
+crud-test: complete app is approximately 13191 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
 crud-test: @arkzen:web:page:index is approximately 3213 tokens (limit 3000); excluded from block training
 crud-test: @arkzen:native:components:shared is approximately 3381 tokens (limit 3000); excluded from block training
-dtr-geofencing: full file is approximately 28430 tokens (limit 3000); excluded from complete-file training
+dtr-geofencing: complete app is approximately 28430 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
 dtr-geofencing: @arkzen:web:components:shared is approximately 4852 tokens (limit 3000); excluded from block training
 dtr-geofencing: @arkzen:web:page:admin is approximately 3481 tokens (limit 3000); excluded from block training
 dtr-geofencing: @arkzen:native:components:shared is approximately 4882 tokens (limit 3000); excluded from block training
 dtr-geofencing: @arkzen:native:page:index is approximately 3287 tokens (limit 3000); excluded from block training
 dtr-geofencing: @arkzen:native:page:admin is approximately 3190 tokens (limit 3000); excluded from block training
-errors-test: full file is approximately 10534 tokens (limit 3000); excluded from complete-file training
-ethan-pool: full file is approximately 21486 tokens (limit 3000); excluded from complete-file training
-ethan-pool: @arkzen:web:components:shared is approximately 3871 tokens (limit 3000); excluded from block training
-ethan-pool: @arkzen:web:style is approximately 9312 tokens (limit 3000); excluded from block training
-ethan-pool: @arkzen:web:page:index is approximately 7064 tokens (limit 3000); excluded from block training
-ethereane: full file is approximately 17692 tokens (limit 3000); excluded from complete-file training
-ethereane: @arkzen:web:script is approximately 7017 tokens (limit 3000); excluded from block training
-ethereane: @arkzen:web:components:game is approximately 9286 tokens (limit 3000); excluded from block training
+errors-test: complete app is approximately 10538 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+ethan-pool: complete app is approximately 21290 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+ethan-pool: @arkzen:web:components:shared is approximately 3675 tokens (limit 3000); excluded from block training
+ethan-pool: @arkzen:web:style is approximately 9116 tokens (limit 3000); excluded from block training
+ethan-pool: @arkzen:web:page:index is approximately 6868 tokens (limit 3000); excluded from block training
+ethereane: complete app is approximately 17670 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+ethereane: @arkzen:web:script is approximately 6994 tokens (limit 3000); excluded from block training
+ethereane: @arkzen:web:components:game is approximately 9264 tokens (limit 3000); excluded from block training
 events-test: engine warnings: Table "event_log" should be plural snake_case (e.g., "event_logs")
-events-test: full file is approximately 11574 tokens (limit 3000); excluded from complete-file training
-hello-native: full file is approximately 3816 tokens (limit 3000); excluded from complete-file training
-hw-coffee: full file is approximately 28184 tokens (limit 3000); excluded from complete-file training
-hw-coffee: @arkzen:web:page:index is approximately 25326 tokens (limit 3000); excluded from block training
+events-test: complete app is approximately 11580 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+hw-coffee: complete app is approximately 28142 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+hw-coffee: @arkzen:web:page:index is approximately 25284 tokens (limit 3000); excluded from block training
 inventory-management: engine warnings: API model "Inventory" expects table "inventorys" — ensure a @arkzen:database block declares table: inventorys
-inventory-management: full file is approximately 16583 tokens (limit 3000); excluded from complete-file training
-inventory-management: @arkzen:web:page:index is approximately 3010 tokens (limit 3000); excluded from block training
-inventory-management: @arkzen:native:page:lynx:index is approximately 3078 tokens (limit 3000); excluded from block training
-jo-payroll: full file is approximately 55350 tokens (limit 3000); excluded from complete-file training
-jo-payroll: @arkzen:web:components:shared is approximately 6533 tokens (limit 3000); excluded from block training
-jo-payroll: @arkzen:web:page:index is approximately 3937 tokens (limit 3000); excluded from block training
-jo-payroll: @arkzen:web:page:payslip is approximately 3532 tokens (limit 3000); excluded from block training
-job-test: full file is approximately 7443 tokens (limit 3000); excluded from complete-file training
-lain098: full file is approximately 29413 tokens (limit 3000); excluded from complete-file training
-lain098: @arkzen:web:components:shared is approximately 14478 tokens (limit 3000); excluded from block training
-lain098: @arkzen:web:style is approximately 12859 tokens (limit 3000); excluded from block training
-layout-test: full file is approximately 12440 tokens (limit 3000); excluded from complete-file training
-mail-test: full file is approximately 17976 tokens (limit 3000); excluded from complete-file training
-mail-test: @arkzen:web:page:dashboard is approximately 3283 tokens (limit 3000); excluded from block training
-mail-test: @arkzen:native:page:dashboard is approximately 3308 tokens (limit 3000); excluded from block training
-mail-test: @arkzen:native:page:lynx:dashboard is approximately 3266 tokens (limit 3000); excluded from block training
-middleware-test: full file is approximately 8179 tokens (limit 3000); excluded from complete-file training
-new-updates-styles: full file is approximately 15127 tokens (limit 3000); excluded from complete-file training
-notification-test: full file is approximately 20290 tokens (limit 3000); excluded from complete-file training
+inventory-management: complete app is approximately 16614 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+inventory-management: @arkzen:web:page:index is approximately 3041 tokens (limit 3000); excluded from block training
+inventory-management: @arkzen:native:page:lynx:index is approximately 3109 tokens (limit 3000); excluded from block training
+jo-payroll: complete app is approximately 55342 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+jo-payroll: @arkzen:web:components:shared is approximately 6524 tokens (limit 3000); excluded from block training
+jo-payroll: @arkzen:web:page:index is approximately 3928 tokens (limit 3000); excluded from block training
+jo-payroll: @arkzen:web:page:payslip is approximately 3523 tokens (limit 3000); excluded from block training
+lain098: complete app is approximately 29440 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+lain098: @arkzen:web:components:shared is approximately 14504 tokens (limit 3000); excluded from block training
+lain098: @arkzen:web:style is approximately 12885 tokens (limit 3000); excluded from block training
+layout-test: complete app is approximately 12444 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+mail-test: complete app is approximately 17985 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+mail-test: @arkzen:web:page:dashboard is approximately 3292 tokens (limit 3000); excluded from block training
+mail-test: @arkzen:native:page:dashboard is approximately 3317 tokens (limit 3000); excluded from block training
+mail-test: @arkzen:native:page:lynx:dashboard is approximately 3274 tokens (limit 3000); excluded from block training
+new-updates-styles: complete app is approximately 15138 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+notification-test: complete app is approximately 20290 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
 notification-test: @arkzen:web:page:dashboard is approximately 4703 tokens (limit 3000); excluded from block training
 notification-test: @arkzen:native:page:dashboard is approximately 4490 tokens (limit 3000); excluded from block training
 notification-test: @arkzen:native:page:lynx:dashboard is approximately 3120 tokens (limit 3000); excluded from block training
-portfolio-test: full file is approximately 6761 tokens (limit 3000); excluded from complete-file training
-queue-flow: full file is approximately 34055 tokens (limit 3000); excluded from complete-file training
-queue-flow: @arkzen:web:components:shared is approximately 4110 tokens (limit 3000); excluded from block training
-queue-flow: @arkzen:native:page:join is approximately 3146 tokens (limit 3000); excluded from block training
-queue-flow: @arkzen:native:page:join is approximately 3150 tokens (limit 3000); excluded from block training
-roles-test: full file is approximately 15924 tokens (limit 3000); excluded from complete-file training
-scheduler-test: full file is approximately 9708 tokens (limit 3000); excluded from complete-file training
-shan-shan: full file is approximately 37386 tokens (limit 3000); excluded from complete-file training
-shan-shan: @arkzen:web:components:shared is approximately 5799 tokens (limit 3000); excluded from block training
-shan-shan: @arkzen:web:style is approximately 7404 tokens (limit 3000); excluded from block training
-shan-shan: @arkzen:web:page:index is approximately 4196 tokens (limit 3000); excluded from block training
-shan-shan: @arkzen:native:components:shared is approximately 6934 tokens (limit 3000); excluded from block training
-shan-shan: @arkzen:native:page:index is approximately 3274 tokens (limit 3000); excluded from block training
-shan-shan: @arkzen:native:page:index is approximately 3208 tokens (limit 3000); excluded from block training
+queue-flow: complete app is approximately 34094 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+queue-flow: @arkzen:web:components:shared is approximately 4149 tokens (limit 3000); excluded from block training
+queue-flow: @arkzen:native:page:join is approximately 3185 tokens (limit 3000); excluded from block training
+queue-flow: @arkzen:native:page:join is approximately 3189 tokens (limit 3000); excluded from block training
+roles-test: complete app is approximately 15896 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+scheduler-test: complete app is approximately 9713 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+shan-shan: complete app is approximately 37340 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+shan-shan: @arkzen:web:components:shared is approximately 5753 tokens (limit 3000); excluded from block training
+shan-shan: @arkzen:web:style is approximately 7358 tokens (limit 3000); excluded from block training
+shan-shan: @arkzen:web:page:index is approximately 4150 tokens (limit 3000); excluded from block training
+shan-shan: @arkzen:native:components:shared is approximately 6888 tokens (limit 3000); excluded from block training
+shan-shan: @arkzen:native:page:index is approximately 3228 tokens (limit 3000); excluded from block training
+shan-shan: @arkzen:native:page:index is approximately 3162 tokens (limit 3000); excluded from block training
 shikaku: engine warnings: auth: true is set but no guest (public) pages found. Users will have no way to log in. Add @arkzen:web:page:layout:guest to a login page.
-shikaku: full file is approximately 23034 tokens (limit 3000); excluded from complete-file training
-shikaku: @arkzen:web:style is approximately 6622 tokens (limit 3000); excluded from block training
-shikaku: @arkzen:web:components:editor is approximately 5471 tokens (limit 3000); excluded from block training
-shikaku: @arkzen:web:page:editor is approximately 5764 tokens (limit 3000); excluded from block training
-upload-test: full file is approximately 9261 tokens (limit 3000); excluded from complete-file training
-visual-lab: full file is approximately 33559 tokens (limit 3000); excluded from complete-file training
-visual-lab: @arkzen:web:components:shared is approximately 26113 tokens (limit 3000); excluded from block training
-visual-lab: @arkzen:web:style is approximately 4405 tokens (limit 3000); excluded from block training
+shikaku: complete app is approximately 22994 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+shikaku: @arkzen:web:style is approximately 6582 tokens (limit 3000); excluded from block training
+shikaku: @arkzen:web:components:editor is approximately 5430 tokens (limit 3000); excluded from block training
+shikaku: @arkzen:web:page:editor is approximately 5723 tokens (limit 3000); excluded from block training
+upload-test: complete app is approximately 9264 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+visual-lab: complete app is approximately 33439 tokens (planning target 8192); included whole in dataset.jsonl, but needs a compatible training sequence length
+visual-lab: @arkzen:web:components:shared is approximately 25993 tokens (limit 3000); excluded from block training
+visual-lab: @arkzen:web:style is approximately 4285 tokens (limit 3000); excluded from block training

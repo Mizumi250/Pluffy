@@ -1,6 +1,6 @@
 {
   "animation-lab": {
-    "description": "Full animation testing lab — GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures, layout, AnimatePresence, keyframes, drag), and CSS animations (keyframes, transitions, transforms, custom properties). The definitive Arkzen animation reference.",
+    "description": "Create an animation playground that lets me preview and compare common web and mobile animation patterns, including entrances, exits, scroll effects, staggered motion, gestures, timelines, and 3D transforms.",
     "meta_description": "Full animation testing lab — GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures, layout, AnimatePresence, keyframes, drag), and CSS animations (keyframes, transitions, transforms, custom properties). The definitive Arkzen animation reference.",
     "blocks": [
       "meta",
@@ -31,10 +31,10 @@
       "native:script:lynx"
     ],
     "lines": 3858,
-    "estimated_tokens": 48913
+    "estimated_tokens": 48881
   },
   "asset-hub": {
-    "description": "Tests how assets are placed in the tatemono folder and distributed by the engine. Drop any file into tatemonos/asset-hub/assets/<category>/ — the engine auto-copies everything to the public folder. Web page shows all registered assets live. Native screen mirrors the same test.",
+    "description": "Build an asset gallery that displays images, icons, fonts, audio, video, and data files placed in an app assets folder, and show where each asset is served on web and mobile.",
     "meta_description": "Tests how assets are placed in the tatemono folder and distributed by the engine. Drop any file into tatemonos/asset-hub/assets/<category>/ — the engine auto-copies everything to the public folder. Web page shows all registered assets live. Native screen mirrors the same test.",
     "blocks": [
       "meta",
@@ -51,10 +51,10 @@
       "native:page:lynx:index"
     ],
     "lines": 597,
-    "estimated_tokens": 6534
+    "estimated_tokens": 6499
   },
   "atelier": {
-    "description": "Atelier — A Home for Creative Journeys. Social platform for artists, supporters, commissioners, and collaborators. Centered on creative continuations rather than isolated posts.",
+    "description": "Create a social platform for artists where creators can share ongoing projects, find supporters and collaborators, and receive commission requests.",
     "meta_description": "Atelier — A Home for Creative Journeys. Social platform for artists, supporters, commissioners, and collaborators. Centered on creative continuations rather than isolated posts.",
     "blocks": [
       "meta",
@@ -69,10 +69,10 @@
       "native:page:index"
     ],
     "lines": 3766,
-    "estimated_tokens": 48244
+    "estimated_tokens": 48234
   },
   "auth-test": {
-    "description": "Tests core authentication — register, login, logout, and protected dashboard.",
+    "description": "Build a small authentication app with registration, login, logout, and a protected dashboard, using separate public and signed-in pages.",
     "meta_description": "Tests core authentication — register, login, logout, and protected dashboard.",
     "blocks": [
       "meta",
@@ -91,10 +91,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 796,
-    "estimated_tokens": 8758
+    "estimated_tokens": 8778
   },
   "body-endpoint-handler": {
-    "description": "Tests ControllerBuilder v7.0 @arkzen:endpoint body injection and CustomRouteBuilder v2.0 @arkzen:handler body injection. Both builders accept base64-encoded PHP between the DSL block markers. This tatemono verifies that custom api endpoint methods and standalone route handlers use the injected PHP body instead of the Not implemented stub.",
+    "description": "Create an API demonstration dashboard with buttons to call custom endpoints and routes, then display their responses and recent results.",
     "meta_description": "Tests ControllerBuilder v7.0 @arkzen:endpoint body injection and CustomRouteBuilder v2.0 @arkzen:handler body injection. Both builders accept base64-encoded PHP between the DSL block markers. This tatemono verifies that custom api endpoint methods and standalone route handlers use the injected PHP body instead of the Not implemented stub.",
     "blocks": [
       "meta",
@@ -115,10 +115,10 @@
       "native:page:lynx:index"
     ],
     "lines": 1426,
-    "estimated_tokens": 20061
+    "estimated_tokens": 19993
   },
   "body-mail-notification": {
-    "description": "Tests MailBuilder v3.1 blade_body injection and NotificationBuilder v3.9 toMail_body injection. Blade HTML is placed between the closing YAML comment and the end marker. This tatemono verifies that blade views are generated from injected HTML content and that toMail() uses the injected MailMessage chain instead of the stub.",
+    "description": "Build a messaging demo where I can trigger welcome, receipt, and alert emails plus in-app notifications, and inspect the send history.",
     "meta_description": "Tests MailBuilder v3.1 blade_body injection and NotificationBuilder v3.9 toMail_body injection. Blade HTML is placed between the closing YAML comment and the end marker. This tatemono verifies that blade views are generated from injected HTML content and that toMail() uses the injected MailMessage chain instead of the stub.",
     "blocks": [
       "meta",
@@ -149,10 +149,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 1692,
-    "estimated_tokens": 21423
+    "estimated_tokens": 21360
   },
   "broadcast-test": {
-    "description": "Tests all three Laravel Reverb channel types end-to-end. Public channel (no auth), private channel (user-scoped), and presence channel (member roster). Each panel is independently testable.",
+    "description": "Create a real-time messaging demo that shows public, private, and presence-based updates, including the current participant list.",
     "meta_description": "Tests all three Laravel Reverb channel types end-to-end. Public channel (no auth), private channel (user-scoped), and presence channel (member roster). Each panel is independently testable.",
     "blocks": [
       "meta",
@@ -179,10 +179,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 1534,
-    "estimated_tokens": 20597
+    "estimated_tokens": 20577
   },
   "cafe-teresita": {
-    "description": "Cafe Teresita (by Guada's) Tatemono — Concept landing page for the cafe in Calubo, Kinoguitan, Misamis Oriental. Full Couvee-mirrored design: dark hero overlay, cream sections, centered logo nav with Instagram + hamburger, scroll-scale hero, mouse-parallax floating images, per-column fadeInRight/Left, merchandise-style card stagger, tada CTA, marquee strip, full-height hero. Frontend-only, single design system (no dark mode).",
+    "description": "Design a polished landing page for Cafe Teresita in Calubo, Kinoguitan, with a warm cream-and-dark palette, cafe imagery, menu highlights, location details, and social links.",
     "meta_description": "Cafe Teresita (by Guada's) Tatemono — Concept landing page for the cafe in Calubo, Kinoguitan, Misamis Oriental. Full Couvee-mirrored design: dark hero overlay, cream sections, centered logo nav with Instagram + hamburger, scroll-scale hero, mouse-parallax floating images, per-column fadeInRight/Left, merchandise-style card stagger, tada CTA, marquee strip, full-height hero. Frontend-only, single design system (no dark mode).",
     "blocks": [
       "meta",
@@ -192,10 +192,10 @@
       "web:page:index"
     ],
     "lines": 1790,
-    "estimated_tokens": 27897
+    "estimated_tokens": 27812
   },
   "crud-test": {
-    "description": "Tests the full CRUD pipeline — Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.",
+    "description": "Build an admin dashboard for testing a full resource workflow: create, view, edit, and delete records, with validation and clear status feedback.",
     "meta_description": "Tests the full CRUD pipeline — Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.",
     "blocks": [
       "meta",
@@ -212,7 +212,7 @@
       "native:page:lynx:index"
     ],
     "lines": 1083,
-    "estimated_tokens": 13190
+    "estimated_tokens": 13191
   },
   "dtr-geofencing": {
     "description": "Build a staff time-and-attendance app with employee records, GPS-verified clock-ins, a map of attendance locations, and admin controls for the office geofence.",
@@ -250,7 +250,7 @@
     "estimated_tokens": 28430
   },
   "errors-test": {
-    "description": "Tests real HTTP error handlers. Next.js segment-scoped not-found.tsx and error.tsx. API codes trigger toasts via arkzenFetch interceptor.",
+    "description": "Create a diagnostic app with custom not-found and error screens, plus controls that trigger common API errors and show user-friendly toast messages.",
     "meta_description": "Tests real HTTP error handlers. Next.js segment-scoped not-found.tsx and error.tsx. API codes trigger toasts via arkzenFetch interceptor.",
     "blocks": [
       "meta",
@@ -270,10 +270,10 @@
       "native:error:500:lynx"
     ],
     "lines": 691,
-    "estimated_tokens": 10534
+    "estimated_tokens": 10538
   },
   "ethan-pool": {
-    "description": "Ethan Pool — Luxury aquatic resort landing page tatemono. Structural & animation port of a luxury hotel one-page template: fullscreen hero with morning-pool imagery, full-bleed banner with text reveal, horizontally scrollable room carousel, sticky info/amenities section, gallery grid, blog carousel, location/contact split, newsletter signup, sticky booking bar, promo modal and lightbox gallery modal. GSAP + ScrollTrigger entrance/scroll animations, fade-in/fade-up reveals, parallax images. English copy, plain sans-serif typography, no marquee/ticker/pin elements. Frontend-only, demo content with stock placeholder imagery. DISCLAIMER: Ethan Pool is a fictional demo business — all content, names and imagery are placeholders for showcase purposes only.",
+    "description": "Create a luxury resort landing page with a full-screen pool hero, immersive photography, refined typography, destination highlights, amenities, and booking calls to action.",
     "meta_description": "Ethan Pool — Luxury aquatic resort landing page tatemono. Structural & animation port of a luxury hotel one-page template: fullscreen hero with morning-pool imagery, full-bleed banner with text reveal, horizontally scrollable room carousel, sticky info/amenities section, gallery grid, blog carousel, location/contact split, newsletter signup, sticky booking bar, promo modal and lightbox gallery modal. GSAP + ScrollTrigger entrance/scroll animations, fade-in/fade-up reveals, parallax images. English copy, plain sans-serif typography, no marquee/ticker/pin elements. Frontend-only, demo content with stock placeholder imagery. DISCLAIMER: Ethan Pool is a fictional demo business — all content, names and imagery are placeholders for showcase purposes only.",
     "blocks": [
       "meta",
@@ -285,10 +285,10 @@
       "web:page:index"
     ],
     "lines": 1541,
-    "estimated_tokens": 21486
+    "estimated_tokens": 21290
   },
   "ethereane": {
-    "description": "Real-time 3D voxel-pixel RPG — free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for character/NPCs/bushes, virtual joystick + keyboard, low-res pixelated render target.",
+    "description": "Build a real-time voxel-pixel RPG prototype with an orbiting 3D camera, blocky terrain, billboard characters and scenery, and keyboard and touch movement controls.",
     "meta_description": "Real-time 3D voxel-pixel RPG — free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for character/NPCs/bushes, virtual joystick + keyboard, low-res pixelated render target.",
     "blocks": [
       "meta",
@@ -299,10 +299,10 @@
       "web:page:index"
     ],
     "lines": 1498,
-    "estimated_tokens": 17692
+    "estimated_tokens": 17670
   },
   "events-test": {
-    "description": "Tests Laravel Events + Listeners pipeline. Fire events manually, see listeners execute asynchronously, inspect the event chain.",
+    "description": "Create an event-processing dashboard where I can trigger events, inspect listener activity, and follow each event through its processing history.",
     "meta_description": "Tests Laravel Events + Listeners pipeline. Fire events manually, see listeners execute asynchronously, inspect the event chain.",
     "blocks": [
       "meta",
@@ -330,10 +330,10 @@
       "native:page:lynx:index"
     ],
     "lines": 979,
-    "estimated_tokens": 11574
+    "estimated_tokens": 11580
   },
   "hello-native": {
-    "description": "Native-only starter tatemono. Two screens — home and about. No auth, no backend.",
+    "description": "Create a simple native mobile starter app with a home screen and an about screen, reusable UI components, and straightforward navigation.",
     "meta_description": "Native-only starter tatemono. Two screens — home and about. No auth, no backend.",
     "blocks": [
       "meta",
@@ -347,10 +347,10 @@
       "native:page:lynx:about"
     ],
     "lines": 398,
-    "estimated_tokens": 3816
+    "estimated_tokens": 3835
   },
   "hw-coffee": {
-    "description": "H&W Coffee Tatemono — Concept landing page for H&W Coffee, Gingoog City's #1 café. GSAP ScrollTrigger, SplitText-style reveals, magnetic buttons, parallax, marquee, staggered grid reveals, horizontal rule draws, floating badges, dark/light mode. Frontend-only. Concept by Mizumi (James Rafty D. Libago).",
+    "description": "Design a high-end landing page for H&W Coffee in Gingoog City, featuring coffee photography, an editorial hero, menu highlights, location details, and smooth scroll animations.",
     "meta_description": "H&W Coffee Tatemono — Concept landing page for H&W Coffee, Gingoog City's #1 café. GSAP ScrollTrigger, SplitText-style reveals, magnetic buttons, parallax, marquee, staggered grid reveals, horizontal rule draws, floating badges, dark/light mode. Frontend-only. Concept by Mizumi (James Rafty D. Libago).",
     "blocks": [
       "meta",
@@ -360,10 +360,10 @@
       "web:page:index"
     ],
     "lines": 1952,
-    "estimated_tokens": 28184
+    "estimated_tokens": 28142
   },
   "inventory-management": {
-    "description": "Full inventory management with stock tracking",
+    "description": "Build an inventory management app to browse products, track stock levels, record changes, and quickly identify items that need restocking.",
     "meta_description": "Full inventory management with stock tracking",
     "blocks": [
       "meta",
@@ -379,10 +379,10 @@
       "native:page:lynx:index"
     ],
     "lines": 1298,
-    "estimated_tokens": 16583
+    "estimated_tokens": 16614
   },
   "jo-payroll": {
-    "description": "J.O Payroll System v2 — Job Order management, payroll processing, deductions tracking, cash/ATM groupings, and appointment sequencing for local government unit. Redesigned with dashboard-style UI.",
+    "description": "Create a job-order payroll system for a local government office to manage workers, job orders, payroll calculations, deductions, cash and ATM groupings, and appointments.",
     "meta_description": "J.O Payroll System v2 — Job Order management, payroll processing, deductions tracking, cash/ATM groupings, and appointment sequencing for local government unit. Redesigned with dashboard-style UI.",
     "blocks": [
       "meta",
@@ -424,10 +424,10 @@
       "native:layout:app"
     ],
     "lines": 3915,
-    "estimated_tokens": 55350
+    "estimated_tokens": 55342
   },
   "job-test": {
-    "description": "Tests Laravel Queue Jobs. Dispatch a job, watch it process, see the result. Tests sync, default, and failed queues.",
+    "description": "Build a job queue demo where I can dispatch background jobs, compare sync and queued execution, and inspect completed and failed job results.",
     "meta_description": "Tests Laravel Queue Jobs. Dispatch a job, watch it process, see the result. Tests sync, default, and failed queues.",
     "blocks": [
       "meta",
@@ -445,10 +445,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 644,
-    "estimated_tokens": 7443
+    "estimated_tokens": 7452
   },
   "lain098": {
-    "description": "Art portfolio for Lain — fullscreen bottom-slide image slider, centered orbit.",
+    "description": "Create a visual art portfolio with an immersive, full-screen image slider that moves upward from the bottom and lets viewers browse works in a centered orbit.",
     "meta_description": "Art portfolio for Lain — fullscreen bottom-slide image slider, centered orbit.",
     "blocks": [
       "meta",
@@ -461,10 +461,10 @@
       "web:error:404"
     ],
     "lines": 2318,
-    "estimated_tokens": 29413
+    "estimated_tokens": 29440
   },
   "layout-test": {
-    "description": "Tests the v11.0 infinite layout nesting system — every combo of single layout, chain, guard-only, guard+chain, and native parity.",
+    "description": "Build a layout showcase that demonstrates nested shells, panels, and modals alongside guest-only and authenticated pages on web and mobile.",
     "meta_description": "Tests the v11.0 infinite layout nesting system — every combo of single layout, chain, guard-only, guard+chain, and native parity.",
     "blocks": [
       "meta",
@@ -503,10 +503,10 @@
       "native:error:404:lynx"
     ],
     "lines": 1034,
-    "estimated_tokens": 12440
+    "estimated_tokens": 12444
   },
   "mail-test": {
-    "description": "Tests Laravel Mail system. Send emails via SMTP/Mailtrap. Logs attempts. Updated to v6 named mail format.",
+    "description": "Create an email testing dashboard where I can send sample messages, configure recipients and content, and review delivery attempts.",
     "meta_description": "Tests Laravel Mail system. Send emails via SMTP/Mailtrap. Logs attempts. Updated to v6 named mail format.",
     "blocks": [
       "meta",
@@ -530,10 +530,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 1516,
-    "estimated_tokens": 17976
+    "estimated_tokens": 17985
   },
   "middleware-test": {
-    "description": "Tests MiddlewareBuilder v7.0 body injection. Declares [requireJson] with real logic injected via @arkzen:middleware:requireJson DSL block. Also tests alias registration fix — previously requireJson was never registered as an alias so Laravel 500'd at runtime.",
+    "description": "Build a middleware demo with a protected API route that validates incoming JSON requests and a screen for testing successful and rejected requests.",
     "meta_description": "Tests MiddlewareBuilder v7.0 body injection. Declares [requireJson] with real logic injected via @arkzen:middleware:requireJson DSL block. Also tests alias registration fix — previously requireJson was never registered as an alias so Laravel 500'd at runtime.",
     "blocks": [
       "meta",
@@ -548,10 +548,10 @@
       "native:page:lynx:index"
     ],
     "lines": 722,
-    "estimated_tokens": 8179
+    "estimated_tokens": 8142
   },
   "new-updates-styles": {
-    "description": "Showcase tatemono demonstrating component separation, CSS/Style DSL, multiple pages, and custom components",
+    "description": "Create a multi-page showcase that demonstrates reusable components, separated page sections, and consistent custom styling across the app.",
     "meta_description": "Showcase tatemono demonstrating component separation, CSS/Style DSL, multiple pages, and custom components",
     "blocks": [
       "meta",
@@ -583,10 +583,10 @@
       "native:style:lynx:HeroSection"
     ],
     "lines": 1378,
-    "estimated_tokens": 15127
+    "estimated_tokens": 15138
   },
   "notification-test": {
-    "description": "Tests Laravel Notifications across all three channels — database (bell), mail, and broadcast (real-time popup). Uses Laravel's native notifications table.",
+    "description": "Build a notification center that demonstrates database, email, and real-time notifications, with controls to trigger each type and review recent activity.",
     "meta_description": "Tests Laravel Notifications across all three channels — database (bell), mail, and broadcast (real-time popup). Uses Laravel's native notifications table.",
     "blocks": [
       "meta",
@@ -614,7 +614,7 @@
     "estimated_tokens": 20290
   },
   "portfolio-test": {
-    "description": "Frontend-only portfolio showcase",
+    "description": "Create a polished personal portfolio to introduce a creative professional, showcase selected projects and skills, and provide contact links.",
     "meta_description": "Frontend-only portfolio showcase",
     "blocks": [
       "meta",
@@ -627,10 +627,10 @@
       "native:page:lynx:index"
     ],
     "lines": 490,
-    "estimated_tokens": 6761
+    "estimated_tokens": 6797
   },
   "queue-flow": {
-    "description": "Real-time queue management system with PWA support",
+    "description": "Build a real-time customer queue system where visitors can join a service queue, receive a ticket, and watch their position update while staff call and manage tickets.",
     "meta_description": "Real-time queue management system with PWA support",
     "blocks": [
       "meta",
@@ -675,10 +675,10 @@
       "native:script:lynx"
     ],
     "lines": 2662,
-    "estimated_tokens": 34055
+    "estimated_tokens": 34094
   },
   "roles-test": {
-    "description": "Tests role-based access control with real Sanctum auth. Two roles (admin, user), protected routes, role-gated UI. v2.1: middleware now declares [auth, role:admin] at the DSL level to exercise MiddlewareBuilder v6.0 scoped CheckRole generation.",
+    "description": "Create a role-based dashboard with separate admin and user access, protected routes, and controls that demonstrate which actions each role is allowed to perform.",
     "meta_description": "Tests role-based access control with real Sanctum auth. Two roles (admin, user), protected routes, role-gated UI. v2.1: middleware now declares [auth, role:admin] at the DSL level to exercise MiddlewareBuilder v6.0 scoped CheckRole generation.",
     "blocks": [
       "meta",
@@ -699,10 +699,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 1404,
-    "estimated_tokens": 15924
+    "estimated_tokens": 15896
   },
   "scheduler-test": {
-    "description": "Tests Laravel Console Commands + Scheduler. Register Artisan commands, run them manually, inspect execution history.",
+    "description": "Build a scheduler dashboard where I can run sample scheduled commands, inspect their configuration, and review execution history.",
     "meta_description": "Tests Laravel Console Commands + Scheduler. Register Artisan commands, run them manually, inspect execution history.",
     "blocks": [
       "meta",
@@ -721,10 +721,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 759,
-    "estimated_tokens": 9708
+    "estimated_tokens": 9713
   },
   "shan-shan": {
-    "description": "Portfolio for Shan Sabal Cezar — Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers, ScrollTrigger-driven entrances across 9 sections: Hero, Intro, 5 Tale-style service chapters, Skills marquee, About, Contact, Footer.",
+    "description": "Create an expressive artist portfolio with an animated logo, layered story sections, parallax imagery, and scroll-triggered transitions.",
     "meta_description": "Portfolio for Shan Sabal Cezar — Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers, ScrollTrigger-driven entrances across 9 sections: Hero, Intro, 5 Tale-style service chapters, Skills marquee, About, Contact, Footer.",
     "blocks": [
       "meta",
@@ -762,10 +762,10 @@
       "native:script:lynx"
     ],
     "lines": 4085,
-    "estimated_tokens": 37386
+    "estimated_tokens": 37340
   },
   "shikaku": {
-    "description": "Shikaku — a full pixel art editor. Combines Aseprite's layer/frame system, PixSquare's clean mobile UI, Resprite's gesture-native canvas, and ibispaint's smooth panel UX. Per-project isolated SQLite. Auth-gated. Projects saved as JSON blobs with thumbnail previews.",
+    "description": "Build a pixel-art editor with a drawable canvas, layers, animation frames, color palettes, touch-friendly controls, and per-project saved work.",
     "meta_description": "Shikaku — a full pixel art editor. Combines Aseprite's layer/frame system, PixSquare's clean mobile UI, Resprite's gesture-native canvas, and ibispaint's smooth panel UX. Per-project isolated SQLite. Auth-gated. Projects saved as JSON blobs with thumbnail previews.",
     "blocks": [
       "meta",
@@ -784,10 +784,10 @@
       "web:animation"
     ],
     "lines": 2496,
-    "estimated_tokens": 23034
+    "estimated_tokens": 22994
   },
   "upload-test": {
-    "description": "Tests file uploads — single file, multiple files, image preview, download, delete. Backend stores in storage/app/public/arkzen/upload-test/.",
+    "description": "Create a file-upload dashboard that supports single and multiple uploads, previews images, lists stored files, and lets users download or delete them.",
     "meta_description": "Tests file uploads — single file, multiple files, image preview, download, delete. Backend stores in storage/app/public/arkzen/upload-test/.",
     "blocks": [
       "meta",
@@ -802,10 +802,10 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 767,
-    "estimated_tokens": 9261
+    "estimated_tokens": 9264
   },
   "visual-lab": {
-    "description": "Visual Lab — tests every new frontend package installed across all 5 stacks (Three.js/R3F, BabylonJS, PlayCanvas, PixiJS, OGL, Phaser, Matter.js, Rapier, p5.js, Konva, Fabric.js, REGL, TWGL, Lottie, tsParticles, Proton, Typed.js, Rough Notation, Splitting.js, Vanilla Tilt, Lenis, Canvas Confetti, CurtainsJS, Maath, TroikaText). Also demos both @arkzen:script DSL blocks (global + named) and the experimental HTML-in-Canvas API (Chrome 148+). The definitive Arkzen visual/graphics/canvas reference.",
+    "description": "Build a visual technology playground with interactive demos for 2D and 3D rendering, physics, animation, particle effects, and canvas tools.",
     "meta_description": "Visual Lab — tests every new frontend package installed across all 5 stacks (Three.js/R3F, BabylonJS, PlayCanvas, PixiJS, OGL, Phaser, Matter.js, Rapier, p5.js, Konva, Fabric.js, REGL, TWGL, Lottie, tsParticles, Proton, Typed.js, Rough Notation, Splitting.js, Vanilla Tilt, Lenis, Canvas Confetti, CurtainsJS, Maath, TroikaText). Also demos both @arkzen:script DSL blocks (global + named) and the experimental HTML-in-Canvas API (Chrome 148+). The definitive Arkzen visual/graphics/canvas reference.",
     "blocks": [
       "meta",
@@ -820,6 +820,6 @@
       "web:page:index"
     ],
     "lines": 2669,
-    "estimated_tokens": 33559
+    "estimated_tokens": 33439
   }
 }

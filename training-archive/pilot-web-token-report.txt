@@ -1,0 +1,34 @@
+Next.js web-only Tatemono pilot.
+Source: 33 existing Tatemono core.tsx files, excluding native/Expo/RN/Lynx blocks.
+All retained web targets passed the Pluff Next.js engine validator. Native-only hello-native excluded.
+Tokenizer: Qwen/Qwen2.5-Coder-7B-Instruct exact chat template; maximum sequence 8192; no truncation.
+Validated web targets: 32
+Whole targets within 8192: 19
+Training: 15
+Held-out validation: 4
+Whole targets over limit: 13
+
+Training:
+  asset-hub: 2896 tokens
+  auth-test: 2187 tokens
+  body-mail-notification: 6527 tokens
+  broadcast-test: 5690 tokens
+  crud-test: 3469 tokens
+  errors-test: 3410 tokens
+  events-test: 4240 tokens
+  job-test: 2275 tokens
+  layout-test: 3577 tokens
+  mail-test: 5017 tokens
+  middleware-test: 2093 tokens
+  new-updates-styles: 4413 tokens
+  notification-test: 5457 tokens
+  roles-test: 3988 tokens
+  scheduler-test: 3163 tokens
+
+Held-out validation:
+  body-endpoint-handler: 6626 tokens
+  inventory-management: 4521 tokens
+  portfolio-test: 1723 tokens
+  upload-test: 2608 tokens
+
+This is a broader pilot, not production-quality training data. It teaches Next.js web generation only; it does not teach native or Lynx output.

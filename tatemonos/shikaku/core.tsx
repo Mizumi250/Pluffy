@@ -1153,6 +1153,7 @@ body { background: #0e0e1a; color: #e0e0f0; font-family: 'Inter', sans-serif; }
 
 import React, { useState, useEffect, useRef, useCallback, useLayoutEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/arkzen/core/stores/authStore'
 import {
   Pencil, Eraser, Pipette, Move, Square, Circle, Minus,
   Type, Trash2, Plus, Eye, EyeOff, Lock, Unlock,
@@ -1346,7 +1347,7 @@ export function renderFrameThumb(frame: Frame, width: number, height: number, si
 // arkzen fetch helper
 export async function skFetch(url: string, options?: RequestInit) {
   const base = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000'
-  const token = typeof window !== 'undefined' ? localStorage.getItem('shikaku_token') : null
+  const token = typeof window !== 'undefined' ? useAuthStore.getState().token : null
   const res = await fetch(`${base}${url}`, {
     ...options,
     headers: {
@@ -1811,11 +1812,124 @@ export const TOOLS: { id: Tool; icon: React.ReactNode; label: string }[] = [
 
 /* @arkzen:web:components:editor:end */
 
+/* @arkzen:web:page:login */
+/* @arkzen:web:page:layout:+guest */
+
+const LoginPage = () => {
+  const router = useRouter()
+  const { login, isLoading } = useAuthStore()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+    try {
+      await login(email, password)
+      router.push('/shikaku')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to sign in')
+    }
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-[#0b0b16] p-6 text-white">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 rounded-2xl border border-indigo-400/20 bg-[#11111f] p-8 shadow-2xl">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-300">Shikaku</p>
+          <h1 className="mt-2 text-2xl font-bold">Sign in to your studio</h1>
+          <p className="mt-2 text-sm text-indigo-100/60">Your pixel projects are saved to your account.</p>
+        </div>
+        {error && <p role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p>}
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Email
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />
+        </label>
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Password
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} />
+        </label>
+        <button className="w-full rounded-lg bg-indigo-500 px-4 py-3 font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isLoading}>
+          {isLoading ? 'Signing in...' : 'Sign in'}
+        </button>
+        <p className="text-center text-sm text-indigo-100/60">
+          New here? <a className="text-indigo-300 underline underline-offset-4" href="/shikaku/register">Create an account</a>
+        </p>
+      </form>
+    </main>
+  )
+}
+
+/* @arkzen:web:page:login:end */
+
+/* @arkzen:web:page:register */
+/* @arkzen:web:page:layout:+guest */
+
+const RegisterPage = () => {
+  const router = useRouter()
+  const { register, isLoading } = useAuthStore()
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [passwordConfirmation, setPasswordConfirmation] = useState('')
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault()
+    setError(null)
+    try {
+      await register(name, email, password, passwordConfirmation)
+      router.push('/shikaku')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to create account')
+    }
+  }
+
+  return (
+    <main className="min-h-screen flex items-center justify-center bg-[#0b0b16] p-6 text-white">
+      <form onSubmit={handleSubmit} className="w-full max-w-sm space-y-5 rounded-2xl border border-indigo-400/20 bg-[#11111f] p-8 shadow-2xl">
+        <div>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-indigo-300">Shikaku</p>
+          <h1 className="mt-2 text-2xl font-bold">Create your studio account</h1>
+          <p className="mt-2 text-sm text-indigo-100/60">Save and revisit your pixel projects.</p>
+        </div>
+        {error && <p role="alert" className="rounded-lg border border-red-400/30 bg-red-400/10 p-3 text-sm text-red-200">{error}</p>}
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Name
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" autoComplete="name" required value={name} onChange={e => setName(e.target.value)} />
+        </label>
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Email
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />
+        </label>
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Password
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" type="password" autoComplete="new-password" minLength={8} required value={password} onChange={e => setPassword(e.target.value)} />
+        </label>
+        <label className="block space-y-2 text-sm text-indigo-100/70">
+          Confirm password
+          <input className="w-full rounded-lg border border-indigo-300/20 bg-[#0b0b16] px-3 py-2.5 text-white outline-none focus:border-indigo-400" type="password" autoComplete="new-password" minLength={8} required value={passwordConfirmation} onChange={e => setPasswordConfirmation(e.target.value)} />
+        </label>
+        <button className="w-full rounded-lg bg-indigo-500 px-4 py-3 font-semibold text-white transition hover:bg-indigo-400 disabled:cursor-not-allowed disabled:opacity-60" type="submit" disabled={isLoading}>
+          {isLoading ? 'Creating account...' : 'Create account'}
+        </button>
+        <p className="text-center text-sm text-indigo-100/60">
+          Already registered? <a className="text-indigo-300 underline underline-offset-4" href="/shikaku/login">Sign in</a>
+        </p>
+      </form>
+    </main>
+  )
+}
+
+/* @arkzen:web:page:register:end */
+
 /* @arkzen:web:page:index */
 /* @arkzen:web:page:layout:+auth */
 
 const DashboardPage = () => {
   const router = useRouter()
+  const { logout } = useAuthStore()
   const [projects, setProjects] = useState<Project[]>([])
   const [loading, setLoading] = useState(true)
   const [showNew, setShowNew] = useState(false)
@@ -1872,6 +1986,9 @@ const DashboardPage = () => {
           Shikaku
         </div>
         <div className="sk-dash-actions">
+          <button className="sk-btn sk-btn-ghost" onClick={async () => { await logout(); router.push('/shikaku/login') }}>
+            Sign out
+          </button>
           <button className="sk-btn sk-btn-primary" onClick={() => setShowNew(true)}>
             <Plus size={14} /> New Project
           </button>

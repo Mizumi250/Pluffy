@@ -7,7 +7,7 @@
  * Outputs:
  *   blocks.jsonl          one line per parsed @arkzen block (for inspection)
  *   descriptions.json     description template; fill "description", then run again
- *   dataset.jsonl         validated, complete-file training examples within the size limit
+ *   dataset.jsonl         validated, complete-app training examples (one per Tatemono)
  *   block-dataset.jsonl   validated, block-level training examples within the size limit
  *   scan-report.txt       engine validation errors and examples excluded from training
  */
@@ -21,7 +21,8 @@ const ROOT = process.cwd()
 const TAT_DIR = path.join(ROOT, 'tatemonos')
 const DESC_FILE = path.join(ROOT, 'descriptions.json')
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url))
-const MAX_ESTIMATED_TOKENS = 3000
+const MAX_APP_SEQUENCE_TOKENS = 8192
+const MAX_BLOCK_SEQUENCE_TOKENS = 3000
 
 const SYSTEM_PROMPT =
   'You generate complete Pluff tatemono files (core.tsx) using the @arkzen DSL. ' +
@@ -293,6 +294,7 @@ async function main() {
   const blockDataset = []
   const template = {}
   const report = []
+  let oversizedAppExamples = 0
 
   if (validatorError) {
     report.push(`ENGINE VALIDATION UNAVAILABLE: ${validatorError}`)
@@ -346,23 +348,24 @@ async function main() {
       continue
     }
 
-    if (estimatedTokens <= MAX_ESTIMATED_TOKENS) {
-      dataset.push(trainingExample(SYSTEM_PROMPT, description, src.trim()))
-    } else {
+    dataset.push(trainingExample(SYSTEM_PROMPT, description, src.trim()))
+    if (estimatedTokens > MAX_APP_SEQUENCE_TOKENS) {
+      oversizedAppExamples += 1
       report.push(
-        `${name}: full file is approximately ${estimatedTokens} tokens ` +
-        `(limit ${MAX_ESTIMATED_TOKENS}); excluded from complete-file training`
+        `${name}: complete app is approximately ${estimatedTokens} tokens ` +
+        `(planning target ${MAX_APP_SEQUENCE_TOKENS}); included whole in dataset.jsonl, ` +
+        `but needs a compatible training sequence length`
       )
     }
 
     for (const block of blocks) {
-      const context = meta || description
+      const context = description || meta
       const userPrompt = `Write the @arkzen:${block.tag} block for this application: ${context}`
       const blockTokens = estimateTokens(`${BLOCK_SYSTEM_PROMPT}\n${userPrompt}\n${block.content}`)
-      if (blockTokens > MAX_ESTIMATED_TOKENS) {
+      if (blockTokens > MAX_BLOCK_SEQUENCE_TOKENS) {
         report.push(
           `${name}: @arkzen:${block.tag} is approximately ${blockTokens} tokens ` +
-          `(limit ${MAX_ESTIMATED_TOKENS}); excluded from block training`
+          `(limit ${MAX_BLOCK_SEQUENCE_TOKENS}); excluded from block training`
         )
         continue
       }
@@ -386,7 +389,8 @@ async function main() {
   const missing = Object.values(template).filter(entry => !entry.description).length
   console.log(`Tatemonos scanned:             ${names.length}`)
   console.log(`Blocks found:                  ${blockLines.length}`)
-  console.log(`Complete-file examples:        ${dataset.length}`)
+  console.log(`Complete-app examples:         ${dataset.length}`)
+  console.log(`Apps above ${MAX_APP_SEQUENCE_TOKENS} tokens:    ${oversizedAppExamples}  (included whole; check training context)`)
   console.log(`Block-level examples:          ${blockDataset.length}`)
   console.log(`Missing descriptions:          ${missing}${missing ? '  (fill them in descriptions.json)' : ''}`)
   console.log(`Engine validator available:    ${validatorError ? 'no' : 'yes'}`)

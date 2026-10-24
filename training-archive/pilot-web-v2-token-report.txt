@@ -1,0 +1,17 @@
+Pluff web fine-tuning revision 2
+Reason for revision: the previous system prompt described DSL rules but did not show the exact required comment-wrapped marker syntax.
+Targets are unchanged from the first web pilot and were already validated by the Pluff Next.js engine validator. This revision changes only the system instruction.
+System prompt now demonstrates the exact metadata, component, and page block opening/closing syntax and prohibits bare markers, Markdown fences, and explanatory text.
+Tokenizer: Qwen/Qwen2.5-Coder-7B-Instruct, exact chat template. Maximum sequence: 8192. No truncation.
+
+train: 15 examples
+Tokens min/max: 2219/6653
+Exact counts: 3022, 2313, 6653, 5816, 3595, 3536, 4366, 2401, 3703, 5143, 2219, 4539, 5583, 4114, 3289
+File: pilot-web-v2-train.jsonl
+
+validation: 4 examples
+Tokens min/max: 1849/6752
+Exact counts: 6752, 4647, 1849, 2734
+File: pilot-web-v2-validation.jsonl
+
+This is still an experiment with 15 training and 4 held-out examples. Exact syntax correction may improve format adherence but cannot guarantee high-quality app generation.

@@ -10,7 +10,7 @@
 **WHAT'S NEW IN v12.0 (vs v11.0):**
 
 - **Three stack categories** — `web`, `app`, `desktop` — can all be active at once. New stacks: `react-native` (bare), `lynx`, `tauri`, `electron`.
-- **Native DSL is now per-target.** Expo, bare React Native, and Lynx each have their own blocks. Expo/RN blocks use dual-target `@arkzen:import:expo` / `@arkzen:import:rn` pairs. Lynx blocks are separate, self-contained `:lynx` blocks.
+- **Native DSL is now per-target.** Expo, bare React Native, and Lynx each have their own blocks. Expo/RN blocks use dual-target `@arkzen:import:expo` / `@arkzen:import:rn` pairs. Lynx blocks use separate `:lynx` tags; their imports are handled by the Lynx generator.
 - **New native blocks:** `@arkzen:native:style` (global), `@arkzen:native:error:404|500`, `@arkzen:native:animation:expo|rn|lynx`, `@arkzen:native:script:expo|rn|lynx[:name]`, all `native:*:lynx` blocks. **Removed:** generic `@arkzen:native:script`, and `animation:rn` no longer serves Expo.
 - **PostgreSQL support** — database driver is a project-level setting (`mizumi db`), one isolated database per tatemono.
 - **Corrected syntax** that v10 had wrong: console blocks use `signature:` (not `command:`), listeners use `@arkzen:listener:Name` (singular), mail blocks use `subject` + `data:` (not `lines`/`action`), notifications/mail/events/realtime need `:end`, the multi-table `tables:` database format is **not parsed**, `type: enum` is **not supported**.
@@ -162,10 +162,10 @@ Accessibility (contrast, readability) always wins.
 ```
 1. One .tsx file per tatemono, at tatemonos/<name>/core.tsx  (<name> = meta.name; core.tsx is always accepted)
 2. TypeScript throughout (the file is DSL source — the engine slices blocks out of it)
-3. Web imports live ONLY inside @arkzen:web:components, @arkzen:web:layout, @arkzen:web:animation, @arkzen:web:script blocks (and web:error:500)
-4. Expo / bare-RN imports live inside @arkzen:native:components / layout / error blocks, in @arkzen:import:expo / :rn pairs
-5. Lynx blocks are self-contained and import from '@lynx-js/react' themselves (pages included)
-6. NO imports inside @arkzen:web:page blocks, and NO imports in Expo/RN @arkzen:native:page blocks
+3. Web imports are resolved by the active web generator. For Next.js, imports in web page blocks are collected and moved to the generated module; prefer shared imports in web:components / web:layout blocks.
+4. Expo / bare-RN target-specific imports use @arkzen:import:expo / :rn pairs inside native blocks. The parser selects the matching pair for the active native stack.
+5. Lynx uses separate :lynx blocks. Imports may be declared in a Lynx page or component; the Lynx generator also adds imports for referenced shared components.
+6. Source-block import placement and generated-file imports are not the same: generators may collect, strip, or inject imports while producing platform files. Use the block-specific guidance below.
 7. Web, Expo/RN and Lynx sections can all coexist in one core.tsx (a "dual/triple" tatemono)
 8. A tatemono needs at least ONE page: web page, native page, or Lynx page (native-only and web-only are both valid)
 9. Tatemono asset files go in tatemonos/<name>/assets/ (auto-copied to public)
@@ -223,7 +223,7 @@ Order is mostly free; the engine finds blocks by tag. Recommended order:
 
 ## ⚠️ SECTION 3D — DSL TAG FORMAT RULES (CRITICAL)
 
-The engine runs a **DSL tag validator before parsing**. Format mistakes stop the build with "ARKZEN DSL ERROR" (line number + fix). There are four block shapes.
+The engine checks DSL tag formatting before parsing, but the tag validator enforces only a subset of the parser's format requirements. A reported tag error stops parsing with an "ARKZEN DSL ERROR"; a successful validation is not proof that generated TypeScript compiles or that the app behaves correctly. Follow the block shapes below even where the validator does not currently catch a malformed tag.
 
 ### SHAPE A — YAML-only blocks: NO `*/` on the opening line, closed by a bare `*/` line. No `:end`.
 
@@ -287,7 +287,9 @@ return response()->json($result);
 /* @arkzen:endpoint:my_endpoint:end */
 ```
 
-Used by: `endpoint`, `handler`, `middleware`, `policy`, `listener`.
+Used by: `endpoint`, `handler`, `middleware`, `policy`, and `listener`. The current validator checks the next-line separator for the first four; the listener parser also expects this shape, but the tag validator does not currently check it.
+
+The tag validator's suffix handling is not complete for every platform-specific code tag (for example, `native:animation:expo`). Do not rely on the validator to detect every missing opener or separator.
 
 ### Inline declarations (no `:end`)
 
@@ -314,19 +316,22 @@ Used by: `endpoint`, `handler`, `middleware`, `policy`, `listener`.
 | `web:layout:*`                               | ✅ YES   |
 | `web:animation`                              | ✅ YES (gsap / framer only) |
 | `web:script`, `web:script:name`              | ✅ YES (any npm package) |
-| `web:page:*`                                 | ❌ NO    |
-| `web:error:404`                              | ❌ NO — engine injects React |
-| `web:error:500`                              | ✅ YES — needs `'use client'` |
-| `native:components:*` / `native:layout:*` / `native:error:*` (Expo/RN) | ✅ YES — inside `@arkzen:import:expo/rn` pairs |
-| `native:page:*` (Expo/RN)                    | ❌ NO — uses what components/styles export |
+| `web:page:*`                                 | ⚠️ Next.js collects page imports and forwards referenced imports from `web:components:*` |
+| `web:error:404`                              | ⚠️ Imports are normalized; React is injected by the generator |
+| `web:error:500`                              | ⚠️ Imports are normalized; generated boundary has `'use client'` |
+| `native:components:*` / `native:layout:*` / `native:error:*` (Expo/RN) | ✅ YES — use `@arkzen:import:expo/rn` pairs for target-specific imports |
+| `native:page:*` (Expo/RN)                    | ⚠️ Target import pairs are extracted by the parser; prefer shared imports in native components |
 | `native:animation:*`, `native:script:*`      | ✅ YES   |
-| `native:*:lynx:*` (all Lynx blocks, pages too)| ✅ YES — from `@lynx-js/react`, `@lynx-js/motion` |
+| `native:*:lynx:*` (Lynx blocks)              | ✅ YES — pages may import directly; referenced shared components are imported by the generator |
 | `endpoint`, `handler`, `middleware`, `policy`, `listener`, `jobs`, `console` | ❌ NO — PHP only |
+
+These are source-authoring recommendations, not all parser restrictions. For the active Next.js generator, imports found in web page and error blocks are normalized into generated files; referenced non-React imports from web component blocks may also be forwarded into generated pages. Simple `export default ComponentName` lines are removed, and generated pages receive their own `'use client'` directive. Avoid relying on those transformations for unsupported imports or other export forms.
 
 ## SECTION 3B — `'use client'` (WEB ONLY)
 
-- Top of `web:components`, `web:layout`, `web:error:500` blocks: ✅ write it
-- Never in `web:page`, `web:animation`, `web:error:404`
+- In `web:components`, `web:layout`, `web:error:500` blocks: writing it is supported; the generator emits client directives in the corresponding client files.
+- Prefer not to write it in `web:page`: the Next.js generator strips it and adds the directive to the generated page. It is not a way to make a page block server-rendered.
+- Never in `web:animation`, `web:error:404`
 - Never in any native or Lynx block
 
 ## SECTION 3C — ZUSTAND STORES
@@ -963,8 +968,9 @@ const DashboardPage = () => {
 ```
 
 - Opening tag with `*/` on the same line; layout declaration on the NEXT line
-- NO imports, NO `'use client'`, NO `export default` — everything comes from `web:components`
-- Component name: `<PageName>Page` PascalCase (`IndexPage`, `JobDatabasePage`)
+- The Next.js generator collects and relocates page imports, strips `'use client'`, and removes a simple `export default ComponentName` line. Referenced non-React imports from `web:components` can also be forwarded. Keep page code self-contained apart from generated imports for declared shared components, hooks, constants, types, and utilities; do not rely on declarations sharing a lexical scope across blocks.
+- Put page-only dependencies in the page block. Imports declared in component blocks are available to generated components and may be forwarded to a page when the page references an imported identifier.
+- Define the page as a PascalCase `const` whose name ends in `Page` (for example, `IndexPage`). The generator looks for that shape; if it does not find one, it falls back to `<PageName>Page`.
 - Page name → route `/<tatemono>/<page>`; `index` = the tatemono root
 
 ## ⚠️ SECTION 22 — web:error:404 / web:error:500
@@ -987,7 +993,7 @@ function ServerErrorPage({ reset }: { reset: () => void }) {
 /* @arkzen:web:error:500:end */
 ```
 
-404: component `NotFoundPage`, no imports/`'use client'`/`export default`. 500: component `ServerErrorPage({ reset })`, includes `'use client'`, no `export default`. These generate segment-scoped error files, not routed pages.
+404: define `NotFoundPage`; imports are normalized and React is injected. 500: define `ServerErrorPage({ reset })`; the generated boundary has `'use client'`. In both cases, the generator adds the default export. These generate segment-scoped error files, not routed pages.
 
 ## SECTION 23 — @arkzen:web:components:identifier
 
@@ -1006,7 +1012,7 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 /* @arkzen:web:components:shared:end */
 ```
 
-Multiple blocks share one file scope: import icons/hooks only in the FIRST block; later blocks still start with `'use client'` and their own `import React`.
+The generator combines imports from all web component blocks and includes the resolved import set in each generated component file. Component declarations are still emitted as separate modules; use exported declarations and the generator's shared component/hook/constant/type/utility imports rather than relying on a shared lexical scope.
 
 ## SECTION 24 — @arkzen:web:animation
 
@@ -1070,7 +1076,7 @@ Native blocks live in the same `core.tsx` (after the web blocks, or standalone f
 |---------------|------------------|--------------------------------------|---------|
 | Expo          | `expo`           | `@arkzen:native:*` + `@arkzen:import:expo` pairs | inside `import:expo` pairs |
 | Bare RN       | `react-native`   | `@arkzen:native:*` + `@arkzen:import:rn` pairs   | inside `import:rn` pairs   |
-| Lynx          | `lynx`           | `@arkzen:native:*:lynx:*` (self-contained)       | inside the block itself    |
+| Lynx          | `lynx`           | `@arkzen:native:*:lynx:*`                        | page imports are retained; known shared-component imports are generated |
 
 The engine runs once per active stack and keeps only what matches that stack. Expo and bare RN **share** the same block names and are separated only by the import pairs; Lynx has its own block names and never uses import pairs.
 
@@ -1199,7 +1205,8 @@ const IndexScreen = () => {
 ```
 
 - `*/` on the opening line; layout line directly after (omit it → `default`)
-- NO imports; component name `<PageName>Screen` PascalCase; no `export default`
+- Use `@arkzen:import:expo` / `@arkzen:import:rn` pairs for imports that differ by native target; the parser selects the matching pair. Prefer shared code in native components. The generator wraps and exports the screen, so do not add a default export.
+- Component naming is a convention; the Expo and bare-RN generators select a PascalCase component from the page body and wrap it.
 - NativeWind `className` for static styles, inline `style` for dynamic
 - Navigate with `router.push('/<tatemono>/<page>' as any)`
 - Native-only tatemonos (no web page) are valid
@@ -1261,15 +1268,15 @@ export const API_TIMEOUT = 8000
 
 * * *
 
-## SECTION 25L — LYNX BLOCKS (self-contained)
+## SECTION 25L — LYNX BLOCKS
 
-Lynx is a separate renderer (not React Native). Its blocks are all under `:lynx`, are **self-contained** (no `@arkzen:import` pairs), and carry their own imports:
+Lynx is a separate renderer (not React Native). Its blocks are all under `:lynx` and do not use Expo/RN `@arkzen:import` pairs. Page-level imports are retained in the generated page. The generator also creates imports for known shared components referenced by the page, so those component imports do not need to be repeated.
 
 | Block                                         | Notes |
 |-----------------------------------------------|-------|
 | `@arkzen:native:components:lynx:name`         | e.g. `shared`; imports from `@lynx-js/react` (and `@lynx-js/motion`) |
 | `@arkzen:native:layout:lynx:name`             | wrapper component |
-| `@arkzen:native:page:lynx:name`               | imports allowed here (unlike web/Expo pages) or in the Lynx components block; component named `<PageName>LynxPage` or `<PageName>LynxScreen` (both appear in existing tatemonos) |
+| `@arkzen:native:page:lynx:name`               | page imports are retained; known shared components are imported by the generator; component named `<PageName>LynxPage` or `<PageName>LynxScreen` (both appear in existing tatemonos) |
 | `@arkzen:native:style:lynx` / `:style:lynx:name` | global / named Lynx styles |
 | `@arkzen:native:error:404:lynx` / `:500:lynx` | error screens |
 | `@arkzen:native:animation:lynx`               | `@lynx-js/motion` |
@@ -1320,7 +1327,7 @@ import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/route
 
 **Optional (installed):** `gsap` (+`gsap/ScrollTrigger`), `framer-motion` (`motion`, `AnimatePresence`), `three`, `matter-js`, `leaflet` (`L`), `@tiptap/react` (`useEditor`, `EditorContent`), `lucide-react`.
 
-**Routing rule:** web layouts/components always use `useArkzenRouter()` / `useArkzenPathname()` — never `next/navigation`, React Router or TanStack imports. Native Expo uses `useRouter()` from `expo-router` directly.
+**Routing recommendation:** prefer `useArkzenRouter()` / `useArkzenPathname()` in web code so navigation follows Pluff's Tatemono routing conventions. The Next.js generator can resolve ordinary imports such as `next/navigation`; it does not rewrite their routing behavior. Native Expo uses `useRouter()` from `expo-router` directly.
 
 * * *
 
@@ -1585,7 +1592,7 @@ const DashboardPage = () => <div>protected</div>
 These come from reading the engine source. They are not hypothetical — but test them in your build before relying on them, and fix the engine or the doc when resolved.
 
 1. **`foreign:` prefix vs auto relations.** The migration builder uses `foreign:` literally as the table name, so a real FK constraint needs the **prefixed** name (`queue_flow_queues.id`, as `queue-flow` does). The model builder, however, matches `foreign:` against the *raw* table name when generating `belongsTo`/`hasMany`. With prefixed references the auto-generated relation methods may be missing or oddly named. `dtr-geofencing` uses unprefixed `employees.id` instead. Check generated models/migrations after the first build.
-2. **`type: enum` is unsupported.** The migration builder turns unknown types into `string` and ignores `values:`; use `type: string` with validation rules for allowed values. The shared validator accepts `foreignId`, slug-prefixed foreign keys, legacy shared native blocks, and guarded layout chains.
+2. **`type: enum` is unsupported.** The migration builder turns unknown types into `string` and ignores `values:`; use `type: string` with validation rules for allowed values. The shared parser accepts `foreignId`, slug-prefixed foreign keys, markerless legacy native blocks, and guarded layout chains. The separate Expo frontend validator currently requires explicit Expo/RN import pairs on native blocks, although the Expo generator retains markerless legacy support; use explicit pairs for new native code.
 3. **`command_run`, `job_dispatch`, `event_fire` endpoint types are hardcoded** to the test tatemonos' command/job/event names. Use custom endpoint bodies for real apps.
 4. **Plural `@arkzen:listeners:` blocks (legacy)** in `events-test` are not read; bodies come from singular `@arkzen:listener:`.
 5. **Lynx page layout line.** Parser: `@arkzen:native:page:lynx:layout:<name>`. `layout-test` uses `@arkzen:native:page:layout:<name>` in Lynx pages.
@@ -1593,6 +1600,8 @@ These come from reading the engine source. They are not hypothetical — but tes
 7. **`type: enum`** appears in `queue-flow` but is silently a `string` column; `values:` is ignored.
 8. **Update migrations add new columns only** — they never alter or drop existing columns.
 9. **README is outdated** (still says v9.0, 26 tatemonos, 6 stacks). This guideline and the parser are the references.
+10. **Table/model warnings are heuristics.** The validator appends a literal `s` when suggesting a table name, so `Inventory` is reported as expecting `inventorys` even when the declared table is `inventories`; the Laravel model builder writes its table explicitly. Singular `send_log` and `event_log` also warn because plural snake_case is preferred. These are warnings, not parse errors; keep table declarations and raw SQL references aligned if renaming.
+11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
 * * *
 
@@ -1631,7 +1640,7 @@ queue-flow              v1.0.0  auth:false  web:index,join,admin                
 roles-test              v2.1.0  auth:true   web:login,register,dashboard      native:login,register,dashboard   lynx:login,register,dashboard   roles, auth_seed
 scheduler-test          v2.0.0  auth:false  web:dashboard                     native:dashboard             lynx:dashboard                   console/schedule
 shan-shan               v2.0.0  auth:false  web:index
-shikaku                 v1.0.0  auth:true   web:index,editor                                                                                realtime (project channel)
+shikaku                 v1.0.0  auth:true   web:login,register,index,editor                                                                 realtime (project channel)
 upload-test             v1.0.0  auth:false  web:dashboard                     native:dashboard             lynx:dashboard                   upload endpoints
 visual-lab              v1.0.0  auth:false  web:index                                                                                       web:script (three.js)
 ```
@@ -1649,7 +1658,7 @@ Before finalizing any tatemono, verify:
 - [ ] `@arkzen:meta:web` if web pages (favicon/title/description; PWA + og here)
 - [ ] `@arkzen:meta:native` + `@arkzen:native:config` if native screens
 
-**TAG FORMAT** (the validator stops the build on these)
+**TAG FORMAT** (follow these shapes; the validator checks only a subset)
 - [ ] Shape A (meta, config, database, api, routes): no `*/` on the opening line, no `:end`
 - [ ] Shape B (jobs, console, notifications, mail, events, realtime): YAML in opening comment, `*/`, body, `:end */`
 - [ ] Shape C (web/native components, layouts, pages, styles, animation, script, error): `*/` on the SAME opening line, `:end */`
@@ -1677,22 +1686,22 @@ Before finalizing any tatemono, verify:
 - [ ] realtime: channel registration has no `channel:` key; broadcast event has one; `broadcast()` namespace `\App\Events\Arkzen\{Ns}\Broadcast\{Class}`
 
 **WEB**
-- [ ] Imports only in components/layout/animation/script (+ error:500); none in pages; icons imported once (first components block)
-- [ ] `'use client'` in components/layout/error:500 only
+- [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
+- [ ] Source `'use client'` is supported in components/layout/error:500; page directives are stripped and generated pages receive their own directive
 - [ ] Layouts export `<Name>Layout`, use `useArkzenRouter()`/`useArkzenPathname()`; `parent:` layouts use Shape B
-- [ ] Pages named `<Name>Page`, no `export default`; layout names exist
+- [ ] Prefer a page `const` named `<Name>Page`; the generator looks for a `const` ending in `Page` and otherwise falls back to the page name. Do not add a default export.
 - [ ] `error:404` = `NotFoundPage`, `error:500` = `ServerErrorPage({ reset })`
 - [ ] Animation function has no `export`, is `camelCase(name)Animations`; `pageVariants` exported; no pinned-ScrollTrigger opacity tweens
 - [ ] `arkzenFetch` result is a `Response` — `await res.json()`, `JSON.stringify` the body; null-safe access everywhere
 
 **NATIVE (Expo / bare RN)**
-- [ ] Imports in `@arkzen:import:expo` / `:rn` pairs inside components/layout/error; none in pages
-- [ ] Pages named `<Name>Screen`, no `export default`; router via `expo-router` in the `expo` pair
+- [ ] Target-specific imports use `@arkzen:import:expo` / `:rn` pairs; the parser extracts these from native blocks, including pages
+- [ ] Prefer a PascalCase screen component (for example, `<Name>Screen`); the generator selects a screen component and wraps/exports it. Do not add a default export.
 - [ ] Error blocks: one per target; animation/script blocks stack-suffixed (`:expo` | `:rn`); no generic `native:script`
 - [ ] Named styles export their StyleSheet; global `@arkzen:native:style` is CSS-like
 
 **LYNX**
-- [ ] Only `:lynx` blocks, self-contained with `@lynx-js/react` imports; no import pairs
+- [ ] Only `:lynx` blocks; no Expo/RN import pairs. Page imports are retained and known shared-component imports are generated.
 - [ ] Realtime needs the `type: broadcast` endpoint (SSE bridge); no WebSocket code
 
 **SCRIPTS**

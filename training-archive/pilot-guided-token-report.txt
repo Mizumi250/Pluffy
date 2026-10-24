@@ -1,0 +1,8 @@
+System prompt distilled from PLUFF_GUIDELINES_v12.md (Next.js web stack).
+Qwen2.5-Coder-7B-Instruct exact chat-template tokenization; max 8192.
+The assistant outputs are original, engine-validated complete Tatemono examples; no app outputs were truncated or changed.
+
+pilot-train-guided.jsonl: 6 complete examples; exact token counts 6350, 7066, 3567, 6278, 6678, 7791
+pilot-validation-guided.jsonl: 2 complete examples; exact token counts 5594, 7339
+
+This is still a six-example training pilot, not enough data to establish model quality.

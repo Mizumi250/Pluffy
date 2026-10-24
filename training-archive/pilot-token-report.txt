@@ -1,0 +1,56 @@
+Tokenizer: Qwen/Qwen2.5-Coder-7B-Instruct (exact chat-template token counts)
+Pilot maximum sequence length: 8192 tokens; no examples are truncated.
+Source examples: 33
+Within pilot limit: 8
+Training examples: 6
+Validation examples: 2
+Above pilot limit: 25
+
+Pilot training split:
+  asset-hub: 5951 tokens
+  auth-test: 6667 tokens
+  hello-native: 3168 tokens
+  job-test: 5879 tokens
+  middleware-test: 6279 tokens
+  scheduler-test: 7392 tokens
+
+Held-out validation split:
+  portfolio-test: 5195 tokens
+  upload-test: 6940 tokens
+
+All source examples by exact token count:
+  animation-lab: 42932 tokens
+  asset-hub: 5951 tokens
+  atelier: 44900 tokens
+  auth-test: 6667 tokens
+  body-endpoint-handler: 16460 tokens
+  body-mail-notification: 17210 tokens
+  broadcast-test: 15610 tokens
+  cafe-teresita: 24692 tokens
+  crud-test: 10217 tokens
+  dtr-geofencing: 23283 tokens
+  errors-test: 8692 tokens
+  ethan-pool: 19853 tokens
+  ethereane: 15364 tokens
+  events-test: 9022 tokens
+  hello-native: 3168 tokens
+  hw-coffee: 23847 tokens
+  inventory-management: 13064 tokens
+  jo-payroll: 46691 tokens
+  job-test: 5879 tokens
+  lain098: 32875 tokens
+  layout-test: 10619 tokens
+  mail-test: 13649 tokens
+  middleware-test: 6279 tokens
+  new-updates-styles: 12660 tokens
+  notification-test: 14970 tokens
+  portfolio-test: 5195 tokens
+  queue-flow: 28343 tokens
+  roles-test: 11906 tokens
+  scheduler-test: 7392 tokens
+  shan-shan: 33007 tokens
+  shikaku: 20409 tokens
+  upload-test: 6940 tokens
+  visual-lab: 30731 tokens
+
+This split is only a pipeline experiment. Eight examples are not enough to establish model quality.
