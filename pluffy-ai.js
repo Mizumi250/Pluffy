@@ -15,6 +15,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { buildReference, fullGuide } from './pluffy-retrieve.js';
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url));
 
@@ -34,6 +35,7 @@ if (!REQUEST) {
 const SERVER = opt.server || 'http://127.0.0.1:8080';
 const OUT_ROOT = path.resolve(ROOT, opt.out || 'tatemonos');
 const MAX_TRIES = Number(opt.tries || 3);
+const GUIDE = opt.guide === 'full' ? fullGuide() : '';
 
 // Must be EXACTLY the system prompt used in training.
 const SYSTEM = 'You generate one valid Pluff @arkzen DSL block. Output only the requested block, including its opening and closing markers where required.';
@@ -125,7 +127,7 @@ const blockList = (plan) => [
 
 // ---------- prompt (same shape as the training data) ----------
 function userPrompt(tag, plan, blocks, errors) {
-  let msg = `Write the @arkzen:${tag} block for this application: ${REQUEST}`;
+  let msg = (opt.guide === 'full' ? 'PLUFF GUIDELINES (read all of it before answering):\n' + GUIDE + '\n\n---\n\n' : '') + `Write the @arkzen:${tag} block for this application: ${REQUEST}`;
   const ctx = [];
   if (/^(api|endpoint|handler|web:page|web:components)/.test(tag)) {
     ctx.push('- tables: ' + plan.tables.map((t) => `${t.name}(${t.columns.map((c) => c.name).join(', ')})`).join('; '));
@@ -135,6 +137,7 @@ function userPrompt(tag, plan, blocks, errors) {
     if (names.length) ctx.push('- shared components and hooks: ' + [...new Set(names)].join(', '));
   }
   if (ctx.length) msg += '\n\nAlready written:\n' + ctx.join('\n');
+  if (opt.ref === 'on' && !/^(meta|web:config)/.test(tag)) { const r = buildReference(tag, REQUEST); if (r) msg += '\n\nReference (same format, adapt to this app):\n' + r; }
   if (errors?.length) msg += '\n\nYour previous attempt was rejected. Fix these problems and output the full block again:\n- ' + errors.join('\n- ');
   return msg;
 }

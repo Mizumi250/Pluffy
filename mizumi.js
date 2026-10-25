@@ -17,6 +17,8 @@
 //    node mizumi.js stack        ← show active web + app + desktop stack
 //    node mizumi.js stacks       ← list all stacks
 //    node mizumi.js modules      ← list registered tatemonos
+//    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
+//    node mizumi.js scan         ← scan tatemonos into training data
 // ============================================================
 
 import { spawn } from 'node:child_process'
@@ -618,6 +620,109 @@ async function cmdSwitchDatabase(dbArg) {
   if (code === 0) info('Restart: node mizumi.js start  (each tatemono gets its database on the next build)')
 }
 
+// ─── AI + TRAINING DATA ───────────────────────────────────────
+const AI_PREFS_PATH = path.join(ROOT_DIR, '.mizumi-ai.json')   // remembers your toggles (never the API key)
+const AI_PERSIST    = ['ref', 'guide', 'tries', 'server', 'model']
+
+// Each option = one pluffy-ai.js flag. `fixed` = on/off toggle, `ask` = needs a value.
+const AI_OPTIONS = [
+  { key: 'ref',    flag: '--ref',    label: 'Reference snippets', fixed: 'on',   sub: 'similar tatemono blocks + guideline section' },
+  { key: 'guide',  flag: '--guide',  label: 'Full guideline',     fixed: 'full', sub: 'whole PLUFF_GUIDELINES in every request (needs num_ctx 32768)' },
+  { key: 'tables', flag: '--tables', label: 'Set tables',         ask: 'Tables, e.g. tasks(title:string,done:boolean);notes(body:text)', sub: 'skip auto-plan' },
+  { key: 'pages',  flag: '--pages',  label: 'Set pages',          ask: 'Pages, comma separated, e.g. index,admin' },
+  { key: 'slug',   flag: '--slug',   label: 'Set tatemono name',  ask: 'Tatemono folder name (kebab-case)' },
+  { key: 'tries',  flag: '--tries',  label: 'Retries per block',  ask: 'Max tries per block', def: '3' },
+  { key: 'server', flag: '--server', label: 'Server URL',         ask: 'Model server URL (Colab tunnel URL or http://127.0.0.1:8080)' },
+  { key: 'model',  flag: '--model',  label: 'Model name',         ask: 'Model name', def: 'pluffy-v11' },
+  { key: 'key',    flag: '--key',    label: 'API key',            ask: 'API key', secret: true },
+]
+
+function runNode(script, scriptArgs = []) {
+  return new Promise((resolve) => {
+    const child = spawn(process.execPath, [script, ...scriptArgs], { cwd: ROOT_DIR, stdio: 'inherit' })
+    child.on('exit', code => resolve(code ?? 1))
+  })
+}
+
+function loadAiPrefs() {
+  try { return JSON.parse(fs.readFileSync(AI_PREFS_PATH, 'utf8')) } catch { return {} }
+}
+function saveAiPrefs(sel) {
+  const out = {}
+  for (const k of AI_PERSIST) if (sel[k] !== undefined) out[k] = sel[k]
+  try { fs.writeFileSync(AI_PREFS_PATH, JSON.stringify(out, null, 2) + '\n') } catch { /* not fatal */ }
+}
+const aiArgs = sel => AI_OPTIONS.filter(o => sel[o.key] !== undefined).flatMap(o => [o.flag, String(sel[o.key])])
+
+// Numbered checkbox menu: type numbers (e.g. "1 2") to toggle, Enter to continue.
+async function aiOptionsMenu(sel) {
+  while (true) {
+    console.log()
+    console.log(`  ${paint(c.cyan + c.bold, '◆')} ${paint(c.white, 'AI options')} ${paint(c.gray, '— type numbers to toggle (e.g. 1 2), Enter to continue')}`)
+    AI_OPTIONS.forEach((o, i) => {
+      const on  = sel[o.key] !== undefined
+      const box = on ? paint(c.green + c.bold, '[x]') : paint(c.gray, '[ ]')
+      const val = on && !o.fixed ? paint(c.yellow, `  = ${o.secret ? '••••' : sel[o.key]}`) : ''
+      const sub = o.sub ? paint(c.gray, `  ${o.sub}`) : ''
+      console.log(`  ${paint(c.gray, String(i + 1).padStart(2))}. ${box} ${paint(on ? c.white : c.gray, o.label)} ${paint(c.gray, o.flag)}${val}${sub}`)
+    })
+    const ans = await prompt('Toggle')
+    if (!ans) return sel
+    for (const tok of ans.split(/[\s,]+/).filter(Boolean)) {
+      const o = AI_OPTIONS[Number(tok) - 1]
+      if (!o) { warn(`No option "${tok}"`); continue }
+      if (o.fixed) {                                   // on/off checkbox
+        if (sel[o.key] !== undefined) delete sel[o.key]; else sel[o.key] = o.fixed
+        continue
+      }
+      const cur = sel[o.key] ?? o.def ?? ''            // value option: ask, "-" turns it off
+      const v   = await prompt(`${o.ask} ${paint(c.gray, '(- = off)')}`, o.secret ? '' : cur)
+      if (v === '-') delete sel[o.key]
+      else if (v) sel[o.key] = v
+    }
+  }
+}
+
+async function cmdScan() {
+  console.log()
+  log(`訓練データをスキャン中... Scanning tatemonos for training data ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  console.log()
+  if (!fs.existsSync(path.join(ROOT_DIR, 'scan.js'))) { error('scan.js not found in the repo root'); return }
+  const code = await runNode('scan.js')
+  console.log()
+  if (code === 0) {
+    success('Scan finished')
+    info('Wrote: dataset.jsonl, block-dataset.jsonl, blocks.jsonl, descriptions.json, scan-report.txt')
+    info('If the summary shows missing descriptions, fill them in descriptions.json and scan again.')
+    info('If it says "Engine validator available: no", run: node mizumi.js deps install <your web stack>, then scan again.')
+    info('Next: git push, then run Colab Cell 2 to train.')
+  } else error(`scan.js exited with code ${code}`)
+}
+
+// `mizumi ai`                         → options menu + request loop
+// `mizumi ai "an idea" --ref on ...`  → straight to pluffy-ai.js with your flags
+async function cmdAi(rest = []) {
+  if (!fs.existsSync(path.join(ROOT_DIR, 'pluffy-ai.js'))) { error('pluffy-ai.js not found in the repo root'); return }
+  if (rest.length) { process.exitCode = await runNode('pluffy-ai.js', rest); return }
+
+  const sel = loadAiPrefs()
+  divider()
+  info('Start the model first (Colab Cell 1 prints the server URL), then set it below.')
+  while (true) {
+    await aiOptionsMenu(sel)
+    saveAiPrefs(sel)
+    const idea = await prompt('アイデア What should the AI build? (blank = back)')
+    if (!idea) return
+    console.log()
+    const code = await runNode('pluffy-ai.js', [idea, ...aiArgs(sel)])
+    console.log()
+    if (code === 0) success('Done — check the Engine validator line above')
+    else error(`pluffy-ai.js exited with code ${code} (is the model server running and the URL right?)`)
+    for (const k of ['tables', 'pages', 'slug']) delete sel[k]   // per-request options reset
+    divider()
+  }
+}
+
 async function interactiveMenu() {
   printBanner()
 
@@ -633,6 +738,8 @@ async function interactiveMenu() {
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
+    { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
+    { label: '訓練データ       Scan training data',      sub: 'node scan.js → dataset.jsonl',  value: 'scan'       },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
   ]
 
@@ -650,6 +757,8 @@ async function interactiveMenu() {
     case 'deps':      await cmdDeps();         break
     case 'stacks':    cmdStacks();             break
     case 'modules':   cmdModules();            break
+    case 'ai':        await cmdAi();           break
+    case 'scan':      await cmdScan();         break
     case 'exit':
       console.log()
       console.log(`  ${paint(c.gray, 'またね！ See you! (￣▽￣)ノ')}`)
@@ -683,6 +792,9 @@ function printHelp() {
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
+    ['mizumi ai',                '→ Pluffy AI: option checkboxes, then ask for apps'],
+    ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
+    ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
   ]
   cmds.forEach(([cmd, desc]) => {
     console.log(`  ${paint(c.cyan, cmd.padEnd(30))} ${paint(c.gray, desc)}`)
@@ -713,6 +825,8 @@ switch (command) {
   case 'stack':   cmdStack();                  break
   case 'stacks':  cmdStacks();                 break
   case 'modules': cmdModules();                break
+  case 'ai':      cmdAi(args.slice(1));        break
+  case 'scan':    cmdScan();                   break
   case 'help':
   case '--help':
   case '-h':      printHelp();                 break
