@@ -3,12 +3,20 @@
 //   node chat.js            open the chat (stays attached to this terminal, Ctrl+C closes it)
 //   node chat.js --detach   open the chat and give the terminal back
 // Needs Node 18+. The first run installs Electron into chat/ (one time).
+// This is a NODE launcher. Do not run it with electron.
 
 import { spawn, spawnSync } from 'node:child_process'
 import { createRequire } from 'node:module'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+
+// If Electron itself is running this file, require('electron') returns the
+// Electron API object instead of the executable path, so bail out clearly.
+if (process.versions.electron) {
+  console.error('  ✗ chat.js is a Node launcher. Run it with: node chat.js (not electron).')
+  process.exit(1)
+}
 
 const ROOT = path.dirname(fileURLToPath(import.meta.url))
 const CHAT_DIR = path.join(ROOT, 'chat')
@@ -21,31 +29,19 @@ if (!fs.existsSync(path.join(CHAT_DIR, 'main.js'))) {
 
 const requireFromChat = createRequire(path.join(CHAT_DIR, 'package.json'))
 
-
 function findElectron() {
   try {
-    const result = requireFromChat('electron');
-    console.log('[DIAG] Launcher:', fileURLToPath(import.meta.url));
-    console.log('[DIAG] Chat directory:', CHAT_DIR);
-    console.log('[DIAG] Electron result:', result);
-    console.log('[DIAG] Result type:', typeof result);
-    console.log(
-      '[DIAG] Exists:',
-      typeof result === 'string' && fs.existsSync(result)
-    );
-
-    if (typeof result !== 'string' || !result) return null;
-    if (!fs.existsSync(result) || !fs.statSync(result).isFile()) return null;
-    return result;
-  } catch (err) {
-    console.error('[DIAG] Electron lookup threw:', err.stack);
-    return null;
+    const result = requireFromChat('electron')
+    if (typeof result !== 'string' || !result) return null
+    if (!fs.existsSync(result) || !fs.statSync(result).isFile()) return null
+    return result
+  } catch {
+    return null
   }
 }
 
-const electronPath = findElectron();
-console.log('[DIAG] Final electronPath:', electronPath);
-
+// `let`, not `const`: it is reassigned after npm install below.
+let electronPath = findElectron()
 
 if (!electronPath) {
   console.log('  ✦ Installing Electron in chat/ (first run only)...')
@@ -88,7 +84,10 @@ console.log('  ✓ Electron:', electronPath)
 
 const env = { ...process.env }
 delete env.ELECTRON_RUN_AS_NODE
-const child = spawn(electronPath, [CHAT_DIR], {
+// Pass the explicit main.js FILE, never the chat/ folder (or '.'). Electron
+// resolves an app path like a Node module, so "...\Pluffy\chat" matches the
+// FILE chat.js (this launcher) before it matches the chat/ DIRECTORY.
+const child = spawn(electronPath, [path.join(CHAT_DIR, 'main.js')], {
   cwd: ROOT, env, stdio: detach ? 'ignore' : 'inherit', detached: detach,
 })
 child.on('error', (err) => { console.error('  ✗ Could not start Electron:', err.message); process.exit(1) })

@@ -1,0 +1,6 @@
+{
+  "provider": "openai",
+  "server": "https://generativelanguage.googleapis.com/v1beta/openai/chat/completions",
+  "model": "gemini-3.8-flash",
+  "key": "AQ.Ab8RN6JLqBSFPgohv8M8SBnnuMMaygQdegKY4qXyUp9U8JP2Nw"
+}

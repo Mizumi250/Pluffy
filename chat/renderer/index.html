@@ -39,6 +39,7 @@
 
       <footer class="composer">
         <div id="suggest" class="suggest hidden" role="listbox"></div>
+        <div class="modelbar"><label for="modelSelect">Model</label><select id="modelSelect" aria-label="Model"></select></div>
         <div class="field">
           <textarea id="input" rows="1" placeholder="Message Pluffy" aria-label="Message" spellcheck="true"></textarea>
           <button id="send" class="send" aria-label="Send" title="Send">
@@ -52,8 +53,13 @@
 
   <div id="sheet" class="backdrop hidden">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-      <h2 id="sheetTitle">Model server</h2>
-      <p class="hint">Paste the URL that Colab Cell 1 prints after <code>--server</code>. It changes every time you run the cell.</p>
+      <h2 id="sheetTitle">Models</h2>
+      <p id="sheetHint" class="hint"></p>
+      <label for="setProfile">Which model are you editing?</label>
+      <select id="setProfile">
+        <option value="pluffy">Pluffy (Colab)</option>
+        <option value="api">API model</option>
+      </select>
       <label for="setServer">Server URL</label>
       <input id="setServer" type="text" spellcheck="false" placeholder="https://something.trycloudflare.com">
       <label for="setModel">Model name</label>

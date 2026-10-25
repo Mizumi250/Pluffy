@@ -724,6 +724,31 @@ async function cmdAi(rest = []) {
   }
 }
 
+// `mizumi review`                       → asks folder / task / mode, then runs pluffy-review.js
+// `mizumi review engine --task "..."`   → straight to pluffy-review.js with your flags
+// A SECOND (hosted) model reviews the repo. Config: .pluffy-review.json or PLUFFY_REVIEW_* env vars.
+async function cmdReview(rest = []) {
+  if (!fs.existsSync(path.join(ROOT_DIR, 'pluffy-review.js'))) { error('pluffy-review.js not found in the repo root'); return }
+  if (rest.length) { process.exitCode = await runNode('pluffy-review.js', rest); return }
+  if (!process.stdin.isTTY) { error('No keyboard here. Use: mizumi review <folder> [--task "..."] [--dry-run]'); process.exitCode = 1; return }
+
+  divider()
+  info('A second AI reviews your folder. Set it up in .pluffy-review.json (provider, server, model, key).')
+  const folder = (await prompt('フォルダ Folder to review (blank = whole repo)')) || ''
+  const task   = (await prompt('タスク What should it look for? (blank = general review)')) || ''
+  const apply  = ((await prompt('Let it propose edits too? y/N')) || '').trim().toLowerCase() === 'y'
+  const flags  = [...(folder ? [folder] : []), ...(task ? ['--task', task] : []), ...(apply ? ['--apply'] : [])]
+  console.log()
+  const dry = await runNode('pluffy-review.js', [...flags, '--dry-run'])
+  if (dry !== 0) { error(`pluffy-review.js exited with code ${dry}`); return }
+  const go = ((await prompt('Send these files to the review API? y/N')) || '').trim().toLowerCase() === 'y'
+  if (!go) return
+  console.log()
+  const code = await runNode('pluffy-review.js', flags)
+  if (code === 0) success('Review done. The report is in .pluffy-review/')
+  else error(`pluffy-review.js exited with code ${code}`)
+}
+
 async function cmdChat(rest = []) {
   if (!fs.existsSync(path.join(ROOT_DIR, 'chat.js'))) { error('chat.js not found in the repo root'); return }
   process.exitCode = await runNode('chat.js', rest)
@@ -745,6 +770,7 @@ async function interactiveMenu() {
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
+    { label: 'レビュー         Review project',          sub: 'a second AI reviews the whole folder', value: 'review' },
     { label: 'チャット         Pluffy chat',             sub: 'open the chat window (sessions saved in SQLite)', value: 'chat' },
     { label: '訓練データ       Scan training data',      sub: 'node scan.js → dataset.jsonl',  value: 'scan'       },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
@@ -767,6 +793,7 @@ async function interactiveMenu() {
     case 'ai':        await cmdAi();           break
     case 'scan':      await cmdScan();         break
     case 'chat':      await cmdChat();         break
+    case 'review':    await cmdReview();       break
     case 'exit':
       console.log()
       console.log(`  ${paint(c.gray, 'またね！ See you! (￣▽￣)ノ')}`)
@@ -804,6 +831,8 @@ function printHelp() {
     ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
     ['mizumi chat',              '→ Open the Pluffy chat window (Electron)'],
+    ['mizumi review',            '→ Second AI reviews the repo (menu), report in .pluffy-review/'],
+    ['mizumi review engine --apply', '→ Review one folder and approve edits one by one'],
   ]
   cmds.forEach(([cmd, desc]) => {
     console.log(`  ${paint(c.cyan, cmd.padEnd(30))} ${paint(c.gray, desc)}`)
@@ -837,6 +866,7 @@ switch (command) {
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break
   case 'chat':    cmdChat(args.slice(1));      break
+  case 'review':  cmdReview(args.slice(1));    break
   case 'help':
   case '--help':
   case '-h':      printHelp();                 break

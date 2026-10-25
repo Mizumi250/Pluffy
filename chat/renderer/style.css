@@ -184,3 +184,9 @@ body.mac .side-top { height: 56px; padding-left: 84px; }
 .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: rgba(40, 40, 42, 0.94); color: #fff; padding: 7px 14px; border-radius: 16px; font-size: 13px; z-index: 40; max-width: 80%; }
 
 @media (max-width: 860px) { .app { grid-template-columns: 220px 1fr; } .bubble { max-width: 80%; } }
+
+/* ---------- model picker ---------- */
+.modelbar { display: flex; align-items: center; gap: 8px; padding: 0 4px 6px; font-size: 12px; color: var(--muted); }
+.modelbar select, .sheet select { border: 1px solid var(--field-line); border-radius: 8px; padding: 4px 8px; background: var(--bg); color: var(--text); font-size: 12.5px; outline: none; max-width: 70%; }
+.sheet select { width: 100%; max-width: none; padding: 7px 10px; font-size: inherit; }
+.modelbar select:focus, .sheet select:focus { border-color: var(--blue); }

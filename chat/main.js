@@ -4,6 +4,7 @@
 
 const { app, BrowserWindow, ipcMain, dialog, shell, nativeTheme } = require('electron')
 const path = require('node:path')
+const fs = require('node:fs')
 const { spawn, execFile } = require('node:child_process')
 const { openDb } = require('./db')
 const { parseCommand, listCommands } = require('./commands')
@@ -74,8 +75,10 @@ function main() {
   // ---------- chat ----------
   async function runChat(sessionId) {
     const s = db.getSettings()
-    const system = lib.systemPrompt(ROOT)
-    const ctx = lib.buildContext(db.getTextMessages(sessionId), system)
+    const history = db.getTextMessages(sessionId)
+    const lastUser = [...history].reverse().find((m) => m.role === 'user')
+    const system = lib.systemPromptFor(ROOT, s.active, lastUser ? lastUser.content : '')
+    const ctx = lib.buildContext(history, system, s.active === 'api' ? 30000 : 12000)
     const placeholder = db.addMessage(sessionId, 'assistant', 'text', '')
     emit({ type: 'assistant:start', message: placeholder })
 
@@ -85,7 +88,7 @@ function main() {
     let error = null
     try {
       await lib.streamChat({
-        server: s.server, model: s.model, key: s.key, messages: ctx, signal: job.ac.signal,
+        server: s.server, model: s.model, key: s.key, profile: s.active, messages: ctx, signal: job.ac.signal,
         onToken: (d) => { full += d; emit({ type: 'assistant:token', sessionId, id: placeholder.id, delta: d }) },
       })
     } catch (err) {
@@ -154,6 +157,16 @@ function main() {
       const env = { ...process.env, FORCE_COLOR: '0', NO_COLOR: '1' }
       delete env.ELECTRON_RUN_AS_NODE
       if (useElectronAsNode) env.ELECTRON_RUN_AS_NODE = '1'
+      // /review: if there is no .pluffy-review.json, reuse the API profile from this chat
+      if (parsed.args[0] === 'review') {
+        const st = db.getSettings()
+        if (st.apiReady && !fs.existsSync(path.join(ROOT, '.pluffy-review.json'))) {
+          env.PLUFFY_REVIEW_PROVIDER = 'openai'
+          env.PLUFFY_REVIEW_SERVER = st.profiles.api.server
+          env.PLUFFY_REVIEW_MODEL = st.profiles.api.model
+          env.PLUFFY_REVIEW_KEY = st.profiles.api.key
+        }
+      }
       let superseded = false
       const child = spawn(useElectronAsNode ? process.execPath : 'node', ['mizumi.js', ...parsed.args], {
         cwd: ROOT, env, detached: process.platform !== 'win32', windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'],
@@ -189,22 +202,39 @@ function main() {
   ipcMain.handle('settings:set', guard((_e, s) => {
     const out = {}
     if (s && typeof s === 'object') {
+      const prof = s.profile === 'api' ? 'api' : 'pluffy'
+      const k = (name) => (prof === 'api' ? 'api_' + name : name)
       if (typeof s.server === 'string') {
-        let u
-        try { u = new URL(s.server.trim()) } catch { return { ok: false, error: 'The server URL is not valid.' } }
-        if (!/^https?:$/.test(u.protocol)) return { ok: false, error: 'The server URL must start with http:// or https://' }
-        out.server = u.origin + u.pathname.replace(/\/+$/, '')
+        const raw = s.server.trim()
+        if (!raw && prof === 'api') out.api_server = ''
+        else {
+          let u
+          try { u = new URL(raw) } catch { return { ok: false, error: 'The server URL is not valid.' } }
+          if (!/^https?:$/.test(u.protocol)) return { ok: false, error: 'The server URL must start with http:// or https://' }
+          out[k('server')] = u.origin + u.pathname.replace(/\/+$/, '')
+        }
       }
       if (typeof s.model === 'string') {
         const m = s.model.trim()
-        if (!m || m.length > 100) return { ok: false, error: 'Enter a model name (for example pluffy-v11).' }
-        out.model = m
+        if (!m && prof === 'api') out.api_model = ''
+        else {
+          if (!m || m.length > 100) return { ok: false, error: 'Enter a model name (for example pluffy-v12).' }
+          out[k('model')] = m
+        }
       }
-      if (typeof s.key === 'string') out.key = s.key.trim().slice(0, 300)
+      if (typeof s.key === 'string') out[k('key')] = s.key.trim().slice(0, 300)
     }
     return { ok: true, settings: db.setSettings(out) }
   }))
-  ipcMain.handle('server:health', guard(() => lib.checkHealth(db.getSettings())))
+  ipcMain.handle('model:select', guard((_e, which) => {
+    if (which !== 'pluffy' && which !== 'api') return { ok: false, error: 'Unknown model.' }
+    if (which === 'api' && !db.getSettings().apiReady) return { ok: false, error: 'Set up the API model first (server URL and model name).' }
+    return { ok: true, settings: db.setSettings({ active: which }) }
+  }))
+  ipcMain.handle('server:health', guard((_e, which) => {
+    const st = db.getSettings()
+    return lib.checkHealth(which === 'api' || which === 'pluffy' ? st.profiles[which] : st)
+  }))
 
   ipcMain.handle('chat:send', guard((_e, sessionId, text) => {
     text = String(text || '').trim()

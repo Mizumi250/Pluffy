@@ -4,7 +4,12 @@
 const { DatabaseSync } = require('node:sqlite')
 const { cap } = require('./lib')
 
-const DEFAULTS = { server: 'http://127.0.0.1:11434', model: 'pluffy-v11', key: '' }
+// server/model/key = the Pluffy (Colab) profile, kept under the old names so existing settings still work.
+// api_* = the second profile (any OpenAI-compatible API). active = which one the chat and /ai use.
+const DEFAULTS = {
+  server: 'http://127.0.0.1:11434', model: 'pluffy-v11', key: '',
+  active: 'pluffy', api_server: '', api_model: '', api_key: '',
+}
 const now = () => Date.now()
 const like = (s) => '%' + String(s).replace(/[\\%_]/g, '\\$&') + '%'
 
@@ -106,9 +111,17 @@ function openDb(file) {
     },
     deleteMessage: (id) => { q.delMsg.run(id) },
     getSettings() {
-      const out = { ...DEFAULTS }
-      for (const r of q.getSet.all()) if (r.key in DEFAULTS) out[r.key] = r.value
-      return out
+      const raw = { ...DEFAULTS }
+      for (const r of q.getSet.all()) if (r.key in DEFAULTS) raw[r.key] = r.value
+      const profiles = {
+        pluffy: { server: raw.server, model: raw.model, key: raw.key },
+        api: { server: raw.api_server, model: raw.api_model, key: raw.api_key },
+      }
+      const apiReady = !!(profiles.api.server && profiles.api.model)
+      const active = raw.active === 'api' && apiReady ? 'api' : 'pluffy'
+      const cur = profiles[active]
+      // server/model/key always describe the ACTIVE profile, so /ai and the chat need no changes to use it
+      return { server: cur.server, model: cur.model, key: cur.key, active, profiles, apiReady }
     },
     setSettings(obj) {
       for (const k of Object.keys(DEFAULTS)) if (k in obj) q.putSet.run(k, String(obj[k]))

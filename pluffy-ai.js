@@ -51,7 +51,7 @@ const pascal = (s) => s.split(/[^A-Za-z0-9]+/).filter(Boolean).map((w) => w[0].t
 
 // ---------- model call (streaming, so slow CPUs don't hit fetch timeouts) ----------
 async function chat(messages, maxTokens, temperature) {
-  const res = await fetch(`${SERVER}/v1/chat/completions`, {
+  const res = await fetch(/\/chat\/completions$/.test(SERVER) ? SERVER : `${SERVER.replace(/\/+$/, '')}/v1/chat/completions`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', ...(opt.key ? { Authorization: `Bearer ${opt.key}` } : {}) },
     body: JSON.stringify({ model: opt.model || 'pluffy-v11', messages, max_tokens: maxTokens, temperature, stream: true }),

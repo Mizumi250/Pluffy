@@ -393,33 +393,76 @@ function setStatus(ok, text) {
   const s = $('#status'); s.classList.toggle('on', ok === true); s.classList.toggle('off', ok === false)
   $('#statusText').textContent = text
 }
+const PROFILE_LABEL = { pluffy: 'Pluffy (Colab)', api: 'API model' }
+const profileName = (id) => (id === 'api' && state.settings.profiles.api.model ? `API · ${state.settings.profiles.api.model}` : PROFILE_LABEL[id])
+function renderModelBar() {
+  const sel = $('#modelSelect'); sel.textContent = ''
+  for (const id of ['pluffy', 'api']) {
+    const o = document.createElement('option')
+    o.value = id
+    o.textContent = id === 'api' && !state.settings.apiReady ? 'API model (set up...)' : profileName(id)
+    sel.appendChild(o)
+  }
+  sel.value = state.settings.active
+}
 async function checkHealth() {
   const r = await api.health()
-  if (r && r.ok) setStatus(true, 'Model online')
-  else setStatus(false, 'Model offline')
+  const who = state.settings && state.settings.active === 'api' ? 'API' : 'Model'
+  if (r && r.ok) setStatus(true, `${who} online`)
+  else setStatus(false, `${who} offline`)
   return r
 }
-function openSheet() {
-  $('#setServer').value = state.settings.server; $('#setModel').value = state.settings.model; $('#setKey').value = state.settings.key
+function fillSheet(profile) {
+  const p = state.settings.profiles[profile]
+  $('#setProfile').value = profile
+  $('#setServer').value = p.server; $('#setModel').value = p.model; $('#setKey').value = p.key
+  $('#sheetHint').textContent = profile === 'api'
+    ? 'Any OpenAI-compatible API (OpenRouter, Groq, Gemini...). Examples: https://openrouter.ai/api or https://api.groq.com/openai. For Gemini paste the full address ending in /chat/completions.'
+    : 'Paste the URL that Colab Cell 1 prints after --server. It changes every time you run the cell.'
+  $('#setServer').placeholder = profile === 'api' ? 'https://openrouter.ai/api' : 'https://something.trycloudflare.com'
+  $('#setModel').placeholder = profile === 'api' ? 'model name from your provider' : 'pluffy-v12'
+  $('#setKey').placeholder = profile === 'api' ? 'Your API key' : 'Leave empty for Ollama'
+}
+function openSheet(profile, activate) {
+  const p = profile === 'api' || profile === 'pluffy' ? profile : state.settings.active   // a click passes an event object, not a name
+  state.pendingActivate = activate === true
+  fillSheet(p)
   $('#sheetMsg').textContent = ''; $('#sheetMsg').className = 'sheet-msg'
   $('#sheet').classList.remove('hidden'); $('#setServer').focus()
 }
-function closeSheet() { $('#sheet').classList.add('hidden') }
-const sheetValues = () => ({ server: $('#setServer').value, model: $('#setModel').value, key: $('#setKey').value })
+function closeSheet() { $('#sheet').classList.add('hidden'); state.pendingActivate = false }
+const sheetValues = () => ({ profile: $('#setProfile').value, server: $('#setServer').value, model: $('#setModel').value, key: $('#setKey').value })
 async function saveSheet() {
-  const r = await api.setSettings(sheetValues())
+  const v = sheetValues()
+  const r = await api.setSettings(v)
   if (!r || !r.ok) { const m = $('#sheetMsg'); m.textContent = (r && r.error) || 'Could not save.'; m.className = 'sheet-msg bad'; return }
-  state.settings = r.settings; closeSheet(); checkHealth()
+  state.settings = r.settings
+  if (state.pendingActivate && v.profile === 'api') {
+    const a = await api.selectModel('api')
+    if (a && a.ok) state.settings = a.settings
+  }
+  renderModelBar(); closeSheet(); checkHealth()
 }
 async function testSheet() {
   const m = $('#sheetMsg'); m.className = 'sheet-msg'; m.textContent = 'Testing...'
-  const saved = await api.setSettings(sheetValues())
+  const v = sheetValues()
+  const saved = await api.setSettings(v)
   if (!saved || !saved.ok) { m.textContent = (saved && saved.error) || 'Could not save.'; m.className = 'sheet-msg bad'; return }
   state.settings = saved.settings
-  const r = await checkHealth()
+  renderModelBar()
+  const r = await api.health(v.profile)   // test the profile being edited, not necessarily the active one
   m.textContent = r && r.ok ? 'Connected.' : `Not reachable. ${(r && r.error) || ''}`.trim()
   m.className = 'sheet-msg ' + (r && r.ok ? 'good' : 'bad')
+  checkHealth()
 }
+$('#setProfile').addEventListener('change', (e) => fillSheet(e.target.value))
+$('#modelSelect').addEventListener('change', async (e) => {
+  const which = e.target.value
+  if (which === 'api' && !state.settings.apiReady) { renderModelBar(); openSheet('api', true); return }
+  const r = await api.selectModel(which)
+  if (!r || !r.ok) { toast((r && r.error) || 'Could not switch model.'); renderModelBar(); return }
+  state.settings = r.settings; renderModelBar(); toast(`Using ${profileName(which)}`); checkHealth()
+})
 $('#openSettings').addEventListener('click', openSheet)
 $('#status').addEventListener('click', openSheet)
 $('#sheetCancel').addEventListener('click', closeSheet)
@@ -439,6 +482,7 @@ document.addEventListener('keydown', (e) => {
 ;(async function init() {
   buildQuick()
   state.settings = await api.getSettings()
+  renderModelBar()
   state.commands = await api.commands()
   await loadSessions()
   if (state.sessions.length) await selectSession(state.sessions[0].id)

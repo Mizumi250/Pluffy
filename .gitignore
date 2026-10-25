@@ -7,3 +7,6 @@
 **/.env
 *.log
 .DS_Store
+# Pluffy review (second AI)
+.pluffy-review.json
+.pluffy-review/

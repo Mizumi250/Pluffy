@@ -13,7 +13,8 @@ contextBridge.exposeInMainWorld('pluffy', {
   stopTerminal: (id) => ipcRenderer.invoke('term:stop', id),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (s) => ipcRenderer.invoke('settings:set', s),
-  health: () => ipcRenderer.invoke('server:health'),
+  health: (which) => ipcRenderer.invoke('server:health', which),
+  selectModel: (which) => ipcRenderer.invoke('model:select', which),
   commands: () => ipcRenderer.invoke('commands:list'),
   onEvent: (cb) => {
     const h = (_e, evt) => cb(evt)

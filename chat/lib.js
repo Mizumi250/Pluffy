@@ -28,6 +28,47 @@ function systemPrompt(root) {
     ' You cannot run commands yourself. When a command is needed, tell Master Mizumi to type a slash command such as /ai, /modules or /scan.'
 }
 
+// ---------- API profile: send only the guideline sections that match the question ----------
+// A fine-tuned Pluffy model knows the rules. A general API model does not, and the whole guideline is too big to send every time.
+const STOP = new Set('the and for with that this what how why when are can you your pluff pluffy about from have has not use using does into per tell me'.split(' '))
+function guidelineExcerpt(root, query, maxChars = 9000) {
+  try {
+    const g = latestGuideline(root)
+    if (!g) return ''
+    const lines = fs.readFileSync(path.join(root, g + '.md'), 'utf8').split('\n')
+    const secs = []
+    let cur = null, fence = false
+    for (const ln of lines) {
+      if (ln.trimStart().startsWith('```')) fence = !fence
+      if (!fence && ln.startsWith('## ')) { cur = { title: ln.slice(3).trim(), body: [] }; secs.push(cur); continue }
+      if (cur) cur.body.push(ln)
+    }
+    const words = [...new Set((String(query).toLowerCase().match(/[a-z][a-z0-9:_-]{2,}/g) || []).filter((w) => !STOP.has(w)))]
+    if (!words.length) return ''
+    const scored = secs.map((s) => {
+      const title = s.title.toLowerCase(), body = s.body.join('\n').toLowerCase()
+      let score = 0
+      for (const w of words) { if (title.includes(w)) score += 4; score += Math.min(body.split(w).length - 1, 5) }
+      return { s, score }
+    }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score)
+    let out = '', used = 0
+    for (const { s } of scored.slice(0, 3)) {
+      const text = `## ${s.title}\n${s.body.join('\n').trim()}`.slice(0, 4500)
+      if (used + text.length > maxChars) break
+      out += text + '\n\n'; used += text.length
+    }
+    return out.trim()
+  } catch { return '' }
+}
+
+function systemPromptFor(root, profile, lastUser) {
+  const base = systemPrompt(root)
+  if (profile !== 'api') return base
+  const ex = guidelineExcerpt(root, lastUser)
+  return base + ' You are a general-purpose model, not trained on Pluff. Answer ONLY from the guideline excerpts below. If they do not cover the question, say you are not sure instead of guessing.' +
+    (ex ? '\n\nGUIDELINE EXCERPTS:\n' + ex : '\n\n(No matching guideline section was found for this question.)')
+}
+
 // ---------- guardrail (runs on the finished reply, in code, not in the prompt) ----------
 function applyGuardrail(text) {
   let t = String(text || '').trim()
@@ -54,10 +95,14 @@ function buildContext(history, system, budget = 12000) {
 }
 
 // ---------- model stream (same endpoint and SSE format as pluffy-ai.js) ----------
-async function streamChat({ server, model, key, messages, signal, onToken, maxTokens = 1500, temperature = 0.2 }) {
+// A server ending in /chat/completions (for example Gemini's OpenAI-compatible address) is used exactly as written.
+const chatUrl = (server) => { const s = String(server).replace(/\/+$/, ''); return /\/chat\/completions$/.test(s) ? s : `${s}/v1/chat/completions` }
+const modelsUrl = (server) => { const s = String(server).replace(/\/+$/, ''); return /\/chat\/completions$/.test(s) ? s.replace(/\/chat\/completions$/, '/models') : `${s}/v1/models` }
+
+async function streamChat({ server, model, key, messages, signal, onToken, maxTokens = 1500, temperature = 0.2, profile = 'pluffy' }) {
   let res
   try {
-    res = await fetch(`${server.replace(/\/+$/, '')}/v1/chat/completions`, {
+    res = await fetch(chatUrl(server), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(key ? { Authorization: `Bearer ${key}` } : {}) },
       body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature, stream: true }),
@@ -65,7 +110,9 @@ async function streamChat({ server, model, key, messages, signal, onToken, maxTo
     })
   } catch (err) {
     if (err.name === 'AbortError') throw err
-    throw new Error('Cannot reach the model server. Check the URL in Settings and that Colab Cell 1 is still running.')
+    throw new Error(profile === 'api'
+      ? 'Cannot reach the API server. Check the URL in Settings and your internet connection.'
+      : 'Cannot reach the model server. Check the URL in Settings and that Colab Cell 1 is still running.')
   }
   if (!res.ok) throw new Error(`Server error ${res.status}: ${(await res.text()).slice(0, 300)}`)
   const decoder = new TextDecoder()
@@ -86,7 +133,7 @@ async function streamChat({ server, model, key, messages, signal, onToken, maxTo
 
 async function checkHealth({ server, key }) {
   try {
-    const res = await fetch(`${server.replace(/\/+$/, '')}/v1/models`, {
+    const res = await fetch(modelsUrl(server), {
       headers: key ? { Authorization: `Bearer ${key}` } : {},
       signal: AbortSignal.timeout(5000),
     })
@@ -143,4 +190,4 @@ class ProgressParser {
   }
 }
 
-module.exports = { cap, CAP, stripAnsi, systemPrompt, latestGuideline, applyGuardrail, buildContext, streamChat, checkHealth, ProgressParser }
+module.exports = { cap, CAP, stripAnsi, systemPrompt, systemPromptFor, guidelineExcerpt, chatUrl, modelsUrl, latestGuideline, applyGuardrail, buildContext, streamChat, checkHealth, ProgressParser }
