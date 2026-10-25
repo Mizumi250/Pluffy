@@ -19,6 +19,7 @@
 //    node mizumi.js modules      ← list registered tatemonos
 //    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
 //    node mizumi.js scan         ← scan tatemonos into training data
+//    node mizumi.js chat         ← open the Pluffy chat window (Electron)
 // ============================================================
 
 import { spawn } from 'node:child_process'
@@ -723,6 +724,11 @@ async function cmdAi(rest = []) {
   }
 }
 
+async function cmdChat(rest = []) {
+  if (!fs.existsSync(path.join(ROOT_DIR, 'chat.js'))) { error('chat.js not found in the repo root'); return }
+  process.exitCode = await runNode('chat.js', rest)
+}
+
 async function interactiveMenu() {
   printBanner()
 
@@ -739,6 +745,7 @@ async function interactiveMenu() {
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
+    { label: 'チャット         Pluffy chat',             sub: 'open the chat window (sessions saved in SQLite)', value: 'chat' },
     { label: '訓練データ       Scan training data',      sub: 'node scan.js → dataset.jsonl',  value: 'scan'       },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
   ]
@@ -759,6 +766,7 @@ async function interactiveMenu() {
     case 'modules':   cmdModules();            break
     case 'ai':        await cmdAi();           break
     case 'scan':      await cmdScan();         break
+    case 'chat':      await cmdChat();         break
     case 'exit':
       console.log()
       console.log(`  ${paint(c.gray, 'またね！ See you! (￣▽￣)ノ')}`)
@@ -795,6 +803,7 @@ function printHelp() {
     ['mizumi ai',                '→ Pluffy AI: option checkboxes, then ask for apps'],
     ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
+    ['mizumi chat',              '→ Open the Pluffy chat window (Electron)'],
   ]
   cmds.forEach(([cmd, desc]) => {
     console.log(`  ${paint(c.cyan, cmd.padEnd(30))} ${paint(c.gray, desc)}`)
@@ -827,6 +836,7 @@ switch (command) {
   case 'modules': cmdModules();                break
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break
+  case 'chat':    cmdChat(args.slice(1));      break
   case 'help':
   case '--help':
   case '-h':      printHelp();                 break

@@ -1,0 +1,14 @@
+{
+  "name": "pluffy-chat",
+  "version": "1.0.0",
+  "description": "Pluffy chat window (Electron)",
+  "private": true,
+  "type": "commonjs",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "devDependencies": {
+    "electron": "^45.0.0"
+  }
+}

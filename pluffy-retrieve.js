@@ -124,6 +124,14 @@ export function buildReference(tag, request, opts = {}) {
   return parts.length ? parts.join('\n\n') : '';
 }
 
+/**
+ * The whole newest PLUFF_GUIDELINES_v*.md as one string (used by pluffy-ai.js with --guide full).
+ * pluffy-ai.js imports this, but it was missing from the file, so pluffy-ai.js crashed on start.
+ */
+export function fullGuide() {
+  return loadGuide().map((s) => s.text).join('\n\n');
+}
+
 // quick self-test: node pluffy-retrieve.js "a clinic booking app" api:appointments
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const [req = 'a clinic booking app', tag = 'api:appointments'] = process.argv.slice(2);
