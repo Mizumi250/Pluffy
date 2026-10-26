@@ -26,6 +26,45 @@ const hasAppStack    = !!arkzenJson.activeAppStack
 const DESKTOP_STACKS = ['tauri', 'electron']
 const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeDesktopStack)
 const hasDesktopStack = isDesktop
+
+// ── PLATFORM SELECTION (CLI flags, does NOT touch arkzen.json) ─
+//   node start.js                    → everything configured in arkzen.json
+//   node start.js --only=web         → web only
+//   node start.js --only=web,app     → web + app
+//   node start.js --skip=desktop     → everything except desktop
+const cliArgs = process.argv.slice(2)
+const parseList = (flag) => {
+  const hit = cliArgs.find(a => a.startsWith(`--${flag}=`))
+  return hit ? hit.split('=')[1].split(',').map(s => s.trim().toLowerCase()).filter(Boolean) : null
+}
+const onlyList = parseList('only')
+const skipList = parseList('skip') ?? []
+const VALID_PLATFORMS = ['web', 'app', 'desktop']
+for (const p of [...(onlyList ?? []), ...skipList]) {
+  if (!VALID_PLATFORMS.includes(p)) {
+    console.log(`\n  ✗ Unknown platform "${p}". Use: ${VALID_PLATFORMS.join(', ')}\n`)
+    process.exit(1)
+  }
+}
+const wanted = (p) => (onlyList ? onlyList.includes(p) : true) && !skipList.includes(p)
+
+let runWeb     = wanted('web')
+const runApp     = wanted('app')     && hasAppStack
+const runDesktop = wanted('desktop') && hasDesktopStack
+
+// Desktop shells (Tauri / Electron) just wrap the running web dev server,
+// so desktop cannot run without web.
+if (runDesktop && !runWeb) {
+  console.log('  ⚠ Desktop wraps the web dev server — enabling web too.')
+  runWeb = true
+}
+if (onlyList && onlyList.includes('app') && !hasAppStack) {
+  console.log('  ⚠ --only=app requested but no app stack is set. Run: node mizumi.js app <stack>')
+}
+if (!runWeb && !runApp && !runDesktop) {
+  console.log('\n  ✗ Nothing to start — no selected platform is configured.\n')
+  process.exit(1)
+}
 const WEB_DEV_URL = activeStack === 'react-inertia' ? 'http://localhost:5173' : 'http://localhost:3000'
 
 // Backend dir — Inertia uses its own Laravel instance
@@ -76,22 +115,22 @@ function checkSetup() {
     process.exit(1)
   }
 
-  if (!fs.existsSync(path.join(WEB_DIR, 'node_modules'))) {
+  if (runWeb && !fs.existsSync(path.join(WEB_DIR, 'node_modules'))) {
     console.log(`\n  ✗ Web stack packages not installed (${activeStack}). Run: node mizumi.js deps install ${activeStack}\n`)
     process.exit(1)
   }
 
-  if (hasDesktopStack && activeDesktopStack === 'tauri' && !fs.existsSync(path.join(TAURI_DIR, 'node_modules'))) {
+  if (runDesktop && activeDesktopStack === 'tauri' && !fs.existsSync(path.join(TAURI_DIR, 'node_modules'))) {
     console.log('\n  ✗ Tauri packages not installed. Run: node setup.js\n')
     process.exit(1)
   }
 
-  if (hasDesktopStack && activeDesktopStack === 'electron' && !fs.existsSync(path.join(ELECTRON_DIR, 'node_modules'))) {
+  if (runDesktop && activeDesktopStack === 'electron' && !fs.existsSync(path.join(ELECTRON_DIR, 'node_modules'))) {
     console.log('\n  ✗ Electron packages not installed. Run: node setup.js\n')
     process.exit(1)
   }
 
-  if (hasAppStack && !fs.existsSync(path.join(APP_DIR, 'node_modules'))) {
+  if (runApp && !fs.existsSync(path.join(APP_DIR, 'node_modules'))) {
     console.log(`\n  ✗ App stack packages not installed (${activeAppStack}). Run: node setup.js\n`)
     process.exit(1)
   }
@@ -381,18 +420,18 @@ queue   = startQueueWorker()
 reverb  = startReverb()
 
 // Start web stack
-const web = startWebStack()
+const web = runWeb ? startWebStack() : null
 
 // Start app stack (if configured)
 let app = null
-if (hasAppStack) {
+if (runApp) {
   console.log(`  ✓ Starting app stack: ${activeAppStack}`)
   app = startAppStack()
 }
 
 // Start desktop shell (if configured) — wraps the running web URL
 let desktop = null
-if (hasDesktopStack) {
+if (runDesktop) {
   console.log(`  ✓ Starting desktop stack: ${activeDesktopStack}`)
   desktop = startDesktopStack()
 }
@@ -406,12 +445,13 @@ process.on('SIGINT', () => {
 
 // ── FOOTER ────────────────────────────────────────────────────
 console.log('\n  Tatemonos folder: tatemonos/your-project/core.tsx')
-console.log(`  Web stack:        ${activeStack}  → engine/frontend/${activeStack}/  (${WEB_DEV_URL})`)
-if (hasAppStack) {
+if (runWeb) console.log(`  Web stack:        ${activeStack}  → engine/frontend/${activeStack}/  (${WEB_DEV_URL})`)
+if (runApp) {
   console.log(`  App stack:        ${activeAppStack}  → engine/frontend/${activeAppStack}/`)
 }
-if (hasDesktopStack) {
+if (runDesktop) {
   console.log(`  Desktop stack:    ${activeDesktopStack}  → engine/frontend/${activeDesktopStack}/`)
 }
 console.log('  Export project:   node export.js project-name')
+console.log('  Pick platforms:   node mizumi.js start --only=web,app   (or --skip=desktop)')
 console.log('  Switch stacks:    node mizumi.js web / node mizumi.js app / node mizumi.js desktop\n')

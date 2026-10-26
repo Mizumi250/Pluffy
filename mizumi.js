@@ -216,6 +216,79 @@ async function picker(question, options) {
   })
 }
 
+// Multi-select: ↑/↓ move, SPACE toggles, ENTER confirms. Returns array of selected values.
+async function checkboxPicker(question, options) {
+  return new Promise((resolve) => {
+    let idx = 0
+    const total = options.length
+    const LINES = total + 2
+    const checked = options.map(o => !!o.checked)
+
+    const buildBlock = () => {
+      const lines = []
+      lines.push(`  ${paint(c.cyan + c.bold, '◆')} ${paint(c.white, question)}`)
+      options.forEach((opt, i) => {
+        const here = i === idx
+        const box  = checked[i] ? paint(c.green + c.bold, '[x]') : paint(c.gray, '[ ]')
+        const ptr  = here ? paint(c.magenta + c.bold, '›') : ' '
+        const label = here ? paint(c.white + c.bold, opt.label) : paint(c.gray, opt.label)
+        const sub  = opt.sub ? paint(c.gray, `  ${opt.sub}`) : ''
+        lines.push(`  ${ptr} ${box} ${label}${sub}`)
+      })
+      lines.push(`  ${paint(c.gray, '  space = toggle   enter = start')}`)
+      return lines
+    }
+
+    const firstDraw = () => buildBlock().forEach(line => process.stdout.write(line + '\n'))
+    const redraw    = () => {
+      process.stdout.write(`\x1b[${LINES}A`)
+      buildBlock().forEach(line => process.stdout.write(`\x1b[2K${line}\n`))
+    }
+
+    const rl = readline.createInterface({ input: process.stdin })
+    process.stdin.setRawMode(true)
+    process.stdin.resume()
+    process.stdin.setEncoding('utf8')
+    firstDraw()
+
+    process.stdin.on('data', function handler(key) {
+      if      (key === '\u001b[A') { idx = (idx - 1 + total) % total; redraw() }
+      else if (key === '\u001b[B') { idx = (idx + 1) % total; redraw() }
+      else if (key === ' ')        { checked[idx] = !checked[idx]; redraw() }
+      else if (key === '\r' || key === '\n') {
+        process.stdin.removeListener('data', handler)
+        process.stdin.setRawMode(false)
+        rl.close()
+        console.log()
+        resolve(options.filter((_, i) => checked[i]).map(o => o.value))
+      } else if (key === '\u0003') {
+        process.stdin.removeListener('data', handler)
+        process.stdin.setRawMode(false)
+        rl.close()
+        console.log()
+        console.log(`  ${paint(c.gray, 'またね！ (Bye!) (￣▽￣)ノ')}`)
+        console.log()
+        process.exit(0)
+      }
+    })
+  })
+}
+
+// "Start engine" from the menu: choose which platforms to activate this run.
+async function cmdStartPicker() {
+  const config = readConfig()
+  const options = [
+    { label: 'Web',     sub: config.activeStack ?? 'nextjs',        value: 'web',     checked: true },
+  ]
+  if (config.activeAppStack)     options.push({ label: 'App',     sub: config.activeAppStack,     value: 'app',     checked: true })
+  if (config.activeDesktopStack) options.push({ label: 'Desktop', sub: config.activeDesktopStack, value: 'desktop', checked: true })
+
+  divider()
+  const picked = await checkboxPicker('どのプラットフォーム？ Which platforms to activate?', options)
+  if (picked.length === 0) { warn('Nothing selected — not starting.'); return }
+  cmdStart([`--only=${picked.join(',')}`])
+}
+
 async function prompt(question, defaultVal = '') {
   return new Promise((resolve) => {
     const rl   = readline.createInterface({ input: process.stdin, output: process.stdout })
@@ -229,11 +302,11 @@ async function prompt(question, defaultVal = '') {
 
 // ─── COMMANDS ─────────────────────────────────────────────────
 
-function cmdStart() {
+function cmdStart(extraArgs = []) {
   console.log()
   log(`エンジン起動中... Starting Pluff ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn(process.execPath, ['start.js'], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const child = spawn(process.execPath, ['start.js', ...extraArgs], { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', code => { if (code !== 0) error(`Engine exited with code ${code}`) })
 }
 
@@ -758,7 +831,7 @@ async function interactiveMenu() {
   printBanner()
 
   const MENU = [
-    { label: 'エンジン起動     Start engine',           sub: 'web + app + desktop simultaneously',  value: 'start'      },
+    { label: 'エンジン起動     Start engine',           sub: 'pick which platforms: web / app / desktop',  value: 'start'      },
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
     { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop → stack',value: 'export'     },
@@ -779,7 +852,7 @@ async function interactiveMenu() {
   const chosen = await picker('何をしますか？ What do you want to do?', MENU)
 
   switch (chosen.value) {
-    case 'start':     cmdStart();              break
+    case 'start':     await cmdStartPicker();  break
     
     case 'setup':     cmdSetup();              break
     case 'export':    await cmdExport();       break
@@ -817,6 +890,8 @@ function printHelp() {
     ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
     ['mizumi web <stack>',       '→ Switch web stack'],
+    ['mizumi start --only=web,app', '→ Start only chosen platforms (web / app / desktop)'],
+    ['mizumi start --skip=desktop',  '→ Start everything except chosen platforms'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
     ['mizumi db <sqlite|postgresql>', '→ Switch database (one isolated DB per tatemono)'],
@@ -851,7 +926,7 @@ const command = args[0]
 const arg     = args[1]
 
 switch (command) {
-  case 'start':   cmdStart();     break
+  case 'start':   cmdStart(args.slice(1)); break
   case 'setup':   cmdSetup();                  break
   case 'export':  cmdExport(arg, args[2]);     break
   case 'web':     cmdSwitchWeb(arg);           break
