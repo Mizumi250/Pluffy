@@ -307,6 +307,8 @@ const SCHEMAS = [
     { command: { type: 'string', description: 'The slash command, starting with /' } }, ['command']),
   fn('generate_block', 'Have the trained Pluff model write ONE @arkzen DSL block (for example "api:tasks" or "web:page:index"). Give "file" (tatemonos/<name>/core.tsx) to insert it straight into that file with approval; without "file" the block text is returned to you.',
     { tag: { type: 'string', description: 'Block tag without the @arkzen: prefix' }, description: { type: 'string', description: 'What the app is, in the style of a client request. Optional when file is a tatemono with a description.' }, file: { type: 'string', description: 'Optional tatemonos/<name>/core.tsx to put the block into' } }, ['tag']),
+  fn('create_tatemono', 'Create a brand-new tatemono (tatemonos/<slug>/core.tsx) from an app idea. The trained Pluff model plans the tables, writes every DSL block, checks it and retries, then saves the file. Use this whenever Master Mizumi describes an app they want built. Needs approval and can take several minutes.',
+    { idea: { type: 'string', description: 'The app in plain words, like a client request (max 500 characters)' }, slug: { type: 'string', description: 'Optional folder name, for example clinic-booking' }, tables: { type: 'string', description: 'Optional plan, for example tasks(title:string,done:boolean,due_date:date);notes(body:text)' }, pages: { type: 'string', description: 'Optional comma separated page names, for example index,admin' } }, ['idea']),
   fn('validate_tatemono', 'Run the engine validator on tatemonos/<name>/core.tsx and return the real errors and warnings.',
     { name: { type: 'string', description: 'The tatemono folder name' } }, ['name']),
 ]
@@ -532,6 +534,32 @@ function createTools({ root, confirm, runCommand, getColab }) {
     return applyChange({ rel: target.rel, abs: target.abs, oldText: src, newText: withEol(next, eol), action: src ? 'edit' : 'create', ctx })
   }
 
+  // ---- chat -> new tatemono (same pipeline as the /ai command, so the same checks and the same approval)
+  async function createTatemono(a, ctx) {
+    const idea = String(a.idea || '').replace(/["\\]/g, "'").replace(/\s+/g, ' ').trim()
+    if (!idea) throw new Error('idea is required')
+    if (idea.length > 500) throw new Error('the idea is too long (500 characters max). Shorten it.')
+    let cmd = `/ai "${idea}"`
+    if (a.slug) {
+      const slug = String(a.slug).trim()
+      if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,60}$/.test(slug)) throw new Error('bad slug: use letters, numbers, - and _')
+      cmd += ` --slug ${slug}`
+    }
+    if (a.tables) {
+      const t = String(a.tables).replace(/["\\]/g, '').trim()
+      if (t.length > 600) throw new Error('tables is too long (600 characters max)')
+      if (t) cmd += ` --tables "${t}"`
+    }
+    if (a.pages) {
+      const p = String(a.pages).replace(/\s+/g, '')
+      if (!/^[A-Za-z0-9_,-]+$/.test(p)) throw new Error('bad pages: use names separated by commas')
+      cmd += ` --pages ${p}`
+    }
+    const out = await runCmd({ command: cmd }, ctx)
+    if (out === DECLINED) return out
+    return out + '\n\nNext: call validate_tatemono on the new folder and report the real result. If the output above says blocks failed, tell Master Mizumi which ones.'
+  }
+
   async function validate(a, ctx) {
     const name = String(a.name || '').trim()
     if (!/^[A-Za-z0-9][A-Za-z0-9_-]{0,60}$/.test(name)) throw new Error('bad tatemono name')
@@ -549,7 +577,7 @@ function createTools({ root, confirm, runCommand, getColab }) {
   const IMPL = {
     list_dir: listDir, read_file: readFile, search,
     edit_file: editFile, write_file: writeFile, delete_file: deleteFile,
-    run_command: runCmd, generate_block: generateBlock, validate_tatemono: validate,
+    run_command: runCmd, generate_block: generateBlock, create_tatemono: createTatemono, validate_tatemono: validate,
   }
 
   return {
