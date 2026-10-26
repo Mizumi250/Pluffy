@@ -181,6 +181,31 @@ function main() {
     if (error) notice(sessionId, `Master Mizumi, ${error}`, { error: true })
   }
 
+  // ---------- the trained Pluff model cannot use tools, so code drives it (same pipeline as /ai) ----------
+  // A fine-tuned block writer does not decide things, it only writes blocks. So for that AI the chat decides in code:
+  // an app request runs the /ai pipeline (after you approve), anything else is plain chat with no pretend tools.
+  const BUILD_VERB = /\b(create|make|build|generate|develop|design|set up|i need|i want)\b/i
+  const BUILD_NOUN = /\b(app|application|system|website|web ?site|tatemono|tracker|dashboard|portal|platform|booking|management|manager|to-?do|crm|landing page|store|shop)\b/i
+
+  async function runTrainedChat(sessionId, text) {
+    if (!(BUILD_VERB.test(text) && BUILD_NOUN.test(text))) return runChat(sessionId)
+    const idea = text.replace(/["\\]/g, "'").replace(/\s+/g, ' ').trim().slice(0, 500)
+    const parsed = parseCommand(`/ai "${idea}"`, { root: ROOT, settings: trainedSettings() })
+    if (!parsed.ok) return notice(sessionId, `Master Mizumi, ${parsed.error}`, { error: true })
+    const r = await dialog.showMessageBox(win, {
+      type: 'question', buttons: ['Create', 'Cancel'], defaultId: 1, cancelId: 1, noLink: true,
+      title: 'Create a tatemono', message: 'Create a tatemono from this request?',
+      detail: `It runs the same steps as the /ai command and saves tatemonos/<name>/core.tsx.\n\n${idea}`,
+    })
+    if (r.response !== 0) return notice(sessionId, 'Cancelled.')
+    notice(sessionId, 'Master Mizumi, building it with the /ai pipeline. Watch the terminal card below.')
+    const res = await runProcess(sessionId, parsed)
+    const lines = lib.stripAnsi(res.out || '').split('\n').filter((l) => /^(Done:|Engine validator:|Failed blocks)/.test(l.trim()))
+    if (res.stopped) return notice(sessionId, 'Master Mizumi, stopped. Nothing was finished.')
+    if (res.code !== 0 || !lines.length) return notice(sessionId, 'Master Mizumi, the build did not finish. Check the terminal card for the error.', { error: true })
+    notice(sessionId, 'Master Mizumi, finished.\n' + lines.join('\n'))
+  }
+
   async function runChat(sessionId) {
     const ai = activeAi()
     if (!ai) return notice(sessionId, 'Master Mizumi, no AI is set up yet. Open Settings and add one.', { error: true })
@@ -377,7 +402,8 @@ function main() {
     const message = db.addMessage(sessionId, 'user', slash ? 'command' : 'text', text)
     db.autoTitle(sessionId, text)
     setImmediate(() => {
-      const p = slash ? runSlash(sessionId, text) : (db.getSettings().agent === 'on' ? runAgentChat(sessionId) : runChat(sessionId))
+      const ai = activeAi()
+      const p = slash ? runSlash(sessionId, text) : (ai && ai.trained ? runTrainedChat(sessionId, text) : (db.getSettings().agent === 'on' ? runAgentChat(sessionId) : runChat(sessionId)))
       p.catch((err) => notice(sessionId, `Master Mizumi, something went wrong: ${err.message}`, { error: true }))
     })
     return { ok: true, message }
