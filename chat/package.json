@@ -6,7 +6,7 @@
   "type": "commonjs",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron main.js"
   },
   "devDependencies": {
     "electron": "^45.0.0"

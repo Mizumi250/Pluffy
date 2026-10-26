@@ -163,12 +163,34 @@ body.mac .side-top { height: 56px; padding-left: 84px; }
 
 /* ---------- settings sheet, menu, toast ---------- */
 .backdrop { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.35); display: grid; place-items: center; z-index: 20; }
-.sheet { width: min(440px, calc(100% - 32px)); background: var(--sheet); border-radius: 14px; padding: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35); }
+.sheet { width: min(520px, calc(100% - 32px)); max-height: calc(100vh - 32px); overflow-y: auto; background: var(--sheet); border-radius: 14px; padding: 20px; box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35); }
+.sheet-sub { margin: 18px 0 2px; font-size: 14px; }
+.sheet-sub.first { margin-top: 6px; }
+.picker { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; padding: 0 4px; font-size: 12.5px; color: var(--muted); }
+.pick { display: inline-flex; align-items: center; gap: 6px; }
+.pick select { border: 1px solid var(--field-line); border-radius: 8px; padding: 3px 8px; background: var(--bg); color: inherit; font: inherit; outline: none; }
+.pick select:focus { border-color: var(--blue); }
+.pick.check { cursor: pointer; }
+/* AI cards in the settings sheet */
+.ai-card { border: 1px solid var(--line); border-radius: 12px; padding: 12px; margin: 12px 0; }
+.ai-top { display: flex; gap: 8px; align-items: center; }
+.ai-top .ai-name { flex: 1; min-width: 0; font-weight: 600; }
+.sheet .ai-top select { width: auto; max-width: 48%; }
+.ai-card .hint { margin: 8px 0 0; font-size: 12px; }
+.ai-field label { margin-top: 8px; }
+.sheet .ai-check { display: flex; align-items: flex-start; gap: 8px; margin: 12px 0 0; font-size: 12.5px; cursor: pointer; }
+.sheet .ai-check input { width: auto; margin-top: 2px; }
+.ai-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.ai-msg { flex: 1; font-size: 12.5px; color: var(--muted); }
+.ai-msg.good { color: var(--green); }
+.ai-msg.bad { color: var(--red); }
+#addAi { margin-top: 2px; }
+.pick.check input { margin: 0; cursor: pointer; }
 .sheet h2 { margin: 0 0 6px; font-size: 17px; }
 .hint { margin: 0 0 14px; color: var(--muted); font-size: 13px; }
 .sheet label { display: block; font-size: 12.5px; color: var(--muted); margin: 10px 0 4px; }
-.sheet input { width: 100%; border: 1px solid var(--field-line); border-radius: 8px; padding: 7px 10px; background: var(--bg); outline: none; }
-.sheet input:focus { border-color: var(--blue); }
+.sheet input, .sheet select { width: 100%; border: 1px solid var(--field-line); border-radius: 8px; padding: 7px 10px; background: var(--bg); outline: none; font: inherit; color: inherit; }
+.sheet input:focus, .sheet select:focus { border-color: var(--blue); }
 .sheet-msg { min-height: 18px; margin-top: 10px; font-size: 12.5px; color: var(--muted); }
 .sheet-msg.bad { color: var(--red); }
 .sheet-msg.good { color: var(--green); }
@@ -184,9 +206,3 @@ body.mac .side-top { height: 56px; padding-left: 84px; }
 .toast { position: fixed; left: 50%; bottom: 84px; transform: translateX(-50%); background: rgba(40, 40, 42, 0.94); color: #fff; padding: 7px 14px; border-radius: 16px; font-size: 13px; z-index: 40; max-width: 80%; }
 
 @media (max-width: 860px) { .app { grid-template-columns: 220px 1fr; } .bubble { max-width: 80%; } }
-
-/* ---------- model picker ---------- */
-.modelbar { display: flex; align-items: center; gap: 8px; padding: 0 4px 6px; font-size: 12px; color: var(--muted); }
-.modelbar select, .sheet select { border: 1px solid var(--field-line); border-radius: 8px; padding: 4px 8px; background: var(--bg); color: var(--text); font-size: 12.5px; outline: none; max-width: 70%; }
-.sheet select { width: 100%; max-width: none; padding: 7px 10px; font-size: inherit; }
-.modelbar select:focus, .sheet select:focus { border-color: var(--blue); }

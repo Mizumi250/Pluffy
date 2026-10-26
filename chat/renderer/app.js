@@ -3,12 +3,12 @@ const api = window.pluffy
 const $ = (s) => document.querySelector(s)
 const el = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e }
 
-const state = { sessions: [], currentId: null, messages: [], busy: new Set(), commands: [], settings: null, query: '', suggestIdx: 0 }
+const state = { sessions: [], currentId: null, messages: [], busy: new Set(), commands: [], settings: null, ais: [], kinds: {}, activeAi: '', query: '', suggestIdx: 0 }
 if (api.platform === 'darwin') document.body.classList.add('mac')
 
 const QUICK = [
   { label: '/modules', run: true }, { label: '/stacks', run: true }, { label: '/stack', run: true },
-  { label: '/scan', run: true }, { label: '/ai', run: false }, { label: '/help', run: true },
+  { label: '/scan', run: true }, { label: '/ai', run: false }, { label: '/undo', run: true }, { label: '/help', run: true },
 ]
 
 // ---------- helpers ----------
@@ -388,88 +388,140 @@ function buildQuick() {
   }
 }
 
-// ---------- settings + status ----------
+// ---------- AIs: status, picker, settings sheet ----------
+let draft = []                                   // the AIs being edited in the sheet (not saved until Save)
+
 function setStatus(ok, text) {
   const s = $('#status'); s.classList.toggle('on', ok === true); s.classList.toggle('off', ok === false)
   $('#statusText').textContent = text
 }
-const PROFILE_LABEL = { pluffy: 'Pluffy (Colab)', api: 'API model' }
-const profileName = (id) => (id === 'api' && state.settings.profiles.api.model ? `API · ${state.settings.profiles.api.model}` : PROFILE_LABEL[id])
-function renderModelBar() {
-  const sel = $('#modelSelect'); sel.textContent = ''
-  for (const id of ['pluffy', 'api']) {
-    const o = document.createElement('option')
-    o.value = id
-    o.textContent = id === 'api' && !state.settings.apiReady ? 'API model (set up...)' : profileName(id)
-    sel.appendChild(o)
-  }
-  sel.value = state.settings.active
-}
+const activeName = () => { const a = state.ais.find((x) => x.id === state.activeAi); return a ? a.name : 'AI' }
 async function checkHealth() {
   const r = await api.health()
-  const who = state.settings && state.settings.active === 'api' ? 'API' : 'Model'
-  if (r && r.ok) setStatus(true, `${who} online`)
-  else setStatus(false, `${who} offline`)
+  const name = activeName()
+  if (r && r.ok) setStatus(true, r.checked ? `${name} online` : name)
+  else setStatus(false, r && r.checked === true ? `${name} offline` : (r && r.error === 'No API key yet.' ? `${name}: no key` : `${name} offline`))
   return r
 }
-function fillSheet(profile) {
-  const p = state.settings.profiles[profile]
-  $('#setProfile').value = profile
-  $('#setServer').value = p.server; $('#setModel').value = p.model; $('#setKey').value = p.key
-  $('#sheetHint').textContent = profile === 'api'
-    ? 'Any OpenAI-compatible API (OpenRouter, Groq, Gemini...). Examples: https://openrouter.ai/api or https://api.groq.com/openai. For Gemini paste the full address ending in /chat/completions.'
-    : 'Paste the URL that Colab Cell 1 prints after --server. It changes every time you run the cell.'
-  $('#setServer').placeholder = profile === 'api' ? 'https://openrouter.ai/api' : 'https://something.trycloudflare.com'
-  $('#setModel').placeholder = profile === 'api' ? 'model name from your provider' : 'pluffy-v12'
-  $('#setKey').placeholder = profile === 'api' ? 'Your API key' : 'Leave empty for Ollama'
+
+// the Model dropdown and the "can edit files" checkbox under the message box
+function renderPicker() {
+  const sel = $('#modelPick'); sel.textContent = ''
+  for (const a of state.ais) { const o = el('option', '', a.name); o.value = a.id; sel.appendChild(o) }
+  sel.value = state.activeAi
+  $('#actionsPick').checked = !!(state.settings && state.settings.agent === 'on')
 }
-function openSheet(profile, activate) {
-  const p = profile === 'api' || profile === 'pluffy' ? profile : state.settings.active   // a click passes an event object, not a name
-  state.pendingActivate = activate === true
-  fillSheet(p)
-  $('#sheetMsg').textContent = ''; $('#sheetMsg').className = 'sheet-msg'
-  $('#sheet').classList.remove('hidden'); $('#setServer').focus()
-}
-function closeSheet() { $('#sheet').classList.add('hidden'); state.pendingActivate = false }
-const sheetValues = () => ({ profile: $('#setProfile').value, server: $('#setServer').value, model: $('#setModel').value, key: $('#setKey').value })
-async function saveSheet() {
-  const v = sheetValues()
-  const r = await api.setSettings(v)
-  if (!r || !r.ok) { const m = $('#sheetMsg'); m.textContent = (r && r.error) || 'Could not save.'; m.className = 'sheet-msg bad'; return }
-  state.settings = r.settings
-  if (state.pendingActivate && v.profile === 'api') {
-    const a = await api.selectModel('api')
-    if (a && a.ok) state.settings = a.settings
-  }
-  renderModelBar(); closeSheet(); checkHealth()
-}
-async function testSheet() {
-  const m = $('#sheetMsg'); m.className = 'sheet-msg'; m.textContent = 'Testing...'
-  const v = sheetValues()
-  const saved = await api.setSettings(v)
-  if (!saved || !saved.ok) { m.textContent = (saved && saved.error) || 'Could not save.'; m.className = 'sheet-msg bad'; return }
-  state.settings = saved.settings
-  renderModelBar()
-  const r = await api.health(v.profile)   // test the profile being edited, not necessarily the active one
-  m.textContent = r && r.ok ? 'Connected.' : `Not reachable. ${(r && r.error) || ''}`.trim()
-  m.className = 'sheet-msg ' + (r && r.ok ? 'good' : 'bad')
-  checkHealth()
-}
-$('#setProfile').addEventListener('change', (e) => fillSheet(e.target.value))
-$('#modelSelect').addEventListener('change', async (e) => {
-  const which = e.target.value
-  if (which === 'api' && !state.settings.apiReady) { renderModelBar(); openSheet('api', true); return }
-  const r = await api.selectModel(which)
-  if (!r || !r.ok) { toast((r && r.error) || 'Could not switch model.'); renderModelBar(); return }
-  state.settings = r.settings; renderModelBar(); toast(`Using ${profileName(which)}`); checkHealth()
+function applyAis(r) { state.ais = r.list; state.kinds = r.kinds; state.activeAi = r.active; renderPicker() }
+$('#modelPick').addEventListener('change', async (e) => {
+  const id = e.target.value
+  const r = await api.selectAi(id)
+  if (!r || !r.ok) { renderPicker(); toast((r && r.error) || 'Could not switch.'); openSheet(id); return }
+  applyAis(r); checkHealth()
 })
-$('#openSettings').addEventListener('click', openSheet)
-$('#status').addEventListener('click', openSheet)
+$('#actionsPick').addEventListener('change', async (e) => {
+  const r = await api.setSettings({ agent: e.target.checked ? 'on' : 'off' })
+  if (r && r.ok) state.settings = r.settings
+  renderPicker()
+})
+
+// ---- the sheet: one card per AI
+const sheetMsg = (text, cls) => { const m = $('#sheetMsg'); m.textContent = text; m.className = 'sheet-msg' + (cls ? ' ' + cls : '') }
+const blankAi = () => ({ id: '', name: 'New AI', kind: 'custom', baseUrl: '', model: '', key: '', keySet: false, trained: false })
+
+function field(label, input) {
+  const wrap = el('div', 'ai-field'); wrap.appendChild(el('label', '', label)); wrap.appendChild(input); return wrap
+}
+function buildCard(d, i) {
+  const card = el('div', 'ai-card'); card.dataset.i = String(i)
+  const kinds = state.kinds
+  const top = el('div', 'ai-top')
+  const name = el('input', 'ai-name'); name.value = d.name; name.placeholder = 'Name'; name.setAttribute('aria-label', 'AI name')
+  const kind = el('select', 'ai-kind'); kind.setAttribute('aria-label', 'Provider')
+  for (const [k, v] of Object.entries(kinds)) { const o = el('option', '', v.label); o.value = k; kind.appendChild(o) }
+  kind.value = d.kind
+  const del = el('button', 'btn', 'Remove'); del.type = 'button'
+  top.append(name, kind, del)
+
+  const hint = el('p', 'hint', (kinds[d.kind] || {}).hint || '')
+  const url = el('input'); url.type = 'text'; url.spellcheck = false; url.value = d.baseUrl
+  const model = el('input'); model.type = 'text'; model.spellcheck = false; model.value = d.model; model.placeholder = 'model name'
+  const key = el('input'); key.type = 'password'; key.spellcheck = false
+  const setHolders = () => {
+    url.placeholder = d.kind === 'pluffy' ? 'https://something.trycloudflare.com' : 'https://.../v1'
+    key.placeholder = d.keySet ? 'Saved (encrypted). Leave empty to keep it' : ((kinds[d.kind] || {}).needsKey ? 'Paste your API key' : 'Optional')
+  }
+  setHolders()
+
+  const trained = el('input'); trained.type = 'checkbox'; trained.className = 'ai-trained'; trained.checked = d.trained
+  const trainedLabel = el('label', 'ai-check'); trainedLabel.append(trained, el('span', '', 'This is my trained Pluff model (it writes the DSL blocks and runs /ai)'))
+  const row = el('div', 'ai-row'); const test = el('button', 'btn', 'Test this AI'); test.type = 'button'
+  const msg = el('span', 'ai-msg'); row.append(test, msg)
+
+  card.append(top, hint, field('Server URL', url), field('Model name', model), field('API key', key), trainedLabel, row)
+
+  name.addEventListener('input', () => { d.name = name.value })
+  url.addEventListener('input', () => { d.baseUrl = url.value })
+  model.addEventListener('input', () => { d.model = model.value })
+  key.addEventListener('input', () => { d.key = key.value })
+  kind.addEventListener('change', () => {
+    const prev = kinds[d.kind] || {}; const next = kinds[kind.value] || {}
+    if (!d.baseUrl || d.baseUrl === prev.url) { d.baseUrl = next.url || ''; url.value = d.baseUrl }
+    if (!d.model || d.model === prev.model) { d.model = next.model || ''; model.value = d.model }
+    if (d.name === 'New AI' && kind.value !== 'custom') { d.name = (next.label || '').split(' ')[0]; name.value = d.name }
+    d.kind = kind.value; hint.textContent = next.hint || ''; setHolders()
+  })
+  trained.addEventListener('change', () => {
+    draft.forEach((x) => { x.trained = false }); d.trained = trained.checked
+    document.querySelectorAll('.ai-trained').forEach((c) => { c.checked = false }); trained.checked = d.trained
+  })
+  del.addEventListener('click', () => {
+    if (draft.length <= 1) { sheetMsg('Keep at least one AI.', 'bad'); return }
+    draft.splice(i, 1); renderCards(); sheetMsg('', '')
+  })
+  test.addEventListener('click', async () => {
+    msg.className = 'ai-msg'; msg.textContent = 'Testing...'; test.disabled = true
+    const r = await api.testAi({ id: d.id, kind: d.kind, baseUrl: d.baseUrl, model: d.model, key: d.key })
+    test.disabled = false
+    msg.textContent = (r && (r.message || r.error)) || 'No result.'
+    msg.className = 'ai-msg ' + (r && r.ok ? 'good' : 'bad')
+  })
+  return card
+}
+function renderCards() {
+  const list = $('#aiList'); list.textContent = ''
+  draft.forEach((d, i) => list.appendChild(buildCard(d, i)))
+}
+function openSheet(focusId) {
+  draft = state.ais.map((a) => ({ ...a, key: '' }))
+  renderCards(); sheetMsg('', '')
+  $('#sheet').classList.remove('hidden')
+  const i = draft.findIndex((a) => a.id === focusId)
+  const card = i >= 0 ? $('#aiList').children[i] : null
+  const target = card ? card.querySelector('input[type=password]') : $('#aiList input')
+  if (target) target.focus()
+}
+function closeSheet() { $('#sheet').classList.add('hidden') }
+async function saveSheet() {
+  const r = await api.saveAis({
+    list: draft.map((d) => ({ id: d.id, name: d.name, kind: d.kind, baseUrl: d.baseUrl, model: d.model, key: d.key, trained: d.trained })),
+    active: state.activeAi,
+  })
+  if (!r || !r.ok) { sheetMsg((r && r.error) || 'Could not save.', 'bad'); return }
+  applyAis(r); closeSheet(); checkHealth()
+}
+$('#addAi').addEventListener('click', () => {
+  draft.push(blankAi()); renderCards(); sheetMsg('', '')
+  const last = $('#aiList').lastElementChild; last.scrollIntoView({ block: 'nearest' }); last.querySelector('.ai-name').select()
+})
+$('#openSettings').addEventListener('click', () => openSheet())
+$('#status').addEventListener('click', () => openSheet())
 $('#sheetCancel').addEventListener('click', closeSheet)
 $('#sheetSave').addEventListener('click', saveSheet)
-$('#sheetTest').addEventListener('click', testSheet)
 $('#sheet').addEventListener('mousedown', (e) => { if (e.target.id === 'sheet') closeSheet() })
-$('#sheet').addEventListener('keydown', (e) => { if (e.key === 'Enter') saveSheet(); if (e.key === 'Escape') closeSheet() })
+$('#sheet').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT' && e.target.type !== 'checkbox') saveSheet()
+  if (e.key === 'Escape') closeSheet()
+})
 
 $('#newChat').addEventListener('click', newSession)
 $('#search').addEventListener('input', debounce((e) => { state.query = e.target.value; loadSessions() }, 200))
@@ -482,13 +534,13 @@ document.addEventListener('keydown', (e) => {
 ;(async function init() {
   buildQuick()
   state.settings = await api.getSettings()
-  renderModelBar()
+  applyAis(await api.getAis())
   state.commands = await api.commands()
   await loadSessions()
   if (state.sessions.length) await selectSession(state.sessions[0].id)
   else await newSession()
   autosize(); input.focus()
   const r = await checkHealth()
-  if (!r || !r.ok) toast('The model server is not reachable. Open Settings and paste the Colab URL.')
+  if (!r || !r.ok) toast(`${activeName()}: ${(r && r.error) || 'not reachable'} Open Settings to fix it.`)
   setInterval(checkHealth, 20000)
 })()

@@ -28,47 +28,6 @@ function systemPrompt(root) {
     ' You cannot run commands yourself. When a command is needed, tell Master Mizumi to type a slash command such as /ai, /modules or /scan.'
 }
 
-// ---------- API profile: send only the guideline sections that match the question ----------
-// A fine-tuned Pluffy model knows the rules. A general API model does not, and the whole guideline is too big to send every time.
-const STOP = new Set('the and for with that this what how why when are can you your pluff pluffy about from have has not use using does into per tell me'.split(' '))
-function guidelineExcerpt(root, query, maxChars = 9000) {
-  try {
-    const g = latestGuideline(root)
-    if (!g) return ''
-    const lines = fs.readFileSync(path.join(root, g + '.md'), 'utf8').split('\n')
-    const secs = []
-    let cur = null, fence = false
-    for (const ln of lines) {
-      if (ln.trimStart().startsWith('```')) fence = !fence
-      if (!fence && ln.startsWith('## ')) { cur = { title: ln.slice(3).trim(), body: [] }; secs.push(cur); continue }
-      if (cur) cur.body.push(ln)
-    }
-    const words = [...new Set((String(query).toLowerCase().match(/[a-z][a-z0-9:_-]{2,}/g) || []).filter((w) => !STOP.has(w)))]
-    if (!words.length) return ''
-    const scored = secs.map((s) => {
-      const title = s.title.toLowerCase(), body = s.body.join('\n').toLowerCase()
-      let score = 0
-      for (const w of words) { if (title.includes(w)) score += 4; score += Math.min(body.split(w).length - 1, 5) }
-      return { s, score }
-    }).filter((x) => x.score > 0).sort((a, b) => b.score - a.score)
-    let out = '', used = 0
-    for (const { s } of scored.slice(0, 3)) {
-      const text = `## ${s.title}\n${s.body.join('\n').trim()}`.slice(0, 4500)
-      if (used + text.length > maxChars) break
-      out += text + '\n\n'; used += text.length
-    }
-    return out.trim()
-  } catch { return '' }
-}
-
-function systemPromptFor(root, profile, lastUser) {
-  const base = systemPrompt(root)
-  if (profile !== 'api') return base
-  const ex = guidelineExcerpt(root, lastUser)
-  return base + ' You are a general-purpose model, not trained on Pluff. Answer ONLY from the guideline excerpts below. If they do not cover the question, say you are not sure instead of guessing.' +
-    (ex ? '\n\nGUIDELINE EXCERPTS:\n' + ex : '\n\n(No matching guideline section was found for this question.)')
-}
-
 // ---------- guardrail (runs on the finished reply, in code, not in the prompt) ----------
 function applyGuardrail(text) {
   let t = String(text || '').trim()
@@ -95,14 +54,12 @@ function buildContext(history, system, budget = 12000) {
 }
 
 // ---------- model stream (same endpoint and SSE format as pluffy-ai.js) ----------
-// A server ending in /chat/completions (for example Gemini's OpenAI-compatible address) is used exactly as written.
-const chatUrl = (server) => { const s = String(server).replace(/\/+$/, ''); return /\/chat\/completions$/.test(s) ? s : `${s}/v1/chat/completions` }
-const modelsUrl = (server) => { const s = String(server).replace(/\/+$/, ''); return /\/chat\/completions$/.test(s) ? s.replace(/\/chat\/completions$/, '/models') : `${s}/v1/models` }
-
-async function streamChat({ server, model, key, messages, signal, onToken, maxTokens = 1500, temperature = 0.2, profile = 'pluffy' }) {
+// baseUrl is the full OpenAI-style base (…/v1). `server` (origin only) still works and gets /v1 added.
+async function streamChat({ baseUrl, server, model, key, messages, signal, onToken, maxTokens = 1500, temperature = 0.2 }) {
+  const base = baseUrl ? String(baseUrl).replace(/\/+$/, '') : `${String(server).replace(/\/+$/, '')}/v1`
   let res
   try {
-    res = await fetch(chatUrl(server), {
+    res = await fetch(`${base}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(key ? { Authorization: `Bearer ${key}` } : {}) },
       body: JSON.stringify({ model, messages, max_tokens: maxTokens, temperature, stream: true }),
@@ -110,9 +67,7 @@ async function streamChat({ server, model, key, messages, signal, onToken, maxTo
     })
   } catch (err) {
     if (err.name === 'AbortError') throw err
-    throw new Error(profile === 'api'
-      ? 'Cannot reach the API server. Check the URL in Settings and your internet connection.'
-      : 'Cannot reach the model server. Check the URL in Settings and that Colab Cell 1 is still running.')
+    throw new Error('Cannot reach the AI server. Open Settings and press Test on that AI to see why.')
   }
   if (!res.ok) throw new Error(`Server error ${res.status}: ${(await res.text()).slice(0, 300)}`)
   const decoder = new TextDecoder()
@@ -131,9 +86,47 @@ async function streamChat({ server, model, key, messages, signal, onToken, maxTo
   }
 }
 
+// Says exactly what is wrong instead of a vague "no answer". Used by the Test button and the status dot.
+async function testEndpoint({ baseUrl, key, model, timeoutMs = 12000 }) {
+  const url = String(baseUrl).replace(/\/+$/, '') + '/models'
+  let res
+  let body = ''
+  try {
+    res = await fetch(url, { headers: key ? { Authorization: `Bearer ${key}` } : {}, signal: AbortSignal.timeout(timeoutMs) })
+    body = (await res.text()).slice(0, 6000)
+  } catch (err) {
+    const c = err && err.cause
+    const code = (c && (c.code || (c.errors && c.errors[0] && c.errors[0].code))) || (err && err.code) ||
+      ((String((c && c.message) || '').match(/\b(E[A-Z]{3,}|UND_ERR_\w+)\b/) || [])[1]) || ''
+    if (err && (err.name === 'TimeoutError' || err.name === 'AbortError')) return { ok: false, message: `No answer after ${Math.round(timeoutMs / 1000)} seconds. The server may be asleep or the URL may be wrong.` }
+    if (code === 'ENOTFOUND' || code === 'EAI_AGAIN') return { ok: false, message: 'That address does not exist (DNS lookup failed). Check the URL for typos. If it is a Colab link, the tunnel is gone: run Cell 1 again and paste the new URL.' }
+    if (code === 'ECONNREFUSED') return { ok: false, message: 'Connection refused: nothing is listening at that address. Is the server running?' }
+    if (/CERT|SSL|TLS/i.test(code)) return { ok: false, message: `Security certificate problem (${code}).` }
+    if (code === 'ECONNRESET' || /^UND_ERR/.test(code)) return { ok: false, message: 'The connection was cut off before the server answered.' }
+    return { ok: false, message: `Could not connect (${code || (err && err.message) || 'unknown error'}).` }
+  }
+  const st = res.status
+  if (st === 200) {
+    let ids = []
+    try { ids = (JSON.parse(body).data || JSON.parse(body).models || []).map((m) => String(m.id || m.name || '')).filter(Boolean) } catch { /* not a model list */ }
+    if (model && ids.length) {
+      const has = ids.some((id) => id === model || id === 'models/' + model || id.split(':')[0] === model || id.endsWith('/' + model))
+      if (!has) return { ok: true, message: `Connected, but the server does not list a model called "${model}". It has: ${ids.slice(0, 6).join(', ')}${ids.length > 6 ? ', ...' : ''}.` }
+      return { ok: true, message: `Connected. Model "${model}" is available.` }
+    }
+    return { ok: true, message: 'Connected.' }
+  }
+  if (st === 401 || st === 403) return { ok: false, message: `The server answered but rejected the API key (HTTP ${st}). Check the key.` }
+  if (st === 429) return { ok: true, message: 'Connected, but the provider says you are rate limited right now (HTTP 429).' }
+  if (st === 530 || (st >= 500 && /cloudflare/i.test(body))) return { ok: false, message: 'The Cloudflare tunnel is down or Colab has stopped. Run Colab Cell 1 again and paste the new URL.' }
+  if (st >= 500) return { ok: false, message: `The address answers but the server behind it does not (HTTP ${st}). Is Colab Cell 1 still running?` }
+  if (st === 404) return { ok: false, message: 'Reached the server, but it has no /models list at this URL (HTTP 404). Check the URL (it usually ends in /v1). Some servers have no model list; you can still try sending a message.' }
+  return { ok: false, message: `The server answered HTTP ${st}: ${body.replace(/\s+/g, ' ').slice(0, 160)}` }
+}
+
 async function checkHealth({ server, key }) {
   try {
-    const res = await fetch(modelsUrl(server), {
+    const res = await fetch(`${server.replace(/\/+$/, '')}/v1/models`, {
       headers: key ? { Authorization: `Bearer ${key}` } : {},
       signal: AbortSignal.timeout(5000),
     })
@@ -190,4 +183,4 @@ class ProgressParser {
   }
 }
 
-module.exports = { cap, CAP, stripAnsi, systemPrompt, systemPromptFor, guidelineExcerpt, chatUrl, modelsUrl, latestGuideline, applyGuardrail, buildContext, streamChat, checkHealth, ProgressParser }
+module.exports = { cap, CAP, stripAnsi, systemPrompt, latestGuideline, applyGuardrail, buildContext, streamChat, checkHealth, ProgressParser, testEndpoint }

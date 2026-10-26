@@ -11,10 +11,13 @@ contextBridge.exposeInMainWorld('pluffy', {
   send: (sessionId, text) => ipcRenderer.invoke('chat:send', sessionId, text),
   stop: (sessionId) => ipcRenderer.invoke('chat:stop', sessionId),
   stopTerminal: (id) => ipcRenderer.invoke('term:stop', id),
+  getAis: () => ipcRenderer.invoke('ais:get'),
+  saveAis: (payload) => ipcRenderer.invoke('ais:save', payload),
+  testAi: (draft) => ipcRenderer.invoke('ais:test', draft),
+  selectAi: (id) => ipcRenderer.invoke('ais:select', id),
   getSettings: () => ipcRenderer.invoke('settings:get'),
   setSettings: (s) => ipcRenderer.invoke('settings:set', s),
-  health: (which) => ipcRenderer.invoke('server:health', which),
-  selectModel: (which) => ipcRenderer.invoke('model:select', which),
+  health: () => ipcRenderer.invoke('server:health'),
   commands: () => ipcRenderer.invoke('commands:list'),
   onEvent: (cb) => {
     const h = (_e, evt) => cb(evt)

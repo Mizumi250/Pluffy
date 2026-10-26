@@ -39,7 +39,6 @@
 
       <footer class="composer">
         <div id="suggest" class="suggest hidden" role="listbox"></div>
-        <div class="modelbar"><label for="modelSelect">Model</label><select id="modelSelect" aria-label="Model"></select></div>
         <div class="field">
           <textarea id="input" rows="1" placeholder="Message Pluffy" aria-label="Message" spellcheck="true"></textarea>
           <button id="send" class="send" aria-label="Send" title="Send">
@@ -47,28 +46,31 @@
             <svg class="i-stop" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
           </button>
         </div>
+        <div class="picker">
+          <label class="pick" title="Which model answers your messages">
+            <span>Model</span>
+            <select id="modelPick" aria-label="Model">
+              <option value="colab">Pluffy</option>
+              <option value="gemini">Gemini</option>
+            </select>
+          </label>
+          <label class="pick check" title="Lets the model read your files, edit, add and delete them, and run commands. You approve every change and /undo restores the last one.">
+            <input id="actionsPick" type="checkbox">
+            <span>Can edit files and run commands (asks you first)</span>
+          </label>
+        </div>
       </footer>
     </main>
   </div>
 
   <div id="sheet" class="backdrop hidden">
     <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
-      <h2 id="sheetTitle">Models</h2>
-      <p id="sheetHint" class="hint"></p>
-      <label for="setProfile">Which model are you editing?</label>
-      <select id="setProfile">
-        <option value="pluffy">Pluffy (Colab)</option>
-        <option value="api">API model</option>
-      </select>
-      <label for="setServer">Server URL</label>
-      <input id="setServer" type="text" spellcheck="false" placeholder="https://something.trycloudflare.com">
-      <label for="setModel">Model name</label>
-      <input id="setModel" type="text" spellcheck="false" placeholder="pluffy-v11">
-      <label for="setKey">API key (optional)</label>
-      <input id="setKey" type="password" spellcheck="false" placeholder="Leave empty for Ollama">
+      <h2 id="sheetTitle">AI models</h2>
+      <p class="hint">Add every AI you want to use. Each one has its own provider, address, model and key. Pick which one answers with the Model dropdown under the message box.</p>
+      <div id="aiList"></div>
+      <button id="addAi" class="btn" type="button">+ Add AI</button>
       <div id="sheetMsg" class="sheet-msg" aria-live="polite"></div>
       <div class="sheet-actions">
-        <button id="sheetTest" class="btn">Test connection</button>
         <span class="grow"></span>
         <button id="sheetCancel" class="btn">Cancel</button>
         <button id="sheetSave" class="btn primary">Save</button>

@@ -45,15 +45,9 @@ const AI_OPTS = {
   guide: (v) => v === 'full' || v === 'off',
 }
 
-const REVIEW_OPTS = {
-  task: (v) => v.length > 0 && v.length <= 300,
-  'max-chunks': (v) => /^\d{1,3}$/.test(v) && Number(v) >= 1,
-}
-const REVIEW_FLAGS = new Set(['apply', 'dry-run', 'include-tatemonos'])
-const REVIEW_FOLDER = /^[A-Za-z0-9_][A-Za-z0-9_./-]{0,100}$/
-
 const COMMANDS = {
   help: { usage: '/help', desc: 'Show all commands', local: true },
+  undo: { usage: '/undo', desc: 'Restore the last file the AI changed or deleted', local: true },
   modules: simple('modules', 'List registered tatemonos'),
   stacks: simple('stacks', 'List all stacks and install status'),
   stack: simple('stack', 'Show the active web, app and desktop stacks'),
@@ -81,47 +75,6 @@ const COMMANDS = {
       return ok(['export', t[0], t[1]], `node mizumi.js export ${t[0]} ${t[1]}`, `Export ${t[0]} with the ${t[1]} stack into projects/${t[0]}?`)
     },
   },
-  review: {
-    usage: '/review [folder] [--task "..."] [--max-chunks 12] [--apply] [--dry-run] [--include-tatemonos]',
-    desc: 'Have the second (review) model check the repo. Needs .pluffy-review.json',
-    build: (t, ctx) => {
-      let folder = null
-      const opts = []
-      let apply = false
-      let dry = false
-      for (let i = 0; i < t.length; i++) {
-        if (t[i].startsWith('--')) {
-          const k = t[i].slice(2)
-          if (REVIEW_FLAGS.has(k)) {
-            opts.push(t[i])
-            if (k === 'apply') apply = true
-            if (k === 'dry-run') dry = true
-          } else if (REVIEW_OPTS[k]) {
-            const v = t[i + 1]
-            if (v === undefined || v.startsWith('--') || !REVIEW_OPTS[k](v)) return fail(`bad value for --${k}`)
-            opts.push(t[i], v); i++
-          } else {
-            return fail(`option --${k} is not allowed here. Allowed: ${[...REVIEW_FLAGS, ...Object.keys(REVIEW_OPTS)].map((x) => '--' + x).join(', ')}`)
-          }
-        } else if (folder === null) {
-          folder = t[i]
-        } else return fail('only one folder can be reviewed at a time')
-      }
-      if (folder !== null) {
-        if (!REVIEW_FOLDER.test(folder) || folder.split('/').includes('..')) return fail('that folder name is not valid (it must be inside the repo)')
-        if (!fs.existsSync(path.join(ctx.root, folder))) return fail(`no folder named "${folder}" in the repo`)
-      }
-      // never call `mizumi review` with no arguments: that opens a keyboard menu, and the chat has no keyboard
-      const args = ['review', folder || '.', ...opts]
-      if (apply && !dry) args.push('--yes')   // the chat has no keyboard prompt, so the confirmation below is the approval
-      const display = `node mizumi.js review${folder ? ' ' + folder : ''}${opts.length ? ' ' + opts.map((x) => (/\s/.test(x) ? JSON.stringify(x) : x)).join(' ') : ''}`
-      if (dry) return ok(args, display)
-      const where = folder && folder !== '.' ? folder : 'the whole repo'
-      return ok(args, display, apply
-        ? `Send ${where} to the review API AND let it edit files? Every valid edit is applied (originals are saved in .pluffy-review/).`
-        : `Send ${where} to the review API? Source files leave this machine (secrets and .env are skipped).`)
-    },
-  },
   ai: {
     usage: '/ai <idea> [--tables "tasks(title:string)"] [--pages index] [--slug name] [--tries 3] [--ref on] [--guide full]',
     desc: 'Generate a tatemono with your model',
@@ -141,6 +94,7 @@ const COMMANDS = {
       if (!idea) return fail('usage: ' + COMMANDS.ai.usage)
       if (idea.length > 500) return fail('the idea is too long (500 characters max)')
       const s = ctx.settings
+      if (!s.server) return fail('no trained Pluff model is set. In Settings, tick "This is my trained Pluff model" on one AI.')
       const args = ['ai', idea, ...opts, '--server', s.server, '--model', s.model, ...(s.key ? ['--key', s.key] : [])]
       const display = `node mizumi.js ai ${JSON.stringify(idea)}${opts.length ? ' ' + opts.map((x) => (/\s|\(/.test(x) ? JSON.stringify(x) : x)).join(' ') : ''}`
       const slugIdx = opts.indexOf('--slug')
