@@ -381,7 +381,7 @@ function printSetupHelp() {
 // CHECKS
 // ─────────────────────────────────────────────
 
-function checkRequirements() {
+function checkRequirements({ desktop = true } = {}) {
   divider()
   console.log('\n  PLUFF — SETUP\n')
   console.log(`  Active Stack: ${activeStack}`)
@@ -396,7 +396,7 @@ function checkRequirements() {
     { cmd: 'composer', name: 'Composer' },
   ]
 
-  if (isDesktop && activeDesktopStack === 'tauri') {
+  if (desktop && isDesktop && activeDesktopStack === 'tauri') {
     checks.push({ cmd: 'rustc', name: 'Rust compiler' })
     checks.push({ cmd: 'cargo', name: 'Cargo' })
   }
@@ -885,7 +885,7 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
-  checkRequirements()
+  checkRequirements({ desktop: false }) // backend-only never needs Rust/Tauri
   useBackend(cli.backendName ?? ACTIVE_BACKEND)
   setupBackend()
   process.exit(0)

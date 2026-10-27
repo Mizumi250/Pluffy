@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PrimaryBtn [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:12.030Z
+// Generated: 2026-10-27T08:11:29.286Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

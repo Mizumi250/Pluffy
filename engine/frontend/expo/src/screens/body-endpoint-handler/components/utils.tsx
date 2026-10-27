@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — body-endpoint-handler [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:07.146Z
+// Generated: 2026-10-27T08:11:25.547Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

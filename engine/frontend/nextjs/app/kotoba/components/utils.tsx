@@ -1,0 +1,71 @@
+// ============================================================
+// ARKZEN GENERATED UTILITIES — kotoba
+// Source: @arkzen:components (kotoba)
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-10-27T08:12:46.499Z
+// ============================================================
+
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import type { Ex, KComment, KPost, KProfile } from './types'
+
+export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
+
+export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
+
+// ─── Network ──────────────────────────────────────────────────
+
+// ─── Network ──────────────────────────────────────────────────
+export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
+  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
+  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
+  const res = await arkzenFetch(`/api/kotoba${path}`, init)
+  let data: any = null
+  try { data = await res.json() } catch { data = null }
+  if (!res.ok) {
+    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
+    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
+  }
+  return data as T
+}
+
+export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
+  if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('kotoba:toast', { detail: { message, kind } }))
+}
+
+// ─── Utils ────────────────────────────────────────────────────
+export function timeAgo(ts?: string | null) {
+  if (!ts) return ''
+  const s = Math.max(1, Math.floor((Date.now() - new Date(ts).getTime()) / 1000))
+  if (s < 60) return 'now'
+  if (s < 3600) return `${Math.floor(s / 60)}m`
+  if (s < 86400) return `${Math.floor(s / 3600)}h`
+  if (s < 604800) return `${Math.floor(s / 86400)}d`
+  return new Date(ts).toLocaleDateString()
+}
+
+export const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim()
+
+export const shuffle = <T,>(a: T[]): T[] => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]] } return r }
+
+export function diffText(a: string, b: string) {
+  const split = (s: string) => (/\s/.test(s) ? s.split(/(\s+)/).filter(Boolean) : Array.from(s))
+  const x = split(a), y = split(b)
+  const dp: number[][] = Array.from({ length: x.length + 1 }, () => new Array(y.length + 1).fill(0))
+  for (let i = x.length - 1; i >= 0; i--) for (let j = y.length - 1; j >= 0; j--) dp[i][j] = x[i] === y[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1])
+  const out: { t: 'same' | 'del' | 'add'; s: string }[] = []
+  let i = 0, j = 0
+  while (i < x.length && j < y.length) {
+    if (x[i] === y[j]) { out.push({ t: 'same', s: x[i] }); i++; j++ }
+    else if (dp[i + 1][j] >= dp[i][j + 1]) { out.push({ t: 'del', s: x[i] }); i++ }
+    else { out.push({ t: 'add', s: y[j] }); j++ }
+  }
+  while (i < x.length) out.push({ t: 'del', s: x[i++] })
+  while (j < y.length) out.push({ t: 'add', s: y[j++] })
+  return out
+}
+
+// ─── UI atoms ─────────────────────────────────────────────────

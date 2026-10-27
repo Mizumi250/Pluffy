@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — layout-test
 // Source: @arkzen:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:47.012Z
+// Generated: 2026-10-27T08:12:56.725Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

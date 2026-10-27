@@ -74,6 +74,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'job-test', screenName: 'dashboard', routePath: '/job-test/dashboard', layout: 'default', auth: false },
 // ROUTE:job-test:index:/job-test:default:false
   { tatName: 'job-test', screenName: 'index', routePath: '/job-test', layout: 'default', auth: false },
+// ROUTE:kotoba:index:/kotoba:+guest:false
+  { tatName: 'kotoba', screenName: 'index', routePath: '/kotoba', layout: '+guest', auth: false },
+// ROUTE:kotoba:login:/kotoba/login:+guest:false
+  { tatName: 'kotoba', screenName: 'login', routePath: '/kotoba/login', layout: '+guest', auth: false },
+// ROUTE:kotoba:register:/kotoba/register:+guest:false
+  { tatName: 'kotoba', screenName: 'register', routePath: '/kotoba/register', layout: '+guest', auth: false },
 // ROUTE:layout-test:index:/layout-test:app-shell:false
   { tatName: 'layout-test', screenName: 'index', routePath: '/layout-test', layout: 'app-shell', auth: false },
 // ROUTE:layout-test:tab:/layout-test/tab:tab-panel:false

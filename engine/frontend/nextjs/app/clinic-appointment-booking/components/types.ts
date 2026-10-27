@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — clinic-appointment-booking
 // Source: @arkzen:components (clinic-appointment-booking)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:31.209Z
+// Generated: 2026-10-27T08:12:28.229Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

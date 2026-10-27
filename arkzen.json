@@ -463,9 +463,9 @@
       "auth": false
     }
   ],
-  "activeStack": "react-vite",
-  "activeAppStack": "react-native",
-  "activeDesktopStack": "tauri",
+  "activeStack": "nextjs",
+  "activeAppStack": "expo",
+  "activeDesktopStack": "electron",
   "stacks": {
     "nextjs": "engine/frontend/nextjs",
     "react-vite": "engine/frontend/react-vite",

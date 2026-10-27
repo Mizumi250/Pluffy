@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SectionCard [Expo]
 // Source: @arkzen:native:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:07.153Z
+// Generated: 2026-10-27T08:11:25.555Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

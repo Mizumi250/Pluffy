@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — RoleAuditLog
 // Tatemono: roles-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:51.391628Z
+// Generated: 2026-10-27T08:13:05.143761Z
 // ============================================================
 
 namespace App\Models\Arkzen\RolesTest;

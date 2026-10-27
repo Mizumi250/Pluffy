@@ -13,7 +13,7 @@
       ],
       "auth": false,
       "registered": "2026-05-29T11:49:29.723Z",
-      "lastUpdated": "2026-10-24T13:18:27.917Z"
+      "lastUpdated": "2026-10-27T08:12:05.002Z"
     },
     {
       "name": "crud-test",
@@ -25,7 +25,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T05:01:27.802Z",
-      "lastUpdated": "2026-10-24T13:18:24.476Z"
+      "lastUpdated": "2026-10-27T08:11:50.776Z"
     },
     {
       "name": "auth-test",
@@ -39,7 +39,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T05:13:01.615Z",
-      "lastUpdated": "2026-10-24T13:18:07.030Z"
+      "lastUpdated": "2026-10-27T08:11:25.344Z"
     },
     {
       "name": "upload-test",
@@ -51,7 +51,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T07:24:49.161Z",
-      "lastUpdated": "2026-10-24T13:18:45.889Z"
+      "lastUpdated": "2026-10-27T08:12:40.749Z"
     },
     {
       "name": "mail-test",
@@ -65,7 +65,7 @@
       ],
       "auth": true,
       "registered": "2026-05-30T13:43:13.671Z",
-      "lastUpdated": "2026-10-24T13:18:34.962Z"
+      "lastUpdated": "2026-10-27T08:12:26.423Z"
     },
     {
       "name": "inventory-management",
@@ -77,7 +77,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T13:54:53.420Z",
-      "lastUpdated": "2026-10-24T13:18:29.539Z"
+      "lastUpdated": "2026-10-27T08:12:08.184Z"
     },
     {
       "name": "events-test",
@@ -89,7 +89,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:20:09.470Z",
-      "lastUpdated": "2026-10-24T13:18:27.812Z"
+      "lastUpdated": "2026-10-27T08:12:03.649Z"
     },
     {
       "name": "job-test",
@@ -101,7 +101,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:41:59.405Z",
-      "lastUpdated": "2026-10-24T13:18:33.447Z"
+      "lastUpdated": "2026-10-27T08:12:15.190Z"
     },
     {
       "name": "scheduler-test",
@@ -113,7 +113,7 @@
       ],
       "auth": false,
       "registered": "2026-05-30T14:56:22.878Z",
-      "lastUpdated": "2026-10-24T13:18:43.907Z"
+      "lastUpdated": "2026-10-27T08:12:36.868Z"
     },
     {
       "name": "broadcast-test",
@@ -127,7 +127,7 @@
       ],
       "auth": true,
       "registered": "2026-05-31T11:11:11.611Z",
-      "lastUpdated": "2026-10-24T13:18:16.515Z"
+      "lastUpdated": "2026-10-27T08:11:47.290Z"
     },
     {
       "name": "roles-test",
@@ -141,7 +141,7 @@
       ],
       "auth": true,
       "registered": "2026-06-05T13:13:33.603Z",
-      "lastUpdated": "2026-10-24T13:18:42.208Z"
+      "lastUpdated": "2026-10-27T08:12:35.454Z"
     },
     {
       "name": "middleware-test",
@@ -153,7 +153,7 @@
       ],
       "auth": false,
       "registered": "2026-06-06T03:52:09.579Z",
-      "lastUpdated": "2026-10-24T13:18:36.924Z"
+      "lastUpdated": "2026-10-27T08:12:27.783Z"
     },
     {
       "name": "errors-test",
@@ -165,7 +165,7 @@
       ],
       "auth": false,
       "registered": "2026-06-06T04:12:10.162Z",
-      "lastUpdated": "2026-10-24T13:18:26.037Z"
+      "lastUpdated": "2026-10-27T08:11:58.657Z"
     },
     {
       "name": "notification-test",
@@ -179,7 +179,7 @@
       ],
       "auth": true,
       "registered": "2026-06-09T02:47:31.378Z",
-      "lastUpdated": "2026-10-24T13:18:37.657Z"
+      "lastUpdated": "2026-10-27T08:12:29.836Z"
     },
     {
       "name": "body-endpoint-handler",
@@ -191,7 +191,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T09:27:00.701Z",
-      "lastUpdated": "2026-10-24T13:18:11.865Z"
+      "lastUpdated": "2026-10-27T08:11:28.339Z"
     },
     {
       "name": "body-mail-notification",
@@ -205,7 +205,7 @@
       ],
       "auth": true,
       "registered": "2026-06-09T10:16:50.282Z",
-      "lastUpdated": "2026-10-24T13:18:15.031Z"
+      "lastUpdated": "2026-10-27T08:11:39.792Z"
     },
     {
       "name": "portfolio-test",
@@ -217,7 +217,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T10:31:21.465Z",
-      "lastUpdated": "2026-10-24T13:18:37.773Z"
+      "lastUpdated": "2026-10-27T08:12:30.513Z"
     },
     {
       "name": "queue-flow",
@@ -231,7 +231,7 @@
       ],
       "auth": false,
       "registered": "2026-06-09T11:29:50.908Z",
-      "lastUpdated": "2026-10-24T13:18:39.819Z"
+      "lastUpdated": "2026-10-27T08:12:32.364Z"
     },
     {
       "name": "animation-lab",
@@ -243,7 +243,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T10:31:43.017Z",
-      "lastUpdated": "2026-10-24T13:18:06.344Z"
+      "lastUpdated": "2026-10-27T08:11:24.705Z"
     },
     {
       "name": "new-updates-styles",
@@ -257,7 +257,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T18:08:22.665Z",
-      "lastUpdated": "2026-10-24T13:18:37.124Z"
+      "lastUpdated": "2026-10-27T08:12:28.120Z"
     },
     {
       "name": "dtr-geofencing",
@@ -270,7 +270,7 @@
       ],
       "auth": false,
       "registered": "2026-06-10T18:18:17.210Z",
-      "lastUpdated": "2026-10-24T13:18:25.910Z"
+      "lastUpdated": "2026-10-27T08:11:58.143Z"
     },
     {
       "name": "jo-payroll",
@@ -286,7 +286,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T01:13:19.471Z",
-      "lastUpdated": "2026-10-24T13:18:31.884Z"
+      "lastUpdated": "2026-10-27T08:12:12.015Z"
     },
     {
       "name": "asset-hub",
@@ -298,7 +298,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T02:43:24.186Z",
-      "lastUpdated": "2026-10-24T13:18:06.592Z"
+      "lastUpdated": "2026-10-27T08:11:24.852Z"
     },
     {
       "name": "shan-shan",
@@ -310,7 +310,7 @@
       ],
       "auth": false,
       "registered": "2026-06-11T07:04:18.295Z",
-      "lastUpdated": "2026-10-24T13:18:44.598Z"
+      "lastUpdated": "2026-10-27T08:12:37.546Z"
     },
     {
       "name": "layout-test",
@@ -327,7 +327,7 @@
       ],
       "auth": false,
       "registered": "2026-06-14T03:49:00.806Z",
-      "lastUpdated": "2026-10-24T13:18:33.964Z"
+      "lastUpdated": "2026-10-27T08:12:24.697Z"
     },
     {
       "name": "atelier",
@@ -339,7 +339,30 @@
       ],
       "auth": false,
       "registered": "2026-06-14T15:57:51.242Z",
-      "lastUpdated": "2026-10-24T13:18:06.871Z"
+      "lastUpdated": "2026-10-27T08:11:25.107Z"
+    },
+    {
+      "name": "kotoba",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "C:\\Users\\Administrator\\Downloads\\PROJECTS\\Pluffy\\tatemonos\\kotoba\\core.tsx",
+      "screens": [
+        "index",
+        "login",
+        "register",
+        "dashboard",
+        "feed",
+        "learn",
+        "review",
+        "partners",
+        "chat",
+        "circles",
+        "progress",
+        "profile"
+      ],
+      "auth": true,
+      "registered": "2026-10-27T08:12:23.643Z",
+      "lastUpdated": "2026-10-27T08:12:23.643Z"
     }
   ]
 }

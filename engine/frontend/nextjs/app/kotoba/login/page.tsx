@@ -1,0 +1,85 @@
+'use client'
+// ============================================================
+// ARKZEN GENERATED PAGE — kotoba/login
+// Layout: +guest | Auth guard: false | Guest-only: true
+// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
+// Generated: 2026-10-27T08:12:47.363Z
+// ============================================================
+
+import React, { useEffect, useRef, useState } from 'react'
+import { motion } from 'framer-motion'
+import { Avatar } from '../components/Avatar'
+import { ComposeBox } from '../components/ComposeBox'
+import { Diff } from '../components/Diff'
+import { Empty } from '../components/Empty'
+import { InterestPicker } from '../components/InterestPicker'
+import { LangSelect } from '../components/LangSelect'
+import { LessonPlayer } from '../components/LessonPlayer'
+import { OnboardingSheet } from '../components/OnboardingSheet'
+import { PostCard } from '../components/PostCard'
+import { ProfileSheet } from '../components/ProfileSheet'
+import { Ring } from '../components/Ring'
+import { Segmented } from '../components/Segmented'
+import { Sheet } from '../components/Sheet'
+import { Skeletons } from '../components/Skeletons'
+import { useNav } from '../components/hooks'
+import type { Ex, KComment, KPost, KProfile } from '../components/types'
+import { kt } from '../components/utils'
+import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
+import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+
+// Page component code (from @arkzen:page:login)
+const LoginPage = () => {
+  const nav = useNav()
+  const { login, isLoading } = useAuthStore()
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const submit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault(); setError(null)
+    try { await login(email, password) } catch (err) { setError(err instanceof Error ? err.message : 'Unable to sign in') }
+  }
+  return (
+    <div className="kt-hero" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20, fontFamily: 'var(--kt-font)', color: 'var(--kt-text)' }}>
+      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 400, padding: 32, borderRadius: 28 }}>
+        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><div className="kt-brand-mark">言</div>Kotoba</div>
+        <h1 className="kt-title" style={{ fontSize: 28 }}>Welcome back</h1>
+        <p className="kt-sub" style={{ margin: '6px 0 20px' }}>Sign in to continue your streak.</p>
+        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(255,69,58,0.14)', color: 'var(--kt-red)', padding: '10px 12px', borderRadius: 12, marginBottom: 14, fontSize: 14 }}>{error}</div>}
+        <div className="kt-stack">
+          <div><label className="kt-label" htmlFor="kt-email">Email</label><input id="kt-email" className="kt-input" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
+          <div><label className="kt-label" htmlFor="kt-pass">Password</label><input id="kt-pass" className="kt-input" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></div>
+          <button className="kt-btn primary block" type="submit" disabled={isLoading}>{isLoading ? 'Signing in…' : 'Sign in'}</button>
+          <button className="kt-btn block" type="button" onClick={() => { setEmail('demo@kotoba.app'); setPassword('password123') }}>Use demo account</button>
+        </div>
+        <p className="kt-sub" style={{ textAlign: 'center', marginTop: 18 }}>New here? <a style={{ color: 'var(--kt-blue)', cursor: 'pointer' }} onClick={() => nav.go('register')}>Create an account</a></p>
+      </form>
+    </div>
+  )
+}
+
+// Wrapper for animation + layout
+const ArkzenPage_Kotoba_Login = () => {
+  const pageRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!pageRef.current) return
+    // Animations are managed by the page or not defined
+  }, [])
+
+  return (
+    <GuestLayout guestOnly={true}>
+      <motion.div
+        ref={pageRef}
+        variants={{}}
+        initial="initial"
+        animate="animate"
+        exit="exit"
+      >
+        <LoginPage />
+      </motion.div>
+    </GuestLayout>
+  )
+}
+
+export default ArkzenPage_Kotoba_Login

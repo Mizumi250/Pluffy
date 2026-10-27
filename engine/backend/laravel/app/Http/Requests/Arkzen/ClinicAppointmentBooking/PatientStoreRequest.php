@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — PatientStoreRequest
 // Tatemono: clinic-appointment-booking
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:32.604367Z
+// Generated: 2026-10-27T08:12:29.116179Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ClinicAppointmentBooking;
