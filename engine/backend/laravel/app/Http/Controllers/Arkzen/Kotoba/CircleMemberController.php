@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — CircleMemberController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:51.794400Z
+// Generated: 2026-10-27T08:59:23.119523Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

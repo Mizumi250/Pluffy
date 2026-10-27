@@ -2,13 +2,14 @@
 // ARKZEN GENERATED TYPES — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:46.502Z
+// Generated: 2026-10-27T08:59:09.990Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────
@@ -30,7 +31,8 @@ export type KComment = {
   is_correction: boolean; corrected?: string | null; explanation?: string | null; accepted: boolean; created_at?: string
 }
 
-// ─── Languages ────────────────────────────────────────────────
+// ─── Levels & palette ─────────────────────────────────────────
+// (LANGS, langName, langFlag and kt live in the web:script block above)
 
 // ─── Lesson player ────────────────────────────────────────────
 export type Ex = { t: 'choose' | 'type' | 'order' | 'match'; q: string; o?: string[]; a?: any; w?: string[]; p?: string[][] }

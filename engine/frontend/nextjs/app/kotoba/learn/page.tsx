@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/learn
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:47.915Z
+// Generated: 2026-10-27T08:59:10.743Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -22,12 +22,11 @@ import { Ring } from '../components/Ring'
 import { Segmented } from '../components/Segmented'
 import { Sheet } from '../components/Sheet'
 import { Skeletons } from '../components/Skeletons'
-import { LANGS } from '../components/constants'
 import { useApi, useProfile } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
-import { kt, langFlag, langName } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:learn)

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/partners
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:48.154Z
+// Generated: 2026-10-27T08:59:10.957Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -24,9 +24,10 @@ import { Sheet } from '../components/Sheet'
 import { Skeletons } from '../components/Skeletons'
 import { useNav } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
-import { kt, langFlag, langName, toast } from '../components/utils'
+import { toast } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:partners)

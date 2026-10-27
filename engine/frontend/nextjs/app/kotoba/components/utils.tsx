@@ -2,35 +2,16 @@
 // ARKZEN GENERATED UTILITIES — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:46.499Z
+// Generated: 2026-10-27T08:59:09.985Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
 import type { Ex, KComment, KPost, KProfile } from './types'
-
-export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
-
-export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
-
-// ─── Network ──────────────────────────────────────────────────
-
-// ─── Network ──────────────────────────────────────────────────
-export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
-  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
-  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
-  const res = await arkzenFetch(`/api/kotoba${path}`, init)
-  let data: any = null
-  try { data = await res.json() } catch { data = null }
-  if (!res.ok) {
-    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
-    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
-  }
-  return data as T
-}
 
 export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('kotoba:toast', { detail: { message, kind } }))

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — kotoba [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:16.348Z
+// Generated: 2026-10-27T08:59:06.994Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -10,7 +10,7 @@ import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen
 import { usePathname, useRouter } from 'expo-router'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
-import { LANGS } from './constants'
+import { KT_REQUEST, LANGS } from './constants'
 
 export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
 
@@ -22,24 +22,16 @@ export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.fl
 export const pending: { chat: { kind: 'dm' | 'circle'; id: number } | null; feedScope: string | null } = { chat: null, feedScope: null }
 
 // ─── Network + helpers ────────────────────────────────────────
+// The request function is an ALL_CAPS const on purpose: the engine writes it to
+// constants.tsx, which the generated hooks.tsx can import (it can NOT import
+// utils.tsx, where a plain `kt` function would be emitted). `kt` stays as the
+// short alias every screen already calls.
+
+export const kt = KT_REQUEST
 
 export const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^\p{L}\p{N}\s]/gu, '').replace(/\s+/g, ' ').trim()
 
 export const shuffle = <T,>(a: T[]): T[] => { const r = [...a]; for (let i = r.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [r[i], r[j]] = [r[j], r[i]] } return r }
-
-// ─── Network + helpers ────────────────────────────────────────
-export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
-  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
-  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
-  const res = await arkzenFetch(`/api/kotoba${path}`, init)
-  let data: any = null
-  try { data = await res.json() } catch { data = null }
-  if (!res.ok) {
-    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
-    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
-  }
-  return data as T
-}
 
 export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
   const bus = (globalThis as any).__ktToast

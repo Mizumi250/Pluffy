@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — InterestPicker [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:16.477Z
+// Generated: 2026-10-27T08:59:07.207Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

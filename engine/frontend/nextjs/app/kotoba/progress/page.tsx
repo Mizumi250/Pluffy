@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/progress
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:48.682Z
+// Generated: 2026-10-27T08:59:11.331Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'
@@ -24,9 +24,9 @@ import { Sheet } from '../components/Sheet'
 import { Skeletons } from '../components/Skeletons'
 import { useApi } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
-import { kt } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 
 // Page component code (from @arkzen:page:progress)
 const ProgressPage = () => {

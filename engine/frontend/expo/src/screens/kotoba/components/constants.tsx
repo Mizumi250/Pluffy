@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — kotoba [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:16.338Z
+// Generated: 2026-10-27T08:59:06.966Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -31,3 +31,21 @@ export const LANGS = [
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 
 export const COLORS = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68']
+
+// ─── Network + helpers ────────────────────────────────────────
+// The request function is an ALL_CAPS const on purpose: the engine writes it to
+// constants.tsx, which the generated hooks.tsx can import (it can NOT import
+// utils.tsx, where a plain `kt` function would be emitted). `kt` stays as the
+// short alias every screen already calls.
+export const KT_REQUEST = async function <T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
+  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
+  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
+  const res = await arkzenFetch(`/api/kotoba${path}`, init)
+  let data: any = null
+  try { data = await res.json() } catch { data = null }
+  if (!res.ok) {
+    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
+    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
+  }
+  return data as T
+}

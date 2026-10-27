@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/feed
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:47.773Z
+// Generated: 2026-10-27T08:59:10.644Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -22,12 +22,11 @@ import { Ring } from '../components/Ring'
 import { Segmented } from '../components/Segmented'
 import { Sheet } from '../components/Sheet'
 import { Skeletons } from '../components/Skeletons'
-import { LANGS } from '../components/constants'
 import { useProfile } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
-import { kt, langName } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 
 // Page component code (from @arkzen:page:feed)
 const FeedPage = () => {

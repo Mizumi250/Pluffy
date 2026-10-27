@@ -1366,6 +1366,42 @@ return response()->json(['profile' => $p, 'series' => $series, 'stats' => $stats
 @media (prefers-reduced-motion: reduce) { .kt-main, .kt-sheet, .kt-toast, .kt-skel { animation: none; } .kt-btn, .kt-bars > div, .kt-bar > div { transition: none; } }
 /* @arkzen:web:style:end */
 
+/* @arkzen:web:script */
+
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+
+// Shared building blocks used by BOTH the generated utils.tsx and hooks.tsx.
+// The engine emits constants / utils / hooks / types as separate modules that
+// don't import each other (langName needs LANGS, useApi needs kt), so anything
+// they share lives here and is imported once by the components block below.
+
+// ─── Languages ────────────────────────────────────────────────
+export const LANGS = [
+  { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+  { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'fr', name: 'French', flag: '🇫🇷' },
+  { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'de', name: 'German', flag: '🇩🇪' },
+  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' }, { code: 'it', name: 'Italian', flag: '🇮🇹' },
+  { code: 'zh', name: 'Mandarin', flag: '🇨🇳' }, { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
+]
+export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
+export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
+
+// ─── Network ──────────────────────────────────────────────────
+export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
+  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
+  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
+  const res = await arkzenFetch(`/api/kotoba${path}`, init)
+  let data: any = null
+  try { data = await res.json() } catch { data = null }
+  if (!res.ok) {
+    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
+    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
+  }
+  return data as T
+}
+
+/* @arkzen:web:script:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'
@@ -1374,6 +1410,7 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { Heart, MessageCircle, Check, X, Plus, Languages, Sparkles, Send, PenLine, Wand2, BookmarkPlus, Trophy } from 'lucide-react'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
+import { LANGS, langName, langFlag, kt } from '@/arkzen/generated/kotoba.scripts'
 
 if (typeof window !== 'undefined') { setActiveTatemono('kotoba') }
 
@@ -1394,32 +1431,10 @@ export type KComment = {
   is_correction: boolean; corrected?: string | null; explanation?: string | null; accepted: boolean; created_at?: string
 }
 
-// ─── Languages ────────────────────────────────────────────────
-export const LANGS = [
-  { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' }, { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'zh', name: 'Mandarin', flag: '🇨🇳' }, { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
-]
+// ─── Levels & palette ─────────────────────────────────────────
+// (LANGS, langName, langFlag and kt live in the web:script block above)
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
 export const COLORS = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68']
-export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
-export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
-
-// ─── Network ──────────────────────────────────────────────────
-export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
-  const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
-  if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
-  const res = await arkzenFetch(`/api/kotoba${path}`, init)
-  let data: any = null
-  try { data = await res.json() } catch { data = null }
-  if (!res.ok) {
-    const first = data?.errors ? (Object.values(data.errors)[0] as string[] | undefined)?.[0] : undefined
-    throw new Error(first ?? data?.message ?? `Request failed (${res.status})`)
-  }
-  return data as T
-}
 
 export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('kotoba:toast', { detail: { message, kind } }))
@@ -2890,7 +2905,11 @@ export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.fl
 export const pending: { chat: { kind: 'dm' | 'circle'; id: number } | null; feedScope: string | null } = { chat: null, feedScope: null }
 
 // ─── Network + helpers ────────────────────────────────────────
-export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
+// The request function is an ALL_CAPS const on purpose: the engine writes it to
+// constants.tsx, which the generated hooks.tsx can import (it can NOT import
+// utils.tsx, where a plain `kt` function would be emitted). `kt` stays as the
+// short alias every screen already calls.
+export const KT_REQUEST = async function <T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
   const init: RequestInit = { method: opts.method ?? (opts.json !== undefined ? 'POST' : 'GET') }
   if (opts.json !== undefined) init.body = JSON.stringify(opts.json)
   const res = await arkzenFetch(`/api/kotoba${path}`, init)
@@ -2902,6 +2921,7 @@ export async function kt<T = any>(path: string, opts: { method?: string; json?: 
   }
   return data as T
 }
+export const kt = KT_REQUEST
 
 export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
   const bus = (globalThis as any).__ktToast
@@ -2943,7 +2963,7 @@ export function useApi<T = any>(path: string | null, deps: any[] = []) {
   const load = useCallback(async () => {
     if (!path) return
     setLoading(true); setError(null)
-    try { setData(await kt<T>(path)) }
+    try { setData(await KT_REQUEST<T>(path)) }
     catch (e) { setError(e instanceof Error ? e.message : 'Something went wrong') }
     finally { setLoading(false) }
   }, [path])
@@ -2966,7 +2986,7 @@ export function useRealtime(event: string, cb: (data: any) => void) {
 export function useProfile() {
   const [profile, setProfile] = useState<KProfile | null>(null)
   const load = useCallback(async () => {
-    try { const r = await kt<{ data: KProfile }>('/me'); setProfile(r.data) } catch { /* auth layout handles it */ }
+    try { const r = await KT_REQUEST<{ data: KProfile }>('/me'); setProfile(r.data) } catch { /* auth layout handles it */ }
   }, [])
   useEffect(() => { load() }, [load])
   return { profile, setProfile, reload: load }

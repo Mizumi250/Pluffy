@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/register
 // Layout: +guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:47.522Z
+// Generated: 2026-10-27T08:59:10.409Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -24,9 +24,9 @@ import { Sheet } from '../components/Sheet'
 import { Skeletons } from '../components/Skeletons'
 import { useNav } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
-import { kt } from '../components/utils'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
+import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
 
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {
