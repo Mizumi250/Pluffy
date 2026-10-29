@@ -2,15 +2,15 @@
 // ARKZEN GENERATED TYPES — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:09.990Z
+// Generated: 2026-10-29T02:08:57.950Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 
 // ─── Types ────────────────────────────────────────────────────
 export type KProfile = {
@@ -32,7 +32,7 @@ export type KComment = {
 }
 
 // ─── Levels & palette ─────────────────────────────────────────
-// (LANGS, langName, langFlag and kt live in the web:script block above)
+// (LANGS, langName and kt live in the web:script block above)
 
 // ─── Lesson player ────────────────────────────────────────────
 export type Ex = { t: 'choose' | 'type' | 'order' | 'match'; q: string; o?: string[]; a?: any; w?: string[]; p?: string[][] }

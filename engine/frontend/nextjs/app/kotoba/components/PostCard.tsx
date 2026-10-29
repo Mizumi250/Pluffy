@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — PostCard
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.040Z
+// Generated: 2026-10-29T02:08:57.982Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 import { timeAgo, toast } from './utils'
 import type { Ex, KComment, KPost, KProfile } from './types'
 import { Avatar } from './Avatar'
@@ -79,7 +79,7 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
           <div style={{ fontWeight: 600 }}>{p.author_name}</div>
           <div className="kt-sub">Native {langName(p.author_native)} · {timeAgo(p.created_at)}</div>
         </div>
-        <span className="kt-chip blue">{langFlag(p.lang)} {langName(p.lang)}</span>
+        <span className="kt-chip blue">{langName(p.lang)}</span>
         {p.kind !== 'moment' && <span className={`kt-chip ${p.kind === 'mission' ? 'orange' : 'purple'}`}>{p.kind === 'mission' ? 'Mission' : 'Question'}</span>}
       </div>
       <p onMouseUp={capture} onTouchEnd={capture} style={{ fontSize: 18, lineHeight: 1.55, margin: '14px 0 6px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{p.body}</p>
@@ -90,8 +90,8 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
         </div>
       )}
       {sel && (
-        <div className="kt-row kt-wrap" style={{ margin: '10px 0', padding: 10, borderRadius: 14, background: 'rgba(10,132,255,0.1)' }}>
-          <BookmarkPlus size={18} color="#0a84ff" />
+        <div className="kt-row kt-wrap" style={{ margin: '10px 0', padding: 10, borderRadius: 14, background: 'rgba(18, 18, 18, 0.1)' }}>
+          <BookmarkPlus size={18} color="#121212" />
           <span style={{ fontWeight: 600 }}>“{sel}”</span>
           <input className="kt-input" style={{ flex: 1, minWidth: 140, padding: '8px 12px', fontSize: 14 }} value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="What does it mean?" onKeyDown={e => { if (e.key === 'Enter') save() }} />
           <button className="kt-btn primary sm" onClick={save} disabled={!meaning.trim()}>Save to deck</button>

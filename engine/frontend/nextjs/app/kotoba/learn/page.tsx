@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/learn
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.743Z
+// Generated: 2026-10-29T02:08:58.329Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -26,8 +27,8 @@ import { useApi, useProfile } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:learn)
 const LearnPage = () => {
@@ -45,19 +46,19 @@ const LearnPage = () => {
       <div className="kt-head" style={{ marginBottom: 0 }}>
         <div><h1 className="kt-title">Learn</h1><p className="kt-subtitle">Short lessons built around phrases you will actually say.</p></div>
         <select className="kt-select" style={{ width: 'auto' }} value={active ?? ''} onChange={e => setLang(e.target.value)} aria-label="Language">
-          {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          {LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
         </select>
       </div>
-      {lessons.length > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>{langFlag(active)} {langName(active)} path</b><span className="kt-sub">{doneCount}/{lessons.length} lessons</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(doneCount / lessons.length) * 100}%` }} /></div></div>}
+      {lessons.length > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>{langName(active)} path</b><span className="kt-sub">{doneCount}/{lessons.length} lessons</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(doneCount / lessons.length) * 100}%` }} /></div></div>}
       {(loading && !data) && <Skeletons n={3} h={100} />}
-      {error && <Empty icon="📡" title="Could not load lessons" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
-      {data && lessons.length === 0 && <Empty icon="🌍" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile the fastest way to learn is to write in the community, chat with a partner and build your deck. Or try a language with lessons available." action={<div className="kt-row" style={{ justifyContent: 'center' }}>{['es', 'ja', 'en'].map(c => <button key={c} className="kt-btn tint sm" onClick={() => setLang(c)}>{langFlag(c)} {langName(c)}</button>)}</div>} />}
+      {error && <Empty icon="wifi-off" title="Could not load lessons" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
+      {data && lessons.length === 0 && <Empty icon="globe" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile the fastest way to learn is to write in the community, chat with a partner and build your deck. Or try a language with lessons available." action={<div className="kt-row" style={{ justifyContent: 'center' }}>{['es', 'ja', 'en'].map(c => <button key={c} className="kt-btn tint sm" onClick={() => setLang(c)}>{langName(c)}</button>)}</div>} />}
       {units.map(u => (
         <section key={u as string}>
           <h2 className="kt-h2" style={{ marginBottom: 12 }}>{u as string}</h2>
           <div className="kt-grid c3">{lessons.filter(l => l.unit === u).map(l => (
             <button key={l.id} className="kt-card" onClick={() => setPlaying(l)} style={{ textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit', position: 'relative' }}>
-              <div style={{ fontSize: 34 }}>{l.emoji ?? '📘'}</div>
+              <Ico n={l.emoji ?? 'book'} size={30} />
               <div style={{ fontWeight: 600, fontSize: 17, margin: '8px 0 4px' }}>{l.title}</div>
               <div className="kt-row kt-wrap"><span className="kt-chip">{l.level}</span><span className="kt-chip orange">+{l.xp} XP</span>{l.done && <span className="kt-chip green"><Check size={12} />Best {l.best}%</span>}</div>
             </button>

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — EpNavDrawer
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:36.324Z
+// Generated: 2026-10-29T02:08:53.025Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

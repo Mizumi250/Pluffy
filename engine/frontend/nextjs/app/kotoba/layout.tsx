@@ -8,7 +8,7 @@ import './styles/global.css'
 export const metadata: Metadata = {
   title: 'Kotoba — Learn languages with real people',
   description: 'A social language-learning network. Daily missions, native-speaker corrections, spaced repetition and real conversations.',
-  icons: { icon: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>💬</text></svg>" },
+  icons: { icon: 'https://api.iconify.design/lucide/languages.svg?color=%23121212' },
   openGraph: {
     type: 'website',
     title: 'Kotoba — Learn languages with real people',

@@ -5,7 +5,7 @@
 // Tatemono: kotoba
 // Type: Custom Route Controller (no model/resource)
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:routes block in the tatemono instead.
-// Generated: 2026-10-27T08:59:23.166976Z
+// Generated: 2026-10-29T02:08:59.591574Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;
@@ -27,7 +27,7 @@ class KotobaController extends Controller
         $Profile = $ns . 'Profile';
         $Post = $ns . 'Post';
         if ($Post::count() === 0) { $this->community_seed($request); }
-        $palette = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68'];
+        $palette = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a'];
         $p = $Profile::firstOrCreate(['user_id' => $u->id], ['display_name' => $u->name, 'avatar_color' => $palette[$u->id % count($palette)]]);
         return response()->json(['data' => $p, 'user' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email]]);
     }
@@ -155,9 +155,9 @@ class KotobaController extends Controller
         $Message = $ns . 'Message';
         if ($Post::count() > 0) { return response()->json(['seeded' => false]); }
         $people = [
-            'aiko@kotoba.app' => ['Aiko Tanaka', 'ja', 'en', 'A2', 'Japan', 'Osaka native. I love ramen, film cameras and teaching Japanese.', 'travel,food,photography', '#ff375f', 240, 12],
-            'mateo@kotoba.app' => ['Mateo Rivera', 'es', 'en', 'B1', 'Mexico', 'From Mexico City. Football, tacos and bad puns in two languages.', 'football,food,music', '#30d158', 180, 6],
-            'sofia@kotoba.app' => ['Sofia Laurent', 'en', 'ja', 'A2', 'Canada', 'English teacher learning Japanese. Coffee first, grammar second.', 'books,coffee,anime', '#bf5af2', 320, 21],
+            'aiko@kotoba.app' => ['Aiko Tanaka', 'ja', 'en', 'A2', 'Japan', 'Osaka native. I love ramen, film cameras and teaching Japanese.', 'travel,food,photography', '#7a3b34', 240, 12],
+            'mateo@kotoba.app' => ['Mateo Rivera', 'es', 'en', 'B1', 'Mexico', 'From Mexico City. Football, tacos and bad puns in two languages.', 'football,food,music', '#3f6b4f', 180, 6],
+            'sofia@kotoba.app' => ['Sofia Laurent', 'en', 'ja', 'A2', 'Canada', 'English teacher learning Japanese. Coffee first, grammar second.', 'books,coffee,anime', '#4a4a4a', 320, 21],
         ];
         $by = [];
         foreach ($people as $email => $d) {
@@ -203,9 +203,9 @@ class KotobaController extends Controller
             $Follow::firstOrCreate(['follower_id' => $by['sofia@kotoba.app']->user_id, 'following_id' => $by['aiko@kotoba.app']->user_id]);
         }
         $circles = [
-            ['English Morning Club', '☀️', 'en', 'A2', 'Short daily check-ins in English. Be kind and correct gently.', 'sofia@kotoba.app'],
-            ['Japanese for Beginners', '🌸', 'ja', 'A1', 'Hiragana, greetings and first sentences. Ask anything.', 'aiko@kotoba.app'],
-            ['Spanish Cafe Talk', '☕', 'es', 'A2', 'Relaxed conversation practice over virtual coffee.', 'mateo@kotoba.app'],
+            ['English Morning Club', 'sun', 'en', 'A2', 'Short daily check-ins in English. Be kind and correct gently.', 'sofia@kotoba.app'],
+            ['Japanese for Beginners', 'flower', 'ja', 'A1', 'Hiragana, greetings and first sentences. Ask anything.', 'aiko@kotoba.app'],
+            ['Spanish Cafe Talk', 'coffee', 'es', 'A2', 'Relaxed conversation practice over virtual coffee.', 'mateo@kotoba.app'],
         ];
         foreach ($circles as $c) {
             if (!isset($by[$c[5]])) { continue; }
@@ -621,7 +621,7 @@ class KotobaController extends Controller
             $pr = $profiles->get($other);
             return [
                 'id' => $c->id, 'last_message' => $c->last_message, 'last_at' => $c->last_at,
-                'with' => $pr ? $pr->toArray() : ['user_id' => $other, 'display_name' => 'Member', 'avatar_color' => '#8e8e93'],
+                'with' => $pr ? $pr->toArray() : ['user_id' => $other, 'display_name' => 'Member', 'avatar_color' => '#6b655b'],
             ];
         })->values();
         return response()->json(['data' => $data]);
@@ -772,11 +772,11 @@ class KotobaController extends Controller
         $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
         $Circle = $ns . 'Circle'; $Member = $ns . 'CircleMember';
         $data = $request->validate([
-            'name' => 'required|string|max:80', 'emoji' => 'sometimes|nullable|string|max:8', 'lang' => 'required|string|max:8',
+            'name' => 'required|string|max:80', 'emoji' => 'sometimes|nullable|string|max:24', 'lang' => 'required|string|max:8',
             'level' => 'sometimes|string|in:A1,A2,B1,B2,C1,C2', 'description' => 'sometimes|nullable|string|max:400',
         ]);
         $c = $Circle::create([
-            'name' => $data['name'], 'emoji' => $data['emoji'] ?? '💬', 'lang' => $data['lang'], 'level' => $data['level'] ?? 'A1',
+            'name' => $data['name'], 'emoji' => $data['emoji'] ?? 'message-circle', 'lang' => $data['lang'], 'level' => $data['level'] ?? 'A1',
             'description' => $data['description'] ?? null, 'owner_id' => $u->id, 'members_count' => 1,
         ]);
         $Member::create(['circle_id' => $c->id, 'user_id' => $u->id]);

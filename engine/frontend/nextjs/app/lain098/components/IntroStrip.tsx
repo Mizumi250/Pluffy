@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — IntroStrip
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:56.084Z
+// Generated: 2026-10-29T02:09:01.142Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

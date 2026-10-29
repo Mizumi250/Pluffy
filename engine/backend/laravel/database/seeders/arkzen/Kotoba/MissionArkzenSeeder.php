@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — MissionArkzenSeeder
 // Tatemono: kotoba  |  Connection: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:28.338751Z
+// Generated: 2026-10-29T02:09:00.721091Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\Kotoba;

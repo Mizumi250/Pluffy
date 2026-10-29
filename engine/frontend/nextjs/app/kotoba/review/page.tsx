@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/review
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.850Z
+// Generated: 2026-10-29T02:08:58.385Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -27,8 +28,8 @@ import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { shuffle, toast } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:review)
 const ReviewPage = () => {
@@ -82,7 +83,7 @@ const ReviewPage = () => {
     catch (e) { toast(e instanceof Error ? e.message : 'Failed', 'err') }
   }
   const remove = async (id: number) => { try { await kt(`/vocab/${id}`, { method: 'DELETE' }); setDeck(d => d.filter(x => x.id !== id)) } catch { toast('Could not delete', 'err') } }
-  const hints = card ? [['Again', '#ff453a', 'now'], ['Hard', '#ff9f0a', card.reps === 0 ? '1d' : 'soon'], ['Good', '#0a84ff', card.reps === 0 ? '1d' : card.reps === 1 ? '4d' : `${Math.max(1, Math.round((card.interval_days || 1) * card.ease))}d`], ['Easy', '#30d158', card.reps === 0 ? '3d' : card.reps === 1 ? '7d' : `${Math.max(2, Math.round((card.interval_days || 1) * card.ease * 1.3))}d`]] : []
+  const hints = card ? [['Again', '#9b3b34', 'now'], ['Hard', '#8a6a2f', card.reps === 0 ? '1d' : 'soon'], ['Good', '#121212', card.reps === 0 ? '1d' : card.reps === 1 ? '4d' : `${Math.max(1, Math.round((card.interval_days || 1) * card.ease))}d`], ['Easy', '#3f6b4f', card.reps === 0 ? '3d' : card.reps === 1 ? '7d' : `${Math.max(2, Math.round((card.interval_days || 1) * card.ease * 1.3))}d`]] : []
 
   return (
     <div className="kt-stack" style={{ gap: 22 }}>
@@ -94,25 +95,25 @@ const ReviewPage = () => {
       {tab === 'review' && (loading ? <Skeletons n={1} h={280} /> : card ? (
         <div className="kt-stack" style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
           <div className="kt-bar"><div style={{ width: `${(reviewed / Math.max(1, reviewed + queue.length)) * 100}%` }} /></div>
-          <button className="kt-card kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
+          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
             <div>
-              <span className="kt-chip blue">{langFlag(card.lang)} {langName(card.lang)}</span>
-              <div style={{ fontSize: 40, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em' }}>{card.term}</div>
-              {flipped ? <div><div style={{ fontSize: 24, color: 'var(--kt-blue)' }}>{card.meaning}</div>{card.example && <p className="kt-sub" style={{ maxWidth: 420, margin: '14px auto 0', fontStyle: 'italic' }}>“{card.example.slice(0, 160)}”</p>}</div> : <div className="kt-sub">Tap or press space to reveal</div>}
+              <span className="kt-chip">{langName(card.lang)}</span>
+              <div style={{ fontSize: 44, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em', fontFamily: ['ja', 'zh', 'ko'].includes(card.lang) ? 'var(--kt-serif)' : undefined }}>{card.term}</div>
+              {flipped ? <div><div style={{ fontSize: 24, opacity: 0.75 }}>{card.meaning}</div>{card.example && <p className="kt-sub" style={{ maxWidth: 420, margin: '14px auto 0', fontStyle: 'italic' }}>“{card.example.slice(0, 160)}”</p>}</div> : <div className="kt-sub">Tap or press space to reveal</div>}
             </div>
           </button>
           {flipped ? <div className="kt-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>{hints.map((h, n) => <button key={h[0]} className="kt-btn" style={{ height: 62, flexDirection: 'column', gap: 2, color: h[1] }} onClick={() => grade(n)}><span>{h[0]}</span><span className="kt-sub" style={{ fontSize: 11 }}>{h[2]}</span></button>)}</div> : <button className="kt-btn primary block" onClick={() => setFlipped(true)}>Show answer</button>}
         </div>
       ) : (
-        <Empty icon="🎉" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, select words in the community feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Come back tomorrow, your next cards are scheduled.`} action={<button className="kt-btn primary" onClick={() => setTab('add')}>Add a word</button>} />
+        <Empty icon="party-popper" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, select words in the community feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Come back tomorrow, your next cards are scheduled.`} action={<button className="kt-btn primary" onClick={() => setTab('add')}>Add a word</button>} />
       ))}
 
       {tab === 'deck' && (
         <div className="kt-stack">
           <input className="kt-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Search your deck" aria-label="Search deck" />
-          {deck.length === 0 ? <Empty icon="🗂️" title="No cards found" /> : <div className="kt-list">{deck.map(c => (
+          {deck.length === 0 ? <Empty icon="layers" title="No cards found" /> : <div className="kt-list">{deck.map(c => (
             <div key={c.id} className="kt-item" style={{ cursor: 'default' }}>
-              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600 }}>{c.term} <span className="kt-chip">{langFlag(c.lang)}</span></div><div className="kt-sub">{c.meaning}</div></div>
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600 }}>{c.term} <span className="kt-chip">{c.lang.toUpperCase()}</span></div><div className="kt-sub">{c.meaning}</div></div>
               <span className={`kt-chip ${c.reps >= 4 ? 'green' : c.reps > 0 ? 'blue' : ''}`}>{c.reps >= 4 ? 'Mastered' : c.reps > 0 ? `${c.reps}x` : 'New'}</span>
               <button className="kt-icon-btn" aria-label={`Delete ${c.term}`} onClick={() => remove(c.id)}><X size={16} /></button>
             </div>

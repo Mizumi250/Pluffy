@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — TimeRecord
 // Tatemono: dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:32.727121Z
+// Generated: 2026-10-29T02:08:52.058059Z
 // ============================================================
 
 namespace App\Models\Arkzen\DtrGeofencing;

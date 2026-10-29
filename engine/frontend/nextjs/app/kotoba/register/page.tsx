@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/register
 // Layout: +guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.409Z
+// Generated: 2026-10-29T02:08:58.178Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -26,7 +27,7 @@ import { useNav } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
 
 // Page component code (from @arkzen:page:register)
 const RegisterPage = () => {
@@ -43,12 +44,13 @@ const RegisterPage = () => {
     try { await register(name, email, password, confirm) } catch (err) { setError(err instanceof Error ? err.message : 'Unable to create account') }
   }
   return (
-    <div className="kt-hero" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20, fontFamily: 'var(--kt-font)', color: 'var(--kt-text)' }}>
-      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 400, padding: 32, borderRadius: 28 }}>
-        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><div className="kt-brand-mark">言</div>Kotoba</div>
+    <div className="kt-hero kt-split" style={{ minHeight: '100vh', color: 'var(--kt-text)' }}>
+      <div style={{ display: 'grid', placeItems: 'center', padding: 20 }}>
+      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 420, padding: 36, borderRadius: 36 }}>
+        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         <h1 className="kt-title" style={{ fontSize: 28 }}>Create your account</h1>
         <p className="kt-sub" style={{ margin: '6px 0 20px' }}>Free forever. Takes under a minute.</p>
-        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(255,69,58,0.14)', color: 'var(--kt-red)', padding: '10px 12px', borderRadius: 12, marginBottom: 14, fontSize: 14 }}>{error}</div>}
+        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(155, 59, 52, 0.12)', color: 'var(--kt-red)', padding: '10px 14px', borderRadius: 16, marginBottom: 14, fontSize: 14 }}>{error}</div>}
         <div className="kt-stack">
           <div><label className="kt-label" htmlFor="kt-name">Name</label><input id="kt-name" className="kt-input" autoComplete="name" required value={name} onChange={e => setName(e.target.value)} /></div>
           <div><label className="kt-label" htmlFor="kt-email">Email</label><input id="kt-email" className="kt-input" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
@@ -58,6 +60,8 @@ const RegisterPage = () => {
         </div>
         <p className="kt-sub" style={{ textAlign: 'center', marginTop: 18 }}>Already learning with us? <a style={{ color: 'var(--kt-blue)', cursor: 'pointer' }} onClick={() => nav.go('login')}>Sign in</a></p>
       </form>
+      </div>
+      <div className="kt-hide-m" style={{ padding: 20 }}><div className="kt-hero-art" style={{ height: '100%', aspectRatio: 'auto' }}><img className="kt-photo" src="https://picsum.photos/seed/kotoba-words/900/1125?grayscale" alt="" /></div></div>
     </div>
   )
 }

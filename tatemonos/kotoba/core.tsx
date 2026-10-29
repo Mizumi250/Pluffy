@@ -12,7 +12,7 @@ auth_seed:
 */
 
 /* @arkzen:meta:web
-favicon: 💬
+favicon: "https://api.iconify.design/lucide/languages.svg?color=%23121212"
 title: Kotoba — Learn languages with real people
 description: A social language-learning network. Daily missions, native-speaker corrections, spaced repetition and real conversations.
 */
@@ -36,11 +36,11 @@ toast:
 
 /* @arkzen:native:config
 theme:
-  primary: "#0a84ff"
-  background: "#f2f2f7"
-  surface: "#ffffff"
-  text: "#1c1c1e"
-  muted: "#8e8e93"
+  primary: "#121212"
+  background: "#e9e4da"
+  surface: "#f5f1e9"
+  text: "#121212"
+  muted: "#6b655b"
 */
 
 /* @arkzen:desktop:config
@@ -67,7 +67,7 @@ columns:
   level: { type: string, length: 4, default: A1 }
   country: { type: string, length: 80, nullable: true }
   interests: { type: string, length: 500, nullable: true }
-  avatar_color: { type: string, length: 16, default: "#0a84ff" }
+  avatar_color: { type: string, length: 16, default: "#121212" }
   xp: { type: integer, default: 0 }
   streak: { type: integer, default: 0 }
   best_streak: { type: integer, default: 0 }
@@ -166,7 +166,7 @@ columns:
   lang: { type: string, length: 8, nullable: false }
   unit: { type: string, length: 80, nullable: false }
   title: { type: string, length: 120, nullable: false }
-  emoji: { type: string, length: 8, nullable: true }
+  emoji: { type: string, length: 24, nullable: true }
   level: { type: string, length: 4, default: A1 }
   position: { type: integer, default: 0 }
   xp: { type: integer, default: 15 }
@@ -177,7 +177,7 @@ seeder:
     - lang: es
       unit: Basics
       title: Greetings
-      emoji: 👋
+      emoji: hand
       level: A1
       position: 1
       xp: 15
@@ -185,7 +185,7 @@ seeder:
     - lang: es
       unit: Basics
       title: Introductions
-      emoji: 🤝
+      emoji: handshake
       level: A1
       position: 2
       xp: 15
@@ -193,7 +193,7 @@ seeder:
     - lang: es
       unit: Food
       title: At the cafe
-      emoji: ☕
+      emoji: coffee
       level: A1
       position: 3
       xp: 20
@@ -201,7 +201,7 @@ seeder:
     - lang: ja
       unit: Basics
       title: Greetings
-      emoji: 🌸
+      emoji: flower
       level: A1
       position: 1
       xp: 15
@@ -209,7 +209,7 @@ seeder:
     - lang: ja
       unit: Basics
       title: Introductions
-      emoji: 🎎
+      emoji: users
       level: A1
       position: 2
       xp: 15
@@ -217,7 +217,7 @@ seeder:
     - lang: ja
       unit: Food
       title: Food and drink
-      emoji: 🍙
+      emoji: utensils
       level: A1
       position: 3
       xp: 20
@@ -225,7 +225,7 @@ seeder:
     - lang: en
       unit: Conversation
       title: Greetings and small talk
-      emoji: 💬
+      emoji: message-circle
       level: A1
       position: 1
       xp: 15
@@ -233,7 +233,7 @@ seeder:
     - lang: en
       unit: Everyday life
       title: Daily routine
-      emoji: ⏰
+      emoji: clock
       level: A2
       position: 2
       xp: 20
@@ -241,7 +241,7 @@ seeder:
     - lang: en
       unit: Everyday life
       title: Talking about the past
-      emoji: ⏪
+      emoji: history
       level: A2
       position: 3
       xp: 20
@@ -315,7 +315,7 @@ timestamps: true
 columns:
   id: { type: integer, primary: true, autoIncrement: true }
   name: { type: string, length: 80, nullable: false }
-  emoji: { type: string, length: 8, default: "💬" }
+  emoji: { type: string, length: 24, default: "message-circle" }
   lang: { type: string, length: 8, nullable: false }
   level: { type: string, length: 4, default: A1 }
   description: { type: text, nullable: true }
@@ -537,7 +537,7 @@ $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Profile = $ns . 'Profile';
 $Post = $ns . 'Post';
 if ($Post::count() === 0) { $this->community_seed($request); }
-$palette = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68'];
+$palette = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a'];
 $p = $Profile::firstOrCreate(['user_id' => $u->id], ['display_name' => $u->name, 'avatar_color' => $palette[$u->id % count($palette)]]);
 return response()->json(['data' => $p, 'user' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email]]);
 /* @arkzen:handler:me:end */
@@ -616,9 +616,9 @@ $Member = $ns . 'CircleMember';
 $Message = $ns . 'Message';
 if ($Post::count() > 0) { return response()->json(['seeded' => false]); }
 $people = [
-    'aiko@kotoba.app' => ['Aiko Tanaka', 'ja', 'en', 'A2', 'Japan', 'Osaka native. I love ramen, film cameras and teaching Japanese.', 'travel,food,photography', '#ff375f', 240, 12],
-    'mateo@kotoba.app' => ['Mateo Rivera', 'es', 'en', 'B1', 'Mexico', 'From Mexico City. Football, tacos and bad puns in two languages.', 'football,food,music', '#30d158', 180, 6],
-    'sofia@kotoba.app' => ['Sofia Laurent', 'en', 'ja', 'A2', 'Canada', 'English teacher learning Japanese. Coffee first, grammar second.', 'books,coffee,anime', '#bf5af2', 320, 21],
+    'aiko@kotoba.app' => ['Aiko Tanaka', 'ja', 'en', 'A2', 'Japan', 'Osaka native. I love ramen, film cameras and teaching Japanese.', 'travel,food,photography', '#7a3b34', 240, 12],
+    'mateo@kotoba.app' => ['Mateo Rivera', 'es', 'en', 'B1', 'Mexico', 'From Mexico City. Football, tacos and bad puns in two languages.', 'football,food,music', '#3f6b4f', 180, 6],
+    'sofia@kotoba.app' => ['Sofia Laurent', 'en', 'ja', 'A2', 'Canada', 'English teacher learning Japanese. Coffee first, grammar second.', 'books,coffee,anime', '#4a4a4a', 320, 21],
 ];
 $by = [];
 foreach ($people as $email => $d) {
@@ -664,9 +664,9 @@ if (isset($by['aiko@kotoba.app']) && isset($by['sofia@kotoba.app'])) {
     $Follow::firstOrCreate(['follower_id' => $by['sofia@kotoba.app']->user_id, 'following_id' => $by['aiko@kotoba.app']->user_id]);
 }
 $circles = [
-    ['English Morning Club', '☀️', 'en', 'A2', 'Short daily check-ins in English. Be kind and correct gently.', 'sofia@kotoba.app'],
-    ['Japanese for Beginners', '🌸', 'ja', 'A1', 'Hiragana, greetings and first sentences. Ask anything.', 'aiko@kotoba.app'],
-    ['Spanish Cafe Talk', '☕', 'es', 'A2', 'Relaxed conversation practice over virtual coffee.', 'mateo@kotoba.app'],
+    ['English Morning Club', 'sun', 'en', 'A2', 'Short daily check-ins in English. Be kind and correct gently.', 'sofia@kotoba.app'],
+    ['Japanese for Beginners', 'flower', 'ja', 'A1', 'Hiragana, greetings and first sentences. Ask anything.', 'aiko@kotoba.app'],
+    ['Spanish Cafe Talk', 'coffee', 'es', 'A2', 'Relaxed conversation practice over virtual coffee.', 'mateo@kotoba.app'],
 ];
 foreach ($circles as $c) {
     if (!isset($by[$c[5]])) { continue; }
@@ -1033,7 +1033,7 @@ $data = $rows->map(function ($c) use ($u, $profiles) {
     $pr = $profiles->get($other);
     return [
         'id' => $c->id, 'last_message' => $c->last_message, 'last_at' => $c->last_at,
-        'with' => $pr ? $pr->toArray() : ['user_id' => $other, 'display_name' => 'Member', 'avatar_color' => '#8e8e93'],
+        'with' => $pr ? $pr->toArray() : ['user_id' => $other, 'display_name' => 'Member', 'avatar_color' => '#6b655b'],
     ];
 })->values();
 return response()->json(['data' => $data]);
@@ -1159,11 +1159,11 @@ $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Circle = $ns . 'Circle'; $Member = $ns . 'CircleMember';
 $data = $request->validate([
-    'name' => 'required|string|max:80', 'emoji' => 'sometimes|nullable|string|max:8', 'lang' => 'required|string|max:8',
+    'name' => 'required|string|max:80', 'emoji' => 'sometimes|nullable|string|max:24', 'lang' => 'required|string|max:8',
     'level' => 'sometimes|string|in:A1,A2,B1,B2,C1,C2', 'description' => 'sometimes|nullable|string|max:400',
 ]);
 $c = $Circle::create([
-    'name' => $data['name'], 'emoji' => $data['emoji'] ?? '💬', 'lang' => $data['lang'], 'level' => $data['level'] ?? 'A1',
+    'name' => $data['name'], 'emoji' => $data['emoji'] ?? 'message-circle', 'lang' => $data['lang'], 'level' => $data['level'] ?? 'A1',
     'description' => $data['description'] ?? null, 'owner_id' => $u->id, 'members_count' => 1,
 ]);
 $Member::create(['circle_id' => $c->id, 'user_id' => $u->id]);
@@ -1243,41 +1243,47 @@ return response()->json(['profile' => $p, 'series' => $series, 'stats' => $stats
 /* @arkzen:handler:progress:end */
 
 /* @arkzen:web:style */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+JP:wght@500;700&display=swap');
 :root {
-  --kt-bg: #f5f5f7; --kt-surface: #ffffff; --kt-surface2: #f2f2f7; --kt-text: #1d1d1f; --kt-sub: #6e6e73;
-  --kt-line: rgba(60, 60, 67, 0.14); --kt-blue: #0a84ff; --kt-green: #30d158; --kt-orange: #ff9f0a;
-  --kt-red: #ff453a; --kt-purple: #bf5af2; --kt-glass: rgba(255, 255, 255, 0.72);
-  --kt-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 30px rgba(0, 0, 0, 0.06);
-  --kt-font: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Segoe UI", Inter, system-ui, sans-serif;
+  --kt-bg: #e9e4da; --kt-surface: #f5f1e9; --kt-surface2: #e0d9cb; --kt-text: #121212; --kt-sub: #6b655b;
+  --kt-line: rgba(18, 18, 18, 0.12); --kt-blue: #121212; --kt-on-blue: #f5f1e9; --kt-green: #3f6b4f; --kt-orange: #8a6a2f;
+  --kt-red: #9b3b34; --kt-purple: #4a4a4a; --kt-glass: rgba(233, 228, 218, 0.82); --kt-dark: #121212; --kt-on-dark: #efe9dc;
+  --kt-shadow: 0 1px 2px rgba(18, 18, 18, 0.04), 0 14px 40px rgba(18, 18, 18, 0.07);
+  --kt-logo-filter: none;
+  --kt-paper: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .18 0 0 0 0 .14 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --kt-font: 'Plus Jakarta Sans', 'Segoe UI', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --kt-serif: 'Noto Serif JP', 'Hiragino Mincho ProN', 'Yu Mincho', serif;
   --kt-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --kt-bg: #000000; --kt-surface: #1c1c1e; --kt-surface2: #2c2c2e; --kt-text: #f5f5f7; --kt-sub: #a1a1a6;
-    --kt-line: rgba(235, 235, 245, 0.16); --kt-glass: rgba(28, 28, 30, 0.72);
-    --kt-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 8px 30px rgba(0, 0, 0, 0.5);
+    --kt-bg: #0e0d0b; --kt-surface: #1a1916; --kt-surface2: #2a2824; --kt-text: #efe9dc; --kt-sub: #a39c8f;
+    --kt-line: rgba(239, 233, 220, 0.14); --kt-blue: #efe9dc; --kt-on-blue: #121212; --kt-green: #7fb08f; --kt-orange: #c9a45f;
+    --kt-red: #d9776e; --kt-purple: #b8b8b8; --kt-glass: rgba(14, 13, 11, 0.82); --kt-dark: #efe9dc; --kt-on-dark: #121212;
+    --kt-shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 14px 40px rgba(0, 0, 0, 0.5);
+    --kt-logo-filter: invert(1);
   }
 }
-.kt-shell { display: flex; min-height: 100vh; background: var(--kt-bg); color: var(--kt-text); font-family: var(--kt-font); -webkit-font-smoothing: antialiased; }
+.kt-shell { display: flex; min-height: 100vh; background-color: var(--kt-bg); background-image: var(--kt-paper); color: var(--kt-text); font-family: var(--kt-font); -webkit-font-smoothing: antialiased; }
 .kt-shell * { box-sizing: border-box; }
-.kt-side { width: 256px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; padding: 20px 14px; display: flex; flex-direction: column; gap: 4px; background: var(--kt-glass); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border-right: 1px solid var(--kt-line); }
-.kt-brand { display: flex; align-items: center; gap: 10px; padding: 6px 12px 18px; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-.kt-brand-mark { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; color: #fff; font-size: 15px; background: linear-gradient(135deg, #0a84ff, #bf5af2); }
-.kt-nav { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 12px; font-size: 15px; font-weight: 500; color: var(--kt-text); cursor: pointer; border: 0; background: transparent; width: 100%; text-align: left; transition: background 0.15s var(--kt-ease), transform 0.15s var(--kt-ease); }
+.kt-logo { width: 28px; height: 28px; display: block; filter: var(--kt-logo-filter); }
+.kt-side { width: 264px; flex-shrink: 0; position: sticky; top: 0; height: 100vh; padding: 24px 16px; display: flex; flex-direction: column; gap: 4px; background: var(--kt-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-right: 1px solid var(--kt-line); }
+.kt-brand { display: flex; align-items: center; gap: 10px; padding: 6px 12px 22px; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.kt-nav { display: flex; align-items: center; gap: 12px; padding: 11px 14px; border-radius: 999px; font-family: inherit; font-size: 15px; font-weight: 500; color: var(--kt-text); cursor: pointer; border: 0; background: transparent; width: 100%; text-align: left; transition: background 0.15s var(--kt-ease), color 0.15s var(--kt-ease); }
 .kt-nav:hover { background: var(--kt-surface2); }
-.kt-nav.active { background: var(--kt-blue); color: #fff; }
-.kt-nav .kt-badge { margin-left: auto; }
-.kt-badge { min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--kt-red); color: #fff; font-size: 12px; font-weight: 600; display: inline-grid; place-items: center; }
-.kt-main { flex: 1; min-width: 0; width: 100%; max-width: 1040px; margin: 0 auto; padding: 36px 40px 96px; animation: kt-in 0.4s var(--kt-ease); }
+.kt-nav.active { background: var(--kt-blue); color: var(--kt-on-blue); }
+.kt-main { flex: 1; min-width: 0; width: 100%; max-width: 1040px; margin: 0 auto; padding: 40px 44px 96px; animation: kt-in 0.4s var(--kt-ease); }
 @keyframes kt-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 .kt-tabbar { display: none; }
-.kt-title { font-size: 34px; line-height: 1.1; font-weight: 700; letter-spacing: -0.03em; margin: 0; }
-.kt-subtitle { font-size: 17px; color: var(--kt-sub); margin: 6px 0 0; line-height: 1.4; }
-.kt-h2 { font-size: 22px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
-.kt-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
-.kt-sub { color: var(--kt-sub); font-size: 14px; }
-.kt-card { background: var(--kt-surface); border-radius: 22px; box-shadow: var(--kt-shadow); padding: 20px; border: 1px solid var(--kt-line); }
-.kt-card.flat { box-shadow: none; }
+.kt-title { font-size: 40px; line-height: 1.05; font-weight: 800; letter-spacing: -0.04em; margin: 0; }
+.kt-subtitle { font-size: 17px; font-weight: 400; color: var(--kt-sub); margin: 8px 0 0; line-height: 1.5; }
+.kt-h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.025em; margin: 0; }
+.kt-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 28px; flex-wrap: wrap; }
+.kt-sub { color: var(--kt-sub); font-size: 14px; font-weight: 400; }
+.kt-card { background: var(--kt-surface); border-radius: 28px; box-shadow: var(--kt-shadow); padding: 22px; border: 1px solid var(--kt-line); }
+.kt-card.flat { box-shadow: none; background: transparent; border-style: dashed; }
+.kt-card.dark { background: var(--kt-dark); color: var(--kt-on-dark); border-color: transparent; }
+.kt-card.dark .kt-sub { color: var(--kt-on-dark); opacity: 0.6; }
 .kt-grid { display: grid; gap: 16px; }
 .kt-grid.c2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 .kt-grid.c3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
@@ -1286,84 +1292,95 @@ return response()->json(['profile' => $p, 'series' => $series, 'stats' => $stats
 .kt-row { display: flex; align-items: center; gap: 12px; }
 .kt-between { justify-content: space-between; }
 .kt-wrap { flex-wrap: wrap; }
-.kt-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 44px; padding: 0 20px; border-radius: 14px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.15s var(--kt-ease), opacity 0.15s, background 0.15s; background: var(--kt-surface2); color: var(--kt-text); }
+.kt-btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 46px; padding: 0 24px; border-radius: 999px; border: 0; font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.15s var(--kt-ease), opacity 0.15s, background 0.15s; background: var(--kt-surface2); color: var(--kt-text); }
 .kt-btn:active { transform: scale(0.97); }
-.kt-btn:disabled { opacity: 0.45; cursor: not-allowed; }
-.kt-btn.primary { background: var(--kt-blue); color: #fff; }
-.kt-btn.tint { background: rgba(10, 132, 255, 0.14); color: var(--kt-blue); }
-.kt-btn.ghost { background: transparent; color: var(--kt-blue); }
-.kt-btn.danger { background: rgba(255, 69, 58, 0.14); color: var(--kt-red); }
-.kt-btn.sm { height: 34px; padding: 0 14px; font-size: 14px; border-radius: 11px; }
+.kt-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.kt-btn.primary { background: var(--kt-blue); color: var(--kt-on-blue); }
+.kt-btn.tint { background: transparent; color: var(--kt-text); box-shadow: inset 0 0 0 1.5px var(--kt-text); }
+.kt-btn.ghost { background: transparent; color: var(--kt-text); }
+.kt-btn.danger { background: transparent; color: var(--kt-red); box-shadow: inset 0 0 0 1.5px var(--kt-red); }
+.kt-btn.sm { height: 36px; padding: 0 16px; font-size: 14px; }
 .kt-btn.block { width: 100%; }
-.kt-icon-btn { width: 36px; height: 36px; border-radius: 50%; border: 0; display: inline-grid; place-items: center; background: var(--kt-surface2); color: var(--kt-text); cursor: pointer; position: relative; }
-.kt-input, .kt-textarea, .kt-select { width: 100%; border: 1px solid var(--kt-line); background: var(--kt-surface2); color: var(--kt-text); border-radius: 14px; padding: 12px 14px; font-family: inherit; font-size: 16px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
-.kt-input:focus, .kt-textarea:focus, .kt-select:focus { border-color: var(--kt-blue); box-shadow: 0 0 0 4px rgba(10, 132, 255, 0.18); }
+.kt-icon-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; display: inline-grid; place-items: center; background: var(--kt-surface2); color: var(--kt-text); cursor: pointer; position: relative; font-family: inherit; }
+.kt-fab { width: 64px; height: 64px; border-radius: 50%; border: 0; display: inline-grid; place-items: center; background: var(--kt-dark); color: var(--kt-on-dark); cursor: pointer; transition: transform 0.2s var(--kt-ease); }
+.kt-fab:hover { transform: scale(1.05); }
+.kt-input, .kt-textarea, .kt-select { width: 100%; border: 1px solid var(--kt-line); background: var(--kt-surface); color: var(--kt-text); border-radius: 18px; padding: 13px 16px; font-family: inherit; font-size: 16px; outline: none; transition: border-color 0.15s, box-shadow 0.15s; }
+.kt-input:focus, .kt-textarea:focus, .kt-select:focus { border-color: var(--kt-text); box-shadow: 0 0 0 4px var(--kt-line); }
 .kt-textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
-.kt-label { display: block; font-size: 13px; font-weight: 600; color: var(--kt-sub); margin: 0 0 6px 4px; text-transform: uppercase; letter-spacing: 0.04em; }
-.kt-seg { display: inline-flex; padding: 3px; border-radius: 12px; background: var(--kt-surface2); gap: 2px; max-width: 100%; overflow-x: auto; }
-.kt-seg button { border: 0; background: transparent; color: var(--kt-text); font-family: inherit; font-size: 14px; font-weight: 500; padding: 7px 14px; border-radius: 9px; cursor: pointer; white-space: nowrap; transition: background 0.2s var(--kt-ease); }
-.kt-seg button.on { background: var(--kt-surface); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12); font-weight: 600; }
-.kt-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--kt-surface2); color: var(--kt-sub); }
-.kt-chip.blue { background: rgba(10, 132, 255, 0.14); color: var(--kt-blue); }
-.kt-chip.green { background: rgba(48, 209, 88, 0.16); color: #22a847; }
-.kt-chip.orange { background: rgba(255, 159, 10, 0.18); color: #c77700; }
-.kt-chip.purple { background: rgba(191, 90, 242, 0.16); color: var(--kt-purple); }
-.kt-avatar { border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 700; flex-shrink: 0; user-select: none; }
-.kt-list { background: var(--kt-surface); border-radius: 18px; border: 1px solid var(--kt-line); overflow: hidden; }
-.kt-item { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-bottom: 1px solid var(--kt-line); width: 100%; background: transparent; border-left: 0; border-right: 0; border-top: 0; text-align: left; font-family: inherit; color: inherit; cursor: pointer; }
+.kt-label { display: block; font-size: 11px; font-weight: 600; color: var(--kt-sub); margin: 0 0 8px 4px; text-transform: uppercase; letter-spacing: 0.1em; }
+.kt-seg { display: inline-flex; padding: 4px; border-radius: 999px; background: var(--kt-surface2); gap: 2px; max-width: 100%; overflow-x: auto; }
+.kt-seg button { border: 0; background: transparent; color: var(--kt-text); font-family: inherit; font-size: 14px; font-weight: 500; padding: 8px 16px; border-radius: 999px; cursor: pointer; white-space: nowrap; transition: background 0.2s var(--kt-ease); }
+.kt-seg button.on { background: var(--kt-blue); color: var(--kt-on-blue); font-weight: 600; }
+.kt-chip { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; background: var(--kt-surface2); color: var(--kt-sub); }
+.kt-chip.blue { background: var(--kt-blue); color: var(--kt-on-blue); }
+.kt-chip.green { background: transparent; color: var(--kt-green); box-shadow: inset 0 0 0 1.5px var(--kt-green); }
+.kt-chip.orange { background: transparent; color: var(--kt-orange); box-shadow: inset 0 0 0 1.5px var(--kt-orange); }
+.kt-chip.purple { background: transparent; color: var(--kt-purple); box-shadow: inset 0 0 0 1.5px var(--kt-purple); }
+.kt-avatar { border-radius: 50%; display: grid; place-items: center; color: #f5f1e9; font-weight: 700; flex-shrink: 0; user-select: none; }
+.kt-list { background: var(--kt-surface); border-radius: 24px; border: 1px solid var(--kt-line); overflow: hidden; }
+.kt-item { display: flex; align-items: center; gap: 12px; padding: 15px 18px; border-bottom: 1px solid var(--kt-line); width: 100%; background: transparent; border-left: 0; border-right: 0; border-top: 0; text-align: left; font-family: inherit; color: inherit; cursor: pointer; }
 .kt-item:last-child { border-bottom: 0; }
 .kt-item:hover { background: var(--kt-surface2); }
-.kt-item.on { background: rgba(10, 132, 255, 0.1); }
-.kt-sheet-back { position: fixed; inset: 0; z-index: 80; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; animation: kt-fade 0.25s ease; }
+.kt-item.on { background: var(--kt-surface2); }
+.kt-sheet-back { position: fixed; inset: 0; z-index: 80; background: rgba(18, 18, 18, 0.45); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); display: flex; align-items: center; justify-content: center; padding: 16px; animation: kt-fade 0.25s ease; }
 @keyframes kt-fade { from { opacity: 0; } to { opacity: 1; } }
-.kt-sheet { width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; background: var(--kt-surface); border-radius: 28px; padding: 14px 22px 24px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); animation: kt-pop 0.35s var(--kt-ease); }
+.kt-sheet { width: 100%; max-width: 520px; max-height: 88vh; overflow-y: auto; background-color: var(--kt-surface); border-radius: 32px; padding: 16px 24px 26px; box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35); animation: kt-pop 0.35s var(--kt-ease); }
 .kt-sheet.wide { max-width: 720px; }
 @keyframes kt-pop { from { opacity: 0; transform: translateY(24px) scale(0.97); } to { opacity: 1; transform: none; } }
 .kt-grab { width: 38px; height: 5px; border-radius: 3px; background: var(--kt-line); margin: 0 auto 10px; }
 .kt-sheet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-.kt-sheet-head h3 { margin: 0; font-size: 20px; font-weight: 700; letter-spacing: -0.02em; }
-.kt-bubble { max-width: 76%; padding: 10px 14px; border-radius: 20px; font-size: 16px; line-height: 1.4; word-break: break-word; white-space: pre-wrap; }
-.kt-bubble.me { background: var(--kt-blue); color: #fff; border-bottom-right-radius: 6px; margin-left: auto; }
+.kt-sheet-head h3 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
+.kt-bubble { max-width: 76%; padding: 11px 16px; border-radius: 22px; font-size: 16px; line-height: 1.45; word-break: break-word; white-space: pre-wrap; }
+.kt-bubble.me { background: var(--kt-dark); color: var(--kt-on-dark); border-bottom-right-radius: 6px; margin-left: auto; }
 .kt-bubble.them { background: var(--kt-surface2); border-bottom-left-radius: 6px; }
-.kt-fix { margin-top: 6px; padding: 8px 12px; border-radius: 14px; background: rgba(48, 209, 88, 0.14); color: var(--kt-text); font-size: 14px; border: 1px solid rgba(48, 209, 88, 0.35); }
-.kt-diff del { background: rgba(255, 69, 58, 0.16); color: var(--kt-red); text-decoration: line-through; border-radius: 4px; padding: 0 2px; }
-.kt-diff ins { background: rgba(48, 209, 88, 0.2); color: #1f9c43; text-decoration: none; border-radius: 4px; padding: 0 2px; font-weight: 600; }
+.kt-fix { margin-top: 6px; padding: 9px 13px; border-radius: 16px; background: transparent; color: var(--kt-text); font-size: 14px; border: 1px dashed var(--kt-green); }
+.kt-diff del { background: rgba(155, 59, 52, 0.14); color: var(--kt-red); text-decoration: line-through; border-radius: 4px; padding: 0 2px; }
+.kt-diff ins { background: rgba(63, 107, 79, 0.16); color: var(--kt-green); text-decoration: none; border-radius: 4px; padding: 0 2px; font-weight: 700; }
 .kt-bar { height: 8px; border-radius: 4px; background: var(--kt-surface2); overflow: hidden; }
-.kt-bar > div { height: 100%; border-radius: 4px; background: var(--kt-blue); transition: width 0.5s var(--kt-ease); }
-.kt-skel { border-radius: 14px; background: linear-gradient(90deg, var(--kt-surface2) 25%, var(--kt-line) 37%, var(--kt-surface2) 63%); background-size: 400% 100%; animation: kt-shimmer 1.4s ease infinite; }
-@keyframes kt-shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
+.kt-bar > div { height: 100%; border-radius: 4px; background: var(--kt-dark); transition: width 0.5s var(--kt-ease); }
+.kt-skel { border-radius: 24px; background: var(--kt-surface2); animation: kt-pulse 1.4s ease-in-out infinite; }
+@keyframes kt-pulse { 0%, 100% { opacity: 0.55; } 50% { opacity: 1; } }
 .kt-toasts { position: fixed; top: 16px; right: 16px; z-index: 120; display: flex; flex-direction: column; gap: 8px; pointer-events: none; }
-.kt-toast { padding: 12px 16px; border-radius: 16px; background: var(--kt-glass); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); border: 1px solid var(--kt-line); box-shadow: var(--kt-shadow); font-size: 14px; font-weight: 500; animation: kt-pop 0.3s var(--kt-ease); }
-.kt-toast.err { color: var(--kt-red); }
-.kt-hero { background: radial-gradient(1200px 500px at 20% -10%, rgba(10, 132, 255, 0.28), transparent), radial-gradient(900px 500px at 90% 0%, rgba(191, 90, 242, 0.24), transparent), var(--kt-bg); }
-.kt-card-flip { min-height: 260px; display: grid; place-items: center; text-align: center; cursor: pointer; user-select: none; transition: transform 0.2s var(--kt-ease); }
+.kt-toast { padding: 13px 20px; border-radius: 999px; background: var(--kt-dark); color: var(--kt-on-dark); box-shadow: var(--kt-shadow); font-size: 14px; font-weight: 500; animation: kt-pop 0.3s var(--kt-ease); }
+.kt-toast.err { background: var(--kt-red); color: #f5f1e9; }
+.kt-hero { background-color: var(--kt-bg); background-image: var(--kt-paper); font-family: var(--kt-font); }
+.kt-hero * { box-sizing: border-box; }
+.kt-cjk { font-family: var(--kt-serif); font-weight: 700; }
+.kt-photo { width: 100%; height: 100%; object-fit: cover; display: block; filter: grayscale(1) contrast(1.05); }
+.kt-card-flip { min-height: 280px; display: grid; place-items: center; text-align: center; cursor: pointer; user-select: none; transition: transform 0.2s var(--kt-ease); }
 .kt-card-flip:active { transform: scale(0.99); }
 .kt-chat { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 16px; height: calc(100vh - 190px); min-height: 460px; }
 .kt-chat-thread { display: flex; flex-direction: column; min-height: 0; padding: 0; overflow: hidden; }
-.kt-chat-scroll { flex: 1; overflow-y: auto; padding: 18px; display: flex; flex-direction: column; gap: 10px; }
-.kt-chat-input { display: flex; gap: 10px; padding: 12px; border-top: 1px solid var(--kt-line); background: var(--kt-glass); }
+.kt-chat-scroll { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+.kt-chat-input { display: flex; gap: 10px; padding: 14px; border-top: 1px solid var(--kt-line); background: var(--kt-glass); }
 .kt-bars { display: flex; align-items: flex-end; gap: 6px; height: 120px; }
-.kt-bars > div { flex: 1; border-radius: 6px 6px 3px 3px; background: var(--kt-blue); min-height: 4px; transition: height 0.5s var(--kt-ease); }
+.kt-bars > div { flex: 1; border-radius: 999px; background: var(--kt-dark); min-height: 4px; transition: height 0.5s var(--kt-ease); }
+.kt-hero-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr); gap: 48px; align-items: center; }
+.kt-hero-art { position: relative; aspect-ratio: 4 / 5; border-radius: 40px; overflow: hidden; background: var(--kt-surface2); }
+.kt-hero-art .kt-dark-card { position: absolute; left: 6%; right: 6%; bottom: 5%; border-radius: 30px; padding: 22px 24px; background: var(--kt-dark); color: var(--kt-on-dark); display: flex; align-items: center; justify-content: space-between; gap: 16px; }
 .kt-hide-m { display: initial; }
 .kt-only-m { display: none; }
 @media (max-width: 860px) {
   .kt-side { display: none; }
-  .kt-main { padding: 20px 16px 120px; }
-  .kt-title { font-size: 30px; }
+  .kt-main { padding: 22px 16px 120px; }
+  .kt-title { font-size: 32px; }
   .kt-grid.c2, .kt-grid.c3, .kt-grid.c4 { grid-template-columns: 1fr; }
   .kt-grid.c4.keep2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .kt-tabbar { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 60; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); background: var(--kt-glass); backdrop-filter: saturate(180%) blur(24px); -webkit-backdrop-filter: saturate(180%) blur(24px); border-top: 1px solid var(--kt-line); justify-content: space-around; }
-  .kt-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--kt-sub); border: 0; background: transparent; padding: 6px 10px; border-radius: 12px; cursor: pointer; font-family: inherit; position: relative; }
-  .kt-tab.active { color: var(--kt-blue); }
+  .kt-hero-grid { grid-template-columns: 1fr; gap: 28px; }
+  .kt-tabbar { display: flex; position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 60; padding: 8px; background: var(--kt-glass); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border: 1px solid var(--kt-line); border-radius: 999px; justify-content: space-around; }
+  .kt-tab { display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; font-weight: 500; color: var(--kt-sub); border: 0; background: transparent; padding: 7px 12px; border-radius: 999px; cursor: pointer; font-family: inherit; }
+  .kt-tab.active { color: var(--kt-on-blue); background: var(--kt-blue); }
   .kt-chat { grid-template-columns: 1fr; height: calc(100vh - 230px); }
   .kt-chat.thread-open .kt-chat-list { display: none; }
   .kt-chat:not(.thread-open) .kt-chat-thread { display: none; }
   .kt-sheet-back { align-items: flex-end; padding: 0; }
-  .kt-sheet { border-radius: 28px 28px 0 0; max-width: none; }
+  .kt-sheet { border-radius: 32px 32px 0 0; max-width: none; }
   .kt-hide-m { display: none; }
   .kt-only-m { display: initial; }
 }
 @media (prefers-reduced-motion: reduce) { .kt-main, .kt-sheet, .kt-toast, .kt-skel { animation: none; } .kt-btn, .kt-bars > div, .kt-bar > div { transition: none; } }
+.kt-split { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+@media (max-width: 860px) { .kt-split { grid-template-columns: 1fr; } }
 /* @arkzen:web:style:end */
 
 /* @arkzen:web:script */
@@ -1377,14 +1394,13 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ─── Languages ────────────────────────────────────────────────
 export const LANGS = [
-  { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' }, { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'zh', name: 'Mandarin', flag: '🇨🇳' }, { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
+  { code: 'en', name: 'English' }, { code: 'es', name: 'Spanish' },
+  { code: 'ja', name: 'Japanese' }, { code: 'fr', name: 'French' },
+  { code: 'ko', name: 'Korean' }, { code: 'de', name: 'German' },
+  { code: 'pt', name: 'Portuguese' }, { code: 'it', name: 'Italian' },
+  { code: 'zh', name: 'Mandarin' }, { code: 'tl', name: 'Filipino' },
 ]
 export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
-export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
 
 // ─── Network ──────────────────────────────────────────────────
 export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {
@@ -1407,10 +1423,10 @@ export async function kt<T = any>(path: string, opts: { method?: string; json?: 
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
-import { Heart, MessageCircle, Check, X, Plus, Languages, Sparkles, Send, PenLine, Wand2, BookmarkPlus, Trophy } from 'lucide-react'
+import { Heart, MessageCircle, Check, X, Plus, Languages, Sparkles, Send, PenLine, Wand2, BookmarkPlus, Trophy, Flame, WifiOff, Handshake, Users, Globe, Brain, Compass, GraduationCap, Target, BookOpen, PartyPopper, Layers, Medal, TrendingUp, Lightbulb, CalendarDays, Sprout, Star, FileText, Book, Home, Newspaper, User, Hand, Pencil, Sun, Flower2, Coffee, Headphones, Gamepad2, Utensils, Clock, History, ArrowRight, Minus } from 'lucide-react'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
-import { LANGS, langName, langFlag, kt } from '@/arkzen/generated/kotoba.scripts'
+import { LANGS, langName, kt } from '@/arkzen/generated/kotoba.scripts'
 
 if (typeof window !== 'undefined') { setActiveTatemono('kotoba') }
 
@@ -1432,9 +1448,9 @@ export type KComment = {
 }
 
 // ─── Levels & palette ─────────────────────────────────────────
-// (LANGS, langName, langFlag and kt live in the web:script block above)
+// (LANGS, langName and kt live in the web:script block above)
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-export const COLORS = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68']
+export const COLORS = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a']
 
 export function toast(message: string, kind: 'ok' | 'err' = 'ok') {
   if (typeof window !== 'undefined') window.dispatchEvent(new CustomEvent('kotoba:toast', { detail: { message, kind } }))
@@ -1510,8 +1526,8 @@ export function diffText(a: string, b: string) {
 }
 
 // ─── UI atoms ─────────────────────────────────────────────────
-export const Avatar = ({ name, color = '#0a84ff', size = 40 }: { name?: string; color?: string | null; size?: number }) => (
-  <div className="kt-avatar" style={{ width: size, height: size, background: color ?? '#0a84ff', fontSize: size * 0.42 }}>{(name || '?').trim().slice(0, 1).toUpperCase()}</div>
+export const Avatar = ({ name, color = '#121212', size = 40 }: { name?: string; color?: string | null; size?: number }) => (
+  <div className="kt-avatar" style={{ width: size, height: size, background: color ?? '#121212', fontSize: size * 0.42 }}>{(name || '?').trim().slice(0, 1).toUpperCase()}</div>
 )
 
 export const Segmented = ({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) => (
@@ -1539,9 +1555,23 @@ export const Sheet = ({ open, onClose, title, children, wide }: { open: boolean;
   )
 }
 
+// Icon set — every icon in the UI is a lucide SVG, addressed by a short key (also what circles and lessons store).
+const ICON_MAP: Record<string, React.ComponentType<{ size?: number; strokeWidth?: number }>> = {
+  'flame': Flame, 'wifi-off': WifiOff, 'handshake': Handshake, 'pen-line': PenLine, 'users': Users, 'globe': Globe, 'brain': Brain,
+  'compass': Compass, 'graduation-cap': GraduationCap, 'target': Target, 'book-open': BookOpen, 'party-popper': PartyPopper, 'layers': Layers,
+  'medal': Medal, 'check': Check, 'trending-up': TrendingUp, 'message-circle': MessageCircle, 'lightbulb': Lightbulb, 'calendar': CalendarDays,
+  'sprout': Sprout, 'star': Star, 'file-text': FileText, 'book': Book, 'home': Home, 'newspaper': Newspaper, 'user': User, 'heart': Heart,
+  'hand': Hand, 'pencil': Pencil, 'sun': Sun, 'flower': Flower2, 'coffee': Coffee, 'headphones': Headphones, 'gamepad': Gamepad2,
+  'utensils': Utensils, 'trophy': Trophy, 'clock': Clock, 'history': History,
+}
+export const Ico = ({ n, size = 20 }: { n?: string | null; size?: number }) => {
+  const C = (n && ICON_MAP[n]) || Sparkles
+  return <C size={size} strokeWidth={1.6} />
+}
+
 export const Empty = ({ icon, title, text, action }: { icon?: React.ReactNode; title: string; text?: string; action?: React.ReactNode }) => (
   <div className="kt-card flat" style={{ textAlign: 'center', padding: '44px 24px' }}>
-    <div style={{ fontSize: 40, marginBottom: 10 }}>{icon ?? '🌱'}</div>
+    <div style={{ display: 'grid', placeItems: 'center', marginBottom: 12 }}>{typeof icon === 'string' || icon == null ? <Ico n={(icon as string) ?? 'sprout'} size={34} /> : icon}</div>
     <div className="kt-h2" style={{ fontSize: 19 }}>{title}</div>
     {text && <p className="kt-sub" style={{ margin: '6px auto 16px', maxWidth: 360 }}>{text}</p>}
     {action}
@@ -1552,7 +1582,7 @@ export const Skeletons = ({ n = 3, h = 120 }: { n?: number; h?: number }) => (
   <div className="kt-stack">{Array.from({ length: n }).map((_, i) => <div key={i} className="kt-skel" style={{ height: h }} />)}</div>
 )
 
-export const Ring = ({ value, max, size = 120, stroke = 12, color = '#0a84ff', children }: { value: number; max: number; size?: number; stroke?: number; color?: string; children?: React.ReactNode }) => {
+export const Ring = ({ value, max, size = 120, stroke = 12, color = 'currentColor', children }: { value: number; max: number; size?: number; stroke?: number; color?: string; children?: React.ReactNode }) => {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, pct = Math.max(0, Math.min(1, max ? value / max : 0))
   return (
     <div style={{ position: 'relative', width: size, height: size }}>
@@ -1569,7 +1599,7 @@ export const LangSelect = ({ value, onChange, label }: { value: string; onChange
   <div>
     {label && <label className="kt-label">{label}</label>}
     <select className="kt-select" value={value} onChange={e => onChange(e.target.value)}>
-      {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+      {LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
     </select>
   </div>
 )
@@ -1609,7 +1639,7 @@ export const ComposeBox = ({ lang: initialLang, kind = 'moment', missionId, plac
       <div className="kt-row kt-between kt-wrap" style={{ marginTop: 12 }}>
         <div className="kt-row kt-wrap">
           <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Post language">
-            {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+            {LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
           </select>
           {kind !== 'mission' && (
             <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={asKind} onChange={e => setAsKind(e.target.value as any)} aria-label="Post type">
@@ -1685,7 +1715,7 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
           <div style={{ fontWeight: 600 }}>{p.author_name}</div>
           <div className="kt-sub">Native {langName(p.author_native)} · {timeAgo(p.created_at)}</div>
         </div>
-        <span className="kt-chip blue">{langFlag(p.lang)} {langName(p.lang)}</span>
+        <span className="kt-chip blue">{langName(p.lang)}</span>
         {p.kind !== 'moment' && <span className={`kt-chip ${p.kind === 'mission' ? 'orange' : 'purple'}`}>{p.kind === 'mission' ? 'Mission' : 'Question'}</span>}
       </div>
       <p onMouseUp={capture} onTouchEnd={capture} style={{ fontSize: 18, lineHeight: 1.55, margin: '14px 0 6px', whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{p.body}</p>
@@ -1696,8 +1726,8 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
         </div>
       )}
       {sel && (
-        <div className="kt-row kt-wrap" style={{ margin: '10px 0', padding: 10, borderRadius: 14, background: 'rgba(10,132,255,0.1)' }}>
-          <BookmarkPlus size={18} color="#0a84ff" />
+        <div className="kt-row kt-wrap" style={{ margin: '10px 0', padding: 10, borderRadius: 14, background: 'rgba(18, 18, 18, 0.1)' }}>
+          <BookmarkPlus size={18} color="#121212" />
           <span style={{ fontWeight: 600 }}>“{sel}”</span>
           <input className="kt-input" style={{ flex: 1, minWidth: 140, padding: '8px 12px', fontSize: 14 }} value={meaning} onChange={e => setMeaning(e.target.value)} placeholder="What does it mean?" onKeyDown={e => { if (e.key === 'Enter') save() }} />
           <button className="kt-btn primary sm" onClick={save} disabled={!meaning.trim()}>Save to deck</button>
@@ -1796,7 +1826,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
   if (!ex.length) return <Sheet open onClose={onClose} title={lesson.title}><Empty title="This lesson is empty" /></Sheet>
   if (result) return (
     <div className="kt-sheet-back"><div className="kt-sheet" style={{ textAlign: 'center', padding: 32 }}>
-      <Ring value={result.score} max={100} size={140} color={result.score >= 70 ? '#30d158' : '#ff9f0a'}><div><div style={{ fontSize: 34, fontWeight: 700 }}>{result.score}%</div><div className="kt-sub">score</div></div></Ring>
+      <Ring value={result.score} max={100} size={140} color={result.score >= 70 ? '#3f6b4f' : '#8a6a2f'}><div><div style={{ fontSize: 34, fontWeight: 700 }}>{result.score}%</div><div className="kt-sub">score</div></div></Ring>
       <h2 className="kt-h2" style={{ marginTop: 18 }}>{result.score >= 70 ? 'Nicely done!' : 'Good effort!'}</h2>
       <p className="kt-sub">+{result.xp} XP{result.cards_added > 0 ? ` · ${result.cards_added} new words added to your deck` : ''}</p>
       <div className="kt-row" style={{ justifyContent: 'center', marginTop: 18 }}><button className="kt-btn primary" onClick={onDone}><Trophy size={16} />Continue</button></div>
@@ -1816,7 +1846,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
         <div style={{ flex: 1, overflowY: 'auto', padding: '10px 20px 30px', maxWidth: 720, width: '100%', margin: '0 auto' }}>
           <h2 className="kt-title" style={{ fontSize: 26, marginBottom: 22 }}>{cur.q}</h2>
           {cur.t === 'choose' && <div className="kt-stack" style={{ gap: 10 }}>{order.map(k => (
-            <button key={k} disabled={status !== 'idle'} className="kt-card" onClick={() => setSel(k)} style={{ textAlign: 'left', cursor: 'pointer', fontSize: 18, fontFamily: 'inherit', color: 'inherit', borderColor: sel === k ? '#0a84ff' : undefined, boxShadow: sel === k ? '0 0 0 3px rgba(10,132,255,0.25)' : undefined }}>{cur.o![k]}</button>
+            <button key={k} disabled={status !== 'idle'} className="kt-card" onClick={() => setSel(k)} style={{ textAlign: 'left', cursor: 'pointer', fontSize: 18, fontFamily: 'inherit', color: 'inherit', borderColor: sel === k ? '#121212' : undefined, boxShadow: sel === k ? '0 0 0 3px rgba(18, 18, 18, 0.25)' : undefined }}>{cur.o![k]}</button>
           ))}</div>}
           {cur.t === 'type' && <input autoFocus className="kt-input" style={{ fontSize: 20 }} value={typed} disabled={status !== 'idle'} onChange={e => setTyped(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && canCheck && status === 'idle') check() }} placeholder="Type your answer" aria-label="Your answer" />}
           {cur.t === 'order' && (
@@ -1827,15 +1857,15 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
           )}
           {cur.t === 'match' && (
             <div className="kt-grid c2" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <div className="kt-stack" style={{ gap: 10 }}>{cur.p!.map((pair, k) => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1, outline: left === k ? '3px solid #0a84ff' : 'none' }} onClick={() => pickMatch('l', k)}>{pair[0]}</button>)}</div>
+              <div className="kt-stack" style={{ gap: 10 }}>{cur.p!.map((pair, k) => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1, outline: left === k ? '3px solid #121212' : 'none' }} onClick={() => pickMatch('l', k)}>{pair[0]}</button>)}</div>
               <div className="kt-stack" style={{ gap: 10 }}>{rightOrder.map(k => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1 }} onClick={() => pickMatch('r', k)}>{cur.p![k][1]}</button>)}</div>
             </div>
           )}
         </div>
-        <div style={{ padding: '16px 20px calc(16px + env(safe-area-inset-bottom))', background: status === 'right' ? 'rgba(48,209,88,0.18)' : status === 'wrong' ? 'rgba(255,69,58,0.16)' : 'var(--kt-glass)', borderTop: '1px solid var(--kt-line)' }}>
+        <div style={{ padding: '16px 20px calc(16px + env(safe-area-inset-bottom))', background: status === 'right' ? 'rgba(63, 107, 79, 0.18)' : status === 'wrong' ? 'rgba(155, 59, 52, 0.16)' : 'var(--kt-glass)', borderTop: '1px solid var(--kt-line)' }}>
           <div className="kt-row kt-between" style={{ maxWidth: 720, margin: '0 auto' }}>
             <div>
-              {status === 'right' && <b style={{ color: '#1f9c43', fontSize: 18 }}>Correct!</b>}
+              {status === 'right' && <b style={{ color: '#3f6b4f', fontSize: 18 }}>Correct!</b>}
               {status === 'wrong' && <div><b style={{ color: 'var(--kt-red)', fontSize: 18 }}>Not quite</b>{cur.t !== 'match' && <div className="kt-sub">Answer: {answerText}</div>}</div>}
             </div>
             {status === 'idle' ? (cur.t === 'match' ? <button className="kt-btn" onClick={() => { verdict(false) }}>Skip</button> : <button className="kt-btn primary" disabled={!canCheck} onClick={check}>Check</button>) : <button className="kt-btn primary" onClick={next}>{i + 1 < ex.length ? 'Continue' : 'Finish'}</button>}
@@ -1873,9 +1903,9 @@ export const ProfileSheet = ({ userId, onClose }: { userId: number | null; onClo
           <div className="kt-row"><Avatar name={p.display_name} color={p.avatar_color} size={64} />
             <div><div className="kt-h2">{p.display_name}</div><div className="kt-sub">{p.country ?? 'Somewhere on Earth'}</div></div></div>
           <div className="kt-row kt-wrap">
-            <span className="kt-chip green">Speaks {langFlag(p.native_lang)} {langName(p.native_lang)}</span>
-            <span className="kt-chip blue">Learning {langFlag(p.learning_lang)} {langName(p.learning_lang)} · {p.level}</span>
-            <span className="kt-chip orange">🔥 {p.streak} day streak</span>
+            <span className="kt-chip green">Speaks {langName(p.native_lang)}</span>
+            <span className="kt-chip blue">Learning {langName(p.learning_lang)} · {p.level}</span>
+            <span className="kt-chip orange"><Ico n="flame" size={13} />{p.streak} day streak</span>
           </div>
           {p.bio && <p style={{ margin: 0, fontSize: 16, lineHeight: 1.5 }}>{p.bio}</p>}
           {p.interests && <div className="kt-row kt-wrap">{p.interests.split(',').filter(Boolean).map(i => <span key={i} className="kt-chip">{i.trim()}</span>)}</div>}
@@ -1883,7 +1913,7 @@ export const ProfileSheet = ({ userId, onClose }: { userId: number | null; onClo
             {[['Posts', d.post_count], ['Followers', d.followers], ['Following', d.following_count]].map(([k, v]) => <div key={k as string} className="kt-card flat" style={{ textAlign: 'center', padding: 12 }}><div style={{ fontSize: 22, fontWeight: 700 }}>{v}</div><div className="kt-sub">{k}</div></div>)}
           </div>
           <div className="kt-row"><button className="kt-btn primary" style={{ flex: 1 }} onClick={message}><MessageCircle size={16} />Message</button><button className="kt-btn" disabled={busy} onClick={follow}>{d.following ? 'Following' : 'Follow'}</button></div>
-          {d.posts?.length > 0 && <div><div className="kt-label">Recent posts</div><div className="kt-list">{d.posts.map((x: KPost) => <div key={x.id} className="kt-item" style={{ cursor: 'default', display: 'block' }}><span className="kt-chip" style={{ marginBottom: 4 }}>{langFlag(x.lang)} {langName(x.lang)}</span><div style={{ fontSize: 15 }}>{x.body}</div></div>)}</div></div>}
+          {d.posts?.length > 0 && <div><div className="kt-label">Recent posts</div><div className="kt-list">{d.posts.map((x: KPost) => <div key={x.id} className="kt-item" style={{ cursor: 'default', display: 'block' }}><span className="kt-chip" style={{ marginBottom: 4 }}>{langName(x.lang)}</span><div style={{ fontSize: 15 }}>{x.body}</div></div>)}</div></div>}
         </div>
       )}
     </Sheet>
@@ -1937,7 +1967,7 @@ export const OnboardingSheet = ({ open, profile, onDone }: { open: boolean; prof
 'use client'
 
 import React, { useState, useEffect, useRef, useCallback } from 'react'
-import { Home, Newspaper, GraduationCap, Layers, Compass, MessageCircle, Users, BarChart3, User, Bell, LogOut, X } from 'lucide-react'
+import { Home, Newspaper, GraduationCap, Layers, Compass, MessageCircle, Users, BarChart3, User, Bell, LogOut, X, Heart, Hand, Check, Pencil } from 'lucide-react'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
 
@@ -2049,20 +2079,20 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <div className="kt-shell">
       <aside className="kt-side" aria-label="Main navigation">
-        <div className="kt-brand"><div className="kt-brand-mark">言</div>Kotoba</div>
+        <div className="kt-brand"><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         {NAV.map(n => (
           <button key={n.key} className={`kt-nav ${active === n.key ? 'active' : ''}`} aria-current={active === n.key ? 'page' : undefined} onClick={() => go(n.key)}>
             <n.icon size={20} />{n.label}
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <button className="kt-nav" onClick={openBell}><Bell size={20} />Notifications{unread > 0 && <span className="kt-badge">{unread}</span>}</button>
+        <button className="kt-nav" onClick={openBell}><Bell size={20} />Notifications</button>
         <button className="kt-nav" onClick={signOut}><LogOut size={20} />Sign out</button>
       </aside>
 
       <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
         <button className="kt-icon-btn kt-only-m" aria-label="Notifications" onClick={openBell} style={{ position: 'fixed', top: 14, right: 14, zIndex: 55, background: 'var(--kt-glass)', backdropFilter: 'blur(16px)' }}>
-          <Bell size={18} />{unread > 0 && <span className="kt-badge" style={{ position: 'absolute', top: -4, right: -4 }}>{unread}</span>}
+          <Bell size={18} />
         </button>
         <main className="kt-main" key={pathname}>{children}</main>
       </div>
@@ -2080,8 +2110,8 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="kt-sheet-head"><h3>Notifications</h3><button className="kt-icon-btn" aria-label="Close" onClick={() => setBell(false)}><X size={18} /></button></div>
             {alerts.length === 0 && <p className="kt-sub" style={{ textAlign: 'center', padding: 24 }}>You are all caught up.</p>}
             <div className="kt-list">{alerts.map((a, i) => (
-              <div key={a.id ?? i} className="kt-item" style={{ cursor: 'default', background: a.is_read ? undefined : 'rgba(10,132,255,0.08)' }}>
-                <span style={{ fontSize: 20 }}>{a.kind === 'like' ? '❤️' : a.kind === 'follow' ? '👋' : a.kind === 'accepted' ? '✅' : a.kind === 'correction' ? '✏️' : '💬'}</span>
+              <div key={a.id ?? i} className="kt-item" style={{ cursor: 'default', background: a.is_read ? undefined : 'var(--kt-surface2)' }}>
+                <span style={{ display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: '50%', background: 'var(--kt-surface2)', flexShrink: 0 }}>{a.kind === 'like' ? <Heart size={17} /> : a.kind === 'follow' ? <Hand size={17} /> : a.kind === 'accepted' ? <Check size={17} /> : a.kind === 'correction' ? <Pencil size={17} /> : <MessageCircle size={17} />}</span>
                 <span style={{ fontSize: 15 }}>{a.text}</span>
               </div>
             ))}</div>
@@ -2101,42 +2131,54 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 
 const IndexPage = () => {
   const nav = useNav()
+  // y = yes, n = no, p = partial
   const rows: [string, string, string, string][] = [
-    ['Real people', '✕', '✓', '✓'],
-    ['Structure and a plan', '✓', '✕', '✓'],
-    ['Corrections with explanations', '✕', '~', '✓'],
-    ['Words saved from your own conversations', '✕', '✕', '✓'],
-    ['Spaced repetition', '✓', '✕', '✓'],
-    ['Conversation starters that fit your level', '✕', '✕', '✓'],
+    ['Real people', 'n', 'y', 'y'],
+    ['Structure and a plan', 'y', 'n', 'y'],
+    ['Corrections with explanations', 'n', 'p', 'y'],
+    ['Words saved from your own conversations', 'n', 'n', 'y'],
+    ['Spaced repetition', 'y', 'n', 'y'],
+    ['Conversation starters that fit your level', 'n', 'n', 'y'],
   ]
+  const mark = (v: string) => (v === 'y' ? <Check size={18} /> : v === 'n' ? <X size={18} /> : <Minus size={18} />)
   return (
-    <div className="kt-hero" style={{ minHeight: '100vh', fontFamily: 'var(--kt-font)', color: 'var(--kt-text)' }}>
-      <header className="kt-row kt-between" style={{ maxWidth: 1080, margin: '0 auto', padding: '20px 24px' }}>
-        <div className="kt-brand" style={{ padding: 0 }}><div className="kt-brand-mark">言</div>Kotoba</div>
+    <div className="kt-hero" style={{ minHeight: '100vh', color: 'var(--kt-text)' }}>
+      <header className="kt-row kt-between" style={{ maxWidth: 1120, margin: '0 auto', padding: '24px' }}>
+        <div className="kt-brand" style={{ padding: 0 }}><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         <div className="kt-row"><button className="kt-btn ghost" onClick={() => nav.go('login')}>Sign in</button><button className="kt-btn primary" onClick={() => nav.go('register')}>Get started</button></div>
       </header>
-      <section style={{ maxWidth: 820, margin: '0 auto', padding: '72px 24px 48px', textAlign: 'center' }}>
-        <span className="kt-chip blue" style={{ marginBottom: 18 }}><Sparkles size={13} />Social language learning</span>
-        <h1 className="kt-title" style={{ fontSize: 'clamp(40px, 7vw, 72px)', lineHeight: 1.03 }}>Learn by talking,<br />not by tapping.</h1>
-        <p className="kt-subtitle" style={{ fontSize: 21, maxWidth: 600, margin: '20px auto 0' }}>Write real posts, get corrected by native speakers, and turn every mistake into a flashcard. Kotoba is the practice that streak apps skip.</p>
-        <div className="kt-row" style={{ justifyContent: 'center', marginTop: 32 }}>
-          <button className="kt-btn primary" style={{ height: 52, padding: '0 28px', fontSize: 17 }} onClick={() => nav.go('register')}>Create free account</button>
-          <button className="kt-btn" style={{ height: 52, padding: '0 28px', fontSize: 17 }} onClick={() => nav.go('login')}>I have an account</button>
+      <section className="kt-hero-grid" style={{ maxWidth: 1120, margin: '0 auto', padding: '32px 24px 64px' }}>
+        <div>
+          <span className="kt-label" style={{ marginLeft: 0 }}>Social language learning</span>
+          <h1 className="kt-title" style={{ fontSize: 'clamp(46px, 7vw, 84px)', lineHeight: 1, marginTop: 6 }}>Learn by talking, not by tapping.</h1>
+          <p className="kt-subtitle" style={{ fontSize: 19, maxWidth: 520, margin: '24px 0 0' }}>Write real posts, get corrected by native speakers, and turn every mistake into a flashcard. Kotoba is the practice that streak apps skip.</p>
+          <div className="kt-row kt-wrap" style={{ marginTop: 32 }}>
+            <button className="kt-btn primary" style={{ height: 54, padding: '0 30px', fontSize: 16 }} onClick={() => nav.go('register')}>Create free account</button>
+            <button className="kt-btn tint" style={{ height: 54, padding: '0 30px', fontSize: 16 }} onClick={() => nav.go('login')}>I have an account</button>
+          </div>
+          <p className="kt-sub" style={{ marginTop: 16 }}>Try the demo: demo@kotoba.app / password123</p>
         </div>
-        <p className="kt-sub" style={{ marginTop: 14 }}>Try the demo: demo@kotoba.app / password123</p>
+        <div className="kt-hero-art">
+          <img className="kt-photo" src="https://picsum.photos/seed/kotoba-words/900/1125?grayscale" alt="" />
+          <div className="kt-dark-card">
+            <div><div className="kt-sub" style={{ opacity: 0.6, color: 'inherit' }}>kotoba</div><div style={{ fontSize: 22, fontWeight: 700, letterSpacing: '-0.02em' }}>Words</div></div>
+            <div className="kt-cjk" style={{ fontSize: 44, lineHeight: 1 }}>言葉</div>
+            <button className="kt-fab" style={{ background: 'var(--kt-on-dark)', color: 'var(--kt-dark)', width: 52, height: 52 }} aria-label="Get started" onClick={() => nav.go('register')}><ArrowRight size={20} /></button>
+          </div>
+        </div>
       </section>
-      <section style={{ maxWidth: 1080, margin: '0 auto', padding: '24px' }}>
+      <section style={{ maxWidth: 1120, margin: '0 auto', padding: '24px' }}>
         <div className="kt-grid c3">
-          {[['🎯', 'Daily mission', 'One small prompt a day, written at your level. No more blank-page panic or "hi, where are you from?"'], ['✏️', 'Corrections that teach', 'Native speakers suggest a fix with a visual diff and a reason. Accept it and it sticks.'], ['🧠', 'Your own deck', 'Select any word in any post or chat to save it. Spaced repetition brings it back right before you forget.']].map(([e, t, d]) => (
-            <div key={t} className="kt-card"><div style={{ fontSize: 34 }}>{e}</div><div className="kt-h2" style={{ margin: '10px 0 6px' }}>{t}</div><p className="kt-sub" style={{ margin: 0, fontSize: 16, lineHeight: 1.5 }}>{d}</p></div>
+          {[['target', 'Daily mission', 'One small prompt a day, written at your level. No more blank-page panic or "hi, where are you from?"'], ['pencil', 'Corrections that teach', 'Native speakers suggest a fix with a visual diff and a reason. Accept it and it sticks.'], ['brain', 'Your own deck', 'Select any word in any post or chat to save it. Spaced repetition brings it back right before you forget.']].map(([e, t, d]) => (
+            <div key={t} className="kt-card" style={{ padding: 28 }}><div className="kt-icon-btn" style={{ width: 48, height: 48, background: 'var(--kt-dark)', color: 'var(--kt-on-dark)' }}><Ico n={e} size={22} /></div><div className="kt-h2" style={{ margin: '20px 0 8px' }}>{t}</div><p className="kt-sub" style={{ margin: 0, fontSize: 16, lineHeight: 1.55 }}>{d}</p></div>
           ))}
         </div>
       </section>
-      <section style={{ maxWidth: 820, margin: '0 auto', padding: '48px 24px' }}>
-        <h2 className="kt-title" style={{ fontSize: 34, textAlign: 'center', marginBottom: 24 }}>Why most apps stop working</h2>
+      <section style={{ maxWidth: 860, margin: '0 auto', padding: '56px 24px' }}>
+        <h2 className="kt-title" style={{ fontSize: 36, textAlign: 'center', marginBottom: 28 }}>Why most apps stop working</h2>
         <div className="kt-list" style={{ overflowX: 'auto' }}>
-          <div className="kt-item" style={{ cursor: 'default', fontWeight: 600, fontSize: 13 }}><span style={{ flex: 2 }} /><span style={{ flex: 1, textAlign: 'center' }}>Drill apps</span><span style={{ flex: 1, textAlign: 'center' }}>Chat-only apps</span><span style={{ flex: 1, textAlign: 'center', color: 'var(--kt-blue)' }}>Kotoba</span></div>
-          {rows.map(r => <div key={r[0]} className="kt-item" style={{ cursor: 'default' }}><span style={{ flex: 2, fontSize: 15 }}>{r[0]}</span>{[1, 2, 3].map(i => <span key={i} style={{ flex: 1, textAlign: 'center', fontWeight: 700, color: r[i] === '✓' ? '#22a847' : r[i] === '✕' ? 'var(--kt-sub)' : '#c77700' }}>{r[i]}</span>)}</div>)}
+          <div className="kt-item" style={{ cursor: 'default', fontWeight: 600, fontSize: 13 }}><span style={{ flex: 2 }} /><span style={{ flex: 1, textAlign: 'center' }}>Drill apps</span><span style={{ flex: 1, textAlign: 'center' }}>Chat-only apps</span><span style={{ flex: 1, textAlign: 'center' }}>Kotoba</span></div>
+          {rows.map(r => <div key={r[0]} className="kt-item" style={{ cursor: 'default' }}><span style={{ flex: 2, fontSize: 15 }}>{r[0]}</span>{[1, 2, 3].map(i => <span key={i} style={{ flex: 1, display: 'grid', placeItems: 'center', color: r[i] === 'y' ? 'var(--kt-green)' : r[i] === 'n' ? 'var(--kt-sub)' : 'var(--kt-orange)' }}>{mark(r[i])}</span>)}</div>)}
         </div>
       </section>
       <footer className="kt-sub" style={{ textAlign: 'center', padding: '32px 24px 48px' }}>Kotoba · 言葉 means “words”</footer>
@@ -2160,12 +2202,13 @@ const LoginPage = () => {
     try { await login(email, password) } catch (err) { setError(err instanceof Error ? err.message : 'Unable to sign in') }
   }
   return (
-    <div className="kt-hero" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20, fontFamily: 'var(--kt-font)', color: 'var(--kt-text)' }}>
-      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 400, padding: 32, borderRadius: 28 }}>
-        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><div className="kt-brand-mark">言</div>Kotoba</div>
+    <div className="kt-hero kt-split" style={{ minHeight: '100vh', color: 'var(--kt-text)' }}>
+      <div style={{ display: 'grid', placeItems: 'center', padding: 20 }}>
+      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 420, padding: 36, borderRadius: 36 }}>
+        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         <h1 className="kt-title" style={{ fontSize: 28 }}>Welcome back</h1>
         <p className="kt-sub" style={{ margin: '6px 0 20px' }}>Sign in to continue your streak.</p>
-        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(255,69,58,0.14)', color: 'var(--kt-red)', padding: '10px 12px', borderRadius: 12, marginBottom: 14, fontSize: 14 }}>{error}</div>}
+        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(155, 59, 52, 0.12)', color: 'var(--kt-red)', padding: '10px 14px', borderRadius: 16, marginBottom: 14, fontSize: 14 }}>{error}</div>}
         <div className="kt-stack">
           <div><label className="kt-label" htmlFor="kt-email">Email</label><input id="kt-email" className="kt-input" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
           <div><label className="kt-label" htmlFor="kt-pass">Password</label><input id="kt-pass" className="kt-input" type="password" autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} /></div>
@@ -2174,6 +2217,8 @@ const LoginPage = () => {
         </div>
         <p className="kt-sub" style={{ textAlign: 'center', marginTop: 18 }}>New here? <a style={{ color: 'var(--kt-blue)', cursor: 'pointer' }} onClick={() => nav.go('register')}>Create an account</a></p>
       </form>
+      </div>
+      <div className="kt-hide-m" style={{ padding: 20 }}><div className="kt-hero-art" style={{ height: '100%', aspectRatio: 'auto' }}><img className="kt-photo" src="https://picsum.photos/seed/kotoba-words/900/1125?grayscale" alt="" /></div></div>
     </div>
   )
 }
@@ -2197,12 +2242,13 @@ const RegisterPage = () => {
     try { await register(name, email, password, confirm) } catch (err) { setError(err instanceof Error ? err.message : 'Unable to create account') }
   }
   return (
-    <div className="kt-hero" style={{ minHeight: '100vh', display: 'grid', placeItems: 'center', padding: 20, fontFamily: 'var(--kt-font)', color: 'var(--kt-text)' }}>
-      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 400, padding: 32, borderRadius: 28 }}>
-        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><div className="kt-brand-mark">言</div>Kotoba</div>
+    <div className="kt-hero kt-split" style={{ minHeight: '100vh', color: 'var(--kt-text)' }}>
+      <div style={{ display: 'grid', placeItems: 'center', padding: 20 }}>
+      <form onSubmit={submit} className="kt-card" style={{ width: '100%', maxWidth: 420, padding: 36, borderRadius: 36 }}>
+        <div className="kt-brand" style={{ padding: 0, marginBottom: 18 }}><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         <h1 className="kt-title" style={{ fontSize: 28 }}>Create your account</h1>
         <p className="kt-sub" style={{ margin: '6px 0 20px' }}>Free forever. Takes under a minute.</p>
-        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(255,69,58,0.14)', color: 'var(--kt-red)', padding: '10px 12px', borderRadius: 12, marginBottom: 14, fontSize: 14 }}>{error}</div>}
+        {error && <div role="alert" className="kt-chip" style={{ display: 'flex', background: 'rgba(155, 59, 52, 0.12)', color: 'var(--kt-red)', padding: '10px 14px', borderRadius: 16, marginBottom: 14, fontSize: 14 }}>{error}</div>}
         <div className="kt-stack">
           <div><label className="kt-label" htmlFor="kt-name">Name</label><input id="kt-name" className="kt-input" autoComplete="name" required value={name} onChange={e => setName(e.target.value)} /></div>
           <div><label className="kt-label" htmlFor="kt-email">Email</label><input id="kt-email" className="kt-input" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} /></div>
@@ -2212,6 +2258,8 @@ const RegisterPage = () => {
         </div>
         <p className="kt-sub" style={{ textAlign: 'center', marginTop: 18 }}>Already learning with us? <a style={{ color: 'var(--kt-blue)', cursor: 'pointer' }} onClick={() => nav.go('login')}>Sign in</a></p>
       </form>
+      </div>
+      <div className="kt-hide-m" style={{ padding: 20 }}><div className="kt-hero-art" style={{ height: '100%', aspectRatio: 'auto' }}><img className="kt-photo" src="https://picsum.photos/seed/kotoba-words/900/1125?grayscale" alt="" /></div></div>
     </div>
   )
 }
@@ -2234,19 +2282,19 @@ const DashboardPage = () => {
   const today = data?.today_activity ?? 0
 
   if (loading && !data) return <Skeletons n={4} h={110} />
-  if (error && !data) return <Empty icon="📡" title="Cannot reach Kotoba" text={error} action={<button className="kt-btn primary" onClick={reload}>Try again</button>} />
+  if (error && !data) return <Empty icon="wifi-off" title="Cannot reach Kotoba" text={error} action={<button className="kt-btn primary" onClick={reload}>Try again</button>} />
 
   const plan = [
-    { emoji: '🎯', title: data?.mission?.title ?? 'Daily mission', text: data?.mission_done ? 'Done for today. Nice work!' : data?.mission?.prompt, done: !!data?.mission_done, cta: 'Write', run: () => setWriting(true) },
-    { emoji: '📚', title: data?.next_lesson ? `Lesson: ${data.next_lesson.title}` : 'Lessons', text: data?.next_lesson ? `Next up in ${data.next_lesson.unit}` : 'You finished every lesson for this language. Try a mission or chat.', done: !data?.next_lesson, cta: 'Start', run: () => nav.go('learn') },
-    { emoji: '🧠', title: `Review ${data?.due ?? 0} card${data?.due === 1 ? '' : 's'}`, text: data?.due ? 'Right before you forget them.' : 'Nothing due. Save new words from posts and chats.', done: !data?.due, cta: 'Review', run: () => nav.go('review') },
-    { emoji: '🤝', title: 'Help a learner', text: `${data?.help_needed ?? 0} post${data?.help_needed === 1 ? '' : 's'} in ${langName(p?.native_lang)} could use your eyes. Teaching is the fastest way to stay humble.`, done: !data?.help_needed, cta: 'Help', run: () => nav.go('feed#help') },
+    { emoji: 'target', title: data?.mission?.title ?? 'Daily mission', text: data?.mission_done ? 'Done for today. Nice work!' : data?.mission?.prompt, done: !!data?.mission_done, cta: 'Write', run: () => setWriting(true) },
+    { emoji: 'book-open', title: data?.next_lesson ? `Lesson: ${data.next_lesson.title}` : 'Lessons', text: data?.next_lesson ? `Next up in ${data.next_lesson.unit}` : 'You finished every lesson for this language. Try a mission or chat.', done: !data?.next_lesson, cta: 'Start', run: () => nav.go('learn') },
+    { emoji: 'brain', title: `Review ${data?.due ?? 0} card${data?.due === 1 ? '' : 's'}`, text: data?.due ? 'Right before you forget them.' : 'Nothing due. Save new words from posts and chats.', done: !data?.due, cta: 'Review', run: () => nav.go('review') },
+    { emoji: 'handshake', title: 'Help a learner', text: `${data?.help_needed ?? 0} post${data?.help_needed === 1 ? '' : 's'} in ${langName(p?.native_lang)} could use your eyes. Teaching is the fastest way to stay humble.`, done: !data?.help_needed, cta: 'Help', run: () => nav.go('feed#help') },
   ]
   return (
     <div className="kt-stack" style={{ gap: 24 }}>
       <div className="kt-head" style={{ marginBottom: 0 }}>
-        <div><h1 className="kt-title">{hi}, {p?.display_name?.split(' ')[0] ?? 'friend'}</h1><p className="kt-subtitle">{langFlag(p?.learning_lang)} Learning {langName(p?.learning_lang)} · Level {p?.level}</p></div>
-        <div className="kt-row kt-wrap"><span className="kt-chip orange" style={{ fontSize: 14, padding: '8px 14px' }}>🔥 {p?.streak ?? 0} day streak</span><span className="kt-chip blue" style={{ fontSize: 14, padding: '8px 14px' }}>⭐ {p?.xp ?? 0} XP</span></div>
+        <div><h1 className="kt-title">{hi}, {p?.display_name?.split(' ')[0] ?? 'friend'}</h1><p className="kt-subtitle">Learning {langName(p?.learning_lang)} · Level {p?.level}</p></div>
+        <div className="kt-row kt-wrap"><span className="kt-chip orange" style={{ fontSize: 14, padding: '8px 14px' }}><Ico n="flame" size={15} />{p?.streak ?? 0} day streak</span><span className="kt-chip blue" style={{ fontSize: 14, padding: '8px 14px' }}><Ico n="star" size={15} />{p?.xp ?? 0} XP</span></div>
       </div>
 
       <div className="kt-grid" style={{ gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 1fr)' }}>
@@ -2254,27 +2302,27 @@ const DashboardPage = () => {
           <div className="kt-row kt-between" style={{ marginBottom: 12 }}><h2 className="kt-h2">Today’s plan</h2><span className="kt-sub">{plan.filter(x => x.done).length}/{plan.length} done</span></div>
           <div className="kt-list" style={{ border: 0, borderRadius: 0 }}>{plan.map(s => (
             <div key={s.title} className="kt-item" style={{ cursor: 'default', padding: '14px 0', opacity: s.done ? 0.6 : 1 }}>
-              <div style={{ fontSize: 28, width: 44, textAlign: 'center' }}>{s.done ? '✅' : s.emoji}</div>
+              <div style={{ width: 44, display: 'grid', placeItems: 'center' }}><Ico n={s.done ? 'check' : s.emoji} size={26} /></div>
               <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600 }}>{s.title}</div><div className="kt-sub" style={{ marginTop: 2 }}>{s.text}</div></div>
               <button className={`kt-btn sm ${s.done ? '' : 'tint'}`} onClick={s.run}>{s.cta}</button>
             </div>
           ))}</div>
         </div>
         <div className="kt-card" style={{ display: 'grid', placeItems: 'center', gap: 12, textAlign: 'center' }}>
-          <Ring value={Math.min(today, goal)} max={goal} size={150} stroke={14} color={today >= goal ? '#30d158' : '#0a84ff'}><div><div style={{ fontSize: 36, fontWeight: 700 }}>{today}<span className="kt-sub" style={{ fontSize: 18 }}>/{goal}</span></div><div className="kt-sub">today</div></div></Ring>
-          <div className="kt-sub">{today >= goal ? 'Daily goal reached 🎉' : `${goal - today} more to hit your goal`}</div>
+          <Ring value={Math.min(today, goal)} max={goal} size={150} stroke={14} color={today >= goal ? '#3f6b4f' : 'currentColor'}><div><div style={{ fontSize: 36, fontWeight: 700 }}>{today}<span className="kt-sub" style={{ fontSize: 18 }}>/{goal}</span></div><div className="kt-sub">today</div></div></Ring>
+          <div className="kt-sub">{today >= goal ? 'Daily goal reached' : `${goal - today} more to hit your goal`}</div>
         </div>
       </div>
 
       <div className="kt-grid c4 keep2">
-        {[['Partners', '🧭', 'Find people to practice with', 'partners'], ['Circles', '👥', `${data?.circles ?? 0} joined`, 'circles'], ['Progress', '📈', 'See how you are growing', 'progress'], ['Messages', '💬', 'Pick up a conversation', 'chat']].map(([t, e, s, k]) => (
-          <button key={t} className="kt-card" style={{ textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit' }} onClick={() => nav.go(k)}><div style={{ fontSize: 28 }}>{e}</div><div style={{ fontWeight: 600, marginTop: 8 }}>{t}</div><div className="kt-sub">{s}</div></button>
+        {[['Partners', 'compass', 'Find people to practice with', 'partners'], ['Circles', 'users', `${data?.circles ?? 0} joined`, 'circles'], ['Progress', 'trending-up', 'See how you are growing', 'progress'], ['Messages', 'message-circle', 'Pick up a conversation', 'chat']].map(([t, e, s, k]) => (
+          <button key={t} className="kt-card" style={{ textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit' }} onClick={() => nav.go(k)}><Ico n={e} size={26} /><div style={{ fontWeight: 700, marginTop: 10 }}>{t}</div><div className="kt-sub">{s}</div></button>
         ))}
       </div>
 
       <Sheet open={writing} onClose={() => setWriting(false)} title={data?.mission?.title ?? 'Daily mission'} wide>
         <p style={{ margin: '0 0 6px', fontSize: 16, lineHeight: 1.5 }}>{data?.mission?.prompt}</p>
-        {data?.mission?.hint && <p className="kt-sub" style={{ margin: '0 0 14px' }}>💡 {data.mission.hint}</p>}
+        {data?.mission?.hint && <p className="kt-sub" style={{ margin: '0 0 14px' }}>Hint: {data.mission.hint}</p>}
         <ComposeBox lang={p?.learning_lang ?? 'es'} kind="mission" missionId={data?.mission?.id} onPosted={() => { setWriting(false); reload() }} placeholder={`Write your answer in ${langName(p?.learning_lang)}…`} />
       </Sheet>
       <OnboardingSheet open={onb} profile={p} onDone={() => { setOnb(false); reload() }} />
@@ -2312,12 +2360,12 @@ const FeedPage = () => {
       <div className="kt-row kt-between kt-wrap">
         <Segmented value={scope} onChange={setScope} options={[{ value: 'all', label: 'For you' }, { value: 'following', label: 'Following' }, { value: 'help', label: `Needs ${langName(profile?.native_lang) || 'help'} help` }, { value: 'mine', label: 'Mine' }]} />
         <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Filter by language">
-          <option value="all">🌐 All languages</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          <option value="all">All languages</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
         </select>
       </div>
       {posts === null && <Skeletons n={3} h={170} />}
-      {error && <Empty icon="📡" title="Feed unavailable" text={error} action={<button className="kt-btn primary" onClick={load}>Retry</button>} />}
-      {posts && !error && posts.length === 0 && <Empty icon="✍️" title="Nothing here yet" text={scope === 'help' ? `No unanswered ${langName(profile?.native_lang)} posts right now. Check back soon.` : 'Be the first to post something in your target language.'} />}
+      {error && <Empty icon="wifi-off" title="Feed unavailable" text={error} action={<button className="kt-btn primary" onClick={load}>Retry</button>} />}
+      {posts && !error && posts.length === 0 && <Empty icon="pen-line" title="Nothing here yet" text={scope === 'help' ? `No unanswered ${langName(profile?.native_lang)} posts right now. Check back soon.` : 'Be the first to post something in your target language.'} />}
       <div className="kt-stack" style={{ gap: 16 }}>{posts?.map(p => <PostCard key={p.id} post={p} meId={profile?.user_id} onProfile={setViewing} onDeleted={id => setPosts(l => (l ?? []).filter(x => x.id !== id))} />)}</div>
       <ProfileSheet userId={viewing} onClose={() => setViewing(null)} />
     </div>
@@ -2344,19 +2392,19 @@ const LearnPage = () => {
       <div className="kt-head" style={{ marginBottom: 0 }}>
         <div><h1 className="kt-title">Learn</h1><p className="kt-subtitle">Short lessons built around phrases you will actually say.</p></div>
         <select className="kt-select" style={{ width: 'auto' }} value={active ?? ''} onChange={e => setLang(e.target.value)} aria-label="Language">
-          {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          {LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
         </select>
       </div>
-      {lessons.length > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>{langFlag(active)} {langName(active)} path</b><span className="kt-sub">{doneCount}/{lessons.length} lessons</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(doneCount / lessons.length) * 100}%` }} /></div></div>}
+      {lessons.length > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>{langName(active)} path</b><span className="kt-sub">{doneCount}/{lessons.length} lessons</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(doneCount / lessons.length) * 100}%` }} /></div></div>}
       {(loading && !data) && <Skeletons n={3} h={100} />}
-      {error && <Empty icon="📡" title="Could not load lessons" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
-      {data && lessons.length === 0 && <Empty icon="🌍" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile the fastest way to learn is to write in the community, chat with a partner and build your deck. Or try a language with lessons available." action={<div className="kt-row" style={{ justifyContent: 'center' }}>{['es', 'ja', 'en'].map(c => <button key={c} className="kt-btn tint sm" onClick={() => setLang(c)}>{langFlag(c)} {langName(c)}</button>)}</div>} />}
+      {error && <Empty icon="wifi-off" title="Could not load lessons" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
+      {data && lessons.length === 0 && <Empty icon="globe" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile the fastest way to learn is to write in the community, chat with a partner and build your deck. Or try a language with lessons available." action={<div className="kt-row" style={{ justifyContent: 'center' }}>{['es', 'ja', 'en'].map(c => <button key={c} className="kt-btn tint sm" onClick={() => setLang(c)}>{langName(c)}</button>)}</div>} />}
       {units.map(u => (
         <section key={u as string}>
           <h2 className="kt-h2" style={{ marginBottom: 12 }}>{u as string}</h2>
           <div className="kt-grid c3">{lessons.filter(l => l.unit === u).map(l => (
             <button key={l.id} className="kt-card" onClick={() => setPlaying(l)} style={{ textAlign: 'left', cursor: 'pointer', fontFamily: 'inherit', color: 'inherit', position: 'relative' }}>
-              <div style={{ fontSize: 34 }}>{l.emoji ?? '📘'}</div>
+              <Ico n={l.emoji ?? 'book'} size={30} />
               <div style={{ fontWeight: 600, fontSize: 17, margin: '8px 0 4px' }}>{l.title}</div>
               <div className="kt-row kt-wrap"><span className="kt-chip">{l.level}</span><span className="kt-chip orange">+{l.xp} XP</span>{l.done && <span className="kt-chip green"><Check size={12} />Best {l.best}%</span>}</div>
             </button>
@@ -2424,7 +2472,7 @@ const ReviewPage = () => {
     catch (e) { toast(e instanceof Error ? e.message : 'Failed', 'err') }
   }
   const remove = async (id: number) => { try { await kt(`/vocab/${id}`, { method: 'DELETE' }); setDeck(d => d.filter(x => x.id !== id)) } catch { toast('Could not delete', 'err') } }
-  const hints = card ? [['Again', '#ff453a', 'now'], ['Hard', '#ff9f0a', card.reps === 0 ? '1d' : 'soon'], ['Good', '#0a84ff', card.reps === 0 ? '1d' : card.reps === 1 ? '4d' : `${Math.max(1, Math.round((card.interval_days || 1) * card.ease))}d`], ['Easy', '#30d158', card.reps === 0 ? '3d' : card.reps === 1 ? '7d' : `${Math.max(2, Math.round((card.interval_days || 1) * card.ease * 1.3))}d`]] : []
+  const hints = card ? [['Again', '#9b3b34', 'now'], ['Hard', '#8a6a2f', card.reps === 0 ? '1d' : 'soon'], ['Good', '#121212', card.reps === 0 ? '1d' : card.reps === 1 ? '4d' : `${Math.max(1, Math.round((card.interval_days || 1) * card.ease))}d`], ['Easy', '#3f6b4f', card.reps === 0 ? '3d' : card.reps === 1 ? '7d' : `${Math.max(2, Math.round((card.interval_days || 1) * card.ease * 1.3))}d`]] : []
 
   return (
     <div className="kt-stack" style={{ gap: 22 }}>
@@ -2436,25 +2484,25 @@ const ReviewPage = () => {
       {tab === 'review' && (loading ? <Skeletons n={1} h={280} /> : card ? (
         <div className="kt-stack" style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
           <div className="kt-bar"><div style={{ width: `${(reviewed / Math.max(1, reviewed + queue.length)) * 100}%` }} /></div>
-          <button className="kt-card kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
+          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
             <div>
-              <span className="kt-chip blue">{langFlag(card.lang)} {langName(card.lang)}</span>
-              <div style={{ fontSize: 40, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em' }}>{card.term}</div>
-              {flipped ? <div><div style={{ fontSize: 24, color: 'var(--kt-blue)' }}>{card.meaning}</div>{card.example && <p className="kt-sub" style={{ maxWidth: 420, margin: '14px auto 0', fontStyle: 'italic' }}>“{card.example.slice(0, 160)}”</p>}</div> : <div className="kt-sub">Tap or press space to reveal</div>}
+              <span className="kt-chip">{langName(card.lang)}</span>
+              <div style={{ fontSize: 44, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em', fontFamily: ['ja', 'zh', 'ko'].includes(card.lang) ? 'var(--kt-serif)' : undefined }}>{card.term}</div>
+              {flipped ? <div><div style={{ fontSize: 24, opacity: 0.75 }}>{card.meaning}</div>{card.example && <p className="kt-sub" style={{ maxWidth: 420, margin: '14px auto 0', fontStyle: 'italic' }}>“{card.example.slice(0, 160)}”</p>}</div> : <div className="kt-sub">Tap or press space to reveal</div>}
             </div>
           </button>
           {flipped ? <div className="kt-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: 10 }}>{hints.map((h, n) => <button key={h[0]} className="kt-btn" style={{ height: 62, flexDirection: 'column', gap: 2, color: h[1] }} onClick={() => grade(n)}><span>{h[0]}</span><span className="kt-sub" style={{ fontSize: 11 }}>{h[2]}</span></button>)}</div> : <button className="kt-btn primary block" onClick={() => setFlipped(true)}>Show answer</button>}
         </div>
       ) : (
-        <Empty icon="🎉" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, select words in the community feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Come back tomorrow, your next cards are scheduled.`} action={<button className="kt-btn primary" onClick={() => setTab('add')}>Add a word</button>} />
+        <Empty icon="party-popper" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, select words in the community feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Come back tomorrow, your next cards are scheduled.`} action={<button className="kt-btn primary" onClick={() => setTab('add')}>Add a word</button>} />
       ))}
 
       {tab === 'deck' && (
         <div className="kt-stack">
           <input className="kt-input" value={q} onChange={e => setQ(e.target.value)} placeholder="Search your deck" aria-label="Search deck" />
-          {deck.length === 0 ? <Empty icon="🗂️" title="No cards found" /> : <div className="kt-list">{deck.map(c => (
+          {deck.length === 0 ? <Empty icon="layers" title="No cards found" /> : <div className="kt-list">{deck.map(c => (
             <div key={c.id} className="kt-item" style={{ cursor: 'default' }}>
-              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600 }}>{c.term} <span className="kt-chip">{langFlag(c.lang)}</span></div><div className="kt-sub">{c.meaning}</div></div>
+              <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600 }}>{c.term} <span className="kt-chip">{c.lang.toUpperCase()}</span></div><div className="kt-sub">{c.meaning}</div></div>
               <span className={`kt-chip ${c.reps >= 4 ? 'green' : c.reps > 0 ? 'blue' : ''}`}>{c.reps >= 4 ? 'Mastered' : c.reps > 0 ? `${c.reps}x` : 'New'}</span>
               <button className="kt-icon-btn" aria-label={`Delete ${c.term}`} onClick={() => remove(c.id)}><X size={16} /></button>
             </div>
@@ -2507,15 +2555,15 @@ const PartnersPage = () => {
         <input className="kt-input" style={{ maxWidth: 280 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search name, interest or country" aria-label="Search partners" />
       </div>
       {list === null && <Skeletons n={3} h={150} />}
-      {list && list.length === 0 && <Empty icon="🧭" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
+      {list && list.length === 0 && <Empty icon="compass" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
       <div className="kt-grid c2">{list?.map(p => (
         <div key={p.id} className="kt-card kt-stack" style={{ gap: 12 }}>
           <div className="kt-row">
             <button style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer' }} aria-label={`Open ${p.display_name}`} onClick={() => setViewing(p.user_id)}><Avatar name={p.display_name} color={p.avatar_color} size={52} /></button>
-            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 17 }}>{p.display_name}</div><div className="kt-sub">{p.country ?? '—'} · 🔥 {p.streak}</div></div>
-            <div style={{ textAlign: 'right' }}><div style={{ fontSize: 22, fontWeight: 700, color: (p.score ?? 0) >= 70 ? '#22a847' : 'var(--kt-blue)' }}>{p.score}%</div><div className="kt-sub" style={{ fontSize: 11 }}>match</div></div>
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 17 }}>{p.display_name}</div><div className="kt-sub">{p.country ?? '—'} · {p.streak} day streak</div></div>
+            <div style={{ textAlign: 'right' }}><div style={{ fontSize: 22, fontWeight: 700, color: (p.score ?? 0) >= 70 ? '#3f6b4f' : 'var(--kt-blue)' }}>{p.score}%</div><div className="kt-sub" style={{ fontSize: 11 }}>match</div></div>
           </div>
-          <div className="kt-row kt-wrap"><span className="kt-chip green">Speaks {langFlag(p.native_lang)} {langName(p.native_lang)}</span><span className="kt-chip blue">Learning {langFlag(p.learning_lang)} {p.level}</span>{p.shared?.slice(0, 3).map(s => <span key={s} className="kt-chip purple">{s}</span>)}</div>
+          <div className="kt-row kt-wrap"><span className="kt-chip green">Speaks {langName(p.native_lang)}</span><span className="kt-chip blue">Learning {p.level}</span>{p.shared?.slice(0, 3).map(s => <span key={s} className="kt-chip purple">{s}</span>)}</div>
           {p.bio && <p className="kt-sub" style={{ margin: 0, fontSize: 15, lineHeight: 1.45 }}>{p.bio}</p>}
           <div className="kt-row"><button className="kt-btn primary sm" style={{ flex: 1 }} onClick={() => hello(p)}><MessageCircle size={15} />Say hello</button><button className="kt-btn sm" onClick={() => follow(p)}>{p.following ? 'Following' : 'Follow'}</button></div>
         </div>
@@ -2556,8 +2604,8 @@ const ChatPage = () => {
     setActive(a); setMsgs([])
     try { const r = await kt<any>(`/messages?${a.kind === 'dm' ? 'conversation_id' : 'circle_id'}=${a.id}`); setMsgs(r.data) } catch (e) { toast(e instanceof Error ? e.message : 'Could not load messages', 'err') }
   }, [])
-  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langFlag(c.with.native_lang)} ${langName(c.with.native_lang)}`, color: c.with.avatar_color })
-  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: `${c.emoji} ${c.name}`, sub: `${langName(c.lang)} · ${c.members_count} members`, color: '#0a84ff' })
+  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langName(c.with.native_lang)}`, color: c.with.avatar_color })
+  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: c.name, sub: `${langName(c.lang)} · ${c.members_count} members`, color: '#121212' })
 
   useEffect(() => {
     loadLists().then(l => {
@@ -2618,19 +2666,19 @@ const ChatPage = () => {
       <div className={`kt-chat ${active ? 'thread-open' : ''}`}>
         <div className="kt-chat-list kt-stack" style={{ gap: 10, minHeight: 0, overflowY: 'auto' }}>
           <Segmented value={tab} onChange={setTab} options={[{ value: 'dm', label: 'Direct' }, { value: 'circle', label: 'Circles' }]} />
-          {list.length === 0 && <Empty icon={tab === 'dm' ? '💬' : '👥'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
+          {list.length === 0 && <Empty icon={tab === 'dm' ? 'message-circle' : 'users'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
           <div className="kt-list">{list.map((c: any) => {
             const a = tab === 'dm' ? fromDm(c) : fromCircle(c)
             return (
               <button key={`${tab}${c.id}`} className={`kt-item ${active?.kind === a.kind && active.id === a.id ? 'on' : ''}`} onClick={() => open(a)}>
-                {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <div className="kt-avatar" style={{ width: 40, height: 40, background: 'var(--kt-surface2)', fontSize: 20 }}>{c.emoji}</div>}
-                <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontWeight: 600 }}>{tab === 'dm' ? c.with.display_name : c.name}</div><div className="kt-sub" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab === 'dm' ? (c.last_message ?? 'Say hello 👋') : `${langName(c.lang)} · ${c.members_count} members`}</div></div>
+                {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <div className="kt-avatar" style={{ width: 40, height: 40, background: 'var(--kt-surface2)', fontSize: 20 }}><Ico n={c.emoji} size={19} /></div>}
+                <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontWeight: 600 }}>{tab === 'dm' ? c.with.display_name : c.name}</div><div className="kt-sub" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab === 'dm' ? (c.last_message ?? 'Say hello') : `${langName(c.lang)} · ${c.members_count} members`}</div></div>
               </button>
             )
           })}</div>
         </div>
         <div className="kt-card kt-chat-thread">
-          {!active ? <div style={{ margin: 'auto', textAlign: 'center' }} className="kt-sub"><div style={{ fontSize: 40 }}>💬</div>Select a conversation</div> : (
+          {!active ? <div style={{ margin: 'auto', textAlign: 'center' }} className="kt-sub"><div style={{ display: 'grid', placeItems: 'center', marginBottom: 8 }}><Ico n="message-circle" size={34} /></div>Select a conversation</div> : (
             <>
               <div className="kt-row" style={{ padding: '12px 16px', borderBottom: '1px solid var(--kt-line)' }}>
                 <button className="kt-icon-btn kt-only-m" aria-label="Back" onClick={() => setActive(null)}>‹</button>
@@ -2644,7 +2692,7 @@ const ChatPage = () => {
                     <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: own ? 'flex-end' : 'flex-start', gap: 2 }}>
                       {!own && active.kind === 'circle' && <span className="kt-sub" style={{ fontSize: 12, marginLeft: 8 }}>{m.sender_name}</span>}
                       <div className={`kt-bubble ${own ? 'me' : 'them'}`}>{m.body}</div>
-                      {m.corrected && <div className="kt-fix" style={{ maxWidth: '76%' }}><div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>✏️ Suggested</div><Diff from={m.body} to={m.corrected} />{m.note && <div className="kt-sub" style={{ marginTop: 4 }}>{m.note}</div>}</div>}
+                      {m.corrected && <div className="kt-fix" style={{ maxWidth: '76%' }}><div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>Suggested</div><Diff from={m.body} to={m.corrected} />{m.note && <div className="kt-sub" style={{ marginTop: 4 }}>{m.note}</div>}</div>}
                       <div className="kt-row" style={{ gap: 2 }}>
                         <span className="kt-sub" style={{ fontSize: 11 }}>{timeAgo(m.created_at)}</span>
                         {!own && <button className="kt-btn ghost sm" style={{ height: 24, padding: '0 8px', fontSize: 12 }} onClick={() => { setFixing(m); setFixText(m.corrected ?? m.body) }}>Correct</button>}
@@ -2687,7 +2735,7 @@ const CirclesPage = () => {
   const [lang, setLang] = useState('all')
   const { data, loading, error, reload, setData } = useApi<{ data: any[] }>(`/circles${lang !== 'all' ? `?lang=${lang}` : ''}`, [lang])
   const [creating, setCreating] = useState(false)
-  const [f, setF] = useState({ name: '', emoji: '💬', lang: 'es', level: 'A1', description: '' })
+  const [f, setF] = useState({ name: '', emoji: 'message-circle', lang: 'es', level: 'A1', description: '' })
   const [busy, setBusy] = useState(false)
   useEffect(() => { if (profile) setF(x => ({ ...x, lang: profile.learning_lang, level: profile.level })) }, [profile?.id])
 
@@ -2705,24 +2753,24 @@ const CirclesPage = () => {
     catch (e) { toast(e instanceof Error ? e.message : 'Failed', 'err') }
     finally { setBusy(false) }
   }
-  const emojis = ['💬', '☀️', '🌸', '☕', '🎧', '📚', '🌍', '🎮', '🍜', '⚽']
+  const emojis = ['message-circle', 'sun', 'flower', 'coffee', 'headphones', 'book-open', 'globe', 'gamepad', 'utensils', 'trophy']
   return (
     <div className="kt-stack" style={{ gap: 22 }}>
       <div className="kt-head" style={{ marginBottom: 0 }}>
         <div><h1 className="kt-title">Circles</h1><p className="kt-subtitle">Small study groups with a shared language and level.</p></div>
         <div className="kt-row">
-          <select className="kt-select" style={{ width: 'auto' }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Language filter"><option value="all">🌐 All</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}</select>
+          <select className="kt-select" style={{ width: 'auto' }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Language filter"><option value="all">All</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}</select>
           <button className="kt-btn primary" onClick={() => setCreating(true)}><Plus size={16} />New circle</button>
         </div>
       </div>
       {loading && !data && <Skeletons n={3} h={140} />}
-      {error && <Empty icon="📡" title="Could not load circles" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
-      {data && data.data.length === 0 && <Empty icon="👥" title="No circles here yet" text="Start one. Small groups with a clear goal are where people actually stick around." action={<button className="kt-btn primary" onClick={() => setCreating(true)}>Create a circle</button>} />}
+      {error && <Empty icon="wifi-off" title="Could not load circles" text={error} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />}
+      {data && data.data.length === 0 && <Empty icon="users" title="No circles here yet" text="Start one. Small groups with a clear goal are where people actually stick around." action={<button className="kt-btn primary" onClick={() => setCreating(true)}>Create a circle</button>} />}
       <div className="kt-grid c2">{data?.data.map(c => (
         <div key={c.id} className="kt-card kt-stack" style={{ gap: 10 }}>
-          <div className="kt-row"><div className="kt-avatar" style={{ width: 52, height: 52, background: 'var(--kt-surface2)', fontSize: 26 }}>{c.emoji}</div>
+          <div className="kt-row"><div className="kt-avatar" style={{ width: 52, height: 52, background: 'var(--kt-surface2)', fontSize: 26 }}><Ico n={c.emoji} size={24} /></div>
             <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 17 }}>{c.name}</div><div className="kt-sub">{c.members_count} member{c.members_count === 1 ? '' : 's'}</div></div>
-            <span className="kt-chip blue">{langFlag(c.lang)} {c.level}</span></div>
+            <span className="kt-chip blue">{c.level}</span></div>
           {c.description && <p className="kt-sub" style={{ margin: 0, fontSize: 15, lineHeight: 1.45 }}>{c.description}</p>}
           <div className="kt-row">
             {c.joined && <button className="kt-btn primary sm" style={{ flex: 1 }} onClick={() => nav.go(`chat#circle=${c.id}`)}><MessageCircle size={15} />Open chat</button>}
@@ -2732,7 +2780,7 @@ const CirclesPage = () => {
       ))}</div>
       <Sheet open={creating} onClose={() => setCreating(false)} title="New circle">
         <div className="kt-stack">
-          <div><label className="kt-label">Icon</label><div className="kt-row kt-wrap">{emojis.map(e => <button key={e} className="kt-icon-btn" style={{ width: 42, height: 42, fontSize: 20, outline: f.emoji === e ? '3px solid #0a84ff' : 'none' }} onClick={() => setF({ ...f, emoji: e })} aria-label={`Icon ${e}`}>{e}</button>)}</div></div>
+          <div><label className="kt-label">Icon</label><div className="kt-row kt-wrap">{emojis.map(e => <button key={e} className="kt-icon-btn" style={{ width: 42, height: 42, fontSize: 20, outline: f.emoji === e ? '3px solid var(--kt-text)' : 'none' }} onClick={() => setF({ ...f, emoji: e })} aria-label={`Icon ${e}`}><Ico n={e} size={20} /></button>)}</div></div>
           <div><label className="kt-label">Name</label><input className="kt-input" value={f.name} maxLength={80} onChange={e => setF({ ...f, name: e.target.value })} placeholder="Tokyo Night Owls" /></div>
           <div className="kt-grid c2" style={{ gridTemplateColumns: '1fr 1fr' }}><LangSelect label="Language" value={f.lang} onChange={v => setF({ ...f, lang: v })} /><div><label className="kt-label">Level</label><select className="kt-select" value={f.level} onChange={e => setF({ ...f, level: e.target.value })}>{LEVELS.map(l => <option key={l}>{l}</option>)}</select></div></div>
           <div><label className="kt-label">What is it for?</label><textarea className="kt-textarea" style={{ minHeight: 70 }} value={f.description} onChange={e => setF({ ...f, description: e.target.value })} placeholder="Daily 5-minute check-ins, no pressure." /></div>
@@ -2751,41 +2799,41 @@ const CirclesPage = () => {
 const ProgressPage = () => {
   const { data, loading, error, reload } = useApi<any>('/progress')
   if (loading && !data) return <Skeletons n={4} h={140} />
-  if (error || !data) return <Empty icon="📡" title="Could not load progress" text={error ?? ''} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />
+  if (error || !data) return <Empty icon="wifi-off" title="Could not load progress" text={error ?? ''} action={<button className="kt-btn primary" onClick={reload}>Retry</button>} />
   const p: KProfile = data.profile
   const s = data.stats
   const series: { date: string; count: number }[] = data.series
   const max = Math.max(1, ...series.map(x => x.count))
   const activeDays = series.filter(x => x.count > 0).length
   const badges = [
-    { e: '✍️', t: 'First post', ok: s.posts >= 1 }, { e: '🔥', t: '7-day streak', ok: p.best_streak >= 7 },
-    { e: '🧠', t: '25 words', ok: s.cards >= 25 }, { e: '🎓', t: '3 lessons', ok: s.lessons >= 3 },
-    { e: '🤝', t: 'First correction', ok: s.corrections_given >= 1 }, { e: '💬', t: '50 messages', ok: s.messages_sent >= 50 },
-    { e: '🏅', t: 'Word master', ok: s.mastered >= 10 }, { e: '🌟', t: 'Level 5', ok: data.level >= 5 },
+    { e: 'pen-line', t: 'First post', ok: s.posts >= 1 }, { e: 'flame', t: '7-day streak', ok: p.best_streak >= 7 },
+    { e: 'brain', t: '25 words', ok: s.cards >= 25 }, { e: 'graduation-cap', t: '3 lessons', ok: s.lessons >= 3 },
+    { e: 'handshake', t: 'First correction', ok: s.corrections_given >= 1 }, { e: 'message-circle', t: '50 messages', ok: s.messages_sent >= 50 },
+    { e: 'medal', t: 'Word master', ok: s.mastered >= 10 }, { e: 'star', t: 'Level 5', ok: data.level >= 5 },
   ]
   const tiles = [
-    ['Words written', s.words_written, '✍️'], ['Messages sent', s.messages_sent, '💬'], ['Posts', s.posts, '📝'], ['Lessons done', s.lessons, '🎓'],
-    ['Words in deck', s.cards, '🗂️'], ['Mastered', s.mastered, '🏅'], ['Corrections given', s.corrections_given, '🤝'], ['Corrections received', s.corrections_received, '✏️'],
+    ['Words written', s.words_written, 'pen-line'], ['Messages sent', s.messages_sent, 'message-circle'], ['Posts', s.posts, 'file-text'], ['Lessons done', s.lessons, 'graduation-cap'],
+    ['Words in deck', s.cards, 'layers'], ['Mastered', s.mastered, 'medal'], ['Corrections given', s.corrections_given, 'handshake'], ['Corrections received', s.corrections_received, 'pencil'],
   ]
   return (
     <div className="kt-stack" style={{ gap: 22 }}>
       <div className="kt-head" style={{ marginBottom: 0 }}><div><h1 className="kt-title">Progress</h1><p className="kt-subtitle">What you produce matters more than what you tap.</p></div></div>
       <div className="kt-grid c3">
         <div className="kt-card" style={{ display: 'grid', placeItems: 'center', gap: 10, textAlign: 'center' }}>
-          <Ring value={data.level_progress} max={100} size={140} stroke={14} color="#bf5af2"><div><div style={{ fontSize: 34, fontWeight: 700 }}>{data.level}</div><div className="kt-sub">level</div></div></Ring>
+          <Ring value={data.level_progress} max={100} size={140} stroke={14} color="#4a4a4a"><div><div style={{ fontSize: 34, fontWeight: 700 }}>{data.level}</div><div className="kt-sub">level</div></div></Ring>
           <div className="kt-sub">{p.xp} XP · {100 - data.level_progress} to next level</div>
         </div>
-        <div className="kt-card" style={{ display: 'grid', placeItems: 'center', textAlign: 'center' }}><div><div style={{ fontSize: 54 }}>🔥</div><div style={{ fontSize: 40, fontWeight: 700 }}>{p.streak}</div><div className="kt-sub">day streak · best {p.best_streak}</div></div></div>
-        <div className="kt-card" style={{ display: 'grid', placeItems: 'center', textAlign: 'center' }}><div><div style={{ fontSize: 54 }}>📅</div><div style={{ fontSize: 40, fontWeight: 700 }}>{activeDays}<span className="kt-sub" style={{ fontSize: 20 }}>/14</span></div><div className="kt-sub">active days, last two weeks</div></div></div>
+        <div className="kt-card" style={{ display: 'grid', placeItems: 'center', textAlign: 'center' }}><div><div style={{ display: 'grid', placeItems: 'center', marginBottom: 6 }}><Ico n="flame" size={44} /></div><div style={{ fontSize: 40, fontWeight: 700 }}>{p.streak}</div><div className="kt-sub">day streak · best {p.best_streak}</div></div></div>
+        <div className="kt-card" style={{ display: 'grid', placeItems: 'center', textAlign: 'center' }}><div><div style={{ display: 'grid', placeItems: 'center', marginBottom: 6 }}><Ico n="calendar" size={44} /></div><div style={{ fontSize: 40, fontWeight: 700 }}>{activeDays}<span className="kt-sub" style={{ fontSize: 20 }}>/14</span></div><div className="kt-sub">active days, last two weeks</div></div></div>
       </div>
       <div className="kt-card">
         <div className="kt-row kt-between" style={{ marginBottom: 14 }}><h2 className="kt-h2">Last 14 days</h2><span className="kt-sub">posts, messages and lessons</span></div>
         <div className="kt-bars" role="img" aria-label="Activity over the last 14 days">{series.map(d => <div key={d.date} title={`${d.date}: ${d.count}`} style={{ height: `${Math.max(4, (d.count / max) * 100)}%`, opacity: d.count ? 1 : 0.18 }} />)}</div>
         <div className="kt-row kt-between kt-sub" style={{ marginTop: 8, fontSize: 12 }}><span>{series[0]?.date.slice(5)}</span><span>today</span></div>
       </div>
-      <div className="kt-grid c4 keep2">{tiles.map(t => <div key={t[0] as string} className="kt-card" style={{ padding: 16 }}><div style={{ fontSize: 24 }}>{t[2]}</div><div style={{ fontSize: 28, fontWeight: 700, marginTop: 4 }}>{t[1]}</div><div className="kt-sub">{t[0]}</div></div>)}</div>
-      {s.corrections_received > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>Corrections you accepted</b><span className="kt-sub">{s.corrections_accepted}/{s.corrections_received}</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(s.corrections_accepted / s.corrections_received) * 100}%`, background: '#30d158' }} /></div><p className="kt-sub" style={{ margin: '10px 0 0' }}>Accepting a fix is how it sticks. Review the ones you skipped.</p></div>}
-      <div><h2 className="kt-h2" style={{ marginBottom: 12 }}>Milestones</h2><div className="kt-grid c4 keep2">{badges.map(b => <div key={b.t} className="kt-card" style={{ padding: 16, textAlign: 'center', opacity: b.ok ? 1 : 0.4 }}><div style={{ fontSize: 34, filter: b.ok ? 'none' : 'grayscale(1)' }}>{b.e}</div><div style={{ fontWeight: 600, fontSize: 14, marginTop: 6 }}>{b.t}</div></div>)}</div></div>
+      <div className="kt-grid c4 keep2">{tiles.map(t => <div key={t[0] as string} className="kt-card" style={{ padding: 16 }}><Ico n={t[2] as string} size={22} /><div style={{ fontSize: 28, fontWeight: 700, marginTop: 4 }}>{t[1]}</div><div className="kt-sub">{t[0]}</div></div>)}</div>
+      {s.corrections_received > 0 && <div className="kt-card"><div className="kt-row kt-between"><b>Corrections you accepted</b><span className="kt-sub">{s.corrections_accepted}/{s.corrections_received}</span></div><div className="kt-bar" style={{ marginTop: 10 }}><div style={{ width: `${(s.corrections_accepted / s.corrections_received) * 100}%`, background: '#3f6b4f' }} /></div><p className="kt-sub" style={{ margin: '10px 0 0' }}>Accepting a fix is how it sticks. Review the ones you skipped.</p></div>}
+      <div><h2 className="kt-h2" style={{ marginBottom: 12 }}>Milestones</h2><div className="kt-grid c4 keep2">{badges.map(b => <div key={b.t} className="kt-card" style={{ padding: 16, textAlign: 'center', opacity: b.ok ? 1 : 0.4 }}><div style={{ display: 'grid', placeItems: 'center' }}><Ico n={b.e} size={30} /></div><div style={{ fontWeight: 600, fontSize: 14, marginTop: 6 }}>{b.t}</div></div>)}</div></div>
     </div>
   )
 }
@@ -2842,6 +2890,9 @@ const ProfilePage = () => {
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Pressable, ScrollView, ActivityIndicator, Modal, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native'
 import { useRouter } from 'expo-router'
+import { Flame, WifiOff, Handshake, PenLine, Users, Globe, Brain, Compass, GraduationCap, Target, BookOpen, PartyPopper, Layers, Medal, Check, TrendingUp, MessageCircle, Lightbulb, CalendarDays, Sprout, Star, FileText, Book, Home, Newspaper, User, Heart, Hand, Pencil, Sun, Flower2, Coffee, Headphones, Gamepad2, Utensils, Trophy, Clock, History, Sparkles, X } from 'lucide-react-native'
+import { SvgUri } from 'react-native-svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 setActiveTatemono('kotoba')
@@ -2856,6 +2907,9 @@ export const useNav = () => {
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { View, Text, TextInput, TouchableOpacity, Pressable, ScrollView, ActivityIndicator, Modal, KeyboardAvoidingView, Platform, RefreshControl } from 'react-native'
 import { useNavigation } from '@react-navigation/native'
+import { Flame, WifiOff, Handshake, PenLine, Users, Globe, Brain, Compass, GraduationCap, Target, BookOpen, PartyPopper, Layers, Medal, Check, TrendingUp, MessageCircle, Lightbulb, CalendarDays, Sprout, Star, FileText, Book, Home, Newspaper, User, Heart, Hand, Pencil, Sun, Flower2, Coffee, Headphones, Gamepad2, Utensils, Trophy, Clock, History, Sparkles, X } from 'lucide-react-native'
+import { SvgUri } from 'react-native-svg'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { arkzenFetch, useAuthStore, setActiveTatemono } from '@/arkzen/core/stores/authStore'
 
 setActiveTatemono('kotoba')
@@ -2866,12 +2920,12 @@ export const useNav = () => {
 }
 /* @arkzen:import:rn:end */
 
-// ─── Theme (light, iOS system colors) ─────────────────────────
+// ─── Theme (paper + ink) ──────────────────────────────────────
 export const TH = {
-  bg: '#f2f2f7', card: '#ffffff', fill: '#f2f2f7', text: '#1c1c1e', sub: '#8e8e93', line: 'rgba(60,60,67,0.16)',
-  blue: '#0a84ff', green: '#30d158', orange: '#ff9f0a', red: '#ff453a', purple: '#bf5af2',
+  bg: '#e9e4da', card: '#f5f1e9', fill: '#e0d9cb', text: '#121212', sub: '#6b655b', line: 'rgba(18,18,18,0.14)',
+  blue: '#121212', green: '#3f6b4f', orange: '#8a6a2f', red: '#9b3b34', purple: '#4a4a4a',
 }
-export const SHADOW = { shadowColor: '#000', shadowOpacity: 0.06, shadowRadius: 12, shadowOffset: { width: 0, height: 4 }, elevation: 2 }
+export const SHADOW = { shadowColor: '#121212', shadowOpacity: 0.07, shadowRadius: 16, shadowOffset: { width: 0, height: 6 }, elevation: 2 }
 
 export type KProfile = {
   id: number; user_id: number; display_name: string; bio?: string | null; native_lang: string; learning_lang: string
@@ -2890,16 +2944,15 @@ export type KComment = {
 }
 
 export const LANGS = [
-  { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' }, { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'zh', name: 'Mandarin', flag: '🇨🇳' }, { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
+  { code: 'en', name: 'English' }, { code: 'es', name: 'Spanish' },
+  { code: 'ja', name: 'Japanese' }, { code: 'fr', name: 'French' },
+  { code: 'ko', name: 'Korean' }, { code: 'de', name: 'German' },
+  { code: 'pt', name: 'Portuguese' }, { code: 'it', name: 'Italian' },
+  { code: 'zh', name: 'Mandarin' }, { code: 'tl', name: 'Filipino' },
 ]
 export const LEVELS = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2']
-export const COLORS = ['#0a84ff', '#bf5af2', '#30d158', '#ff9f0a', '#ff375f', '#64d2ff', '#ac8e68']
+export const COLORS = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a']
 export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
-export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
 
 // Tiny cross-screen state (RN has no URL hash)
 export const pending: { chat: { kind: 'dm' | 'circle'; id: number } | null; feedScope: string | null } = { chat: null, feedScope: null }
@@ -2993,42 +3046,44 @@ export function useProfile() {
 }
 
 // ─── UI atoms ─────────────────────────────────────────────────
-export const Avatar = ({ name, color = '#0a84ff', size = 40 }: { name?: string; color?: string | null; size?: number }) => (
-  <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color ?? '#0a84ff', alignItems: 'center', justifyContent: 'center' }}>
-    <Text style={{ color: '#fff', fontWeight: '700', fontSize: size * 0.42 }}>{(name || '?').trim().slice(0, 1).toUpperCase()}</Text>
+export const Avatar = ({ name, color = '#121212', size = 40 }: { name?: string; color?: string | null; size?: number }) => (
+  <View style={{ width: size, height: size, borderRadius: size / 2, backgroundColor: color ?? '#121212', alignItems: 'center', justifyContent: 'center' }}>
+    <Text style={{ color: '#f5f1e9', fontWeight: '700', fontSize: size * 0.42 }}>{(name || '?').trim().slice(0, 1).toUpperCase()}</Text>
   </View>
 )
 
 export const Card = ({ children, style, onPress }: { children: React.ReactNode; style?: any; onPress?: () => void }) => {
-  const base = { backgroundColor: TH.card, borderRadius: 20, padding: 16, ...SHADOW }
+  const base = { backgroundColor: TH.card, borderRadius: 28, padding: 18, borderWidth: 1, borderColor: TH.line, ...SHADOW }
   return onPress ? <TouchableOpacity activeOpacity={0.85} onPress={onPress} style={[base, style]}>{children}</TouchableOpacity> : <View style={[base, style]}>{children}</View>
 }
 
-export const Btn = ({ label, onPress, kind = 'fill', disabled, small, style }: { label: string; onPress: () => void; kind?: 'primary' | 'tint' | 'fill' | 'danger' | 'ghost'; disabled?: boolean; small?: boolean; style?: any }) => {
-  const bg = kind === 'primary' ? TH.blue : kind === 'tint' ? 'rgba(10,132,255,0.14)' : kind === 'danger' ? 'rgba(255,69,58,0.14)' : kind === 'ghost' ? 'transparent' : TH.fill
-  const fg = kind === 'primary' ? '#fff' : kind === 'danger' ? TH.red : kind === 'fill' ? TH.text : TH.blue
+export const Btn = ({ label, onPress, kind = 'fill', disabled, small, style, icon, iconFilled }: { label: string; onPress: () => void; kind?: 'primary' | 'tint' | 'fill' | 'danger' | 'ghost'; disabled?: boolean; small?: boolean; style?: any; icon?: string; iconFilled?: boolean }) => {
+  const bg = kind === 'primary' ? TH.blue : kind === 'fill' ? TH.fill : 'transparent'
+  const fg = kind === 'primary' ? TH.card : kind === 'danger' ? TH.red : TH.text
+  const ring = kind === 'tint' ? TH.text : kind === 'danger' ? TH.red : 'transparent'
   return (
     <TouchableOpacity accessibilityRole="button" accessibilityLabel={label} disabled={disabled} activeOpacity={0.8} onPress={onPress}
-      style={[{ height: small ? 36 : 48, paddingHorizontal: small ? 14 : 20, borderRadius: small ? 11 : 14, backgroundColor: bg, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.45 : 1 }, style]}>
+      style={[{ height: small ? 36 : 50, paddingHorizontal: small ? 16 : 24, borderRadius: 999, backgroundColor: bg, borderWidth: 1.5, borderColor: ring, flexDirection: 'row', gap: 8, alignItems: 'center', justifyContent: 'center', opacity: disabled ? 0.4 : 1 }, style]}>
+      {icon ? <Ico n={icon} size={small ? 15 : 18} color={fg} fill={iconFilled} /> : null}
       <Text style={{ color: fg, fontWeight: '600', fontSize: small ? 14 : 16 }}>{label}</Text>
     </TouchableOpacity>
   )
 }
 
 export const Chip = ({ label, tone = 'gray', onPress, on }: { label: string; tone?: 'gray' | 'blue' | 'green' | 'orange' | 'purple'; onPress?: () => void; on?: boolean }) => {
-  const m: any = { gray: ['rgba(120,120,128,0.14)', TH.sub], blue: ['rgba(10,132,255,0.14)', TH.blue], green: ['rgba(48,209,88,0.18)', '#22a847'], orange: ['rgba(255,159,10,0.2)', '#c77700'], purple: ['rgba(191,90,242,0.16)', TH.purple] }
-  const [bg, fg] = on ? m.blue : m[tone]
-  const inner = <View style={{ backgroundColor: bg, paddingHorizontal: 10, paddingVertical: 5, borderRadius: 999, alignSelf: 'flex-start' }}><Text style={{ color: fg, fontSize: 12, fontWeight: '600' }}>{label}</Text></View>
+  const m: any = { gray: [TH.fill, TH.sub, 'transparent'], blue: [TH.blue, TH.card, 'transparent'], green: ['transparent', TH.green, TH.green], orange: ['transparent', TH.orange, TH.orange], purple: ['transparent', TH.purple, TH.purple] }
+  const [bg, fg, ring] = on ? m.blue : m[tone]
+  const inner = <View style={{ backgroundColor: bg, borderWidth: 1.5, borderColor: ring, paddingHorizontal: 12, paddingVertical: 4, borderRadius: 999, alignSelf: 'flex-start' }}><Text style={{ color: fg, fontSize: 12, fontWeight: '600' }}>{label}</Text></View>
   return onPress ? <TouchableOpacity onPress={onPress} style={{ marginRight: 6, marginBottom: 6 }}>{inner}</TouchableOpacity> : <View style={{ marginRight: 6, marginBottom: 6 }}>{inner}</View>
 }
 
 export const Seg = ({ value, onChange, options }: { value: string; onChange: (v: string) => void; options: { value: string; label: string }[] }) => (
   <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-    <View style={{ flexDirection: 'row', backgroundColor: 'rgba(118,118,128,0.12)', borderRadius: 12, padding: 3 }}>
+    <View style={{ flexDirection: 'row', backgroundColor: TH.fill, borderRadius: 999, padding: 4 }}>
       {options.map(o => (
         <TouchableOpacity key={o.value} accessibilityRole="tab" accessibilityState={{ selected: value === o.value }} onPress={() => onChange(o.value)}
-          style={{ paddingHorizontal: 14, paddingVertical: 8, borderRadius: 9, backgroundColor: value === o.value ? '#fff' : 'transparent' }}>
-          <Text style={{ fontWeight: value === o.value ? '700' : '500', fontSize: 14, color: TH.text }}>{o.label}</Text>
+          style={{ paddingHorizontal: 16, paddingVertical: 8, borderRadius: 999, backgroundColor: value === o.value ? TH.blue : 'transparent' }}>
+          <Text style={{ fontWeight: value === o.value ? '700' : '500', fontSize: 14, color: value === o.value ? TH.card : TH.text }}>{o.label}</Text>
         </TouchableOpacity>
       ))}
     </View>
@@ -3037,21 +3092,21 @@ export const Seg = ({ value, onChange, options }: { value: string; onChange: (v:
 
 export const Field = ({ label, value, onChangeText, placeholder, multiline, secure, keyboard, autoCap }: { label?: string; value: string; onChangeText: (t: string) => void; placeholder?: string; multiline?: boolean; secure?: boolean; keyboard?: any; autoCap?: any }) => (
   <View>
-    {label && <Text style={{ fontSize: 12, fontWeight: '600', color: TH.sub, marginBottom: 6, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Text>}
+    {label && <Text style={{ fontSize: 12, fontWeight: '600', color: TH.sub, marginBottom: 6, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1.2 }}>{label}</Text>}
     <TextInput value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={TH.sub} multiline={multiline} secureTextEntry={secure} keyboardType={keyboard} autoCapitalize={autoCap ?? 'none'} accessibilityLabel={label ?? placeholder}
-      style={{ backgroundColor: TH.fill, borderRadius: 14, paddingHorizontal: 14, paddingVertical: multiline ? 12 : 13, fontSize: 16, color: TH.text, minHeight: multiline ? 90 : undefined, textAlignVertical: multiline ? 'top' : 'center' }} />
+      style={{ backgroundColor: TH.card, borderWidth: 1, borderColor: TH.line, borderRadius: 18, paddingHorizontal: 16, paddingVertical: multiline ? 12 : 13, fontSize: 16, color: TH.text, minHeight: multiline ? 90 : undefined, textAlignVertical: multiline ? 'top' : 'center' }} />
   </View>
 )
 
 export const Sheet = ({ open, onClose, title, children }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode }) => (
   <Modal visible={open} transparent animationType="slide" onRequestClose={onClose}>
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(18,18,18,0.45)' }}>
       <Pressable style={{ flex: 1 }} onPress={onClose} accessibilityLabel="Dismiss" />
-      <View style={{ backgroundColor: TH.card, borderTopLeftRadius: 28, borderTopRightRadius: 28, maxHeight: '90%', paddingTop: 10 }}>
+      <View style={{ backgroundColor: TH.card, borderTopLeftRadius: 32, borderTopRightRadius: 32, maxHeight: '90%', paddingTop: 10 }}>
         <View style={{ alignSelf: 'center', width: 38, height: 5, borderRadius: 3, backgroundColor: TH.line, marginBottom: 8 }} />
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingBottom: 8 }}>
           <Text style={{ fontSize: 20, fontWeight: '700', color: TH.text }}>{title}</Text>
-          <TouchableOpacity onPress={onClose} accessibilityLabel="Close" style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 16, color: TH.sub }}>✕</Text></TouchableOpacity>
+          <TouchableOpacity onPress={onClose} accessibilityLabel="Close" style={{ width: 32, height: 32, borderRadius: 16, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Ico n="close" size={16} color={TH.sub} /></TouchableOpacity>
         </View>
         <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20, paddingTop: 8, paddingBottom: 36, gap: 14 }}>{children}</ScrollView>
       </View>
@@ -3059,9 +3114,29 @@ export const Sheet = ({ open, onClose, title, children }: { open: boolean; onClo
   </Modal>
 )
 
+// Icons are lucide SVGs addressed by a short key (the same keys circles and lessons store).
+export const Ico = ({ n, size = 20, color, fill }: { n?: string | null; size?: number; color?: string; fill?: boolean }) => {
+  const map: Record<string, any> = {
+    'flame': Flame, 'wifi-off': WifiOff, 'handshake': Handshake, 'pen-line': PenLine, 'users': Users, 'globe': Globe, 'brain': Brain,
+    'compass': Compass, 'graduation-cap': GraduationCap, 'target': Target, 'book-open': BookOpen, 'party-popper': PartyPopper, 'layers': Layers,
+    'medal': Medal, 'check': Check, 'trending-up': TrendingUp, 'message-circle': MessageCircle, 'lightbulb': Lightbulb, 'calendar': CalendarDays,
+    'sprout': Sprout, 'star': Star, 'file-text': FileText, 'book': Book, 'home': Home, 'newspaper': Newspaper, 'user': User, 'heart': Heart,
+    'hand': Hand, 'pencil': Pencil, 'sun': Sun, 'flower': Flower2, 'coffee': Coffee, 'headphones': Headphones, 'gamepad': Gamepad2,
+    'utensils': Utensils, 'trophy': Trophy, 'clock': Clock, 'history': History, 'close': X,
+  }
+  const C = (n && map[n]) || Sparkles
+  const c = color ?? TH.text
+  return <C size={size} color={c} strokeWidth={1.7} fill={fill ? c : 'none'} />
+}
+
+// Brand mark: an SVG served online (Iconify), not a bundled asset.
+export const Logo = ({ size = 28 }: { size?: number }) => (
+  <SvgUri uri="https://api.iconify.design/lucide/languages.svg?color=%23121212" width={size} height={size} />
+)
+
 export const Empty = ({ icon, title, text, children }: { icon?: string; title: string; text?: string; children?: React.ReactNode }) => (
   <View style={{ alignItems: 'center', padding: 32, gap: 6 }}>
-    <Text style={{ fontSize: 40 }}>{icon ?? '🌱'}</Text>
+    <Ico n={icon ?? 'sprout'} size={34} />
     <Text style={{ fontSize: 18, fontWeight: '700', color: TH.text, textAlign: 'center' }}>{title}</Text>
     {text && <Text style={{ color: TH.sub, textAlign: 'center', fontSize: 15, lineHeight: 21 }}>{text}</Text>}
     {children && <View style={{ marginTop: 10 }}>{children}</View>}
@@ -3069,14 +3144,100 @@ export const Empty = ({ icon, title, text, children }: { icon?: string; title: s
 )
 
 export const Skel = ({ n = 3, h = 100 }: { n?: number; h?: number }) => (
-  <View style={{ gap: 12 }}>{Array.from({ length: n }).map((_, i) => <View key={i} style={{ height: h, borderRadius: 20, backgroundColor: 'rgba(120,120,128,0.12)' }} />)}</View>
+  <View style={{ gap: 12 }}>{Array.from({ length: n }).map((_, i) => <View key={i} style={{ height: h, borderRadius: 28, backgroundColor: TH.fill }} />)}</View>
 )
 
 export const Bar = ({ value, max, color = TH.blue }: { value: number; max: number; color?: string }) => (
   <View style={{ height: 8, borderRadius: 4, backgroundColor: TH.fill, overflow: 'hidden' }}><View style={{ height: 8, borderRadius: 4, width: `${Math.max(0, Math.min(100, max ? (value / max) * 100 : 0))}%`, backgroundColor: color }} /></View>
 )
 
+// Realtime socket + toast host. Mounted once per screen through <Screen/>; the socket is shared and ref-counted so it
+// connects once per session no matter how many screens are in the stack.
+export const ShellFx = () => {
+  const { user } = useAuthStore()
+  const insets = useSafeAreaInsets()
+  const [toasts, setToasts] = useState<{ id: number; message: string; kind: string }[]>([])
+  const uid = (user as any)?.id as number | undefined
+
+  useEffect(() => {
+    const g = globalThis as any
+    const host = (message: string, kind: string) => {
+      const id = Date.now() + Math.random()
+      setToasts(t => [...t, { id, message, kind }])
+      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000)
+    }
+    g.__ktHosts = [...(g.__ktHosts ?? []), host]
+    g.__ktToast = (message: string, kind: string) => { const hs = g.__ktHosts ?? []; hs[hs.length - 1]?.(message, kind) }
+    return () => { g.__ktHosts = (g.__ktHosts ?? []).filter((h: any) => h !== host) }
+  }, [])
+
+  // Realtime: one Reverb socket per session, fanned out through a global bus
+  useEffect(() => {
+    if (!uid) return
+    const g = globalThis as any
+    const rtState = (g.__ktRt = g.__ktRt ?? { uid: 0, users: 0, close: null as null | (() => void) })
+    rtState.users += 1
+    if (rtState.uid === uid && rtState.close) return () => { rtState.users -= 1; if (rtState.users <= 0 && rtState.close) { rtState.close(); rtState.close = null; rtState.uid = 0 } }
+    rtState.close?.()
+    let closed = false
+    let retry = 0
+    let timer: any
+    let ws: WebSocket | null = null
+    let host = 'localhost'
+    let port = '8080'
+    let key = 'arkzen-key'
+    let secure = false
+    try {
+      host = process.env.EXPO_PUBLIC_REVERB_HOST ?? host
+      port = process.env.EXPO_PUBLIC_REVERB_PORT ?? port
+      key = process.env.EXPO_PUBLIC_REVERB_APP_KEY ?? key
+      secure = (process.env.EXPO_PUBLIC_REVERB_SCHEME ?? 'ws') === 'wss'
+    } catch { /* defaults */ }
+    const emit = (event: string, data: any) => { const g = globalThis as any; g.__ktBus?.forEach((h: any) => h(event, data)) }
+    const connect = () => {
+      if (closed) return
+      ws = new WebSocket(`${secure ? 'wss' : 'ws'}://${host}:${port}/app/${key}?protocol=7&client=js&version=8.4.0`)
+      ws.onmessage = async (ev: any) => {
+        let msg: any
+        try { msg = JSON.parse(ev.data) } catch { return }
+        if (msg.event === 'pusher:connection_established') {
+          retry = 0
+          const socketId = JSON.parse(msg.data).socket_id
+          const channel = `private-kotoba.${uid}`
+          try {
+            const res = await arkzenFetch('/api/kotoba/auth/broadcasting/auth', { method: 'POST', body: JSON.stringify({ socket_id: socketId, channel_name: channel }) })
+            if (!res.ok) return
+            const auth = await res.json()
+            ws?.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel, auth: auth.auth } }))
+          } catch { /* retry on reconnect */ }
+        } else if (msg.event === 'pusher:ping') {
+          ws?.send(JSON.stringify({ event: 'pusher:pong', data: {} }))
+        } else if (typeof msg.event === 'string' && msg.event.startsWith('kotoba.')) {
+          let data: any = msg.data
+          try { data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data } catch { /* raw */ }
+          emit(msg.event, data)
+          if (msg.event === 'kotoba.alert-created') { const a = data?.data ?? data; (globalThis as any).__ktToast?.(a?.text ?? 'New notification', 'ok') }
+        }
+      }
+      ws.onclose = () => { if (closed) return; retry = Math.min(retry + 1, 6); timer = setTimeout(connect, 1000 * 2 ** retry) }
+      ws.onerror = () => { try { ws?.close() } catch { /* ignore */ } }
+    }
+    connect()
+    rtState.uid = uid
+    rtState.close = () => { closed = true; clearTimeout(timer); try { ws?.close() } catch { /* ignore */ } }
+    return () => { rtState.users -= 1; if (rtState.users <= 0 && rtState.close) { rtState.close(); rtState.close = null; rtState.uid = 0 } }
+  }, [uid])
+
+
+  return (
+    <View pointerEvents="none" style={{ position: 'absolute', top: insets.top + 8, left: 16, right: 16, gap: 8 }}>
+      {toasts.map(t => <View key={t.id} style={{ backgroundColor: t.kind === 'err' ? '#9b3b34' : '#121212', borderRadius: 999, paddingVertical: 12, paddingHorizontal: 20 }}><Text style={{ fontSize: 14, fontWeight: '600', color: '#f5f1e9' }}>{t.message}</Text></View>)}
+    </View>
+  )
+}
+
 export const Screen = ({ title, subtitle, right, children, onRefresh, refreshing }: { title: string; subtitle?: string; right?: React.ReactNode; children: React.ReactNode; onRefresh?: () => void; refreshing?: boolean }) => (
+  <View style={{ flex: 1 }}>
   <ScrollView style={{ flex: 1 }} contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 16 }} keyboardShouldPersistTaps="handled"
     refreshControl={onRefresh ? <RefreshControl refreshing={!!refreshing} onRefresh={onRefresh} /> : undefined}>
     <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between' }}>
@@ -3088,20 +3249,22 @@ export const Screen = ({ title, subtitle, right, children, onRefresh, refreshing
     </View>
     {children}
   </ScrollView>
+  <ShellFx />
+  </View>
 )
 
 export const LangPicker = ({ label, value, onChange }: { label?: string; value: string; onChange: (v: string) => void }) => (
   <View>
-    {label && <Text style={{ fontSize: 12, fontWeight: '600', color: TH.sub, marginBottom: 6, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 0.5 }}>{label}</Text>}
+    {label && <Text style={{ fontSize: 12, fontWeight: '600', color: TH.sub, marginBottom: 6, marginLeft: 4, textTransform: 'uppercase', letterSpacing: 1.2 }}>{label}</Text>}
     <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-      {LANGS.map(l => <Chip key={l.code} label={`${l.flag} ${l.name}`} on={value === l.code} onPress={() => onChange(l.code)} />)}
+      {LANGS.map(l => <Chip key={l.code} label={`${l.name}`} on={value === l.code} onPress={() => onChange(l.code)} />)}
     </ScrollView>
   </View>
 )
 
 export const Diff = ({ from, to, size = 15 }: { from: string; to: string; size?: number }) => (
   <Text style={{ fontSize: size, color: TH.text, lineHeight: size * 1.5 }}>
-    {diffText(from, to).map((p, i) => <Text key={i} style={p.t === 'del' ? { color: TH.red, textDecorationLine: 'line-through', backgroundColor: 'rgba(255,69,58,0.14)' } : p.t === 'add' ? { color: '#1f9c43', fontWeight: '700', backgroundColor: 'rgba(48,209,88,0.2)' } : undefined}>{p.s}</Text>)}
+    {diffText(from, to).map((p, i) => <Text key={i} style={p.t === 'del' ? { color: TH.red, textDecorationLine: 'line-through', backgroundColor: 'rgba(155, 59, 52, 0.14)' } : p.t === 'add' ? { color: '#3f6b4f', fontWeight: '700', backgroundColor: 'rgba(63, 107, 79, 0.2)' } : undefined}>{p.s}</Text>)}
   </Text>
 )
 
@@ -3198,7 +3361,7 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity onPress={() => onProfile?.(p.user_id)} accessibilityLabel={`Open ${p.author_name}`}><Avatar name={p.author_name} color={p.author_color} /></TouchableOpacity>
         <View style={{ flex: 1 }}><Text style={{ fontWeight: '600', fontSize: 16, color: TH.text }}>{p.author_name}</Text><Text style={{ color: TH.sub, fontSize: 13 }}>Native {langName(p.author_native)} · {timeAgo(p.created_at)}</Text></View>
-        <Chip tone="blue" label={`${langFlag(p.lang)} ${langName(p.lang)}`} />
+        <Chip tone="blue" label={`${langName(p.lang)}`} />
       </View>
       <Text style={{ fontSize: 18, lineHeight: 27, color: TH.text }}>
         {words.map((w, i) => /^\s+$/.test(w) || w.length > 40 ? <Text key={i}>{w}</Text> : <Text key={i} onPress={() => { setTerm(w.replace(/[.,!?¡¿;:()"“”]/g, '')); setSaveOpen(true) }}>{w}</Text>)}
@@ -3206,9 +3369,9 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
       {p.translation && <TouchableOpacity onPress={() => setShowTr(s => !s)}><Text style={{ color: TH.blue, fontSize: 14, fontWeight: '600' }}>{showTr ? 'Hide translation' : 'Show translation'}</Text>{showTr && <Text style={{ color: TH.sub, fontSize: 15, marginTop: 4 }}>{p.translation}</Text>}</TouchableOpacity>}
       <Text style={{ color: TH.sub, fontSize: 12 }}>Tip: tap any word to save it to your deck.</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <Btn small kind="ghost" label={`${p.liked ? '❤️' : '🤍'} ${p.likes_count}`} onPress={like} />
-        <Btn small kind="ghost" label={`💬 ${p.comments_count}`} onPress={toggle} />
-        {p.corrections_count > 0 ? <Chip tone="green" label={`✓ ${p.corrections_count} correction${p.corrections_count > 1 ? 's' : ''}`} /> : !mine ? <Chip tone="orange" label="Needs feedback" /> : null}
+        <Btn small kind="ghost" icon="heart" iconFilled={p.liked} label={String(p.likes_count)} onPress={like} />
+        <Btn small kind="ghost" icon="message-circle" label={String(p.comments_count)} onPress={toggle} />
+        {p.corrections_count > 0 ? <Chip tone="green" label={`${p.corrections_count} correction${p.corrections_count > 1 ? 's' : ''}`} /> : !mine ? <Chip tone="orange" label="Needs feedback" /> : null}
         {mine && <Btn small kind="ghost" label="Delete" onPress={remove} />}
       </View>
       {open && (
@@ -3222,8 +3385,8 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
                 <Text style={{ fontSize: 14, color: TH.text }}><Text style={{ fontWeight: '700' }}>{c.author_name}</Text> <Text style={{ color: TH.sub }}>{timeAgo(c.created_at)}</Text></Text>
                 <Text style={{ fontSize: 15, color: TH.text }}>{c.body}</Text>
                 {c.is_correction && c.corrected && (
-                  <View style={{ backgroundColor: 'rgba(48,209,88,0.14)', borderRadius: 14, padding: 10, gap: 6, borderWidth: 1, borderColor: 'rgba(48,209,88,0.35)' }}>
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>✏️ Suggested correction {c.accepted ? '· Accepted' : ''}</Text>
+                  <View style={{ backgroundColor: 'rgba(63, 107, 79, 0.14)', borderRadius: 14, padding: 10, gap: 6, borderWidth: 1, borderColor: 'rgba(63, 107, 79, 0.35)' }}>
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>Suggested correction {c.accepted ? '· Accepted' : ''}</Text>
                     <Diff from={p.body} to={c.corrected} />
                     {c.explanation && <Text style={{ color: TH.sub, fontSize: 14 }}>{c.explanation}</Text>}
                     {mine && !c.accepted && <Btn small kind="tint" label="Accept and thank" onPress={() => accept(c)} />}
@@ -3291,7 +3454,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
       <View style={{ flex: 1, backgroundColor: TH.bg, paddingTop: Platform.OS === 'ios' ? 54 : 30 }}>
         {result ? (
           <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30, gap: 10 }}>
-            <Text style={{ fontSize: 64 }}>{result.score >= 70 ? '🎉' : '💪'}</Text>
+            <Ico n={result.score >= 70 ? 'party-popper' : 'medal'} size={56} />
             <Text style={{ fontSize: 44, fontWeight: '800', color: TH.text }}>{result.score}%</Text>
             <Text style={{ fontSize: 22, fontWeight: '700', color: TH.text }}>{result.score >= 70 ? 'Nicely done!' : 'Good effort!'}</Text>
             <Text style={{ color: TH.sub, fontSize: 16, textAlign: 'center' }}>+{result.xp} XP{result.cards_added > 0 ? ` · ${result.cards_added} new words in your deck` : ''}</Text>
@@ -3300,7 +3463,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
         ) : !cur ? <Empty title="This lesson is empty"><Btn label="Close" onPress={onClose} /></Empty> : (
           <>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingHorizontal: 20, paddingBottom: 10 }}>
-              <TouchableOpacity onPress={onClose} accessibilityLabel="Quit lesson" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: TH.card, alignItems: 'center', justifyContent: 'center' }}><Text>✕</Text></TouchableOpacity>
+              <TouchableOpacity onPress={onClose} accessibilityLabel="Quit lesson" style={{ width: 36, height: 36, borderRadius: 18, backgroundColor: TH.card, alignItems: 'center', justifyContent: 'center' }}><Ico n="close" size={18} /></TouchableOpacity>
               <View style={{ flex: 1 }}><Bar value={i} max={ex.length} /></View>
               <Text style={{ color: TH.sub }}>{i + 1}/{ex.length}</Text>
             </View>
@@ -3323,8 +3486,8 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
                 </View>
               )}
             </ScrollView>
-            <View style={{ padding: 20, paddingBottom: 34, backgroundColor: status === 'right' ? 'rgba(48,209,88,0.2)' : status === 'wrong' ? 'rgba(255,69,58,0.16)' : TH.card, gap: 10 }}>
-              {status === 'right' && <Text style={{ color: '#1f9c43', fontWeight: '800', fontSize: 18 }}>Correct!</Text>}
+            <View style={{ padding: 20, paddingBottom: 34, backgroundColor: status === 'right' ? 'rgba(63, 107, 79, 0.2)' : status === 'wrong' ? 'rgba(155, 59, 52, 0.16)' : TH.card, gap: 10 }}>
+              {status === 'right' && <Text style={{ color: '#3f6b4f', fontWeight: '800', fontSize: 18 }}>Correct!</Text>}
               {status === 'wrong' && <View><Text style={{ color: TH.red, fontWeight: '800', fontSize: 18 }}>Not quite</Text>{cur.t !== 'match' && <Text style={{ color: TH.sub }}>Answer: {answerText}</Text>}</View>}
               {status === 'idle' ? (cur.t === 'match' ? <Btn label="Skip" onPress={() => verdict(false)} /> : <Btn kind="primary" label="Check" disabled={!canCheck} onPress={check} />) : <Btn kind="primary" label={i + 1 < ex.length ? 'Continue' : 'Finish'} onPress={next} />}
             </View>
@@ -3353,7 +3516,7 @@ export const ProfileSheet = ({ userId, onClose }: { userId: number | null; onClo
       {!p ? <ActivityIndicator /> : (
         <>
           <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}><Avatar name={p.display_name} color={p.avatar_color} size={64} /><View><Text style={{ fontSize: 22, fontWeight: '700', color: TH.text }}>{p.display_name}</Text><Text style={{ color: TH.sub }}>{p.country ?? 'Somewhere on Earth'}</Text></View></View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langFlag(p.native_lang)} ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${langFlag(p.learning_lang)} ${langName(p.learning_lang)} · ${p.level}`} /><Chip tone="orange" label={`🔥 ${p.streak} days`} /></View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${langName(p.learning_lang)} · ${p.level}`} /><Chip tone="orange" label={`${p.streak} day streak`} /></View>
           {p.bio && <Text style={{ fontSize: 16, lineHeight: 23, color: TH.text }}>{p.bio}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}>{[['Posts', d.post_count], ['Followers', d.followers], ['Following', d.following_count]].map(([k, v]) => <View key={k as string} style={{ flex: 1, backgroundColor: TH.fill, borderRadius: 14, padding: 12, alignItems: 'center' }}><Text style={{ fontSize: 20, fontWeight: '700', color: TH.text }}>{v}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>{k}</Text></View>)}</View>
           <View style={{ flexDirection: 'row', gap: 10 }}><Btn kind="primary" label="Message" onPress={message} style={{ flex: 1 }} /><Btn label={d.following ? 'Following' : 'Follow'} onPress={follow} /></View>
@@ -3396,11 +3559,11 @@ export const OnboardingSheet = ({ open, profile, onDone }: { open: boolean; prof
 /* @arkzen:native:layout:shell */
 
 /* @arkzen:import:expo */
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useRouter, usePathname } from 'expo-router'
-import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Home, Newspaper, GraduationCap, Layers, MessageCircle, User } from 'lucide-react-native'
 
 const useTabNav = () => {
   const r = useRouter()
@@ -3410,11 +3573,11 @@ const useTabNav = () => {
 /* @arkzen:import:expo:end */
 
 /* @arkzen:import:rn */
-import React, { useState, useEffect } from 'react'
+import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
 import { useNavigation, useRoute } from '@react-navigation/native'
-import { useAuthStore, arkzenFetch } from '@/arkzen/core/stores/authStore'
+import { Home, Newspaper, GraduationCap, Layers, MessageCircle, User } from 'lucide-react-native'
 
 const useTabNav = () => {
   const n = useNavigation<any>()
@@ -3424,90 +3587,30 @@ const useTabNav = () => {
 /* @arkzen:import:rn:end */
 
 const TABS = [
-  { key: 'dashboard', label: 'Home', icon: '🏠' }, { key: 'feed', label: 'Feed', icon: '📰' }, { key: 'learn', label: 'Learn', icon: '🎓' },
-  { key: 'review', label: 'Review', icon: '🧠' }, { key: 'chat', label: 'Chat', icon: '💬' }, { key: 'profile', label: 'Me', icon: '👤' },
+  { key: 'dashboard', label: 'Home', icon: Home }, { key: 'feed', label: 'Feed', icon: Newspaper }, { key: 'learn', label: 'Learn', icon: GraduationCap },
+  { key: 'review', label: 'Review', icon: Layers }, { key: 'chat', label: 'Chat', icon: MessageCircle }, { key: 'profile', label: 'Me', icon: User },
 ]
 
+// The shell is only chrome (tab bar). Realtime and toasts live in the shared <ShellFx/> component, mounted by <Screen>,
+// because layouts cannot use the '@/arkzen' import alias (their generated file sits in a different folder).
 export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { user } = useAuthStore()
   const nav = useTabNav()
   const insets = useSafeAreaInsets()
-  const [toasts, setToasts] = useState<{ id: number; message: string; kind: string }[]>([])
-  const uid = (user as any)?.id as number | undefined
-
-  useEffect(() => {
-    const g = globalThis as any
-    g.__ktToast = (message: string, kind: string) => {
-      const id = Date.now() + Math.random()
-      setToasts(t => [...t, { id, message, kind }])
-      setTimeout(() => setToasts(t => t.filter(x => x.id !== id)), 3000)
-    }
-    return () => { g.__ktToast = undefined }
-  }, [])
-
-  // Realtime: one Reverb socket per session, fanned out through a global bus
-  useEffect(() => {
-    if (!uid) return
-    let closed = false
-    let retry = 0
-    let timer: any
-    let ws: WebSocket | null = null
-    let host = 'localhost'
-    let port = '8080'
-    let key = 'arkzen-key'
-    let secure = false
-    try {
-      host = process.env.EXPO_PUBLIC_REVERB_HOST ?? host
-      port = process.env.EXPO_PUBLIC_REVERB_PORT ?? port
-      key = process.env.EXPO_PUBLIC_REVERB_APP_KEY ?? key
-      secure = (process.env.EXPO_PUBLIC_REVERB_SCHEME ?? 'ws') === 'wss'
-    } catch { /* defaults */ }
-    const emit = (event: string, data: any) => { const g = globalThis as any; g.__ktBus?.forEach((h: any) => h(event, data)) }
-    const connect = () => {
-      if (closed) return
-      ws = new WebSocket(`${secure ? 'wss' : 'ws'}://${host}:${port}/app/${key}?protocol=7&client=js&version=8.4.0`)
-      ws.onmessage = async (ev: any) => {
-        let msg: any
-        try { msg = JSON.parse(ev.data) } catch { return }
-        if (msg.event === 'pusher:connection_established') {
-          retry = 0
-          const socketId = JSON.parse(msg.data).socket_id
-          const channel = `private-kotoba.${uid}`
-          try {
-            const res = await arkzenFetch('/api/kotoba/auth/broadcasting/auth', { method: 'POST', body: JSON.stringify({ socket_id: socketId, channel_name: channel }) })
-            if (!res.ok) return
-            const auth = await res.json()
-            ws?.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel, auth: auth.auth } }))
-          } catch { /* retry on reconnect */ }
-        } else if (msg.event === 'pusher:ping') {
-          ws?.send(JSON.stringify({ event: 'pusher:pong', data: {} }))
-        } else if (typeof msg.event === 'string' && msg.event.startsWith('kotoba.')) {
-          let data: any = msg.data
-          try { data = typeof msg.data === 'string' ? JSON.parse(msg.data) : msg.data } catch { /* raw */ }
-          emit(msg.event, data)
-          if (msg.event === 'kotoba.alert-created') { const a = data?.data ?? data; (globalThis as any).__ktToast?.(a?.text ?? 'New notification', 'ok') }
-        }
-      }
-      ws.onclose = () => { if (closed) return; retry = Math.min(retry + 1, 6); timer = setTimeout(connect, 1000 * 2 ** retry) }
-      ws.onerror = () => { try { ws?.close() } catch { /* ignore */ } }
-    }
-    connect()
-    return () => { closed = true; clearTimeout(timer); try { ws?.close() } catch { /* ignore */ } }
-  }, [uid])
 
   return (
-    <View style={{ flex: 1, backgroundColor: '#f2f2f7' }}>
+    <View style={{ flex: 1, backgroundColor: '#e9e4da' }}>
       <SafeAreaView edges={['top']} style={{ flex: 1 }}>{children}</SafeAreaView>
-      <View accessibilityRole="tablist" style={{ flexDirection: 'row', backgroundColor: 'rgba(255,255,255,0.96)', borderTopWidth: 1, borderTopColor: 'rgba(60,60,67,0.16)', paddingTop: 6, paddingBottom: Math.max(insets.bottom, 8) }}>
-        {TABS.map(t => (
-          <TouchableOpacity key={t.key} accessibilityRole="tab" accessibilityLabel={t.label} accessibilityState={{ selected: nav.active === t.key }} onPress={() => nav.go(t.key)} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 4 }}>
-            <Text style={{ fontSize: 22, opacity: nav.active === t.key ? 1 : 0.55 }}>{t.icon}</Text>
-            <Text style={{ fontSize: 10, fontWeight: '600', color: nav.active === t.key ? '#0a84ff' : '#8e8e93' }}>{t.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <View pointerEvents="none" style={{ position: 'absolute', top: insets.top + 8, left: 16, right: 16, gap: 8 }}>
-        {toasts.map(t => <View key={t.id} style={{ backgroundColor: 'rgba(255,255,255,0.97)', borderRadius: 16, paddingVertical: 12, paddingHorizontal: 16, shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 14, shadowOffset: { width: 0, height: 6 }, elevation: 6 }}><Text style={{ fontSize: 14, fontWeight: '600', color: t.kind === 'err' ? '#ff453a' : '#1c1c1e' }}>{t.message}</Text></View>)}
+      <View accessibilityRole="tablist" style={{ flexDirection: 'row', marginHorizontal: 14, marginBottom: Math.max(insets.bottom, 10), padding: 6, backgroundColor: '#f5f1e9', borderRadius: 999, borderWidth: 1, borderColor: 'rgba(18,18,18,0.12)' }}>
+        {TABS.map(t => {
+          const on = nav.active === t.key
+          const Icon = t.icon
+          return (
+            <TouchableOpacity key={t.key} accessibilityRole="tab" accessibilityLabel={t.label} accessibilityState={{ selected: on }} onPress={() => nav.go(t.key)} style={{ flex: 1, alignItems: 'center', gap: 2, paddingVertical: 7, borderRadius: 999, backgroundColor: on ? '#121212' : 'transparent' }}>
+              <Icon size={20} color={on ? '#f5f1e9' : '#6b655b'} strokeWidth={1.8} />
+              <Text style={{ fontSize: 10, fontWeight: '600', color: on ? '#f5f1e9' : '#6b655b' }}>{t.label}</Text>
+            </TouchableOpacity>
+          )
+        })}
       </View>
     </View>
   )
@@ -3521,15 +3624,23 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
 const IndexScreen = () => {
   const nav = useNav()
   return (
-    <View style={{ flex: 1, backgroundColor: TH.bg, justifyContent: 'center', padding: 28, gap: 14 }}>
-      <View style={{ width: 64, height: 64, borderRadius: 18, backgroundColor: TH.blue, alignItems: 'center', justifyContent: 'center' }}><Text style={{ color: '#fff', fontSize: 30 }}>言</Text></View>
-      <Text style={{ fontSize: 42, fontWeight: '800', letterSpacing: -1.2, color: TH.text, lineHeight: 46 }}>Learn by talking, not by tapping.</Text>
-      <Text style={{ fontSize: 18, color: TH.sub, lineHeight: 26 }}>Write real posts, get corrected by native speakers, and turn every mistake into a flashcard.</Text>
-      <View style={{ gap: 10, marginTop: 18 }}>
-        <Btn kind="primary" label="Create free account" onPress={() => nav.go('register')} />
-        <Btn label="I have an account" onPress={() => nav.go('login')} />
+    <ScrollView style={{ flex: 1, backgroundColor: TH.bg }} contentContainerStyle={{ padding: 24, paddingTop: 56, paddingBottom: 44, gap: 22 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}><Logo /><Text style={{ fontSize: 20, fontWeight: '800', letterSpacing: -0.6, color: TH.text }}>Kotoba</Text></View>
+      <View style={{ height: 320, borderRadius: 36, overflow: 'hidden', backgroundColor: TH.fill }}>
+        <Image source={{ uri: 'https://picsum.photos/seed/kotoba-words/900/1125?grayscale' }} style={{ width: '100%', height: '100%' }} resizeMode="cover" />
+        <View style={{ position: 'absolute', left: 14, right: 14, bottom: 14, borderRadius: 26, backgroundColor: TH.text, paddingVertical: 16, paddingHorizontal: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+          <View><Text style={{ color: 'rgba(245,241,233,0.6)', fontSize: 12 }}>kotoba</Text><Text style={{ color: TH.card, fontSize: 20, fontWeight: '700' }}>Words</Text></View>
+          <Text style={{ color: TH.card, fontSize: 40, fontWeight: '700', fontFamily: Platform.OS === 'ios' ? 'Hiragino Mincho ProN' : 'serif' }}>言葉</Text>
+        </View>
       </View>
-    </View>
+      <Text style={{ fontSize: 11, fontWeight: '600', letterSpacing: 1.6, color: TH.sub, textTransform: 'uppercase' }}>Social language learning</Text>
+      <Text style={{ fontSize: 44, fontWeight: '800', letterSpacing: -1.8, color: TH.text, lineHeight: 46, marginTop: -12 }}>Learn by talking, not by tapping.</Text>
+      <Text style={{ fontSize: 17, color: TH.sub, lineHeight: 26 }}>Write real posts, get corrected by native speakers, and turn every mistake into a flashcard.</Text>
+      <View style={{ gap: 10 }}>
+        <Btn kind="primary" label="Create free account" onPress={() => nav.go('register')} />
+        <Btn kind="tint" label="I have an account" onPress={() => nav.go('login')} />
+      </View>
+    </ScrollView>
   )
 }
 
@@ -3551,10 +3662,10 @@ const LoginScreen = () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: TH.bg }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
-        <Card style={{ padding: 24, gap: 14, borderRadius: 28 }}>
-          <Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>Welcome back</Text>
+        <Card style={{ padding: 28, gap: 14, borderRadius: 36 }}>
+          <Logo /><Text style={{ fontSize: 32, fontWeight: '800', letterSpacing: -1, color: TH.text }}>Welcome back</Text>
           <Text style={{ color: TH.sub, fontSize: 16 }}>Sign in to continue your streak.</Text>
-          {error && <View accessibilityRole="alert" style={{ backgroundColor: 'rgba(255,69,58,0.14)', padding: 12, borderRadius: 12 }}><Text style={{ color: TH.red }}>{error}</Text></View>}
+          {error && <View accessibilityRole="alert" style={{ backgroundColor: 'rgba(155, 59, 52, 0.14)', padding: 12, borderRadius: 12 }}><Text style={{ color: TH.red }}>{error}</Text></View>}
           <Field label="Email" value={email} onChangeText={setEmail} keyboard="email-address" />
           <Field label="Password" value={password} onChangeText={setPassword} secure />
           <Btn kind="primary" label={isLoading ? 'Signing in…' : 'Sign in'} disabled={isLoading || !email || !password} onPress={submit} />
@@ -3587,10 +3698,10 @@ const RegisterScreen = () => {
   return (
     <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1, backgroundColor: TH.bg }}>
       <ScrollView contentContainerStyle={{ flexGrow: 1, justifyContent: 'center', padding: 24 }} keyboardShouldPersistTaps="handled">
-        <Card style={{ padding: 24, gap: 14, borderRadius: 28 }}>
+        <Card style={{ padding: 28, gap: 14, borderRadius: 36 }}>
           <Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>Create your account</Text>
           <Text style={{ color: TH.sub, fontSize: 16 }}>Free forever. Takes under a minute.</Text>
-          {error && <View accessibilityRole="alert" style={{ backgroundColor: 'rgba(255,69,58,0.14)', padding: 12, borderRadius: 12 }}><Text style={{ color: TH.red }}>{error}</Text></View>}
+          {error && <View accessibilityRole="alert" style={{ backgroundColor: 'rgba(155, 59, 52, 0.14)', padding: 12, borderRadius: 12 }}><Text style={{ color: TH.red }}>{error}</Text></View>}
           <Field label="Name" value={name} onChangeText={setName} autoCap="words" />
           <Field label="Email" value={email} onChangeText={setEmail} keyboard="email-address" />
           <Field label="Password (8+ characters)" value={password} onChangeText={setPassword} secure />
@@ -3621,42 +3732,42 @@ const DashboardScreen = () => {
   const today = data?.today_activity ?? 0
 
   const plan = [
-    { e: '🎯', t: data?.mission?.title ?? 'Daily mission', s: data?.mission_done ? 'Done for today. Nice work!' : data?.mission?.prompt, done: !!data?.mission_done, cta: 'Write', run: () => setWriting(true) },
-    { e: '📚', t: data?.next_lesson ? `Lesson: ${data.next_lesson.title}` : 'Lessons', s: data?.next_lesson ? `Next up in ${data.next_lesson.unit}` : 'All lessons done for this language.', done: !data?.next_lesson, cta: 'Start', run: () => nav.go('learn') },
-    { e: '🧠', t: `Review ${data?.due ?? 0} card${data?.due === 1 ? '' : 's'}`, s: data?.due ? 'Right before you forget them.' : 'Nothing due right now.', done: !data?.due, cta: 'Review', run: () => nav.go('review') },
-    { e: '🤝', t: 'Help a learner', s: `${data?.help_needed ?? 0} post${data?.help_needed === 1 ? '' : 's'} in ${langName(p?.native_lang)} need your eyes.`, done: !data?.help_needed, cta: 'Help', run: () => { pending.feedScope = 'help'; nav.go('feed') } },
+    { e: 'target', t: data?.mission?.title ?? 'Daily mission', s: data?.mission_done ? 'Done for today. Nice work!' : data?.mission?.prompt, done: !!data?.mission_done, cta: 'Write', run: () => setWriting(true) },
+    { e: 'book-open', t: data?.next_lesson ? `Lesson: ${data.next_lesson.title}` : 'Lessons', s: data?.next_lesson ? `Next up in ${data.next_lesson.unit}` : 'All lessons done for this language.', done: !data?.next_lesson, cta: 'Start', run: () => nav.go('learn') },
+    { e: 'brain', t: `Review ${data?.due ?? 0} card${data?.due === 1 ? '' : 's'}`, s: data?.due ? 'Right before you forget them.' : 'Nothing due right now.', done: !data?.due, cta: 'Review', run: () => nav.go('review') },
+    { e: 'handshake', t: 'Help a learner', s: `${data?.help_needed ?? 0} post${data?.help_needed === 1 ? '' : 's'} in ${langName(p?.native_lang)} need your eyes.`, done: !data?.help_needed, cta: 'Help', run: () => { pending.feedScope = 'help'; nav.go('feed') } },
   ]
   return (
-    <Screen title={`${hi}, ${p?.display_name?.split(' ')[0] ?? 'friend'}`} subtitle={p ? `${langFlag(p.learning_lang)} Learning ${langName(p.learning_lang)} · ${p.level}` : undefined} onRefresh={reload} refreshing={loading && !!data}>
+    <Screen title={`${hi}, ${p?.display_name?.split(' ')[0] ?? 'friend'}`} subtitle={p ? `Learning ${langName(p.learning_lang)} · ${p.level}` : undefined} onRefresh={reload} refreshing={loading && !!data}>
       {loading && !data && <Skel n={3} h={110} />}
-      {error && !data && <Empty icon="📡" title="Cannot reach Kotoba" text={error}><Btn kind="primary" label="Try again" onPress={reload} /></Empty>}
+      {error && !data && <Empty icon="wifi-off" title="Cannot reach Kotoba" text={error}><Btn kind="primary" label="Try again" onPress={reload} /></Empty>}
       {data && (
         <>
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Text style={{ fontSize: 26 }}>🔥</Text><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{p?.streak ?? 0}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>day streak</Text></Card>
-            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Text style={{ fontSize: 26 }}>⭐</Text><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{p?.xp ?? 0}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>XP</Text></Card>
-            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Text style={{ fontSize: 26 }}>🎯</Text><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{Math.min(today, goal)}/{goal}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>today</Text></Card>
+            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Ico n="flame" size={24} /><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{p?.streak ?? 0}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>day streak</Text></Card>
+            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Ico n="star" size={24} /><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{p?.xp ?? 0}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>XP</Text></Card>
+            <Card style={{ flex: 1, alignItems: 'center', padding: 14 }}><Ico n="target" size={24} /><Text style={{ fontSize: 24, fontWeight: '800', color: TH.text }}>{Math.min(today, goal)}/{goal}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>today</Text></Card>
           </View>
           <Card style={{ gap: 4 }}>
             <Text style={{ fontSize: 22, fontWeight: '700', color: TH.text, marginBottom: 6 }}>Today’s plan</Text>
             {plan.map((s, i) => (
               <View key={s.t} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderTopWidth: i ? 1 : 0, borderTopColor: TH.line, opacity: s.done ? 0.6 : 1 }}>
-                <Text style={{ fontSize: 28, width: 40, textAlign: 'center' }}>{s.done ? '✅' : s.e}</Text>
+                <View style={{ width: 40, alignItems: 'center' }}><Ico n={s.done ? 'check' : s.e} size={24} /></View>
                 <View style={{ flex: 1 }}><Text style={{ fontWeight: '600', fontSize: 16, color: TH.text }}>{s.t}</Text><Text numberOfLines={2} style={{ color: TH.sub, fontSize: 14, marginTop: 2 }}>{s.s}</Text></View>
                 <Btn small kind={s.done ? 'fill' : 'tint'} label={s.cta} onPress={s.run} />
               </View>
             ))}
           </Card>
           <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
-            {[['Partners', '🧭', 'Find people', 'partners'], ['Circles', '👥', `${data.circles ?? 0} joined`, 'circles'], ['Progress', '📈', 'See growth', 'progress']].map(([t, e, s, k]) => (
-              <Card key={t} onPress={() => nav.go(k)} style={{ flexGrow: 1, flexBasis: '30%' }}><Text style={{ fontSize: 26 }}>{e}</Text><Text style={{ fontWeight: '700', marginTop: 6, color: TH.text }}>{t}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>{s}</Text></Card>
+            {[['Partners', 'compass', 'Find people', 'partners'], ['Circles', 'users', `${data.circles ?? 0} joined`, 'circles'], ['Progress', 'trending-up', 'See growth', 'progress']].map(([t, e, s, k]) => (
+              <Card key={t} onPress={() => nav.go(k)} style={{ flexGrow: 1, flexBasis: '30%' }}><Ico n={e} size={24} /><Text style={{ fontWeight: '700', marginTop: 8, color: TH.text }}>{t}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>{s}</Text></Card>
             ))}
           </View>
         </>
       )}
       <Sheet open={writing} onClose={() => setWriting(false)} title={data?.mission?.title ?? 'Daily mission'}>
         <Text style={{ fontSize: 16, lineHeight: 23, color: TH.text }}>{data?.mission?.prompt}</Text>
-        {data?.mission?.hint && <Text style={{ color: TH.sub }}>💡 {data.mission.hint}</Text>}
+        {data?.mission?.hint && <Text style={{ color: TH.sub }}>Hint: {data.mission.hint}</Text>}
         <ComposeBox lang={p?.learning_lang ?? 'es'} kind="mission" missionId={data?.mission?.id} onPosted={() => { setWriting(false); reload() }} placeholder={`Write your answer in ${langName(p?.learning_lang)}…`} />
       </Sheet>
       <OnboardingSheet open={onb} profile={p} onDone={() => { setOnb(false); reload() }} />
@@ -3689,12 +3800,12 @@ const FeedScreen = () => {
       <ComposeBox lang={profile?.learning_lang ?? 'es'} onPosted={p => setPosts(l => [p, ...(l ?? [])])} />
       <Seg value={scope} onChange={setScope} options={[{ value: 'all', label: 'For you' }, { value: 'following', label: 'Following' }, { value: 'help', label: 'Needs help' }, { value: 'mine', label: 'Mine' }]} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-        <Chip label="🌐 All" on={lang === 'all'} onPress={() => setLang('all')} />
-        {LANGS.map(l => <Chip key={l.code} label={`${l.flag} ${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
+        <Chip label="All" on={lang === 'all'} onPress={() => setLang('all')} />
+        {LANGS.map(l => <Chip key={l.code} label={`${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
       </ScrollView>
       {posts === null && <Skel n={3} h={160} />}
-      {error && <Empty icon="📡" title="Feed unavailable" text={error}><Btn kind="primary" label="Retry" onPress={load} /></Empty>}
-      {posts && !error && posts.length === 0 && <Empty icon="✍️" title="Nothing here yet" text="Be the first to post something in your target language." />}
+      {error && <Empty icon="wifi-off" title="Feed unavailable" text={error}><Btn kind="primary" label="Retry" onPress={load} /></Empty>}
+      {posts && !error && posts.length === 0 && <Empty icon="pen-line" title="Nothing here yet" text="Be the first to post something in your target language." />}
       {posts?.map(p => <PostCard key={p.id} post={p} meId={profile?.user_id} onProfile={setViewing} onDeleted={id => setPosts(l => (l ?? []).filter(x => x.id !== id))} />)}
       <ProfileSheet userId={viewing} onClose={() => setViewing(null)} />
     </Screen>
@@ -3718,17 +3829,17 @@ const LearnScreen = () => {
   return (
     <Screen title="Learn" subtitle="Short lessons built around phrases you will actually say." onRefresh={reload} refreshing={loading && !!data}>
       <LangPicker value={active ?? 'es'} onChange={setLang} />
-      {lessons.length > 0 && <Card style={{ gap: 8 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontWeight: '700', color: TH.text }}>{langFlag(active)} {langName(active)} path</Text><Text style={{ color: TH.sub }}>{doneCount}/{lessons.length}</Text></View><Bar value={doneCount} max={lessons.length} /></Card>}
+      {lessons.length > 0 && <Card style={{ gap: 8 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontWeight: '700', color: TH.text }}>{langName(active)} path</Text><Text style={{ color: TH.sub }}>{doneCount}/{lessons.length}</Text></View><Bar value={doneCount} max={lessons.length} /></Card>}
       {loading && !data && <Skel n={3} h={90} />}
-      {error && <Empty icon="📡" title="Could not load lessons" text={error}><Btn kind="primary" label="Retry" onPress={reload} /></Empty>}
-      {data && lessons.length === 0 && <Empty icon="🌍" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile, write in the community, chat with a partner and build your deck. Spanish, Japanese and English have lessons today." />}
+      {error && <Empty icon="wifi-off" title="Could not load lessons" text={error}><Btn kind="primary" label="Retry" onPress={reload} /></Empty>}
+      {data && lessons.length === 0 && <Empty icon="globe" title={`Lessons for ${langName(active)} are on the way`} text="Meanwhile, write in the community, chat with a partner and build your deck. Spanish, Japanese and English have lessons today." />}
       {units.map(u => (
         <View key={u as string} style={{ gap: 10 }}>
           <Text style={{ fontSize: 22, fontWeight: '700', color: TH.text }}>{u as string}</Text>
           {lessons.filter(l => l.unit === u).map(l => (
             <Card key={l.id} onPress={() => setPlaying(l)} style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>
-              <Text style={{ fontSize: 34 }}>{l.emoji ?? '📘'}</Text>
-              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{l.title}</Text><View style={{ flexDirection: 'row', marginTop: 6 }}><Chip label={l.level} /><Chip tone="orange" label={`+${l.xp} XP`} />{l.done && <Chip tone="green" label={`✓ ${l.best}%`} />}</View></View>
+              <Ico n={l.emoji ?? 'book'} size={30} />
+              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{l.title}</Text><View style={{ flexDirection: 'row', marginTop: 6 }}><Chip label={l.level} /><Chip tone="orange" label={`+${l.xp} XP`} />{l.done && <Chip tone="green" label={`Best ${l.best}%`} />}</View></View>
               <Text style={{ color: TH.sub, fontSize: 22 }}>›</Text>
             </Card>
           ))}
@@ -3795,7 +3906,7 @@ const ReviewScreen = () => {
           <Bar value={reviewed} max={reviewed + queue.length} />
           <TouchableOpacity activeOpacity={0.9} onPress={() => setFlipped(f => !f)} accessibilityLabel="Flip card">
             <Card style={{ minHeight: 260, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 }}>
-              <Chip tone="blue" label={`${langFlag(card.lang)} ${langName(card.lang)}`} />
+              <Chip tone="blue" label={`${langName(card.lang)}`} />
               <Text style={{ fontSize: 38, fontWeight: '800', color: TH.text, textAlign: 'center' }}>{card.term}</Text>
               {flipped ? <><Text style={{ fontSize: 24, color: TH.blue, textAlign: 'center' }}>{card.meaning}</Text>{card.example && <Text style={{ color: TH.sub, fontStyle: 'italic', textAlign: 'center' }}>“{String(card.example).slice(0, 140)}”</Text>}</> : <Text style={{ color: TH.sub }}>Tap to reveal</Text>}
             </Card>
@@ -3803,16 +3914,16 @@ const ReviewScreen = () => {
           {flipped ? <View style={{ flexDirection: 'row', gap: 8 }}>{grades.map(([l, c], n) => <TouchableOpacity key={l} accessibilityLabel={l} onPress={() => grade(n)} style={{ flex: 1, height: 54, borderRadius: 14, backgroundColor: TH.card, alignItems: 'center', justifyContent: 'center', ...SHADOW }}><Text style={{ color: c, fontWeight: '700' }}>{l}</Text></TouchableOpacity>)}</View> : <Btn kind="primary" label="Show answer" onPress={() => setFlipped(true)} />}
         </View>
       ) : (
-        <Empty icon="🎉" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, tap words in the feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Your next cards are scheduled.`}><Btn kind="primary" label="Add a word" onPress={() => setTab('add')} /></Empty>
+        <Empty icon="party-popper" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, tap words in the feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Your next cards are scheduled.`}><Btn kind="primary" label="Add a word" onPress={() => setTab('add')} /></Empty>
       ))}
       {tab === 'deck' && (
         <View style={{ gap: 12 }}>
           <Field value={q} onChangeText={setQ} placeholder="Search your deck" />
-          {deck.length === 0 ? <Empty icon="🗂️" title="No cards found" /> : deck.map(c => (
+          {deck.length === 0 ? <Empty icon="layers" title="No cards found" /> : deck.map(c => (
             <Card key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 }}>
-              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{c.term} {langFlag(c.lang)}</Text><Text style={{ color: TH.sub }}>{c.meaning}</Text></View>
+              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{c.term} · {c.lang.toUpperCase()}</Text><Text style={{ color: TH.sub }}>{c.meaning}</Text></View>
               <Chip tone={c.reps >= 4 ? 'green' : c.reps > 0 ? 'blue' : 'gray'} label={c.reps >= 4 ? 'Mastered' : c.reps > 0 ? `${c.reps}x` : 'New'} />
-              <TouchableOpacity accessibilityLabel={`Delete ${c.term}`} onPress={() => remove(c.id)}><Text style={{ color: TH.sub, fontSize: 18 }}>✕</Text></TouchableOpacity>
+              <TouchableOpacity accessibilityLabel={`Delete ${c.term}`} onPress={() => remove(c.id)}><Ico n="close" size={18} color={TH.sub} /></TouchableOpacity>
             </Card>
           ))}
         </View>
@@ -3858,15 +3969,15 @@ const PartnersScreen = () => {
       <Seg value={mode} onChange={setMode} options={[{ value: 'exchange', label: 'Language exchange' }, { value: 'all', label: 'Everyone' }]} />
       <Field value={q} onChangeText={setQ} placeholder="Search name, interest or country" />
       {list === null && <Skel n={3} h={140} />}
-      {list && list.length === 0 && <Empty icon="🧭" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
+      {list && list.length === 0 && <Empty icon="compass" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
       {list?.map(p => (
         <Card key={p.id} style={{ gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
             <TouchableOpacity onPress={() => setViewing(p.user_id)} accessibilityLabel={`Open ${p.display_name}`}><Avatar name={p.display_name} color={p.avatar_color} size={50} /></TouchableOpacity>
-            <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{p.display_name}</Text><Text style={{ color: TH.sub }}>{p.country ?? '—'} · 🔥 {p.streak}</Text></View>
-            <View style={{ alignItems: 'flex-end' }}><Text style={{ fontSize: 22, fontWeight: '800', color: (p.score ?? 0) >= 70 ? '#22a847' : TH.blue }}>{p.score}%</Text><Text style={{ color: TH.sub, fontSize: 11 }}>match</Text></View>
+            <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{p.display_name}</Text><Text style={{ color: TH.sub }}>{p.country ?? '—'} · {p.streak} day streak</Text></View>
+            <View style={{ alignItems: 'flex-end' }}><Text style={{ fontSize: 22, fontWeight: '800', color: (p.score ?? 0) >= 70 ? '#3f6b4f' : TH.blue }}>{p.score}%</Text><Text style={{ color: TH.sub, fontSize: 11 }}>match</Text></View>
           </View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langFlag(p.native_lang)} ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${langFlag(p.learning_lang)} ${p.level}`} />{p.shared?.slice(0, 3).map(s => <Chip key={s} tone="purple" label={s} />)}</View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${p.level}`} />{p.shared?.slice(0, 3).map(s => <Chip key={s} tone="purple" label={s} />)}</View>
           {p.bio && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{p.bio}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}><Btn small kind="primary" label="Say hello" onPress={() => hello(p)} style={{ flex: 1 }} /><Btn small label={p.following ? 'Following' : 'Follow'} onPress={() => follow(p)} /></View>
         </Card>
@@ -3911,8 +4022,8 @@ const ChatScreen = () => {
     setActive(a); setMsgs([])
     try { const r = await kt<any>(`/messages?${a.kind === 'dm' ? 'conversation_id' : 'circle_id'}=${a.id}`); setMsgs(r.data) } catch (e) { toast(e instanceof Error ? e.message : 'Could not load messages', 'err') }
   }, [])
-  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langFlag(c.with.native_lang)} ${langName(c.with.native_lang)}` })
-  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: `${c.emoji} ${c.name}`, sub: `${langName(c.lang)} · ${c.members_count} members` })
+  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langName(c.with.native_lang)}` })
+  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: c.name, sub: `${langName(c.lang)} · ${c.members_count} members` })
 
   useEffect(() => {
     loadLists().then(l => {
@@ -3974,8 +4085,8 @@ const ChatScreen = () => {
             return (
               <View key={m.id} style={{ alignItems: own ? 'flex-end' : 'flex-start', gap: 3 }}>
                 {!own && active.kind === 'circle' && <Text style={{ color: TH.sub, fontSize: 12, marginLeft: 8 }}>{m.sender_name}</Text>}
-                <View style={{ maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: own ? TH.blue : '#e9e9eb', borderBottomRightRadius: own ? 6 : 20, borderBottomLeftRadius: own ? 20 : 6 }}><Text style={{ fontSize: 16, color: own ? '#fff' : TH.text }}>{m.body}</Text></View>
-                {m.corrected && <View style={{ maxWidth: '80%', padding: 10, borderRadius: 14, backgroundColor: 'rgba(48,209,88,0.14)', borderWidth: 1, borderColor: 'rgba(48,209,88,0.35)', gap: 4 }}><Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>✏️ Suggested</Text><Diff from={m.body} to={m.corrected} size={14} />{m.note && <Text style={{ color: TH.sub, fontSize: 13 }}>{m.note}</Text>}</View>}
+                <View style={{ maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: own ? TH.blue : TH.fill, borderBottomRightRadius: own ? 6 : 20, borderBottomLeftRadius: own ? 20 : 6 }}><Text style={{ fontSize: 16, color: own ? TH.card : TH.text }}>{m.body}</Text></View>
+                {m.corrected && <View style={{ maxWidth: '80%', padding: 10, borderRadius: 14, backgroundColor: 'rgba(63, 107, 79, 0.14)', borderWidth: 1, borderColor: 'rgba(63, 107, 79, 0.35)', gap: 4 }}><Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>Suggested</Text><Diff from={m.body} to={m.corrected} size={14} />{m.note && <Text style={{ color: TH.sub, fontSize: 13 }}>{m.note}</Text>}</View>}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Text style={{ color: TH.sub, fontSize: 11 }}>{timeAgo(m.created_at)}</Text>
                   {!own && <Btn small kind="ghost" label="Correct" onPress={() => { setFixing(m); setFixText(m.corrected ?? m.body) }} style={{ height: 26, paddingHorizontal: 8 }} />}
@@ -4007,11 +4118,11 @@ const ChatScreen = () => {
   return (
     <Screen title="Messages" subtitle="Chat, then fix each other’s mistakes in place." onRefresh={loadLists} refreshing={false}>
       <Seg value={tab} onChange={setTab} options={[{ value: 'dm', label: 'Direct' }, { value: 'circle', label: 'Circles' }]} />
-      {list.length === 0 && <Empty icon={tab === 'dm' ? '💬' : '👥'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
+      {list.length === 0 && <Empty icon={tab === 'dm' ? 'message-circle' : 'users'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
       {list.map((c: any) => (
         <Card key={`${tab}${c.id}`} onPress={() => open(tab === 'dm' ? fromDm(c) : fromCircle(c))} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
-          {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20 }}>{c.emoji}</Text></View>}
-          <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{tab === 'dm' ? c.with.display_name : c.name}</Text><Text numberOfLines={1} style={{ color: TH.sub }}>{tab === 'dm' ? (c.last_message ?? 'Say hello 👋') : `${langName(c.lang)} · ${c.members_count} members`}</Text></View>
+          {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Ico n={c.emoji} size={19} /></View>}
+          <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{tab === 'dm' ? c.with.display_name : c.name}</Text><Text numberOfLines={1} style={{ color: TH.sub }}>{tab === 'dm' ? (c.last_message ?? 'Say hello') : `${langName(c.lang)} · ${c.members_count} members`}</Text></View>
           <Text style={{ color: TH.sub, fontSize: 22 }}>›</Text>
         </Card>
       ))}
@@ -4030,7 +4141,7 @@ const CirclesScreen = () => {
   const [lang, setLang] = useState('all')
   const { data, loading, error, reload, setData } = useApi<{ data: any[] }>(`/circles${lang !== 'all' ? `?lang=${lang}` : ''}`, [lang])
   const [creating, setCreating] = useState(false)
-  const [f, setF] = useState({ name: '', emoji: '💬', lang: 'es', level: 'A1', description: '' })
+  const [f, setF] = useState({ name: '', emoji: 'message-circle', lang: 'es', level: 'A1', description: '' })
   const [busy, setBusy] = useState(false)
   useEffect(() => { if (profile) setF(x => ({ ...x, lang: profile.learning_lang, level: profile.level })) }, [profile?.id])
   const toggle = async (c: any) => {
@@ -4047,23 +4158,23 @@ const CirclesScreen = () => {
     catch (e) { toast(e instanceof Error ? e.message : 'Failed', 'err') }
     finally { setBusy(false) }
   }
-  const emojis = ['💬', '☀️', '🌸', '☕', '🎧', '📚', '🌍', '🎮', '🍜', '⚽']
+  const emojis = ['message-circle', 'sun', 'flower', 'coffee', 'headphones', 'book-open', 'globe', 'gamepad', 'utensils', 'trophy']
   return (
     <Screen title="Circles" subtitle="Small study groups with a shared language." onRefresh={reload} refreshing={loading && !!data}
       right={<Btn small kind="primary" label="+ New" onPress={() => setCreating(true)} />}>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-        <Chip label="🌐 All" on={lang === 'all'} onPress={() => setLang('all')} />
-        {LANGS.map(l => <Chip key={l.code} label={`${l.flag} ${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
+        <Chip label="All" on={lang === 'all'} onPress={() => setLang('all')} />
+        {LANGS.map(l => <Chip key={l.code} label={`${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
       </ScrollView>
       {loading && !data && <Skel n={3} h={130} />}
-      {error && <Empty icon="📡" title="Could not load circles" text={error}><Btn kind="primary" label="Retry" onPress={reload} /></Empty>}
-      {data && data.data.length === 0 && <Empty icon="👥" title="No circles here yet" text="Start one. Small groups with a clear goal are where people stick around."><Btn kind="primary" label="Create a circle" onPress={() => setCreating(true)} /></Empty>}
+      {error && <Empty icon="wifi-off" title="Could not load circles" text={error}><Btn kind="primary" label="Retry" onPress={reload} /></Empty>}
+      {data && data.data.length === 0 && <Empty icon="users" title="No circles here yet" text="Start one. Small groups with a clear goal are where people stick around."><Btn kind="primary" label="Create a circle" onPress={() => setCreating(true)} /></Empty>}
       {data?.data.map(c => (
         <Card key={c.id} style={{ gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 26 }}>{c.emoji}</Text></View>
+            <View style={{ width: 50, height: 50, borderRadius: 25, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Ico n={c.emoji} size={24} /></View>
             <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{c.name}</Text><Text style={{ color: TH.sub }}>{c.members_count} member{c.members_count === 1 ? '' : 's'}</Text></View>
-            <Chip tone="blue" label={`${langFlag(c.lang)} ${c.level}`} />
+            <Chip tone="blue" label={`${c.level}`} />
           </View>
           {c.description && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{c.description}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -4073,7 +4184,7 @@ const CirclesScreen = () => {
         </Card>
       ))}
       <Sheet open={creating} onClose={() => setCreating(false)} title="New circle">
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{emojis.map(e => <TouchableOpacity key={e} accessibilityLabel={`Icon ${e}`} onPress={() => setF({ ...f, emoji: e })} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: f.emoji === e ? TH.blue : 'transparent' }}><Text style={{ fontSize: 20 }}>{e}</Text></TouchableOpacity>)}</View>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>{emojis.map(e => <TouchableOpacity key={e} accessibilityLabel={`Icon ${e}`} onPress={() => setF({ ...f, emoji: e })} style={{ width: 44, height: 44, borderRadius: 22, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: f.emoji === e ? TH.blue : 'transparent' }}><Ico n={e} size={19} /></TouchableOpacity>)}</View>
         <Field label="Name" value={f.name} onChangeText={v => setF({ ...f, name: v })} placeholder="Tokyo Night Owls" autoCap="words" />
         <LangPicker label="Language" value={f.lang} onChange={v => setF({ ...f, lang: v })} />
         <View><Text style={{ fontSize: 12, fontWeight: '600', color: TH.sub, marginBottom: 6, marginLeft: 4, textTransform: 'uppercase' }}>Level</Text><Seg value={f.level} onChange={v => setF({ ...f, level: v })} options={LEVELS.map(l => ({ value: l, label: l }))} /></View>
@@ -4092,17 +4203,17 @@ const CirclesScreen = () => {
 const ProgressScreen = () => {
   const { data, loading, error, reload } = useApi<any>('/progress')
   if (loading && !data) return <Screen title="Progress"><Skel n={3} h={130} /></Screen>
-  if (error || !data) return <Screen title="Progress"><Empty icon="📡" title="Could not load progress" text={error ?? ''}><Btn kind="primary" label="Retry" onPress={reload} /></Empty></Screen>
+  if (error || !data) return <Screen title="Progress"><Empty icon="wifi-off" title="Could not load progress" text={error ?? ''}><Btn kind="primary" label="Retry" onPress={reload} /></Empty></Screen>
   const p: KProfile = data.profile
   const s = data.stats
   const series: { date: string; count: number }[] = data.series
   const max = Math.max(1, ...series.map(x => x.count))
   const activeDays = series.filter(x => x.count > 0).length
   const badges = [
-    ['✍️', 'First post', s.posts >= 1], ['🔥', '7-day streak', p.best_streak >= 7], ['🧠', '25 words', s.cards >= 25], ['🎓', '3 lessons', s.lessons >= 3],
-    ['🤝', 'First correction', s.corrections_given >= 1], ['💬', '50 messages', s.messages_sent >= 50], ['🏅', 'Word master', s.mastered >= 10], ['🌟', 'Level 5', data.level >= 5],
+    ['pen-line', 'First post', s.posts >= 1], ['flame', '7-day streak', p.best_streak >= 7], ['brain', '25 words', s.cards >= 25], ['graduation-cap', '3 lessons', s.lessons >= 3],
+    ['handshake', 'First correction', s.corrections_given >= 1], ['message-circle', '50 messages', s.messages_sent >= 50], ['medal', 'Word master', s.mastered >= 10], ['star', 'Level 5', data.level >= 5],
   ] as [string, string, boolean][]
-  const tiles = [['Words written', s.words_written, '✍️'], ['Messages sent', s.messages_sent, '💬'], ['Posts', s.posts, '📝'], ['Lessons done', s.lessons, '🎓'], ['Words in deck', s.cards, '🗂️'], ['Mastered', s.mastered, '🏅'], ['Corrections given', s.corrections_given, '🤝'], ['Corrections received', s.corrections_received, '✏️']]
+  const tiles = [['Words written', s.words_written, 'pen-line'], ['Messages sent', s.messages_sent, 'message-circle'], ['Posts', s.posts, 'file-text'], ['Lessons done', s.lessons, 'graduation-cap'], ['Words in deck', s.cards, 'layers'], ['Mastered', s.mastered, 'medal'], ['Corrections given', s.corrections_given, 'handshake'], ['Corrections received', s.corrections_received, 'pencil']]
   return (
     <Screen title="Progress" subtitle="What you produce matters more than what you tap." onRefresh={reload} refreshing={loading}>
       <Card style={{ gap: 10 }}>
@@ -4110,17 +4221,17 @@ const ProgressScreen = () => {
         <Bar value={data.level_progress} max={100} color={TH.purple} />
       </Card>
       <View style={{ flexDirection: 'row', gap: 12 }}>
-        <Card style={{ flex: 1, alignItems: 'center' }}><Text style={{ fontSize: 34 }}>🔥</Text><Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>{p.streak}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>streak · best {p.best_streak}</Text></Card>
-        <Card style={{ flex: 1, alignItems: 'center' }}><Text style={{ fontSize: 34 }}>📅</Text><Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>{activeDays}/14</Text><Text style={{ color: TH.sub, fontSize: 12 }}>active days</Text></Card>
+        <Card style={{ flex: 1, alignItems: 'center' }}><Ico n="flame" size={32} /><Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>{p.streak}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>streak · best {p.best_streak}</Text></Card>
+        <Card style={{ flex: 1, alignItems: 'center' }}><Ico n="calendar" size={32} /><Text style={{ fontSize: 30, fontWeight: '800', color: TH.text }}>{activeDays}/14</Text><Text style={{ color: TH.sub, fontSize: 12 }}>active days</Text></Card>
       </View>
       <Card style={{ gap: 10 }}>
         <Text style={{ fontSize: 20, fontWeight: '700', color: TH.text }}>Last 14 days</Text>
         <View accessibilityLabel="Activity over the last 14 days" style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 4, height: 110 }}>{series.map(d => <View key={d.date} style={{ flex: 1, height: `${Math.max(4, (d.count / max) * 100)}%`, borderRadius: 5, backgroundColor: TH.blue, opacity: d.count ? 1 : 0.18 }} />)}</View>
       </Card>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{tiles.map(t => <Card key={t[0] as string} style={{ width: '47.5%', padding: 14 }}><Text style={{ fontSize: 22 }}>{t[2]}</Text><Text style={{ fontSize: 26, fontWeight: '800', color: TH.text }}>{t[1]}</Text><Text style={{ color: TH.sub, fontSize: 13 }}>{t[0]}</Text></Card>)}</View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{tiles.map(t => <Card key={t[0] as string} style={{ width: '47.5%', padding: 14 }}><Ico n={t[2] as string} size={20} /><Text style={{ fontSize: 26, fontWeight: '800', color: TH.text }}>{t[1]}</Text><Text style={{ color: TH.sub, fontSize: 13 }}>{t[0]}</Text></Card>)}</View>
       {s.corrections_received > 0 && <Card style={{ gap: 8 }}><View style={{ flexDirection: 'row', justifyContent: 'space-between' }}><Text style={{ fontWeight: '700', color: TH.text }}>Corrections you accepted</Text><Text style={{ color: TH.sub }}>{s.corrections_accepted}/{s.corrections_received}</Text></View><Bar value={s.corrections_accepted} max={s.corrections_received} color={TH.green} /></Card>}
       <Text style={{ fontSize: 22, fontWeight: '700', color: TH.text }}>Milestones</Text>
-      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{badges.map(b => <Card key={b[1]} style={{ width: '47.5%', alignItems: 'center', padding: 14, opacity: b[2] ? 1 : 0.4 }}><Text style={{ fontSize: 32 }}>{b[0]}</Text><Text style={{ fontWeight: '600', fontSize: 13, marginTop: 4, color: TH.text }}>{b[1]}</Text></Card>)}</View>
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>{badges.map(b => <Card key={b[1]} style={{ width: '47.5%', alignItems: 'center', padding: 14, opacity: b[2] ? 1 : 0.4 }}><Ico n={b[0]} size={28} /><Text style={{ fontWeight: '600', fontSize: 13, marginTop: 4, color: TH.text }}>{b[1]}</Text></Card>)}</View>
     </Screen>
   )
 }
@@ -4151,7 +4262,7 @@ const ProfileScreen = () => {
   return (
     <Screen title="Profile" subtitle={(user as any)?.email}>
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        {[['🧭', 'Partners', 'partners'], ['👥', 'Circles', 'circles'], ['📈', 'Progress', 'progress']].map(([e, t, k]) => <Card key={t} onPress={() => nav.go(k)} style={{ flex: 1, alignItems: 'center', padding: 12 }}><Text style={{ fontSize: 24 }}>{e}</Text><Text style={{ fontWeight: '600', fontSize: 13, color: TH.text, marginTop: 4 }}>{t}</Text></Card>)}
+        {[['compass', 'Partners', 'partners'], ['users', 'Circles', 'circles'], ['trending-up', 'Progress', 'progress']].map(([e, t, k]) => <Card key={t} onPress={() => nav.go(k)} style={{ flex: 1, alignItems: 'center', padding: 12 }}><Ico n={e} size={22} /><Text style={{ fontWeight: '600', fontSize: 13, color: TH.text, marginTop: 6 }}>{t}</Text></Card>)}
       </View>
       <Card style={{ gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>

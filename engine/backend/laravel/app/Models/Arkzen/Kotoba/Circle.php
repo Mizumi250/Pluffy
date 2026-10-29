@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Circle
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:22.784541Z
+// Generated: 2026-10-29T02:08:59.506798Z
 // ============================================================
 
 namespace App\Models\Arkzen\Kotoba;

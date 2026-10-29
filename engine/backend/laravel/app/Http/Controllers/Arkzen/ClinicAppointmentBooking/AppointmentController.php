@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — AppointmentController
 // Tatemono: clinic-appointment-booking
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:29.182339Z
+// Generated: 2026-10-29T02:08:50.423150Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\ClinicAppointmentBooking;

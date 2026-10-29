@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — LessonPlayer
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.043Z
+// Generated: 2026-10-29T02:08:57.985Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 import { norm, shuffle, toast } from './utils'
 import type { Ex, KComment, KPost, KProfile } from './types'
 import { Empty } from './Empty'
@@ -61,7 +61,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
   if (!ex.length) return <Sheet open onClose={onClose} title={lesson.title}><Empty title="This lesson is empty" /></Sheet>
   if (result) return (
     <div className="kt-sheet-back"><div className="kt-sheet" style={{ textAlign: 'center', padding: 32 }}>
-      <Ring value={result.score} max={100} size={140} color={result.score >= 70 ? '#30d158' : '#ff9f0a'}><div><div style={{ fontSize: 34, fontWeight: 700 }}>{result.score}%</div><div className="kt-sub">score</div></div></Ring>
+      <Ring value={result.score} max={100} size={140} color={result.score >= 70 ? '#3f6b4f' : '#8a6a2f'}><div><div style={{ fontSize: 34, fontWeight: 700 }}>{result.score}%</div><div className="kt-sub">score</div></div></Ring>
       <h2 className="kt-h2" style={{ marginTop: 18 }}>{result.score >= 70 ? 'Nicely done!' : 'Good effort!'}</h2>
       <p className="kt-sub">+{result.xp} XP{result.cards_added > 0 ? ` · ${result.cards_added} new words added to your deck` : ''}</p>
       <div className="kt-row" style={{ justifyContent: 'center', marginTop: 18 }}><button className="kt-btn primary" onClick={onDone}><Trophy size={16} />Continue</button></div>
@@ -81,7 +81,7 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
         <div style={{ flex: 1, overflowY: 'auto', padding: '10px 20px 30px', maxWidth: 720, width: '100%', margin: '0 auto' }}>
           <h2 className="kt-title" style={{ fontSize: 26, marginBottom: 22 }}>{cur.q}</h2>
           {cur.t === 'choose' && <div className="kt-stack" style={{ gap: 10 }}>{order.map(k => (
-            <button key={k} disabled={status !== 'idle'} className="kt-card" onClick={() => setSel(k)} style={{ textAlign: 'left', cursor: 'pointer', fontSize: 18, fontFamily: 'inherit', color: 'inherit', borderColor: sel === k ? '#0a84ff' : undefined, boxShadow: sel === k ? '0 0 0 3px rgba(10,132,255,0.25)' : undefined }}>{cur.o![k]}</button>
+            <button key={k} disabled={status !== 'idle'} className="kt-card" onClick={() => setSel(k)} style={{ textAlign: 'left', cursor: 'pointer', fontSize: 18, fontFamily: 'inherit', color: 'inherit', borderColor: sel === k ? '#121212' : undefined, boxShadow: sel === k ? '0 0 0 3px rgba(18, 18, 18, 0.25)' : undefined }}>{cur.o![k]}</button>
           ))}</div>}
           {cur.t === 'type' && <input autoFocus className="kt-input" style={{ fontSize: 20 }} value={typed} disabled={status !== 'idle'} onChange={e => setTyped(e.target.value)} onKeyDown={e => { if (e.key === 'Enter' && canCheck && status === 'idle') check() }} placeholder="Type your answer" aria-label="Your answer" />}
           {cur.t === 'order' && (
@@ -92,15 +92,15 @@ export const LessonPlayer = ({ lesson, onClose, onDone }: { lesson: any; onClose
           )}
           {cur.t === 'match' && (
             <div className="kt-grid c2" style={{ gridTemplateColumns: '1fr 1fr' }}>
-              <div className="kt-stack" style={{ gap: 10 }}>{cur.p!.map((pair, k) => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1, outline: left === k ? '3px solid #0a84ff' : 'none' }} onClick={() => pickMatch('l', k)}>{pair[0]}</button>)}</div>
+              <div className="kt-stack" style={{ gap: 10 }}>{cur.p!.map((pair, k) => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1, outline: left === k ? '3px solid #121212' : 'none' }} onClick={() => pickMatch('l', k)}>{pair[0]}</button>)}</div>
               <div className="kt-stack" style={{ gap: 10 }}>{rightOrder.map(k => <button key={k} disabled={done.includes(k)} className="kt-btn" style={{ height: 54, fontSize: 17, opacity: done.includes(k) ? 0.35 : 1 }} onClick={() => pickMatch('r', k)}>{cur.p![k][1]}</button>)}</div>
             </div>
           )}
         </div>
-        <div style={{ padding: '16px 20px calc(16px + env(safe-area-inset-bottom))', background: status === 'right' ? 'rgba(48,209,88,0.18)' : status === 'wrong' ? 'rgba(255,69,58,0.16)' : 'var(--kt-glass)', borderTop: '1px solid var(--kt-line)' }}>
+        <div style={{ padding: '16px 20px calc(16px + env(safe-area-inset-bottom))', background: status === 'right' ? 'rgba(63, 107, 79, 0.18)' : status === 'wrong' ? 'rgba(155, 59, 52, 0.16)' : 'var(--kt-glass)', borderTop: '1px solid var(--kt-line)' }}>
           <div className="kt-row kt-between" style={{ maxWidth: 720, margin: '0 auto' }}>
             <div>
-              {status === 'right' && <b style={{ color: '#1f9c43', fontSize: 18 }}>Correct!</b>}
+              {status === 'right' && <b style={{ color: '#3f6b4f', fontSize: 18 }}>Correct!</b>}
               {status === 'wrong' && <div><b style={{ color: 'var(--kt-red)', fontSize: 18 }}>Not quite</b>{cur.t !== 'match' && <div className="kt-sub">Answer: {answerText}</div>}</div>}
             </div>
             {status === 'idle' ? (cur.t === 'match' ? <button className="kt-btn" onClick={() => { verdict(false) }}>Skip</button> : <button className="kt-btn primary" disabled={!canCheck} onClick={check}>Check</button>) : <button className="kt-btn primary" onClick={next}>{i + 1 < ex.length ? 'Continue' : 'Finish'}</button>}

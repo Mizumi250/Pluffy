@@ -3,15 +3,15 @@
 // ARKZEN GENERATED COMPONENT — ComposeBox
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.035Z
+// Generated: 2026-10-29T02:08:57.980Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 import { toast } from './utils'
 import type { Ex, KComment, KPost, KProfile } from './types'
 
@@ -44,7 +44,7 @@ export const ComposeBox = ({ lang: initialLang, kind = 'moment', missionId, plac
       <div className="kt-row kt-between kt-wrap" style={{ marginTop: 12 }}>
         <div className="kt-row kt-wrap">
           <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Post language">
-            {LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+            {LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
           </select>
           {kind !== 'mission' && (
             <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={asKind} onChange={e => setAsKind(e.target.value as any)} aria-label="Post type">

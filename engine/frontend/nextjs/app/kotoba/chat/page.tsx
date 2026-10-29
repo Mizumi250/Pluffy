@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/chat
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:11.082Z
+// Generated: 2026-10-29T02:08:58.496Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -27,8 +28,8 @@ import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { timeAgo, toast } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:chat)
 const ChatPage = () => {
@@ -57,8 +58,8 @@ const ChatPage = () => {
     setActive(a); setMsgs([])
     try { const r = await kt<any>(`/messages?${a.kind === 'dm' ? 'conversation_id' : 'circle_id'}=${a.id}`); setMsgs(r.data) } catch (e) { toast(e instanceof Error ? e.message : 'Could not load messages', 'err') }
   }, [])
-  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langFlag(c.with.native_lang)} ${langName(c.with.native_lang)}`, color: c.with.avatar_color })
-  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: `${c.emoji} ${c.name}`, sub: `${langName(c.lang)} · ${c.members_count} members`, color: '#0a84ff' })
+  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langName(c.with.native_lang)}`, color: c.with.avatar_color })
+  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: c.name, sub: `${langName(c.lang)} · ${c.members_count} members`, color: '#121212' })
 
   useEffect(() => {
     loadLists().then(l => {
@@ -119,19 +120,19 @@ const ChatPage = () => {
       <div className={`kt-chat ${active ? 'thread-open' : ''}`}>
         <div className="kt-chat-list kt-stack" style={{ gap: 10, minHeight: 0, overflowY: 'auto' }}>
           <Segmented value={tab} onChange={setTab} options={[{ value: 'dm', label: 'Direct' }, { value: 'circle', label: 'Circles' }]} />
-          {list.length === 0 && <Empty icon={tab === 'dm' ? '💬' : '👥'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
+          {list.length === 0 && <Empty icon={tab === 'dm' ? 'message-circle' : 'users'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
           <div className="kt-list">{list.map((c: any) => {
             const a = tab === 'dm' ? fromDm(c) : fromCircle(c)
             return (
               <button key={`${tab}${c.id}`} className={`kt-item ${active?.kind === a.kind && active.id === a.id ? 'on' : ''}`} onClick={() => open(a)}>
-                {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <div className="kt-avatar" style={{ width: 40, height: 40, background: 'var(--kt-surface2)', fontSize: 20 }}>{c.emoji}</div>}
-                <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontWeight: 600 }}>{tab === 'dm' ? c.with.display_name : c.name}</div><div className="kt-sub" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab === 'dm' ? (c.last_message ?? 'Say hello 👋') : `${langName(c.lang)} · ${c.members_count} members`}</div></div>
+                {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <div className="kt-avatar" style={{ width: 40, height: 40, background: 'var(--kt-surface2)', fontSize: 20 }}><Ico n={c.emoji} size={19} /></div>}
+                <div style={{ minWidth: 0, flex: 1 }}><div style={{ fontWeight: 600 }}>{tab === 'dm' ? c.with.display_name : c.name}</div><div className="kt-sub" style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{tab === 'dm' ? (c.last_message ?? 'Say hello') : `${langName(c.lang)} · ${c.members_count} members`}</div></div>
               </button>
             )
           })}</div>
         </div>
         <div className="kt-card kt-chat-thread">
-          {!active ? <div style={{ margin: 'auto', textAlign: 'center' }} className="kt-sub"><div style={{ fontSize: 40 }}>💬</div>Select a conversation</div> : (
+          {!active ? <div style={{ margin: 'auto', textAlign: 'center' }} className="kt-sub"><div style={{ display: 'grid', placeItems: 'center', marginBottom: 8 }}><Ico n="message-circle" size={34} /></div>Select a conversation</div> : (
             <>
               <div className="kt-row" style={{ padding: '12px 16px', borderBottom: '1px solid var(--kt-line)' }}>
                 <button className="kt-icon-btn kt-only-m" aria-label="Back" onClick={() => setActive(null)}>‹</button>
@@ -145,7 +146,7 @@ const ChatPage = () => {
                     <div key={m.id} style={{ display: 'flex', flexDirection: 'column', alignItems: own ? 'flex-end' : 'flex-start', gap: 2 }}>
                       {!own && active.kind === 'circle' && <span className="kt-sub" style={{ fontSize: 12, marginLeft: 8 }}>{m.sender_name}</span>}
                       <div className={`kt-bubble ${own ? 'me' : 'them'}`}>{m.body}</div>
-                      {m.corrected && <div className="kt-fix" style={{ maxWidth: '76%' }}><div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>✏️ Suggested</div><Diff from={m.body} to={m.corrected} />{m.note && <div className="kt-sub" style={{ marginTop: 4 }}>{m.note}</div>}</div>}
+                      {m.corrected && <div className="kt-fix" style={{ maxWidth: '76%' }}><div style={{ fontSize: 12, fontWeight: 600, marginBottom: 2 }}>Suggested</div><Diff from={m.body} to={m.corrected} />{m.note && <div className="kt-sub" style={{ marginTop: 4 }}>{m.note}</div>}</div>}
                       <div className="kt-row" style={{ gap: 2 }}>
                         <span className="kt-sub" style={{ fontSize: 11 }}>{timeAgo(m.created_at)}</span>
                         {!own && <button className="kt-btn ghost sm" style={{ height: 24, padding: '0 8px', fontSize: 12 }} onClick={() => { setFixing(m); setFixText(m.corrected ?? m.body) }}>Correct</button>}

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — SendLogNotifyRequest
 // Tatemono: body-mail-notification
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:24.066075Z
+// Generated: 2026-10-29T02:08:48.153785Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\BodyMailNotification;

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/partners
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.957Z
+// Generated: 2026-10-29T02:08:58.446Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -27,8 +28,8 @@ import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { toast } from '../components/utils'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 
 // Page component code (from @arkzen:page:partners)
 const PartnersPage = () => {
@@ -58,15 +59,15 @@ const PartnersPage = () => {
         <input className="kt-input" style={{ maxWidth: 280 }} value={q} onChange={e => setQ(e.target.value)} placeholder="Search name, interest or country" aria-label="Search partners" />
       </div>
       {list === null && <Skeletons n={3} h={150} />}
-      {list && list.length === 0 && <Empty icon="🧭" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
+      {list && list.length === 0 && <Empty icon="compass" title="No matches yet" text="Try the Everyone tab, or invite a friend who speaks your target language." />}
       <div className="kt-grid c2">{list?.map(p => (
         <div key={p.id} className="kt-card kt-stack" style={{ gap: 12 }}>
           <div className="kt-row">
             <button style={{ border: 0, background: 'none', padding: 0, cursor: 'pointer' }} aria-label={`Open ${p.display_name}`} onClick={() => setViewing(p.user_id)}><Avatar name={p.display_name} color={p.avatar_color} size={52} /></button>
-            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 17 }}>{p.display_name}</div><div className="kt-sub">{p.country ?? '—'} · 🔥 {p.streak}</div></div>
-            <div style={{ textAlign: 'right' }}><div style={{ fontSize: 22, fontWeight: 700, color: (p.score ?? 0) >= 70 ? '#22a847' : 'var(--kt-blue)' }}>{p.score}%</div><div className="kt-sub" style={{ fontSize: 11 }}>match</div></div>
+            <div style={{ flex: 1, minWidth: 0 }}><div style={{ fontWeight: 600, fontSize: 17 }}>{p.display_name}</div><div className="kt-sub">{p.country ?? '—'} · {p.streak} day streak</div></div>
+            <div style={{ textAlign: 'right' }}><div style={{ fontSize: 22, fontWeight: 700, color: (p.score ?? 0) >= 70 ? '#3f6b4f' : 'var(--kt-blue)' }}>{p.score}%</div><div className="kt-sub" style={{ fontSize: 11 }}>match</div></div>
           </div>
-          <div className="kt-row kt-wrap"><span className="kt-chip green">Speaks {langFlag(p.native_lang)} {langName(p.native_lang)}</span><span className="kt-chip blue">Learning {langFlag(p.learning_lang)} {p.level}</span>{p.shared?.slice(0, 3).map(s => <span key={s} className="kt-chip purple">{s}</span>)}</div>
+          <div className="kt-row kt-wrap"><span className="kt-chip green">Speaks {langName(p.native_lang)}</span><span className="kt-chip blue">Learning {p.level}</span>{p.shared?.slice(0, 3).map(s => <span key={s} className="kt-chip purple">{s}</span>)}</div>
           {p.bio && <p className="kt-sub" style={{ margin: 0, fontSize: 15, lineHeight: 1.45 }}>{p.bio}</p>}
           <div className="kt-row"><button className="kt-btn primary sm" style={{ flex: 1 }} onClick={() => hello(p)}><MessageCircle size={15} />Say hello</button><button className="kt-btn sm" onClick={() => follow(p)}>{p.following ? 'Following' : 'Follow'}</button></div>
         </div>

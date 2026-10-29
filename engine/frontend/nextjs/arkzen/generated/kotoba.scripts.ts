@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — kotoba
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:09.863Z
+// Generated: 2026-10-29T02:08:57.872Z
 // ============================================================
 
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
@@ -14,14 +14,13 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 // ─── Languages ────────────────────────────────────────────────
 export const LANGS = [
-  { code: 'en', name: 'English', flag: '🇬🇧' }, { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-  { code: 'ja', name: 'Japanese', flag: '🇯🇵' }, { code: 'fr', name: 'French', flag: '🇫🇷' },
-  { code: 'ko', name: 'Korean', flag: '🇰🇷' }, { code: 'de', name: 'German', flag: '🇩🇪' },
-  { code: 'pt', name: 'Portuguese', flag: '🇧🇷' }, { code: 'it', name: 'Italian', flag: '🇮🇹' },
-  { code: 'zh', name: 'Mandarin', flag: '🇨🇳' }, { code: 'tl', name: 'Filipino', flag: '🇵🇭' },
+  { code: 'en', name: 'English' }, { code: 'es', name: 'Spanish' },
+  { code: 'ja', name: 'Japanese' }, { code: 'fr', name: 'French' },
+  { code: 'ko', name: 'Korean' }, { code: 'de', name: 'German' },
+  { code: 'pt', name: 'Portuguese' }, { code: 'it', name: 'Italian' },
+  { code: 'zh', name: 'Mandarin' }, { code: 'tl', name: 'Filipino' },
 ]
 export const langName = (c?: string | null) => LANGS.find(l => l.code === c)?.name ?? (c ?? '')
-export const langFlag = (c?: string | null) => LANGS.find(l => l.code === c)?.flag ?? '🌐'
 
 // ─── Network ──────────────────────────────────────────────────
 export async function kt<T = any>(path: string, opts: { method?: string; json?: any } = {}): Promise<T> {

@@ -1148,6 +1148,13 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 /* @arkzen:native:layout:app:end */
 ```
 
+**Layout imports (Expo): never import from `@/arkzen/...` inside a native layout.** A layout file is generated into `arkzen/core/layouts/custom/`, not next to the pages, but the engine rewrites the `@/arkzen/` alias with the folder depth used for pages. The result is a path that does not exist, and Metro fails with `Unable to resolve module ../../../arkzen/core/stores/authStore` on every screen that uses the layout.
+
+- Keep a layout to React, `react-native`, `react-native-safe-area-context`, `expo-router` (or React Navigation) and icon imports.
+- If a shell needs the auth store, `arkzenFetch`, realtime or toasts, put that code in a `native:components` component (for example `ShellFx`) and mount it from `Screen` or from the pages. Components and pages get the correct path.
+- Do not work around it by writing a relative path in the layout. Native imports from every block are merged into the generated component files, so the same module spelled two ways becomes a duplicate declaration.
+- This limit goes away if the engine's layout rewrite is changed to use the layout folder's depth.
+
 Export `<PascalName>Layout`. Nesting works like web: `parent:` in the opening comment (Shape B):
 
 ```
@@ -1696,6 +1703,7 @@ Before finalizing any tatemono, verify:
 
 **NATIVE (Expo / bare RN)**
 - [ ] Target-specific imports use `@arkzen:import:expo` / `:rn` pairs; the parser extracts these from native blocks, including pages
+- [ ] Native layouts import nothing from `@/arkzen/...` (auth store, `arkzenFetch`, and so on); put that logic in a `native:components` component instead (see 19B)
 - [ ] Prefer a PascalCase screen component (for example, `<Name>Screen`); the generator selects a screen component and wraps/exports it. Do not add a default export.
 - [ ] Error blocks: one per target; animation/script blocks stack-suffixed (`:expo` | `:rn`); no generic `native:script`
 - [ ] Named styles export their StyleSheet; global `@arkzen:native:style` is CSS-like

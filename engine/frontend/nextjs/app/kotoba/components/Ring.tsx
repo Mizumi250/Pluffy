@@ -3,18 +3,18 @@
 // ARKZEN GENERATED COMPONENT — Ring
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.017Z
+// Generated: 2026-10-29T02:08:57.972Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
-import { BookmarkPlus, Check, Heart, Languages, MessageCircle, PenLine, Plus, Send, Sparkles, Trophy, Wand2, X } from 'lucide-react'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
+import { ArrowRight, Book, BookOpen, BookmarkPlus, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Languages, Layers, Lightbulb, Medal, MessageCircle, Minus, Newspaper, PartyPopper, PenLine, Pencil, Plus, Send, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, Wand2, WifiOff, X } from 'lucide-react'
 import type { Ex, KComment, KPost, KProfile } from './types'
 
-export const Ring = ({ value, max, size = 120, stroke = 12, color = '#0a84ff', children }: { value: number; max: number; size?: number; stroke?: number; color?: string; children?: React.ReactNode }) => {
+export const Ring = ({ value, max, size = 120, stroke = 12, color = 'currentColor', children }: { value: number; max: number; size?: number; stroke?: number; color?: string; children?: React.ReactNode }) => {
   const r = (size - stroke) / 2, c = 2 * Math.PI * r, pct = Math.max(0, Math.min(1, max ? value / max : 0))
   return (
     <div style={{ position: 'relative', width: size, height: size }}>

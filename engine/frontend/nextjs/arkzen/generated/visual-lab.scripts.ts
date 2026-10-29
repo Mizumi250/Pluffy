@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — visual-lab
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:13:11.470Z
+// Generated: 2026-10-29T02:09:08.590Z
 // ============================================================
 
 import * as THREE from 'three'

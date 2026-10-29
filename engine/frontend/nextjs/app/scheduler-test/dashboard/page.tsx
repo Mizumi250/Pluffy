@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — scheduler-test/dashboard
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:13:06.608Z
+// Generated: 2026-10-29T02:09:06.134Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

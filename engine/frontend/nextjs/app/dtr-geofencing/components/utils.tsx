@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — dtr-geofencing
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:31.643Z
+// Generated: 2026-10-29T02:08:51.510Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

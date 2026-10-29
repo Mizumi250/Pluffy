@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/feed
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:10.644Z
+// Generated: 2026-10-29T02:08:58.278Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -12,6 +12,7 @@ import { Avatar } from '../components/Avatar'
 import { ComposeBox } from '../components/ComposeBox'
 import { Diff } from '../components/Diff'
 import { Empty } from '../components/Empty'
+import { Ico } from '../components/Ico'
 import { InterestPicker } from '../components/InterestPicker'
 import { LangSelect } from '../components/LangSelect'
 import { LessonPlayer } from '../components/LessonPlayer'
@@ -26,7 +27,7 @@ import { useProfile } from '../components/hooks'
 import type { Ex, KComment, KPost, KProfile } from '../components/types'
 import { AuthLayout } from '@/arkzen/core/layouts/AuthLayout'
 import { ShellLayout } from '@/arkzen/core/layouts/custom/kotoba-shell'
-import { LANGS, kt, langFlag, langName } from '@/arkzen/generated/kotoba.scripts'
+import { LANGS, kt, langName } from '@/arkzen/generated/kotoba.scripts'
 
 // Page component code (from @arkzen:page:feed)
 const FeedPage = () => {
@@ -54,12 +55,12 @@ const FeedPage = () => {
       <div className="kt-row kt-between kt-wrap">
         <Segmented value={scope} onChange={setScope} options={[{ value: 'all', label: 'For you' }, { value: 'following', label: 'Following' }, { value: 'help', label: `Needs ${langName(profile?.native_lang) || 'help'} help` }, { value: 'mine', label: 'Mine' }]} />
         <select className="kt-select" style={{ width: 'auto', padding: '8px 12px', fontSize: 14 }} value={lang} onChange={e => setLang(e.target.value)} aria-label="Filter by language">
-          <option value="all">🌐 All languages</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.flag} {l.name}</option>)}
+          <option value="all">All languages</option>{LANGS.map(l => <option key={l.code} value={l.code}>{l.name}</option>)}
         </select>
       </div>
       {posts === null && <Skeletons n={3} h={170} />}
-      {error && <Empty icon="📡" title="Feed unavailable" text={error} action={<button className="kt-btn primary" onClick={load}>Retry</button>} />}
-      {posts && !error && posts.length === 0 && <Empty icon="✍️" title="Nothing here yet" text={scope === 'help' ? `No unanswered ${langName(profile?.native_lang)} posts right now. Check back soon.` : 'Be the first to post something in your target language.'} />}
+      {error && <Empty icon="wifi-off" title="Feed unavailable" text={error} action={<button className="kt-btn primary" onClick={load}>Retry</button>} />}
+      {posts && !error && posts.length === 0 && <Empty icon="pen-line" title="Nothing here yet" text={scope === 'help' ? `No unanswered ${langName(profile?.native_lang)} posts right now. Check back soon.` : 'Be the first to post something in your target language.'} />}
       <div className="kt-stack" style={{ gap: 16 }}>{posts?.map(p => <PostCard key={p.id} post={p} meId={profile?.user_id} onProfile={setViewing} onDeleted={id => setPosts(l => (l ?? []).filter(x => x.id !== id))} />)}</div>
       <ProfileSheet userId={viewing} onClose={() => setViewing(null)} />
     </div>

@@ -5,7 +5,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useArkzenPathname, useArkzenRouter } from '@/arkzen/core/adapters/router'
 import { arkzenFetch, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { BarChart3, Bell, Compass, GraduationCap, Home, Layers, LogOut, MessageCircle, Newspaper, User, Users, X } from 'lucide-react'
+import { BarChart3, Bell, Check, Compass, GraduationCap, Hand, Heart, Home, Layers, LogOut, MessageCircle, Newspaper, Pencil, User, Users, X } from 'lucide-react'
 
 const NAV = [
   { key: 'dashboard', label: 'Home', icon: Home, mobile: true },
@@ -115,20 +115,20 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
   return (
     <div className="kt-shell">
       <aside className="kt-side" aria-label="Main navigation">
-        <div className="kt-brand"><div className="kt-brand-mark">言</div>Kotoba</div>
+        <div className="kt-brand"><img className="kt-logo" src="https://api.iconify.design/lucide/languages.svg?color=%23121212" alt="" width={28} height={28} />Kotoba</div>
         {NAV.map(n => (
           <button key={n.key} className={`kt-nav ${active === n.key ? 'active' : ''}`} aria-current={active === n.key ? 'page' : undefined} onClick={() => go(n.key)}>
             <n.icon size={20} />{n.label}
           </button>
         ))}
         <div style={{ flex: 1 }} />
-        <button className="kt-nav" onClick={openBell}><Bell size={20} />Notifications{unread > 0 && <span className="kt-badge">{unread}</span>}</button>
+        <button className="kt-nav" onClick={openBell}><Bell size={20} />Notifications</button>
         <button className="kt-nav" onClick={signOut}><LogOut size={20} />Sign out</button>
       </aside>
 
       <div style={{ flex: 1, minWidth: 0, position: 'relative' }}>
         <button className="kt-icon-btn kt-only-m" aria-label="Notifications" onClick={openBell} style={{ position: 'fixed', top: 14, right: 14, zIndex: 55, background: 'var(--kt-glass)', backdropFilter: 'blur(16px)' }}>
-          <Bell size={18} />{unread > 0 && <span className="kt-badge" style={{ position: 'absolute', top: -4, right: -4 }}>{unread}</span>}
+          <Bell size={18} />
         </button>
         <main className="kt-main" key={pathname}>{children}</main>
       </div>
@@ -146,8 +146,8 @@ export const ShellLayout: React.FC<{ children: React.ReactNode }> = ({ children 
             <div className="kt-sheet-head"><h3>Notifications</h3><button className="kt-icon-btn" aria-label="Close" onClick={() => setBell(false)}><X size={18} /></button></div>
             {alerts.length === 0 && <p className="kt-sub" style={{ textAlign: 'center', padding: 24 }}>You are all caught up.</p>}
             <div className="kt-list">{alerts.map((a, i) => (
-              <div key={a.id ?? i} className="kt-item" style={{ cursor: 'default', background: a.is_read ? undefined : 'rgba(10,132,255,0.08)' }}>
-                <span style={{ fontSize: 20 }}>{a.kind === 'like' ? '❤️' : a.kind === 'follow' ? '👋' : a.kind === 'accepted' ? '✅' : a.kind === 'correction' ? '✏️' : '💬'}</span>
+              <div key={a.id ?? i} className="kt-item" style={{ cursor: 'default', background: a.is_read ? undefined : 'var(--kt-surface2)' }}>
+                <span style={{ display: 'grid', placeItems: 'center', width: 36, height: 36, borderRadius: '50%', background: 'var(--kt-surface2)', flexShrink: 0 }}>{a.kind === 'like' ? <Heart size={17} /> : a.kind === 'follow' ? <Hand size={17} /> : a.kind === 'accepted' ? <Check size={17} /> : a.kind === 'correction' ? <Pencil size={17} /> : <MessageCircle size={17} />}</span>
                 <span style={{ fontSize: 15 }}>{a.text}</span>
               </div>
             ))}</div>

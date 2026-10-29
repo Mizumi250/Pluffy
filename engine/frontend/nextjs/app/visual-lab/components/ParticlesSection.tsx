@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ParticlesSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-24T13:18:56.058Z
+// Generated: 2026-10-29T02:09:08.716Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

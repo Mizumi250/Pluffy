@@ -4,7 +4,7 @@
 // ARKZEN GENERATED SEEDER — LessonArkzenSeeder
 // Tatemono: kotoba  |  Connection: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:29.457656Z
+// Generated: 2026-10-29T02:09:00.759251Z
 // ============================================================
 
 namespace Database\Seeders\Arkzen\Kotoba;
@@ -23,7 +23,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'es',
                 'unit' => 'Basics',
                 'title' => 'Greetings',
-                'emoji' => '👋',
+                'emoji' => 'hand',
                 'level' => 'A1',
                 'position' => 1,
                 'xp' => 15,
@@ -35,7 +35,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'es',
                 'unit' => 'Basics',
                 'title' => 'Introductions',
-                'emoji' => '🤝',
+                'emoji' => 'handshake',
                 'level' => 'A1',
                 'position' => 2,
                 'xp' => 15,
@@ -47,7 +47,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'es',
                 'unit' => 'Food',
                 'title' => 'At the cafe',
-                'emoji' => '☕',
+                'emoji' => 'coffee',
                 'level' => 'A1',
                 'position' => 3,
                 'xp' => 20,
@@ -59,7 +59,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'ja',
                 'unit' => 'Basics',
                 'title' => 'Greetings',
-                'emoji' => '🌸',
+                'emoji' => 'flower',
                 'level' => 'A1',
                 'position' => 1,
                 'xp' => 15,
@@ -71,7 +71,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'ja',
                 'unit' => 'Basics',
                 'title' => 'Introductions',
-                'emoji' => '🎎',
+                'emoji' => 'users',
                 'level' => 'A1',
                 'position' => 2,
                 'xp' => 15,
@@ -83,7 +83,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'ja',
                 'unit' => 'Food',
                 'title' => 'Food and drink',
-                'emoji' => '🍙',
+                'emoji' => 'utensils',
                 'level' => 'A1',
                 'position' => 3,
                 'xp' => 20,
@@ -95,7 +95,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'en',
                 'unit' => 'Conversation',
                 'title' => 'Greetings and small talk',
-                'emoji' => '💬',
+                'emoji' => 'message-circle',
                 'level' => 'A1',
                 'position' => 1,
                 'xp' => 15,
@@ -107,7 +107,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'en',
                 'unit' => 'Everyday life',
                 'title' => 'Daily routine',
-                'emoji' => '⏰',
+                'emoji' => 'clock',
                 'level' => 'A2',
                 'position' => 2,
                 'xp' => 20,
@@ -119,7 +119,7 @@ class LessonArkzenSeeder extends Seeder
                 'lang' => 'en',
                 'unit' => 'Everyday life',
                 'title' => 'Talking about the past',
-                'emoji' => '⏪',
+                'emoji' => 'history',
                 'level' => 'A2',
                 'position' => 3,
                 'xp' => 20,
