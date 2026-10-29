@@ -2,7 +2,7 @@
 // ARKZEN GENERATED — queue-flow/not-found.tsx
 // Next.js segment-scoped 404 handler.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:404 block in the tatemono instead.
-// Generated: 2026-10-29T02:09:04.200Z
+// Generated: 2026-10-29T03:33:48.445Z
 // ============================================================
 
 import React from 'react'

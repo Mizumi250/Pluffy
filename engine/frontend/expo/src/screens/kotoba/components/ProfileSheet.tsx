@@ -2,17 +2,19 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ProfileSheet [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:07.226Z
+// Generated: 2026-10-29T03:33:10.758Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { TH } from './constants'
 import { useNav } from './hooks'
-import { kt, langFlag, langName, pending, toast } from './utils'
+import { kt, langName, pending, toast } from './utils'
 import type { KProfile } from './types'
 import { Avatar } from './Avatar'
 import { Btn } from './Btn'
@@ -37,7 +39,7 @@ export const ProfileSheet = ({ userId, onClose }: { userId: number | null; onClo
       {!p ? <ActivityIndicator /> : (
         <>
           <View style={{ flexDirection: 'row', gap: 14, alignItems: 'center' }}><Avatar name={p.display_name} color={p.avatar_color} size={64} /><View><Text style={{ fontSize: 22, fontWeight: '700', color: TH.text }}>{p.display_name}</Text><Text style={{ color: TH.sub }}>{p.country ?? 'Somewhere on Earth'}</Text></View></View>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langFlag(p.native_lang)} ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${langFlag(p.learning_lang)} ${langName(p.learning_lang)} · ${p.level}`} /><Chip tone="orange" label={`🔥 ${p.streak} days`} /></View>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}><Chip tone="green" label={`Speaks ${langName(p.native_lang)}`} /><Chip tone="blue" label={`Learning ${langName(p.learning_lang)} · ${p.level}`} /><Chip tone="orange" label={`${p.streak} day streak`} /></View>
           {p.bio && <Text style={{ fontSize: 16, lineHeight: 23, color: TH.text }}>{p.bio}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}>{[['Posts', d.post_count], ['Followers', d.followers], ['Following', d.following_count]].map(([k, v]) => <View key={k as string} style={{ flex: 1, backgroundColor: TH.fill, borderRadius: 14, padding: 12, alignItems: 'center' }}><Text style={{ fontSize: 20, fontWeight: '700', color: TH.text }}>{v}</Text><Text style={{ color: TH.sub, fontSize: 12 }}>{k}</Text></View>)}</View>
           <View style={{ flexDirection: 'row', gap: 10 }}><Btn kind="primary" label="Message" onPress={message} style={{ flex: 1 }} /><Btn label={d.following ? 'Following' : 'Follow'} onPress={follow} /></View>

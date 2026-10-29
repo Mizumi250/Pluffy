@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatCard [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:12:09.265Z
+// Generated: 2026-10-29T03:33:07.973Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

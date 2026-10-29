@@ -5,8 +5,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { ShellLayout } from '../../../arkzen/core/layouts/custom/kotoba-shell'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
@@ -19,15 +21,18 @@ import { ComposeBox } from './components/ComposeBox'
 import { Diff } from './components/Diff'
 import { Empty } from './components/Empty'
 import { Field } from './components/Field'
+import { Ico } from './components/Ico'
 import { InterestPicker } from './components/InterestPicker'
 import { LangPicker } from './components/LangPicker'
 import { LessonPlayer } from './components/LessonPlayer'
+import { Logo } from './components/Logo'
 import { OnboardingSheet } from './components/OnboardingSheet'
 import { PostCard } from './components/PostCard'
 import { ProfileSheet } from './components/ProfileSheet'
 import { Screen } from './components/Screen'
 import { Seg } from './components/Seg'
 import { Sheet } from './components/Sheet'
+import { ShellFx } from './components/ShellFx'
 import { Skel } from './components/Skel'
 import { LANGS } from './components/constants'
 import { useProfile } from './components/hooks'
@@ -55,12 +60,12 @@ const FeedScreen = () => {
       <ComposeBox lang={profile?.learning_lang ?? 'es'} onPosted={p => setPosts(l => [p, ...(l ?? [])])} />
       <Seg value={scope} onChange={setScope} options={[{ value: 'all', label: 'For you' }, { value: 'following', label: 'Following' }, { value: 'help', label: 'Needs help' }, { value: 'mine', label: 'Mine' }]} />
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0 }}>
-        <Chip label="🌐 All" on={lang === 'all'} onPress={() => setLang('all')} />
-        {LANGS.map(l => <Chip key={l.code} label={`${l.flag} ${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
+        <Chip label="All" on={lang === 'all'} onPress={() => setLang('all')} />
+        {LANGS.map(l => <Chip key={l.code} label={`${l.name}`} on={lang === l.code} onPress={() => setLang(l.code)} />)}
       </ScrollView>
       {posts === null && <Skel n={3} h={160} />}
-      {error && <Empty icon="📡" title="Feed unavailable" text={error}><Btn kind="primary" label="Retry" onPress={load} /></Empty>}
-      {posts && !error && posts.length === 0 && <Empty icon="✍️" title="Nothing here yet" text="Be the first to post something in your target language." />}
+      {error && <Empty icon="wifi-off" title="Feed unavailable" text={error}><Btn kind="primary" label="Retry" onPress={load} /></Empty>}
+      {posts && !error && posts.length === 0 && <Empty icon="pen-line" title="Nothing here yet" text="Be the first to post something in your target language." />}
       {posts?.map(p => <PostCard key={p.id} post={p} meId={profile?.user_id} onProfile={setViewing} onDeleted={id => setPosts(l => (l ?? []).filter(x => x.id !== id))} />)}
       <ProfileSheet userId={viewing} onClose={() => setViewing(null)} />
     </Screen>

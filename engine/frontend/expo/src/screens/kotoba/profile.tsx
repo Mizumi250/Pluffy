@@ -5,8 +5,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { ShellLayout } from '../../../arkzen/core/layouts/custom/kotoba-shell'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
@@ -19,15 +21,18 @@ import { ComposeBox } from './components/ComposeBox'
 import { Diff } from './components/Diff'
 import { Empty } from './components/Empty'
 import { Field } from './components/Field'
+import { Ico } from './components/Ico'
 import { InterestPicker } from './components/InterestPicker'
 import { LangPicker } from './components/LangPicker'
 import { LessonPlayer } from './components/LessonPlayer'
+import { Logo } from './components/Logo'
 import { OnboardingSheet } from './components/OnboardingSheet'
 import { PostCard } from './components/PostCard'
 import { ProfileSheet } from './components/ProfileSheet'
 import { Screen } from './components/Screen'
 import { Seg } from './components/Seg'
 import { Sheet } from './components/Sheet'
+import { ShellFx } from './components/ShellFx'
 import { Skel } from './components/Skel'
 import { COLORS, LEVELS, TH } from './components/constants'
 import { useNav, useProfile } from './components/hooks'
@@ -56,7 +61,7 @@ const ProfileScreen = () => {
   return (
     <Screen title="Profile" subtitle={(user as any)?.email}>
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        {[['🧭', 'Partners', 'partners'], ['👥', 'Circles', 'circles'], ['📈', 'Progress', 'progress']].map(([e, t, k]) => <Card key={t} onPress={() => nav.go(k)} style={{ flex: 1, alignItems: 'center', padding: 12 }}><Text style={{ fontSize: 24 }}>{e}</Text><Text style={{ fontWeight: '600', fontSize: 13, color: TH.text, marginTop: 4 }}>{t}</Text></Card>)}
+        {[['compass', 'Partners', 'partners'], ['users', 'Circles', 'circles'], ['trending-up', 'Progress', 'progress']].map(([e, t, k]) => <Card key={t} onPress={() => nav.go(k)} style={{ flex: 1, alignItems: 'center', padding: 12 }}><Ico n={e} size={22} /><Text style={{ fontWeight: '600', fontSize: 13, color: TH.text, marginTop: 6 }}>{t}</Text></Card>)}
       </View>
       <Card style={{ gap: 14 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 14 }}>

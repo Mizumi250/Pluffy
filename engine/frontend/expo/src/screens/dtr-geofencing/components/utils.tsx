@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — dtr-geofencing [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:11:51.813Z
+// Generated: 2026-10-29T03:33:00.895Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/payslip
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T02:08:56.456Z
+// Generated: 2026-10-29T03:33:30.466Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'

@@ -74,6 +74,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'job-test', screenName: 'dashboard', routePath: '/job-test/dashboard', layout: 'default', auth: false },
 // ROUTE:job-test:index:/job-test:default:false
   { tatName: 'job-test', screenName: 'index', routePath: '/job-test', layout: 'default', auth: false },
+// ROUTE:kotoba:index:/kotoba:+guest:false
+  { tatName: 'kotoba', screenName: 'index', routePath: '/kotoba', layout: '+guest', auth: false },
+// ROUTE:kotoba:login:/kotoba/login:+guest:false
+  { tatName: 'kotoba', screenName: 'login', routePath: '/kotoba/login', layout: '+guest', auth: false },
+// ROUTE:kotoba:register:/kotoba/register:+guest:false
+  { tatName: 'kotoba', screenName: 'register', routePath: '/kotoba/register', layout: '+guest', auth: false },
 // ROUTE:layout-test:index:/layout-test:app-shell:false
   { tatName: 'layout-test', screenName: 'index', routePath: '/layout-test', layout: 'app-shell', auth: false },
 // ROUTE:layout-test:tab:/layout-test/tab:tab-panel:false
@@ -134,30 +140,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false
   { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
-// ROUTE:kotoba:index:/kotoba:+guest:false
-  { tatName: 'kotoba', screenName: 'index', routePath: '/kotoba', layout: '+guest', auth: false },
-// ROUTE:kotoba:login:/kotoba/login:+guest:false
-  { tatName: 'kotoba', screenName: 'login', routePath: '/kotoba/login', layout: '+guest', auth: false },
-// ROUTE:kotoba:register:/kotoba/register:+guest:false
-  { tatName: 'kotoba', screenName: 'register', routePath: '/kotoba/register', layout: '+guest', auth: false },
-// ROUTE:kotoba:dashboard:/kotoba/dashboard:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'dashboard', routePath: '/kotoba/dashboard', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:feed:/kotoba/feed:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'feed', routePath: '/kotoba/feed', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:learn:/kotoba/learn:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'learn', routePath: '/kotoba/learn', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:review:/kotoba/review:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'review', routePath: '/kotoba/review', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:partners:/kotoba/partners:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'partners', routePath: '/kotoba/partners', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:chat:/kotoba/chat:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'chat', routePath: '/kotoba/chat', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:circles:/kotoba/circles:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'circles', routePath: '/kotoba/circles', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:progress:/kotoba/progress:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'progress', routePath: '/kotoba/progress', layout: '+auth:shell', auth: false },
-// ROUTE:kotoba:profile:/kotoba/profile:+auth:shell:false
-  { tatName: 'kotoba', screenName: 'profile', routePath: '/kotoba/profile', layout: '+auth:shell', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

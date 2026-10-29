@@ -5,8 +5,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { ShellLayout } from '../../../arkzen/core/layouts/custom/kotoba-shell'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
@@ -19,19 +21,22 @@ import { ComposeBox } from './components/ComposeBox'
 import { Diff } from './components/Diff'
 import { Empty } from './components/Empty'
 import { Field } from './components/Field'
+import { Ico } from './components/Ico'
 import { InterestPicker } from './components/InterestPicker'
 import { LangPicker } from './components/LangPicker'
 import { LessonPlayer } from './components/LessonPlayer'
+import { Logo } from './components/Logo'
 import { OnboardingSheet } from './components/OnboardingSheet'
 import { PostCard } from './components/PostCard'
 import { ProfileSheet } from './components/ProfileSheet'
 import { Screen } from './components/Screen'
 import { Seg } from './components/Seg'
 import { Sheet } from './components/Sheet'
+import { ShellFx } from './components/ShellFx'
 import { Skel } from './components/Skel'
 import { SHADOW, TH } from './components/constants'
 import { useProfile } from './components/hooks'
-import { kt, langFlag, langName, shuffle, toast } from './components/utils'
+import { kt, langName, shuffle, toast } from './components/utils'
 
 // User screen (from @arkzen:native:page:review)
 const ReviewScreen = () => {
@@ -85,7 +90,7 @@ const ReviewScreen = () => {
           <Bar value={reviewed} max={reviewed + queue.length} />
           <TouchableOpacity activeOpacity={0.9} onPress={() => setFlipped(f => !f)} accessibilityLabel="Flip card">
             <Card style={{ minHeight: 260, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 }}>
-              <Chip tone="blue" label={`${langFlag(card.lang)} ${langName(card.lang)}`} />
+              <Chip tone="blue" label={`${langName(card.lang)}`} />
               <Text style={{ fontSize: 38, fontWeight: '800', color: TH.text, textAlign: 'center' }}>{card.term}</Text>
               {flipped ? <><Text style={{ fontSize: 24, color: TH.blue, textAlign: 'center' }}>{card.meaning}</Text>{card.example && <Text style={{ color: TH.sub, fontStyle: 'italic', textAlign: 'center' }}>“{String(card.example).slice(0, 140)}”</Text>}</> : <Text style={{ color: TH.sub }}>Tap to reveal</Text>}
             </Card>
@@ -93,16 +98,16 @@ const ReviewScreen = () => {
           {flipped ? <View style={{ flexDirection: 'row', gap: 8 }}>{grades.map(([l, c], n) => <TouchableOpacity key={l} accessibilityLabel={l} onPress={() => grade(n)} style={{ flex: 1, height: 54, borderRadius: 14, backgroundColor: TH.card, alignItems: 'center', justifyContent: 'center', ...SHADOW }}><Text style={{ color: c, fontWeight: '700' }}>{l}</Text></TouchableOpacity>)}</View> : <Btn kind="primary" label="Show answer" onPress={() => setFlipped(true)} />}
         </View>
       ) : (
-        <Empty icon="🎉" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, tap words in the feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Your next cards are scheduled.`}><Btn kind="primary" label="Add a word" onPress={() => setTab('add')} /></Empty>
+        <Empty icon="party-popper" title={counts.total === 0 ? 'Your deck is empty' : 'All caught up!'} text={counts.total === 0 ? 'Finish a lesson, tap words in the feed, or add your own.' : `You reviewed ${reviewed} card${reviewed === 1 ? '' : 's'}. Your next cards are scheduled.`}><Btn kind="primary" label="Add a word" onPress={() => setTab('add')} /></Empty>
       ))}
       {tab === 'deck' && (
         <View style={{ gap: 12 }}>
           <Field value={q} onChangeText={setQ} placeholder="Search your deck" />
-          {deck.length === 0 ? <Empty icon="🗂️" title="No cards found" /> : deck.map(c => (
+          {deck.length === 0 ? <Empty icon="layers" title="No cards found" /> : deck.map(c => (
             <Card key={c.id} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14 }}>
-              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{c.term} {langFlag(c.lang)}</Text><Text style={{ color: TH.sub }}>{c.meaning}</Text></View>
+              <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{c.term} · {c.lang.toUpperCase()}</Text><Text style={{ color: TH.sub }}>{c.meaning}</Text></View>
               <Chip tone={c.reps >= 4 ? 'green' : c.reps > 0 ? 'blue' : 'gray'} label={c.reps >= 4 ? 'Mastered' : c.reps > 0 ? `${c.reps}x` : 'New'} />
-              <TouchableOpacity accessibilityLabel={`Delete ${c.term}`} onPress={() => remove(c.id)}><Text style={{ color: TH.sub, fontSize: 18 }}>✕</Text></TouchableOpacity>
+              <TouchableOpacity accessibilityLabel={`Delete ${c.term}`} onPress={() => remove(c.id)}><Ico n="close" size={18} color={TH.sub} /></TouchableOpacity>
             </Card>
           ))}
         </View>

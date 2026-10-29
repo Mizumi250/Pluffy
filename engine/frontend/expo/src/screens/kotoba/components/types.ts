@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — kotoba [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:07.010Z
+// Generated: 2026-10-29T03:33:10.718Z
 // ============================================================
 
 export type KProfile = {

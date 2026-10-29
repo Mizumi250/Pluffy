@@ -5,8 +5,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { ShellLayout } from '../../../arkzen/core/layouts/custom/kotoba-shell'
 import { AuthLayout }  from '@/layouts/AuthLayout'
 import { StatusBar as ArkzenStatusBar } from 'expo-status-bar'
@@ -19,19 +21,22 @@ import { ComposeBox } from './components/ComposeBox'
 import { Diff } from './components/Diff'
 import { Empty } from './components/Empty'
 import { Field } from './components/Field'
+import { Ico } from './components/Ico'
 import { InterestPicker } from './components/InterestPicker'
 import { LangPicker } from './components/LangPicker'
 import { LessonPlayer } from './components/LessonPlayer'
+import { Logo } from './components/Logo'
 import { OnboardingSheet } from './components/OnboardingSheet'
 import { PostCard } from './components/PostCard'
 import { ProfileSheet } from './components/ProfileSheet'
 import { Screen } from './components/Screen'
 import { Seg } from './components/Seg'
 import { Sheet } from './components/Sheet'
+import { ShellFx } from './components/ShellFx'
 import { Skel } from './components/Skel'
 import { TH } from './components/constants'
 import { useProfile, useRealtime } from './components/hooks'
-import { kt, langFlag, langName, pending, timeAgo, toast } from './components/utils'
+import { kt, langName, pending, timeAgo, toast } from './components/utils'
 
 // User screen (from @arkzen:native:page:chat)
 const ChatScreen = () => {
@@ -64,8 +69,8 @@ const ChatScreen = () => {
     setActive(a); setMsgs([])
     try { const r = await kt<any>(`/messages?${a.kind === 'dm' ? 'conversation_id' : 'circle_id'}=${a.id}`); setMsgs(r.data) } catch (e) { toast(e instanceof Error ? e.message : 'Could not load messages', 'err') }
   }, [])
-  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langFlag(c.with.native_lang)} ${langName(c.with.native_lang)}` })
-  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: `${c.emoji} ${c.name}`, sub: `${langName(c.lang)} · ${c.members_count} members` })
+  const fromDm = (c: any) => ({ kind: 'dm' as const, id: c.id, title: c.with.display_name, sub: `${langName(c.with.native_lang)}` })
+  const fromCircle = (c: any) => ({ kind: 'circle' as const, id: c.id, title: c.name, sub: `${langName(c.lang)} · ${c.members_count} members` })
 
   useEffect(() => {
     loadLists().then(l => {
@@ -127,8 +132,8 @@ const ChatScreen = () => {
             return (
               <View key={m.id} style={{ alignItems: own ? 'flex-end' : 'flex-start', gap: 3 }}>
                 {!own && active.kind === 'circle' && <Text style={{ color: TH.sub, fontSize: 12, marginLeft: 8 }}>{m.sender_name}</Text>}
-                <View style={{ maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: own ? TH.blue : '#e9e9eb', borderBottomRightRadius: own ? 6 : 20, borderBottomLeftRadius: own ? 20 : 6 }}><Text style={{ fontSize: 16, color: own ? '#fff' : TH.text }}>{m.body}</Text></View>
-                {m.corrected && <View style={{ maxWidth: '80%', padding: 10, borderRadius: 14, backgroundColor: 'rgba(48,209,88,0.14)', borderWidth: 1, borderColor: 'rgba(48,209,88,0.35)', gap: 4 }}><Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>✏️ Suggested</Text><Diff from={m.body} to={m.corrected} size={14} />{m.note && <Text style={{ color: TH.sub, fontSize: 13 }}>{m.note}</Text>}</View>}
+                <View style={{ maxWidth: '80%', paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20, backgroundColor: own ? TH.blue : TH.fill, borderBottomRightRadius: own ? 6 : 20, borderBottomLeftRadius: own ? 20 : 6 }}><Text style={{ fontSize: 16, color: own ? TH.card : TH.text }}>{m.body}</Text></View>
+                {m.corrected && <View style={{ maxWidth: '80%', padding: 10, borderRadius: 14, backgroundColor: 'rgba(63, 107, 79, 0.14)', borderWidth: 1, borderColor: 'rgba(63, 107, 79, 0.35)', gap: 4 }}><Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>Suggested</Text><Diff from={m.body} to={m.corrected} size={14} />{m.note && <Text style={{ color: TH.sub, fontSize: 13 }}>{m.note}</Text>}</View>}
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                   <Text style={{ color: TH.sub, fontSize: 11 }}>{timeAgo(m.created_at)}</Text>
                   {!own && <Btn small kind="ghost" label="Correct" onPress={() => { setFixing(m); setFixText(m.corrected ?? m.body) }} style={{ height: 26, paddingHorizontal: 8 }} />}
@@ -160,11 +165,11 @@ const ChatScreen = () => {
   return (
     <Screen title="Messages" subtitle="Chat, then fix each other’s mistakes in place." onRefresh={loadLists} refreshing={false}>
       <Seg value={tab} onChange={setTab} options={[{ value: 'dm', label: 'Direct' }, { value: 'circle', label: 'Circles' }]} />
-      {list.length === 0 && <Empty icon={tab === 'dm' ? '💬' : '👥'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
+      {list.length === 0 && <Empty icon={tab === 'dm' ? 'message-circle' : 'users'} title={tab === 'dm' ? 'No chats yet' : 'No circles joined'} text={tab === 'dm' ? 'Find a partner and say hello.' : 'Join a study circle to chat in a group.'} />}
       {list.map((c: any) => (
         <Card key={`${tab}${c.id}`} onPress={() => open(tab === 'dm' ? fromDm(c) : fromCircle(c))} style={{ flexDirection: 'row', alignItems: 'center', gap: 12, padding: 14 }}>
-          {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Text style={{ fontSize: 20 }}>{c.emoji}</Text></View>}
-          <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{tab === 'dm' ? c.with.display_name : c.name}</Text><Text numberOfLines={1} style={{ color: TH.sub }}>{tab === 'dm' ? (c.last_message ?? 'Say hello 👋') : `${langName(c.lang)} · ${c.members_count} members`}</Text></View>
+          {tab === 'dm' ? <Avatar name={c.with.display_name} color={c.with.avatar_color} /> : <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: TH.fill, alignItems: 'center', justifyContent: 'center' }}><Ico n={c.emoji} size={19} /></View>}
+          <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 16, color: TH.text }}>{tab === 'dm' ? c.with.display_name : c.name}</Text><Text numberOfLines={1} style={{ color: TH.sub }}>{tab === 'dm' ? (c.last_message ?? 'Say hello') : `${langName(c.lang)} · ${c.members_count} members`}</Text></View>
           <Text style={{ color: TH.sub, fontSize: 22 }}>›</Text>
         </Card>
       ))}

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Like
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T02:08:59.487446Z
+// Generated: 2026-10-29T03:33:38.102973Z
 // ============================================================
 
 namespace App\Models\Arkzen\Kotoba;

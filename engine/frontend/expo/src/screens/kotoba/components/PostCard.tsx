@@ -2,16 +2,18 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PostCard [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-27T08:59:07.220Z
+// Generated: 2026-10-29T03:33:10.753Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { arkzenFetch, setActiveTatemono, useAuthStore } from '../../../../arkzen/core/stores/authStore'
 import { usePathname, useRouter } from 'expo-router'
+import { Book, BookOpen, Brain, CalendarDays, Check, Clock, Coffee, Compass, FileText, Flame, Flower2, Gamepad2, Globe, GraduationCap, Hand, Handshake, Headphones, Heart, History, Home, Layers, Lightbulb, Medal, MessageCircle, Newspaper, PartyPopper, PenLine, Pencil, Sparkles, Sprout, Star, Sun, Target, TrendingUp, Trophy, User, Users, Utensils, WifiOff, X } from 'lucide-react-native'
 import { ActivityIndicator, KeyboardAvoidingView, Modal, Platform, Pressable, RefreshControl, ScrollView, Text, TextInput, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context'
+import { SvgUri } from 'react-native-svg'
 import { TH } from './constants'
-import { kt, langFlag, langName, timeAgo, toast } from './utils'
+import { kt, langName, timeAgo, toast } from './utils'
 import type { KComment, KPost } from './types'
 import { Avatar } from './Avatar'
 import { Btn } from './Btn'
@@ -76,7 +78,7 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
         <TouchableOpacity onPress={() => onProfile?.(p.user_id)} accessibilityLabel={`Open ${p.author_name}`}><Avatar name={p.author_name} color={p.author_color} /></TouchableOpacity>
         <View style={{ flex: 1 }}><Text style={{ fontWeight: '600', fontSize: 16, color: TH.text }}>{p.author_name}</Text><Text style={{ color: TH.sub, fontSize: 13 }}>Native {langName(p.author_native)} · {timeAgo(p.created_at)}</Text></View>
-        <Chip tone="blue" label={`${langFlag(p.lang)} ${langName(p.lang)}`} />
+        <Chip tone="blue" label={`${langName(p.lang)}`} />
       </View>
       <Text style={{ fontSize: 18, lineHeight: 27, color: TH.text }}>
         {words.map((w, i) => /^\s+$/.test(w) || w.length > 40 ? <Text key={i}>{w}</Text> : <Text key={i} onPress={() => { setTerm(w.replace(/[.,!?¡¿;:()"“”]/g, '')); setSaveOpen(true) }}>{w}</Text>)}
@@ -84,9 +86,9 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
       {p.translation && <TouchableOpacity onPress={() => setShowTr(s => !s)}><Text style={{ color: TH.blue, fontSize: 14, fontWeight: '600' }}>{showTr ? 'Hide translation' : 'Show translation'}</Text>{showTr && <Text style={{ color: TH.sub, fontSize: 15, marginTop: 4 }}>{p.translation}</Text>}</TouchableOpacity>}
       <Text style={{ color: TH.sub, fontSize: 12 }}>Tip: tap any word to save it to your deck.</Text>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-        <Btn small kind="ghost" label={`${p.liked ? '❤️' : '🤍'} ${p.likes_count}`} onPress={like} />
-        <Btn small kind="ghost" label={`💬 ${p.comments_count}`} onPress={toggle} />
-        {p.corrections_count > 0 ? <Chip tone="green" label={`✓ ${p.corrections_count} correction${p.corrections_count > 1 ? 's' : ''}`} /> : !mine ? <Chip tone="orange" label="Needs feedback" /> : null}
+        <Btn small kind="ghost" icon="heart" iconFilled={p.liked} label={String(p.likes_count)} onPress={like} />
+        <Btn small kind="ghost" icon="message-circle" label={String(p.comments_count)} onPress={toggle} />
+        {p.corrections_count > 0 ? <Chip tone="green" label={`${p.corrections_count} correction${p.corrections_count > 1 ? 's' : ''}`} /> : !mine ? <Chip tone="orange" label="Needs feedback" /> : null}
         {mine && <Btn small kind="ghost" label="Delete" onPress={remove} />}
       </View>
       {open && (
@@ -100,8 +102,8 @@ export const PostCard = ({ post, meId, onProfile, onDeleted }: { post: KPost; me
                 <Text style={{ fontSize: 14, color: TH.text }}><Text style={{ fontWeight: '700' }}>{c.author_name}</Text> <Text style={{ color: TH.sub }}>{timeAgo(c.created_at)}</Text></Text>
                 <Text style={{ fontSize: 15, color: TH.text }}>{c.body}</Text>
                 {c.is_correction && c.corrected && (
-                  <View style={{ backgroundColor: 'rgba(48,209,88,0.14)', borderRadius: 14, padding: 10, gap: 6, borderWidth: 1, borderColor: 'rgba(48,209,88,0.35)' }}>
-                    <Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>✏️ Suggested correction {c.accepted ? '· Accepted' : ''}</Text>
+                  <View style={{ backgroundColor: 'rgba(63, 107, 79, 0.14)', borderRadius: 14, padding: 10, gap: 6, borderWidth: 1, borderColor: 'rgba(63, 107, 79, 0.35)' }}>
+                    <Text style={{ fontSize: 12, fontWeight: '700', color: TH.text }}>Suggested correction {c.accepted ? '· Accepted' : ''}</Text>
                     <Diff from={p.body} to={c.corrected} />
                     {c.explanation && <Text style={{ color: TH.sub, fontSize: 14 }}>{c.explanation}</Text>}
                     {mine && !c.accepted && <Btn small kind="tint" label="Accept and thank" onPress={() => accept(c)} />}

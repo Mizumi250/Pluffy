@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatusDot
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T02:08:47.814Z
+// Generated: 2026-10-29T03:33:05.680Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
