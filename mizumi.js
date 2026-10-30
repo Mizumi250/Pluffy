@@ -13,8 +13,9 @@
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
 //    node mizumi.js desktop <stack> ← switch desktop stack
+//    node mizumi.js backend <name> ← switch active backend (laravel, express, fastapi, django, spring-boot, aspnet)
 //    node mizumi.js deps         ← install / uninstall node_modules
-//    node mizumi.js stack        ← show active web + app + desktop stack
+//    node mizumi.js stack        ← show active web + app + desktop stack + backend + database
 //    node mizumi.js stacks       ← list all stacks
 //    node mizumi.js modules      ← list registered tatemonos
 //    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
@@ -58,7 +59,7 @@ const divider = ()  => console.log(`\n${paint(c.gray, '  ' + '─'.repeat(46))}\
 // ─── ARKZEN.JSON ──────────────────────────────────────────────
 function readConfig() {
   try { return JSON.parse(fs.readFileSync(JSON_PATH, 'utf-8')) }
-  catch { return { engine: '?', activeStack: 'nextjs', activeAppStack: 'expo', activeDesktopStack: null, modules: [], stacks: {} } }
+  catch { return { engine: '?', activeStack: 'nextjs', activeAppStack: 'expo', activeDesktopStack: null, activeBackend: 'laravel', modules: [], stacks: {} } }
 }
 function writeConfig(config) {
   fs.writeFileSync(JSON_PATH, JSON.stringify(config, null, 2), 'utf-8')
@@ -97,20 +98,50 @@ const DESKTOP_LABELS = {
   'tauri':    'Tauri desktop (wraps the running web stack)',
   'electron': 'Electron desktop (wraps the running web stack)',
 }
+// Backends that setup.js / deps know how to install today.
 const BACKEND_STACKS = {
   'laravel':         'engine/backend/laravel',
   'laravel-inertia': 'engine/backend/laravel-inertia',
 }
+// Backends you can select as the active one (arkzen.json "activeBackend").
+// `variant` is the DSL block suffix the backend reads (names not final, see TEMP_PLUFF_FEATURE_PLAN.md).
+// laravel-inertia is not listed: it is forced whenever the web stack is react-inertia.
+const BACKEND_TARGETS = {
+  'laravel':     { dir: 'engine/backend/laravel',     variant: 'php',  label: 'Laravel (PHP), reference backend' },
+  'express':     { dir: 'engine/backend/express',     variant: 'ts',   label: 'Express (TypeScript)' },
+  'fastapi':     { dir: 'engine/backend/fastapi',     variant: 'py',   label: 'FastAPI (Python)' },
+  'django':      { dir: 'engine/backend/django',      variant: 'py',   label: 'Django (Python)' },
+  'spring-boot': { dir: 'engine/backend/spring-boot', variant: 'java', label: 'Spring Boot (Java)' },
+  'aspnet':      { dir: 'engine/backend/aspnet',      variant: 'cs',   label: 'ASP.NET Core (C#)' },
+}
+const BACKEND_ALIASES = {
+  php: 'laravel', node: 'express', ts: 'express', spring: 'spring-boot', java: 'spring-boot',
+  'asp.net': 'aspnet', dotnet: 'aspnet', csharp: 'aspnet', cs: 'aspnet',
+}
 const BACKEND_LABELS = {
   'laravel':         'Laravel backend (API for web stacks)',
   'laravel-inertia': 'Laravel + Inertia backend (react-inertia)',
+  'express':         BACKEND_TARGETS['express'].label,
+  'fastapi':         BACKEND_TARGETS['fastapi'].label,
+  'django':          BACKEND_TARGETS['django'].label,
+  'spring-boot':     BACKEND_TARGETS['spring-boot'].label,
+  'aspnet':          BACKEND_TARGETS['aspnet'].label,
 }
 const DATABASES = {
   'sqlite': 'SQLite (one .sqlite file per tatemono)',
   'pgsql':  'PostgreSQL (one database per tatemono)',
 }
 const DB_ALIASES = { sqlite: 'sqlite', pgsql: 'pgsql', postgres: 'pgsql', postgresql: 'pgsql', pg: 'pgsql' }
-const activeBackendFor = webStack => webStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
+// Effective backend: react-inertia forces laravel-inertia, otherwise arkzen.json "activeBackend" (default laravel).
+const resolveBackend = config =>
+  (config.activeStack ?? 'nextjs') === 'react-inertia'
+    ? 'laravel-inertia'
+    : (BACKEND_TARGETS[config.activeBackend] ? config.activeBackend : 'laravel')
+const backendVariant = name => name === 'laravel-inertia' ? 'php' : (BACKEND_TARGETS[name]?.variant ?? '?')
+const backendPath = name => {
+  const rel = BACKEND_STACKS[name] ?? BACKEND_TARGETS[name]?.dir
+  return rel ? path.join(ROOT_DIR, rel) : null
+}
 const ALL_STACKS = { ...WEB_STACKS, ...APP_STACKS, ...DESKTOP_STACKS, ...BACKEND_STACKS }
 const ALL_LABELS = { ...WEB_LABELS, ...APP_LABELS, ...DESKTOP_LABELS, ...BACKEND_LABELS }
 
@@ -118,9 +149,23 @@ function stackDir(stack) {
   return ALL_STACKS[stack] ? path.join(ROOT_DIR, ALL_STACKS[stack]) : null
 }
 
+function isBackendBuilt(name) {
+  const dir = backendPath(name)
+  return !!(dir && fs.existsSync(dir))
+}
+
+function isBackendInstalled(name) {
+  const dir = backendPath(name)
+  if (!dir || !fs.existsSync(dir)) return false
+  if (name === 'laravel' || name === 'laravel-inertia') return fs.existsSync(path.join(dir, 'vendor', 'autoload.php'))
+  if (name === 'express') return fs.existsSync(path.join(dir, 'node_modules'))
+  if (name === 'fastapi' || name === 'django') return fs.existsSync(path.join(dir, '.venv'))
+  return true
+}
+
 function isStackInstalled(stack) {
+  if (BACKEND_STACKS[stack]) return isBackendInstalled(stack)
   const dir = stackDir(stack)
-  if (dir && BACKEND_STACKS[stack]) return fs.existsSync(path.join(dir, 'vendor', 'autoload.php'))
   return !!(dir && fs.existsSync(path.join(dir, 'node_modules')))
 }
 
@@ -155,7 +200,9 @@ function printBanner() {
   console.log(`  ${paint(c.gray, 'Web スタック:')}  ${paint(c.cyan + c.bold, webStack)}  ${paint(c.gray, WEB_LABELS[webStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'Desktop:')}       ${paint(c.magenta + c.bold, deskStack)}  ${paint(c.gray, DESKTOP_LABELS[deskStack] ?? '')}`)
-  console.log(`  ${paint(c.gray, 'Backend:')}       ${paint(c.yellow + c.bold, activeBackendFor(webStack))}${isStackInstalled(activeBackendFor(webStack)) ? '' : paint(c.red, '  (vendor missing)')}`)
+  const backend = resolveBackend(config)
+  const backendNote = !isBackendBuilt(backend) ? paint(c.red, '  (not built)') : (isBackendInstalled(backend) ? '' : paint(c.red, '  (deps missing)'))
+  console.log(`  ${paint(c.gray, 'Backend:')}       ${paint(c.yellow + c.bold, backend)}  ${paint(c.gray, `:${backendVariant(backend)}`)}${backendNote}`)
   console.log(`  ${paint(c.gray, 'Database:')}      ${paint(c.cyan + c.bold, config.activeDatabase ?? 'sqlite')}  ${paint(c.gray, DATABASES[config.activeDatabase ?? 'sqlite'] ?? '')}`)
   console.log(`  ${paint(c.gray, 'モジュール:')}    ${paint(c.yellow, String(mods))} tatemonos`)
   console.log(`  ${paint(c.gray, emoji)}`)
@@ -398,6 +445,9 @@ async function cmdSwitchWeb(stackArg) {
   config.activeStack = stack
   writeConfig(config)
   success(`Web スタック切替完了！ ${paint(c.yellow, prev)} → ${paint(c.cyan + c.bold, stack)}`)
+  if (stack === 'react-inertia' && (config.activeBackend ?? 'laravel') !== 'laravel') {
+    warn(`react-inertia is a Laravel monolith. Backend runs as laravel-inertia while this stack is active (saved backend: ${config.activeBackend}).`)
+  }
   hintIfMissing(stack)
   info(`Restart: node mizumi.js start  (runs web + app together)`)
 }
@@ -486,6 +536,51 @@ async function cmdSwitchDesktop(stackArg) {
   info(`Restart: node mizumi.js start  (runs web + app + desktop together)`)
 }
 
+async function cmdSwitchBackend(backendArg) {
+  const config  = readConfig()
+  const current = config.activeBackend ?? 'laravel'
+  let backend = backendArg ? backendArg.toLowerCase() : null
+  if (backend && BACKEND_ALIASES[backend]) backend = BACKEND_ALIASES[backend]
+
+  if (backend === 'laravel-inertia') {
+    error('laravel-inertia is picked automatically when the web stack is react-inertia')
+    return
+  }
+  if (backend && !BACKEND_TARGETS[backend]) {
+    error(`Unknown backend: "${backendArg}" (use: ${Object.keys(BACKEND_TARGETS).join(', ')})`)
+    return
+  }
+  if (!backend) {
+    divider()
+    const chosen = await picker('Backend 切替 — Which backend?',
+      Object.entries(BACKEND_TARGETS).map(([key, t]) => ({
+        label: `${key === current ? paint(c.yellow, '→ ') : '  '}${t.label}`,
+        sub:   `${key}  :${t.variant}${key === current ? paint(c.yellow, '  (current)') : ''}${isBackendBuilt(key) ? '' : paint(c.red, '  (not built)')}`,
+        value: key,
+      }))
+    )
+    backend = chosen.value
+  }
+
+  const webStack = config.activeStack ?? 'nextjs'
+  if (webStack === 'react-inertia' && backend !== 'laravel') {
+    error('react-inertia is a Laravel monolith. Switch the web stack first: node mizumi.js web <stack>')
+    return
+  }
+  if (current === backend) { warn(`すでに ${backend} です — Already on backend: ${backend}`); return }
+
+  config.activeBackend = backend
+  writeConfig(config)
+  success(`Backend 切替完了！ ${paint(c.yellow, current)} → ${paint(c.yellow + c.bold, backend)}  ${paint(c.gray, `:${backendVariant(backend)}`)}`)
+  if (!isBackendBuilt(backend)) {
+    warn(`${BACKEND_TARGETS[backend].dir} does not exist yet (backend not built)`)
+  } else if (!isBackendInstalled(backend)) {
+    info(`Dependencies missing for ${backend}`)
+  }
+  if (backend !== 'laravel') info('start.js, setup.js and export.js do not read activeBackend yet')
+  info(`Tatemonos without a :${backendVariant(backend)} variant will be inactive on this backend`)
+}
+
 function cmdStack() {
   const config   = readConfig()
   const webStack = config.activeStack    ?? 'nextjs'
@@ -495,6 +590,9 @@ function cmdStack() {
   console.log(`  ${paint(c.gray, 'Web スタック:')}  ${paint(c.cyan + c.bold, webStack)}  ${paint(c.gray, WEB_LABELS[webStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'App スタック:')}  ${paint(c.green + c.bold, appStack)}  ${paint(c.gray, APP_LABELS[appStack] ?? '')}`)
   console.log(`  ${paint(c.gray, 'Desktop スタック:')}  ${paint(c.magenta + c.bold, desktopStack)}  ${paint(c.gray, DESKTOP_LABELS[desktopStack] ?? '')}`)
+  const backend = resolveBackend(config)
+  console.log(`  ${paint(c.gray, 'Backend:')}  ${paint(c.yellow + c.bold, backend)}  ${paint(c.gray, `:${backendVariant(backend)}  ${BACKEND_LABELS[backend] ?? ''}`)}`)
+  console.log(`  ${paint(c.gray, 'Database:')}  ${paint(c.cyan + c.bold, config.activeDatabase ?? 'sqlite')}  ${paint(c.gray, DATABASES[config.activeDatabase ?? 'sqlite'] ?? '')}`)
   divider()
 }
 
@@ -542,21 +640,22 @@ function cmdStacks() {
   console.log()
   console.log(`  ${paint(c.white + c.bold, 'Backend:')}`)
   console.log()
-  const activeBackend = activeBackendFor(activeWeb)
-  for (const key of Object.keys(BACKEND_STACKS)) {
+  const activeBackend = resolveBackend(config)
+  for (const key of [...Object.keys(BACKEND_TARGETS), 'laravel-inertia']) {
     const isCurrent = key === activeBackend
     const arrow  = isCurrent ? paint(c.yellow + c.bold, '→') : ' '
     const name   = isCurrent ? paint(c.yellow + c.bold, key.padEnd(18)) : paint(c.gray, key.padEnd(18))
-    const status = isStackInstalled(key) ? paint(c.green, '✓') : paint(c.red, '✗')
+    const status = isBackendInstalled(key) ? paint(c.green, '✓') : paint(c.red, '✗')
     const tag    = isCurrent ? paint(c.yellow, ' (active)') : ''
-    console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, BACKEND_LABELS[key] ?? '')}${tag}`)
+    const built  = isBackendBuilt(key) ? '' : paint(c.red, ' (not built)')
+    console.log(`  ${arrow} ${name} ${status}  ${paint(c.gray, `:${backendVariant(key).padEnd(5)} ${BACKEND_LABELS[key] ?? ''}`)}${tag}${built}`)
   }
   divider()
 }
 
 async function cmdDeps(actionArg, stackArg) {
   const config = readConfig()
-  const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack, activeBackendFor(config.activeStack ?? 'nextjs')].filter(Boolean))
+  const active = new Set([config.activeStack, config.activeAppStack, config.activeDesktopStack, resolveBackend(config)].filter(Boolean))
   const stackOptions = Object.keys(ALL_STACKS).map(key => ({
     label: `${isStackInstalled(key) ? '✓' : '✗'}  ${ALL_LABELS[key] ?? key}`,
     sub:   `${key}${active.has(key) ? '  (active)' : isStackInstalled(key) ? '  installed' : '  not installed'}`,
@@ -675,8 +774,8 @@ async function cmdSwitchDatabase(dbArg) {
 
   const env = {}
   if (db === 'pgsql') {
-    const backend = activeBackendFor(config.activeStack ?? 'nextjs')
-    const cur     = readEnvFile(path.join(ROOT_DIR, BACKEND_STACKS[backend], '.env'))
+    const backend = resolveBackend(config)
+    const cur     = readEnvFile(path.join(backendPath(backend), '.env'))
     const wasPg   = cur.DB_CONNECTION === 'pgsql'
     info('PostgreSQL connection — press Enter to keep the value in brackets')
     env.PLUFF_DB_HOST     = await prompt('Host', (wasPg && cur.DB_HOST) || '127.0.0.1')
@@ -838,6 +937,7 @@ async function interactiveMenu() {
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
+    { label: 'Backend切替      Switch backend',          sub: 'laravel / express / fastapi / django / spring-boot / aspnet', value: 'backend' },
     { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
@@ -859,6 +959,7 @@ async function interactiveMenu() {
     case 'web':       await cmdSwitchWeb();    break
     case 'app':       await cmdSwitchApp();    break
     case 'desktop':   await cmdSwitchDesktop(); break
+    case 'backend':   await cmdSwitchBackend(); break
     case 'db':        await cmdSwitchDatabase(); break
     case 'deps':      await cmdDeps();         break
     case 'stacks':    cmdStacks();             break
@@ -894,6 +995,7 @@ function printHelp() {
     ['mizumi start --skip=desktop',  '→ Start everything except chosen platforms'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
+    ['mizumi backend <name>',   '→ Switch backend (laravel, express, fastapi, django, spring-boot, aspnet)'],
     ['mizumi db <sqlite|postgresql>', '→ Switch database (one isolated DB per tatemono)'],
     ['mizumi deps',              '→ Install / uninstall deps (frontend + backend)'],
     ['mizumi deps prune',        '→ Delete deps of unused stacks'],
@@ -916,7 +1018,7 @@ function printHelp() {
   console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
   console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
   console.log(`  ${paint(c.gray, 'Desktop:')} tauri, electron`)
-  console.log(`  ${paint(c.gray, 'Backend:')} laravel, laravel-inertia`)
+  console.log(`  ${paint(c.gray, 'Backend:')} laravel, express, fastapi, django, spring-boot, aspnet  (laravel-inertia is automatic with react-inertia)`)
   console.log()
 }
 
@@ -932,6 +1034,7 @@ switch (command) {
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break
   case 'desktop': cmdSwitchDesktop(arg);       break
+  case 'backend': cmdSwitchBackend(arg);       break
   case 'db':
   case 'database': cmdSwitchDatabase(arg);     break
   case 'deps':    cmdDeps(arg, args[2]);       break
