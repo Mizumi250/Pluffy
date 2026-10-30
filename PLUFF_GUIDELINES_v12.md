@@ -1014,6 +1014,8 @@ import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
 The generator combines imports from all web component blocks and includes the resolved import set in each generated component file. Component declarations are still emitted as separate modules; use exported declarations and the generator's shared component/hook/constant/type/utility imports rather than relying on a shared lexical scope.
 
+Export names decide which file an export lands in. Top-level exports in web:components blocks are sorted by name: PascalCase becomes one file per component, useXxx goes to hooks.tsx, ALL_CAPS constants go to constants.tsx, camelCase functions and values go to utils.tsx, and type/interface go to types.ts. Pages and other components import what they use automatically. A theme object, language list or limit is an ALL_CAPS export. Dark-mode or state logic is a use* export, and a zustand store works as one. No extra block is needed.
+
 ## SECTION 24 — @arkzen:web:animation
 
 ```
@@ -1118,6 +1120,8 @@ export const Badge = ({ label }: { label: string }) => (
 - Expo uses `expo-router` (`useRouter`, `usePathname`); bare RN has no expo-router — put router code in the `expo` pair only, or write RN-specific navigation in the `rn` pair.
 
 Always available in native component scope: `React` hooks, RN primitives (`View, Text, TouchableOpacity, Pressable, ScrollView, FlatList, Image, StyleSheet, RefreshControl, TextInput, ActivityIndicator`), `SafeAreaView` from `react-native-safe-area-context`, and `useRouter, usePathname` from `expo-router` (Expo). Animation (optional): `react-native-reanimated`, `moti`.
+
+The same sorting applies in native:components: ALL_CAPS goes to constants.tsx, use* to hooks.tsx, camelCase to utils.tsx, types to types.ts, and PascalCase to one file per component. Any package a hook or constant needs, such as zustand, must be listed in an import pair.
 
 > `validate.js` (advisory CLI) still demands an import DSL on every native page and rejects pages that work fine. Trust the parser's DSL errors over that script for native.
 
