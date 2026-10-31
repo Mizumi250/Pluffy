@@ -102,12 +102,12 @@ Thanks for stopping by.
 
 Samples of what Pluff made so far:
 
-https://hw-coffee.vercel.app/
-https://lain098-67v0azy8h-mizumi25s-projects.vercel.app/
-https://ethereane.vercel.app/
-https://ethan-pool.vercel.app/
-https://cafe-teresita.vercel.app/
-https://shan-shan-eight.vercel.app/
+- https://hw-coffee.vercel.app/
+- https://lain098-67v0azy8h-mizumi25s-projects.vercel.app/
+- https://ethereane.vercel.app/
+- https://ethan-pool.vercel.app/
+- https://cafe-teresita.vercel.app/
+- https://shan-shan-eight.vercel.app/
 
 
 as the engine and its ai improve so as the output
