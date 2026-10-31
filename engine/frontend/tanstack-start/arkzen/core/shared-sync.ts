@@ -45,7 +45,7 @@ import * as fs from 'fs'
 import * as path from 'path'
 
 // Engine-core files (cross-platform — synced to ALL stacks)
-const ENGINE_FILES = ['parser.ts', 'backend-bridge.ts', 'validator.ts', 'shared-sync.ts'] as const
+const ENGINE_FILES = ['parser.ts', 'backend-bridge.ts', 'validator.ts', 'backends.ts', 'shared-sync.ts'] as const
 
 // Cross-platform folders from web-core (hooks, lib, stores use fetch/zustand — no DOM)
 // Synced to ALL stacks (web + mobile)

@@ -1,6 +1,12 @@
 // ============================================================
 // ARKZEN ENGINE — PARSER v10.6
 //
+// v13.0: Backend DSL variants. Code blocks (endpoint, handler, policy, middleware,
+//        listener, jobs, console, notifications/mail with a body) accept a variant
+//        suffix between marker and name (:php :ts :py :java :cs). The active backend
+//        (arkzen.json activeBackend, see backends.ts) decides which variant is read.
+//        Unsuffixed code = :php. Unsuffixed YAML-only block = shared.
+// v12.0: Shared desktop window config from @arkzen:desktop:config.
 // v10.6: Global (unnamed) native style block for Expo + Bare RN.
 //        New parser: parseGlobalNativeStyle() — @arkzen:native:style
 //        ParsedTatemono: nativeStyleGlobal? added (ArkzenSection | undefined).
@@ -112,12 +118,14 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import * as yaml from 'js-yaml'
+import { activeBackendVariant, VARIANT_TOKENS } from './backends'
 import type {
   ParsedTatemono,
   ArkzenMeta,
   ArkzenWebMeta,
   ArkzenNativeMeta,
   ArkzenNativeConfig,
+  ArkzenDesktopConfig,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -545,6 +553,20 @@ function parseNativeConfig(content: string): ArkzenNativeConfig | undefined {
   return yaml.load(raw) as ArkzenNativeConfig
 }
 
+function parseDesktopConfig(content: string): ArkzenDesktopConfig | undefined {
+  const matches = content.match(/^[ \t]*\/\*\s*@arkzen:desktop:config(?:\s|\*\/)/gm) ?? []
+  if (matches.length > 1) {
+    throw new Error('[Arkzen Parser] Only one @arkzen:desktop:config block is allowed per Tatemono')
+  }
+  const raw = extractSection(content, 'desktop:config')
+  if (!raw) return undefined
+  const parsed = yaml.load(raw)
+  if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error('[Arkzen Parser] @arkzen:desktop:config must contain a YAML mapping')
+  }
+  return parsed as ArkzenDesktopConfig
+}
+
 // ─────────────────────────────────────────────
 // NATIVE IMPORT LINE EXTRACTOR — v10.3
 //
@@ -943,6 +965,159 @@ function parseAllApis(content: string): ArkzenApi[] {
 }
 
 // ─────────────────────────────────────────────
+// BACKEND VARIANT SCANNER — v13.0
+//
+// Backend code blocks (endpoint, handler, policy, middleware, listener,
+// jobs, console, notifications, mail) can carry one body per backend:
+//
+//   /* @arkzen:middleware:ts:requireJson      ← variant between marker and name
+//   */
+//   ...
+//   /* @arkzen:middleware:ts:requireJson:end */
+//
+// Rules (the active backend decides which variant is read):
+//   - a block with the active variant suffix wins
+//   - an unsuffixed block with a code body is the legacy :php variant
+//   - an unsuffixed block with no code body is shared by every backend
+//   - no usable block for the active variant → not emitted, and the
+//     validator reports the tatemono as inactive on this backend
+// ─────────────────────────────────────────────
+
+let ACTIVE_VARIANT: string = 'php'
+
+interface CodeBlock {
+  name:    string
+  variant: string | null
+  yamlRaw: string
+  body:    string
+  start:   number
+  end:     number
+}
+
+interface VariantPick {
+  chosen:    CodeBlock | null
+  available: string[]
+}
+
+const VARIANT_RE = new RegExp(`^(${VARIANT_TOKENS.join('|')}):([a-zA-Z0-9_-]+)`)
+
+function scanCodeBlocks(content: string, marker: string): CodeBlock[] {
+  const blocks: CodeBlock[] = []
+  const openPattern = `/* @arkzen:${marker}:`
+  let searchFrom = 0
+
+  while (true) {
+    const openIdx = content.indexOf(openPattern, searchFrom)
+    if (openIdx === -1) break
+
+    const after = content.slice(openIdx + openPattern.length)
+    let variant: string | null = null
+    let identifier = ''
+    let consumed = 0
+
+    const vm = after.match(VARIANT_RE)
+    if (vm && content.includes(`/* @arkzen:${marker}:${vm[1]}:${vm[2]}:end */`)) {
+      variant    = vm[1]
+      identifier = vm[2]
+      consumed   = vm[1].length + 1 + vm[2].length
+    } else {
+      const im = after.match(/^([a-zA-Z0-9_-]+)/)
+      if (!im) { searchFrom = openIdx + openPattern.length; continue }
+      identifier = im[1]
+      consumed   = identifier.length
+      if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
+    }
+
+    const afterName = openIdx + openPattern.length + consumed
+    let openCommentEnd = findOpeningCommentEnd(content, openIdx, afterName)
+    if (openCommentEnd === -1) openCommentEnd = content.indexOf('*/', afterName)
+    if (openCommentEnd === -1) break
+
+    const yamlRaw     = content.slice(afterName, openCommentEnd).trim()
+    const closeMarker = variant
+      ? `/* @arkzen:${marker}:${variant}:${identifier}:end */`
+      : `/* @arkzen:${marker}:${identifier}:end */`
+    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
+    const body     = closeIdx !== -1 ? content.slice(openCommentEnd + 2, closeIdx).trim() : ''
+    const end      = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
+
+    blocks.push({ name: identifier, variant, yamlRaw, body, start: openIdx, end })
+    searchFrom = end
+  }
+
+  return blocks
+}
+
+function pickVariantBlocks(content: string, marker: string, variant: string = ACTIVE_VARIANT): Map<string, VariantPick> {
+  const groups = new Map<string, CodeBlock[]>()
+  for (const b of scanCodeBlocks(content, marker)) {
+    if (!groups.has(b.name)) groups.set(b.name, [])
+    groups.get(b.name)!.push(b)
+  }
+
+  const picks = new Map<string, VariantPick>()
+  for (const [name, list] of groups) {
+    const exact  = list.find(b => b.variant === variant) ?? null
+    const legacy = list.find(b => b.variant === null)    ?? null
+    let chosen: CodeBlock | null = exact
+    if (!chosen && legacy) {
+      if (!legacy.body)         chosen = legacy   // YAML only: shared by every backend
+      else if (variant === 'php') chosen = legacy // unsuffixed code = legacy :php
+    }
+    const available = list.map(b => b.variant ?? (b.body ? 'php' : 'shared'))
+    picks.set(name, { chosen, available })
+  }
+  return picks
+}
+
+const BACKEND_BODY_MARKERS = [
+  'middleware', 'policy', 'handler', 'endpoint', 'listener',
+  'jobs', 'console', 'notifications', 'mail',
+] as const
+
+export interface BackendVariantIssue {
+  marker:    string
+  name:      string
+  available: string[]
+}
+
+/** Blocks that exist in the file but have no usable variant for `variant`. */
+export function findMissingBackendVariants(content: string, variant: string): BackendVariantIssue[] {
+  const issues: BackendVariantIssue[] = []
+  for (const marker of BACKEND_BODY_MARKERS) {
+    for (const [name, pick] of pickVariantBlocks(content, marker, variant)) {
+      if (!pick.chosen) issues.push({ marker, name, available: pick.available })
+    }
+  }
+  return issues
+}
+
+function snippetMap(content: string, marker: string, label?: string): Record<string, string> {
+  const out: Record<string, string> = {}
+  for (const [name, pick] of pickVariantBlocks(content, marker)) {
+    if (pick.chosen?.body) {
+      out[name] = Buffer.from(pick.chosen.body).toString('base64')
+      if (label) console.log(`[Parser] ✓ ${label} snippet extracted: ${name} (:${ACTIVE_VARIANT})`)
+    }
+  }
+  return out
+}
+
+function bodySections(content: string, marker: string, bodyKey: string): ArkzenSection[] {
+  const results: ArkzenSection[] = []
+  for (const [name, pick] of pickVariantBlocks(content, marker)) {
+    const b = pick.chosen
+    if (!b) continue
+    const bodyEncoded = Buffer.from(b.body).toString('base64')
+    const raw = `${name}:\n` +
+      b.yamlRaw.split('\n').map(l => `  ${l}`).join('\n') +
+      `\n  ${bodyKey}: '${bodyEncoded}'`
+    results.push({ raw, start: b.start, end: b.end })
+  }
+  return results
+}
+
+// ─────────────────────────────────────────────
 // PARSE ALL CUSTOM ROUTES — v5.1
 //
 // Handles @arkzen:routes blocks — lightweight one-off endpoints
@@ -1024,39 +1199,7 @@ function parseAllCustomRoutes(content: string): ArkzenCustomRoute[] {
 // ─────────────────────────────────────────────
 
 function parseAllMiddlewareSnippets(content: string): ArkzenMiddlewareSnippets {
-  const snippets: ArkzenMiddlewareSnippets = {}
-  const openPattern = `/* @arkzen:middleware:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const closeMarker = `/* @arkzen:middleware:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-
-    const body        = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    if (body) {
-      snippets[identifier] = Buffer.from(body).toString('base64')
-    }
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return snippets
+  return snippetMap(content, 'middleware')
 }
 
 // ─────────────────────────────────────────────
@@ -1080,43 +1223,10 @@ function parseAllMiddlewareSnippets(content: string): ArkzenMiddlewareSnippets {
 // ─────────────────────────────────────────────
 
 function parseAllPolicySnippets(content: string): Record<string, string> {
-  const snippets: Record<string, string> = {}
-  const openPattern = `/* @arkzen:policy:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const closeMarker = `/* @arkzen:policy:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-
-    const body        = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    if (body) {
-      snippets[identifier] = Buffer.from(body).toString('base64')
-      console.log(`[Parser] ✓ Policy snippet extracted: ${identifier}`)
-    }
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
+  const snippets = snippetMap(content, 'policy', 'Policy')
   if (Object.keys(snippets).length > 0) {
     console.log(`[Parser] Policy snippets found: ${Object.keys(snippets).join(', ')}`)
   }
-
   return snippets
 }
 
@@ -1135,39 +1245,7 @@ function parseAllPolicySnippets(content: string): Record<string, string> {
 // ─────────────────────────────────────────────
 
 function parseAllHandlerSnippets(content: string): Record<string, string> {
-  const snippets: Record<string, string> = {}
-  const openPattern = `/* @arkzen:handler:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const closeMarker = `/* @arkzen:handler:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-
-    const body        = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    if (body) {
-      snippets[identifier] = Buffer.from(body).toString('base64')
-    }
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return snippets
+  return snippetMap(content, 'handler')
 }
 
 // ─────────────────────────────────────────────
@@ -1186,39 +1264,7 @@ function parseAllHandlerSnippets(content: string): Record<string, string> {
 // ─────────────────────────────────────────────
 
 function parseAllEndpointBodies(content: string): Record<string, string> {
-  const bodies: Record<string, string> = {}
-  const openPattern = `/* @arkzen:endpoint:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const closeMarker = `/* @arkzen:endpoint:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-
-    const body        = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    if (body) {
-      bodies[identifier] = Buffer.from(body).toString('base64')
-    }
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return bodies
+  return snippetMap(content, 'endpoint')
 }
 
 // ─────────────────────────────────────────────
@@ -1471,47 +1517,7 @@ export function parsePageLayoutDecl(raw: string): { guard?: 'auth' | 'guest'; la
 // ─────────────────────────────────────────────
 
 function parseAllNotifications(content: string): ArkzenSection[] {
-  const results: ArkzenSection[] = []
-  const openPattern = `/* @arkzen:notifications:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const yamlRaw = content
-      .slice(openIdx + openPattern.length + identifier.length, openCommentEnd)
-      .trim()
-
-    const closeMarker = `/* @arkzen:notifications:${identifier}:end */`
-    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
-
-    // v6.3: capture PHP body between */ and :end
-    const body = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    const bodyEncoded = Buffer.from(body).toString('base64')
-    const raw = `${identifier}:\n` +
-      yamlRaw.split('\n').map(l => `  ${l}`).join('\n') +
-      `\n  toMail_body: '${bodyEncoded}'`
-
-    results.push({ raw, start: openIdx, end: closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2 })
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return results
+  return bodySections(content, 'notifications', 'toMail_body')
 }
 
 // ─────────────────────────────────────────────
@@ -1527,47 +1533,7 @@ function parseAllNotifications(content: string): ArkzenSection[] {
 // ─────────────────────────────────────────────
 
 function parseAllMails(content: string): ArkzenSection[] {
-  const results: ArkzenSection[] = []
-  const openPattern = `/* @arkzen:mail:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const yamlRaw = content
-      .slice(openIdx + openPattern.length + identifier.length, openCommentEnd)
-      .trim()
-
-    const closeMarker = `/* @arkzen:mail:${identifier}:end */`
-    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
-
-    // v6.3: capture Blade/HTML body between */ and :end
-    const body = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    const bodyEncoded = Buffer.from(body).toString('base64')
-    const raw = `${identifier}:\n` +
-      yamlRaw.split('\n').map(l => `  ${l}`).join('\n') +
-      `\n  blade_body: '${bodyEncoded}'`
-
-    results.push({ raw, start: openIdx, end: closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2 })
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return results
+  return bodySections(content, 'mail', 'blade_body')
 }
 
 // ─────────────────────────────────────────────
@@ -1797,96 +1763,13 @@ function parseAllNamedCode(content: string, marker: string): ArkzenSection[] {
 // ─────────────────────────────────────────────
 
 function parseAllConsoles(content: string): ArkzenSection[] {
-  const results: ArkzenSection[] = []
-  const openPattern = `/* @arkzen:console:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    // Find closing */ of opening comment (cron-safe).
-    const openCommentEnd = findOpeningCommentEnd(content, openIdx, openIdx + openPattern.length)
-    if (openCommentEnd === -1) break
-
-    // YAML config lives inside the opening comment
-    const yamlRaw = content
-      .slice(openIdx + openPattern.length + identifier.length, openCommentEnd)
-      .trim()
-
-    // PHP body lives between */ and :end
-    const closeMarker = `/* @arkzen:console:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-    const body        = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    // Emit as a YAML string with name as top-level key and body embedded
-    // Body is base64-encoded to safely embed multiline PHP inside YAML
-    const bodyEncoded = Buffer.from(body).toString('base64')
-    const raw = `${identifier}:\n` +
-      yamlRaw.split('\n').map(l => `  ${l}`).join('\n') +
-      `\n  body: '${bodyEncoded}'`
-
-    results.push({ raw, start: openIdx, end: closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2 })
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return results
+  return bodySections(content, 'console', 'body')
 }
 
 
 
 function parseAllJobs(content: string): ArkzenSection[] {
-  const results: ArkzenSection[] = []
-  const openPattern = `/* @arkzen:jobs:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    // YAML config inside the opening comment
-    const yamlRaw = content
-      .slice(openIdx + openPattern.length + identifier.length, openCommentEnd)
-      .trim()
-
-    // PHP body between */ and :end
-    const closeMarker = `/* @arkzen:jobs:${identifier}:end */`
-    const closeIdx = content.indexOf(closeMarker, openCommentEnd)
-    const body = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    const bodyEncoded = Buffer.from(body).toString('base64')
-    const raw = `${identifier}:\n` +
-      yamlRaw.split('\n').map(l => `  ${l}`).join('\n') +
-      `\n  body: '${bodyEncoded}'`
-
-    results.push({ raw, start: openIdx, end: closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2 })
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return results
+  return bodySections(content, 'jobs', 'body')
 }
 
 
@@ -1904,39 +1787,7 @@ function parseAllJobs(content: string): ArkzenSection[] {
 // ─────────────────────────────────────────────
 
 function parseAllListenerBodies(content: string): Record<string, string> {
-  const bodies: Record<string, string> = {}
-  const openPattern = `/* @arkzen:listener:`
-  let searchFrom = 0
-
-  while (true) {
-    const openIdx = content.indexOf(openPattern, searchFrom)
-    if (openIdx === -1) break
-
-    const afterOpen  = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
-    if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
-
-    const identifier = identMatch[1]
-    if (identifier === 'end') { searchFrom = openIdx + openPattern.length; continue }
-
-    const openCommentEnd = content.indexOf('*/', openIdx)
-    if (openCommentEnd === -1) break
-
-    const closeMarker = `/* @arkzen:listener:${identifier}:end */`
-    const closeIdx    = content.indexOf(closeMarker, openCommentEnd)
-
-    const body = closeIdx !== -1
-      ? content.slice(openCommentEnd + 2, closeIdx).trim()
-      : ''
-
-    if (body) {
-      bodies[identifier] = Buffer.from(body).toString('base64')
-    }
-
-    searchFrom = closeIdx !== -1 ? closeIdx + closeMarker.length : openCommentEnd + 2
-  }
-
-  return bodies
+  return snippetMap(content, 'listener')
 }
 
 function parseAllEvents(content: string): ArkzenSection[] {
@@ -2152,7 +2003,7 @@ const CODE_BLOCK_TAGS = [
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
   'meta', 'meta:web', 'meta:native',
-  'web:config', 'native:config',
+  'web:config', 'native:config', 'desktop:config',
   'database', 'api', 'routes', 'realtime', 'events', 'notifications', 'mail',
 ]
 
@@ -2374,11 +2225,15 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const content  = fs.readFileSync(filePath, 'utf-8')
   const fileName = path.basename(filePath, '.tsx')
 
+  // v13.0: the active backend decides which code-block variant is read
+  ACTIVE_VARIANT = activeBackendVariant(filePath)
+
   const meta         = parseMeta(content)
   const webMeta      = parseWebMeta(content)      // v9.0: @arkzen:meta:web
   const nativeMeta   = parseNativeMeta(content)   // v10.0: @arkzen:meta:native
   const config       = parseConfig(content)
   const nativeConfig = parseNativeConfig(content) // v10.0: @arkzen:native:config
+  const desktopConfig = parseDesktopConfig(content)
   const databases    = parseAllDatabases(content)
   const customRoutes = parseAllCustomRoutes(content)  // internally calls parseAllHandlerSnippets
   const pages        = parseAllPages(content)
@@ -2485,6 +2340,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeMeta,    // v10.0
     config,
     nativeConfig,  // v10.0
+    desktopConfig,
     databases,
     apis,
     customRoutes,

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CurtainsSection
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:56.003Z
+// Generated: 2026-10-31T12:45:27.355Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

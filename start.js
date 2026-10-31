@@ -69,9 +69,17 @@ const WEB_DEV_URL = activeStack === 'react-inertia' ? 'http://localhost:5173' : 
 
 // Backend dir — Inertia uses its own Laravel instance
 const INERTIA_BACKEND_DIR = path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
+// Active backend (arkzen.json "activeBackend"). react-inertia always uses its own Laravel.
+const activeBackend = activeStack === 'react-inertia' ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
+const IS_EXPRESS = activeBackend === 'express'
+const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express']
+if (!IMPLEMENTED_BACKENDS.includes(activeBackend)) {
+  console.log(`\n  ✗ Backend "${activeBackend}" is selected but not built yet. Run: node mizumi.js backend laravel\n`)
+  process.exit(1)
+}
 const BACKEND_DIR = activeStack === 'react-inertia'
   ? INERTIA_BACKEND_DIR
-  : path.join(ENGINE_DIR, 'backend', 'laravel')
+  : path.join(ENGINE_DIR, 'backend', IS_EXPRESS ? 'express' : 'laravel')
 
 const WEB_DIR = path.join(STACKS_DIR, activeStack)
 const TAURI_DIR = path.join(STACKS_DIR, 'tauri')
@@ -102,6 +110,20 @@ function log(src, msg) {
 }
 
 function checkSetup() {
+  if (IS_EXPRESS) {
+    const expressOk = fs.existsSync(path.join(BACKEND_DIR, 'node_modules', 'tsx', 'dist', 'cli.mjs')) &&
+      fs.existsSync(path.join(BACKEND_DIR, 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node'))
+    if (!expressOk) {
+      console.log('\n  ✗ Express backend packages are missing or the install was incomplete.')
+      console.log('    Delete engine/backend/express/node_modules, then run:  node mizumi.js deps install express\n')
+      process.exit(1)
+    }
+    const envFile = path.join(BACKEND_DIR, '.env')
+    if (!fs.existsSync(envFile) && fs.existsSync(path.join(BACKEND_DIR, '.env.example'))) {
+      fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
+      console.log('  ✓ Created engine/backend/express/.env from .env.example')
+    }
+  } else {
   const artisan = path.join(BACKEND_DIR, 'artisan')
   if (!fs.existsSync(artisan)) {
     console.log('\n  ✗ Engine not set up yet. Run: node setup.js\n')
@@ -113,6 +135,7 @@ function checkSetup() {
     console.log('    Frontends were installed, but the PHP backend was not.')
     console.log(`    Run:  node mizumi.js deps install ${path.basename(BACKEND_DIR)}\n`)
     process.exit(1)
+  }
   }
 
   if (runWeb && !fs.existsSync(path.join(WEB_DIR, 'node_modules'))) {
@@ -137,12 +160,14 @@ function checkSetup() {
 }
 
 function startBackend() {
-  log('backend', 'Starting Laravel on http://localhost:8000')
+  log('backend', `Starting ${IS_EXPRESS ? 'Express' : 'Laravel'} on http://localhost:8000`)
 
-  const proc = spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
-    cwd: BACKEND_DIR,
-    stdio: 'pipe',
-  })
+  const proc = IS_EXPRESS
+    ? spawn('npx', ['tsx', 'src/server.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, PORT: '8000' } })
+    : spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
+        cwd: BACKEND_DIR,
+        stdio: 'pipe',
+      })
 
   proc.stdout.on('data', (data) => {
     String(data).trim().split('\n').forEach(line => {
@@ -162,16 +187,20 @@ function startBackend() {
 }
 
 function startQueueWorker() {
-  log('queue', 'Starting queue worker (php artisan queue:work --queue=default,heavy --sleep=3 --tries=3)')
+  log('queue', IS_EXPRESS
+    ? 'Starting queue worker + scheduler (tsx src/worker.ts)'
+    : 'Starting queue worker (php artisan queue:work --queue=default,heavy --sleep=3 --tries=3)')
 
   let crashes = 0
   const spawnWorker = () => {
     const startedAt = Date.now()
-    const proc = spawn('php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], {
-      cwd: BACKEND_DIR,
-      stdio: 'pipe',
-      env: process.env,
-    })
+    const proc = IS_EXPRESS
+      ? spawn('npx', ['tsx', 'src/worker.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: process.env })
+      : spawn('php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], {
+          cwd: BACKEND_DIR,
+          stdio: 'pipe',
+          env: process.env,
+        })
 
     proc.stdout.on('data', (data) => {
       String(data).trim().split('\n').forEach(line => {
@@ -188,7 +217,7 @@ function startQueueWorker() {
         crashes += 1
         const instant = Date.now() - startedAt < 4000
         if (instant && crashes >= 3) {
-          log('queue', 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
+          log('queue', IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express' : 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
           return
         }
         log('queue', `Exited with code ${code}, restarting in 3 seconds...`)
@@ -400,15 +429,17 @@ console.log('╚═════════════════════�
 
 checkSetup()
 
-// Storage symlink
-try {
-  execSync('php artisan storage:link --force', {
-    cwd: BACKEND_DIR,
-    stdio: 'pipe'
-  })
-  console.log('  ✓ Storage symlink created/updated')
-} catch (e) {
-  console.log('  ⚠ Storage symlink failed (run: php artisan storage:link --force)')
+// Storage symlink (Laravel only; Express serves /storage itself)
+if (!IS_EXPRESS) {
+  try {
+    execSync('php artisan storage:link --force', {
+      cwd: BACKEND_DIR,
+      stdio: 'pipe'
+    })
+    console.log('  ✓ Storage symlink created/updated')
+  } catch (e) {
+    console.log('  ⚠ Storage symlink failed (run: php artisan storage:link --force)')
+  }
 }
 
 // Start backend services for the web stack (app + desktop run alongside it)
@@ -417,7 +448,7 @@ let queue = null
 let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
-reverb  = startReverb()
+reverb  = IS_EXPRESS ? null : startReverb()   // Express runs its Pusher-compatible realtime server inside the backend process
 
 // Start web stack
 const web = runWeb ? startWebStack() : null

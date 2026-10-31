@@ -10,27 +10,23 @@
 //   2. Database  — table names, types, foreign keys, no circles
 //   3. API       — naming conventions, methods, prefixes
 //   4. Pages     — layout declarations, no duplicates
-//   5. Native    — mandatory @arkzen:import:expo/:rn DSL for Expo/RN blocks
+//   5. Native    — target-specific parsing and duplicate pages
 //   6. Consistency — model/table name alignment
 // ============================================================
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parseTatemono } from './parser'
+import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
+import { activeBackendVariant, resolveActiveBackend } from './backends'
 import type { ParsedTatemono, ValidationResult, ArkzenDatabase } from '../types'
 
 const VALID_COLUMN_TYPES = new Set([
   'integer', 'bigInteger', 'string', 'text', 'longText',
   'decimal', 'float', 'boolean', 'date', 'datetime',
-  'timestamp', 'json', 'uuid',
+  'timestamp', 'json', 'uuid', 'foreignId',
 ])
 
 const VALID_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
-
-// ─── Native DSL check ──────────────────────────────────────────────────────
-function hasImportDSL(raw: string): boolean {
-  return raw.includes('/* @arkzen:import:expo') || raw.includes('/* @arkzen:import:rn')
-}
 
 // ────────────────────────────────────────────────────────────────────────────
 // MAIN VALIDATOR
@@ -50,6 +46,64 @@ export function validateTatemono(filePath: string): ValidationResult {
   }
 
   // ── 1. Structure ─────────────────────────────
+
+  // ── 0. Backend variants (v13.0) ──────────────
+  // Code blocks (endpoint, handler, policy, middleware, listener, jobs,
+  // console, notifications/mail with a body) need a variant for the active
+  // backend. Without one the tatemono is inactive on that backend.
+  try {
+    const variant = activeBackendVariant(filePath)
+    const backend = resolveActiveBackend(filePath)
+    const missing = findMissingBackendVariants(fs.readFileSync(filePath, 'utf-8'), variant)
+    for (const m of missing) {
+      errors.push(
+        `@arkzen:${m.marker}:${m.name} has no :${variant} variant for backend "${backend}" ` +
+        `(found: ${m.available.join(', ')}). Add /* @arkzen:${m.marker}:${variant}:${m.name} ... :end */ ` +
+        `or switch backend. This tatemono is inactive on ${backend}.`
+      )
+    }
+  } catch { /* variant check must never mask the real parse result */ }
+
+  if (parsed.desktopConfig) {
+    const windowConfig = parsed.desktopConfig.window
+    if (
+      windowConfig !== undefined &&
+      (!windowConfig || typeof windowConfig !== 'object' || Array.isArray(windowConfig))
+    ) {
+      errors.push('@arkzen:desktop:config window must be a mapping')
+    } else if (windowConfig) {
+      for (const key of ['width', 'height', 'min_width', 'min_height'] as const) {
+        const value = windowConfig[key]
+        if (value !== undefined && (!Number.isInteger(value) || value <= 0)) {
+          errors.push(`@arkzen:desktop:config window.${key} must be a positive integer`)
+        }
+      }
+      for (const key of ['resizable', 'fullscreenable'] as const) {
+        const value = windowConfig[key]
+        if (value !== undefined && typeof value !== 'boolean') {
+          errors.push(`@arkzen:desktop:config window.${key} must be true or false`)
+        }
+      }
+      if (windowConfig.title !== undefined && (typeof windowConfig.title !== 'string' || !windowConfig.title.trim())) {
+        errors.push('@arkzen:desktop:config window.title must be a non-empty string')
+      }
+      if (
+        windowConfig.width !== undefined &&
+        windowConfig.min_width !== undefined &&
+        windowConfig.min_width > windowConfig.width
+      ) {
+        errors.push('@arkzen:desktop:config window.min_width cannot exceed window.width')
+      }
+      if (
+        windowConfig.height !== undefined &&
+        windowConfig.min_height !== undefined &&
+        windowConfig.min_height > windowConfig.height
+      ) {
+        errors.push('@arkzen:desktop:config window.min_height cannot exceed window.height')
+      }
+    }
+  }
+
   if (parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
@@ -61,6 +115,10 @@ export function validateTatemono(filePath: string): ValidationResult {
   // ── 2. Database ───────────────────────────────
   const tableNames = new Set(parsed.databases.map(d => d.table))
   tableNames.add('users')
+  const tablePrefix = parsed.meta.name.replace(/-/g, '_')
+  for (const db of parsed.databases) {
+    tableNames.add(`${tablePrefix}_${db.table}`)
+  }
 
   for (const db of parsed.databases) {
     if (!/^[a-z][a-z0-9_]*s$/.test(db.table) && db.table !== 'users') {
@@ -125,21 +183,23 @@ export function validateTatemono(filePath: string): ValidationResult {
   }
 
   // ── 4. Pages (web) ──────────────────────────────
-  const validWebLayouts = new Set(['guest', 'auth', ...parsed.layouts.map(l => l.name)])
+  const declaredWebLayouts = new Set(parsed.layouts.map(layout => layout.name))
 
   for (const page of parsed.pages) {
-    if (!validWebLayouts.has(page.layout)) {
+    const { layout } = parsePageLayoutDecl(page.layout)
+    const missingLayouts = (layout?.split(':') ?? []).filter(name => !declaredWebLayouts.has(name))
+    if (missingLayouts.length > 0) {
       errors.push(
-        `Web page "${page.name}": layout "${page.layout}" is not defined. ` +
-        `Valid layouts: ${[...validWebLayouts].join(', ')}. ` +
-        `To define a custom layout, use @arkzen:web:layout:${page.layout}`
+        `Web page "${page.name}": layout "${missingLayouts.join(':')}" is not defined. ` +
+        `Valid layouts: ${[...declaredWebLayouts].join(', ') || '(none)'}. ` +
+        `To define a custom layout, use @arkzen:web:layout:${missingLayouts[0]}`
       )
     }
   }
 
   if (parsed.meta.auth) {
-    const guestPages = parsed.pages.filter(p => p.layout === 'guest')
-    const authPages  = parsed.pages.filter(p => p.layout === 'auth')
+    const guestPages = parsed.pages.filter(page => parsePageLayoutDecl(page.layout).guard === 'guest')
+    const authPages  = parsed.pages.filter(page => parsePageLayoutDecl(page.layout).guard === 'auth')
     if (guestPages.length === 0 && authPages.length > 0) {
       warnings.push(
         'auth: true is set but no guest (public) pages found. ' +
@@ -148,52 +208,8 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  // ── 5. Native: MANDATORY IMPORT DSL CHECK ──────────────────────────────
-  // Per your table: Expo and Bare RN blocks MUST have @arkzen:import:expo or :rn
-  // Lynx blocks use :lynx suffix – they are self-contained, no import DSL required.
-
-  // 5a. Native pages (Expo / Bare RN)
-  for (const page of parsed.nativePages) {
-    if (!hasImportDSL(page.raw)) {
-      errors.push(
-        `Native page "${page.name}" targets Expo or Bare RN but does not contain ` +
-        `an @arkzen:import:expo or @arkzen:import:rn block. ` +
-        `Per the DSL table, every native page must be wrapped with the appropriate import DSL.`
-      )
-    }
-  }
-
-  // 5b. Native layouts (Expo / Bare RN)
-  for (const layout of parsed.nativeLayouts) {
-    if (!hasImportDSL(layout.raw)) {
-      errors.push(
-        `Native layout "${layout.name}" targets Expo or Bare RN but does not contain ` +
-        `an @arkzen:import:expo or @arkzen:import:rn block.`
-      )
-    }
-  }
-
-  // 5c. Native components (Expo / Bare RN)
-  for (const comp of parsed.nativeComponents) {
-    if (!hasImportDSL(comp.raw)) {
-      errors.push(
-        `Native component block "${comp.name}" targets Expo or Bare RN but does not contain ` +
-        `an @arkzen:import:expo or @arkzen:import:rn block.`
-      )
-    }
-  }
-
-  // 5d. Native error handlers (Expo / Bare RN)
-  for (const err of parsed.nativeErrorHandlers) {
-    if (!hasImportDSL(err.raw)) {
-      errors.push(
-        `Native error handler (${err.type}) targets Expo or Bare RN but does not contain ` +
-        `an @arkzen:import:expo or @arkzen:import:rn block.`
-      )
-    }
-  }
-
-  // 5e. Lynx blocks – NO import DSL required. We do NOT check them.
+  // Native blocks may be shared across Expo/RN or explicitly target one runtime.
+  // The parser and builders resolve those imports; markerless legacy blocks are valid.
 
   // Duplicate native page names
   const seenNativePages = new Set<string>()
@@ -314,5 +330,5 @@ function detectCircularDeps(databases: ArkzenDatabase[]): string[] {
 // ─────────────────────────────────────────────
 
 function toSnakeCase(str: string): string {
-  return str.replace(/(?<!^)[A-Z]/g, '_$0').toLowerCase()
+  return str.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
 }

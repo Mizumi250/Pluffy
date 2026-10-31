@@ -4,7 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
-//        node setup.js --backend [laravel|laravel-inertia]
+//        node setup.js --backend [laravel|laravel-inertia|express]
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -28,6 +28,7 @@ let activeStack = 'nextjs'
 let activeAppStack = null
 let activeDesktopStack = null
 let activeDatabase = 'sqlite'
+let activeBackendChoice = 'laravel'
 const arkzenJsonPath = path.join(ROOT_DIR, 'arkzen.json')
 if (fs.existsSync(arkzenJsonPath)) {
   try {
@@ -36,6 +37,7 @@ if (fs.existsSync(arkzenJsonPath)) {
     activeAppStack = json.activeAppStack ?? null
     activeDesktopStack = json.activeDesktopStack ?? null
     activeDatabase = json.activeDatabase === 'pgsql' ? 'pgsql' : 'sqlite'
+    activeBackendChoice = json.activeBackend ?? 'laravel'
   } catch {}
 }
 
@@ -44,6 +46,9 @@ const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeD
 
 // Stack → backend mapping (setupBackend can retarget this via useBackend)
 const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
+// What the user selected in arkzen.json (node mizumi.js backend). react-inertia always forces laravel-inertia.
+// ACTIVE_BACKEND above stays the PHP flow's default; Express is installed through installBackend('express').
+const SELECTED_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : (activeBackendChoice === 'express' ? 'express' : 'laravel')
 let backendName = ACTIVE_BACKEND
 let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
 function useBackend(name) {
@@ -104,16 +109,18 @@ const FRONTEND_STACKS = {
 const BACKEND_STACKS = {
   'laravel':         { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel') },
   'laravel-inertia': { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel-inertia') },
+  'express':         { category: 'backend', dir: path.join(BACKEND_DIR, 'express') },   // Node: "installed" means node_modules exists
 }
 const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
 
 function activeStackSet() {
-  return new Set([activeStack, activeAppStack, activeDesktopStack, ACTIVE_BACKEND].filter(Boolean))
+  return new Set([activeStack, activeAppStack, activeDesktopStack, SELECTED_BACKEND].filter(Boolean))
 }
 
 function cacheDirsFor(stack) {
   if (BACKEND_STACKS[stack]) {
     const dir = BACKEND_STACKS[stack].dir
+    if (stack === 'express') return [path.join(dir, 'node_modules'), path.join(dir, '.build')]
     return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
   }
   const meta = FRONTEND_STACKS[stack]
@@ -155,6 +162,7 @@ function formatBytes(n) {
 }
 
 function stackInstalled(stack) {
+  if (stack === 'express') return expressInstalled()
   if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
   return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
@@ -195,7 +203,67 @@ function installNpm(dir, label) {
   return true
 }
 
+// Complete install = tsx runner + the native sqlite binary. A bare node_modules folder is not enough
+// (a failed npm install leaves one behind).
+function expressInstalled() {
+  const nm = path.join(BACKEND_STACKS.express.dir, 'node_modules')
+  return fs.existsSync(path.join(nm, 'tsx', 'dist', 'cli.mjs')) &&
+         fs.existsSync(path.join(nm, 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node'))
+}
+
+function installExpressBackend({ force = false } = {}) {
+  const dir = BACKEND_STACKS.express.dir
+  if (!fs.existsSync(path.join(dir, 'package.json'))) {
+    error('engine/backend/express is missing (no package.json)')
+    return false
+  }
+  const nm = path.join(dir, 'node_modules')
+  if (expressInstalled() && !force) {
+    success('express already installed — skip (use --force to reinstall)')
+  } else {
+    if (fs.existsSync(nm)) {
+      if (!force) warn('express node_modules is incomplete (previous install failed) — reinstalling')
+      removeDir(nm)
+    }
+    if (!installNpm(dir, 'express')) {
+      removeDir(nm)   // do not leave a half-installed node_modules behind
+      return false
+    }
+    if (!expressInstalled()) { error('express install finished but tsx / better-sqlite3 binary is missing'); return false }
+  }
+  const envPath = path.join(dir, '.env')
+  if (!fs.existsSync(envPath) && fs.existsSync(path.join(dir, '.env.example'))) {
+    fs.copyFileSync(path.join(dir, '.env.example'), envPath)
+    success('Created engine/backend/express/.env')
+  }
+  configureExpressDatabase()
+  return true
+}
+
+// Express reads ARKZEN_DB_DRIVER / DB_* from its own .env (same keys Laravel uses).
+function configureExpressDatabase() {
+  const envPath = path.join(BACKEND_STACKS.express.dir, '.env')
+  if (!fs.existsSync(envPath)) return
+  let env = fs.readFileSync(envPath, 'utf-8')
+  if (activeDatabase === 'pgsql') {
+    const pg = pgSettings(env.replace(/^ARKZEN_DB_DRIVER=.*$/m, 'DB_CONNECTION=pgsql\n$&'))
+    env = setEnvValue(env, 'ARKZEN_DB_DRIVER', 'pgsql')
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+    fs.writeFileSync(envPath, env)
+    success(`express .env configured for PostgreSQL (${pg.username}@${pg.host}:${pg.port}). Databases are created by the engine.`)
+  } else {
+    env = setEnvValue(env, 'ARKZEN_DB_DRIVER', 'sqlite')
+    fs.writeFileSync(envPath, env)
+    success('express .env configured for SQLite')
+  }
+}
+
 function installBackend(name, { force = false } = {}) {
+  if (name === 'express') return installExpressBackend({ force })
   if (stackInstalled(name) && !force) {
     success(`${name} already installed — skip (use --force to reinstall)`)
     return true
@@ -363,9 +431,10 @@ function printSetupHelp() {
   Full setup (active stacks only — does not install every frontend):
     node setup.js
 
-  PHP backend only (composer vendor):
+  Backend only (composer vendor, or npm install for express):
     node setup.js --backend                    (active backend)
     node setup.js --backend laravel-inertia
+    node setup.js --backend express            (Node only, no PHP needed)
     node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
   Package manager:
@@ -392,9 +461,12 @@ function checkRequirements({ desktop = true } = {}) {
   const checks = [
     { cmd: 'node', name: 'Node.js' },
     { cmd: 'npm',  name: 'npm' },
-    { cmd: 'php',      name: 'PHP' },
-    { cmd: 'composer', name: 'Composer' },
   ]
+  // PHP is only needed when a Laravel backend is the one in use.
+  if (SELECTED_BACKEND !== 'express') {
+    checks.push({ cmd: 'php', name: 'PHP' })
+    checks.push({ cmd: 'composer', name: 'Composer' })
+  }
 
   if (desktop && isDesktop && activeDesktopStack === 'tauri') {
     checks.push({ cmd: 'rustc', name: 'Rust compiler' })
@@ -885,6 +957,9 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
+  if ((cli.backendName ?? SELECTED_BACKEND) === 'express') {
+    process.exit(installExpressBackend({ force: cli.force }) ? 0 : 1)
+  }
   checkRequirements({ desktop: false }) // backend-only never needs Rust/Tauri
   useBackend(cli.backendName ?? ACTIVE_BACKEND)
   setupBackend()
@@ -897,7 +972,14 @@ if (cli.databaseOnly) {
   const installed = Object.keys(BACKEND_STACKS).filter(name =>
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, 'vendor', 'autoload.php')) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, '.env')))
+  const expressReady = expressInstalled()
+  if (expressReady) {
+    log('Applying to express...')
+    configureExpressDatabase()
+    log('Express creates one isolated database per tatemono when it builds. Restart the backend to pick up the new driver.')
+  }
   if (!installed.length) {
+    if (expressReady) process.exit(0)
     warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
     process.exit(0)
   }
@@ -940,6 +1022,7 @@ initRegistry()
 setupFrontend()
 if (activeDesktopStack) setupDesktopStack()
 if (activeAppStack) setupAppStack()
-setupBackend()
+if (SELECTED_BACKEND === 'express') installExpressBackend()
+else setupBackend()
 if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

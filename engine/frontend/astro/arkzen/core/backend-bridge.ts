@@ -1,5 +1,6 @@
 // ============================================================
 // ARKZEN ENGINE — BACKEND BRIDGE v5.5
+// v5.6: payload carries backend + backendVariant (parser picks the active backend's DSL variant).
 // v5.5: policySnippets forwarded in build payload.
 //       Same omission as the v5.4 middlewareSnippets fix — the parser
 //       correctly extracted @arkzen:policy:methodName DSL bodies into
@@ -42,6 +43,7 @@
 // ============================================================
 
 import type { ParsedTatemono } from '../types'
+import { activeBackendVariant, resolveActiveBackend } from './backends'
 
 const BACKEND_URL          = process.env.ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 const ARKZEN_ENGINE_SECRET = process.env.ARKZEN_ENGINE_SECRET ?? 'arkzen-engine-secret'
@@ -83,6 +85,11 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     console.log(`[Arkzen Bridge]   Policy snippets: ${Object.keys(tatemono.policySnippets).join(', ')}`)
 
   const payload = {
+    // v5.6: which backend + DSL variant this payload was parsed for.
+    // Laravel ignores these. Other backends refuse a payload for a different variant.
+    backend:        resolveActiveBackend(),
+    backendVariant: activeBackendVariant(),
+
     name:    tatemono.meta.name,
     version: tatemono.meta.version,
     auth:    tatemono.meta.auth,

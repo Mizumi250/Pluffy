@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — PalettePanel
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:53.484Z
+// Generated: 2026-10-31T12:45:25.854Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

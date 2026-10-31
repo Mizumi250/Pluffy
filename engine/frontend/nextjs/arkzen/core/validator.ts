@@ -16,7 +16,8 @@
 
 import * as fs   from 'fs'
 import * as path from 'path'
-import { parsePageLayoutDecl, parseTatemono } from './parser'
+import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
+import { activeBackendVariant, resolveActiveBackend } from './backends'
 import type { ParsedTatemono, ValidationResult, ArkzenDatabase } from '../types'
 
 const VALID_COLUMN_TYPES = new Set([
@@ -45,6 +46,24 @@ export function validateTatemono(filePath: string): ValidationResult {
   }
 
   // ── 1. Structure ─────────────────────────────
+
+  // ── 0. Backend variants (v13.0) ──────────────
+  // Code blocks (endpoint, handler, policy, middleware, listener, jobs,
+  // console, notifications/mail with a body) need a variant for the active
+  // backend. Without one the tatemono is inactive on that backend.
+  try {
+    const variant = activeBackendVariant(filePath)
+    const backend = resolveActiveBackend(filePath)
+    const missing = findMissingBackendVariants(fs.readFileSync(filePath, 'utf-8'), variant)
+    for (const m of missing) {
+      errors.push(
+        `@arkzen:${m.marker}:${m.name} has no :${variant} variant for backend "${backend}" ` +
+        `(found: ${m.available.join(', ')}). Add /* @arkzen:${m.marker}:${variant}:${m.name} ... :end */ ` +
+        `or switch backend. This tatemono is inactive on ${backend}.`
+      )
+    }
+  } catch { /* variant check must never mask the real parse result */ }
+
   if (parsed.desktopConfig) {
     const windowConfig = parsed.desktopConfig.window
     if (

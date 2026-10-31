@@ -1,0 +1,43 @@
+{
+  "name": "pluff-express-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pluff Express backend target. Implements the same /arkzen engine contract as the Laravel backend and generates TypeScript from :ts DSL variants.",
+  "scripts": {
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch --include src/engine --include src/runtime src/server.ts",
+    "queue": "tsx src/worker.ts",
+    "pluff": "tsx src/pluff.ts",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "better-sqlite3": "^12.11.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "esbuild": "^0.24.0",
+    "express": "^4.21.1",
+    "js-yaml": "^4.1.0",
+    "knex": "^3.1.0",
+    "multer": "^1.4.5-lts.1",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.16",
+    "pg": "^8.13.1",
+    "tsx": "^4.19.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/better-sqlite3": "^7.6.11",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/js-yaml": "^4.0.9",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.9.0",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^6.4.17",
+    "@types/ws": "^8.5.13",
+    "typescript": "^5.6.3"
+  }
+}

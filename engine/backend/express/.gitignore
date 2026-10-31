@@ -1,0 +1,8 @@
+node_modules
+.build
+src/generated
+database/arkzen
+database/migrations
+database/*.sqlite
+storage
+.env

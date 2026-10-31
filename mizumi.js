@@ -98,10 +98,11 @@ const DESKTOP_LABELS = {
   'tauri':    'Tauri desktop (wraps the running web stack)',
   'electron': 'Electron desktop (wraps the running web stack)',
 }
-// Backends that setup.js / deps know how to install today.
+// Backends that setup.js / deps know how to install today (laravel via composer, express via npm).
 const BACKEND_STACKS = {
   'laravel':         'engine/backend/laravel',
   'laravel-inertia': 'engine/backend/laravel-inertia',
+  'express':         'engine/backend/express',
 }
 // Backends you can select as the active one (arkzen.json "activeBackend").
 // `variant` is the DSL block suffix the backend reads (names not final, see TEMP_PLUFF_FEATURE_PLAN.md).
@@ -158,7 +159,8 @@ function isBackendInstalled(name) {
   const dir = backendPath(name)
   if (!dir || !fs.existsSync(dir)) return false
   if (name === 'laravel' || name === 'laravel-inertia') return fs.existsSync(path.join(dir, 'vendor', 'autoload.php'))
-  if (name === 'express') return fs.existsSync(path.join(dir, 'node_modules'))
+  if (name === 'express') return fs.existsSync(path.join(dir, 'node_modules', 'tsx', 'dist', 'cli.mjs')) &&
+    fs.existsSync(path.join(dir, 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node'))
   if (name === 'fastapi' || name === 'django') return fs.existsSync(path.join(dir, '.venv'))
   return true
 }
@@ -577,7 +579,8 @@ async function cmdSwitchBackend(backendArg) {
   } else if (!isBackendInstalled(backend)) {
     info(`Dependencies missing for ${backend}`)
   }
-  if (backend !== 'laravel') info('start.js, setup.js and export.js do not read activeBackend yet')
+  if (backend === 'express') info('start.js and setup.js handle Express. export.js still targets Laravel.')
+  else if (backend !== 'laravel') info('start.js refuses to run this backend until it is built')
   info(`Tatemonos without a :${backendVariant(backend)} variant will be inactive on this backend`)
 }
 
@@ -667,8 +670,8 @@ async function cmdDeps(actionArg, stackArg) {
     divider()
     const chosen = await picker('node_modules — install / free disk space?', [
       { label: 'Show disk usage',                 sub: 'which stacks are installed', value: 'status' },
-      { label: 'Install a stack',                 sub: 'npm install (frontend) / composer install (backend)', value: 'install' },
-      { label: 'Uninstall a stack',               sub: 'delete node_modules (frontend) / vendor (backend)', value: 'uninstall' },
+      { label: 'Install a stack',                 sub: 'npm install (frontend, express) / composer install (laravel)', value: 'install' },
+      { label: 'Uninstall a stack',               sub: 'delete node_modules (frontend, express) / vendor (laravel)', value: 'uninstall' },
       { label: 'Prune unused',                    sub: 'keep only active web + app + desktop + backend', value: 'prune' },
     ])
     action = chosen.value

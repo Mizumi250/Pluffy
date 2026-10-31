@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — kotoba
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:33.694Z
+// Generated: 2026-10-31T12:45:17.142Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — shikaku
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:53.457Z
+// Generated: 2026-10-31T12:45:25.837Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
