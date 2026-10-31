@@ -1,11 +1,20 @@
-# PLUFF GUIDELINES v12.0
+# PLUFF GUIDELINES v13.0
 
 ## For AI — Generating & Editing Tatemono Files
 
-**VERSION:** 12.0
-**VERIFIED AGAINST:** shared engine parser and validator, desktop Electron and Tauri shells, Laravel builders, `mizumi.js`, `arkzen.js`, and the 33 tatemonos in `tatemonos/`.
+**VERSION:** 13.0
+**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the 36 tatemonos in `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
+
+**WHAT'S NEW IN v13.0 (vs v12.0):**
+
+- **Two backends, one DSL.** The backend is a **project-level** setting (`activeBackend` in `arkzen.json`, switch with `node mizumi.js backend <n>`), not something a tatemono declares. Laravel is the reference backend; **Express (TypeScript)** is the second implemented backend. See Section 1E.
+- **Backend variant suffixes.** Backend code blocks (`endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` that carry a body) take a suffix between marker and name: `:php` (Laravel) or `:ts` (Express). The active backend reads the matching variant. An unsuffixed code body is only a fallback read as `:php` until the tatemono is converted; unsuffixed YAML-only blocks are shared by every backend.
+- **A tatemono with no usable variant for the active backend is inactive on it** (validator error, not a crash). A tatemono may carry variants for one backend or all of them.
+- **`:ts` body conventions** (Express) documented next to each backend block (Sections 8-18), plus what Express does not support yet.
+- **Sections 27 / 28B / 29** updated: 36 tatemonos (new: `express-test`, `kotoba`, `clinic-appointment-booking` listed), new engine quirks for multi-backend, new checklist block, new Example D.
+- **The old Laravel code blocks are now the `:php` variant.** Sections 9B-18 are rewritten with `:php` (Laravel) and `:ts` (Express) side by side. A plain unsuffixed code body is only a fallback the engine still reads as `:php` for tatemonos not converted yet.
 
 **WHAT'S NEW IN v12.0 (vs v11.0):**
 
@@ -34,7 +43,7 @@ No shared auth, components, stores, or database between tatemonos. Every tatemon
 
 **Common to all stacks:**
 
-- Backend: Laravel 13 + Laravel Sanctum + Laravel Reverb (realtime)
+- Backend: **Laravel 13 + Sanctum + Reverb** (reference backend) or **Express (TypeScript)**, chosen per project (Section 1E). Every backend implements the same Laravel-flavoured vocabulary (rule-string validation, `role:` middleware, policies, queues, mail, notifications, Pusher-protocol realtime, scheduler).
 - Database: SQLite (default) or PostgreSQL — one isolated database per tatemono
 - Web animation: GSAP + Framer Motion · Native animation: Reanimated / Moti (Expo, RN) or `@lynx-js/motion` (Lynx)
 - Icons: Lucide React (web primary), Hero Icons (secondary)
@@ -59,7 +68,13 @@ Stacks are chosen **per project**, in three independent categories.
 | `desktop` | `tauri`          | Tauri shell that **wraps the running web stack**         |
 | `desktop` | `electron`       | Electron shell that **wraps the running web stack**      |
 
-Backends: `laravel` (all decoupled web stacks, and app stacks) · `laravel-inertia` (react-inertia only; chosen automatically).
+Backends (project-level, see Section 1E):
+
+| Backend           | DSL variant | Status | Used with |
+|-------------------|-------------|--------|-----------|
+| `laravel`         | `:php`      | implemented (reference) | all decoupled web stacks, and app stacks |
+| `laravel-inertia` | `:php`      | implemented | `react-inertia` only; chosen automatically, cannot be swapped for another backend |
+| `express`         | `:ts`       | implemented (see 1E "Not covered yet") | decoupled web stacks, and app stacks |
 
 Desktop targets reuse the web blocks for their rendered UI. A small desktop-specific config block controls the desktop shell window; it does not create separate desktop pages or components.
 
@@ -74,6 +89,10 @@ node mizumi.js web <stack>            # switch web stack
 node mizumi.js app <stack>            # switch app stack (expo | react-native | lynx)
 node mizumi.js desktop <stack>        # switch desktop stack (tauri | electron)
 node mizumi.js db <sqlite|postgresql> # switch database driver
+node mizumi.js backend <n>           # switch backend (laravel | express)
+node mizumi.js deps install express  # install the Express backend deps (npm); Laravel uses composer via setup.js
+node setup.js --backend [laravel|laravel-inertia|express]   # install one backend
+# Express extras (inside engine/backend/express):  npm run queue  → jobs + schedules   ·   npm run pluff -- <signature>  → run a console command
 node mizumi.js deps [prune | install <stack> | uninstall <stack>]
 node mizumi.js export                 # wizard
 node mizumi.js export <name> [stack]  # export one tatemono as standalone project
@@ -93,7 +112,7 @@ Every tatemono gets its own isolated database. The driver is a **project setting
 
 Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both.
 
-Supabase and other backend targets (Express, Python, Java, C#) are **planned only** (`TEMP_PLUFF_FEATURE_PLAN.md`), not implemented. Never generate DSL for them.
+Backends are a separate project-level choice (Section 1E). Only Laravel and Express are implemented; do not generate DSL for any other backend.
 
 * * *
 
@@ -117,6 +136,88 @@ window:
 `width`, `height`, `min_width`, and `min_height` must be positive integers. Minimum dimensions cannot exceed their corresponding starting dimensions. `resizable` and `fullscreenable` must be booleans. `title` must be a non-empty string.
 
 The Electron and Tauri shells wrap the whole web app, so this setting is shared rather than isolated to a single route. Partial settings from active Tatemonos are combined; if two Tatemonos set different values for the same property, the alphabetically earlier Tatemono wins and the shell logs a warning. Tauri applies the size, minimum size, title, and resizing settings. A Tauri export includes only its selected Tatemono's settings. Tauri has no portable API for disabling a window's fullscreen controls, so `fullscreenable: false` is warned about but cannot be enforced.
+
+## SECTION 1E — BACKENDS & BACKEND VARIANTS
+
+**The backend is not part of a tatemono.** It is a project setting (`arkzen.json` → `activeBackend`; `react-inertia` forces `laravel-inertia`). The same tatemono file builds on any backend that can read it. Laravel is the **reference backend**: every other backend imitates Laravel's behaviour, so the DSL has one vocabulary (rule strings like `required|string|max:255`, `role:admin`, `policy: true`, queue/mail/notification semantics) on every backend, and each backend implements it behind the scenes.
+
+### Shared blocks vs variant blocks
+
+A backend block is **shared** or a **variant**.
+
+| Kind | Blocks | Rule |
+|------|--------|------|
+| **Shared** (pure config, read by every backend, no suffix) | `meta`, `database:<table>`, `api:<n>`, `routes`, `realtime:<id>`, `events:<id>`, and `notifications:<id>` / `mail:<id>` **with no body** | Write once. Never add a suffix. |
+| **Variant** (contain backend-specific code) | `endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` **with a body** | One block per backend that should run the tatemono. |
+
+For `jobs` and `console` the YAML header (`queue`, `tries`, `timeout`, `signature`, `description`, `schedule`) is repeated in each variant; only the body differs. A `jobs` / `console` block with **no body** (YAML only) is shared and generates a stub on every backend.
+
+### Suffix syntax
+
+The variant token sits **between the marker and the name**, and the closing tag repeats it:
+
+```
+/* @arkzen:middleware:ts:requireJson
+*/
+if (!request.isJson()) {
+  return response.json({ message: 'Content-Type: application/json is required.' }, 415)
+}
+return next()
+/* @arkzen:middleware:ts:requireJson:end */
+
+/* @arkzen:middleware:php:requireJson
+*/
+return $next($request);
+/* @arkzen:middleware:php:requireJson:end */
+```
+
+Tokens: `php` (laravel, laravel-inertia) · `ts` (express). Tag *shape* (A/B/C/D, Section 3D) does not change with the suffix: `endpoint` / `handler` / `policy` / `middleware` / `listener` stay Shape D; `jobs` / `console` / `notifications` / `mail` stay Shape B.
+
+### How the active backend picks a block
+
+For each (marker, name):
+
+1. A block with the **active variant suffix** wins.
+2. Else an **unsuffixed block with a code body** is read as `:php` (compatibility fallback for tatemonos not converted yet; usable only when the active variant is `php`).
+3. Else an **unsuffixed YAML-only block** is shared and usable everywhere.
+4. Else there is **no usable block**: that block is not emitted and the validator reports the tatemono as **inactive on this backend**, e.g. `@arkzen:endpoint:stats has no :ts variant for backend "express" (found: php). Add /* @arkzen:endpoint:ts:stats ... :end */ or switch backend.`
+
+Consequences for generating tatemonos:
+
+- Switching backend does not edit any file. It only changes which variants are read.
+- A tatemono may carry variants for one backend, a few, or all. There is no list of enabled backends to maintain.
+- **Keep code bodies to the minimum.** Prefer shared constructs (custom `routes`, YAML-only `mail` / `notifications`, standard CRUD endpoints, `policy: true` with simple rules) so fewer variants are needed. Every body you write must be written once per backend you want to support.
+- **`:php` is Laravel's form of every code block** (it is what used to be the plain, unsuffixed block). Always write the suffix. An unsuffixed code body is only a compatibility fallback that the engine still reads as `:php` for tatemonos that have not been converted yet.
+- Only `:php` and `:ts` exist. Default to the variant(s) the user names; if the user does not say, ask which backend is active rather than guessing.
+
+### `:ts` bodies (Express)
+
+Bodies are async function bodies. Names in scope: `request`, `response`, every generated model of the tatemono (plus `User` when `auth: true`), `Hash`, `DB`, `abort(status, message)`, `dispatch`, `event`, `broadcast`, `Mail`, `notify`, `Storage`, `Log`, `Command`, `Job`.
+
+| Block | Signature / what the body is | Notes |
+|-------|-------------------------------|-------|
+| `endpoint:ts:name` | `(request, response)`; return a response | `return response.json({ ... }, status?)` |
+| `handler:ts:name` | `(request, response, ...params)` | route params as `request.route('name')` **or** the `params` array |
+| `middleware:ts:name` | `(request, response, next)` | must `return next()` or return a response |
+| `policy:ts:update` / `policy:ts:delete` | `(user, <model>)` where `<model>` is the lower-camel model name (`ticket`); return boolean | requires `policy: true`; default is owner-or-admin |
+| `listener:ts:Name` | `handle(event)`; payload in `event.data` | no body → generated log stub into `event_log` |
+| `jobs:ts:name` | body of `handle()`; payload in `this.data` | the whole `async handle()` method is also accepted |
+| `console:ts:name` | body of `handle()`; `this.info(...)`; `return Command.SUCCESS` | `signature` + quoted cron `schedule`; the whole method is also accepted |
+| `notifications:ts:name` | body of `toMail(notifiable)`, returns `new MailMessage()...` | only if you need custom mail content; otherwise YAML-only (shared) |
+
+Model API is Eloquent-like: `Model.create({...})`, `Model.where('col', val)`, `.orWhere`, `.get()`, `.first()`, `.firstOrFail()`, `.findOrFail(id)`, `.count()`, `.paginate(perPage, page)`, `.update({...})`, `.delete()`, `.withTrashed()`, instance `.save()` / `.fill()` / `.delete()`. Request API: `request.input(key, default)`, `request.route(name)`, `request.user()`, `request.isJson()`, `request.bearerToken()`, `await request.validate({ field: 'required|string' })` (422 bodies identical to Laravel's).
+
+Differences from PHP to remember: no `$` prefix, `await` on every DB call, `request.route('name')` is allowed (PHP handlers must use `$params[n]`), and `return response.json(...)` replaces `response()->json(...)`.
+
+Mail templates on Express accept `{{ var }}`, `{{ $var }}` and `{!! var !!}` placeholders only (a Blade-compatible subset): no `@if` / `@foreach`.
+
+### Not covered on Express yet (as of this guideline)
+
+- Upload endpoint types (`upload`, `upload_index`, `upload_destroy`, `upload_url`, `fileUrl`) return **501**.
+- `resource` and `factory` on `@arkzen:api` are accepted as **no-ops**.
+- The test-only endpoint types `command_run`, `job_dispatch`, `event_fire`, the Lynx SSE bridge, and the PostgreSQL path are **untested** on Express.
+- `export.js` always copies the Laravel backend, so **exporting a tatemono does not carry the Express backend**. Switch to Laravel (and use `:php` variants) to export.
+- Express needs `tsx` and the native `better-sqlite3` binding. `start.js` stops with an install hint if either is missing (a likely trouble spot on Termux/ARM64).
 
 * * *
 
@@ -184,17 +285,17 @@ Order is mostly free; the engine finds blocks by tag. Recommended order:
 @arkzen:database[:identifier]        (REPEAT)
 @arkzen:api[:identifier]             (REPEAT)
 @arkzen:routes                       (optional, REPEAT)
-@arkzen:endpoint:name                (REPEAT)   ← bodies for @arkzen:api methods
-@arkzen:handler:name                 (REPEAT)   ← bodies for @arkzen:routes entries
-@arkzen:policy:method                (optional) ← needs api policy: true
-@arkzen:middleware:name              (optional, REPEAT)
+@arkzen:endpoint:php:name            (REPEAT)   ← Laravel body for an @arkzen:api method   (+ :ts:name for Express)
+@arkzen:handler:php:name             (REPEAT)   ← Laravel body for an @arkzen:routes entry (+ :ts:name for Express)
+@arkzen:policy:php:method             (optional) ← needs api policy: true               (+ :ts:method)
+@arkzen:middleware:php:name            (optional, REPEAT)                                  (+ :ts:name)
 @arkzen:realtime:identifier          (optional, REPEAT)
 @arkzen:events:identifier            (optional, REPEAT)
-@arkzen:listener:Name                (optional, REPEAT)
-@arkzen:jobs:identifier              (optional, REPEAT)
-@arkzen:notifications:identifier     (optional, REPEAT)
-@arkzen:mail:identifier              (optional, REPEAT)
-@arkzen:console:identifier           (optional, REPEAT)
+@arkzen:listener:php:Name              (optional, REPEAT)                                  (+ :ts:Name)
+@arkzen:jobs[:php|:ts]:identifier      (optional, REPEAT)   ← suffix only when it has a body
+@arkzen:notifications[:php|:ts]:identifier (optional, REPEAT) ← suffix only when it has a body
+@arkzen:mail[:php|:ts]:identifier      (optional, REPEAT)   ← suffix only when it has a body
+@arkzen:console[:php|:ts]:identifier   (optional, REPEAT)   ← suffix only when it has a body
 --- web ---
 @arkzen:web:layout:name              (optional, REPEAT)
 @arkzen:web:style / :style:Name      (before OR after components)
@@ -248,12 +349,12 @@ table: products
 ### SHAPE B — YAML-in-comment + body blocks: YAML inside the opening comment, `*/` closes it, code/body follows, then `:end */`.
 
 ```
-/* @arkzen:jobs:process-data
+/* @arkzen:jobs:php:process-data
 queue: default
 tries: 3
 */
 public function handle(): void { ... }
-/* @arkzen:jobs:process-data:end */
+/* @arkzen:jobs:php:process-data:end */
 ```
 
 Used by: `jobs`, `console`, `notifications`, `mail`, `events`, `realtime`, and `web:layout` / `native:layout` when a `parent:` key is needed. **Always write `:end`** for these — bodies need it, and some tags are not enforced by the validator but are still required for bodies to be read.
@@ -280,11 +381,11 @@ Used by: `jobs`, `console`, `notifications`, `mail`, `events`, `realtime`, and `
 ### SHAPE D — Body-separator blocks: opening tag has NO `*/`; the **next line must be exactly `*/`**; then body; then `:end */`.
 
 ```
-/* @arkzen:endpoint:my_endpoint
+/* @arkzen:endpoint:php:my_endpoint
 */
 $result = $code->here();
 return response()->json($result);
-/* @arkzen:endpoint:my_endpoint:end */
+/* @arkzen:endpoint:php:my_endpoint:end */
 ```
 
 Used by: `endpoint`, `handler`, `middleware`, `policy`, and `listener`. The current validator checks the next-line separator for the first four; the listener parser also expects this shape, but the tag validator does not currently check it.
@@ -298,6 +399,10 @@ The tag validator's suffix handling is not complete for every platform-specific 
 /* @arkzen:native:page:layout:app */           ← same for native pages
 /* @arkzen:native:page:lynx:layout:app */      ← same for Lynx pages
 ```
+
+### Backend variant suffix (`:php` `:ts`)
+
+Backend code blocks accept a variant token between marker and name (`@arkzen:endpoint:ts:stats`). The opening tag, YAML placement and `*/` rules follow the block's normal shape; the closing tag repeats the suffix (`/* @arkzen:endpoint:ts:stats:end */`). Same-named blocks with different suffixes may coexist in one file. See Section 1E.
 
 ### Dual-target import pairs (Expo / bare RN) — see Section 23B
 
@@ -653,6 +758,8 @@ For your own jobs / events / commands, **do not** use `command_run | job_dispatc
 
 `me`, `adminOnly`, `userOnly`, `promote`, `demote` — used with `auth: true` and role middleware (see `roles-test`).
 
+**Backend notes (Section 8):** the `api` block is shared: validation rule strings, `role:` middleware, `policy: true`, `response.type` and the standard CRUD methods behave the same on Laravel and Express. Only the *bodies* (`endpoint`, `policy`, `middleware`) are variants. On Express the `upload*` / `fileUrl` endpoint types return 501, and `resource` / `factory` are no-ops.
+
 * * *
 
 ## SECTION 9 — @arkzen:routes (custom routes, no model needed)
@@ -673,17 +780,19 @@ routes:
 
 Multiple `@arkzen:routes` blocks allowed (one controller each). Controller defaults to `CustomController`. Route params arrive as `$params[0]`, `$params[1]`, … in handler bodies (**not** `$request->route('name')`).
 
-## ⚠️ SECTION 9B — @arkzen:handler:name
+**Backend notes:** the `routes` block is shared. In `:ts` handlers the route params are available as `request.route('name')` or the `params` array (see 9B for the PHP `$params[n]` form).
 
-PHP body for a route entry. Shape D (`*/` on the next line).
+## ⚠️ SECTION 9B — @arkzen:handler:php:name / @arkzen:handler:ts:name
+
+Body for a route entry: `:php` for Laravel, `:ts` for Express. Shape D (`*/` on the next line).
 
 ```
-/* @arkzen:handler:join_queue
+/* @arkzen:handler:php:join_queue
 */
 $queueId = $request->input('queue_id');
 $ticket = \App\Models\Arkzen\MyApp\Ticket::create([...]);
 return response()->json(['ticket' => $ticket]);
-/* @arkzen:handler:join_queue:end */
+/* @arkzen:handler:php:join_queue:end */
 ```
 
 Models live at `\App\Models\Arkzen\{SlugNamespace}\{Model}` (slug PascalCased: `queue-flow` → `QueueFlow`).
@@ -691,44 +800,75 @@ Models live at `\App\Models\Arkzen\{SlugNamespace}\{Model}` (slug PascalCased: `
 | Scenario                                          | Use                     |
 |---------------------------------------------------|-------------------------|
 | Custom logic inside an `@arkzen:api` method       | `@arkzen:endpoint:name` |
-| Body for an `@arkzen:routes` entry                | `@arkzen:handler:name`  |
+| Body for an `@arkzen:routes` entry                | `@arkzen:handler:php:name` (Laravel) / `@arkzen:handler:ts:name` (Express) |
 
-## SECTION 9C — @arkzen:policy:method
+**Per-backend forms:** `@arkzen:handler:php:name` (Laravel, above) and `@arkzen:handler:ts:name` (Express). Express example:
+
+```
+/* @arkzen:handler:ts:probe
+*/
+return response.json({ probe: request.route('name'), params, at: 'express' })
+/* @arkzen:handler:ts:probe:end */
+```
+
+## SECTION 9C — @arkzen:policy:php:method / @arkzen:policy:ts:method
 
 Requires `policy: true` on the api. Supported methods: `update`, `delete`. Body has `$user` and the model instance (named after the model, e.g. `$item`/`$product` — see `crud-test`).
 
 ```
-/* @arkzen:policy:update
+/* @arkzen:policy:php:update
 */
 if ($item->status === 'archived') { return false; }
 return true;
-/* @arkzen:policy:update:end */
+/* @arkzen:policy:php:update:end */
 ```
 
-## SECTION 10 — @arkzen:middleware:name
+**Per-backend forms:** `@arkzen:policy:php:update` / `@arkzen:policy:ts:update`. Express example (body receives `user` and the lower-camel model, e.g. `ticket`):
+
+```
+/* @arkzen:policy:ts:delete
+*/
+return user?.role === 'admin'
+/* @arkzen:policy:ts:delete:end */
+```
+
+## SECTION 10 — @arkzen:middleware:php:name / @arkzen:middleware:ts:name
 
 Declare in `middleware: [name]` on an api/routes block; the body becomes `handle()`. The alias is registered automatically. Include `return $next($request);`.
 
 ```
-/* @arkzen:middleware:requireJson
+/* @arkzen:middleware:php:requireJson
 */
 if (!$request->isJson()) {
     return response()->json(['message' => 'Content-Type: application/json required'], 415);
 }
 return $next($request);
-/* @arkzen:middleware:requireJson:end */
+/* @arkzen:middleware:php:requireJson:end */
 ```
 
-## SECTION 18 — @arkzen:endpoint:name
+**Per-backend forms:** `@arkzen:middleware:php:name` / `@arkzen:middleware:ts:name` (Section 1E has the paired example). The alias in `middleware: [name]` is registered on every backend.
+
+## SECTION 18 — @arkzen:endpoint:php:name / @arkzen:endpoint:ts:name
 
 Body for an `@arkzen:api` method (the method name must exist in the api block).
 
 ```
-/* @arkzen:endpoint:index
+/* @arkzen:endpoint:php:index
 */
 $query = \App\Models\Arkzen\MyApp\Item::query()->orderBy('created_at', 'desc');
 return response()->json($query->paginate($request->get('per_page', 15)));
-/* @arkzen:endpoint:index:end */
+/* @arkzen:endpoint:php:index:end */
+```
+
+**Per-backend forms:** `@arkzen:endpoint:php:name` / `@arkzen:endpoint:ts:name`. Express example:
+
+```
+/* @arkzen:endpoint:ts:stats
+*/
+const total = await Ticket.count()
+const open = await Ticket.where('status', 'open').count()
+return response.json({ total, open, closed: total - open, by: request.user().email })
+/* @arkzen:endpoint:ts:stats:end */
 ```
 
 * * *
@@ -768,6 +908,8 @@ Private channels with `{id}` generate events that take a user id and build the c
 
 **Lynx bridge:** Lynx has no WebSocket. When a tatemono has realtime blocks **and** an api endpoint with `type: broadcast`, the engine also generates `SseController` + `GET /api/{slug}/sse/{channelType}` for Lynx. Web/Expo keep using Reverb.
 
+**Backend notes:** `realtime` blocks are shared (pure config); Express serves a Pusher-protocol realtime server (public / private / presence) instead of Reverb, and the browser-side client setup does not change. The `broadcast(new \App\Events\...)` call shown above is PHP; on Express use `broadcast(...)` with the generated broadcast event from a `:ts` body.
+
 ## SECTION 12 — @arkzen:events:identifier
 
 YAML in the opening comment; `listeners:` names the listener classes. Close with `:end`. No body.
@@ -781,25 +923,36 @@ listeners: [SendWelcomeEmail, UpdateUserStats]
 
 Event class: `\App\Events\Arkzen\{SlugNs}\{StudlyName}` (e.g. `UserSignedUp`). Fire with `event(new \App\Events\Arkzen\EventsTest\UserSignedUp($payload));`.
 
-## SECTION 13 — @arkzen:listener:Name (singular!)
+**Backend notes:** `events` blocks are shared. Event firing in a body is backend-specific (`event(new ...)` in PHP, the runtime's `event(...)` in `:ts`).
+
+## SECTION 13 — @arkzen:listener:php:Name / @arkzen:listener:ts:Name (singular!)
 
 Body of the listener's `handle($event)` — **only the method body**, not a class. Shape D. If no body is given the engine generates a log-and-record stub (it inserts into the tatemono's `event_log` table).
 
 ```
-/* @arkzen:listener:SendWelcomeEmail
+/* @arkzen:listener:php:SendWelcomeEmail
 */
 \Mail::to($event->data['email'] ?? '')->send(new \App\Mail\Arkzen\MyApp\WelcomeMail($event->data));
-/* @arkzen:listener:SendWelcomeEmail:end */
+/* @arkzen:listener:php:SendWelcomeEmail:end */
 ```
 
 > Legacy: `events-test` also contains plural `@arkzen:listeners:Name */ class ... { }` blocks with full PHP classes. The parser only reads the singular `@arkzen:listener:` form for bodies — write the singular form.
 
-## SECTION 14 — @arkzen:jobs:identifier
+**Per-backend forms:** `@arkzen:listener:php:Name` / `@arkzen:listener:ts:Name`. Express example:
+
+```
+/* @arkzen:listener:ts:LogTicket
+*/
+await EventLog.create({ event_name: 'ticket-created', listener: 'LogTicket', payload: JSON.stringify(event.data) })
+/* @arkzen:listener:ts:LogTicket:end */
+```
+
+## SECTION 14 — @arkzen:jobs:identifier (shared) / @arkzen:jobs:php:identifier / @arkzen:jobs:ts:identifier
 
 YAML (`queue`, `tries`, `timeout`) inside the opening comment; the body is the **whole `handle()` method**. Close with `:end`. Queue worker is started by `start.js`.
 
 ```
-/* @arkzen:jobs:process-data
+/* @arkzen:jobs:php:process-data
 queue: default
 tries: 3
 timeout: 60
@@ -808,12 +961,27 @@ public function handle(): void
 {
     \App\Models\Arkzen\MyApp\Result::create(['status' => 'done']);
 }
-/* @arkzen:jobs:process-data:end */
+/* @arkzen:jobs:php:process-data:end */
 ```
 
 Job class namespace: `\App\Jobs\Arkzen\{SlugNs}\{Studly}Job` (e.g. `ProcessDataJob`). Dispatch from your own endpoint: `dispatch(new \App\Jobs\Arkzen\MyApp\ProcessDataJob());`.
 
-## SECTION 15 — @arkzen:notifications:identifier
+**Per-backend forms:** `@arkzen:jobs:php:name` (body = the whole `handle()` method, as above) / `@arkzen:jobs:ts:name` (body = the statements of `handle()`; the whole method is also accepted). Repeat `queue` / `tries` / `timeout` in each variant. Express example:
+
+```
+/* @arkzen:jobs:ts:record-result
+queue: default
+tries: 2
+timeout: 20
+*/
+const mode = this.data?.mode ?? 'default'
+await JobResult.create({ job_name: 'record-result', status: 'completed:' + mode })
+/* @arkzen:jobs:ts:record-result:end */
+```
+
+A YAML-only `jobs` block (no body) is shared and generates a stub on every backend. Express runs jobs with `npm run queue` (started automatically by `start.js`).
+
+## SECTION 15 — @arkzen:notifications:identifier (shared; `:php` / `:ts` only with a body)
 
 YAML inside the opening comment. Close with `:end`. Optional PHP body between `*/` and `:end` replaces the generated `toMail()` body.
 
@@ -836,12 +1004,14 @@ subject: "Broadcast Ping"
 
 Class: `\App\Notifications\Arkzen\{SlugNs}\{Studly}Notification`. Requires `auth: true` for private/user notifications. Trigger via an api endpoint with `type: notification_trigger`.
 
-## SECTION 16 — @arkzen:mail:identifier
+**Backend notes:** with **no body** a `notifications` block is shared (Express supports the `database`, `mail` and `broadcast` channels). A body makes it a variant: `:php` replaces `toMail()`; on Express use `@arkzen:notifications:ts:name` with a `toMail(notifiable)` body returning `new MailMessage().subject(...).line(...)`.
+
+## SECTION 16 — @arkzen:mail:identifier (shared; `:php` / `:ts` only with a body)
 
 YAML inside the opening comment (`subject`, `data:` = field → type). Close with `:end`. Optional Blade/HTML body between `*/` and `:end` becomes the email view.
 
 ```
-/* @arkzen:mail:welcome-mail
+/* @arkzen:mail:php:welcome-mail
 subject: "Welcome to My App"
 data:
   username: string
@@ -849,17 +1019,19 @@ data:
 */
 <h1>Welcome, {{ $username }}!</h1>
 <p>Thanks for joining {{ $app_name }}.</p>
-/* @arkzen:mail:welcome-mail:end */
+/* @arkzen:mail:php:welcome-mail:end */
 ```
 
 Class: `\App\Mail\Arkzen\{SlugNs}\{Studly}Mail` (`welcome-mail` → `WelcomeMailMail`: the engine appends `Mail` to the studly name — keep identifiers short, e.g. `welcome`). Trigger via an api endpoint with `type: mail_send`.
 
-## SECTION 17 — @arkzen:console:identifier (Artisan + scheduler)
+**Backend notes:** with **no body** a `mail` block is shared and gets a generated template. A Blade/HTML body makes it a variant, and on Express only `{{ var }}`, `{{ $var }}` and `{!! var !!}` placeholders are rendered (no Blade directives). To stay shared on every backend, keep mail YAML-only unless you need custom markup.
+
+## SECTION 17 — @arkzen:console:identifier (shared) / @arkzen:console:php:identifier / @arkzen:console:ts:identifier (Artisan + scheduler)
 
 YAML (`signature`, `description`, `schedule`) in the opening comment; body is the **whole `handle(): int` method**. `schedule` is a quoted cron string and is auto-registered with the scheduler. Close with `:end`.
 
 ```
-/* @arkzen:console:cleanup-temp
+/* @arkzen:console:php:cleanup-temp
 signature: my-app:cleanup-temp
 description: Deletes temporary files older than 24h
 schedule: '0 * * * *'
@@ -870,10 +1042,26 @@ public function handle(): int
     \Storage::deleteDirectory('temp');
     return Command::SUCCESS;
 }
-/* @arkzen:console:cleanup-temp:end */
+/* @arkzen:console:php:cleanup-temp:end */
 ```
 
 `signature` defaults to `{slug}:{name}`. Do **not** use `command:` (v10 doc was wrong).
+
+**Per-backend forms:** `@arkzen:console:php:name` (body = the whole `handle(): int` method, as above) / `@arkzen:console:ts:name` (body = the statements of `handle()`; the whole method is also accepted). Repeat `signature`, `description` and `schedule` in each variant. Express example:
+
+```
+/* @arkzen:console:ts:ping
+signature: express-test:ping
+description: Writes a job_results row
+schedule: '* * * * *'
+*/
+await JobResult.create({ job_name: 'ping', status: 'ran' })
+this.info('[express-test] ping done')
+return Command.SUCCESS
+/* @arkzen:console:ts:ping:end */
+```
+
+Express runs schedules from `npm run queue` and manual commands via `npm run pluff -- <signature>`.
 
 * * *
 
@@ -1596,6 +1784,59 @@ const DashboardPage = () => <div>protected</div>
 /* @arkzen:web:page:dashboard:end */
 ```
 
+### Example D — Backend variants (`express-test` shape)
+
+Shared blocks once, then one variant per backend for every code body. `auth: true` creates per-tatemono users and the `/api/<slug>/auth/*` routes on every backend.
+
+```
+/* @arkzen:meta
+name: express-test
+version: 1.0.0
+description: "Exercises the Express backend end to end"
+auth: true
+*/
+
+/* @arkzen:database:tickets
+table: tickets
+timestamps: true
+columns:
+  user_id:
+    type: foreignId
+    nullable: true
+  title:
+    type: string
+    length: 255
+  status:
+    type: string
+    length: 30
+    default: open
+*/
+
+/* @arkzen:api:tickets
+model: Ticket
+controller: TicketController
+prefix: /api/express-test
+middleware: [auth:sanctum]
+policy: true
+endpoints:
+  index:  { method: GET, route: /tickets, description: List tickets, response: { type: collection } }
+  stats:  { method: GET, route: /stats,   description: Custom endpoint, response: { type: single } }
+*/
+
+/* @arkzen:endpoint:ts:stats
+*/
+const total = await Ticket.count()
+return response.json({ total })
+/* @arkzen:endpoint:ts:stats:end */
+
+/* @arkzen:endpoint:php:stats
+*/
+return response()->json(['total' => \App\Models\Arkzen\ExpressTest\Ticket::count()]);
+/* @arkzen:endpoint:php:stats:end */
+```
+
+With `activeBackend: express` only the `:ts` block is read; with `laravel` only the `:php` block. If you delete the `:php` block, the tatemono is reported inactive on Laravel but keeps working on Express.
+
 * * *
 
 ## ⚠️ SECTION 28B — KNOWN ENGINE QUIRKS (verify after building)
@@ -1614,9 +1855,15 @@ These come from reading the engine source. They are not hypothetical — but tes
 10. **Table/model warnings are heuristics.** The validator appends a literal `s` when suggesting a table name, so `Inventory` is reported as expecting `inventorys` even when the declared table is `inventories`; the Laravel model builder writes its table explicitly. Singular `send_log` and `event_log` also warn because plural snake_case is preferred. These are warnings, not parse errors; keep table declarations and raw SQL references aligned if renaming.
 11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
+12. **Backend is project-level and variants are per block.** A tatemono that has code bodies only for `:php` is *inactive* (not broken) on Express, and the reverse. The validator message names the missing `:<variant>` block. Check which backend is active (`node mizumi.js stack`) before debugging a "missing endpoint".
+13. **Not-yet-converted tatemonos (unsuffixed code = `:php` fallback).** `kotoba`, `queue-flow`, `scheduler-test`, `job-test`, `crud-test`, `body-endpoint-handler`, `middleware-test` (and others) still carry unsuffixed PHP bodies. They work on Laravel and are inactive on Express until a `:ts` variant exists.
+14. **`react-inertia` forces `laravel-inertia`.** `node mizumi.js backend <n>` refuses any backend other than Laravel while that web stack is active (switch the web stack first with `node mizumi.js web <stack>`).
+15. **Express gaps:** upload endpoint types return 501; `resource` / `factory` are no-ops; `command_run` / `job_dispatch` / `event_fire`, the Lynx SSE bridge and the PostgreSQL path are untested; `export.js` does not copy the Express backend.
+17. **Two copies of the engine core.** `backends.ts` / `parser.ts` / `validator.ts` exist under `engine/shared/arkzen/engine-core/` and again in each frontend's `arkzen/core/` folder, and `mizumi.js` keeps its own copy of the backend → variant map for display. A suffix rename or new backend must be changed in all of them.
+
 * * *
 
-## SECTION 27 — ACTIVE TATEMONOS (33)
+## SECTION 27 — ACTIVE TATEMONOS (36)
 
 Format: `name vVersion auth | web pages | native (Expo/RN) screens | Lynx pages`
 
@@ -1654,9 +1901,12 @@ shan-shan               v2.0.0  auth:false  web:index
 shikaku                 v1.0.0  auth:true   web:login,register,index,editor                                                                 realtime (project channel)
 upload-test             v1.0.0  auth:false  web:dashboard                     native:dashboard             lynx:dashboard                   upload endpoints
 visual-lab              v1.0.0  auth:false  web:index                                                                                       web:script (three.js)
+clinic-appointment-booking v1.0.0  auth:false  web:index,appointments
+express-test            v1.0.0  auth:true   web:index                                                                                     backend variants (:ts + :php), Express end-to-end test
+kotoba                  v1.0.0  auth:true   web:chat,circles,dashboard,feed,index,learn,login,partners,profile,progress,register,review   native/lynx not audited   unsuffixed PHP bodies, not yet converted to `:php`
 ```
 
-Good references when generating: `hello-native` (native starter), `queue-flow` (routes + handlers + realtime), `roles-test` (auth + roles), `crud-test` (api + policy), `upload-test` (upload types), `layout-test` (layout chains), `scheduler-test` (console), `job-test` (jobs), `events-test` (events), `new-updates-styles` (styles), `animation-lab` (Expo/RN/Lynx animation + scripts + errors).
+Good references when generating: `hello-native` (native starter), `queue-flow` (routes + handlers + realtime), `roles-test` (auth + roles), `crud-test` (api + policy), `upload-test` (upload types), `layout-test` (layout chains), `scheduler-test` (console), `job-test` (jobs), `events-test` (events), `new-updates-styles` (styles), `animation-lab` (Expo/RN/Lynx animation + scripts + errors). `express-test` (backend variants: `:ts` + `:php`).
 
 * * *
 
@@ -1688,13 +1938,23 @@ Before finalizing any tatemono, verify:
 - [ ] Custom endpoint names have an `@arkzen:endpoint:name` body; `@arkzen:routes` entries have `@arkzen:handler:name` bodies — never mix them
 - [ ] Route params in handlers via `$params[n]`
 - [ ] Special `type:` values used only as documented; no `command_run|job_dispatch|event_fire` for real apps
-- [ ] `policy: true` only when `@arkzen:policy:update|delete` blocks exist
+- [ ] `policy: true` only when `@arkzen:policy:php|ts:update|delete` blocks exist
 
 **BACKEND BLOCKS**
 - [ ] jobs/console bodies are full methods (`handle(): void` / `handle(): int`); console uses `signature` + quoted cron `schedule`
-- [ ] events list `listeners: [...]`; bodies in singular `@arkzen:listener:Name`
+- [ ] events list `listeners: [...]`; bodies in singular `@arkzen:listener:php:Name` / `@arkzen:listener:ts:Name`
 - [ ] notifications/mail have `:end`; mail uses `subject` + `data:`; short identifiers (class suffix is appended)
 - [ ] realtime: channel registration has no `channel:` key; broadcast event has one; `broadcast()` namespace `\App\Events\Arkzen\{Ns}\Broadcast\{Class}`
+
+**BACKEND VARIANTS (Section 1E)**
+- [ ] Know the active backend (or ask). Code bodies carry the matching suffix: `:php` (laravel), `:ts` (express)
+- [ ] Shared blocks (`meta`, `database`, `api`, `routes`, `realtime`, `events`, YAML-only `jobs` / `console` / `notifications` / `mail`) have **no** suffix
+- [ ] Every `endpoint`, `handler`, `policy`, `middleware`, `listener` and every `jobs` / `console` / `notifications` / `mail` block *with a body* has a suffix, and its closing tag repeats it (`:ts:name:end`)
+- [ ] Each backend you target has a variant for **every** body-carrying block; otherwise the tatemono is inactive there
+- [ ] `jobs` / `console` variants repeat the YAML header (`queue`, `tries`, `timeout`, `signature`, `schedule`)
+- [ ] `:ts` bodies use `await` for DB calls, `response.json(body, status)`, `request.route('name')` / `params`, and `return next()` in middleware
+- [ ] No upload endpoint types, `resource` / `factory`, `command_run` / `job_dispatch` / `event_fire` when the target is Express
+- [ ] Mail / notification bodies avoided (YAML-only) unless custom content is required; Express mail templates use only `{{ var }}` / `{{ $var }}` / `{!! var !!}`
 
 **WEB**
 - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
@@ -1721,4 +1981,4 @@ Before finalizing any tatemono, verify:
 
 * * *
 
-_End of PLUFF GUIDELINES v12.0._
+_End of PLUFF GUIDELINES v13.0._
