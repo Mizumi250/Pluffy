@@ -98,3 +98,19 @@ Pluffy runs on Windows, Linux and Termux on Android. It needs Node, and PHP with
 Pluffy is made by **Mizumi**, an independent developer and digital artist. It's a personal project that keeps growing, so some corners are newer than others, and the guidelines and the validator are the source of truth. Feedback and curiosity are always welcome.
 
 Thanks for stopping by.
+
+
+Samples of what Pluff made so far:
+
+https://hw-coffee.vercel.app/
+https://lain098-67v0azy8h-mizumi25s-projects.vercel.app/
+https://ethereane.vercel.app/
+https://ethan-pool.vercel.app/
+https://cafe-teresita.vercel.app/
+https://shan-shan-eight.vercel.app/
+
+
+as the engine and its ai improve so as the output
+(the future PLUFFY ex Arkzen output will show here)
+
+
