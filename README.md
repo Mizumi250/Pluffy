@@ -87,7 +87,7 @@ node mizumi.js
 
 It will show you what's available, and from there you can set things up, start the engine, switch stacks or generate a tatemono.
 
-When you want to learn the language itself, `PLUFF_GUIDELINES_v12.md` is the reference. It covers every block a tatemono can contain.
+When you want to learn the language itself, `PLUFF_GUIDELINES_v13.md` is the reference. It covers every block a tatemono can contain.
 
 Pluffy runs on Windows, Linux and Termux on Android. It needs Node, and PHP with Composer for the Laravel backend.
 
