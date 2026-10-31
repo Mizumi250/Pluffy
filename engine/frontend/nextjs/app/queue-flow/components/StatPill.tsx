@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatPill
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T12:45:23.641Z
+// Generated: 2026-10-31T13:21:25.367Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

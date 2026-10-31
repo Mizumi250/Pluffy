@@ -23,7 +23,8 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Web:** Next.js, React + Vite, TanStack Start, Astro, or React with Inertia
 - **Mobile:** Expo, bare React Native, or Lynx
 - **Desktop:** Tauri or Electron
-- **Backend:** Laravel, with SQLite (a file per tatemono) or PostgreSQL
+- **Backend:** Laravel, or Express
+- **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 
 You choose the stacks you like, and the tatemono doesn't change when you switch.
 

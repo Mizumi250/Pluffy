@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerGesturesSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T12:44:53.387Z
+// Generated: 2026-10-31T13:20:32.236Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
