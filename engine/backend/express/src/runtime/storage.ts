@@ -16,5 +16,7 @@ export const Storage = {
   },
   delete(rel: string) { const p = path.join(STORAGE_ROOT, rel); if (fs.existsSync(p)) fs.rmSync(p) },
   exists: (rel: string) => fs.existsSync(path.join(STORAGE_ROOT, rel)),
+  path: (rel: string) => path.join(STORAGE_ROOT, rel),
+  read: (rel: string) => fs.readFileSync(path.join(STORAGE_ROOT, rel)),
   url: (rel: string) => `${env('APP_URL', 'http://localhost:8000')}/storage/${rel}`,
 }

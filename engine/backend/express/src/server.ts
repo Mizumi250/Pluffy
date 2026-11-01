@@ -1,17 +1,19 @@
 // Pluff Express backend: same /arkzen engine contract as the Laravel backend.
 import express from 'express'
 import cors from 'cors'
+import multer from 'multer'
 import * as fs from 'fs'
 import * as path from 'path'
 import { REPO_ROOT, BACKEND_DIR, env, Log } from './runtime/support'
 import { startRealtime } from './runtime/broadcast'
 import { STORAGE_ROOT } from './runtime/storage'
-import { buildTatemono, removeTatemono, loadAllGenerated, routers } from './engine/build'
+import { buildTatemono, removeTatemono, loadAllGenerated, routers, routePrefixes } from './engine/build'
 
 export const app = express()
 app.use(cors())
 app.use(express.json({ limit: '10mb' }))
 app.use(express.urlencoded({ extended: true }))
+app.use(multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } }).any())
 app.use('/storage', express.static(STORAGE_ROOT))
 
 const SECRET = env('ARKZEN_ENGINE_SECRET', 'arkzen-engine-secret')
@@ -29,11 +31,20 @@ engine.post('/build',  async (q, r) => { const o = await buildTatemono(q.body); 
 engine.post('/remove', async (q, r) => r.json(await removeTatemono(q.body)))
 app.use('/arkzen', engine)
 
-// /api/<tatemono>/... is dispatched to that tatemono's generated router (hot-swapped on rebuild).
+// Generated API prefixes are authoritative; tatemono slugs are not implicit URL prefixes.
 app.use((req, res, next) => {
-  const m = req.path.match(/^\/api\/([^/]+)/)
-  const r = m && routers.get(m[1])
-  return r ? r(req, res, next) : next()
+  const candidates = [...routePrefixes.entries()]
+    .filter(([, prefixes]) => prefixes.some(prefix => req.path === prefix || req.path.startsWith(`${prefix}/`)))
+    .sort((a, b) => Math.max(...b[1].map(p => p.length)) - Math.max(...a[1].map(p => p.length)))
+    .map(([slug]) => routers.get(slug))
+    .filter((router): router is NonNullable<typeof router> => !!router)
+  let index = 0
+  const dispatchNext: express.NextFunction = (error?: any) => {
+    if (error) return next(error)
+    const router = candidates[index++]
+    return router ? router(req, res, dispatchNext) : next()
+  }
+  return dispatchNext()
 })
 app.use((_q, r) => void r.status(404).json({ message: 'Not Found' }))
 

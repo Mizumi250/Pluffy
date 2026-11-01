@@ -7,12 +7,16 @@
 // ============================================================
 
 import { createFileRoute } from '@tanstack/react-router'
+import * as React from 'react'
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
+import { createArkzenHub } from '../../../../shared/arkzen/hub/Hub.js'
 import {
   Layers, Play, Clock,
   CheckCircle, AlertCircle, Plus, Terminal,
 } from 'lucide-react'
+
+const ArkzenHub = createArkzenHub(React, { platform: 'TanStack Start' })
 
 export const Route = createFileRoute('/')({
   component: ArkzenHub,
@@ -91,7 +95,7 @@ const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: num
   )
 }
 
-function ArkzenHub() {
+function LegacyArkzenHub() {
   const [registry, setRegistry] = useState<RegistryData | null>(null)
   const [loading, setLoading]   = useState(true)
 

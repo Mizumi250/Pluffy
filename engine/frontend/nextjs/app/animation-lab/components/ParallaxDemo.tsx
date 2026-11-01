@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ParallaxDemo
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:20:32.356Z
+// Generated: 2026-11-01T05:48:00.877Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

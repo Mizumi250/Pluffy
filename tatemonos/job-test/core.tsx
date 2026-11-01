@@ -58,16 +58,21 @@ endpoints:
       type: single
 */
 
-/* @arkzen:endpoint:index
+/* @arkzen:endpoint:php:index
 */
 $query = \App\Models\Arkzen\JobTest\JobResult::query();
 $query->orderBy('created_at', 'desc');
 $perPage = $request->get('per_page', 15);
 $results = $query->paginate($perPage);
 return response()->json($results);
-/* @arkzen:endpoint:index:end */
+/* @arkzen:endpoint:php:index:end */
 
-/* @arkzen:jobs:process-data
+/* @arkzen:endpoint:ts:index
+*/
+return response.json({ ok: true, endpoint: 'index', input: request.all() })
+/* @arkzen:endpoint:ts:index:end */
+
+/* @arkzen:jobs:php:process-data
 queue: default
 tries: 3
 timeout: 30
@@ -84,9 +89,24 @@ public function handle(): void
         'processed_at' => now(),
     ]);
 }
-/* @arkzen:jobs:process-data:end */
+/* @arkzen:jobs:php:process-data:end */
 
-/* @arkzen:jobs:heavy-computation
+/* @arkzen:jobs:ts:process-data
+queue: default
+tries: 3
+timeout: 30
+*/
+const start = Date.now()
+await new Promise(resolve => setTimeout(resolve, 2000))
+await JobResult.create({
+  job_name: 'process-data',
+  status: 'completed',
+  result: `Data processed successfully in ${Date.now() - start}ms`,
+  processed_at: now(),
+})
+/* @arkzen:jobs:ts:process-data:end */
+
+/* @arkzen:jobs:php:heavy-computation
 queue: heavy
 tries: 1
 timeout: 120
@@ -103,9 +123,24 @@ public function handle(): void
         'processed_at' => now(),
     ]);
 }
-/* @arkzen:jobs:heavy-computation:end */
+/* @arkzen:jobs:php:heavy-computation:end */
 
-/* @arkzen:jobs:always-fails
+/* @arkzen:jobs:ts:heavy-computation
+queue: heavy
+tries: 1
+timeout: 120
+*/
+const start = Date.now()
+await new Promise(resolve => setTimeout(resolve, 5000))
+await JobResult.create({
+  job_name: 'heavy-computation',
+  status: 'completed',
+  result: `Heavy computation completed in ${Date.now() - start}ms`,
+  processed_at: now(),
+})
+/* @arkzen:jobs:ts:heavy-computation:end */
+
+/* @arkzen:jobs:php:always-fails
 queue: default
 tries: 2
 timeout: 10
@@ -114,7 +149,15 @@ public function handle(): void
 {
     throw new \Exception('This job always fails');
 }
-/* @arkzen:jobs:always-fails:end */
+/* @arkzen:jobs:php:always-fails:end */
+
+/* @arkzen:jobs:ts:always-fails
+queue: default
+tries: 2
+timeout: 10
+*/
+Log.info('[Express] always-fails', this.data)
+/* @arkzen:jobs:ts:always-fails:end */
 
 /* @arkzen:web:components:shared */
 

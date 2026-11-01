@@ -74,6 +74,15 @@ data:
 */
 /* @arkzen:mail:welcome-mail:end */
 
+/* @arkzen:mail:ts:welcome-mail
+subject: "Welcome to Arkzen"
+data:
+  username: string
+  app_name: string
+*/
+<p>welcome-mail</p>
+/* @arkzen:mail:ts:welcome-mail:end */
+
 /* @arkzen:mail:order-confirmation
 subject: "Your order has been confirmed"
 data:
@@ -83,6 +92,16 @@ data:
 */
 /* @arkzen:mail:order-confirmation:end */
 
+/* @arkzen:mail:ts:order-confirmation
+subject: "Your order has been confirmed"
+data:
+  order_id: string
+  total: string
+  customer_name: string
+*/
+<p>order-confirmation</p>
+/* @arkzen:mail:ts:order-confirmation:end */
+
 /* @arkzen:mail:password-reset
 subject: "Reset your password"
 data:
@@ -90,6 +109,15 @@ data:
   expires_in: string
 */
 /* @arkzen:mail:password-reset:end */
+
+/* @arkzen:mail:ts:password-reset
+subject: "Reset your password"
+data:
+  reset_link: string
+  expires_in: string
+*/
+<p>password-reset</p>
+/* @arkzen:mail:ts:password-reset:end */
 
 /* @arkzen:web:components:shared */
 

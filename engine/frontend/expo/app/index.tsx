@@ -6,7 +6,7 @@
 //   - Polls /arkzen/expo-registry every 3s
 //   - Shows all registered native tatemonos as cards
 //   - Entire card is tappable → navigates to tatemono index route
-//   - No pills, no separate Open button — same as web stack
+//   - Searches and filters by framework compatibility
 // ============================================================
 
 import React, { useEffect, useState, useCallback } from 'react'
@@ -15,6 +15,7 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
+  TextInput,
   ActivityIndicator,
   RefreshControl,
   Alert,
@@ -35,13 +36,31 @@ interface TatemonoEntry {
   auth:        boolean
   registered:  string
   lastUpdated: string
+  frontend?:   string[]
+  backend?:    string[]
 }
 
 interface RegistryData {
   engine:  string
   project: string
   modules: TatemonoEntry[]
+  activeStack?: string
+  activeBackend?: string
+  activeDatabase?: string
 }
+
+interface HubRegistry {
+  activeStack?: string
+  activeBackend?: string
+  activeDatabase?: string
+  modules?: Array<{ name: string; frontend?: string[]; backend?: string[] }>
+}
+
+const stackGroups = [
+  { label: 'Frontend', key: 'activeStack' as const, tone: '#007aff', options: [['nextjs', 'Next.js'], ['react-vite', 'React + Vite'], ['react-inertia', 'React + Inertia'], ['astro', 'Astro'], ['tanstack-start', 'TanStack Start'], ['expo', 'Expo'], ['react-native', 'React Native'], ['lynx', 'Lynx'], ['tauri', 'Tauri'], ['electron', 'Electron']] },
+  { label: 'Backend', key: 'activeBackend' as const, tone: '#30c75a', options: [['laravel', 'Laravel'], ['laravel-inertia', 'Laravel + Inertia'], ['express', 'Express'], ['fastapi', 'FastAPI'], ['django', 'Django'], ['spring-boot', 'Spring Boot'], ['aspnet', 'ASP.NET']] },
+  { label: 'Database', key: 'activeDatabase' as const, tone: '#af52de', options: [['sqlite', 'SQLite'], ['pgsql', 'PostgreSQL']] },
+]
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -139,6 +158,11 @@ function TatemonoCard({ tatemono, onNavigate }: {
         )}
       </View>
 
+      <View className="px-4 pb-3 gap-2">
+        <CompatibilityRow label="Frontend" items={tatemono.frontend ?? []} />
+        <CompatibilityRow label="Backend" items={tatemono.backend ?? []} />
+      </View>
+
       {/* Footer — route + copy, mirrors Next.js card actions */}
       <View className="flex-row border-t border-neutral-50">
         <View className="flex-1 py-3 px-4 justify-center">
@@ -153,6 +177,54 @@ function TatemonoCard({ tatemono, onNavigate }: {
         </TouchableOpacity>
       </View>
     </TouchableOpacity>
+  )
+}
+
+function CompatibilityRow({ label, items }: { label: string; items: string[] }) {
+  return (
+    <View className="flex-row items-start gap-2">
+      <Text className="w-16 pt-1 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">{label}</Text>
+      <View className="flex-1 flex-row flex-wrap gap-1.5">
+        {items.length > 0 ? items.map(item => (
+          <View key={item} className="rounded-full border border-neutral-200 bg-white px-2.5 py-1">
+            <Text className="text-[10px] text-neutral-600">{item}</Text>
+          </View>
+        )) : (
+          <View className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1">
+            <Text className="text-[10px] text-neutral-400">None</Text>
+          </View>
+        )}
+      </View>
+    </View>
+  )
+}
+
+function ActiveStack({ registry }: { registry: RegistryData | null }) {
+  return (
+    <View className="mb-5 rounded-2xl border border-neutral-200 bg-white p-3.5 gap-2.5">
+      {stackGroups.map(group => (
+        <View key={group.label} className="flex-row items-start gap-2">
+          <Text className="w-16 pt-1 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">{group.label}</Text>
+          <View className="flex-1 flex-row flex-wrap gap-1.5">
+            {group.options.map(([key, label]) => {
+              const isActive = registry?.[group.key] === key
+              return (
+                <View
+                  key={key}
+                  style={{
+                    backgroundColor: isActive ? group.tone : '#f3f4f6',
+                    borderColor: isActive ? group.tone : '#e5e7eb',
+                  }}
+                  className="rounded-full border px-2.5 py-1"
+                >
+                  <Text style={{ color: isActive ? '#fff' : '#9ca3af' }} className="text-[10px] font-medium">{label}</Text>
+                </View>
+              )
+            })}
+          </View>
+        </View>
+      ))}
+    </View>
   )
 }
 
@@ -198,16 +270,45 @@ function ArkzenHub() {
   const [loading,     setLoading]           = useState(true)
   const [refreshing,  setRefreshing]        = useState(false)
   const [engineAlive, setEngineAlive]       = useState(false)
+  const [metadataUnavailable, setMetadataUnavailable] = useState(false)
+  const [query, setQuery] = useState('')
+  const [frameworkFilter, setFrameworkFilter] = useState('All')
 
   const fetchRegistry = useCallback(async (silent = false) => {
     try {
       const res = await fetch(`${BACKEND_URL}/arkzen/expo-registry`, {
         headers: { Accept: 'application/json' },
       })
-      if (res.ok) {
-        setRegistry(await res.json())
-        setEngineAlive(true)
+      if (!res.ok) throw new Error(`Expo registry request failed (${res.status})`)
+      const nativeRegistry = await res.json() as RegistryData
+      let hubRegistry: HubRegistry | null = null
+      try {
+        const hubResponse = await fetch(`${BACKEND_URL}/arkzen/registry`, {
+          headers: { Accept: 'application/json' },
+        })
+        if (!hubResponse.ok) throw new Error(`Hub registry request failed (${hubResponse.status})`)
+        hubRegistry = await hubResponse.json() as HubRegistry
+        setMetadataUnavailable(false)
+      } catch {
+        setMetadataUnavailable(true)
       }
+
+      const modulesByName = new Map((hubRegistry?.modules ?? []).map(module => [module.name, module]))
+      setRegistry({
+        ...nativeRegistry,
+        activeStack: hubRegistry?.activeStack ?? 'expo',
+        activeBackend: hubRegistry?.activeBackend,
+        activeDatabase: hubRegistry?.activeDatabase,
+        modules: (nativeRegistry.modules ?? []).map(module => {
+          const shared = modulesByName.get(module.name)
+          return {
+            ...module,
+            frontend: shared?.frontend ?? ['Expo'],
+            backend: shared?.backend ?? [],
+          }
+        }),
+      })
+      setEngineAlive(true)
     } catch {
       setEngineAlive(false)
     } finally {
@@ -234,6 +335,13 @@ function ArkzenHub() {
   const active  = registry?.modules.filter(m => m.status === 'active').length ?? 0
   const total   = registry?.modules.length ?? 0
   const errors  = registry?.modules.filter(m => m.status === 'removed').length ?? 0
+  const frameworks = [...new Set((registry?.modules ?? []).flatMap(module => [...(module.frontend ?? []), ...(module.backend ?? [])]))].sort()
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredModules = (registry?.modules ?? []).filter(module => {
+    const compatible = [...(module.frontend ?? []), ...(module.backend ?? [])]
+    const matchesQuery = !normalizedQuery || [module.name, ...compatible].some(value => value.toLowerCase().includes(normalizedQuery))
+    return matchesQuery && (frameworkFilter === 'All' || compatible.includes(frameworkFilter))
+  })
 
   return (
     <SafeAreaView className="flex-1 bg-neutral-50" edges={['top']}>
@@ -243,9 +351,6 @@ function ArkzenHub() {
       <View className="bg-white border-b border-neutral-100 px-5 py-4">
         <View className="flex-row items-center justify-between">
           <View className="flex-row items-center gap-3">
-            <View className="w-8 h-8 rounded-xl bg-neutral-900 items-center justify-center">
-              <Text className="text-white text-xs font-bold">A</Text>
-            </View>
             <View>
               <Text className="text-sm font-semibold text-neutral-900">Arkzen Engine</Text>
               <Text className="text-xs text-neutral-400">v{registry?.engine ?? '1.0.0'} · Expo</Text>
@@ -276,10 +381,48 @@ function ArkzenHub() {
           <StatCard label="Removed" value={errors}  accent="text-red-500" />
         </View>
 
+        <ActiveStack registry={registry} />
+
+        {metadataUnavailable && (
+          <Text className="mb-4 text-xs text-amber-700">Framework compatibility and active stack details are unavailable.</Text>
+        )}
+
+        <View className="mb-3 rounded-2xl border border-neutral-200 bg-white px-4">
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search Tatemono or framework"
+            placeholderTextColor="#a3a3a3"
+            autoCapitalize="none"
+            className="h-12 text-sm text-neutral-900"
+            accessibilityLabel="Search Tatemono or framework"
+          />
+        </View>
+
+        {frameworks.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} className="mb-5">
+            <View className="flex-row gap-2 pr-4">
+              {['All', ...frameworks].map(framework => {
+                const selected = frameworkFilter === framework
+                return (
+                  <TouchableOpacity
+                    key={framework}
+                    onPress={() => setFrameworkFilter(framework)}
+                    activeOpacity={0.75}
+                    className={`rounded-full border px-3.5 py-2 ${selected ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-200 bg-white'}`}
+                  >
+                    <Text className={`text-xs font-medium ${selected ? 'text-white' : 'text-neutral-500'}`}>{framework === 'All' ? 'All frameworks' : framework}</Text>
+                  </TouchableOpacity>
+                )
+              })}
+            </View>
+          </ScrollView>
+        )}
+
         {/* Section label */}
         <View className="flex-row items-center justify-between mb-3">
           <Text className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">
-            Tatemonos
+            Tatemonos · {filteredModules.length}
           </Text>
           <Text className="text-xs text-neutral-400">{registry?.project ?? 'project'}</Text>
         </View>
@@ -293,7 +436,9 @@ function ArkzenHub() {
         ) : !registry || registry.modules.length === 0 ? (
           <EmptyState />
         ) : (
-          registry.modules.map(tat => (
+          filteredModules.length === 0 ? (
+            <Text className="py-12 text-center text-xs text-neutral-400">No matching Tatemono. Try another name or framework.</Text>
+          ) : filteredModules.map(tat => (
             <TatemonoCard key={tat.name} tatemono={tat} onNavigate={handleNavigate} />
           ))
         )}

@@ -16,13 +16,18 @@ const q = (s: string) => JSON.stringify(s)
 const pluralize = (w: string) => w.endsWith('y') ? w.slice(0, -1) + 'ies' : w.endsWith('s') ? w + 'es' : w + 's'
 const tableToModel = (t: string) => studly(t.replace(/s$/, ''))
 const expressPath = (p: string) => p.replace(/\{(\w+)\??\}/g, ':$1')
+const resourceFields = (api: Any) => {
+  const columns = api.__database?.columns ?? {}
+  const fields = Object.keys(columns).filter(k => !['created_at', 'updated_at', 'deleted_at'].includes(k))
+  return `{ id: (v: any) => v.id, ${fields.map(k => `${q(k)}: (v: any) => v[${q(k)}]`).join(', ')}, created_at: (v: any) => v.created_at ?? null, updated_at: (v: any) => v.updated_at ?? null }`
+}
 
 const IMPORTS = `import {
   Model, QueryBuilder, response, Hash, DB, abort, authorize, dispatch, event, broadcast, Mail, notify, Storage, Log,
   validate, now, Command, Job, Event, Listener, Mailable, Notification, MailMessage, BroadcastEvent, createToken,
-  connection, userModelFor, authMiddleware, optionalAuth, roleMiddleware, handle, middleware as wrapMiddleware,
+  connection, userModelFor, authMiddleware, optionalAuth, roleMiddleware, authCookie, clearAuthCookie, handle, middleware as wrapMiddleware,
   registerCommand, ValidationException, HttpException, AuthorizationException, ModelNotFoundException,
-  type Request, type ResponseFactory,
+  resourceTransform, factoryFor, runCommand, type Request, type ResponseFactory,
 } from '@pluff/runtime'
 `
 
@@ -71,7 +76,7 @@ export function generate(p: Any): Generated {
 
   // ── models ─────────────────────────────────────────────
   const modelNames = new Map<string, string>()      // table -> class
-  for (const api of apis) { const db = findDatabaseForModel(dbs, api.model); if (db) modelNames.set(db.table, api.model) }
+  for (const api of apis) { const db = findDatabaseForModel(dbs, api.model); if (db) { modelNames.set(db.table, api.model); api.__database = db } }
   for (const db of dbs) if (!modelNames.has(db.table)) modelNames.set(db.table, tableToModel(db.table))
 
   const castMap: Any = { boolean: 'boolean', integer: 'integer', bigInteger: 'integer', decimal: 'decimal:2', float: 'float', json: 'array', date: 'date', datetime: 'datetime', timestamp: 'datetime' }
@@ -105,8 +110,15 @@ export function generate(p: Any): Generated {
 ${rels.join('\n')}
 }\n\n`
   }
+  if (notifs.length) models += `export class DatabaseNotification extends Model {
+  static table = ${q(T('notifications'))}
+  static connectionName = ${q(slug)}
+  static fillable = ['id', 'type', 'notifiable_type', 'notifiable_id', 'data', 'read_at']
+  static timestamps = true
+  static softDeletes = false
+}\n\n`
   files['models.ts'] = models
-  const modelImports = `import { ${[...(hasAuth ? ['User'] : []), ...modelNames.values()].join(', ') || 'Model'} } from './models'\n`
+  const modelImports = `import { ${[...(hasAuth ? ['User'] : []), ...modelNames.values(), ...(notifs.length ? ['DatabaseNotification'] : [])].join(', ') || 'Model'} } from './models'\n`
 
   // ── middleware ─────────────────────────────────────────
   const mwSnippets: Any = p.middlewareSnippets ?? {}
@@ -145,6 +157,12 @@ ${ind(body('delete'), 2)}
   const controllerNames: string[] = []
   let ctl = `// ARKZEN GENERATED CONTROLLERS: ${slug}\n${IMPORTS}${modelImports}${policyNames.length ? `import { ${policyNames.join(', ')} } from './policies'\n` : ''}\n`
   const rules = (v: Any = {}) => '{ ' + Object.entries(v).map(([k, r]) => `${q(k)}: ${q(String(r))}`).join(', ') + ' }'
+  const commandRun = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => ['command_run', 'run'].includes(e.type)))
+  const jobDispatch = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'job_dispatch'))
+  const eventFire = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'event_fire'))
+  if (commandRun) ctl += `import { runCommand } from '@pluff/runtime'\n`
+  if (jobDispatch) ctl += `import * as GeneratedJobs from './jobs'\n`
+  if (eventFire) ctl += `import * as GeneratedEvents from './events'\n`
 
   for (const api of apis) {
     const M: string = api.model
@@ -158,6 +176,10 @@ ${ind(body('delete'), 2)}
       let code: string
       switch (name) {
         case 'index': {
+          if (ep.type === 'upload_index') {
+            code = `    const files = await ${M}.latest().get()\n    return response.json({ data: files.map((file: any) => ({ ...file.toJSON(), url: file.is_image ? Storage.url(file.disk_path) : null })) })\n`
+            break
+          }
           const query = ep.query ?? {}
           const perPage = /default:(\d+)/.exec(String(query.per_page ?? ''))?.[1] ?? '15'
           const filters = Object.keys(query).filter(k => k !== 'search' && k !== 'per_page')
@@ -165,33 +187,67 @@ ${ind(body('delete'), 2)}
           const search = query.search !== undefined
             ? `    if (request.filled('search')) {\n      const s = '%' + request.input('search') + '%'\n      query.where((w) => { w.orWhere('name', 'like', s); w.orWhere('description', 'like', s) })\n    }\n` : ''
           const fetch = respType === 'array'
-            ? `    return response.json(await query.orderBy('created_at', 'desc').get())\n`
-            : `    return response.json(await query.orderBy('created_at', 'desc').paginate(Number(request.input('per_page', ${perPage})), Number(request.input('page', 1)), request.url()))\n`
+            ? `    const results = await query.orderBy('created_at', 'desc').get()\n    return response.json(${api.resource ? `resourceTransform(results, ${resourceFields(api)})` : 'results'})\n`
+            : `    const results = await query.orderBy('created_at', 'desc').paginate(Number(request.input('per_page', ${perPage})), Number(request.input('page', 1)), request.url())\n    return response.json(${api.resource ? `resourceTransform(results, ${resourceFields(api)})` : 'results'})\n`
           code = `    const query = ${M}.query()\n${search}${filters}${fetch}`
           break
         }
         case 'store':
-          if (ep.type === 'broadcast') {
+          if (ep.type === 'command_run') {
+            code = `    const validated = await request.validate({ command: 'required|string', triggered_by: 'sometimes|string' })\n    const started = Date.now()\n    const entry = [...(await import('@pluff/runtime')).commands].find(([signature]) => signature.endsWith(':' + validated.command))\n    if (!entry) return response.json({ message: 'Invalid command' }, 400)\n    const exitCode = await runCommand(entry[0])\n    const commandRun = await ${M}.create({ command_name: validated.command, signature: entry[0], exit_code: exitCode, output: '', triggered_by: validated.triggered_by ?? 'manual', duration_ms: Date.now() - started })\n    return response.json(commandRun, 201)\n`
+          } else if (ep.type === 'job_dispatch') {
+            code = `    const validated = await request.validate({ job: 'required|string' })\n    const jobClass = Object.values(GeneratedJobs).find((C: any) => C?.name?.toLowerCase().includes(String(validated.job).replace(/[-_]/g, '').toLowerCase())) as any\n    if (!jobClass) throw new Error('Unknown job: ' + validated.job)\n    await dispatch(new jobClass(request.input('data', {})))\n    return response.json({ message: 'Job dispatched' }, 202)\n`
+          } else if (ep.type === 'event_fire') {
+            code = `    const validated = await request.validate({ event: 'required|string', payload: 'sometimes|array' })\n    const eventClass = Object.values(GeneratedEvents).find((C: any) => C?.name?.toLowerCase().includes(String(validated.event).replace(/[-_]/g, '').toLowerCase())) as any\n    if (!eventClass) throw new Error('Unknown event: ' + validated.event)\n    await event(new eventClass(validated.payload ?? {}))\n    return response.json({ message: 'Event fired' }, 202)\n`
+          } else if (ep.type === 'broadcast') {
             code = `    const validated = await request.validate(${rules(ep.validation)})\n    const message = await ${M}.create(validated)\n    const channelType = validated.channel_type ?? 'public'\n    const userId = (await request.authUser())?.id ?? null\n    broadcast(Object.assign(new MessageSentEvents[channelType](message.toJSON()), { userId }))\n    return response.json(message, 201)\n`
           } else if (ep.type === 'mail_send') {
             code = `    const validated = await request.validate(${rules(ep.validation)})\n    const user = await request.authUser()\n    const Cls = mailClasses[validated.mail]\n    if (!Cls) throw new Error('Unknown mail type: ' + validated.mail)\n    await Mail.to(validated.to).send(new (Cls as any)(...Object.values(validated.data ?? {})))\n    const mailLog = await ${M}.create({ user_id: user?.id ?? null, to_email: validated.to, subject: Cls.subject || validated.mail, mail_class: Cls.name, status: 'sent' })\n    return response.json(mailLog, 201)\n`
           } else if (ep.type === 'notification_trigger') {
             code = `    const validated = await request.validate(${rules(ep.validation)})\n    const user = request.user()\n    const Cls = notificationClasses[validated.notification]\n    if (!Cls) throw new Error('Unknown notification type: ' + validated.notification)\n    await notify(user, new (Cls as any)(user))\n    return response.json({ message: 'Notification triggered successfully', type: validated.notification }, 201)\n`
           } else if (['upload', 'upload_index', 'upload_destroy', 'upload_url'].includes(ep.type)) {
-            code = `    return response.json({ message: 'Upload endpoints are not supported on the Express backend yet' }, 501)\n`
+            code = `    const files = request.files('files')\n    const uploaded = []\n    for (const file of files) {\n      const diskPath = Storage.put(${q(`arkzen/${slug}`)}, file)\n      const record = await ${M}.create({ user_id: request.user()?.id ?? null, original_name: file.originalname, stored_name: diskPath.split('/').pop(), mime_type: file.mimetype, size_bytes: file.size, disk_path: diskPath, is_image: file.mimetype.startsWith('image/') })\n      uploaded.push({ ...record.toJSON(), url: record.is_image ? Storage.url(diskPath) : null })\n    }\n    return response.json({ data: uploaded }, 201)\n`
           } else {
-            code = `${auth('create')}    const validated = await request.validate(${rules(ep.validation)})\n    const ${v} = await ${M}.create(validated)\n    return response.json(${v}, 201)\n`
+            const body = dec(ep.body).trim()
+            code = body
+              ? ind(body, 2) + '\n'
+              : `${auth('create')}    const validated = await request.validate(${rules(ep.validation)})\n    const ${v} = await ${M}.create(validated)\n    return response.json(${api.resource ? `resourceTransform(${v}, ${resourceFields(api)})` : v}, 201)\n`
           }
           break
-        case 'show':    code = `${find}    return response.json(${v})\n`; break
-        case 'update':  code = `${find}${auth('update')}    const validated = await request.validate(${rules(ep.validation)})\n    await ${v}.update(validated)\n    return response.json(${v})\n`; break
+        case 'broadcast':
+          if (ep.type === 'broadcast') {
+            code = `    const validated = await request.validate(${rules(ep.validation)})\n    const message = await ${M}.create({ channel: validated.channel_type, target: validated.target, user_id: (await request.authUser())?.id ?? null, status: 'sent' })\n    const channelType = validated.channel_type ?? 'public'\n    const userId = (await request.authUser())?.id ?? null\n    const EventClass = MessageSentEvents[channelType]\n    if (!EventClass) throw new Error('Unknown broadcast channel type: ' + channelType)\n    broadcast(Object.assign(new EventClass(message.toJSON()), { userId }))\n    return response.json(message, 201)\n`
+          } else {
+            code = `    return response.json({ message: 'Endpoint ${name} is not implemented yet' }, 501)\n`
+          }
+          break
+        case 'sendMail':
+          if (ep.body) {
+            code = ind(dec(ep.body).trim(), 2) + '\n'
+          } else if (ep.type === 'mail_send') {
+            code = `    const validated = await request.validate(${rules(ep.validation)})\n    const user = await request.authUser()\n    const Cls = mailClasses[validated.mail]\n    if (!Cls) throw new Error('Unknown mail type: ' + validated.mail)\n    await Mail.to(validated.to).send(new (Cls as any)(...Object.values(validated.data ?? {})))\n    const mailLog = await ${M}.create({ user_id: user?.id ?? null, channel: 'mail', target: validated.to, status: 'sent' })\n    return response.json(mailLog, 201)\n`
+          } else {
+            code = `    return response.json({ message: 'Endpoint ${name} is not implemented yet' }, 501)\n`
+          }
+          break
+        case 'notify':
+          if (ep.body) {
+            code = ind(dec(ep.body).trim(), 2) + '\n'
+          } else if (ep.type === 'notification_trigger') {
+            code = `    const validated = await request.validate(${rules(ep.validation)})\n    const user = request.user()\n    const Cls = notificationClasses[validated.notification]\n    if (!Cls) throw new Error('Unknown notification type: ' + validated.notification)\n    await notify(user, new (Cls as any)(user))\n    return response.json({ message: 'Notification triggered successfully', type: validated.notification }, 201)\n`
+          } else {
+            code = `    return response.json({ message: 'Endpoint ${name} is not implemented yet' }, 501)\n`
+          }
+          break
+        case 'show':    code = `${find}    return response.json(${api.resource ? `resourceTransform(${v}, ${resourceFields(api)})` : v})\n`; break
+        case 'update':  code = `${find}${auth('update')}    const validated = await request.validate(${rules(ep.validation)})\n    await ${v}.update(validated)\n    return response.json(${api.resource ? `resourceTransform(${v}, ${resourceFields(api)})` : v})\n`; break
         case 'destroy':
           code = ep.type === 'upload_destroy'
-            ? `    return response.json({ message: 'Upload endpoints are not supported on the Express backend yet' }, 501)\n`
+            ? `    const file = await ${M}.findOrFail(request.route('id'))\n    if (file.disk_path) Storage.delete(file.disk_path)\n    await file.delete()\n    return response.json({ message: 'File deleted' })\n`
             : `${find}${auth('delete')}    await ${v}.delete()\n    return response.json({ message: ${q(ep.response?.value ?? `${M} deleted successfully`)} })\n`
           break
         case 'fileUrl':
-          code = `    return response.json({ message: 'Upload endpoints are not supported on the Express backend yet' }, 501)\n`; break
+          code = `    const file = await ${M}.findOrFail(request.route('id'))\n    if (!Storage.exists(file.disk_path)) return response.json({ message: 'File not found' }, 404)\n    return response.make(Storage.read(file.disk_path), 200, { 'Content-Type': file.mime_type, 'Content-Disposition': 'attachment; filename="' + file.original_name + '"' })\n`; break
         case 'adminOnly':
           code = `    const user = request.user()\n    const granted = !!user && user.role === 'admin'\n    await ${M}.create({ user_id: user?.id ?? null, action: 'GET /admin-only', role_required: 'admin', granted })\n    if (!granted) return response.json({ message: '✗ Access denied — admin role required' }, 403)\n    return response.json({ message: '✓ Access granted — you are admin' })\n`; break
         case 'userOnly':
@@ -214,14 +270,17 @@ ${ind(body('delete'), 2)}
   }
 
   // custom routes
+  const customControllerNames = new Map<any, string>()
   for (const cr of p.customRoutes ?? []) {
+    const customController = controllerNames.includes(cr.controller) ? `${cr.controller}CustomRoutes` : cr.controller
+    customControllerNames.set(cr, customController)
     const methods: string[] = []
     for (const r of cr.routes ?? []) {
       const body = dec(r.body).trim()
       methods.push(`  async ${r.handler}(request: Request, response: ResponseFactory, ...params: any[]): Promise<any> {\n${body ? ind(body, 2) : `    return response.json({ message: ${q(`Handler ${r.handler} is not implemented yet`)} }, 501)`}\n  },`)
     }
-    ctl += `export const ${cr.controller} = {\n${methods.join('\n')}\n}\n\n`
-    controllerNames.push(cr.controller)
+    ctl += `export const ${customController} = {\n${methods.join('\n')}\n}\n\n`
+    if (!controllerNames.includes(cr.controller)) controllerNames.push(cr.controller)
   }
 
   // mail / notification class lookups used by the typed endpoints
@@ -229,6 +288,7 @@ ${ind(body('delete'), 2)}
   const mailClasses = lookup(Object.keys(mails), 'Mail')
   const notifClasses = lookup(Object.keys(notifs), 'Notification')
   const needsMsgEvents = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'broadcast'))
+  if (notifs.length) ctl = ctl.replace(/\bNotification\.(query|findOrFail)/g, 'DatabaseNotification.$1')
   ctl += `import { mailClasses } from './mails'\nimport { notificationClasses } from './notifications'\n${needsMsgEvents ? `import { MessageSentEvents } from './realtime'\n` : `const MessageSentEvents: Record<string, any> = {}\n`}`
   files['controllers.ts'] = ctl
 
@@ -259,7 +319,7 @@ ${methodBody(body, 'handle', ': Promise<void>')}
     const bodies: Any = (() => { try { return JSON.parse(dec(cfg.listener_bodies) || '{}') } catch { return {} } })()
     for (const l of (Array.isArray(cfg.listeners) ? cfg.listeners : String(cfg.listeners ?? '').split(',')).map((s: string) => String(s).trim()).filter(Boolean)) {
       const body = dec(bodies[l]).trim()
-      const stub = `const EventLog = (await import('./models') as any).EventLog\n  if (EventLog) await EventLog.create({ event_name: ${q(name)}, listener: ${q(l)}, payload: JSON.stringify(event.data) })\n  else Log.info('[Arkzen Listener] ${l}', event.data)`
+      const stub = `const EventLog = (await import('./models') as any).EventLog\n  if (EventLog) await EventLog.create({ event_name: ${q(name)}, listener_name: ${q(l)}, status: 'completed', payload: JSON.stringify(event.data) })\n  else Log.info('[Arkzen Listener] ${l}', event.data)`
       ev += `export class ${l} extends Listener {\n  async handle(event: ${cls}): Promise<void> {\n${ind(body || stub, 2)}\n  }\n}\n`
       listenerClasses.push(l); (listenerMap[cls] ??= []).push(l)
     }
@@ -313,6 +373,24 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
   nt += `export const notificationClasses: Record<string, typeof Notification> = { ${notifClasses} }\n`
   files['notifications.ts'] = nt
 
+  // ── factories ──────────────────────────────────────────
+  let fc = `// ARKZEN GENERATED FACTORIES: ${slug}\n${IMPORTS}${modelImports}\n`
+  const factoryNames: string[] = []
+  for (const api of apis.filter(a => a.factory)) {
+    const db = api.__database ?? findDatabaseForModel(dbs, api.model)
+    const values = Object.entries(db?.columns ?? {})
+      .filter(([name, c]: [string, any]) => !c.primary && !['created_at', 'updated_at', 'deleted_at'].includes(name))
+      .map(([name, c]: [string, any]) => {
+        const expr = c.type === 'boolean' ? 'false' : c.type === 'integer' || c.type === 'bigInteger' ? '1' : c.type === 'json' ? '[]' : q(name === 'email' ? 'user@example.com' : name === 'name' ? 'Example' : '')
+        return `${q(name)}: ${expr}`
+      }).join(', ')
+    const fn = `${api.model}Factory`
+    fc += `export const ${fn} = factoryFor(${api.model}, { ${values} })\n`
+    factoryNames.push(fn)
+  }
+  fc += `export const factories = { ${factoryNames.join(', ')} }\n`
+  files['factories.ts'] = fc
+
   // ── realtime (broadcast events) ────────────────────────
   let rt = `// ARKZEN GENERATED REALTIME: ${slug}\n${IMPORTS}\n`
   const bcClasses: string[] = []
@@ -321,11 +399,14 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     if (!cfg.channel) continue                                     // channel declarations only; auth is handled by /broadcasting/auth
     const type = cfg.type ?? 'public'
     const cls = studly(name)
-    const channel = String(cfg.channel).replace(/\.\{id\}$/, '')
+    const rawChannel = String(cfg.channel)
+    const channelHasId = rawChannel.includes('{id}')
+    const channel = rawChannel.replace(/\.\{id\}$/, '')
     rt += `export class ${cls} extends BroadcastEvent {
   static tatemono = ${q(slug)}
   channelType = ${q(type)} as 'public' | 'private' | 'presence'
   channel = ${q(channel)}
+  channelHasId = ${channelHasId}
   eventName = ${q(`${slug}.${name}`)}
 }\n`
     bcClasses.push(cls)
@@ -345,7 +426,7 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     const v = await request.validate({ name: 'required|string|max:255', email: 'required|email|unique:users,email', password: 'required|string|min:8|confirmed' })
     const user: any = await User.create({ name: v.name, email: v.email, password: Hash.make(v.password) })
     const token = await createToken(S, user.id)
-    return response.json({ user, token }, 201)
+    return response.json({ user, token }, 201, { 'Set-Cookie': authCookie(S, token) })
   }))
   r.post(${q(prefixOf + '/auth/login')}, handle(S, async (request, response) => {
     const v = await request.validate({ email: 'required|email', password: 'required|string' })
@@ -353,11 +434,11 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     if (!user || !Hash.check(v.password, user.password)) throw ValidationException.withMessages({ email: ['The provided credentials are incorrect.'] })
     await user.tokens().delete()
     const token = await createToken(S, user.id)
-    return response.json({ user, token })
+    return response.json({ user, token }, 200, { 'Set-Cookie': authCookie(S, token) })
   }))
   r.post(${q(prefixOf + '/auth/logout')}, authMiddleware(S), handle(S, async (request, response) => {
     await request.user().currentAccessToken().delete()
-    return response.json({ message: 'Logged out successfully' })
+    return response.json({ message: 'Logged out successfully' }, 200, { 'Set-Cookie': clearAuthCookie(S) })
   }))
   r.get(${q(prefixOf + '/auth/me')}, authMiddleware(S), handle(S, async (request, response) => response.json(request.user())))
   r.post(${q(prefixOf + '/auth/broadcasting/auth')}, authMiddleware(S), handle(S, async (request, response) => {
@@ -384,9 +465,19 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     }
   }
   for (const cr of p.customRoutes ?? []) {
+    const customController = customControllerNames.get(cr) ?? cr.controller
     const chain = (cr.middleware ?? []).map((m: string) => `mw(${q(String(m).trim())})`)
     for (const r of cr.routes ?? []) {
-      rts += `  r.${String(r.method ?? 'GET').toLowerCase()}(${q(expressPath(r.route))}${chain.length ? ', ' + chain.join(', ') : ''}, handle(S, (rq, rs) => C.${cr.controller}.${r.handler}(rq, rs, ...Object.values(rq.route() as any))))\n`
+      rts += `  r.${String(r.method ?? 'GET').toLowerCase()}(${q(expressPath(r.route))}${chain.length ? ', ' + chain.join(', ') : ''}, handle(S, (rq, rs) => C.${customController}.${r.handler}(rq, rs, ...Object.values(rq.route() as any))))\n`
+    }
+  }
+  const realtimeNames = Object.keys(realtimes)
+  if (realtimeNames.length) {
+    const broadcastApi = apis.find(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'broadcast'))
+    const realtimeModel = broadcastApi?.model
+    if (realtimeModel) {
+      rts += `  r.get(${q(`${prefixOf}/sse-poll/:channelType`)}, handle(S, async (_request, response) => response.json({ data: await ${realtimeModel}.latest().limit(50).get(), channel: _request.route('channelType') })))\n`
+      rts += `  r.get(${q(`${prefixOf}/sse/:channelType`)}, handle(S, async (_request, response) => response.sse(_request.route('channelType'), { data: await ${realtimeModel}.latest().limit(50).get(), channel: _request.route('channelType') })))\n`
     }
   }
   rts += `  return r\n}\n`
@@ -402,7 +493,8 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     `export const listeners: LoadedModule['listeners'] = { ${listenerClasses.join(', ')} }\n` +
     `export const events: LoadedModule['events'] = { ${eventClasses.join(', ')} }\n` +
     `export const listenerMap: LoadedModule['listenerMap'] = ${JSON.stringify(listenerMap)}\n` +
-    `export const commands = [${cmdClasses.join(', ')}]\n`
+    `export const commands = [${cmdClasses.join(', ')}]\n` +
+    `export const routePrefixes = ${JSON.stringify([...apis.map(a => String(a.prefix ?? '').replace(/\/+$/, '')).filter(Boolean), ...((p.customRoutes ?? []).flatMap((r: any) => (r.routes ?? []).map((x: any) => String(x.route ?? '').split('/').slice(0, 3).join('/'))))])}\n`
 
   return { files, registry: { models: [...modelNames.values(), ...(hasAuth ? ['User'] : [])], controllers: controllerNames, tables: dbs.map(d => T(d.table)) }, warnings }
 }

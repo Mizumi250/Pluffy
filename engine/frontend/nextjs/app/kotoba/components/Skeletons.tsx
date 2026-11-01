@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Skeletons
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:10.050Z
+// Generated: 2026-11-01T06:21:43.892Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

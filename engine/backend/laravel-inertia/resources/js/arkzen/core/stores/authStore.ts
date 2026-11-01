@@ -231,11 +231,14 @@ export const useAuthStore = create<AuthState>()(
 //   const hydrated = useAuthStoreHydrated()
 //   if (!hydrated) return <spinner>
 
-export function useAuthStoreHydrated(): boolean {
+export function useAuthStoreHydrated(tatemono?: string): boolean {
   // On the server (SSR), zustand/persist skips storage init because localStorage
   // doesn't exist — useAuthStore.persist is undefined. Return true immediately so
   // layouts don't block render. Hydration only matters client-side.
   const isServer = typeof window === 'undefined'
+  if (!isServer && tatemono && window.__ARKZEN_TATEMONO__ !== tatemono) {
+    setActiveTatemono(tatemono)
+  }
 
   const [hydrated, setHydrated] = useState(() => {
     if (isServer) return true

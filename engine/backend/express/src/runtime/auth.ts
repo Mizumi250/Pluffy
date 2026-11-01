@@ -16,6 +16,18 @@ export const Hash = {
 export interface AuthConfig { fillable: string[]; hidden: string[]; casts: Record<string, string> }
 const userModels = new Map<string, typeof Model>()
 
+export function authCookieName(slug: string): string {
+  return `arkzen-auth-${slug}`
+}
+
+export function authCookie(slug: string, token: string): string {
+  return `${authCookieName(slug)}=${encodeURIComponent(token)}; Path=/; SameSite=Lax`
+}
+
+export function clearAuthCookie(slug: string): string {
+  return `${authCookieName(slug)}=; Path=/; Max-Age=0; SameSite=Lax`
+}
+
 /** The tatemono's user model: table `<prefix>_users`. Created at module load by generated code. */
 export function userModelFor(slug: string, cfg: AuthConfig = { fillable: ['name', 'email', 'password', 'role'], hidden: ['password', 'remember_token'], casts: {} }): typeof Model {
   let M = userModels.get(slug)

@@ -3,7 +3,7 @@
 ## For AI — Generating & Editing Tatemono Files
 
 **VERSION:** 13.0
-**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the 36 tatemonos in `tatemonos/`.
+**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the 37 tatemonos in `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
 
@@ -12,8 +12,8 @@
 - **Two backends, one DSL.** The backend is a **project-level** setting (`activeBackend` in `arkzen.json`, switch with `node mizumi.js backend <n>`), not something a tatemono declares. Laravel is the reference backend; **Express (TypeScript)** is the second implemented backend. See Section 1E.
 - **Backend variant suffixes.** Backend code blocks (`endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` that carry a body) take a suffix between marker and name: `:php` (Laravel) or `:ts` (Express). The active backend reads the matching variant. An unsuffixed code body is only a fallback read as `:php` until the tatemono is converted; unsuffixed YAML-only blocks are shared by every backend.
 - **A tatemono with no usable variant for the active backend is inactive on it** (validator error, not a crash). A tatemono may carry variants for one backend or all of them.
-- **`:ts` body conventions** (Express) documented next to each backend block (Sections 8-18), plus what Express does not support yet.
-- **Sections 27 / 28B / 29** updated: 36 tatemonos (new: `express-test`, `kotoba`, `clinic-appointment-booking` listed), new engine quirks for multi-backend, new checklist block, new Example D.
+- **`:ts` body conventions** (Express) documented next to each backend block (Sections 8-18), including custom runtime equivalents for uploads, resources, factories, queues, commands, events, notifications, realtime, and streaming SSE.
+- **Sections 27 / 28B / 29** updated: 37 tatemonos (including `express-test` and `express-test-2`), Express runtime/export behavior, multi-backend quirks, and the backend checklist.
 - **The old Laravel code blocks are now the `:php` variant.** Sections 9B-18 are rewritten with `:php` (Laravel) and `:ts` (Express) side by side. A plain unsuffixed code body is only a fallback the engine still reads as `:php` for tatemonos not converted yet.
 
 **WHAT'S NEW IN v12.0 (vs v11.0):**
@@ -22,7 +22,7 @@
 - **Native DSL is now per-target.** Expo, bare React Native, and Lynx each have their own blocks. Expo/RN blocks use dual-target `@arkzen:import:expo` / `@arkzen:import:rn` pairs. Lynx blocks use separate `:lynx` tags; their imports are handled by the Lynx generator.
 - **New native blocks:** `@arkzen:native:style` (global), `@arkzen:native:error:404|500`, `@arkzen:native:animation:expo|rn|lynx`, `@arkzen:native:script:expo|rn|lynx[:name]`, all `native:*:lynx` blocks. **Removed:** generic `@arkzen:native:script`, and `animation:rn` no longer serves Expo.
 - **PostgreSQL support** — database driver is a project-level setting (`mizumi db`), one isolated database per tatemono.
-- **Corrected syntax** that v10 had wrong: console blocks use `signature:` (not `command:`), listeners use `@arkzen:listener:Name` (singular), mail blocks use `subject` + `data:` (not `lines`/`action`), notifications/mail/events/realtime need `:end`, the multi-table `tables:` database format is **not parsed**, `type: enum` is **not supported**.
+- **Corrected syntax** that v10 had wrong: console blocks use `signature:` (not `command:`), listeners use `@arkzen:listener:Name` (singular), mail blocks use `subject` + `data:` (not `lines`/`action`), body-bearing notifications/mail/events/realtime blocks need `:end`, the multi-table `tables:` database format is **not parsed**, `type: enum` is **not supported**.
 - **Special endpoint `type:` values** (`upload`, `broadcast`, `mail_send`, `notification_trigger`, ...) and role endpoint names, documented.
 - **`@arkzen:meta`** gained `dependencies` and `auth_seed`; **`@arkzen:meta:web`** gained `og`, `twitter`, `pwa`, `label`; `favicon`/`pwa` inside `@arkzen:meta` are deprecated.
 - **Lynx realtime:** an SSE bridge controller is auto-generated for Lynx when a tatemono has realtime + a `type: broadcast` endpoint.
@@ -74,7 +74,7 @@ Backends (project-level, see Section 1E):
 |-------------------|-------------|--------|-----------|
 | `laravel`         | `:php`      | implemented (reference) | all decoupled web stacks, and app stacks |
 | `laravel-inertia` | `:php`      | implemented | `react-inertia` only; chosen automatically, cannot be swapped for another backend |
-| `express`         | `:ts`       | implemented (see 1E "Not covered yet") | decoupled web stacks, and app stacks |
+| `express`         | `:ts`       | implemented (custom Laravel-compatible runtime) | decoupled web stacks, and app stacks |
 
 Desktop targets reuse the web blocks for their rendered UI. A small desktop-specific config block controls the desktop shell window; it does not create separate desktop pages or components.
 
@@ -150,6 +150,14 @@ A backend block is **shared** or a **variant**.
 | **Shared** (pure config, read by every backend, no suffix) | `meta`, `database:<table>`, `api:<n>`, `routes`, `realtime:<id>`, `events:<id>`, and `notifications:<id>` / `mail:<id>` **with no body** | Write once. Never add a suffix. |
 | **Variant** (contain backend-specific code) | `endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` **with a body** | One block per backend that should run the tatemono. |
 
+Express consumes every shared backend block through its native runtime: `database` creates
+the isolated schema, `api` creates Laravel-shaped controllers/routes/resources, `routes`
+creates custom Express routes, `realtime` maps to WebSocket/SSE broadcasting, `events`
+maps to events and listeners, YAML-only `jobs` and `console` create queue/command
+definitions, and YAML-only `mail` / `notifications` create their corresponding
+transport classes. Body-bearing blocks use the `:ts` variant for Express and the `:php`
+variant for Laravel; the shared YAML header is not discarded when the body differs.
+
 For `jobs` and `console` the YAML header (`queue`, `tries`, `timeout`, `signature`, `description`, `schedule`) is repeated in each variant; only the body differs. A `jobs` / `console` block with **no body** (YAML only) is shared and generates a stub on every backend.
 
 ### Suffix syntax
@@ -188,6 +196,13 @@ Consequences for generating tatemonos:
 - A tatemono may carry variants for one backend, a few, or all. There is no list of enabled backends to maintain.
 - **Keep code bodies to the minimum.** Prefer shared constructs (custom `routes`, YAML-only `mail` / `notifications`, standard CRUD endpoints, `policy: true` with simple rules) so fewer variants are needed. Every body you write must be written once per backend you want to support.
 - **`:php` is Laravel's form of every code block** (it is what used to be the plain, unsuffixed block). Always write the suffix. An unsuffixed code body is only a compatibility fallback that the engine still reads as `:php` for tatemonos that have not been converted yet.
+
+Authentication follows the same split: Laravel uses Sanctum session/token middleware,
+while Express uses its Sanctum-shaped token table and `auth:sanctum` middleware. Express
+sets and clears the tatemono auth cookie, accepts that cookie or a bearer header on
+protected routes, and exposes the same `register`, `login`, `logout`, and `me` response
+shapes. The frontend auth store still hydrates and calls `me` before rendering a
+tatemono page, matching Laravel's session restoration behavior.
 - Only `:php` and `:ts` exist. Default to the variant(s) the user names; if the user does not say, ask which backend is active rather than guessing.
 
 ### `:ts` bodies (Express)
@@ -211,12 +226,13 @@ Differences from PHP to remember: no `$` prefix, `await` on every DB call, `requ
 
 Mail templates on Express accept `{{ var }}`, `{{ $var }}` and `{!! var !!}` placeholders only (a Blade-compatible subset): no `@if` / `@foreach`.
 
-### Not covered on Express yet (as of this guideline)
+### Express compatibility notes
 
-- Upload endpoint types (`upload`, `upload_index`, `upload_destroy`, `upload_url`, `fileUrl`) return **501**.
-- `resource` and `factory` on `@arkzen:api` are accepted as **no-ops**.
-- The test-only endpoint types `command_run`, `job_dispatch`, `event_fire`, the Lynx SSE bridge, and the PostgreSQL path are **untested** on Express.
-- `export.js` always copies the Laravel backend, so **exporting a tatemono does not carry the Express backend**. Switch to Laravel (and use `:php` variants) to export.
+- Upload endpoint types (`upload`, `upload_index`, `upload_destroy`, `upload_url`, `fileUrl`) use Multer and the Express storage runtime.
+- `resource` uses a Laravel-shaped JSON projection; `factory` provides `make`, `create`, `createMany`, `count`, and `state`.
+- `command_run`, `job_dispatch`, and `event_fire` use generated command/job/event registries and name matching; custom `:ts` endpoint bodies remain the most explicit option.
+- Realtime uses the Pusher protocol for WebSockets. Generated `/sse` routes are true streaming Server-Sent Events with keep-alive heartbeats; `/sse-poll` remains available for polling clients.
+- `export.js` selects the active backend: Express exports use the Express backend and npm; Laravel/Inertia exports use their Laravel backend and Composer.
 - Express needs `tsx` and the native `better-sqlite3` binding. `start.js` stops with an install hint if either is missing (a likely trouble spot on Termux/ARM64).
 
 * * *
@@ -758,7 +774,7 @@ For your own jobs / events / commands, **do not** use `command_run | job_dispatc
 
 `me`, `adminOnly`, `userOnly`, `promote`, `demote` — used with `auth: true` and role middleware (see `roles-test`).
 
-**Backend notes (Section 8):** the `api` block is shared: validation rule strings, `role:` middleware, `policy: true`, `response.type` and the standard CRUD methods behave the same on Laravel and Express. Only the *bodies* (`endpoint`, `policy`, `middleware`) are variants. On Express the `upload*` / `fileUrl` endpoint types return 501, and `resource` / `factory` are no-ops.
+**Backend notes (Section 8):** the `api` block is shared: validation rule strings, `role:` middleware, `policy: true`, `response.type` and the standard CRUD methods behave the same on Laravel and Express. Only the *bodies* (`endpoint`, `policy`, `middleware`) are variants. Express provides custom runtime equivalents for uploads, resources, factories, command/job/event dispatch, mail, notifications, and realtime.
 
 * * *
 
@@ -799,7 +815,7 @@ Models live at `\App\Models\Arkzen\{SlugNamespace}\{Model}` (slug PascalCased: `
 
 | Scenario                                          | Use                     |
 |---------------------------------------------------|-------------------------|
-| Custom logic inside an `@arkzen:api` method       | `@arkzen:endpoint:name` |
+| Custom logic inside an `@arkzen:api` method       | `@arkzen:endpoint:php:name` (Laravel) / `@arkzen:endpoint:ts:name` (Express) |
 | Body for an `@arkzen:routes` entry                | `@arkzen:handler:php:name` (Laravel) / `@arkzen:handler:ts:name` (Express) |
 
 **Per-backend forms:** `@arkzen:handler:php:name` (Laravel, above) and `@arkzen:handler:ts:name` (Express). Express example:
@@ -1856,14 +1872,15 @@ These come from reading the engine source. They are not hypothetical — but tes
 11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
 12. **Backend is project-level and variants are per block.** A tatemono that has code bodies only for `:php` is *inactive* (not broken) on Express, and the reverse. The validator message names the missing `:<variant>` block. Check which backend is active (`node mizumi.js stack`) before debugging a "missing endpoint".
-13. **Not-yet-converted tatemonos (unsuffixed code = `:php` fallback).** `kotoba`, `queue-flow`, `scheduler-test`, `job-test`, `crud-test`, `body-endpoint-handler`, `middleware-test` (and others) still carry unsuffixed PHP bodies. They work on Laravel and are inactive on Express until a `:ts` variant exists.
+13. **Backend variant coverage.** Backend tatemonos now carry explicit `:php` and `:ts` variants for every body-bearing block. Shared YAML-only backend blocks remain unsuffixed. `express-test-2` remains the consolidated Express parity fixture.
 14. **`react-inertia` forces `laravel-inertia`.** `node mizumi.js backend <n>` refuses any backend other than Laravel while that web stack is active (switch the web stack first with `node mizumi.js web <stack>`).
-15. **Express gaps:** upload endpoint types return 501; `resource` / `factory` are no-ops; `command_run` / `job_dispatch` / `event_fire`, the Lynx SSE bridge and the PostgreSQL path are untested; `export.js` does not copy the Express backend.
+15. **Express compatibility boundary:** Express is a custom Laravel-compatible implementation, not Laravel internals. Verify behavior where an application depends on framework-specific internals; the supported DSL surfaces have runtime equivalents, including streaming SSE, uploads, resources, factories, queues, commands, events, mail, notifications, and realtime.
+16. **Realtime channel names:** Express matches Laravel channel naming. Public channels use their declared name; private/presence channels append `.userId` only when the declared channel contains `{id}`. Static private/presence channels do not receive an implicit suffix.
 17. **Two copies of the engine core.** `backends.ts` / `parser.ts` / `validator.ts` exist under `engine/shared/arkzen/engine-core/` and again in each frontend's `arkzen/core/` folder, and `mizumi.js` keeps its own copy of the backend → variant map for display. A suffix rename or new backend must be changed in all of them.
 
 * * *
 
-## SECTION 27 — ACTIVE TATEMONOS (36)
+## SECTION 27 — ACTIVE TATEMONOS (37)
 
 Format: `name vVersion auth | web pages | native (Expo/RN) screens | Lynx pages`
 
@@ -1903,7 +1920,8 @@ upload-test             v1.0.0  auth:false  web:dashboard                     na
 visual-lab              v1.0.0  auth:false  web:index                                                                                       web:script (three.js)
 clinic-appointment-booking v1.0.0  auth:false  web:index,appointments
 express-test            v1.0.0  auth:true   web:index                                                                                     backend variants (:ts + :php), Express end-to-end test
-kotoba                  v1.0.0  auth:true   web:chat,circles,dashboard,feed,index,learn,login,partners,profile,progress,register,review   native/lynx not audited   unsuffixed PHP bodies, not yet converted to `:php`
+express-test-2          v1.0.0   auth:true   web:index                                                                                     consolidated Express parity fixture (:ts)
+kotoba                  v1.0.0  auth:true   web:chat,circles,dashboard,feed,index,learn,login,partners,profile,progress,register,review   native/lynx not audited   backend variants (`:php` + `:ts`)
 ```
 
 Good references when generating: `hello-native` (native starter), `queue-flow` (routes + handlers + realtime), `roles-test` (auth + roles), `crud-test` (api + policy), `upload-test` (upload types), `layout-test` (layout chains), `scheduler-test` (console), `job-test` (jobs), `events-test` (events), `new-updates-styles` (styles), `animation-lab` (Expo/RN/Lynx animation + scripts + errors). `express-test` (backend variants: `:ts` + `:php`).
@@ -1935,10 +1953,10 @@ Before finalizing any tatemono, verify:
 **API**
 - [ ] `model` PascalCase, `controller` ends with `Controller`, `prefix` starts with `/api/`
 - [ ] `description` on every endpoint; `response.type` ∈ paginated | collection | array | single | message
-- [ ] Custom endpoint names have an `@arkzen:endpoint:name` body; `@arkzen:routes` entries have `@arkzen:handler:name` bodies — never mix them
+- [ ] Custom endpoint names have matching `@arkzen:endpoint:php:name` and/or `@arkzen:endpoint:ts:name` bodies; `@arkzen:routes` entries have matching `@arkzen:handler:php:name` and/or `@arkzen:handler:ts:name` bodies — never mix them
 - [ ] Route params in handlers via `$params[n]`
 - [ ] Special `type:` values used only as documented; no `command_run|job_dispatch|event_fire` for real apps
-- [ ] `policy: true` only when `@arkzen:policy:php|ts:update|delete` blocks exist
+- [ ] `policy: true` only when matching `@arkzen:policy:php:update|delete` and/or `@arkzen:policy:ts:update|delete` blocks exist
 
 **BACKEND BLOCKS**
 - [ ] jobs/console bodies are full methods (`handle(): void` / `handle(): int`); console uses `signature` + quoted cron `schedule`
@@ -1953,7 +1971,7 @@ Before finalizing any tatemono, verify:
 - [ ] Each backend you target has a variant for **every** body-carrying block; otherwise the tatemono is inactive there
 - [ ] `jobs` / `console` variants repeat the YAML header (`queue`, `tries`, `timeout`, `signature`, `schedule`)
 - [ ] `:ts` bodies use `await` for DB calls, `response.json(body, status)`, `request.route('name')` / `params`, and `return next()` in middleware
-- [ ] No upload endpoint types, `resource` / `factory`, `command_run` / `job_dispatch` / `event_fire` when the target is Express
+- [ ] Express targets use the documented custom equivalents for uploads, `resource` / `factory`, `command_run` / `job_dispatch` / `event_fire`, and streaming SSE
 - [ ] Mail / notification bodies avoided (YAML-only) unless custom content is required; Express mail templates use only `{{ var }}` / `{{ $var }}` / `{!! var !!}`
 
 **WEB**

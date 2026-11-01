@@ -60,12 +60,28 @@ subject: "Database Ping"
 */
 /* @arkzen:notifications:database-ping:end */
 
+/* @arkzen:notifications:ts:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return new MailMessage().subject('database-ping').line('database-ping')
+/* @arkzen:notifications:ts:database-ping:end */
+
 /* @arkzen:notifications:mail-ping
 channels: [mail]
 message: "This is a test mail notification"
 subject: "Mail Ping from Arkzen"
 */
 /* @arkzen:notifications:mail-ping:end */
+
+/* @arkzen:notifications:ts:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return new MailMessage().subject('mail-ping').line('mail-ping')
+/* @arkzen:notifications:ts:mail-ping:end */
 
 /* @arkzen:notifications:broadcast-ping
 channels: [broadcast, database]
@@ -75,6 +91,15 @@ subject: "Broadcast Ping (Private)"
 */
 /* @arkzen:notifications:broadcast-ping:end */
 
+/* @arkzen:notifications:ts:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return new MailMessage().subject('broadcast-ping').line('broadcast-ping')
+/* @arkzen:notifications:ts:broadcast-ping:end */
+
 /* @arkzen:notifications:broadcast-ping-public
 channels: [broadcast, database]
 channel_type: public
@@ -83,6 +108,15 @@ subject: "Broadcast Ping (Public)"
 */
 /* @arkzen:notifications:broadcast-ping-public:end */
 
+/* @arkzen:notifications:ts:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return new MailMessage().subject('broadcast-ping-public').line('broadcast-ping-public')
+/* @arkzen:notifications:ts:broadcast-ping-public:end */
+
 /* @arkzen:notifications:all-channels
 channels: [database, mail, broadcast]
 channel_type: private
@@ -90,6 +124,15 @@ message: "This notification was sent to all three channels simultaneously"
 subject: "All Channels Test"
 */
 /* @arkzen:notifications:all-channels:end */
+
+/* @arkzen:notifications:ts:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return new MailMessage().subject('all-channels').line('all-channels')
+/* @arkzen:notifications:ts:all-channels:end */
 
 /* @arkzen:web:components:shared */
 

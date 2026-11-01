@@ -4,6 +4,7 @@ import { connection } from './database'
 import { validate } from './validation'
 import { HttpException, ValidationException, AuthenticationException, AuthorizationException, ModelNotFoundException } from './errors'
 import { Log } from './support'
+import { openSse } from './sse'
 
 export class JsonResponse {
   constructor(public body: any, public status = 200, public headers: Record<string, string> = {}) {}
@@ -11,12 +12,16 @@ export class JsonResponse {
 export class RawResponse {
   constructor(public body: any, public status = 200, public headers: Record<string, string> = {}) {}
 }
+export class SseResponse {
+  constructor(public channel: string, public initial: any = null) {}
+}
 
 /** `response.json(...)`, same shape as Laravel's response()->json(...) */
 export const response = {
   json:      (data: any, status = 200, headers: Record<string, string> = {}) => new JsonResponse(data, status, headers),
   noContent: (status = 204) => new RawResponse('', status),
   make:      (body: any, status = 200, headers: Record<string, string> = {}) => new RawResponse(body, status, headers),
+  sse:       (channel: string, initial: any = null) => new SseResponse(channel, initial),
 }
 export type ResponseFactory = typeof response
 
@@ -51,7 +56,13 @@ export class Request {
   header(name: string, def: any = null) { return this.raw.header(name) ?? def }
   bearerToken(): string | null {
     const h = this.raw.header('authorization') ?? ''
-    return h.toLowerCase().startsWith('bearer ') ? h.slice(7).trim() : null
+    if (h.toLowerCase().startsWith('bearer ')) return h.slice(7).trim()
+    const cookieHeader = this.raw.header('cookie') ?? ''
+    const cookieName = `arkzen-auth-${this.slug}=`
+    const cookie = String(cookieHeader).split(';').map(part => part.trim()).find(part => part.startsWith(cookieName))
+    if (!cookie) return null
+    const value = cookie.slice(cookieName.length)
+    try { return decodeURIComponent(value) } catch { return value }
   }
   isJson() { return String(this.raw.header('content-type') ?? '').includes('json') }
   wantsJson() { return true }
@@ -77,6 +88,7 @@ function send(res: ExRes, out: any) {
   if (res.headersSent) return
   if (out instanceof JsonResponse) { for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v); res.status(out.status).json(out.body); return }
   if (out instanceof RawResponse)  { for (const [k, v] of Object.entries(out.headers)) res.setHeader(k, v); res.status(out.status).send(out.body); return }
+  if (out instanceof SseResponse) { openSse(res, out.channel, out.initial); return }
   if (out === undefined || out === null) { res.status(204).end(); return }
   if (typeof out === 'string') { res.status(200).send(out); return }
   res.status(200).json(out)

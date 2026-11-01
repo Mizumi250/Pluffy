@@ -48,7 +48,7 @@ endpoints:
       type: single
 */
 
-/* @arkzen:middleware:requireJson
+/* @arkzen:middleware:php:requireJson
 */
 if (!$request->isJson()) {
     return response()->json([
@@ -57,7 +57,12 @@ if (!$request->isJson()) {
     ], 415);
 }
 return $next($request);
-/* @arkzen:middleware:requireJson:end */
+/* @arkzen:middleware:php:requireJson:end */
+
+/* @arkzen:middleware:ts:requireJson
+*/
+return next()
+/* @arkzen:middleware:ts:requireJson:end */
 
 /* @arkzen:web:components:shared */
 

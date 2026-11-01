@@ -114,7 +114,7 @@ endpoints:
       value: Log cleared
 */
 
-/* @arkzen:endpoint:sendMail
+/* @arkzen:endpoint:php:sendMail
 */
 $validated = $request->validate([
     'mail' => 'required|string|in:welcome,receipt,alert',
@@ -157,9 +157,49 @@ try {
     ]);
     return response()->json($log, 201);
 }
-/* @arkzen:endpoint:sendMail:end */
+/* @arkzen:endpoint:php:sendMail:end */
 
-/* @arkzen:endpoint:notify
+/* @arkzen:endpoint:ts:sendMail
+*/
+const validated = await request.validate({
+  mail: 'required|string|in:welcome,receipt,alert',
+  to: 'required|email',
+})
+const mailKey = validated.mail
+const Cls = mailClasses[mailKey]
+if (!Cls) return response.json({ message: `Unknown mail type: ${mailKey}` }, 422)
+const mailData: Record<string, any[]> = {
+  welcome: ['Test User', 'Arkzen'],
+  receipt: ['ORD-001', '$9.99', 'Arkzen Test Item'],
+  alert: ['This is a test alert from Arkzen.', '/'],
+}
+const user = await request.authUser()
+try {
+  await Mail.to(validated.to).send(new (Cls as any)(...(mailData[mailKey] ?? [])))
+  const log = await SendLog.create({
+    user_id: user?.id ?? null,
+    to_email: validated.to,
+    subject: mailKey,
+    mail_class: Cls.name,
+    kind: 'mail',
+    status: 'sent',
+  })
+  return response.json(log, 201)
+} catch (e: any) {
+  const log = await SendLog.create({
+    user_id: user?.id ?? null,
+    to_email: validated.to,
+    subject: mailKey,
+    mail_class: Cls.name,
+    kind: 'mail',
+    status: 'failed',
+    error: String(e?.message ?? e),
+  })
+  return response.json(log, 201)
+}
+/* @arkzen:endpoint:ts:sendMail:end */
+
+/* @arkzen:endpoint:php:notify
 */
 $validated = $request->validate([
     'notification' => 'required|string|in:action-required,summary',
@@ -199,16 +239,59 @@ try {
     ]);
     return response()->json($log, 201);
 }
-/* @arkzen:endpoint:notify:end */
+/* @arkzen:endpoint:php:notify:end */
 
-/* @arkzen:endpoint:clearLog
+/* @arkzen:endpoint:ts:notify
+*/
+const validated = await request.validate({
+  notification: 'required|string|in:action-required,summary',
+  message: 'sometimes|string|max:255',
+})
+const user = await request.authUser()
+const Cls = notificationClasses[validated.notification]
+if (!Cls) return response.json({ message: `Unknown notification type: ${validated.notification}` }, 422)
+try {
+  const notification = new (Cls as any)(user)
+  if (validated.message) notification.data.message = validated.message
+  await notify(user, notification)
+  const log = await SendLog.create({
+    user_id: user?.id ?? null,
+    to_email: user?.email ?? null,
+    subject: validated.notification,
+    mail_class: Cls.name,
+    kind: 'notification',
+    status: 'sent',
+  })
+  return response.json(log, 201)
+} catch (e: any) {
+  const log = await SendLog.create({
+    user_id: user?.id ?? null,
+    to_email: user?.email ?? null,
+    subject: validated.notification,
+    mail_class: Cls.name,
+    kind: 'notification',
+    status: 'failed',
+    error: String(e?.message ?? e),
+  })
+  return response.json(log, 201)
+}
+/* @arkzen:endpoint:ts:notify:end */
+
+/* @arkzen:endpoint:php:clearLog
 */
 $user = $request->user('sanctum');
 \App\Models\Arkzen\BodyMailNotification\SendLog::where('user_id', $user?->id)->delete();
 return response()->json(['message' => 'Log cleared']);
-/* @arkzen:endpoint:clearLog:end */
+/* @arkzen:endpoint:php:clearLog:end */
 
-/* @arkzen:mail:welcome
+/* @arkzen:endpoint:ts:clearLog
+*/
+const user = await request.authUser()
+await SendLog.where('user_id', user?.id ?? null).delete()
+return response.json({ message: 'Log cleared' })
+/* @arkzen:endpoint:ts:clearLog:end */
+
+/* @arkzen:mail:php:welcome
 subject: "Welcome to Arkzen — blade_body injection test"
 data:
   name: string
@@ -234,9 +317,18 @@ data:
   </div>
 </body>
 </html>
-/* @arkzen:mail:welcome:end */
+/* @arkzen:mail:php:welcome:end */
 
-/* @arkzen:mail:receipt
+/* @arkzen:mail:ts:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
+*/
+<p>welcome</p>
+/* @arkzen:mail:ts:welcome:end */
+
+/* @arkzen:mail:php:receipt
 subject: "Your receipt — blade_body injection test"
 data:
   order_id: string
@@ -268,9 +360,19 @@ data:
   </div>
 </body>
 </html>
-/* @arkzen:mail:receipt:end */
+/* @arkzen:mail:php:receipt:end */
 
-/* @arkzen:mail:alert
+/* @arkzen:mail:ts:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
+*/
+<p>receipt</p>
+/* @arkzen:mail:ts:receipt:end */
+
+/* @arkzen:mail:php:alert
 subject: "⚠ Action Required — blade_body injection test"
 data:
   alert_message: string
@@ -297,9 +399,18 @@ data:
   </div>
 </body>
 </html>
-/* @arkzen:mail:alert:end */
+/* @arkzen:mail:php:alert:end */
 
-/* @arkzen:notifications:action-required
+/* @arkzen:mail:ts:alert
+subject: "⚠ Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
+*/
+<p>alert</p>
+/* @arkzen:mail:ts:alert:end */
+
+/* @arkzen:notifications:php:action-required
 channels: [mail, database]
 channel_type: private
 message: "You have a pending action that requires your attention."
@@ -312,9 +423,18 @@ return (new \Illuminate\Notifications\Messages\MailMessage)
     ->line('This toMail() body was injected via the Arkzen DSL — not a stub.')
     ->action('Review Now', url('/'))
     ->line('NotificationBuilder v3.9 toMail_body injection confirmed ✓');
-/* @arkzen:notifications:action-required:end */
+/* @arkzen:notifications:php:action-required:end */
 
-/* @arkzen:notifications:summary
+/* @arkzen:notifications:ts:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
+subject: "Action Required"
+*/
+return new MailMessage().subject('action-required').line('action-required')
+/* @arkzen:notifications:ts:action-required:end */
+
+/* @arkzen:notifications:php:summary
 channels: [mail, database]
 channel_type: private
 message: "Here is your activity summary."
@@ -327,7 +447,16 @@ return (new \Illuminate\Notifications\Messages\MailMessage)
     ->line('Notifications: 2 unread | Mails: 3 sent | Status: All healthy')
     ->action('View Dashboard', url('/'))
     ->salutation('Cheers, Arkzen Engine');
-/* @arkzen:notifications:summary:end */
+/* @arkzen:notifications:php:summary:end */
+
+/* @arkzen:notifications:ts:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
+subject: "Activity Summary"
+*/
+return new MailMessage().subject('summary').line('summary')
+/* @arkzen:notifications:ts:summary:end */
 
 /* @arkzen:web:components:shared */
 

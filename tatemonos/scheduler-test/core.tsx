@@ -86,7 +86,7 @@ endpoints:
       value: Runs cleared
 */
 
-/* @arkzen:console:cleanup-temp
+/* @arkzen:console:php:cleanup-temp
 signature: scheduler-test:cleanup-temp
 description: Deletes temporary files older than 24h
 schedule: '0 * * * *'
@@ -108,9 +108,18 @@ public function handle(): int
     $this->info('[Arkzen:scheduler-test] ✓ Done');
     return Command::SUCCESS;
 }
-/* @arkzen:console:cleanup-temp:end */
+/* @arkzen:console:php:cleanup-temp:end */
 
-/* @arkzen:console:generate-report
+/* @arkzen:console:ts:cleanup-temp
+signature: scheduler-test:cleanup-temp
+description: Deletes temporary files older than 24h
+schedule: '0 * * * *'
+*/
+this.info('[Express] cleanup-temp')
+return Command.SUCCESS
+/* @arkzen:console:ts:cleanup-temp:end */
+
+/* @arkzen:console:php:generate-report
 signature: scheduler-test:generate-report
 description: Generates a daily activity report
 schedule: '0 8 * * *'
@@ -132,12 +141,21 @@ public function handle(): int
     $this->info('[Arkzen:scheduler-test] ✓ Done');
     return Command::SUCCESS;
 }
-/* @arkzen:console:generate-report:end */
+/* @arkzen:console:php:generate-report:end */
 
-/* @arkzen:console:ping-health
+/* @arkzen:console:ts:generate-report
+signature: scheduler-test:generate-report
+description: Generates a daily activity report
+schedule: '0 8 * * *'
+*/
+this.info('[Express] generate-report')
+return Command.SUCCESS
+/* @arkzen:console:ts:generate-report:end */
+
+/* @arkzen:console:php:ping-health
 signature: scheduler-test:ping-health
 description: Pings all services and records health status
-schedule: '*/5 * * * *'
+schedule: '0-59/5 * * * *'
 */
 public function handle(): int
 {
@@ -156,12 +174,30 @@ public function handle(): int
     $this->info('[Arkzen:scheduler-test] ✓ Done');
     return Command::SUCCESS;
 }
-/* @arkzen:console:ping-health:end */
+/* @arkzen:console:php:ping-health:end */
 
-/* @arkzen:console:sync-data
+/* @arkzen:console:ts:ping-health
+signature: scheduler-test:ping-health
+description: Pings all services and records health status
+schedule: '0-59/5 * * * *'
+*/
+const start = Date.now()
+await CommandRun.create({
+  command_name: 'ping-health',
+  signature: 'scheduler-test:ping-health',
+  exit_code: 0,
+  output: 'All services healthy.',
+  triggered_by: 'schedule',
+  duration_ms: Date.now() - start,
+})
+this.info('[Express] ping-health done')
+return Command.SUCCESS
+/* @arkzen:console:ts:ping-health:end */
+
+/* @arkzen:console:php:sync-data
 signature: scheduler-test:sync-data
 description: Syncs data from external source
-schedule: '*/15 * * * *'
+schedule: '0-59/15 * * * *'
 */
 public function handle(): int
 {
@@ -180,7 +216,25 @@ public function handle(): int
     $this->info('[Arkzen:scheduler-test] ✓ Done');
     return Command::SUCCESS;
 }
-/* @arkzen:console:sync-data:end */
+/* @arkzen:console:php:sync-data:end */
+
+/* @arkzen:console:ts:sync-data
+signature: scheduler-test:sync-data
+description: Syncs data from external source
+schedule: '0-59/15 * * * *'
+*/
+const start = Date.now()
+await CommandRun.create({
+  command_name: 'sync-data',
+  signature: 'scheduler-test:sync-data',
+  exit_code: 0,
+  output: 'Data synced successfully.',
+  triggered_by: 'schedule',
+  duration_ms: Date.now() - start,
+})
+this.info('[Express] sync-data done')
+return Command.SUCCESS
+/* @arkzen:console:ts:sync-data:end */
 
 /* @arkzen:web:components:shared */
 

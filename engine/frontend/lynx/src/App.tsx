@@ -13,13 +13,31 @@ interface RegistryModule {
   auth:        boolean
   registered:  string
   lastUpdated: string
+  frontend?:   string[]
+  backend?:    string[]
 }
 
 interface RegistryData {
   engine:  string
   project: string
   modules: RegistryModule[]
+  activeStack?: string
+  activeBackend?: string
+  activeDatabase?: string
 }
+
+interface HubRegistry {
+  activeStack?: string
+  activeBackend?: string
+  activeDatabase?: string
+  modules?: Array<{ name: string; frontend?: string[]; backend?: string[] }>
+}
+
+const stackGroups = [
+  { label: 'Frontend', key: 'activeStack' as const, tone: '#007aff', options: [['nextjs', 'Next.js'], ['react-vite', 'React + Vite'], ['react-inertia', 'React + Inertia'], ['astro', 'Astro'], ['tanstack-start', 'TanStack Start'], ['expo', 'Expo'], ['react-native', 'React Native'], ['lynx', 'Lynx'], ['tauri', 'Tauri'], ['electron', 'Electron']] },
+  { label: 'Backend', key: 'activeBackend' as const, tone: '#30c75a', options: [['laravel', 'Laravel'], ['laravel-inertia', 'Laravel + Inertia'], ['express', 'Express'], ['fastapi', 'FastAPI'], ['django', 'Django'], ['spring-boot', 'Spring Boot'], ['aspnet', 'ASP.NET']] },
+  { label: 'Database', key: 'activeDatabase' as const, tone: '#af52de', options: [['sqlite', 'SQLite'], ['pgsql', 'PostgreSQL']] },
+]
 
 function formatDate(iso: string): string {
   try {
@@ -59,9 +77,61 @@ function TatemonoCard({ mod, onNavigate }: { mod: RegistryModule; onNavigate: (m
           </view>
         )}
       </view>
+      <view className="px-4 pb-3 flex-col gap-2">
+        <CompatibilityRow label="Frontend" items={mod.frontend ?? []} />
+        <CompatibilityRow label="Backend" items={mod.backend ?? []} />
+      </view>
       <view className="border-t border-neutral-50 py-3 px-4">
         <text className="text-xs text-neutral-400">{routeText}</text>
       </view>
+    </view>
+  )
+}
+
+function CompatibilityRow({ label, items }: { label: string; items: string[] }) {
+  return (
+    <view className="flex-row items-start gap-2">
+      <text className="w-16 pt-1 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">{label}</text>
+      <view className="flex-1 flex-row flex-wrap gap-1.5">
+        {items.length > 0 ? items.map(item => (
+          <view key={item} className="rounded-full border border-neutral-200 bg-white px-2.5 py-1">
+            <text className="text-[10px] text-neutral-600">{item}</text>
+          </view>
+        )) : (
+          <view className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1">
+            <text className="text-[10px] text-neutral-400">None</text>
+          </view>
+        )}
+      </view>
+    </view>
+  )
+}
+
+function ActiveStack({ registry }: { registry: RegistryData | null }) {
+  return (
+    <view className="mb-5 rounded-2xl border border-neutral-200 bg-white p-3.5 flex-col gap-2.5">
+      {stackGroups.map(group => (
+        <view key={group.label} className="flex-row items-start gap-2">
+          <text className="w-16 pt-1 text-[9px] font-semibold uppercase tracking-wider text-neutral-400">{group.label}</text>
+          <view className="flex-1 flex-row flex-wrap gap-1.5">
+            {group.options.map(([key, label]) => {
+              const isActive = registry?.[group.key] === key
+              return (
+                <view
+                  key={key}
+                  style={{
+                    backgroundColor: isActive ? group.tone : '#f3f4f6',
+                    borderColor: isActive ? group.tone : '#e5e7eb',
+                  }}
+                  className="rounded-full border px-2.5 py-1"
+                >
+                  <text style={{ color: isActive ? '#fff' : '#9ca3af' }} className="text-[10px] font-medium">{label}</text>
+                </view>
+              )
+            })}
+          </view>
+        </view>
+      ))}
     </view>
   )
 }
@@ -91,16 +161,41 @@ export function App() {
   const [registry, setRegistry]       = useState<RegistryData | null>(null)
   const [loading, setLoading]         = useState(true)
   const [engineAlive, setEngineAlive] = useState(false)
+  const [metadataUnavailable, setMetadataUnavailable] = useState(false)
+  const [query, setQuery] = useState('')
+  const [frameworkFilter, setFrameworkFilter] = useState('All')
   const [active404, setActive404]     = useState<{ mod: string; page: string } | null>(null)
   const [currentRoute, setCurrentRoute] = useState<{ mod: string; page: string } | null>(null)
 
   const fetchRegistry = useCallback(() => {
     fetch(BACKEND_URL + '/arkzen/lynx-registry', { headers: { Accept: 'application/json' } })
       .then(res => {
-        setEngineAlive(res.ok)
-        return res.ok ? res.json() : null
+        if (!res.ok) throw new Error(`Lynx registry request failed (${res.status})`)
+        setEngineAlive(true)
+        return res.json()
       })
-      .then(data => { if (data) setRegistry(data) })
+      .then(async (data: RegistryData) => {
+        let hubRegistry: HubRegistry | null = null
+        try {
+          const hubResponse = await fetch(BACKEND_URL + '/arkzen/registry', { headers: { Accept: 'application/json' } })
+          if (!hubResponse.ok) throw new Error(`Hub registry request failed (${hubResponse.status})`)
+          hubRegistry = await hubResponse.json() as HubRegistry
+          setMetadataUnavailable(false)
+        } catch {
+          setMetadataUnavailable(true)
+        }
+        const modulesByName = new Map((hubRegistry?.modules ?? []).map(module => [module.name, module]))
+        setRegistry({
+          ...data,
+          activeStack: hubRegistry?.activeStack ?? 'lynx',
+          activeBackend: hubRegistry?.activeBackend,
+          activeDatabase: hubRegistry?.activeDatabase,
+          modules: (data.modules ?? []).map(module => {
+            const shared = modulesByName.get(module.name)
+            return { ...module, frontend: shared?.frontend ?? ['Lynx'], backend: shared?.backend ?? [] }
+          }),
+        })
+      })
       .catch(() => setEngineAlive(false))
       .finally(() => setLoading(false))
   }, [])
@@ -115,6 +210,13 @@ export function App() {
   const active  = modules.filter(m => m.status === 'active').length
   const total   = modules.length
   const removed = modules.filter(m => m.status === 'removed').length
+  const frameworks = [...new Set(modules.flatMap(module => [...(module.frontend ?? []), ...(module.backend ?? [])]))].sort()
+  const normalizedQuery = query.trim().toLowerCase()
+  const filteredModules = modules.filter(module => {
+    const compatible = [...(module.frontend ?? []), ...(module.backend ?? [])]
+    const matchesQuery = !normalizedQuery || [module.name, ...compatible].some(value => value.toLowerCase().includes(normalizedQuery))
+    return matchesQuery && (frameworkFilter === 'All' || compatible.includes(frameworkFilter))
+  })
 
   function handleNavigate(mod: string, page: string) {
     const exists = LYNX_ROUTES.some(r => r.module === mod && r.page === page)
@@ -153,14 +255,9 @@ export function App() {
       <scroll-view style={{ height: '100%' }} className="bg-neutral-50" scroll-orientation="vertical" show-scrollbar={false}>
         <view className="bg-white border-b border-neutral-100 px-5 py-4">
           <view className="flex-row items-center justify-between">
-            <view className="flex-row items-center gap-3">
-              <view className="w-8 h-8 rounded-xl bg-neutral-900 items-center justify-center">
-                <text className="text-white text-xs font-bold">A</text>
-              </view>
-              <view>
-                <text className="text-sm font-semibold text-neutral-900">Arkzen Engine</text>
-                <text className="text-xs text-neutral-400">v{registry?.engine ?? '1.0.0'} · Lynx</text>
-              </view>
+            <view>
+              <text className="text-sm font-semibold text-neutral-900">Arkzen Engine</text>
+              <text className="text-xs text-neutral-400">v{registry?.engine ?? '1.0.0'} · Lynx</text>
             </view>
             <view className="flex-row items-center gap-1.5">
               <view className={'w-1.5 h-1.5 rounded-full ' + (engineAlive ? 'bg-emerald-500' : 'bg-neutral-300')} />
@@ -176,8 +273,40 @@ export function App() {
             <StatCard label="Removed" value={removed} color="text-red-500" />
           </view>
 
+          <ActiveStack registry={registry} />
+
+          {metadataUnavailable && (
+            <text className="mb-4 text-xs text-amber-700">Framework compatibility and active stack details are unavailable.</text>
+          )}
+
+          <input
+            value={query}
+            bindinput={event => setQuery(event.detail.value)}
+            placeholder="Search Tatemono or framework"
+            className="mb-3 h-12 rounded-2xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900"
+          />
+
+          {frameworks.length > 0 && (
+            <scroll-view className="mb-5" scroll-orientation="horizontal" show-scrollbar={false}>
+              <view className="flex-row gap-2">
+                {['All', ...frameworks].map(framework => {
+                  const selected = frameworkFilter === framework
+                  return (
+                    <view
+                      key={framework}
+                      bindtap={() => setFrameworkFilter(framework)}
+                      className={'rounded-full border px-3.5 py-2 ' + (selected ? 'border-neutral-900 bg-neutral-900' : 'border-neutral-200 bg-white')}
+                    >
+                      <text className={'text-xs font-medium ' + (selected ? 'text-white' : 'text-neutral-500')}>{framework === 'All' ? 'All frameworks' : framework}</text>
+                    </view>
+                  )
+                })}
+              </view>
+            </scroll-view>
+          )}
+
           <view className="flex-row items-center justify-between mb-3">
-            <text className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">Tatemonos</text>
+            <text className="text-xs font-semibold text-neutral-900 uppercase tracking-wider">Tatemonos · {filteredModules.length}</text>
             <text className="text-xs text-neutral-400">{registry?.project ?? 'project'}</text>
           </view>
 
@@ -193,9 +322,13 @@ export function App() {
             </view>
           ) : modules.length === 0 ? (
             <EmptyState />
+          ) : filteredModules.length === 0 ? (
+            <view className="py-12 items-center">
+              <text className="text-xs text-neutral-400">No matching Tatemono. Try another name or framework.</text>
+            </view>
           ) : (
             <view className="flex-col gap-3">
-              {modules.map(mod => <TatemonoCard key={mod.name} mod={mod} onNavigate={handleNavigate} />)}
+              {filteredModules.map(mod => <TatemonoCard key={mod.name} mod={mod} onNavigate={handleNavigate} />)}
             </view>
           )}
         </view>

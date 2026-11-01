@@ -23,7 +23,7 @@
 //    node mizumi.js chat         ← open the Pluffy chat window (Electron)
 // ============================================================
 
-import { spawn } from 'node:child_process'
+import { execFileSync, spawn } from 'node:child_process'
 import readline from 'node:readline'
 import fs from 'node:fs'
 import path from 'node:path'
@@ -90,7 +90,7 @@ const WEB_LABELS = {
   'tanstack-start': 'TanStack Start',
 }
 const APP_LABELS = {
-  'expo':         'Expo (SDK 53, Expo Go)',
+  'expo':         'Expo (SDK 58, Expo Go)',
   'react-native': 'React Native (bare)',
   'lynx':         'Lynx (Rspeedy / ReactLynx)',
 }
@@ -349,6 +349,77 @@ async function prompt(question, defaultVal = '') {
   })
 }
 
+function runGit(args, cwd) {
+  return execFileSync('git', args, { cwd, stdio: 'pipe', encoding: 'utf8' }).trim()
+}
+
+async function publishProject(tatName, stack = 'existing export') {
+  divider()
+  const publish = await picker('GitHub に公開？ Publish this export to GitHub?', [
+    { label: 'No',  sub: 'Keep the export local', value: false },
+    { label: 'Yes', sub: 'Commit and push using your existing Git authentication', value: true },
+  ])
+  if (!publish.value) return
+
+  const projectDir = path.join(ROOT_DIR, 'projects', tatName)
+  const repoUrl = await prompt('GitHub repository URL (existing repository)', '')
+  if (!repoUrl) { warn('No repository URL provided — export remains local.'); return }
+  if (!/^(https:\/\/github\.com\/|git@github\.com:)/i.test(repoUrl)) {
+    warn('Use an HTTPS or SSH GitHub repository URL. Export remains local.')
+    return
+  }
+  const branch = await prompt('Branch', 'main')
+  const commitMessage = await prompt('Commit message', `Export ${tatName} (${stack})`)
+  const authorName = await prompt('Commit author name', '')
+  const authorEmail = await prompt('Commit author email', '')
+
+  try {
+    runGit(['init'], projectDir)
+    runGit(['remote', 'remove', 'origin'], projectDir)
+  } catch {
+    // A new export has no origin yet.
+  }
+  try {
+    runGit(['remote', 'add', 'origin', repoUrl], projectDir)
+    runGit(['add', '-A'], projectDir)
+    const configArgs = authorName && authorEmail
+      ? ['-c', `user.name=${authorName}`, '-c', `user.email=${authorEmail}`]
+      : []
+    runGit([...configArgs, 'commit', '-m', commitMessage], projectDir)
+    runGit(['branch', '-M', branch], projectDir)
+    log(`Pushing to ${repoUrl}...`)
+    runGit(['push', '-u', 'origin', branch], projectDir)
+    success(`Published → ${repoUrl} (${branch})`)
+  } catch (e) {
+    const detail = (e.stdout || e.stderr || e.message || '').toString().trim().split('\n').slice(-4).join('\n')
+    error('GitHub publish failed. Check your Git/SSH authentication and repository permissions.')
+    if (detail) warn(detail)
+  }
+}
+
+async function cmdPublish(tatName) {
+  if (!tatName) {
+    const projectsDir = path.join(ROOT_DIR, 'projects')
+    const projects = fs.existsSync(projectsDir)
+      ? fs.readdirSync(projectsDir).filter(name => fs.statSync(path.join(projectsDir, name)).isDirectory())
+      : []
+    if (projects.length === 0) { warn('No exported projects found in projects/.'); return }
+    divider()
+    const chosen = await picker('どのプロジェクト？ Which exported project should be published?', projects.map(name => ({
+      label: name,
+      value: name,
+    })))
+    tatName = chosen.value
+  }
+
+  const projectDir = path.join(ROOT_DIR, 'projects', tatName)
+  if (!fs.existsSync(projectDir) || !fs.statSync(projectDir).isDirectory()) {
+    error(`Exported project not found: projects/${tatName}`)
+    return
+  }
+  await publishProject(tatName)
+}
+
 // ─── COMMANDS ─────────────────────────────────────────────────
 
 function cmdStart(extraArgs = []) {
@@ -415,8 +486,10 @@ async function cmdExport(tatName, stackArg) {
   log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
   const child = spawn(process.execPath, ['export.js', tatName, `--stack=${stack}`], { cwd: ROOT_DIR, stdio: 'inherit' })
-  child.on('exit', code => {
-    if (code === 0) success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
+  child.on('exit', async code => {
+    if (code === 0) {
+      success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
+    }
     else error(`Export failed with code ${code}`)
   })
 }
@@ -579,7 +652,7 @@ async function cmdSwitchBackend(backendArg) {
   } else if (!isBackendInstalled(backend)) {
     info(`Dependencies missing for ${backend}`)
   }
-  if (backend === 'express') info('start.js and setup.js handle Express. export.js still targets Laravel.')
+  if (backend === 'express') info('start.js, setup.js, and export.js support Express.')
   else if (backend !== 'laravel') info('start.js refuses to run this backend until it is built')
   info(`Tatemonos without a :${backendVariant(backend)} variant will be inactive on this backend`)
 }
@@ -937,6 +1010,7 @@ async function interactiveMenu() {
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
     { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop → stack',value: 'export'     },
+    { label: 'GitHub公開       Publish to GitHub',         sub: 'publish an existing projects/ folder', value: 'publish'    },
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
@@ -959,6 +1033,7 @@ async function interactiveMenu() {
     
     case 'setup':     cmdSetup();              break
     case 'export':    await cmdExport();       break
+    case 'publish':   await cmdPublish();      break
     case 'web':       await cmdSwitchWeb();    break
     case 'app':       await cmdSwitchApp();    break
     case 'desktop':   await cmdSwitchDesktop(); break
@@ -993,6 +1068,8 @@ function printHelp() {
     ['mizumi export',            '→ Export wizard (tatemono → web/app → stack)'],
     ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
+    ['mizumi publish',           '→ Publish an existing projects/ export to GitHub'],
+    ['mizumi publish <name>',    '→ Publish projects/<name> to GitHub'],
     ['mizumi web <stack>',       '→ Switch web stack'],
     ['mizumi start --only=web,app', '→ Start only chosen platforms (web / app / desktop)'],
     ['mizumi start --skip=desktop',  '→ Start everything except chosen platforms'],
@@ -1034,6 +1111,7 @@ switch (command) {
   case 'start':   cmdStart(args.slice(1)); break
   case 'setup':   cmdSetup();                  break
   case 'export':  cmdExport(arg, args[2]);     break
+  case 'publish': cmdPublish(arg);             break
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break
   case 'desktop': cmdSwitchDesktop(arg);       break

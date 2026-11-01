@@ -393,7 +393,7 @@ endpoints:
       type: collection
 */
 
-/* @arkzen:endpoint:summary
+/* @arkzen:endpoint:php:summary
 */
 $activeJOs   = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'active')->get();
 $inactiveJOs = \App\Models\Arkzen\JoPayroll\JobOrder::where('status', 'inactive')->count();
@@ -423,20 +423,70 @@ return response()->json([
   'funding_breakdown'   => $fundingBreakdown,
   'group_breakdown'     => $groupBreakdown,
 ]);
-/* @arkzen:endpoint:summary:end */
+/* @arkzen:endpoint:php:summary:end */
 
-/* @arkzen:endpoint:byGroup
+/* @arkzen:endpoint:ts:summary
+*/
+const activeJOs = await JobOrder.where('status', 'active').get()
+const inactiveJOs = await JobOrder.where('status', 'inactive').count()
+const totalCash = activeJOs.filter((jo: any) => jo.disbursement_type === 'CASH').length
+const totalAtm = activeJOs.filter((jo: any) => jo.disbursement_type === 'ATM').length
+const sum = (field: string) => activeJOs.reduce((total: number, jo: any) => total + Number(jo[field] ?? 0), 0)
+const fundingBreakdown: Record<string, { count: number; total_pay: number }> = {}
+const groupBreakdown: Record<string, number> = {}
+for (const jo of activeJOs as any[]) {
+  const funding = String(jo.funding ?? '')
+  const group = String(jo.jor_pyrl_group ?? '')
+  fundingBreakdown[funding] ??= { count: 0, total_pay: 0 }
+  fundingBreakdown[funding].count += 1
+  fundingBreakdown[funding].total_pay += Number(jo.basic_pay ?? 0)
+  groupBreakdown[group] = (groupBreakdown[group] ?? 0) + 1
+}
+const totalBasicPay = sum('basic_pay')
+const totalSss = sum('sss_amount')
+const totalHdmfPremium = sum('hdmf_premium')
+const totalHdmfMpl = sum('hdmf_mpl')
+const totalCalamityLoan = sum('calamity_loan')
+const totalDeductions = totalSss + totalHdmfPremium + totalHdmfMpl + totalCalamityLoan
+return response.json({
+  total_active: activeJOs.length,
+  total_inactive: Number(inactiveJOs),
+  total_atm: totalAtm,
+  total_cash: totalCash,
+  total_basic_pay: totalBasicPay,
+  total_sss: totalSss,
+  total_hdmf_premium: totalHdmfPremium,
+  total_hdmf_mpl: totalHdmfMpl,
+  total_calamity_loan: totalCalamityLoan,
+  total_deductions: totalDeductions,
+  net_pay: totalBasicPay - totalDeductions,
+  funding_breakdown: fundingBreakdown,
+  group_breakdown: groupBreakdown,
+})
+/* @arkzen:endpoint:ts:summary:end */
+
+/* @arkzen:endpoint:php:byGroup
 */
 $group = request()->route('group');
 $orders = \App\Models\Arkzen\JoPayroll\JobOrder::where('jor_pyrl_group', $group)->where('status', 'active')->orderBy('jor_number')->get();
 return response()->json($orders);
-/* @arkzen:endpoint:byGroup:end */
+/* @arkzen:endpoint:php:byGroup:end */
 
-/* @arkzen:endpoint:appointments
+/* @arkzen:endpoint:ts:byGroup
+*/
+return response.json({ ok: true, endpoint: 'byGroup', input: request.all() })
+/* @arkzen:endpoint:ts:byGroup:end */
+
+/* @arkzen:endpoint:php:appointments
 */
 $orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order')->orderBy('appointment_order')->get();
 return response()->json($orders);
-/* @arkzen:endpoint:appointments:end */
+/* @arkzen:endpoint:php:appointments:end */
+
+/* @arkzen:endpoint:ts:appointments
+*/
+return response.json({ ok: true, endpoint: 'appointments', input: request.all() })
+/* @arkzen:endpoint:ts:appointments:end */
 
 /* @arkzen:web:layout:app */
 
@@ -1137,7 +1187,7 @@ const DashboardPage = () => {
         const sumData = await sumRes.json()
         const joData  = await joRes.json()
         setSummary(sumData)
-        setJobOrders(joData)
+        setJobOrders(Array.isArray(joData) ? joData : joData.data ?? [])
       } catch {
         // Use realistic mock data if API is unavailable
         setSummary({
@@ -1373,7 +1423,7 @@ const JobDatabasePage = () => {
       try {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
-        setJobOrders(data)
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { /* use existing */ }
       finally { setLoading(false) }
     }
@@ -1505,7 +1555,8 @@ const CashAtmPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }
@@ -1613,7 +1664,8 @@ const SssPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }
@@ -1718,7 +1770,8 @@ const HdmfPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }
@@ -1826,7 +1879,8 @@ const AppointmentsPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }
@@ -1937,7 +1991,8 @@ const PayslipPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }

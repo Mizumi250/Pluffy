@@ -530,7 +530,7 @@ routes:
   - { method: GET,    route: /api/kotoba/progress,              handler: progress }
 */
 
-/* @arkzen:handler:me
+/* @arkzen:handler:php:me
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -540,9 +540,21 @@ if ($Post::count() === 0) { $this->community_seed($request); }
 $palette = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a'];
 $p = $Profile::firstOrCreate(['user_id' => $u->id], ['display_name' => $u->name, 'avatar_color' => $palette[$u->id % count($palette)]]);
 return response()->json(['data' => $p, 'user' => ['id' => $u->id, 'name' => $u->name, 'email' => $u->email]]);
-/* @arkzen:handler:me:end */
+/* @arkzen:handler:php:me:end */
 
-/* @arkzen:handler:update_me
+/* @arkzen:handler:ts:me
+*/
+const user = request.user()
+const palette = ['#121212', '#4a4a4a', '#3f6b4f', '#8a6a2f', '#7a3b34', '#4a5a6a', '#6b5a7a']
+if (await Post.count() === 0) await this.community_seed(request, response)
+const profile = await Profile.firstOrCreate(
+  { user_id: user.id },
+  { display_name: user.name, avatar_color: palette[Number(user.id) % palette.length] },
+)
+return response.json({ data: profile.toJSON(), user: { id: user.id, name: user.name, email: user.email } })
+/* @arkzen:handler:ts:me:end */
+
+/* @arkzen:handler:php:update_me
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -562,9 +574,29 @@ $data = $request->validate([
 $p = $Profile::firstOrCreate(['user_id' => $u->id], ['display_name' => $u->name]);
 $p->update($data);
 return response()->json(['data' => $p->fresh()]);
-/* @arkzen:handler:update_me:end */
+/* @arkzen:handler:php:update_me:end */
 
-/* @arkzen:handler:bump
+/* @arkzen:handler:ts:update_me
+*/
+const user = request.user()
+const validated = await request.validate({
+  display_name: 'sometimes|string|max:60',
+  bio: 'sometimes|nullable|string|max:300',
+  native_lang: 'sometimes|string|max:8',
+  learning_lang: 'sometimes|string|max:8',
+  level: 'sometimes|string|in:A1,A2,B1,B2,C1,C2',
+  country: 'sometimes|nullable|string|max:60',
+  interests: 'sometimes|nullable|string|max:500',
+  avatar_color: 'sometimes|string|max:16',
+  daily_goal: 'sometimes|integer|min:1|max:20',
+  onboarded: 'sometimes|boolean',
+})
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+await profile.update(validated)
+return response.json({ data: profile.toJSON() })
+/* @arkzen:handler:ts:update_me:end */
+
+/* @arkzen:handler:php:bump
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -585,9 +617,31 @@ $p->words_written = (int) $p->words_written + $words;
 $p->messages_sent = (int) $p->messages_sent + $msgs;
 $p->save();
 return response()->json(['data' => $p]);
-/* @arkzen:handler:bump:end */
+/* @arkzen:handler:php:bump:end */
 
-/* @arkzen:handler:notify
+/* @arkzen:handler:ts:bump
+*/
+const user = request.user()
+const xp = Number(params[0] ?? 0)
+const words = Number(params[1] ?? 0)
+const messages = Number(params[2] ?? 0)
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const today = new Date().toISOString().slice(0, 10)
+const lastActive = profile.last_active ? String(profile.last_active).slice(0, 10) : null
+if (lastActive !== today) {
+  const yesterday = new Date(Date.now() - 86400000).toISOString().slice(0, 10)
+  profile.streak = lastActive === yesterday ? Number(profile.streak ?? 0) + 1 : 1
+  profile.last_active = today
+}
+profile.best_streak = Math.max(Number(profile.best_streak ?? 0), Number(profile.streak ?? 0))
+profile.xp = Number(profile.xp ?? 0) + xp
+profile.words_written = Number(profile.words_written ?? 0) + words
+profile.messages_sent = Number(profile.messages_sent ?? 0) + messages
+await profile.save()
+return response.json({ data: profile.toJSON() })
+/* @arkzen:handler:ts:bump:end */
+
+/* @arkzen:handler:php:notify
 */
 $to = (int) ($params[0] ?? 0);
 $kind = (string) ($params[1] ?? '');
@@ -601,9 +655,21 @@ $Alert = $ns . 'Alert';
 $a = $Alert::create(['user_id' => $to, 'kind' => $kind, 'text' => mb_substr($text, 0, 480), 'ref' => $ref, 'is_read' => false]);
 try { broadcast(new \App\Events\Arkzen\Kotoba\Broadcast\AlertCreated($to, $a->toArray())); } catch (\Throwable $e) {}
 return response()->json(['ok' => true]);
-/* @arkzen:handler:notify:end */
+/* @arkzen:handler:php:notify:end */
 
-/* @arkzen:handler:community_seed
+/* @arkzen:handler:ts:notify
+*/
+const user = request.user()
+const target = Number(params[0] ?? 0)
+const kind = String(params[1] ?? '')
+const text = String(params[2] ?? '')
+const ref = params[3] == null ? null : Number(params[3])
+if (target <= 0 || !kind || target === Number(user.id)) return response.json({ ok: false }, 422)
+const alert = await Alert.create({ user_id: target, kind, text: text.slice(0, 480), ref, is_read: false })
+return response.json({ ok: true, data: alert.toJSON() })
+/* @arkzen:handler:ts:notify:end */
+
+/* @arkzen:handler:php:community_seed
 */
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $User = $ns . 'User';
@@ -677,9 +743,84 @@ foreach ($circles as $c) {
         'body' => 'Welcome to ' . $c[0] . '! Introduce yourself in your target language.', 'lang' => $c[2]]);
 }
 return response()->json(['seeded' => true]);
-/* @arkzen:handler:community_seed:end */
+/* @arkzen:handler:php:community_seed:end */
 
-/* @arkzen:handler:home
+/* @arkzen:handler:ts:community_seed
+*/
+if (await Post.count() > 0) return response.json({ seeded: false })
+const User = userModelFor('kotoba')
+const people = [
+  { email: 'aiko@kotoba.app', display_name: 'Aiko Tanaka', native_lang: 'ja', learning_lang: 'en', level: 'A2', country: 'Japan', bio: 'Osaka native. I love ramen, film cameras and teaching Japanese.', interests: 'travel,food,photography', avatar_color: '#7a3b34', xp: 240, streak: 12 },
+  { email: 'mateo@kotoba.app', display_name: 'Mateo Rivera', native_lang: 'es', learning_lang: 'en', level: 'B1', country: 'Mexico', bio: 'From Mexico City. Football, tacos and bad puns in two languages.', interests: 'football,food,music', avatar_color: '#3f6b4f', xp: 180, streak: 6 },
+  { email: 'sofia@kotoba.app', display_name: 'Sofia Laurent', native_lang: 'en', learning_lang: 'ja', level: 'A2', country: 'Canada', bio: 'English teacher learning Japanese. Coffee first, grammar second.', interests: 'books,coffee,anime', avatar_color: '#4a4a4a', xp: 320, streak: 21 },
+]
+const seededProfiles = new Map<string, any>()
+for (const person of people) {
+  const seededUser = await User.where('email', person.email).first()
+  if (!seededUser) continue
+  const profile = await Profile.updateOrCreate(
+    { user_id: seededUser.id },
+    { ...person, user_id: seededUser.id, best_streak: person.streak, last_active: new Date().toISOString().slice(0, 10), onboarded: true },
+  )
+  seededProfiles.set(person.email, profile)
+}
+if (seededProfiles.size === 0) return response.json({ seeded: false })
+const makePost = async (email: string, lang: string, kind: string, body: string, translation: string | null, likes: number) => {
+  const profile = seededProfiles.get(email)
+  if (!profile) return null
+  return Post.create({
+    user_id: profile.user_id, author_name: profile.display_name, author_color: profile.avatar_color,
+    author_native: profile.native_lang, lang, kind, body, translation, likes_count: likes,
+  })
+}
+const firstPost = await makePost('aiko@kotoba.app', 'en', 'moment', 'Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!', null, 4)
+await makePost('mateo@kotoba.app', 'en', 'moment', 'Today I learned a new word: serendipity. It means finding something good by luck.', null, 7)
+const japanesePost = await makePost('sofia@kotoba.app', 'ja', 'moment', 'きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。', 'It is raining today. I will read a book while drinking coffee.', 5)
+await makePost('mateo@kotoba.app', 'es', 'question', 'Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.', 'Question for you all: what is your favorite food? Mine are tacos al pastor.', 3)
+await makePost('aiko@kotoba.app', 'ja', 'moment', 'こんにちは！わたしは アイコです。にほんの おおさかから きました。', 'Hello! I am Aiko. I came from Osaka, Japan.', 9)
+if (firstPost && seededProfiles.has('sofia@kotoba.app')) {
+  const profile = seededProfiles.get('sofia@kotoba.app')
+  await Comment.create({
+    post_id: firstPost.id, user_id: profile.user_id, author_name: profile.display_name, author_color: profile.avatar_color,
+    body: 'Nice story! A few small fixes:', is_correction: true,
+    corrected: 'Yesterday I went to the park with my friend. We ate ice cream and it was delicious!',
+    explanation: 'Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very.',
+  })
+  await firstPost.update({ comments_count: 1, corrections_count: 1 })
+}
+if (japanesePost && seededProfiles.has('aiko@kotoba.app')) {
+  const profile = seededProfiles.get('aiko@kotoba.app')
+  await Comment.create({
+    post_id: japanesePost.id, user_id: profile.user_id, author_name: profile.display_name, author_color: profile.avatar_color,
+    body: 'すてきですね！Very cozy. Your sentence is perfect.', is_correction: false,
+  })
+  await japanesePost.update({ comments_count: 1 })
+}
+const aiko = seededProfiles.get('aiko@kotoba.app')
+const sofia = seededProfiles.get('sofia@kotoba.app')
+if (aiko && sofia) {
+  await Follow.firstOrCreate({ follower_id: aiko.user_id, following_id: sofia.user_id })
+  await Follow.firstOrCreate({ follower_id: sofia.user_id, following_id: aiko.user_id })
+}
+const circles = [
+  ['English Morning Club', 'sun', 'en', 'A2', 'Short daily check-ins in English. Be kind and correct gently.', 'sofia@kotoba.app'],
+  ['Japanese for Beginners', 'flower', 'ja', 'A1', 'Hiragana, greetings and first sentences. Ask anything.', 'aiko@kotoba.app'],
+  ['Spanish Cafe Talk', 'coffee', 'es', 'A2', 'Relaxed conversation practice over virtual coffee.', 'mateo@kotoba.app'],
+]
+for (const [name, emoji, lang, level, description, email] of circles) {
+  const owner = seededProfiles.get(email)
+  if (!owner) continue
+  const circle = await Circle.create({ name, emoji, lang, level, description, owner_id: owner.user_id, members_count: 1 })
+  await CircleMember.create({ circle_id: circle.id, user_id: owner.user_id })
+  await Message.create({
+    circle_id: circle.id, sender_id: owner.user_id, sender_name: owner.display_name, sender_color: owner.avatar_color,
+    body: `Welcome to ${name}! Introduce yourself in your target language.`, lang,
+  })
+}
+return response.json({ seeded: true })
+/* @arkzen:handler:ts:community_seed:end */
+
+/* @arkzen:handler:php:home
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -706,9 +847,39 @@ return response()->json([
     'unread' => $unread, 'today_activity' => $acts, 'help_needed' => $help,
     'circles' => $Circle::where('user_id', $u->id)->count(),
 ]);
-/* @arkzen:handler:home:end */
+/* @arkzen:handler:php:home:end */
 
-/* @arkzen:handler:feed
+/* @arkzen:handler:ts:home
+*/
+const user = request.user()
+if (await Post.count() === 0) await this.community_seed(request, response)
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const lang = profile.learning_lang
+const missions = await Mission.whereIn('lang', [lang, 'any']).orderBy('position').get()
+const now = new Date()
+const dayOfYear = Math.floor((Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()) - Date.UTC(now.getUTCFullYear(), 0, 0)) / 86400000)
+const mission = missions.length ? missions[dayOfYear % missions.length] : null
+const today = new Date().toISOString().slice(0, 10)
+const todayStart = `${today}T00:00:00.000Z`
+const tomorrowStart = `${new Date(Date.now() + 86400000).toISOString().slice(0, 10)}T00:00:00.000Z`
+const due = await VocabCard.where('user_id', user.id).where(q => q.whereNull('due_date').orWhere('due_date', '<=', today)).count()
+const done = await LessonResult.where('user_id', user.id).pluck('lesson_id')
+const nextLesson = await Lesson.query().where('lang', lang).whereNotIn('id', done).orderBy('position').first()
+const unread = await Alert.where('user_id', user.id).where('is_read', false).count()
+const activity = await Post.where('user_id', user.id).where('created_at', '>=', todayStart).where('created_at', '<', tomorrowStart).count()
+  + await Message.where('sender_id', user.id).where('created_at', '>=', todayStart).where('created_at', '<', tomorrowStart).count()
+  + await LessonResult.where('user_id', user.id).where('updated_at', '>=', todayStart).where('updated_at', '<', tomorrowStart).count()
+const helpNeeded = await Post.where('corrections_count', 0).where('user_id', '!=', user.id).where('lang', profile.native_lang).count()
+const missionDone = mission ? await Post.where('user_id', user.id).where('mission_id', mission.id).where('created_at', '>=', todayStart).where('created_at', '<', tomorrowStart).exists() : false
+return response.json({
+  profile: profile.toJSON(), mission: mission?.toJSON() ?? null, mission_done: missionDone, due,
+  next_lesson: nextLesson ? { id: nextLesson.id, title: nextLesson.title, unit: nextLesson.unit, emoji: nextLesson.emoji } : null,
+  unread, today_activity: activity, help_needed: helpNeeded,
+  circles: await CircleMember.where('user_id', user.id).count(),
+})
+/* @arkzen:handler:ts:home:end */
+
+/* @arkzen:handler:php:feed
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -731,9 +902,31 @@ $posts = $q->limit(40)->get();
 $liked = $Like::where('user_id', $u->id)->whereIn('post_id', $posts->pluck('id')->all())->pluck('post_id')->all();
 $data = $posts->map(function ($p) use ($liked) { return array_merge($p->toArray(), ['liked' => in_array($p->id, $liked)]); })->values();
 return response()->json(['data' => $data]);
-/* @arkzen:handler:feed:end */
+/* @arkzen:handler:php:feed:end */
 
-/* @arkzen:handler:create_post
+/* @arkzen:handler:ts:feed
+*/
+const user = request.user()
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+let query = Post.query().orderBy('id', 'desc')
+if (request.filled('lang')) query = query.where('lang', request.input('lang'))
+const scope = request.input('scope', 'all')
+if (scope === 'following') {
+  const followedIds = await Follow.where('follower_id', user.id).pluck('following_id')
+  query = query.whereIn('user_id', [...followedIds, user.id])
+} else if (scope === 'mine') {
+  query = query.where('user_id', user.id)
+} else if (scope === 'help') {
+  query = query.where('lang', profile.native_lang).where('user_id', '!=', user.id).where('corrections_count', 0)
+}
+if (request.filled('mission_id')) query = query.where('mission_id', Number(request.input('mission_id')))
+const posts = await query.limit(40).get()
+const postIds = posts.map(post => post.id)
+const likedIds = postIds.length ? await Like.where('user_id', user.id).whereIn('post_id', postIds).pluck('post_id') : []
+return response.json({ data: posts.map(post => ({ ...post.toJSON(), liked: likedIds.includes(post.id) || likedIds.includes(Number(post.id)) })) })
+/* @arkzen:handler:ts:feed:end */
+
+/* @arkzen:handler:php:create_post
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -755,9 +948,28 @@ $post = $Post::create([
 $words = max(1, count(preg_split('/\s+/u', trim($data['body']))));
 $this->bump($request, $kind === 'mission' ? 20 : 10, $words);
 return response()->json(['data' => array_merge($post->toArray(), ['liked' => false])], 201);
-/* @arkzen:handler:create_post:end */
+/* @arkzen:handler:php:create_post:end */
 
-/* @arkzen:handler:delete_post
+/* @arkzen:handler:ts:create_post
+*/
+const user = request.user()
+const validated = await request.validate({
+  body: 'required|string|max:1500', lang: 'required|string|max:8',
+  kind: 'sometimes|string|in:moment,question,mission', mission_id: 'sometimes|nullable|integer',
+  translation: 'sometimes|nullable|string|max:1500',
+})
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const kind = validated.kind ?? 'moment'
+const post = await Post.create({
+  user_id: user.id, author_name: profile.display_name, author_color: profile.avatar_color, author_native: profile.native_lang,
+  lang: validated.lang, kind, mission_id: validated.mission_id ?? null, body: validated.body, translation: validated.translation ?? null,
+})
+const words = Math.max(1, String(validated.body).trim().split(/\s+/u).length)
+await this.bump(request, response, kind === 'mission' ? 20 : 10, words)
+return response.json({ data: { ...post.toJSON(), liked: false } }, 201)
+/* @arkzen:handler:ts:create_post:end */
+
+/* @arkzen:handler:php:delete_post
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -765,9 +977,17 @@ $Post = $ns . 'Post';
 $post = $Post::where('id', (int) $id)->where('user_id', $u->id)->firstOrFail();
 $post->delete();
 return response()->json(['message' => 'Post deleted']);
-/* @arkzen:handler:delete_post:end */
+/* @arkzen:handler:php:delete_post:end */
 
-/* @arkzen:handler:toggle_like
+/* @arkzen:handler:ts:delete_post
+*/
+const user = request.user()
+const post = await Post.where('id', params[0]).where('user_id', user.id).firstOrFail()
+await post.delete()
+return response.json({ message: 'Post deleted' })
+/* @arkzen:handler:ts:delete_post:end */
+
+/* @arkzen:handler:php:toggle_like
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -786,17 +1006,45 @@ if ($existing) {
     $this->notify($request, $post->user_id, 'like', ($me ? $me->display_name : $u->name) . ' liked your post', $post->id);
 }
 return response()->json(['liked' => $liked, 'likes_count' => (int) $post->fresh()->likes_count]);
-/* @arkzen:handler:toggle_like:end */
+/* @arkzen:handler:php:toggle_like:end */
 
-/* @arkzen:handler:list_comments
+/* @arkzen:handler:ts:toggle_like
+*/
+const user = request.user()
+const post = await Post.findOrFail(params[0])
+const existing = await Like.where('post_id', post.id).where('user_id', user.id).first()
+let liked: boolean
+if (existing) {
+  await existing.delete()
+  await post.update({ likes_count: Math.max(0, Number(post.likes_count ?? 0) - 1) })
+  liked = false
+} else {
+  await Like.create({ post_id: post.id, user_id: user.id })
+  await post.update({ likes_count: Number(post.likes_count ?? 0) + 1 })
+  liked = true
+  const profile = await Profile.where('user_id', user.id).first()
+  if (Number(post.user_id) !== Number(user.id)) {
+    await this.notify(request, response, post.user_id, 'like', `${profile?.display_name ?? user.name} liked your post`, post.id)
+  }
+}
+return response.json({ liked, likes_count: Number(post.likes_count) })
+/* @arkzen:handler:ts:toggle_like:end */
+
+/* @arkzen:handler:php:list_comments
 */
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Comment = $ns . 'Comment';
 $rows = $Comment::where('post_id', (int) $id)->orderBy('id')->get();
 return response()->json(['data' => $rows]);
-/* @arkzen:handler:list_comments:end */
+/* @arkzen:handler:php:list_comments:end */
 
-/* @arkzen:handler:add_comment
+/* @arkzen:handler:ts:list_comments
+*/
+const comments = await Comment.where('post_id', params[0]).orderBy('id').get()
+return response.json({ data: comments.map(comment => comment.toJSON()) })
+/* @arkzen:handler:ts:list_comments:end */
+
+/* @arkzen:handler:php:add_comment
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -822,9 +1070,34 @@ $post->update([
 $this->notify($request, $post->user_id, $isFix ? 'correction' : 'comment', $me->display_name . ($isFix ? ' corrected your post' : ' commented on your post'), $post->id);
 $this->bump($request, $isFix ? 15 : 5, 0);
 return response()->json(['data' => $c], 201);
-/* @arkzen:handler:add_comment:end */
+/* @arkzen:handler:php:add_comment:end */
 
-/* @arkzen:handler:accept_correction
+/* @arkzen:handler:ts:add_comment
+*/
+const user = request.user()
+const validated = await request.validate({
+  body: 'required|string|max:1000', is_correction: 'sometimes|boolean',
+  corrected: 'sometimes|nullable|string|max:1500', explanation: 'sometimes|nullable|string|max:1000',
+})
+const post = await Post.findOrFail(params[0])
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const isCorrection = Boolean(validated.is_correction && validated.corrected)
+const comment = await Comment.create({
+  post_id: post.id, user_id: user.id, author_name: profile.display_name, author_color: profile.avatar_color,
+  body: validated.body, is_correction: isCorrection, corrected: isCorrection ? validated.corrected : null,
+  explanation: isCorrection ? validated.explanation ?? null : null,
+})
+await post.update({
+  comments_count: Number(post.comments_count ?? 0) + 1,
+  corrections_count: Number(post.corrections_count ?? 0) + (isCorrection ? 1 : 0),
+})
+await this.notify(request, response, post.user_id, isCorrection ? 'correction' : 'comment',
+  `${profile.display_name}${isCorrection ? ' corrected your post' : ' commented on your post'}`, post.id)
+await this.bump(request, response, isCorrection ? 15 : 5, 0)
+return response.json({ data: comment.toJSON() }, 201)
+/* @arkzen:handler:ts:add_comment:end */
+
+/* @arkzen:handler:php:accept_correction
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -836,9 +1109,21 @@ $c->update(['accepted' => true]);
 $me = $Profile::where('user_id', $u->id)->first();
 $this->notify($request, $c->user_id, 'accepted', ($me ? $me->display_name : $u->name) . ' accepted your correction. Thank you!', $post->id);
 return response()->json(['data' => $c->fresh()]);
-/* @arkzen:handler:accept_correction:end */
+/* @arkzen:handler:php:accept_correction:end */
 
-/* @arkzen:handler:list_lessons
+/* @arkzen:handler:ts:accept_correction
+*/
+const user = request.user()
+const comment = await Comment.findOrFail(params[0])
+const post = await Post.findOrFail(comment.post_id)
+if (Number(post.user_id) !== Number(user.id)) return response.json({ message: 'Only the author can accept a correction' }, 403)
+await comment.update({ accepted: true })
+const profile = await Profile.where('user_id', user.id).first()
+await this.notify(request, response, comment.user_id, 'accepted', `${profile?.display_name ?? user.name} accepted your correction. Thank you!`, post.id)
+return response.json({ data: comment.toJSON() })
+/* @arkzen:handler:ts:accept_correction:end */
+
+/* @arkzen:handler:php:list_lessons
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -851,9 +1136,28 @@ $rows = $Lesson::where('lang', $lang)->orderBy('position')->get()->map(function 
     return array_merge($l->toArray(), ['done' => (bool) $r, 'best' => $r ? (int) $r->best : 0]);
 })->values();
 return response()->json(['data' => $rows, 'lang' => $lang]);
-/* @arkzen:handler:list_lessons:end */
+/* @arkzen:handler:php:list_lessons:end */
 
-/* @arkzen:handler:complete_lesson
+/* @arkzen:handler:ts:list_lessons
+*/
+const user = request.user()
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const lang = request.input('lang', profile.learning_lang)
+const [lessons, results] = await Promise.all([
+  Lesson.where('lang', lang).orderBy('position').get(),
+  LessonResult.where('user_id', user.id).get(),
+])
+const resultByLesson = new Map(results.map(result => [Number(result.lesson_id), result]))
+return response.json({
+  data: lessons.map(lesson => {
+    const result = resultByLesson.get(Number(lesson.id))
+    return { ...lesson.toJSON(), done: Boolean(result), best: result ? Number(result.best) : 0 }
+  }),
+  lang,
+})
+/* @arkzen:handler:ts:list_lessons:end */
+
+/* @arkzen:handler:php:complete_lesson
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -878,9 +1182,38 @@ foreach (($content['v'] ?? []) as $pair) {
 }
 $this->bump($request, $xp, 0);
 return response()->json(['xp' => $xp, 'cards_added' => $added, 'first' => $first]);
-/* @arkzen:handler:complete_lesson:end */
+/* @arkzen:handler:php:complete_lesson:end */
 
-/* @arkzen:handler:list_cards
+/* @arkzen:handler:ts:complete_lesson
+*/
+const user = request.user()
+const validated = await request.validate({ score: 'required|integer|min:0|max:100' })
+const lesson = await Lesson.findOrFail(params[0])
+let result = await LessonResult.where('user_id', user.id).where('lesson_id', lesson.id).first()
+const first = !result
+if (!result) {
+  result = await LessonResult.create({ user_id: user.id, lesson_id: lesson.id, score: validated.score, best: validated.score })
+} else {
+  await result.update({ score: validated.score, best: Math.max(Number(result.best ?? 0), Number(validated.score)) })
+}
+const xp = first ? Math.round(Number(lesson.xp) * Math.max(0.4, Number(validated.score) / 100)) : 5
+let cardsAdded = 0
+const content = typeof lesson.content === 'string' ? JSON.parse(lesson.content) : lesson.content
+for (const pair of content?.v ?? []) {
+  if (!Array.isArray(pair) || pair.length < 2) continue
+  const existing = await VocabCard.where('user_id', user.id).where('lang', lesson.lang).where('term', pair[0]).first()
+  if (existing) continue
+  await VocabCard.create({
+    user_id: user.id, lang: lesson.lang, term: pair[0], meaning: pair[1], source: 'lesson',
+    due_date: new Date().toISOString().slice(0, 10),
+  })
+  cardsAdded++
+}
+await this.bump(request, response, xp, 0)
+return response.json({ xp, cards_added: cardsAdded, first })
+/* @arkzen:handler:ts:complete_lesson:end */
+
+/* @arkzen:handler:php:list_cards
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -899,9 +1232,32 @@ if ($request->filled('q')) {
 }
 $rows = $base->orderBy('due_date')->orderBy('id')->limit(200)->get();
 return response()->json(['data' => $rows, 'total' => $total, 'due_count' => $dueCount]);
-/* @arkzen:handler:list_cards:end */
+/* @arkzen:handler:php:list_cards:end */
 
-/* @arkzen:handler:add_card
+/* @arkzen:handler:ts:list_cards
+*/
+const user = request.user()
+const today = new Date().toISOString().slice(0, 10)
+const base = () => {
+  let query = VocabCard.query().where('user_id', user.id)
+  if (request.filled('lang')) query = query.where('lang', request.input('lang'))
+  return query
+}
+const total = await base().count()
+const dueCount = await base().where(q => q.whereNull('due_date').orWhere('due_date', '<=', today)).count()
+let query = base()
+if (String(request.input('due', '0')) === '1') {
+  query = query.where(q => q.whereNull('due_date').orWhere('due_date', '<=', today))
+}
+if (request.filled('q')) {
+  const term = `%${request.input('q')}%`
+  query = query.where(q => q.where('term', 'like', term).orWhere('meaning', 'like', term))
+}
+const cards = await query.orderBy('due_date').orderBy('id').limit(200).get()
+return response.json({ data: cards.map(card => card.toJSON()), total, due_count: dueCount })
+/* @arkzen:handler:ts:list_cards:end */
+
+/* @arkzen:handler:php:add_card
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -915,9 +1271,28 @@ $card = $Card::firstOrCreate(
     ['meaning' => $data['meaning'], 'example' => $data['example'] ?? null, 'source' => $data['source'] ?? 'manual', 'due_date' => now()->toDateString()]
 );
 return response()->json(['data' => $card, 'created' => $card->wasRecentlyCreated], $card->wasRecentlyCreated ? 201 : 200);
-/* @arkzen:handler:add_card:end */
+/* @arkzen:handler:php:add_card:end */
 
-/* @arkzen:handler:review_card
+/* @arkzen:handler:ts:add_card
+*/
+const user = request.user()
+const validated = await request.validate({
+  term: 'required|string|max:255', meaning: 'required|string|max:255', lang: 'required|string|max:8',
+  example: 'sometimes|nullable|string|max:500', source: 'sometimes|string|max:16',
+})
+let card = await VocabCard.where('user_id', user.id).where('lang', validated.lang).where('term', validated.term).first()
+const created = !card
+if (!card) {
+  card = await VocabCard.create({
+    user_id: user.id, lang: validated.lang, term: validated.term, meaning: validated.meaning,
+    example: validated.example ?? null, source: validated.source ?? 'manual',
+    due_date: new Date().toISOString().slice(0, 10),
+  })
+}
+return response.json({ data: card.toJSON(), created }, created ? 201 : 200)
+/* @arkzen:handler:ts:add_card:end */
+
+/* @arkzen:handler:php:review_card
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -945,18 +1320,60 @@ if ($g === 0) {
 $c->save();
 $this->bump($request, 2, 0);
 return response()->json(['data' => $c]);
-/* @arkzen:handler:review_card:end */
+/* @arkzen:handler:php:review_card:end */
 
-/* @arkzen:handler:delete_card
+/* @arkzen:handler:ts:review_card
+*/
+const user = request.user()
+const card = await VocabCard.where('id', params[0]).where('user_id', user.id).firstOrFail()
+const grade = Math.max(0, Math.min(3, Number(request.input('grade', 2)) || 0))
+let repetitions = Number(card.reps ?? 0)
+let intervalDays = Number(card.interval_days ?? 0)
+let ease = Number(card.ease ?? 2.5)
+let lapses = Number(card.lapses ?? 0)
+if (grade === 0) {
+  lapses++
+  repetitions = 0
+  ease = Math.max(1.3, ease - 0.2)
+  intervalDays = 0
+} else {
+  repetitions++
+  if (repetitions === 1) intervalDays = grade === 3 ? 3 : 1
+  else if (repetitions === 2) intervalDays = grade === 1 ? 2 : grade === 3 ? 7 : 4
+  else {
+    const multiplier = grade === 1 ? 1.2 : grade === 3 ? ease * 1.3 : ease
+    intervalDays = Math.max(1, Math.round(intervalDays * multiplier))
+  }
+  if (grade === 1) ease = Math.max(1.3, ease - 0.15)
+  if (grade === 3) ease += 0.15
+}
+const dueDate = new Date()
+dueDate.setDate(dueDate.getDate() + intervalDays)
+await card.update({
+  lapses, reps: repetitions, ease, interval_days: intervalDays,
+  due_date: dueDate.toISOString().slice(0, 10),
+})
+await this.bump(request, response, 2, 0)
+return response.json({ data: card.toJSON() })
+/* @arkzen:handler:ts:review_card:end */
+
+/* @arkzen:handler:php:delete_card
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Card = $ns . 'VocabCard';
 $Card::where('id', (int) $id)->where('user_id', $u->id)->delete();
 return response()->json(['message' => 'Card deleted']);
-/* @arkzen:handler:delete_card:end */
+/* @arkzen:handler:php:delete_card:end */
 
-/* @arkzen:handler:partners
+/* @arkzen:handler:ts:delete_card
+*/
+const user = request.user()
+await VocabCard.where('id', params[0]).where('user_id', user.id).delete()
+return response.json({ message: 'Card deleted' })
+/* @arkzen:handler:ts:delete_card:end */
+
+/* @arkzen:handler:php:partners
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -983,9 +1400,39 @@ $rows = $q->limit(60)->get()->map(function ($p) use ($me, $mine, $following, $le
     return array_merge($p->toArray(), ['score' => min(100, $score), 'shared' => $shared, 'following' => in_array($p->user_id, $following)]);
 })->sortByDesc('score')->values();
 return response()->json(['data' => $rows]);
-/* @arkzen:handler:partners:end */
+/* @arkzen:handler:php:partners:end */
 
-/* @arkzen:handler:view_profile
+/* @arkzen:handler:ts:partners
+*/
+const user = request.user()
+const me = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const followingIds = await Follow.where('follower_id', user.id).pluck('following_id')
+let query = Profile.query().where('user_id', '!=', user.id)
+if (request.input('mode') === 'exchange') query = query.where('native_lang', me.learning_lang)
+if (request.filled('lang')) query = query.where('native_lang', request.input('lang'))
+if (request.filled('q')) {
+  const term = `%${request.input('q')}%`
+  query = query.where(w => w.where('display_name', 'like', term).orWhere('interests', 'like', term).orWhere('country', 'like', term))
+}
+const mine = String(me.interests ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean)
+const levels: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6 }
+const candidates = await query.limit(60).get()
+const data = candidates.map(candidate => {
+  let score = candidate.native_lang === me.learning_lang ? 50 : 0
+  if (candidate.learning_lang === me.native_lang) score += 30
+  const interests = String(candidate.interests ?? '').toLowerCase().split(',').map(value => value.trim()).filter(Boolean)
+  const shared = mine.filter(interest => interests.includes(interest))
+  score += Math.min(20, shared.length * 7)
+  score += Math.max(0, 5 - Math.abs((levels[candidate.level] ?? 1) - (levels[me.level] ?? 1)))
+  return {
+    ...candidate.toJSON(), score: Math.min(100, score), shared,
+    following: followingIds.some(id => Number(id) === Number(candidate.user_id)),
+  }
+}).sort((left, right) => right.score - left.score)
+return response.json({ data })
+/* @arkzen:handler:ts:partners:end */
+
+/* @arkzen:handler:php:view_profile
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1000,9 +1447,26 @@ return response()->json([
     'following' => $Follow::where('follower_id', $u->id)->where('following_id', $p->user_id)->exists(),
     'post_count' => $Post::where('user_id', $p->user_id)->count(),
 ]);
-/* @arkzen:handler:view_profile:end */
+/* @arkzen:handler:php:view_profile:end */
 
-/* @arkzen:handler:toggle_follow
+/* @arkzen:handler:ts:view_profile
+*/
+const user = request.user()
+const profile = await Profile.where('user_id', params[0]).firstOrFail()
+const [posts, followers, followingCount, following, postCount] = await Promise.all([
+  Post.where('user_id', profile.user_id).orderBy('id', 'desc').limit(5).get(),
+  Follow.where('following_id', profile.user_id).count(),
+  Follow.where('follower_id', profile.user_id).count(),
+  Follow.where('follower_id', user.id).where('following_id', profile.user_id).exists(),
+  Post.where('user_id', profile.user_id).count(),
+])
+return response.json({
+  data: profile.toJSON(), posts: posts.map(post => post.toJSON()),
+  followers, following_count: followingCount, following, post_count: postCount,
+})
+/* @arkzen:handler:ts:view_profile:end */
+
+/* @arkzen:handler:php:toggle_follow
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1018,9 +1482,25 @@ $Follow::create(['follower_id' => $u->id, 'following_id' => $target]);
 $me = $Profile::where('user_id', $u->id)->first();
 $this->notify($request, $target, 'follow', ($me ? $me->display_name : $u->name) . ' started following you', $u->id);
 return response()->json(['following' => true]);
-/* @arkzen:handler:toggle_follow:end */
+/* @arkzen:handler:php:toggle_follow:end */
 
-/* @arkzen:handler:list_conversations
+/* @arkzen:handler:ts:toggle_follow
+*/
+const user = request.user()
+const target = Number(params[0])
+if (target === Number(user.id)) return response.json({ message: 'You cannot follow yourself' }, 422)
+const existing = await Follow.where('follower_id', user.id).where('following_id', target).first()
+if (existing) {
+  await existing.delete()
+  return response.json({ following: false })
+}
+await Follow.create({ follower_id: user.id, following_id: target })
+const profile = await Profile.where('user_id', user.id).first()
+await this.notify(request, response, target, 'follow', `${profile?.display_name ?? user.name} started following you`, user.id)
+return response.json({ following: true })
+/* @arkzen:handler:ts:toggle_follow:end */
+
+/* @arkzen:handler:php:list_conversations
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1037,9 +1517,30 @@ $data = $rows->map(function ($c) use ($u, $profiles) {
     ];
 })->values();
 return response()->json(['data' => $data]);
-/* @arkzen:handler:list_conversations:end */
+/* @arkzen:handler:php:list_conversations:end */
 
-/* @arkzen:handler:start_conversation
+/* @arkzen:handler:ts:list_conversations
+*/
+const user = request.user()
+const rows = await Conversation.where('user_a', user.id).orWhere('user_b', user.id).orderBy('last_at', 'desc').orderBy('id', 'desc').get()
+const otherIds = rows.map(conversation => Number(conversation.user_a) === Number(user.id) ? conversation.user_b : conversation.user_a)
+const profiles = await Profile.whereIn('user_id', otherIds).get()
+const profileById = new Map(profiles.map(profile => [Number(profile.user_id), profile]))
+return response.json({
+  data: rows.map(conversation => {
+    const otherId = Number(conversation.user_a) === Number(user.id) ? conversation.user_b : conversation.user_a
+    const profile = profileById.get(Number(otherId))
+    return {
+      id: conversation.id,
+      last_message: conversation.last_message,
+      last_at: conversation.last_at,
+      with: profile?.toJSON() ?? { user_id: otherId, display_name: 'Member', avatar_color: '#6b655b' },
+    }
+  }),
+})
+/* @arkzen:handler:ts:list_conversations:end */
+
+/* @arkzen:handler:php:start_conversation
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1050,9 +1551,30 @@ if ($other === (int) $u->id) { return response()->json(['message' => 'Pick someo
 $pr = $Profile::where('user_id', $other)->firstOrFail();
 $conv = $Conv::firstOrCreate(['user_a' => min($u->id, $other), 'user_b' => max($u->id, $other)]);
 return response()->json(['data' => ['id' => $conv->id, 'last_message' => $conv->last_message, 'last_at' => $conv->last_at, 'with' => $pr->toArray()]]);
-/* @arkzen:handler:start_conversation:end */
+/* @arkzen:handler:php:start_conversation:end */
 
-/* @arkzen:handler:list_messages
+/* @arkzen:handler:ts:start_conversation
+*/
+const user = request.user()
+const validated = await request.validate({ user_id: 'required|integer' })
+const otherId = Number(validated.user_id)
+if (otherId === Number(user.id)) return response.json({ message: 'Pick someone else to talk to' }, 422)
+const profile = await Profile.where('user_id', otherId).firstOrFail()
+const conversation = await Conversation.firstOrCreate({
+  user_a: Math.min(Number(user.id), otherId),
+  user_b: Math.max(Number(user.id), otherId),
+})
+return response.json({
+  data: {
+    id: conversation.id,
+    last_message: conversation.last_message,
+    last_at: conversation.last_at,
+    with: profile.toJSON(),
+  },
+})
+/* @arkzen:handler:ts:start_conversation:end */
+
+/* @arkzen:handler:php:list_messages
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1072,9 +1594,33 @@ if ($request->filled('conversation_id')) {
 if ($request->filled('after_id')) { $q->where('id', '>', (int) $request->input('after_id')); }
 $rows = $q->orderByDesc('id')->limit(100)->get()->reverse()->values();
 return response()->json(['data' => $rows]);
-/* @arkzen:handler:list_messages:end */
+/* @arkzen:handler:php:list_messages:end */
 
-/* @arkzen:handler:send_message
+/* @arkzen:handler:ts:list_messages
+*/
+const user = request.user()
+let query = Message.query()
+if (request.filled('conversation_id')) {
+  const conversation = await Conversation.findOrFail(Number(request.input('conversation_id')))
+  if (Number(conversation.user_a) !== Number(user.id) && Number(conversation.user_b) !== Number(user.id)) {
+    return response.json({ message: 'Not your conversation' }, 403)
+  }
+  query = query.where('conversation_id', conversation.id)
+} else if (request.filled('circle_id')) {
+  const circleId = Number(request.input('circle_id'))
+  if (!await CircleMember.where('circle_id', circleId).where('user_id', user.id).exists()) {
+    return response.json({ message: 'Join this circle first' }, 403)
+  }
+  query = query.where('circle_id', circleId)
+} else {
+  return response.json({ message: 'conversation_id or circle_id required' }, 422)
+}
+if (request.filled('after_id')) query = query.where('id', '>', Number(request.input('after_id')))
+const rows = await query.orderBy('id', 'desc').limit(100).get()
+return response.json({ data: rows.reverse().map(message => message.toJSON()) })
+/* @arkzen:handler:ts:list_messages:end */
+
+/* @arkzen:handler:php:send_message
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1111,9 +1657,59 @@ foreach ($ids as $rid) {
 $words = max(1, count(preg_split('/\s+/u', trim($data['body']))));
 $this->bump($request, 3, $words, 1);
 return response()->json(['data' => $payload], 201);
-/* @arkzen:handler:send_message:end */
+/* @arkzen:handler:php:send_message:end */
 
-/* @arkzen:handler:correct_message
+/* @arkzen:handler:ts:send_message
+*/
+const user = request.user()
+const validated = await request.validate({
+  body: 'required|string|max:2000',
+  lang: 'sometimes|nullable|string|max:8',
+  conversation_id: 'sometimes|nullable|integer',
+  circle_id: 'sometimes|nullable|integer',
+})
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+let conversationId = null
+let circleId = null
+let participantIds: any[] = []
+if (validated.conversation_id) {
+  const conversation = await Conversation.findOrFail(Number(validated.conversation_id))
+  if (Number(conversation.user_a) !== Number(user.id) && Number(conversation.user_b) !== Number(user.id)) {
+    return response.json({ message: 'Not your conversation' }, 403)
+  }
+  conversationId = conversation.id
+  participantIds = [conversation.user_a, conversation.user_b]
+  await conversation.update({ last_message: String(validated.body).slice(0, 200), last_at: new Date().toISOString() })
+} else if (validated.circle_id) {
+  circleId = Number(validated.circle_id)
+  if (!await CircleMember.where('circle_id', circleId).where('user_id', user.id).exists()) {
+    return response.json({ message: 'Join this circle first' }, 403)
+  }
+  participantIds = await CircleMember.where('circle_id', circleId).pluck('user_id')
+} else {
+  return response.json({ message: 'conversation_id or circle_id required' }, 422)
+}
+const message = await Message.create({
+  conversation_id: conversationId,
+  circle_id: circleId,
+  sender_id: user.id,
+  sender_name: profile.display_name,
+  sender_color: profile.avatar_color,
+  body: validated.body,
+  lang: validated.lang ?? null,
+})
+const payload = { ...message.toJSON(), scope: circleId ? 'circle' : 'dm' }
+const { broadcastTo } = await import('@pluff/runtime')
+for (const recipientId of participantIds) {
+  if (Number(recipientId) === Number(user.id)) continue
+  broadcastTo(`private-kotoba.${recipientId}`, 'kotoba.message-created', payload)
+}
+const words = Math.max(1, String(validated.body).trim().split(/\s+/u).length)
+await this.bump(request, response, 3, words, 1)
+return response.json({ data: payload }, 201)
+/* @arkzen:handler:ts:send_message:end */
+
+/* @arkzen:handler:php:correct_message
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1139,9 +1735,37 @@ $me = $Profile::where('user_id', $u->id)->first();
 $this->notify($request, $m->sender_id, 'correction', ($me ? $me->display_name : $u->name) . ' suggested a correction in chat', $m->id);
 $this->bump($request, 10, 0);
 return response()->json(['data' => $payload]);
-/* @arkzen:handler:correct_message:end */
+/* @arkzen:handler:php:correct_message:end */
 
-/* @arkzen:handler:list_circles
+/* @arkzen:handler:ts:correct_message
+*/
+const user = request.user()
+const validated = await request.validate({ corrected: 'required|string|max:2000', note: 'sometimes|nullable|string|max:500' })
+const message = await Message.findOrFail(params[0])
+if (Number(message.sender_id) === Number(user.id)) return response.json({ message: 'You cannot correct your own message' }, 422)
+let participantIds: any[] = []
+if (message.conversation_id) {
+  const conversation = await Conversation.find(message.conversation_id)
+  if (conversation) participantIds = [conversation.user_a, conversation.user_b]
+} else if (message.circle_id) {
+  participantIds = await CircleMember.where('circle_id', message.circle_id).pluck('user_id')
+}
+if (!participantIds.some(id => Number(id) === Number(user.id))) return response.json({ message: 'Not allowed' }, 403)
+await message.update({ corrected: validated.corrected, note: validated.note ?? null, corrected_by: user.id })
+const payload = { ...message.toJSON(), scope: message.circle_id ? 'circle' : 'dm', updated: true }
+const profile = await Profile.where('user_id', user.id).first()
+await this.notify(request, response, message.sender_id, 'correction',
+  `${profile?.display_name ?? user.name} suggested a correction in chat`, message.id)
+await this.bump(request, response, 10, 0)
+const { broadcastTo } = await import('@pluff/runtime')
+for (const recipientId of participantIds) {
+  if (Number(recipientId) === Number(user.id)) continue
+  broadcastTo(`private-kotoba.${recipientId}`, 'kotoba.message-created', payload)
+}
+return response.json({ data: payload })
+/* @arkzen:handler:ts:correct_message:end */
+
+/* @arkzen:handler:php:list_circles
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1151,9 +1775,24 @@ $q = $Circle::query()->orderByDesc('members_count')->orderByDesc('id');
 if ($request->filled('lang')) { $q->where('lang', $request->input('lang')); }
 $rows = $q->limit(60)->get()->map(function ($c) use ($mine) { return array_merge($c->toArray(), ['joined' => in_array($c->id, $mine)]); })->values();
 return response()->json(['data' => $rows]);
-/* @arkzen:handler:list_circles:end */
+/* @arkzen:handler:php:list_circles:end */
 
-/* @arkzen:handler:create_circle
+/* @arkzen:handler:ts:list_circles
+*/
+const user = request.user()
+const mine = await CircleMember.where('user_id', user.id).pluck('circle_id')
+let query = Circle.query().orderBy('members_count', 'desc').orderBy('id', 'desc').limit(60)
+if (request.filled('lang')) query = query.where('lang', request.input('lang'))
+const rows = await query.get()
+return response.json({
+  data: rows.map(circle => ({
+    ...circle.toJSON(),
+    joined: mine.includes(circle.id),
+  })),
+})
+/* @arkzen:handler:ts:list_circles:end */
+
+/* @arkzen:handler:php:create_circle
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1168,9 +1807,32 @@ $c = $Circle::create([
 ]);
 $Member::create(['circle_id' => $c->id, 'user_id' => $u->id]);
 return response()->json(['data' => array_merge($c->toArray(), ['joined' => true])], 201);
-/* @arkzen:handler:create_circle:end */
+/* @arkzen:handler:php:create_circle:end */
 
-/* @arkzen:handler:toggle_join
+/* @arkzen:handler:ts:create_circle
+*/
+const user = request.user()
+const validated = await request.validate({
+  name: 'required|string|max:80',
+  emoji: 'sometimes|nullable|string|max:24',
+  lang: 'required|string|max:8',
+  level: 'sometimes|string|in:A1,A2,B1,B2,C1,C2',
+  description: 'sometimes|nullable|string|max:400',
+})
+const circle = await Circle.create({
+  name: validated.name,
+  emoji: validated.emoji ?? 'message-circle',
+  lang: validated.lang,
+  level: validated.level ?? 'A1',
+  description: validated.description ?? null,
+  owner_id: user.id,
+  members_count: 1,
+})
+await CircleMember.create({ circle_id: circle.id, user_id: user.id })
+return response.json({ data: { ...circle.toJSON(), joined: true } }, 201)
+/* @arkzen:handler:ts:create_circle:end */
+
+/* @arkzen:handler:php:toggle_join
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1186,27 +1848,62 @@ if ($existing) {
 $Member::create(['circle_id' => $c->id, 'user_id' => $u->id]);
 $c->update(['members_count' => (int) $c->members_count + 1]);
 return response()->json(['joined' => true, 'members_count' => (int) $c->fresh()->members_count]);
-/* @arkzen:handler:toggle_join:end */
+/* @arkzen:handler:php:toggle_join:end */
 
-/* @arkzen:handler:list_alerts
+/* @arkzen:handler:ts:toggle_join
+*/
+const user = request.user()
+const circle = await Circle.findOrFail(params[0])
+const existing = await CircleMember.where('circle_id', circle.id).where('user_id', user.id).first()
+if (existing) {
+  if (Number(circle.owner_id) === Number(user.id)) {
+    return response.json({ message: 'Owners cannot leave their own circle' }, 422)
+  }
+  await existing.delete()
+  await circle.update({ members_count: Math.max(1, Number(circle.members_count ?? 1) - 1) })
+  return response.json({ joined: false, members_count: Number(circle.members_count) })
+}
+await CircleMember.create({ circle_id: circle.id, user_id: user.id })
+await circle.update({ members_count: Number(circle.members_count ?? 0) + 1 })
+return response.json({ joined: true, members_count: Number(circle.members_count) })
+/* @arkzen:handler:ts:toggle_join:end */
+
+/* @arkzen:handler:php:list_alerts
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Alert = $ns . 'Alert';
 $rows = $Alert::where('user_id', $u->id)->orderByDesc('id')->limit(40)->get();
 return response()->json(['data' => $rows, 'unread' => $Alert::where('user_id', $u->id)->where('is_read', false)->count()]);
-/* @arkzen:handler:list_alerts:end */
+/* @arkzen:handler:php:list_alerts:end */
 
-/* @arkzen:handler:read_alerts
+/* @arkzen:handler:ts:list_alerts
+*/
+const user = request.user()
+const [alerts, unread] = await Promise.all([
+  Alert.where('user_id', user.id).orderBy('id', 'desc').limit(40).get(),
+  Alert.where('user_id', user.id).where('is_read', false).count(),
+])
+return response.json({ data: alerts.map(alert => alert.toJSON()), unread })
+/* @arkzen:handler:ts:list_alerts:end */
+
+/* @arkzen:handler:php:read_alerts
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
 $Alert = $ns . 'Alert';
 $Alert::where('user_id', $u->id)->where('is_read', false)->update(['is_read' => true]);
 return response()->json(['ok' => true]);
-/* @arkzen:handler:read_alerts:end */
+/* @arkzen:handler:php:read_alerts:end */
 
-/* @arkzen:handler:progress
+/* @arkzen:handler:ts:read_alerts
+*/
+const user = request.user()
+await Alert.where('user_id', user.id).where('is_read', false).update({ is_read: true })
+return response.json({ ok: true })
+/* @arkzen:handler:ts:read_alerts:end */
+
+/* @arkzen:handler:php:progress
 */
 $u = $request->user();
 $ns = '\\App\\Models\\Arkzen\\Kotoba\\';
@@ -1240,7 +1937,62 @@ $stats = [
     'messages_sent' => (int) $p->messages_sent,
 ];
 return response()->json(['profile' => $p, 'series' => $series, 'stats' => $stats, 'level' => (int) floor(((int) $p->xp) / 100) + 1, 'level_progress' => ((int) $p->xp) % 100]);
-/* @arkzen:handler:progress:end */
+/* @arkzen:handler:php:progress:end */
+
+/* @arkzen:handler:ts:progress
+*/
+const user = request.user()
+const profile = await Profile.firstOrCreate({ user_id: user.id }, { display_name: user.name })
+const from = new Date()
+from.setDate(from.getDate() - 13)
+from.setUTCHours(0, 0, 0, 0)
+const since = from.toISOString()
+const days: Record<string, number> = {}
+for (let offset = 13; offset >= 0; offset--) {
+  const date = new Date()
+  date.setUTCDate(date.getUTCDate() - offset)
+  days[date.toISOString().slice(0, 10)] = 0
+}
+const [posts, messages, results, myPosts] = await Promise.all([
+  Post.where('user_id', user.id).where('created_at', '>=', since).select('created_at').get(),
+  Message.where('sender_id', user.id).where('created_at', '>=', since).select('created_at').get(),
+  LessonResult.where('user_id', user.id).where('updated_at', '>=', since).select('updated_at').get(),
+  Post.where('user_id', user.id).pluck('id'),
+])
+for (const row of posts) {
+  const date = String(row.created_at ?? '').slice(0, 10)
+  if (date in days) days[date]++
+}
+for (const row of messages) {
+  const date = String(row.created_at ?? '').slice(0, 10)
+  if (date in days) days[date]++
+}
+for (const row of results) {
+  const date = String(row.updated_at ?? '').slice(0, 10)
+  if (date in days) days[date]++
+}
+const cards = VocabCard.where('user_id', user.id)
+const [cardCount, mastered, lessonCount, correctionsGiven, correctionsReceived, correctionsAccepted] = await Promise.all([
+  cards.count(),
+  VocabCard.where('user_id', user.id).where('reps', '>=', 4).count(),
+  LessonResult.where('user_id', user.id).count(),
+  Comment.where('user_id', user.id).where('is_correction', true).count(),
+  myPosts.length ? Comment.where('is_correction', true).whereIn('post_id', myPosts).count() : 0,
+  myPosts.length ? Comment.where('is_correction', true).where('accepted', true).whereIn('post_id', myPosts).count() : 0,
+])
+return response.json({
+  profile: profile.toJSON(),
+  series: Object.entries(days).map(([date, count]) => ({ date, count })),
+  stats: {
+    cards: cardCount, mastered, lessons: lessonCount, posts: myPosts.length,
+    corrections_given: correctionsGiven, corrections_received: correctionsReceived,
+    corrections_accepted: correctionsAccepted, words_written: Number(profile.words_written ?? 0),
+    messages_sent: Number(profile.messages_sent ?? 0),
+  },
+  level: Math.floor(Number(profile.xp ?? 0) / 100) + 1,
+  level_progress: Number(profile.xp ?? 0) % 100,
+})
+/* @arkzen:handler:ts:progress:end */
 
 /* @arkzen:web:style */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+JP:wght@500;700&display=swap');

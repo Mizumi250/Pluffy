@@ -121,10 +121,11 @@ export async function applyAuthTables(db: Knex, slug: string, hasNotifications: 
   }
 }
 
-export async function seedAuthUsers(db: Knex, slug: string, seed: Any[] | null | undefined, steps: string[]) {
-  if (!Array.isArray(seed)) return
+export async function seedAuthUsers(db: Knex, slug: string, seed: Any[] | { users?: Any[] } | null | undefined, steps: string[]) {
+  const seedUsers = Array.isArray(seed) ? seed : (seed as any)?.users
+  if (!Array.isArray(seedUsers)) return
   const users = prefixedTable(slug, 'users')
-  for (const u of seed) {
+  for (const u of seedUsers) {
     const email = u.email; if (!email) continue
     const row = { name: u.name ?? email, email, password: Hash.make(u.password ?? 'password'), role: u.role ?? 'user', updated_at: sqlNow() }
     const existing = await db(users).where({ email }).first()
@@ -139,8 +140,7 @@ export async function seedTables(db: Knex, slug: string, dbs: Any[], steps: stri
     const rows: Any[] = d.seeder?.data ?? []
     if (!rows.length) continue
     const table = prefixedTable(slug, d.table)
-    const c: any = await db(table).count({ c: '*' }).first()
-    if (Number(c?.c ?? 0) > 0) continue
+    await db(table).del()
     const ts = sqlNow()
     await db(table).insert(rows.map(r => {
       const row: Any = { ...r }
@@ -148,7 +148,7 @@ export async function seedTables(db: Knex, slug: string, dbs: Any[], steps: stri
       if (d.timestamps !== false) { row.created_at ??= ts; row.updated_at ??= ts }
       return row
     }))
-    steps.push(`Seeded ${rows.length} rows: ${table}`)
+    steps.push(`Seeded ${rows.length} rows: ${table} (reset)`)
   }
   void slugToConn
 }

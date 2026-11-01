@@ -207,7 +207,7 @@ endpoints:
       type: single
 */
 
-/* @arkzen:handler:join_queue
+/* @arkzen:handler:php:join_queue
 */
 $queueId      = $request->input('queue_id');
 $customerName = $request->input('customer_name', 'Guest');
@@ -246,9 +246,35 @@ return response()->json([
   'position'       => $waiting + 1,
   'estimated_wait' => ($waiting) * $queue->avg_wait_minutes,
 ]);
-/* @arkzen:handler:join_queue:end */
+/* @arkzen:handler:php:join_queue:end */
 
-/* @arkzen:handler:call_next
+/* @arkzen:handler:ts:join_queue
+*/
+const queueId = request.input('queue_id')
+const customerName = request.input('customer_name', 'Guest')
+const queue = await Queue.findOrFail(queueId)
+const lastPosition = await Ticket.where('queue_id', queueId)
+  .whereIn('status', ['waiting', 'serving'])
+  .max('position') ?? 0
+const ticket = await Ticket.create({
+  queue_id: queueId,
+  ticket_number: `${queue.prefix}-${String(Number(lastPosition) + 1).padStart(3, '0')}`,
+  customer_name: customerName,
+  status: 'waiting',
+  position: Number(lastPosition) + 1,
+})
+const waiting = await Ticket.where('queue_id', queueId)
+  .where('status', 'waiting')
+  .where('position', '<', ticket.position)
+  .count()
+return response.json({
+  ticket,
+  position: Number(waiting) + 1,
+  estimated_wait: Number(waiting) * Number(queue.avg_wait_minutes ?? 5),
+})
+/* @arkzen:handler:ts:join_queue:end */
+
+/* @arkzen:handler:php:call_next
 */
 $queueId = $request->input('queue_id');
 
@@ -280,9 +306,24 @@ try {
 }
 
 return response()->json(['ticket' => $next]);
-/* @arkzen:handler:call_next:end */
+/* @arkzen:handler:php:call_next:end */
 
-/* @arkzen:handler:queue_status
+/* @arkzen:handler:ts:call_next
+*/
+const queueId = request.input('queue_id')
+await Ticket.where('queue_id', queueId)
+  .where('status', 'serving')
+  .update({ status: 'done', served_at: now() })
+const next = await Ticket.where('queue_id', queueId)
+  .where('status', 'waiting')
+  .orderBy('position')
+  .first()
+if (!next) return response.json({ message: 'No more tickets in queue', ticket: null })
+await next.update({ status: 'serving', called_at: now() })
+return response.json({ ticket: next })
+/* @arkzen:handler:ts:call_next:end */
+
+/* @arkzen:handler:php:queue_status
 */
 $queueId = $params[0] ?? null;
 
@@ -308,9 +349,28 @@ return response()->json([
   'done_count' => $done_count,
   'total_waiting' => $waiting->count(),
 ]);
-/* @arkzen:handler:queue_status:end */
+/* @arkzen:handler:php:queue_status:end */
 
-/* @arkzen:handler:my_ticket
+/* @arkzen:handler:ts:queue_status
+*/
+const queueId = params[0]
+const queue = await Queue.findOrFail(queueId)
+const serving = await Ticket.where('queue_id', queueId).where('status', 'serving').first()
+const waiting = await Ticket.where('queue_id', queueId)
+  .where('status', 'waiting')
+  .orderBy('position')
+  .get()
+const doneCount = await Ticket.where('queue_id', queueId).where('status', 'done').count()
+return response.json({
+  queue,
+  serving,
+  waiting,
+  done_count: Number(doneCount),
+  total_waiting: waiting.length,
+})
+/* @arkzen:handler:ts:queue_status:end */
+
+/* @arkzen:handler:php:my_ticket
 */
 $ticketNumber = $params[1] ?? null;
 $queueId      = $params[0] ?? null;
@@ -333,7 +393,28 @@ return response()->json([
   'is_serving'     => $ticket->status === 'serving',
   'is_done'        => $ticket->status === 'done',
 ]);
-/* @arkzen:handler:my_ticket:end */
+/* @arkzen:handler:php:my_ticket:end */
+
+/* @arkzen:handler:ts:my_ticket
+*/
+const queueId = params[0]
+const ticketNumber = params[1]
+const ticket = await Ticket.where('ticket_number', ticketNumber)
+  .where('queue_id', queueId)
+  .firstOrFail()
+const ahead = await Ticket.where('queue_id', queueId)
+  .where('status', 'waiting')
+  .where('position', '<', ticket.position)
+  .count()
+const queue = await Queue.find(queueId)
+return response.json({
+  ticket,
+  position: ticket.status === 'waiting' ? Number(ahead) + 1 : 0,
+  estimated_wait: Number(ahead) * Number(queue?.avg_wait_minutes ?? 5),
+  is_serving: ticket.status === 'serving',
+  is_done: ticket.status === 'done',
+})
+/* @arkzen:handler:ts:my_ticket:end */
 
 /* @arkzen:routes
 controller: QueueController
@@ -757,12 +838,25 @@ export const AnnounceBadge = ({ ticket }: { ticket: { ticket_number: string; cus
 
 const IndexPage = () => {
   const { statuses, setStatus } = useQueueStore()
-  const [queueId] = useState(1)
-  const status = statuses[queueId]
+  const [queueId, setQueueId] = useState<number | null>(null)
+  const status = queueId === null ? undefined : statuses[queueId]
   const announce = useAnnounce()
   const prevServing = useRef<string | null>(null)
 
+  useEffect(() => {
+    fetch('/api/queue-flow/queues')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: Queue) => queue.is_active)
+        if (active) setQueueId(active.id)
+      })
+      .catch(() => {})
+  }, [])
+
   const load = useCallback(async () => {
+    if (queueId === null) return
     try {
       const res = await arkzenFetch(`/api/queue-flow/status/${queueId}`)
       const data = await res.json() as QueueStatus
@@ -775,6 +869,7 @@ const IndexPage = () => {
   }, [queueId])
 
   useEffect(() => {
+    if (queueId === null) return
     load()
     const interval = setInterval(load, 4000)
     return () => clearInterval(interval)
@@ -871,9 +966,23 @@ const IndexPage = () => {
 const JoinPage = () => {
   const { myTicket, setMyTicket } = useQueueStore()
   const [name, setName] = useState('')
-  const [queueId] = useState(1)
+  const [queueId, setQueueId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'form' | 'ticket'>('form')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/queue-flow/queues')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: Queue) => queue.is_active)
+        if (!active) throw new Error('No active queue is available')
+        setQueueId(active.id)
+      })
+      .catch(e => setError(e instanceof Error ? e.message : 'Unable to load queues'))
+  }, [])
 
   useEffect(() => {
     const saved = localStorage.getItem('queueflow_ticket')
@@ -912,8 +1021,9 @@ const JoinPage = () => {
   }, [myTicket, step])
 
   const join = async () => {
-    if (!name.trim()) return
+    if (!name.trim() || queueId === null) return
     setLoading(true)
+    setError(null)
     try {
       const res = await arkzenFetch('/api/queue-flow/join', {
         method: 'POST',
@@ -930,7 +1040,9 @@ const JoinPage = () => {
       setMyTicket(ticketData)
       localStorage.setItem('queueflow_ticket', JSON.stringify(ticketData))
       setStep('ticket')
-    } catch {} finally { setLoading(false) }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to get a ticket')
+    } finally { setLoading(false) }
   }
 
   const leave = () => {
@@ -983,10 +1095,11 @@ const JoinPage = () => {
           placeholder="e.g. Maria Santos"
           style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.85)', borderRadius: 18, padding: '16px 18px', fontSize: 16, color: '#0f2050', outline: 'none', backdropFilter: 'blur(8px)' }}
         />
+        {error && <p style={{ color: '#dc2626', fontSize: 13, marginTop: 10 }}>{error}</p>}
       </div>
       <button
         onClick={join}
-        disabled={!name.trim() || loading}
+        disabled={!name.trim() || loading || queueId === null}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '16px', borderRadius: 18, marginTop: 32, background: 'linear-gradient(135deg, #4a72d8, #3a5fc8)', border: 'none', color: 'white', fontSize: 15, fontWeight: 700, cursor: !name.trim() || loading ? 'not-allowed' : 'pointer', opacity: !name.trim() || loading ? 0.5 : 1, boxShadow: '0 8px 24px rgba(74,114,216,0.30)', transition: 'all 0.2s' }}
       >
         {loading ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}
@@ -1003,12 +1116,26 @@ const JoinPage = () => {
 
 const AdminPage = () => {
   const { statuses, setStatus } = useQueueStore()
-  const [queueId] = useState(1)
+  const [queueId, setQueueId] = useState<number | null>(null)
   const [calling, setCalling] = useState(false)
-  const status = statuses[queueId]
+  const status = queueId === null ? undefined : statuses[queueId]
   const announce = useAnnounce()
 
+  useEffect(() => {
+    fetch('/api/queue-flow/queues')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: Queue) => queue.is_active)
+        if (!active) throw new Error('No active queue is available')
+        setQueueId(active.id)
+      })
+      .catch(() => {})
+  }, [])
+
   const load = useCallback(async () => {
+    if (queueId === null) return
     try {
       const res = await arkzenFetch(`/api/queue-flow/status/${queueId}`)
       const data = await res.json() as QueueStatus
@@ -1017,6 +1144,7 @@ const AdminPage = () => {
   }, [queueId])
 
   useEffect(() => {
+    if (queueId === null) return
     load()
     const interval = setInterval(load, 3000)
     return () => clearInterval(interval)

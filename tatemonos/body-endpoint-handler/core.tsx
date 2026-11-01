@@ -113,7 +113,7 @@ endpoints:
    $endpoint['body'] which ControllerBuilder::generateCustomMethod() decodes.
    ─────────────────────────────────────────────────────────────────────────── */
 
-/* @arkzen:endpoint:echo
+/* @arkzen:endpoint:php:echo
 */
 $input   = $request->all();
 $count   = count($input);
@@ -132,9 +132,29 @@ return response()->json([
     'echo'        => $input,
     'probe_id'    => $record->id,
 ]);
-/* @arkzen:endpoint:echo:end */
+/* @arkzen:endpoint:php:echo:end */
 
-/* @arkzen:endpoint:stats
+/* @arkzen:endpoint:ts:echo
+*/
+const input = request.all()
+const record = await ProbeResult.create({
+  source: 'endpoint-body',
+  probe: 'echo',
+  payload: JSON.stringify(input),
+  result: `Echoed ${Object.keys(input).length} field(s) — ControllerBuilder v7.0 body injection ✓`,
+  ok: true,
+})
+return response.json({
+  injected: true,
+  builder: 'ControllerBuilder v7.0',
+  method: 'echo',
+  field_count: Object.keys(input).length,
+  echo: input,
+  probe_id: record.id,
+})
+/* @arkzen:endpoint:ts:echo:end */
+
+/* @arkzen:endpoint:php:stats
 */
 $total   = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::count();
 $passed  = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::where('ok', true)->count();
@@ -151,7 +171,25 @@ return response()->json([
     'failed'   => $failed,
     'sources'  => $sources,
 ]);
-/* @arkzen:endpoint:stats:end */
+/* @arkzen:endpoint:php:stats:end */
+
+/* @arkzen:endpoint:ts:stats
+*/
+const total = await ProbeResult.count()
+const passed = await ProbeResult.where('ok', true).count()
+const failed = await ProbeResult.where('ok', false).count()
+const sourceRows = await ProbeResult.query().select('source').get()
+const sources = [...new Set(sourceRows.map((row: any) => row.source))]
+return response.json({
+  injected: true,
+  builder: 'ControllerBuilder v7.0',
+  method: 'stats',
+  total,
+  passed,
+  failed,
+  sources,
+})
+/* @arkzen:endpoint:ts:stats:end */
 
 /* ─── CustomRouteBuilder body injection ───────────────────────────────────────
    @arkzen:routes DSL block declares standalone routes without a model.
@@ -174,7 +212,7 @@ routes:
     handler: latest
 */
 
-/* @arkzen:handler:ping
+/* @arkzen:handler:php:ping
 */
 return response()->json([
     'injected'   => true,
@@ -184,9 +222,21 @@ return response()->json([
     'timestamp'  => now()->toIso8601String(),
     'message'    => 'CustomRouteBuilder handler body injection confirmed ✓',
 ]);
-/* @arkzen:handler:ping:end */
+/* @arkzen:handler:php:ping:end */
 
-/* @arkzen:handler:recordHandler
+/* @arkzen:handler:ts:ping
+*/
+return response.json({
+  injected: true,
+  builder: 'CustomRouteBuilder v2.0',
+  handler: 'ping',
+  status: 'ok',
+  timestamp: new Date().toISOString(),
+  message: 'CustomRouteBuilder handler body injection confirmed ✓',
+})
+/* @arkzen:handler:ts:ping:end */
+
+/* @arkzen:handler:php:recordHandler
 */
 $validated = $request->validate([
     'probe'   => 'required|string|max:100',
@@ -207,9 +257,32 @@ return response()->json([
     'probe_id'  => $record->id,
     'probe'     => $record->probe,
 ]);
-/* @arkzen:handler:recordHandler:end */
+/* @arkzen:handler:php:recordHandler:end */
 
-/* @arkzen:handler:latest
+/* @arkzen:handler:ts:recordHandler
+*/
+const validated = await request.validate({
+  probe: 'required|string|max:100',
+  payload: 'nullable|string',
+  ok: 'sometimes|boolean',
+})
+const record = await ProbeResult.create({
+  source: 'handler-body',
+  probe: validated.probe,
+  payload: validated.payload ?? null,
+  result: 'Recorded via CustomRouteBuilder handler body injection ✓',
+  ok: validated.ok ?? true,
+})
+return response.json({
+  injected: true,
+  builder: 'CustomRouteBuilder v2.0',
+  handler: 'recordHandler',
+  probe_id: record.id,
+  probe: record.probe,
+})
+/* @arkzen:handler:ts:recordHandler:end */
+
+/* @arkzen:handler:php:latest
 */
 $latest = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::latest()->take(5)->get();
 return response()->json([
@@ -219,7 +292,19 @@ return response()->json([
     'count'    => $latest->count(),
     'results'  => $latest,
 ]);
-/* @arkzen:handler:latest:end */
+/* @arkzen:handler:php:latest:end */
+
+/* @arkzen:handler:ts:latest
+*/
+const latest = await ProbeResult.query().latest().take(5).get()
+return response.json({
+  injected: true,
+  builder: 'CustomRouteBuilder v2.0',
+  handler: 'latest',
+  count: latest.length,
+  results: latest,
+})
+/* @arkzen:handler:ts:latest:end */
 
 /* @arkzen:web:components:shared */
 
@@ -381,15 +466,6 @@ const IndexPage = () => {
     <div style={{ minHeight: '100vh', background: '#fafafa', padding: '32px 16px' }}>
       {toast && <div style={{ position: 'fixed', top: 20, right: 20, background: toast.type === 'success' ? '#22c55e' : '#ef4444', color: '#fff', padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, zIndex: 9999 }}>{toast.msg}</div>}
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#18181b', margin: 0 }}>Body Injection — Endpoint & Handler</h1>
-          <p style={{ fontSize: 13, color: '#71717a', margin: '6px 0 0' }}>
-            <strong>ControllerBuilder v7.0</strong> <code>@arkzen:endpoint</code> ·{' '}
-            <strong>CustomRouteBuilder v2.0</strong> <code>@arkzen:handler</code>
-          </p>
-        </div>
 
         {/* Stats card — ControllerBuilder endpoint body */}
         <div style={card}>

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/job-database
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:07.270Z
+// Generated: 2026-11-01T05:48:26.212Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -40,7 +40,7 @@ const JobDatabasePage = () => {
       try {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
-        setJobOrders(data)
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { /* use existing */ }
       finally { setLoading(false) }
     }

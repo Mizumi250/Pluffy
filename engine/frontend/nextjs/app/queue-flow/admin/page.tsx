@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:25.533Z
+// Generated: 2026-11-01T05:48:39.048Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -25,12 +25,26 @@ import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, 
 // Page component code (from @arkzen:page:admin)
 const AdminPage = () => {
   const { statuses, setStatus } = useQueueStore()
-  const [queueId] = useState(1)
+  const [queueId, setQueueId] = useState<number | null>(null)
   const [calling, setCalling] = useState(false)
-  const status = statuses[queueId]
+  const status = queueId === null ? undefined : statuses[queueId]
   const announce = useAnnounce()
 
+  useEffect(() => {
+    fetch('/api/queue-flow/queues')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: Queue) => queue.is_active)
+        if (!active) throw new Error('No active queue is available')
+        setQueueId(active.id)
+      })
+      .catch(() => {})
+  }, [])
+
   const load = useCallback(async () => {
+    if (queueId === null) return
     try {
       const res = await arkzenFetch(`/api/queue-flow/status/${queueId}`)
       const data = await res.json() as QueueStatus
@@ -39,6 +53,7 @@ const AdminPage = () => {
   }, [queueId])
 
   useEffect(() => {
+    if (queueId === null) return
     load()
     const interval = setInterval(load, 3000)
     return () => clearInterval(interval)

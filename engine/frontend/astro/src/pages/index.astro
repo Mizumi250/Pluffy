@@ -6,7 +6,10 @@
 // ============================================================
 
 import RootLayout from '@/RootLayout.astro'
-import HubIsland from '@/arkzen/generated/islands/hub'
+import * as React from 'react'
+import { createArkzenHub } from '../../../../shared/arkzen/hub/Hub.js'
+
+const HubIsland = createArkzenHub(React, { platform: 'Astro' })
 ---
 
 <RootLayout title="Arkzen Hub">

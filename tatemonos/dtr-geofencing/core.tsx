@@ -235,7 +235,7 @@ endpoints:
       type: single
 */
 
-/* @arkzen:endpoint:my_records
+/* @arkzen:endpoint:php:my_records
 */
 $employeeId = $request->route('employee_id');
 $records = \App\Models\Arkzen\DtrGeofencing\TimeRecord::where('employee_id', $employeeId)
@@ -244,9 +244,14 @@ $records = \App\Models\Arkzen\DtrGeofencing\TimeRecord::where('employee_id', $em
     ->limit(50)
     ->get();
 return response()->json($records);
-/* @arkzen:endpoint:my_records:end */
+/* @arkzen:endpoint:php:my_records:end */
 
-/* @arkzen:endpoint:check_in
+/* @arkzen:endpoint:ts:my_records
+*/
+return response.json({ ok: true, endpoint: 'my_records', input: request.all() })
+/* @arkzen:endpoint:ts:my_records:end */
+
+/* @arkzen:endpoint:php:check_in
 */
 $employeeId = $request->input('employee_id');
 $latitude   = $request->input('latitude');
@@ -295,9 +300,14 @@ return response()->json([
     'within_geofence'     => $withinGeofence,
     'geofencing_enabled'  => $geofencingEnabled,
 ]);
-/* @arkzen:endpoint:check_in:end */
+/* @arkzen:endpoint:php:check_in:end */
 
-/* @arkzen:endpoint:check_out
+/* @arkzen:endpoint:ts:check_in
+*/
+return response.json({ ok: true, endpoint: 'check_in', input: request.all() })
+/* @arkzen:endpoint:ts:check_in:end */
+
+/* @arkzen:endpoint:php:check_out
 */
 $employeeId = $request->input('employee_id');
 $latitude   = $request->input('latitude');
@@ -345,9 +355,14 @@ return response()->json([
     'within_geofence'    => $withinGeofence,
     'geofencing_enabled' => $geofencingEnabled,
 ]);
-/* @arkzen:endpoint:check_out:end */
+/* @arkzen:endpoint:php:check_out:end */
 
-/* @arkzen:endpoint:toggle_geofencing
+/* @arkzen:endpoint:ts:check_out
+*/
+return response.json({ ok: true, endpoint: 'check_out', input: request.all() })
+/* @arkzen:endpoint:ts:check_out:end */
+
+/* @arkzen:endpoint:php:toggle_geofencing
 */
 $enabled = $request->input('enabled');
 \App\Models\Arkzen\DtrGeofencing\DtrSetting::updateOrCreate(
@@ -355,9 +370,14 @@ $enabled = $request->input('enabled');
     ['value' => $enabled ? 'true' : 'false']
 );
 return response()->json(['success' => true, 'geofencing_enabled' => $enabled]);
-/* @arkzen:endpoint:toggle_geofencing:end */
+/* @arkzen:endpoint:php:toggle_geofencing:end */
 
-/* @arkzen:endpoint:update_office
+/* @arkzen:endpoint:ts:toggle_geofencing
+*/
+return response.json({ ok: true, endpoint: 'toggle_geofencing', input: request.all() })
+/* @arkzen:endpoint:ts:toggle_geofencing:end */
+
+/* @arkzen:endpoint:php:update_office
 */
 $lat    = $request->input('lat');
 $lng    = $request->input('lng');
@@ -366,7 +386,12 @@ $radius = $request->input('radius');
 \App\Models\Arkzen\DtrGeofencing\DtrSetting::updateOrCreate(['key' => 'office_longitude'],          ['value' => (string) $lng]);
 \App\Models\Arkzen\DtrGeofencing\DtrSetting::updateOrCreate(['key' => 'geofence_radius_meters'],    ['value' => (string) $radius]);
 return response()->json(['success' => true]);
-/* @arkzen:endpoint:update_office:end */
+/* @arkzen:endpoint:php:update_office:end */
+
+/* @arkzen:endpoint:ts:update_office
+*/
+return response.json({ ok: true, endpoint: 'update_office', input: request.all() })
+/* @arkzen:endpoint:ts:update_office:end */
 
 /* @arkzen:web:layout:app */
 

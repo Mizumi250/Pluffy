@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:05.942Z
+// Generated: 2026-11-01T05:48:24.785Z
 // ============================================================
 
 import { gsap } from 'gsap'

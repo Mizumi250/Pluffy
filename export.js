@@ -14,7 +14,7 @@
 //
 // Stack → backend mapping:
 //   react-inertia → engine/backend/laravel-inertia  (monolith — frontend LIVES inside Laravel)
-//   all others    → engine/backend/laravel           (decoupled — separate frontend process)
+//   all others    → arkzen.json activeBackend      (decoupled — separate frontend process)
 //
 // Inertia exports land in a SINGLE folder (backend IS the project).
 // No frontend/ split for Inertia — pages are inside resources/js/ in Laravel.
@@ -47,12 +47,12 @@ const isDesktop  = isTauri || isElectron
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
+const activeBackend = isInertia ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
+const isExpress = activeBackend === 'express'
 
 // Paths — backend is stack-aware
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isDesktop ? 'react-vite' : activeStack)
-const BACKEND_DIR   = isInertia
-  ? path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
-  : path.join(ENGINE_DIR, 'backend', 'laravel')
+const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend', activeBackend)
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 // Database — each tatemono has its own sqlite file or Postgres database
@@ -130,6 +130,7 @@ console.log(`  Version:  v10`)
 console.log(`  Tatemono: ${tatName}`)
 console.log(`  Stack:    ${activeStack}`)
 console.log(`  Backend:  ${hasBackend}`)
+console.log(`  Backend target: ${activeBackend}`)
 console.log(`  Realtime: ${hasRealtime}`)
 console.log(`  Jobs:     ${hasJobs}`)
 if (isInertia) console.log(`  Mode:     Inertia monolith — backend IS the project (no frontend/ folder)`)
@@ -262,7 +263,7 @@ if (isNative) {
   })
   success('laravel-inertia monolith copied to project root')
 } else if (hasBackend) {
-  log('Copying backend...')
+  log(`Copying ${activeBackend} backend...`)
   fs.cpSync(BACKEND_DIR, PROJ_BACK, {
     recursive: true,
     filter: BACKEND_EXCLUDE_FILTER
@@ -660,7 +661,7 @@ if (fs.existsSync(srcAssetsPath)) {
 }
 
 // ─────────────────────────────────────────────
-// STEP 5 — WRITE STANDALONE bootstrap/app.php
+// STEP 5 — WRITE STANDALONE backend bootstrap
 //
 // WHY: The engine's bootstrap/app.php registers DB connections for
 // ALL tatemonos dynamically. A standalone export only needs the one
@@ -673,7 +674,7 @@ if (fs.existsSync(srcAssetsPath)) {
 // Skip: Native (no backend), Inertia (monolith manages its own)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend) {
+if (!isNative && !isInertia && hasBackend && !isExpress) {
   log('Writing standalone bootstrap/app.php...')
 
   fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
@@ -713,7 +714,7 @@ return $app;
 `)
   success('bootstrap/app.php (single tatemono DB connection registered)')
 } else {
-  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isNative ? ' (Native)' : ''))
+  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -727,7 +728,7 @@ return $app;
 // Skip: Native (no backend), Inertia (Laravel-Inertia handles routes)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend) {
+if (!isNative && !isInertia && hasBackend && !isExpress) {
   log('Writing ModuleRouteServiceProvider...')
 
   const routeFilePath = `routes/modules/${tatName}.php`
@@ -768,7 +769,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
     success('bootstrap/providers.php → ModuleRouteServiceProvider registered')
   }
 } else {
-  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isNative ? ' (Native)' : ''))
+  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -783,7 +784,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
 // Skip: Native (no backend), Inertia (monolith has its own providers)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend) {
+if (!isNative && !isInertia && hasBackend && !isExpress) {
   const provPath = path.join(PROJ_BACK, 'bootstrap', 'providers.php')
   if (fs.existsSync(provPath)) {
     log('Stripping engine-only providers...')
@@ -821,7 +822,18 @@ if (!isNative && hasBackend) {
   const relativeSqlitePath = `database/arkzen/${tatName}.sqlite`
   const backendPort = isInertia ? '8000' : '8001'
 
-  env = env
+  if (isExpress) {
+    env = [
+      `PORT=${backendPort}`,
+      `APP_URL=http://localhost:${backendPort}`,
+      `ARKZEN_DB_DRIVER=${isPg ? 'pgsql' : 'sqlite'}`,
+      `ARKZEN_DB_PREFIX=${tatSnake}`,
+      'QUEUE_CONNECTION=database',
+      hasRealtime ? 'REVERB_PORT=8081' : '',
+      hasRealtime ? 'REVERB_APP_KEY=arkzen-key' : '',
+      hasRealtime ? 'REVERB_APP_SECRET=arkzen-secret' : '',
+    ].filter(Boolean).join('\n') + '\n'
+  } else env = env
     .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)
     .replace(/APP_ENV=.*/,              'APP_ENV=local')
     .replace(/APP_DEBUG=.*/,            'APP_DEBUG=true')
@@ -837,7 +849,7 @@ if (!isNative && hasBackend) {
     .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
     .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
-  if (isPg) {
+  if (isPg && !isExpress) {
     env = env
       .replace(/^DB_CONNECTION=.*$/m,       'DB_CONNECTION=pgsql')
       .replace(/^#?[ \t]*DB_HOST=.*$/m,     `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`)
@@ -848,7 +860,7 @@ if (!isNative && hasBackend) {
     env += '\nARKZEN_DB_DRIVER=pgsql\n'
   }
 
-  if (hasRealtime && !env.includes('REVERB_APP_ID=')) {
+  if (hasRealtime && !isExpress && !env.includes('REVERB_APP_ID=')) {
     env += [
       '',
       'REVERB_APP_ID=arkzen',
@@ -861,7 +873,7 @@ if (!isNative && hasBackend) {
   }
 
   fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-  success(`.env written (DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
+  success(`.env written (${isExpress ? 'Express' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
 } else {
   skip('.env (Native)')
 }
@@ -1270,14 +1282,23 @@ if (!isInertia && !isNative) {
 }
 
 // ─────────────────────────────────────────────
-// STEP 11 — COMPOSER INSTALL
+// STEP 11 — BACKEND DEPENDENCIES
 //
-// WHY: vendor/ is excluded from the copy (absolute paths baked in,
-// too large to copy). We run composer install fresh so autoloader
-// paths are correct for the exported project's location.
+// Laravel uses Composer; Express uses npm. Dependency folders are
+// excluded from the copy and installed fresh in the exported project.
 // ─────────────────────────────────────────────
 
-if (!isNative && hasBackend) {
+if (!isNative && hasBackend && isExpress) {
+  log('Installing Express dependencies...')
+  try {
+    execSync('npm install --no-audit --no-fund', { cwd: PROJ_BACK, stdio: 'pipe' })
+    success('npm install complete')
+  } catch (e) {
+    warn('npm install failed — run manually: cd backend && npm install')
+    const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
+    msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
+  }
+} else if (!isNative && hasBackend) {
   log('Installing Composer dependencies...')
   try {
     execSync('composer install --no-interaction --prefer-dist --optimize-autoloader --quiet', {
@@ -1376,21 +1397,31 @@ const startLines = [
   hasBackend && !isInertia ? `console.log('  Backend:  http://localhost:8001')` : null,
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
-  hasBackend && hasRealtime ? `console.log('  Reverb:   ws://localhost:8081')` : null,
+  hasBackend && hasRealtime ? `console.log('  ${isExpress ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
   isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
   !isInertia && !isNative && !isTauri ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
   isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
   ``,
   // Backend process
-  hasBackend && !isInertia ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')` : null,
+  hasBackend && !isInertia
+    ? (isExpress
+      ? `const backend  = run('backend',  'npm', ['start'], BACK, 'backend')`
+      : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
+    : null,
   // Inertia: php artisan serve from project root, Vite runs alongside
   isInertia && hasBackend  ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8000'], __dirname, 'backend')` : null,
   hasBackend && hasJobs && !isInertia
-    ? `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], BACK, 'queue')` : null,
+    ? (isExpress
+      ? `const queue    = run('queue',    'npm', ['run', 'queue'], BACK, 'queue')`
+      : `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], BACK, 'queue')`)
+    : null,
   hasBackend && hasJobs && isInertia
     ? `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], __dirname, 'queue')` : null,
   hasBackend && hasRealtime && !isInertia
-    ? `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], BACK, 'reverb')` : null,
+    ? (isExpress
+      ? null
+      : `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], BACK, 'reverb')`)
+    : null,
   hasBackend && hasRealtime && isInertia
     ? `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], __dirname, 'reverb')` : null,
   // Frontend process
@@ -1405,7 +1436,7 @@ const startLines = [
   !isInertia && !isNative && !isTauri
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
   ``,
-  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs ? ' queue,' : ''}${hasBackend && hasRealtime ? ' reverb,' : ''} frontend].filter(Boolean)`,
+  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress ? ' reverb,' : ''} frontend].filter(Boolean)`,
   ``,
   `process.on('SIGINT', () => {`,
   `  services.forEach(s => s && s.kill())`,
@@ -1473,16 +1504,13 @@ node start.js
 \`\`\`
 
 | Service  | URL                                          |
-|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime ? '\n| Reverb   | ws://localhost:8081                          |' : ''}
+|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime ? `\n| Realtime | ws://localhost:${isExpress ? '8080' : '8081'}                          |` : ''}
 ${hasBackend && !isInertia ? `
 ## Manual backend setup (if needed)
 
 \`\`\`bash
 cd backend
-composer install
-php artisan key:generate
-php artisan migrate
-php artisan db:seed   # if seeders exist
+${isExpress ? 'npm install\nnpm start' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
 \`\`\`
 ` : ''}`)
 

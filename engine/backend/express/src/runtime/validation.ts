@@ -88,7 +88,7 @@ async function check(rule: string, p: string[], v: any, key: string, ctx: Ctx, n
     case 'accepted': return ['yes', 'on', 1, '1', true, 'true'].includes(v) ? null : fail()
     case 'email':   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v)) ? null : fail()
     case 'url':     try { new URL(String(v)); return null } catch { return fail() }
-    case 'array':   return Array.isArray(v) ? null : fail()
+    case 'array':   return Array.isArray(v) || (!!v && typeof v === 'object' && !ArrayBuffer.isView(v)) ? null : fail()
     case 'date':    return !isNaN(Date.parse(String(v))) ? null : fail()
     case 'json':    try { JSON.parse(String(v)); return null } catch { return fail() }
     case 'uuid':    return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(String(v)) ? null : fail()

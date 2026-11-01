@@ -4,6 +4,7 @@ import { WebSocketServer, WebSocket } from 'ws'
 import * as crypto from 'crypto'
 import * as http from 'http'
 import { env, Log } from './support'
+import { publishSse } from './sse'
 
 interface Client { id: string; ws: WebSocket; channels: Set<string>; info: Map<string, any> }
 const clients = new Map<WebSocket, Client>()
@@ -50,12 +51,14 @@ function drop(c: Client) {
 
 export function broadcastTo(channel: string, event: string, data: any) {
   for (const c of channels.get(channel) ?? []) out(c.ws, event, data, channel)
+  publishSse(channel, data, event)
 }
 
 export class BroadcastEvent {
   static tatemono = ''
   channelType: 'public' | 'private' | 'presence' = 'public'
   channel = ''
+  channelHasId = false
   eventName = ''
   userId: number | null = null
   constructor(public data: Record<string, any> = {}) {}
@@ -63,7 +66,9 @@ export class BroadcastEvent {
 
 /** broadcast(new SomeEvent(data)) */
 export function broadcast(e: BroadcastEvent) {
-  const name = e.channelType === 'public' ? e.channel : `${e.channelType}-${e.channel}${e.userId != null ? `.${e.userId}` : ''}`
+  const name = e.channelType === 'public' || !e.channelHasId
+    ? `${e.channelType === 'public' ? '' : `${e.channelType}-`}${e.channel}`
+    : `${e.channelType}-${e.channel}${e.userId != null ? `.${e.userId}` : ''}`
   broadcastTo(name, e.eventName, e.data)
 }
 

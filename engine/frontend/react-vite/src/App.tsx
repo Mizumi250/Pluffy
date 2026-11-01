@@ -1,9 +1,11 @@
 // ============================================================
 // ARKZEN React+Vite — App Router + Hub
 // ============================================================
+import * as React from 'react'
 import { useEffect, useState, Suspense } from 'react'
 import { motion } from 'framer-motion'
 import { Routes, Route } from 'react-router'
+import { createArkzenHub } from '../../../shared/arkzen/hub/Hub.js'
 import {
   Layers, Play, Clock,
   CheckCircle, AlertCircle, Plus, Terminal,
@@ -96,7 +98,7 @@ const TatemonoCard = ({ tatemono, index }: { tatemono: TatemonoEntry; index: num
   )
 }
 
-function ArkzenHub() {
+function LegacyArkzenHub() {
   const [registry, setRegistry] = useState<RegistryData | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -212,6 +214,8 @@ function ArkzenHub() {
     </div>
   )
 }
+
+const ArkzenHub = createArkzenHub(React, { platform: 'React + Vite' })
 
 function NotFoundScreen() {
   return (

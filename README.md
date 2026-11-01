@@ -23,7 +23,7 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Web:** Next.js, React + Vite, TanStack Start, Astro, or React with Inertia
 - **Mobile:** Expo, bare React Native, or Lynx
 - **Desktop:** Tauri or Electron
-- **Backend:** Laravel, or Express
+- **Backend:** Laravel (reference), Express (TypeScript equivalent), or FastAPI (python)
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 
 You choose the stacks you like, and the tatemono doesn't change when you switch.
@@ -65,14 +65,14 @@ It's bring-your-own-model: you point Pluffy at a model server, such as a local o
 tatemonos/        every tatemono: <name>/core.tsx (plus assets)
 engine/
   frontend/       the web, mobile and desktop stacks
-  backend/        Laravel, and the builders that generate it
+  backend/        Laravel reference backend, Express equivalent, and generators
 projects/         exported, standalone projects
 mizumi.js         the friendly front door (the menu is bilingual: English / 日本語)
 start.js          starts the backend, the queue, real-time and the frontends
 setup.js          one-time setup
 export.js         turns a tatemono into a standalone project
 pluffy-*.js       the AI tools
-PLUFF_GUIDELINES_v12.md   the full language reference
+PLUFF_GUIDELINES_v13.md   the full language reference
 ```
 
 ---
@@ -89,7 +89,8 @@ It will show you what's available, and from there you can set things up, start t
 
 When you want to learn the language itself, `PLUFF_GUIDELINES_v13.md` is the reference. It covers every block a tatemono can contain.
 
-Pluffy runs on Windows, Linux and Termux on Android. It needs Node, and PHP with Composer for the Laravel backend.
+Pluffy runs on Windows, Linux and Termux on Android. It needs Node. PHP with Composer is only required
+when using the Laravel reference backend or the React-Inertia stack; Express uses Node and npm.
 
 ---
 
@@ -103,7 +104,7 @@ Thanks for stopping by.
 Samples of what Pluff made so far:
 
 - https://hw-coffee.vercel.app/
-- https://lain098-67v0azy8h-mizumi25s-projects.vercel.app/
+- https://lain098.vercel.app/
 - https://ethereane.vercel.app/
 - https://ethan-pool.vercel.app/
 - https://cafe-teresita.vercel.app/
@@ -112,5 +113,4 @@ Samples of what Pluff made so far:
 
 as the engine and its ai improve so as the output
 (the future PLUFFY ex Arkzen output will show here)
-
 

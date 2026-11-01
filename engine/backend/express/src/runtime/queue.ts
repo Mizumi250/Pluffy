@@ -60,7 +60,12 @@ async function push(queue: string, payload: Payload, delaySec = 0) {
 }
 
 export async function runPayload(p: Payload): Promise<void> {
-  const mod = modules.get(p.tatemono)
+  let mod = modules.get(p.tatemono)
+  if (!mod) {
+    const { loadModule } = await import('../engine/build')
+    await loadModule(p.tatemono)
+    mod = modules.get(p.tatemono)
+  }
   if (!mod) throw new Error(`Tatemono "${p.tatemono}" is not loaded`)
   if (p.kind === 'job') {
     const C = mod.jobs[p.class]; if (!C) throw new Error(`Unknown job ${p.class}`)

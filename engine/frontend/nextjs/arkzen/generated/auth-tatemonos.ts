@@ -13,5 +13,7 @@ export const AUTH_TATEMONOS: string[] = [
   "roles-test",
   "shikaku",
   "kotoba",
-  "express-test"
+  "express-test",
+  "express-test-2",
+  "fastapi-test"
 ];

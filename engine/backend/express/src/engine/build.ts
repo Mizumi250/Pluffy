@@ -12,6 +12,7 @@ import { applySchema, applyAuthTables, seedAuthUsers, seedTables } from './schem
 
 type Any = Record<string, any>
 export const routers = new Map<string, Router>()
+export const routePrefixes = new Map<string, string[]>()
 const GEN_DIR   = path.join(BACKEND_DIR, 'src', 'generated')
 const BUILD_DIR = path.join(BACKEND_DIR, '.build')
 const RUNTIME   = pathToFileURL(path.join(BACKEND_DIR, 'src', 'runtime', 'index.ts')).href
@@ -39,6 +40,7 @@ export async function loadModule(slug: string): Promise<void> {
   })
   const mod: Any = await import(pathToFileURL(outfile).href)
   routers.set(slug, mod.router)
+  routePrefixes.set(slug, mod.routePrefixes ?? [`/api/${slug}`])
   modules.set(slug, { name: slug, jobs: mod.jobs, listeners: mod.listeners, events: mod.events, listenerMap: mod.listenerMap })
   unregisterTatemonoCommands(slug)
   for (const C of mod.commands ?? []) registerCommand(slug, C)
@@ -94,7 +96,7 @@ export async function buildTatemono(p: Any) {
 export async function removeTatemono(p: Any) {
   const slug: string = p.name
   const steps: string[] = []
-  routers.delete(slug); modules.delete(slug); unregisterTatemonoCommands(slug)
+  routers.delete(slug); routePrefixes.delete(slug); modules.delete(slug); unregisterTatemonoCommands(slug)
   fs.rmSync(path.join(GEN_DIR, slug), { recursive: true, force: true })
   for (const f of fs.existsSync(BUILD_DIR) ? fs.readdirSync(BUILD_DIR) : []) if (f.startsWith(`${slug}.`)) fs.rmSync(path.join(BUILD_DIR, f))
   fs.rmSync(path.join(BACKEND_DIR, 'database', 'migrations', 'arkzen', slug), { recursive: true, force: true })

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — shikaku/login
 // Layout: +guest | Auth guard: false | Guest-only: true
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:31.331Z
+// Generated: 2026-11-01T05:48:43.723Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -22,6 +22,11 @@ class RegistryReader
         return base_path('arkzen.json');
     }
 
+    private static function repositoryRoot(): string
+    {
+        return dirname(base_path(), 3);
+    }
+
     // ─────────────────────────────────────────────
     // READ
     // ─────────────────────────────────────────────
@@ -29,17 +34,72 @@ class RegistryReader
     public static function read(): array
     {
         $path = self::registryPath();
+        $rootPath = self::repositoryRoot() . DIRECTORY_SEPARATOR . 'arkzen.json';
 
         if (!File::exists($path)) {
-            return [
+            $path = $rootPath;
+        }
+
+        if (!File::exists($path)) {
+            $registry = [
                 'engine'  => '1.0.0',
                 'project' => basename(base_path()),
                 'modules' => [],
             ];
+        } else {
+            $registry = json_decode(File::get($path), true) ?? [];
         }
 
-        $raw = File::get($path);
-        return json_decode($raw, true) ?? [];
+        $root = File::exists($rootPath) ? (json_decode(File::get($rootPath), true) ?? []) : $registry;
+        $activeStack = $root['activeStack'] ?? $registry['activeStack'] ?? 'nextjs';
+        $registry['activeStack'] = $activeStack;
+        $registry['activeBackend'] = $activeStack === 'react-inertia'
+            ? 'laravel-inertia'
+            : ($root['activeBackend'] ?? $registry['activeBackend'] ?? 'laravel');
+        $registry['activeDatabase'] = $root['activeDatabase'] ?? $registry['activeDatabase'] ?? 'sqlite';
+
+        $repoRoot = self::repositoryRoot();
+        $registry['modules'] = array_map(static function (array $module) use ($repoRoot): array {
+            $sourcePath = $repoRoot . DIRECTORY_SEPARATOR . str_replace(
+                ['/', '\\'],
+                DIRECTORY_SEPARATOR,
+                $module['filePath'] ?? ''
+            );
+            if (!File::exists($sourcePath)) {
+                return array_merge($module, ['frontend' => [], 'backend' => []]);
+            }
+
+            $source = File::get($sourcePath);
+            $hasBackend = preg_match('/auth:\\s*true|@arkzen:(?:api|database|auth|jobs|events|mail|notifications|routes|realtime|console|store)/', $source) === 1;
+            $hasVariant = preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):(?:php|ts|py|java|cs)\\b/', $source) === 1;
+            $hasLaravel = preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):php\\b/', $source) === 1;
+            $backend = [];
+            if ($hasBackend && ($hasLaravel || !$hasVariant)) $backend[] = 'Laravel';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):ts\\b/', $source)) $backend[] = 'Express';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):py\\b/', $source)) $backend[] = 'FastAPI / Django';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):java\\b/', $source)) $backend[] = 'Spring Boot';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):cs\\b/', $source)) $backend[] = 'ASP.NET';
+
+            $frontend = [];
+            $hasWeb = preg_match('/@arkzen:(?:web:|meta:web\\b)/', $source) === 1;
+            if ($hasWeb) {
+                $frontend = array_merge($frontend, ['Next.js', 'React + Vite', 'React + Inertia', 'Astro', 'TanStack Start']);
+            }
+            if (preg_match('/@arkzen:(?:native:|meta:native\\b)/', $source)) {
+                $frontend = array_merge($frontend, ['Expo', 'React Native', 'Lynx']);
+            }
+            $hasDesktop = preg_match('/@arkzen:desktop:|desktopConfig|@arkzen:meta:desktop/', $source) === 1;
+            if ($hasWeb || $hasDesktop) {
+                $frontend = array_merge($frontend, ['Tauri', 'Electron']);
+            }
+
+            return array_merge($module, [
+                'frontend' => array_values(array_unique($frontend)),
+                'backend' => array_values(array_unique($backend)),
+            ]);
+        }, $registry['modules'] ?? []);
+
+        return $registry;
     }
 
     // ─────────────────────────────────────────────

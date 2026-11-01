@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/join
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-31T13:21:25.490Z
+// Generated: 2026-11-01T05:48:39.018Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -25,9 +25,23 @@ import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, 
 const JoinPage = () => {
   const { myTicket, setMyTicket } = useQueueStore()
   const [name, setName] = useState('')
-  const [queueId] = useState(1)
+  const [queueId, setQueueId] = useState<number | null>(null)
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState<'form' | 'ticket'>('form')
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/queue-flow/queues')
+      .then(async res => {
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: Queue) => queue.is_active)
+        if (!active) throw new Error('No active queue is available')
+        setQueueId(active.id)
+      })
+      .catch(e => setError(e instanceof Error ? e.message : 'Unable to load queues'))
+  }, [])
 
   useEffect(() => {
     const saved = localStorage.getItem('queueflow_ticket')
@@ -66,8 +80,9 @@ const JoinPage = () => {
   }, [myTicket, step])
 
   const join = async () => {
-    if (!name.trim()) return
+    if (!name.trim() || queueId === null) return
     setLoading(true)
+    setError(null)
     try {
       const res = await arkzenFetch('/api/queue-flow/join', {
         method: 'POST',
@@ -84,7 +99,9 @@ const JoinPage = () => {
       setMyTicket(ticketData)
       localStorage.setItem('queueflow_ticket', JSON.stringify(ticketData))
       setStep('ticket')
-    } catch {} finally { setLoading(false) }
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Unable to get a ticket')
+    } finally { setLoading(false) }
   }
 
   const leave = () => {
@@ -137,10 +154,11 @@ const JoinPage = () => {
           placeholder="e.g. Maria Santos"
           style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(255,255,255,0.55)', border: '1px solid rgba(255,255,255,0.85)', borderRadius: 18, padding: '16px 18px', fontSize: 16, color: '#0f2050', outline: 'none', backdropFilter: 'blur(8px)' }}
         />
+        {error && <p style={{ color: '#dc2626', fontSize: 13, marginTop: 10 }}>{error}</p>}
       </div>
       <button
         onClick={join}
-        disabled={!name.trim() || loading}
+        disabled={!name.trim() || loading || queueId === null}
         style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '16px', borderRadius: 18, marginTop: 32, background: 'linear-gradient(135deg, #4a72d8, #3a5fc8)', border: 'none', color: 'white', fontSize: 15, fontWeight: 700, cursor: !name.trim() || loading ? 'not-allowed' : 'pointer', opacity: !name.trim() || loading ? 0.5 : 1, boxShadow: '0 8px 24px rgba(74,114,216,0.30)', transition: 'all 0.2s' }}
       >
         {loading ? <Loader2 size={18} className="animate-spin" /> : <ArrowRight size={18} />}

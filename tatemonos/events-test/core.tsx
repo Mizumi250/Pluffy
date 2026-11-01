@@ -258,6 +258,10 @@ public function index(Request $request): JsonResponse
 }
 /* @arkzen:endpoint:index:end */
 
+/* @arkzen:endpoint:ts:index */
+return response.json({ ok: true, endpoint: 'index', input: request.all() })
+/* @arkzen:endpoint:ts:index:end */
+
 /* @arkzen:endpoint:clearLog */
 public function clearLog(Request $request): JsonResponse
 {
@@ -265,6 +269,10 @@ public function clearLog(Request $request): JsonResponse
     return response()->json(['message' => 'Log cleared']);
 }
 /* @arkzen:endpoint:clearLog:end */
+
+/* @arkzen:endpoint:ts:clearLog */
+return response.json({ ok: true, endpoint: 'clearLog', input: request.all() })
+/* @arkzen:endpoint:ts:clearLog:end */
 
 /* @arkzen:web:components:shared */
 

@@ -112,7 +112,7 @@ endpoints:
       value: Item deleted
 */
 
-/* @arkzen:policy:update
+/* @arkzen:policy:php:update
 */
 // Prevent updates to archived items
 if ($item->status === 'archived') {
@@ -121,9 +121,14 @@ if ($item->status === 'archived') {
 
 // Only allow if user is authenticated (in a real app, check ownership)
 return true;
-/* @arkzen:policy:update:end */
+/* @arkzen:policy:php:update:end */
 
-/* @arkzen:policy:delete
+/* @arkzen:policy:ts:update
+*/
+return item?.status !== 'archived'
+/* @arkzen:policy:ts:update:end */
+
+/* @arkzen:policy:php:delete
 */
 // Prevent deletion of archived items (must restore first)
 if ($item->status === 'archived') {
@@ -131,7 +136,12 @@ if ($item->status === 'archived') {
 }
 
 return true;
-/* @arkzen:policy:delete:end */
+/* @arkzen:policy:php:delete:end */
+
+/* @arkzen:policy:ts:delete
+*/
+return item?.status !== 'archived'
+/* @arkzen:policy:ts:delete:end */
 
 /* @arkzen:web:components:shared */
 

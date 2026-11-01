@@ -221,12 +221,29 @@ data:
 */
 /* @arkzen:mail:welcome-mail:end */
 
+/* @arkzen:mail:ts:welcome-mail
+subject: "Welcome to Pluff"
+data:
+  username: string
+  app_name: string
+*/
+<p>welcome-mail</p>
+/* @arkzen:mail:ts:welcome-mail:end */
+
 /* @arkzen:notifications:db-ping
 channels: [database]
 message: "You have a new database notification"
 subject: "DB Ping"
 */
 /* @arkzen:notifications:db-ping:end */
+
+/* @arkzen:notifications:ts:db-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "DB Ping"
+*/
+return new MailMessage().subject('db-ping').line('db-ping')
+/* @arkzen:notifications:ts:db-ping:end */
 
 /* @arkzen:realtime:express-test-public
 type: public
