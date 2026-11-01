@@ -1,14 +1,17 @@
 import * as LucideIcons from 'lucide-react-native'
 import type { LucideProps } from 'lucide-react-native'
-import type { ComponentType } from 'react'
+import type { ComponentType, ForwardRefExoticComponent } from 'react'
+
+type LucideComponent = ComponentType<LucideProps> | ForwardRefExoticComponent<LucideProps>
 
 interface ArkzenIconProps extends LucideProps {
   name: string
   set?: string
 }
 
-function isLucideIcon(value: unknown): value is ComponentType<LucideProps> {
+function isLucideIcon(value: unknown): value is LucideComponent {
   return typeof value === 'function'
+    || (typeof value === 'object' && value !== null && '$$typeof' in value)
 }
 
 export function Icon({ name, set = 'lucide', ...props }: ArkzenIconProps) {

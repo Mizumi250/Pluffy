@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NativeLayerBadge [Expo]
 // Source: @arkzen:native:components (layout-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:44.912Z
+// Generated: 2026-11-01T09:07:32.305Z
 // ============================================================
 
 import React from 'react'

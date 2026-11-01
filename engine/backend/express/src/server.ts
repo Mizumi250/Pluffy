@@ -22,11 +22,15 @@ const engineAuth: express.RequestHandler = (req, res, next) =>
 
 const engine = express.Router()
 engine.get('/health', (_q, r) => void r.json({ status: 'ok', engine: 'Pluff Express Backend Engine', backend: 'express', variant: 'ts', version: '1.0.0' }))
-engine.use(engineAuth)
 engine.get('/registry', (_q, r) => {
   const f = path.join(REPO_ROOT, 'arkzen.json')
   r.json(fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf-8')) : { project: path.basename(REPO_ROOT) })
 })
+engine.get('/expo-registry', (_q, r) => {
+  const f = path.join(REPO_ROOT, 'engine', 'frontend', 'expo', 'expo-registry.json')
+  r.json(fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf-8')) : { engine: '1.0.0', project: 'expo', modules: [] })
+})
+engine.use(engineAuth)
 engine.post('/build',  async (q, r) => { const o = await buildTatemono(q.body); r.status(o.status).json(o.body) })
 engine.post('/remove', async (q, r) => r.json(await removeTatemono(q.body)))
 app.use('/arkzen', engine)

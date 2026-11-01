@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StaggerSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:15.442Z
+// Generated: 2026-11-01T09:07:23.561Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

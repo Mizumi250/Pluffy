@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE SCRIPT (GLOBAL) — animation-lab [Expo]
 // Source: @arkzen:native:script:expo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:15.720Z
+// Generated: 2026-11-01T09:07:23.581Z
 // ============================================================
 
 import React from 'react'

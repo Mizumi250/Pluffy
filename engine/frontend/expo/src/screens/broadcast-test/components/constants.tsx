@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — broadcast-test [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:25.282Z
+// Generated: 2026-11-01T09:07:25.154Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,7 +14,7 @@ import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, Text, Te
 
 export const BACKEND_URL   = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 
-export const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST          ?? 'localhost'
+export const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST          ?? new URL(BACKEND_URL).hostname
 
 export const REVERB_PORT   = process.env.EXPO_PUBLIC_REVERB_PORT          ?? '8080'
 

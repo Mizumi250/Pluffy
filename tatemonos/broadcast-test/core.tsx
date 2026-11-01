@@ -594,7 +594,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 setActiveTatemono('broadcast-test')
 
 const BACKEND_URL   = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
-const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST          ?? 'localhost'
+const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST          ?? new URL(BACKEND_URL).hostname
 const REVERB_PORT   = process.env.EXPO_PUBLIC_REVERB_PORT          ?? '8080'
 const REVERB_SCHEME = process.env.EXPO_PUBLIC_REVERB_SCHEME        ?? 'ws'
 const APP_KEY       = process.env.EXPO_PUBLIC_REVERB_APP_KEY       ?? 'arkzen-key'

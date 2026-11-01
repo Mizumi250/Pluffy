@@ -71,6 +71,7 @@ export function generate(p: Any): Generated {
   const events = parseSections(p.events)
   const consoles = parseSections(p.consoles)
   const notifs = parseSections(p.notifications)
+  const hasNotifications = Object.keys(notifs).length > 0
   const mails  = parseSections(p.mails)
   const realtimes = parseSections(p.realtimes)
 
@@ -110,7 +111,7 @@ export function generate(p: Any): Generated {
 ${rels.join('\n')}
 }\n\n`
   }
-  if (notifs.length) models += `export class DatabaseNotification extends Model {
+  if (hasNotifications) models += `export class DatabaseNotification extends Model {
   static table = ${q(T('notifications'))}
   static connectionName = ${q(slug)}
   static fillable = ['id', 'type', 'notifiable_type', 'notifiable_id', 'data', 'read_at']
@@ -118,7 +119,7 @@ ${rels.join('\n')}
   static softDeletes = false
 }\n\n`
   files['models.ts'] = models
-  const modelImports = `import { ${[...(hasAuth ? ['User'] : []), ...modelNames.values(), ...(notifs.length ? ['DatabaseNotification'] : [])].join(', ') || 'Model'} } from './models'\n`
+  const modelImports = `import { ${[...(hasAuth ? ['User'] : []), ...modelNames.values(), ...(hasNotifications ? ['DatabaseNotification'] : [])].join(', ') || 'Model'} } from './models'\n`
 
   // ── middleware ─────────────────────────────────────────
   const mwSnippets: Any = p.middlewareSnippets ?? {}
@@ -167,6 +168,7 @@ ${ind(body('delete'), 2)}
   for (const api of apis) {
     const M: string = api.model
     const v = lcfirst(M)
+    const nativeNotificationApi = hasNotifications && M === 'Notification'
     const usePolicy = !!api.policy
     const methods: string[] = []
     for (const [name, ep] of Object.entries(api.endpoints ?? {}) as [string, Any][]) {
@@ -176,6 +178,10 @@ ${ind(body('delete'), 2)}
       let code: string
       switch (name) {
         case 'index': {
+          if (nativeNotificationApi && !ep.body) {
+            code = `    const user = request.user()\n    const results = await DatabaseNotification.query().where({ notifiable_type: 'user', notifiable_id: user.id }).orderBy('created_at', 'desc').get()\n    return response.json({ data: results })\n`
+            break
+          }
           if (ep.type === 'upload_index') {
             code = `    const files = await ${M}.latest().get()\n    return response.json({ data: files.map((file: any) => ({ ...file.toJSON(), url: file.is_image ? Storage.url(file.disk_path) : null })) })\n`
             break
@@ -242,7 +248,9 @@ ${ind(body('delete'), 2)}
         case 'show':    code = `${find}    return response.json(${api.resource ? `resourceTransform(${v}, ${resourceFields(api)})` : v})\n`; break
         case 'update':  code = `${find}${auth('update')}    const validated = await request.validate(${rules(ep.validation)})\n    await ${v}.update(validated)\n    return response.json(${api.resource ? `resourceTransform(${v}, ${resourceFields(api)})` : v})\n`; break
         case 'destroy':
-          code = ep.type === 'upload_destroy'
+          code = nativeNotificationApi && !ep.body
+            ? `    const user = request.user()\n    const notification = await DatabaseNotification.query().where({ id: request.route('id'), notifiable_type: 'user', notifiable_id: user.id }).firstOrFail()\n    await notification.delete()\n    return response.json({ message: ${q(ep.response?.value ?? 'Notification deleted')} })\n`
+            : ep.type === 'upload_destroy'
             ? `    const file = await ${M}.findOrFail(request.route('id'))\n    if (file.disk_path) Storage.delete(file.disk_path)\n    await file.delete()\n    return response.json({ message: 'File deleted' })\n`
             : `${find}${auth('delete')}    await ${v}.delete()\n    return response.json({ message: ${q(ep.response?.value ?? `${M} deleted successfully`)} })\n`
           break
@@ -260,6 +268,8 @@ ${ind(body('delete'), 2)}
           const body = dec(ep.body).trim()
           code = body
             ? ind(body, 2) + '\n'
+            : nativeNotificationApi && name === 'readAll'
+              ? `    const user = request.user()\n    await DatabaseNotification.query().where({ notifiable_type: 'user', notifiable_id: user.id }).whereNull('read_at').update({ read_at: now() })\n    return response.json({ message: ${q(ep.response?.value ?? 'All notifications marked as read')} })\n`
             : `    // Custom endpoint: ${name}\n    // Add @arkzen:endpoint:ts:${name} ... :end to your tatemono to inject logic.\n    return response.json({ message: ${q(`Endpoint ${name} is not implemented yet`)} }, 501)\n`
         }
       }
@@ -288,7 +298,7 @@ ${ind(body('delete'), 2)}
   const mailClasses = lookup(Object.keys(mails), 'Mail')
   const notifClasses = lookup(Object.keys(notifs), 'Notification')
   const needsMsgEvents = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'broadcast'))
-  if (notifs.length) ctl = ctl.replace(/\bNotification\.(query|findOrFail)/g, 'DatabaseNotification.$1')
+  if (hasNotifications) ctl = ctl.replace(/\bNotification\.(query|findOrFail)/g, 'DatabaseNotification.$1')
   ctl += `import { mailClasses } from './mails'\nimport { notificationClasses } from './notifications'\n${needsMsgEvents ? `import { MessageSentEvents } from './realtime'\n` : `const MessageSentEvents: Record<string, any> = {}\n`}`
   files['controllers.ts'] = ctl
 

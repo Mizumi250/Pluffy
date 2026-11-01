@@ -106,14 +106,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'new-updates-styles', screenName: 'about', routePath: '/new-updates-styles/about', layout: 'default', auth: false },
 // ROUTE:new-updates-styles:features:/new-updates-styles/features:default:false
   { tatName: 'new-updates-styles', screenName: 'features', routePath: '/new-updates-styles/features', layout: 'default', auth: false },
-// ROUTE:notification-test:login:/notification-test/login:guest:false
-  { tatName: 'notification-test', screenName: 'login', routePath: '/notification-test/login', layout: 'guest', auth: false },
-// ROUTE:notification-test:register:/notification-test/register:guest:false
-  { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
-// ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
-  { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
-// ROUTE:notification-test:index:/notification-test:guest:false
-  { tatName: 'notification-test', screenName: 'index', routePath: '/notification-test', layout: 'guest', auth: false },
 // ROUTE:portfolio-test:index:/portfolio-test:guest:false
   { tatName: 'portfolio-test', screenName: 'index', routePath: '/portfolio-test', layout: 'guest', auth: false },
 // ROUTE:queue-flow:index:/queue-flow:default:false
@@ -140,6 +132,14 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false
   { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
+// ROUTE:notification-test:login:/notification-test/login:guest:false
+  { tatName: 'notification-test', screenName: 'login', routePath: '/notification-test/login', layout: 'guest', auth: false },
+// ROUTE:notification-test:register:/notification-test/register:guest:false
+  { tatName: 'notification-test', screenName: 'register', routePath: '/notification-test/register', layout: 'guest', auth: false },
+// ROUTE:notification-test:dashboard:/notification-test/dashboard:auth:true
+  { tatName: 'notification-test', screenName: 'dashboard', routePath: '/notification-test/dashboard', layout: 'auth', auth: true },
+// ROUTE:notification-test:index:/notification-test:guest:false
+  { tatName: 'notification-test', screenName: 'index', routePath: '/notification-test', layout: 'guest', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

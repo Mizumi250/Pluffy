@@ -94,12 +94,12 @@ const DashboardScreen = () => {
                 <Text className="text-xs text-neutral-500">{cmd.schedule}</Text>
               </View>
               <TouchableOpacity
-                onPress={() => runCommand('/api/scheduler-test/run', { command: cmd.key, triggered_by: 'manual' })}
+                onPress={() => runCommand(cmd.key)}
                 disabled={!!running}
                 activeOpacity={0.8}
-                className={`py-2 rounded-xl items-center ${runningKey?.command === cmd.key ? 'bg-neutral-200' : 'bg-neutral-900'}`}
+                className={`py-2 rounded-xl items-center ${running === cmd.key ? 'bg-neutral-200' : 'bg-neutral-900'}`}
               >
-                {runningKey?.command === cmd.key
+                {running === cmd.key
                   ? <ActivityIndicator size="small" color="#737373" />
                   : <Text className="text-white text-xs font-semibold">Run now</Text>
                 }

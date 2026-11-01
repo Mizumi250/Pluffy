@@ -662,7 +662,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage'
 setActiveTatemono('notification-test')
 
 const BACKEND_URL   = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
-const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST        ?? 'localhost'
+const REVERB_HOST   = process.env.EXPO_PUBLIC_REVERB_HOST        ?? new URL(BACKEND_URL).hostname
 const REVERB_PORT   = process.env.EXPO_PUBLIC_REVERB_PORT        ?? '8080'
 const REVERB_SCHEME = process.env.EXPO_PUBLIC_REVERB_SCHEME      ?? 'ws'
 const APP_KEY       = process.env.EXPO_PUBLIC_REVERB_APP_KEY     ?? 'arkzen-key'
@@ -1263,7 +1263,7 @@ const DashboardScreen = () => {
         {wsStatus === 'error' && (
           <View className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
             <Text className="text-xs text-amber-800 font-semibold mb-1">WebSocket not connected</Text>
-            <Text className="text-xs text-amber-700 font-mono">php artisan reverb:start</Text>
+            <Text className="text-xs text-amber-700">Inbox notifications still work; live broadcasts are unavailable. Check the backend realtime service on port {REVERB_PORT}.</Text>
           </View>
         )}
 

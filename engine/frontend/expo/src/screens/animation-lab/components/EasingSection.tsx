@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — EasingSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:15.525Z
+// Generated: 2026-11-01T09:07:23.575Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

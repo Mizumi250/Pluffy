@@ -338,7 +338,7 @@ const DashboardScreen = () => {
         {wsStatus === 'error' && (
           <View className="bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-4">
             <Text className="text-xs text-amber-800 font-semibold mb-1">WebSocket not connected</Text>
-            <Text className="text-xs text-amber-700 font-mono">php artisan reverb:start</Text>
+            <Text className="text-xs text-amber-700">Inbox notifications still work; live broadcasts are unavailable. Check the backend realtime service on port {REVERB_PORT}.</Text>
           </View>
         )}
 
