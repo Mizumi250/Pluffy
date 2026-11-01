@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — BigTicketDisplay
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:32:16.353Z
+// Generated: 2026-11-01T12:45:27.878Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

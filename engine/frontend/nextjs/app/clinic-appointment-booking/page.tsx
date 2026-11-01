@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — clinic-appointment-booking/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:32:03.152Z
+// Generated: 2026-11-01T12:45:02.916Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

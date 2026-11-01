@@ -22,10 +22,10 @@ def build_router():
     register_auth_routes(r, S, "/api/express-test", {'express-test-public': {'type': 'public', 'auth': 'authenticated'}, 'express-test.{id}': {'type': 'private', 'auth': 'owner'}})
     r.add("GET", "/api/express-test/tickets", [mw("auth:sanctum")], handle(S, C.TicketController.index))
     r.add("POST", "/api/express-test/tickets", [mw("auth:sanctum")], handle(S, C.TicketController.store))
+    r.add("GET", "/api/express-test/stats", [mw("auth:sanctum")], handle(S, C.TicketController.stats))
     r.add("GET", "/api/express-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.show))
     r.add("PUT", "/api/express-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.update))
     r.add("DELETE", "/api/express-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.destroy))
-    r.add("GET", "/api/express-test/stats", [mw("auth:sanctum")], handle(S, C.TicketController.stats))
     r.add("GET", "/api/express-test/ping", [mw("requireJson")], handle(S, C.PingController.index))
     r.add("GET", "/api/express-test/probe/{name}", [], handle(S, lambda rq, rs: C.ProbeController.probe(rq, rs, *rq.route().values())))
     return r

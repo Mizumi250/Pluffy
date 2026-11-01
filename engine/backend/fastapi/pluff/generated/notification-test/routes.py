@@ -22,6 +22,6 @@ def build_router():
     register_auth_routes(r, S, "/api/notification-test", {'notification-test.{id}': {'type': 'private', 'auth': 'owner'}})
     r.add("GET", "/api/notification-test/inbox", [mw("auth")], handle(S, C.NotificationController.index))
     r.add("POST", "/api/notification-test/trigger", [mw("auth")], handle(S, C.NotificationController.store))
-    r.add("DELETE", "/api/notification-test/inbox/{id}", [mw("auth")], handle(S, C.NotificationController.destroy))
     r.add("POST", "/api/notification-test/inbox/read-all", [mw("auth")], handle(S, C.NotificationController.readAll))
+    r.add("DELETE", "/api/notification-test/inbox/{id}", [mw("auth")], handle(S, C.NotificationController.destroy))
     return r

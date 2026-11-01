@@ -21,10 +21,10 @@ def build_router():
 
     r.add("GET", "/api/jo-payroll/job-orders", [], handle(S, C.JobOrderController.index))
     r.add("POST", "/api/jo-payroll/job-orders", [], handle(S, C.JobOrderController.store))
+    r.add("GET", "/api/jo-payroll/job-orders/stats/summary", [], handle(S, C.JobOrderController.summary))
+    r.add("GET", "/api/jo-payroll/job-orders/appointments/list", [], handle(S, C.JobOrderController.appointments))
     r.add("GET", "/api/jo-payroll/job-orders/{id}", [], handle(S, C.JobOrderController.show))
     r.add("PUT", "/api/jo-payroll/job-orders/{id}", [], handle(S, C.JobOrderController.update))
     r.add("DELETE", "/api/jo-payroll/job-orders/{id}", [], handle(S, C.JobOrderController.destroy))
-    r.add("GET", "/api/jo-payroll/job-orders/stats/summary", [], handle(S, C.JobOrderController.summary))
     r.add("GET", "/api/jo-payroll/job-orders/group/{group}", [], handle(S, C.JobOrderController.byGroup))
-    r.add("GET", "/api/jo-payroll/job-orders/appointments/list", [], handle(S, C.JobOrderController.appointments))
     return r

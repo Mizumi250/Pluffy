@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — RecordRow
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:32:04.310Z
+// Generated: 2026-11-01T12:45:04.787Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

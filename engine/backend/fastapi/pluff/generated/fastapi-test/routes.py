@@ -22,10 +22,10 @@ def build_router():
     register_auth_routes(r, S, "/api/fastapi-test", {'fastapi-test-public': {'type': 'public', 'auth': 'authenticated'}, 'fastapi-test.{id}': {'type': 'private', 'auth': 'owner'}})
     r.add("GET", "/api/fastapi-test/tickets", [mw("auth:sanctum")], handle(S, C.TicketController.index))
     r.add("POST", "/api/fastapi-test/tickets", [mw("auth:sanctum")], handle(S, C.TicketController.store))
+    r.add("GET", "/api/fastapi-test/stats", [mw("auth:sanctum")], handle(S, C.TicketController.stats))
     r.add("GET", "/api/fastapi-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.show))
     r.add("PUT", "/api/fastapi-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.update))
     r.add("DELETE", "/api/fastapi-test/tickets/{id}", [mw("auth:sanctum")], handle(S, C.TicketController.destroy))
-    r.add("GET", "/api/fastapi-test/stats", [mw("auth:sanctum")], handle(S, C.TicketController.stats))
     r.add("GET", "/api/fastapi-test/ping", [mw("requireJson")], handle(S, C.PingController.index))
     r.add("GET", "/api/fastapi-test/probe/{name}", [], handle(S, lambda rq, rs: C.ProbeController.probe(rq, rs, *rq.route().values())))
     return r

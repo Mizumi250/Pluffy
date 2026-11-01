@@ -20,8 +20,8 @@ def build_router():
         return middleware(S, fn)
 
     r.add("GET", "/api/queue-flow/queues", [], handle(S, C.QueueController.index))
-    r.add("GET", "/api/queue-flow/queues/{id}", [], handle(S, C.QueueController.show))
     r.add("POST", "/api/queue-flow/queues", [], handle(S, C.QueueController.store))
+    r.add("GET", "/api/queue-flow/queues/{id}", [], handle(S, C.QueueController.show))
     r.add("PUT", "/api/queue-flow/queues/{id}", [], handle(S, C.QueueController.update))
     r.add("DELETE", "/api/queue-flow/queues/{id}", [], handle(S, C.QueueController.destroy))
     r.add("GET", "/api/queue-flow/tickets", [], handle(S, C.TicketController.index))

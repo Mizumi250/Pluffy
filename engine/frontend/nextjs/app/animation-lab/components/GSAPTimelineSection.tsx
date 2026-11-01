@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — GSAPTimelineSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:31:58.664Z
+// Generated: 2026-11-01T12:44:54.536Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

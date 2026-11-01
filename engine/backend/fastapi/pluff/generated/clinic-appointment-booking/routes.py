@@ -19,12 +19,12 @@ def build_router():
             raise Exception('Unknown middleware: ' + name)
         return middleware(S, fn)
 
-    r.add("GET", "/api/clinic-appointment-booking/patients/", [], handle(S, C.PatientController.index))
-    r.add("POST", "/api/clinic-appointment-booking/patients/", [], handle(S, C.PatientController.store))
+    r.add("GET", "/api/clinic-appointment-booking/patients", [], handle(S, C.PatientController.index))
+    r.add("POST", "/api/clinic-appointment-booking/patients", [], handle(S, C.PatientController.store))
     r.add("PUT", "/api/clinic-appointment-booking/patients/{id}", [], handle(S, C.PatientController.update))
     r.add("DELETE", "/api/clinic-appointment-booking/patients/{id}", [], handle(S, C.PatientController.destroy))
-    r.add("GET", "/api/clinic-appointment-booking/appointments/", [], handle(S, C.AppointmentController.index))
-    r.add("POST", "/api/clinic-appointment-booking/appointments/", [], handle(S, C.AppointmentController.store))
+    r.add("GET", "/api/clinic-appointment-booking/appointments", [], handle(S, C.AppointmentController.index))
+    r.add("POST", "/api/clinic-appointment-booking/appointments", [], handle(S, C.AppointmentController.store))
     r.add("PUT", "/api/clinic-appointment-booking/appointments/{id}", [], handle(S, C.AppointmentController.update))
     r.add("DELETE", "/api/clinic-appointment-booking/appointments/{id}", [], handle(S, C.AppointmentController.destroy))
     return r

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ContinuationCard
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:31:59.953Z
+// Generated: 2026-11-01T12:44:56.181Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

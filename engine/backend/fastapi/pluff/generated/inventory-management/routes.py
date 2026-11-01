@@ -20,9 +20,9 @@ def build_router():
         return middleware(S, fn)
 
     r.add("GET", "/api/inventories", [], handle(S, C.InventoryController.index))
+    r.add("POST", "/api/inventories", [], handle(S, C.InventoryController.store))
     r.add("GET", "/api/inventories/low-stock", [], handle(S, C.InventoryController.lowStock))
     r.add("GET", "/api/inventories/{id}", [], handle(S, C.InventoryController.show))
-    r.add("POST", "/api/inventories", [], handle(S, C.InventoryController.store))
     r.add("PUT", "/api/inventories/{id}", [], handle(S, C.InventoryController.update))
     r.add("DELETE", "/api/inventories/{id}", [], handle(S, C.InventoryController.destroy))
     return r

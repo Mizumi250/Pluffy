@@ -174,6 +174,7 @@ def generate(p: Any) -> Any:
     if any(ep.get("type") == "event_fire" for api in apis for ep in (api.get("endpoints") or {}).values()):
         ctl += "from . import events as GeneratedEvents\n"
     ctl += "from .mails import mail_classes\nfrom .notifications import notification_classes\nfrom .realtime import MessageSentEvents\n\n\n"
+    controller_methods: dict[str, list[str]] = {}
 
     def rules(v: Any | None) -> str:
         return repr({k: str(r) for k, r in (v or {}).items()})
@@ -346,8 +347,9 @@ def generate(p: Any) -> Any:
                 lines = (b + "\n") if b else (f"# Custom endpoint: {name}\n# Add @arkzen:endpoint:py:{name} ... :end to your tatemono to inject logic.\n"
                                               f"return response.json({{'message': {q(f'Endpoint {name} is not implemented yet')}}}, 501)\n")
             methods.append(f"    @staticmethod\n    async def {name}(request, response):\n{ind(lines.rstrip(chr(10)), 8)}\n")
-        ctl += f"class {api['controller']}:\n" + "\n".join(methods) + "\n\n"
-        controller_names.append(api["controller"])
+        controller_methods.setdefault(api["controller"], []).extend(methods)
+        if api["controller"] not in controller_names:
+            controller_names.append(api["controller"])
 
     for cr in p.get("customRoutes") or []:
         methods = []
@@ -356,8 +358,11 @@ def generate(p: Any) -> Any:
             stub_msg = q("Handler " + str(r["handler"]) + " is not implemented yet")
             body = b or f"return response.json({{'message': {stub_msg}}}, 501)"
             methods.append(f"    @staticmethod\n    async def {r['handler']}(request, response, *params):\n{ind(body, 8)}\n")
-        ctl += f"class {cr['controller']}:\n" + "\n".join(methods) + "\n\n"
-        controller_names.append(cr["controller"])
+        controller_methods.setdefault(cr["controller"], []).extend(methods)
+        if cr["controller"] not in controller_names:
+            controller_names.append(cr["controller"])
+    for controller, methods in controller_methods.items():
+        ctl += f"class {controller}:\n" + "\n".join(methods) + "\n\n"
     files["controllers.py"] = ctl
 
     # ── jobs ──

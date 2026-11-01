@@ -20,8 +20,8 @@ def build_router():
         return middleware(S, fn)
 
     register_auth_routes(r, S, "/api/shikaku", {})
-    r.add("GET", "/api/shikaku/projects/", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.index))
-    r.add("POST", "/api/shikaku/projects/", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.store))
+    r.add("GET", "/api/shikaku/projects", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.index))
+    r.add("POST", "/api/shikaku/projects", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.store))
     r.add("GET", "/api/shikaku/projects/{id}", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.show))
     r.add("PUT", "/api/shikaku/projects/{id}", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.update))
     r.add("DELETE", "/api/shikaku/projects/{id}", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.destroy))

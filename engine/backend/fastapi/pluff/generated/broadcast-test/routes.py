@@ -20,7 +20,7 @@ def build_router():
         return middleware(S, fn)
 
     register_auth_routes(r, S, "/api/broadcast-test", {'broadcast-test-public': {'type': 'public', 'auth': 'authenticated'}, 'broadcast-test-presence': {'type': 'presence', 'auth': 'authenticated'}})
-    r.add("GET", "/api/broadcast-test/messages/", [], handle(S, C.MessageController.index))
-    r.add("POST", "/api/broadcast-test/messages/", [optional_auth(S)], handle(S, C.MessageController.store))
+    r.add("GET", "/api/broadcast-test/messages", [], handle(S, C.MessageController.index))
+    r.add("POST", "/api/broadcast-test/messages", [optional_auth(S)], handle(S, C.MessageController.store))
     r.add("DELETE", "/api/broadcast-test/messages/{id}", [], handle(S, C.MessageController.destroy))
     return r
