@@ -102,10 +102,14 @@ public final class Conn {
           try (ResultSet rs = ps.executeQuery()) { return rs.next() ? normalize(rs.getObject(1)) : null; }
         }
       }
-      try (PreparedStatement ps = c.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
+      // SQLite: getGeneratedKeys() is not implemented in every sqlite-jdbc version, last_insert_rowid() always is.
+      // This method is synchronized and owns the connection, so the rowid belongs to the INSERT above.
+      try (PreparedStatement ps = c.prepareStatement(sql)) {
         bind(ps, params);
         ps.executeUpdate();
-        try (ResultSet rs = ps.getGeneratedKeys()) { return rs.next() ? normalize(rs.getObject(1)) : null; }
+      }
+      try (Statement st = c.createStatement(); ResultSet rs = st.executeQuery("SELECT last_insert_rowid()")) {
+        return rs.next() ? normalize(rs.getObject(1)) : null;
       }
     } catch (SQLException e) {
       throw wrap(e, sql);
