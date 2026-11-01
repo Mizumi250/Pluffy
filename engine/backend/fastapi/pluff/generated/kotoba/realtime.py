@@ -6,6 +6,7 @@ class MessageCreated(BroadcastEvent):
     tatemono = "kotoba"
     channel_type = "private"
     channel = "kotoba"
+    channel_has_id = True
     event_name = "kotoba.message-created"
 
 
@@ -13,6 +14,7 @@ class AlertCreated(BroadcastEvent):
     tatemono = "kotoba"
     channel_type = "private"
     channel = "kotoba"
+    channel_has_id = True
     event_name = "kotoba.alert-created"
 
 

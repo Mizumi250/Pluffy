@@ -73,7 +73,6 @@ const DashboardScreen = () => {
         const socketId = (connData as any).socket_id as string
 
         // 1. public — no auth needed
-        setPublicStatus('connected')
         ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'broadcast-test-public' } }))
 
         // 2. private — use arkzenFetch, handles auth token automatically from map
@@ -85,7 +84,6 @@ const DashboardScreen = () => {
           if (res.ok) {
             const { auth } = await res.json()
             ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: `private-broadcast-test.${userId}`, auth } }))
-            setPrivateStatus('connected')
           } else { setPrivateStatus('error') }
         } catch (e) { console.error('[broadcast-test] private auth error:', e); setPrivateStatus('error') }
 
@@ -98,9 +96,18 @@ const DashboardScreen = () => {
           if (res.ok) {
             const { auth, channel_data } = await res.json()
             ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'presence-broadcast-test-presence', auth, channel_data } }))
-            setPresenceStatus('connected')
           } else { setPresenceStatus('error') }
         } catch (e) { console.error('[broadcast-test] presence auth error:', e); setPresenceStatus('error') }
+      }
+
+      if (msg.event === 'pusher_internal:subscription_succeeded') {
+        if (msg.channel === 'broadcast-test-public') setPublicStatus('connected')
+        else if (msg.channel?.startsWith('private-broadcast-test.')) setPrivateStatus('connected')
+        else if (msg.channel === 'presence-broadcast-test-presence') setPresenceStatus('connected')
+      }
+      if (msg.event === 'pusher:error') {
+        if (msg.channel?.startsWith('private-broadcast-test.')) setPrivateStatus('error')
+        else if (msg.channel === 'presence-broadcast-test-presence') setPresenceStatus('error')
       }
 
       if (msg.event === 'broadcast-test.message-sent-public' || msg.channel === 'broadcast-test-public') {

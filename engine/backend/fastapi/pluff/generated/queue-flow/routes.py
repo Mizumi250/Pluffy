@@ -27,8 +27,8 @@ def build_router():
     r.add("GET", "/api/queue-flow/tickets", [], handle(S, C.TicketController.index))
     r.add("POST", "/api/queue-flow/tickets", [], handle(S, C.TicketController.store))
     r.add("PUT", "/api/queue-flow/tickets/{id}", [], handle(S, C.TicketController.update))
-    r.add("POST", "/api/queue-flow/join", [], handle(S, lambda rq, rs: C.QueueController.join_queue(rq, rs, *rq.route().values())))
-    r.add("POST", "/api/queue-flow/call-next", [], handle(S, lambda rq, rs: C.QueueController.call_next(rq, rs, *rq.route().values())))
-    r.add("GET", "/api/queue-flow/status/{queue_id}", [], handle(S, lambda rq, rs: C.QueueController.queue_status(rq, rs, *rq.route().values())))
-    r.add("GET", "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}", [], handle(S, lambda rq, rs: C.QueueController.my_ticket(rq, rs, *rq.route().values())))
+    r.add("POST", "/api/queue-flow/join", [], handle(S, lambda rq, rs: C.QueueControllerCustomRoutes.join_queue(rq, rs, *rq.route().values())))
+    r.add("POST", "/api/queue-flow/call-next", [], handle(S, lambda rq, rs: C.QueueControllerCustomRoutes.call_next(rq, rs, *rq.route().values())))
+    r.add("GET", "/api/queue-flow/status/{queue_id}", [], handle(S, lambda rq, rs: C.QueueControllerCustomRoutes.queue_status(rq, rs, *rq.route().values())))
+    r.add("GET", "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}", [], handle(S, lambda rq, rs: C.QueueControllerCustomRoutes.my_ticket(rq, rs, *rq.route().values())))
     return r

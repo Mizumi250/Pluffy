@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — EpGalleryModal
 // Source: @arkzen:components (ethan-pool)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:45:06.996Z
+// Generated: 2026-11-01T13:14:16.433Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

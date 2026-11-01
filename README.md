@@ -124,16 +124,3 @@ as the engine and its ai improve so as the output
 (the future PLUFFY ex Arkzen output will show here)
 
 
-
-body-endpoint-handler
-body-mail-notification
-crud-test
-dtr-geofencing
-fastapi-test
-jo-payroll
-job-test
-kotoba
-middleware-test
-ollama-studio
-queue-flow
-scheduler-test

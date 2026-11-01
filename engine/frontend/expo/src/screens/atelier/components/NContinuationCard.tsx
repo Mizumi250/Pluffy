@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — NContinuationCard [Expo]
 // Source: @arkzen:native:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T09:07:24.149Z
+// Generated: 2026-11-01T13:17:41.678Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

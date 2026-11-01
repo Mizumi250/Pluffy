@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — MobileNav
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:44:56.164Z
+// Generated: 2026-11-01T13:14:10.430Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

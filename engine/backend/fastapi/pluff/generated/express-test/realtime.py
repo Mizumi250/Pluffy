@@ -6,6 +6,7 @@ class MessageSentPublic(BroadcastEvent):
     tatemono = "express-test"
     channel_type = "public"
     channel = "express-test-public"
+    channel_has_id = False
     event_name = "express-test.message-sent-public"
 
 

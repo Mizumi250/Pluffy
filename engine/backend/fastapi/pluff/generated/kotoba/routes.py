@@ -19,7 +19,7 @@ def build_router():
             raise Exception('Unknown middleware: ' + name)
         return middleware(S, fn)
 
-    register_auth_routes(r, S, "/api/kotoba", {})
+    register_auth_routes(r, S, "/api/kotoba", {'kotoba.{id}': {'type': 'private', 'auth': 'owner'}})
     r.add("GET", "/api/kotoba/x/profiles/status", [mw("auth:sanctum")], handle(S, C.ProfileController.status))
     r.add("GET", "/api/kotoba/x/posts/status", [mw("auth:sanctum")], handle(S, C.PostController.status))
     r.add("GET", "/api/kotoba/x/comments/status", [mw("auth:sanctum")], handle(S, C.CommentController.status))

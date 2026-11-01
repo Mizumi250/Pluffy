@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — dtr-geofencing
 // Source: @arkzen:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:45:04.755Z
+// Generated: 2026-11-01T13:14:15.162Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

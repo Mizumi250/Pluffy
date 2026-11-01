@@ -64,7 +64,7 @@ async def _subscribe(c: _Client, msg: dict) -> None:
     if is_private or is_presence:
         expected = sign_channel(c.id, ch, msg.get("channel_data") if is_presence else None)
         if msg.get("auth") != expected:
-            return await _out(c.ws, "pusher:error", {"code": 4009, "message": "Connection is unauthorized"})
+            return await _out(c.ws, "pusher:error", {"code": 4009, "message": "Connection is unauthorized"}, ch)
     _channels.setdefault(ch, set()).add(c)
     c.channels.add(ch)
     if is_presence:
@@ -108,6 +108,7 @@ class BroadcastEvent:
     tatemono = ""
     channel_type = "public"
     channel = ""
+    channel_has_id = False
     event_name = ""
     user_id = None
 
@@ -119,8 +120,10 @@ def broadcast(e: BroadcastEvent) -> None:
     """broadcast(SomeEvent(data))"""
     if e.channel_type == "public":
         name = e.channel
+    elif e.channel_type == "private":
+        name = f"private-{e.channel}" + (f".{e.user_id}" if e.channel_has_id and e.user_id is not None else "")
     else:
-        name = f"{e.channel_type}-{e.channel}" + (f".{e.user_id}" if e.user_id is not None else "")
+        name = f"{e.channel_type}-{e.channel}"
     broadcast_to(name, e.event_name, e.data)
 
 

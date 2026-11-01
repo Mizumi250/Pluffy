@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CommissionsSection
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:45:22.898Z
+// Generated: 2026-11-01T13:14:25.817Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

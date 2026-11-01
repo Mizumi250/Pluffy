@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerVariantsSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:44:54.558Z
+// Generated: 2026-11-01T13:14:09.502Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

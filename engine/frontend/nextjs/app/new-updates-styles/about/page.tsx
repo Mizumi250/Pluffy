@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — new-updates-styles/about
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T12:45:25.593Z
+// Generated: 2026-11-01T13:14:27.507Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Logo [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T09:07:30.302Z
+// Generated: 2026-11-01T13:17:46.784Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

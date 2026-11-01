@@ -351,16 +351,22 @@ def generate(p: Any) -> Any:
         if api["controller"] not in controller_names:
             controller_names.append(api["controller"])
 
+    api_controller_names = {api["controller"] for api in apis}
+    custom_controller_names: dict[int, str] = {}
     for cr in p.get("customRoutes") or []:
+        controller = cr["controller"]
+        if controller in api_controller_names:
+            controller += "CustomRoutes"
+        custom_controller_names[id(cr)] = controller
         methods = []
         for r in cr.get("routes") or []:
             b = dec(r.get("body")).strip()
             stub_msg = q("Handler " + str(r["handler"]) + " is not implemented yet")
             body = b or f"return response.json({{'message': {stub_msg}}}, 501)"
             methods.append(f"    @staticmethod\n    async def {r['handler']}(request, response, *params):\n{ind(body, 8)}\n")
-        controller_methods.setdefault(cr["controller"], []).extend(methods)
-        if cr["controller"] not in controller_names:
-            controller_names.append(cr["controller"])
+        controller_methods.setdefault(controller, []).extend(methods)
+        if controller not in controller_names:
+            controller_names.append(controller)
     for controller, methods in controller_methods.items():
         ctl += f"class {controller}:\n" + "\n".join(methods) + "\n\n"
     files["controllers.py"] = ctl
@@ -461,8 +467,11 @@ def generate(p: Any) -> Any:
             continue
         typ = cfg.get("type") or "public"
         cls = studly(name)
-        channel = re.sub(r"\.\{id\}$", "", str(cfg["channel"]))
+        raw_channel = str(cfg["channel"])
+        channel_has_id = bool(re.search(r"\.\{id\}$", raw_channel))
+        channel = re.sub(r"\.\{id\}$", "", raw_channel)
         rt += (f"class {cls}(BroadcastEvent):\n    tatemono = {q(slug)}\n    channel_type = {q(typ)}\n    channel = {q(channel)}\n"
+               f"    channel_has_id = {channel_has_id!r}\n"
                f"    event_name = {q(f'{slug}.{name}')}\n\n\n")
         bc_classes.append((typ, cls))
     first: dict[str, str] = {}
@@ -495,9 +504,10 @@ def generate(p: Any) -> Any:
             rts += f"    r.add({q(str(ep.get('method') or 'GET').upper())}, {q(path)}, [{', '.join(chain)}], handle(S, C.{api['controller']}.{name}))\n"
     for cr in p.get("customRoutes") or []:
         chain = [f"mw({q(str(m).strip())})" for m in (cr.get("middleware") or [])]
+        controller = custom_controller_names[id(cr)]
         for r in cr.get("routes") or []:
             rts += (f"    r.add({q(str(r.get('method') or 'GET').upper())}, {q(r['route'])}, [{', '.join(chain)}], "
-                    f"handle(S, lambda rq, rs: C.{cr['controller']}.{r['handler']}(rq, rs, *rq.route().values())))\n")
+                    f"handle(S, lambda rq, rs: C.{controller}.{r['handler']}(rq, rs, *rq.route().values())))\n")
     rts += "    return r\n"
     files["routes.py"] = rts
 

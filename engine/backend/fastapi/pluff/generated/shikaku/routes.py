@@ -19,7 +19,7 @@ def build_router():
             raise Exception('Unknown middleware: ' + name)
         return middleware(S, fn)
 
-    register_auth_routes(r, S, "/api/shikaku", {})
+    register_auth_routes(r, S, "/api/shikaku", {'shikaku.project.{id}': {'type': 'presence', 'auth': 'authenticated'}})
     r.add("GET", "/api/shikaku/projects", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.index))
     r.add("POST", "/api/shikaku/projects", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.store))
     r.add("GET", "/api/shikaku/projects/{id}", [mw("auth:sanctum")], handle(S, C.ShikakuProjectController.show))
