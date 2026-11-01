@@ -266,8 +266,20 @@ class Router:
         self.routes: list[tuple[str, re.Pattern, list, object]] = []
 
     def add(self, method: str, path: str, chain: list, handler) -> None:
-        pat = re.sub(r"\{(\w+)\??\}", r"(?P<\1>[^/]+)", re.sub(r"([.+*?^$()|\\])", r"\\\1", path).replace("\\{", "{").replace("\\}", "}"))
-        self.routes.append((method.upper(), re.compile("^" + pat + "/?$"), chain, handler))
+        path = re.sub(r"/+", "/", path)
+        if path != "/":
+            path = path.rstrip("/")
+        if path == "/":
+            pat = re.compile(r"^/?$")
+        else:
+            escaped = re.sub(r"([.+*?^$()|\\])", r"\\\1", path).replace("\\{", "{").replace("\\}", "}")
+            pat = re.compile("^" + re.sub(r"\{(\w+)\??\}", r"(?P<\1>[^/]+)", escaped) + "/?$")
+        route = (method.upper(), pat, chain, handler)
+        if re.search(r"\{\w+\??\}", path):
+            self.routes.append(route)
+        else:
+            dynamic_index = next((i for i, existing in enumerate(self.routes) if re.search(r"\(\?P<", existing[1].pattern)), len(self.routes))
+            self.routes.insert(dynamic_index, route)
 
     async def dispatch(self, raw: StarletteRequest, path: str, body, files: dict | None = None) -> StarletteResponse | None:
         for method, pat, chain, handler in self.routes:

@@ -134,6 +134,49 @@ subject: "All Channels Test"
 return new MailMessage().subject('all-channels').line('all-channels')
 /* @arkzen:notifications:ts:all-channels:end */
 
+/* @arkzen:notifications:py:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return MailMessage().subject('Database Ping').line('You have a new database notification')
+/* @arkzen:notifications:py:database-ping:end */
+
+/* @arkzen:notifications:py:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return MailMessage().subject('Mail Ping from Arkzen').line('This is a test mail notification')
+/* @arkzen:notifications:py:mail-ping:end */
+
+/* @arkzen:notifications:py:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return MailMessage().subject('Broadcast Ping (Private)').line('Real-time notification received on your private channel!')
+/* @arkzen:notifications:py:broadcast-ping:end */
+
+/* @arkzen:notifications:py:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return MailMessage().subject('Broadcast Ping (Public)').line('This broadcast went to the public notification channel!')
+/* @arkzen:notifications:py:broadcast-ping-public:end */
+
+/* @arkzen:notifications:py:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return MailMessage().subject('All Channels Test').line('This notification was sent to all three channels simultaneously')
+/* @arkzen:notifications:py:all-channels:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

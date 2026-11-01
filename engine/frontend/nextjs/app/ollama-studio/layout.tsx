@@ -6,11 +6,11 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'ollama-studio',
-  description: 'A small local AI chat Tatemono powered by Ollama through the FastAPI backend. Prompts are sent only to the local Ollama service.',
+  description: 'A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.',
   openGraph: {
     type: 'website',
     title: 'ollama-studio',
-    description: 'A small local AI chat Tatemono powered by Ollama through the FastAPI backend. Prompts are sent only to the local Ollama service.',
+    description: 'A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.',
   },
 }
 

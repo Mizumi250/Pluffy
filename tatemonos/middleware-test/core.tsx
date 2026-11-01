@@ -88,7 +88,7 @@ import { ShieldCheck } from 'lucide-react'
 const IndexPage = () => {
   const [logs,    setLogs]    = useState<any[]>([])
   const [message, setMessage] = useState('')
-  const [result,  setResult]  = useState<{ status: 'idle' | 'pass' | 'fail' | 'blocked'; text: string }>({ status: 'idle', text: '' })
+  const [result,  setResult]  = useState<{ status: 'idle' | 'pass' | 'fail'; text: string }>({ status: 'idle', text: '' })
   const [loading, setLoading] = useState(false)
 
   const loadLogs = async () => {
@@ -116,12 +116,18 @@ const IndexPage = () => {
         body: JSON.stringify({ message: message || 'Test ping', headers_ok: withCorrectHeader }),
       })
       const d = await res.json()
-      if (res.ok) {
+      if (withCorrectHeader && res.ok) {
         setResult({ status: 'pass', text: '✓ Request passed — Content-Type was application/json' })
         setMessage('')
         setTimeout(loadLogs, 300)
       } else if (res.status === 415) {
-        setResult({ status: 'blocked', text: `✗ Blocked by requireJson middleware — ${d.message}` })
+        if (withCorrectHeader) {
+          setResult({ status: 'fail', text: `✗ Middleware rejected a valid JSON request — ${d.message}` })
+        } else {
+          setResult({ status: 'pass', text: `✓ Middleware correctly blocked the request without a JSON header — ${d.message}` })
+        }
+      } else if (res.ok) {
+        setResult({ status: 'fail', text: '✗ Middleware accepted a request without the JSON header' })
       } else {
         setResult({ status: 'fail', text: d.message ?? '✗ Request failed' })
       }
@@ -134,7 +140,6 @@ const IndexPage = () => {
 
   const resultStyle =
     result.status === 'pass'    ? 'bg-green-50 border-green-200 text-green-700' :
-    result.status === 'blocked' ? 'bg-amber-50 border-amber-200 text-amber-700' :
     result.status === 'fail'    ? 'bg-red-50 border-red-200 text-red-700' :
     'bg-neutral-50 border-neutral-200 text-neutral-500'
 
@@ -390,12 +395,18 @@ const IndexScreen = () => {
         body: JSON.stringify({ message: message.trim() || 'Test ping', headers_ok: withCorrectHeader }),
       })
       const d = await res.json()
-      if (res.ok) {
+      if (withCorrectHeader && res.ok) {
         setResult({ status: 'pass', text: '✓ Request passed — Content-Type was application/json' })
         setMessage('')
         setTimeout(loadLogs, 300)
       } else if (res.status === 415) {
-        setResult({ status: 'blocked', text: `✗ Blocked by requireJson — ${d.message}` })
+        if (withCorrectHeader) {
+          setResult({ status: 'fail', text: `✗ Middleware rejected a valid JSON request — ${d.message}` })
+        } else {
+          setResult({ status: 'pass', text: `✓ Middleware correctly blocked the request without a JSON header — ${d.message}` })
+        }
+      } else if (res.ok) {
+        setResult({ status: 'fail', text: '✗ Middleware accepted a request without the JSON header' })
       } else {
         setResult({ status: 'fail', text: d.message ?? '✗ Request failed' })
       }
@@ -629,12 +640,18 @@ const IndexScreen = () => {
         body: JSON.stringify({ message: message.trim() || 'Test ping', headers_ok: withCorrectHeader }),
       })
       const d = await res.json()
-      if (res.ok) {
+      if (withCorrectHeader && res.ok) {
         setResult({ status: 'pass', text: '✓ Request passed — Content-Type was application/json' })
         setMessage('')
         setTimeout(loadLogs, 300)
       } else if (res.status === 415) {
-        setResult({ status: 'blocked', text: `✗ Blocked by requireJson — ${d.message}` })
+        if (withCorrectHeader) {
+          setResult({ status: 'fail', text: `✗ Middleware rejected a valid JSON request — ${d.message}` })
+        } else {
+          setResult({ status: 'pass', text: `✓ Middleware correctly blocked the request without a JSON header — ${d.message}` })
+        }
+      } else if (res.ok) {
+        setResult({ status: 'fail', text: '✗ Middleware accepted a request without the JSON header' })
       } else {
         setResult({ status: 'fail', text: d.message ?? '✗ Request failed' })
       }

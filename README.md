@@ -48,7 +48,7 @@ When a tatemono is ready, you can export it as a standalone project and take it 
 
 ## Meet the tatemonos
 
-The `tatemonos/` folder is a small gallery of what the engine has built so far: café and portfolio sites, a payroll system, a queue manager, a geofenced time clock, a social language-learning app called Kotoba, a FastAPI fixture, and Ollama Studio for local AI chat.
+The `tatemonos/` folder is a small gallery of what the engine has built so far: café and portfolio sites, a payroll system, a queue manager, a geofenced time clock, a social language-learning app called Kotoba, a FastAPI fixture, and AI Studio for provider-backed chat.
 
 They're also the best way to learn the language. Open any `core.tsx` and you'll see how a whole app reads in one place.
 
@@ -64,7 +64,7 @@ The project also has an AI side. A fine-tuned model learns the tatemono language
 - a scanner that turns the tatemonos themselves into training data
 
 It's bring-your-own-model: you point Pluffy at a model server, such as a local one or a Colab tunnel, and it does the rest.
-The `ollama-studio` Tatemono is intentionally local-only: it sends prompts to Ollama on `127.0.0.1` and does not contact an external provider.
+AI Studio demonstrates provider-backed chat through the FastAPI backend. Provider configuration and supported Tatemono examples are documented in `PLUFF_GUIDELINES_v13.md`.
 
 ---
 
@@ -100,7 +100,6 @@ When you want to learn the language itself, `PLUFF_GUIDELINES_v13.md` is the ref
 
 Pluffy runs on Windows, Linux and Termux on Android. It needs Node. Python 3 is required for FastAPI;
 PHP with Composer is required for the Laravel reference backend or React-Inertia; Express uses Node and npm.
-Ollama Studio also expects a local Ollama server at `127.0.0.1:11434`.
 
 ---
 
@@ -123,3 +122,18 @@ Samples of what Pluff made so far:
 
 as the engine and its ai improve so as the output
 (the future PLUFFY ex Arkzen output will show here)
+
+
+
+body-endpoint-handler
+body-mail-notification
+crud-test
+dtr-geofencing
+fastapi-test
+jo-payroll
+job-test
+kotoba
+middleware-test
+ollama-studio
+queue-flow
+scheduler-test

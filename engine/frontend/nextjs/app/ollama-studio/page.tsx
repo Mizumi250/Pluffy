@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — ollama-studio/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T11:53:51.872Z
+// Generated: 2026-11-01T12:32:15.681Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -47,17 +47,17 @@ const IndexPage = () => {
     <main className="min-h-screen bg-neutral-950 px-4 py-10 text-neutral-100">
       <section className="mx-auto flex min-h-[80vh] max-w-3xl flex-col rounded-3xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl">
         <header className="border-b border-neutral-800 pb-5">
-          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-400">Local AI</p>
-          <h1 className="mt-2 text-3xl font-semibold">Ollama Studio</h1>
+          <p className="text-xs font-semibold uppercase tracking-[0.25em] text-emerald-400">AI API</p>
+          <h1 className="mt-2 text-3xl font-semibold">AI Studio</h1>
           <p className="mt-2 text-sm text-neutral-400">
-            A small chat interface for your local Ollama model. Prompts stay on this machine.
+            Chat with the OpenAI-compatible provider configured on the FastAPI backend.
           </p>
         </header>
 
         <div className="flex-1 space-y-4 overflow-y-auto py-6" aria-live="polite">
           {messages.length === 0 && (
             <p className="rounded-2xl border border-dashed border-neutral-700 p-5 text-sm text-neutral-400">
-              Ask something to start. The FastAPI backend sends your prompt to Ollama at 127.0.0.1:11434.
+              Ask something to start. Your prompt is sent by the FastAPI backend to its configured AI API provider.
             </p>
           )}
           {messages.map((message, index) => (
@@ -68,7 +68,7 @@ const IndexPage = () => {
               {message.content}
             </article>
           ))}
-          {busy && <p className="text-sm text-neutral-400">Waiting for the local model...</p>}
+          {busy && <p className="text-sm text-neutral-400">Waiting for the AI provider...</p>}
         </div>
 
         {error && <p role="alert" className="mb-3 rounded-xl border border-red-900 bg-red-950/50 p-3 text-sm text-red-300">{error}</p>}
@@ -92,7 +92,7 @@ const IndexPage = () => {
           </button>
         </form>
         <p className="mt-3 text-xs text-neutral-500">
-          Default model: llama3.2. Set PLUFF_AI_MODEL in the FastAPI backend environment to choose another local model.
+          Set PLUFF_AI_API_KEY, PLUFF_AI_BASE_URL, and PLUFF_AI_MODEL in the FastAPI backend environment. Prompts are sent to that provider.
         </p>
       </section>
     </main>

@@ -12,29 +12,32 @@ class UserSignedUp(Event):
 
 class SendWelcomeEmail(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "user-signed-up", 'listener': "SendWelcomeEmail", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] SendWelcomeEmail', event.data)
+        await EventLog.create({
+            'event_name': 'UserSignedUp',
+            'listener_name': 'SendWelcomeEmail',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class UpdateUserStats(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "user-signed-up", 'listener': "UpdateUserStats", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] UpdateUserStats', event.data)
+        await EventLog.create({
+            'event_name': 'UserSignedUp',
+            'listener_name': 'UpdateUserStats',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class NotifyAdmins(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "user-signed-up", 'listener': "NotifyAdmins", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] NotifyAdmins', event.data)
+        await EventLog.create({
+            'event_name': 'UserSignedUp',
+            'listener_name': 'NotifyAdmins',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class OrderPlaced(Event):
@@ -43,29 +46,32 @@ class OrderPlaced(Event):
 
 class ProcessPayment(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "order-placed", 'listener': "ProcessPayment", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] ProcessPayment', event.data)
+        await EventLog.create({
+            'event_name': 'OrderPlaced',
+            'listener_name': 'ProcessPayment',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class UpdateInventory(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "order-placed", 'listener': "UpdateInventory", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] UpdateInventory', event.data)
+        await EventLog.create({
+            'event_name': 'OrderPlaced',
+            'listener_name': 'UpdateInventory',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class SendOrderConfirmation(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "order-placed", 'listener': "SendOrderConfirmation", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] SendOrderConfirmation', event.data)
+        await EventLog.create({
+            'event_name': 'OrderPlaced',
+            'listener_name': 'SendOrderConfirmation',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class DataExported(Event):
@@ -74,19 +80,21 @@ class DataExported(Event):
 
 class LogExportActivity(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "data-exported", 'listener': "LogExportActivity", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] LogExportActivity', event.data)
+        await EventLog.create({
+            'event_name': 'DataExported',
+            'listener_name': 'LogExportActivity',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 
 class CleanupTempFiles(Listener):
     async def handle(self, event):
-        EventLog = getattr(_models, 'EventLog', None)
-        if EventLog:
-            await EventLog.create({'event_name': "data-exported", 'listener': "CleanupTempFiles", 'payload': json.dumps(event.data)})
-        else:
-            Log.info('[Arkzen Listener] CleanupTempFiles', event.data)
+        await EventLog.create({
+            'event_name': 'DataExported',
+            'listener_name': 'CleanupTempFiles',
+            'status': 'completed',
+            'payload': json.dumps(event.data),
+        })
 
 

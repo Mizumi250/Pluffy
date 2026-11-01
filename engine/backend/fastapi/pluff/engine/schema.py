@@ -164,10 +164,11 @@ def apply_auth_tables(db: Connection, slug: str, has_notifications: bool, steps:
 
 
 def seed_auth_users(db: Connection, slug: str, seed, steps: list[str]) -> None:
-    if not isinstance(seed, list):
+    users_seed = seed if isinstance(seed, list) else seed.get("users") if isinstance(seed, dict) else None
+    if not isinstance(users_seed, list):
         return
     users = prefixed_table(slug, "users")
-    for u in seed:
+    for u in users_seed:
         email = u.get("email")
         if not email:
             continue
@@ -188,9 +189,7 @@ def seed_tables(db: Connection, slug: str, dbs: list[Any], steps: list[str]) -> 
         if not rows:
             continue
         table = prefixed_table(slug, d["table"])
-        c = db.select(f"SELECT COUNT(*) AS c FROM {qi(table)}")[0]["c"]
-        if int(c or 0) > 0:
-            continue
+        db.execute(f"DELETE FROM {qi(table)}")
         ts = sql_now()
         for r in rows:
             row = dict(r)

@@ -45,4 +45,9 @@ class InventoryController:
         await inventory.delete()
         return response.json({'message': "Item deleted successfully"})
 
+    @staticmethod
+    async def lowStock(request, response):
+        items = await Inventory.where('quantity', '<', 20).order_by('quantity', 'asc').get()
+        return response.json({'data': items, 'count': len(items)})
+
 

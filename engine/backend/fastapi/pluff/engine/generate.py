@@ -167,6 +167,12 @@ def generate(p: Any) -> Any:
     ctl = f"# ARKZEN GENERATED CONTROLLERS: {slug}\n{common}import json\nimport time\nfrom urllib.parse import quote\n"
     if policy_names:
         ctl += f"from .policies import {', '.join(policy_names)}\n"
+    if any(ep.get("type") == "job_dispatch" for api in apis for ep in (api.get("endpoints") or {}).values()):
+        job_class_names = [f"{studly(name)}Job" for name in jobs]
+        if job_class_names:
+            ctl += f"from .jobs import {', '.join(job_class_names)}\n"
+    if any(ep.get("type") == "event_fire" for api in apis for ep in (api.get("endpoints") or {}).values()):
+        ctl += "from . import events as GeneratedEvents\n"
     ctl += "from .mails import mail_classes\nfrom .notifications import notification_classes\nfrom .realtime import MessageSentEvents\n\n\n"
 
     def rules(v: Any | None) -> str:
@@ -186,8 +192,11 @@ def generate(p: Any) -> Any:
             find = f"{v} = await {M}.find_or_fail(request.route('id'))\n"
             resp_type = (ep.get("response") or {}).get("type") or ""
             etype = ep.get("type")
+            custom_body = dec(ep.get("body")).strip()
             lines: str
-            if name == "index":
+            if custom_body:
+                lines = custom_body + "\n"
+            elif name == "index":
                 if etype == "upload_index":
                     lines = (f"records = await {M}.latest().get()\n"
                              "for record in records:\n"
@@ -240,6 +249,27 @@ def generate(p: Any) -> Any:
                              "'triggered_by': validated.get('triggered_by', 'manual'), "
                              "'duration_ms': int((time.perf_counter() - started) * 1000)})\n"
                              "return response.json(command_run, 201)\n")
+                elif etype == "job_dispatch":
+                    job_classes = {
+                        name.replace("_", "-"): f"{studly(name)}Job"
+                        for name in jobs
+                    }
+                    lines = (f"validated = await request.validate({rules(ep.get('validation'))})\n"
+                             f"job_class_name = {job_classes!r}.get(str(validated['job']).replace('_', '-'))\n"
+                             "job_class = globals().get(job_class_name) if job_class_name else None\n"
+                             "if job_class is None:\n"
+                             "    return response.json({'message': 'Unknown job: ' + str(validated['job'])}, 400)\n"
+                             "job = job_class(request.input('data', {}))\n"
+                             "await dispatch(job)\n"
+                             "return response.json({'message': 'Job dispatched'}, 202)\n")
+                elif etype == "event_fire":
+                    event_classes = {name.replace("_", "-"): f"GeneratedEvents.{studly(name)}" for name in events}
+                    lines = (f"validated = await request.validate({rules(ep.get('validation'))})\n"
+                             f"event_class = {{{', '.join(f'{q(key)}: {value}' for key, value in event_classes.items())}}}.get(str(validated['event']).replace('_', '-'))\n"
+                             "if event_class is None:\n"
+                             "    return response.json({'message': 'Unknown event: ' + str(validated['event'])}, 400)\n"
+                             "await event(event_class(validated.get('payload') or {}))\n"
+                             "return response.json({'message': 'Event fired'}, 202)\n")
                 elif etype == "broadcast":
                     lines = (f"validated = await request.validate({rules(ep.get('validation'))})\nmessage = await {M}.create(validated)\n"
                              "channel_type = validated.get('channel_type') or 'public'\n_u = await request.auth_user()\n"
@@ -449,11 +479,14 @@ def generate(p: Any) -> Any:
             auth_channels.setdefault(f"{slug}.{{id}}", {"type": "private", "auth": "owner"})
         rts += f"    register_auth_routes(r, S, {q(prefix)}, {auth_channels!r})\n"
     for api in apis:
-        for name, ep in (api.get("endpoints") or {}).items():
+        endpoints = list((api.get("endpoints") or {}).items())
+        endpoints.sort(key=lambda item: bool(re.search(r"\{\w+\??\}", str((item[1] or {}).get("route") or ""))))
+        for name, ep in endpoints:
             chain = [f"mw({q(str(m).strip())})" for m in (api.get("middleware") or [])]
             if ep.get("type") in ("broadcast", "mail_send") and not chain:
                 chain.append("optional_auth(S)")
-            path = f"{api.get('prefix') or ''}{ep.get('route') or ''}"
+            route_parts = [str(part).strip("/") for part in (api.get("prefix"), ep.get("route")) if part]
+            path = "/" + "/".join(part for part in route_parts if part)
             rts += f"    r.add({q(str(ep.get('method') or 'GET').upper())}, {q(path)}, [{', '.join(chain)}], handle(S, C.{api['controller']}.{name}))\n"
     for cr in p.get("customRoutes") or []:
         chain = [f"mw({q(str(m).strip())})" for m in (cr.get("middleware") or [])]

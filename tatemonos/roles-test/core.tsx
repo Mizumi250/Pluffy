@@ -85,6 +85,47 @@ endpoints:
       value: Demoted to user
 */
 
+/* @arkzen:endpoint:py:adminOnly
+*/
+user = request.user()
+granted = bool(user) and user.role == 'admin'
+await RoleAuditLog.create({
+    'user_id': user.id if user else None,
+    'action': 'GET /admin-only',
+    'role_required': 'admin',
+    'granted': granted,
+})
+if not granted:
+    return response.json({'message': '✗ Access denied — admin role required'}, 403)
+return response.json({'message': '✓ Access granted — you are admin'})
+/* @arkzen:endpoint:py:adminOnly:end */
+
+/* @arkzen:endpoint:py:userOnly
+*/
+user = request.user()
+await RoleAuditLog.create({
+    'user_id': user.id if user else None,
+    'action': 'GET /user-only',
+    'role_required': 'user',
+    'granted': True,
+})
+return response.json({'message': '✓ Access granted — open to all authenticated users'})
+/* @arkzen:endpoint:py:userOnly:end */
+
+/* @arkzen:endpoint:py:promote
+*/
+user = request.user()
+await user.update({'role': 'admin'})
+return response.json({'message': 'Promoted to admin', 'user': await user.fresh()})
+/* @arkzen:endpoint:py:promote:end */
+
+/* @arkzen:endpoint:py:demote
+*/
+user = request.user()
+await user.update({'role': 'user'})
+return response.json({'message': 'Demoted to user', 'user': await user.fresh()})
+/* @arkzen:endpoint:py:demote:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

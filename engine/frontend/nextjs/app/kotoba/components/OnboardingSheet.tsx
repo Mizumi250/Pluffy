@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — OnboardingSheet
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T11:53:47.951Z
+// Generated: 2026-11-01T12:32:11.103Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

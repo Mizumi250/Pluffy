@@ -4,6 +4,7 @@ from .models import EventLog
 import json
 import time
 from urllib.parse import quote
+from . import events as GeneratedEvents
 from .mails import mail_classes
 from .notifications import notification_classes
 from .realtime import MessageSentEvents
@@ -12,19 +13,25 @@ from .realtime import MessageSentEvents
 class EventLogController:
     @staticmethod
     async def index(request, response):
-        query = EventLog.query()
-        return response.json(await query.order_by('created_at', 'desc').paginate(request.input('per_page', 15), request.input('page', 1), request.url()))
+        results = await EventLog.query().latest().paginate(
+            request.input('per_page', 100),
+            request.input('page', 1),
+            request.url(),
+        )
+        return response.json(results)
 
     @staticmethod
     async def store(request, response):
         validated = await request.validate({'event': 'required|string', 'payload': 'nullable|array'})
-        event_log = await EventLog.create(validated)
-        return response.json(event_log, 201)
+        event_class = {"user-signed-up": GeneratedEvents.UserSignedUp, "order-placed": GeneratedEvents.OrderPlaced, "data-exported": GeneratedEvents.DataExported}.get(str(validated['event']).replace('_', '-'))
+        if event_class is None:
+            return response.json({'message': 'Unknown event: ' + str(validated['event'])}, 400)
+        await event(event_class(validated.get('payload') or {}))
+        return response.json({'message': 'Event fired'}, 202)
 
     @staticmethod
     async def clearLog(request, response):
-        # Custom endpoint: clearLog
-        # Add @arkzen:endpoint:py:clearLog ... :end to your tatemono to inject logic.
-        return response.json({'message': "Endpoint clearLog is not implemented yet"}, 501)
+        await EventLog.query().delete()
+        return response.json({'message': 'Log cleared'})
 
 

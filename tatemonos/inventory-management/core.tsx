@@ -141,7 +141,19 @@ endpoints:
     response:
       type: message
       value: Item deleted successfully
+  lowStock:
+    method: GET
+    route: /low-stock
+    description: Get items with fewer than 20 units in stock
+    response:
+      type: array
 */
+
+/* @arkzen:endpoint:py:lowStock
+*/
+items = await Inventory.where('quantity', '<', 20).order_by('quantity', 'asc').get()
+return response.json({'data': items, 'count': len(items)})
+/* @arkzen:endpoint:py:lowStock:end */
 
 /* @arkzen:web:components:shared */
 

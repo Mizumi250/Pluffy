@@ -11,7 +11,7 @@ class DatabasePingNotification(Notification):
         return {'message': "You have a new database notification", 'type': "DatabasePingNotification"}
 
     def to_mail(self, notifiable):
-        return MailMessage().subject("Database Ping").line("You have a new database notification")
+        return MailMessage().subject('Database Ping').line('You have a new database notification')
 
 
 class MailPingNotification(Notification):
@@ -23,7 +23,7 @@ class MailPingNotification(Notification):
         return {'message': "This is a test mail notification", 'type': "MailPingNotification"}
 
     def to_mail(self, notifiable):
-        return MailMessage().subject("Mail Ping from Arkzen").line("This is a test mail notification")
+        return MailMessage().subject('Mail Ping from Arkzen').line('This is a test mail notification')
 
 
 class BroadcastPingNotification(Notification):
@@ -35,7 +35,7 @@ class BroadcastPingNotification(Notification):
         return {'message': "Real-time notification received on your private channel!", 'type': "BroadcastPingNotification"}
 
     def to_mail(self, notifiable):
-        return MailMessage().subject("Broadcast Ping (Private)").line("Real-time notification received on your private channel!")
+        return MailMessage().subject('Broadcast Ping (Private)').line('Real-time notification received on your private channel!')
 
 
 class BroadcastPingPublicNotification(Notification):
@@ -47,7 +47,7 @@ class BroadcastPingPublicNotification(Notification):
         return {'message': "This broadcast went to the public notification channel!", 'type': "BroadcastPingPublicNotification"}
 
     def to_mail(self, notifiable):
-        return MailMessage().subject("Broadcast Ping (Public)").line("This broadcast went to the public notification channel!")
+        return MailMessage().subject('Broadcast Ping (Public)').line('This broadcast went to the public notification channel!')
 
 
 class AllChannelsNotification(Notification):
@@ -59,7 +59,7 @@ class AllChannelsNotification(Notification):
         return {'message': "This notification was sent to all three channels simultaneously", 'type': "AllChannelsNotification"}
 
     def to_mail(self, notifiable):
-        return MailMessage().subject("All Channels Test").line("This notification was sent to all three channels simultaneously")
+        return MailMessage().subject('All Channels Test').line('This notification was sent to all three channels simultaneously')
 
 
 notification_classes = {"database-ping": DatabasePingNotification, "mail-ping": MailPingNotification, "broadcast-ping": BroadcastPingNotification, "broadcast-ping-public": BroadcastPingPublicNotification, "all-channels": AllChannelsNotification}

@@ -5,6 +5,7 @@ import json
 import time
 from urllib.parse import quote
 from .policies import TestRecordPolicy
+from . import events as GeneratedEvents
 from .mails import mail_classes
 from .notifications import notification_classes
 from .realtime import MessageSentEvents
@@ -125,16 +126,24 @@ class DispatchController:
     @staticmethod
     async def store(request, response):
         validated = await request.validate({'job': 'required|string'})
-        job_result = await JobResult.create(validated)
-        return response.json(job_result, 201)
+        job_class_name = {}.get(str(validated['job']).replace('_', '-'))
+        job_class = globals().get(job_class_name) if job_class_name else None
+        if job_class is None:
+            return response.json({'message': 'Unknown job: ' + str(validated['job'])}, 400)
+        job = job_class(request.input('data', {}))
+        await dispatch(job)
+        return response.json({'message': 'Job dispatched'}, 202)
 
 
 class EventController:
     @staticmethod
     async def store(request, response):
         validated = await request.validate({'event': 'required|string', 'payload': 'sometimes|array'})
-        event_log = await EventLog.create(validated)
-        return response.json(event_log, 201)
+        event_class = {"record-created": GeneratedEvents.RecordCreated}.get(str(validated['event']).replace('_', '-'))
+        if event_class is None:
+            return response.json({'message': 'Unknown event: ' + str(validated['event'])}, 400)
+        await event(event_class(validated.get('payload') or {}))
+        return response.json({'message': 'Event fired'}, 202)
 
 
 class MessagingController:

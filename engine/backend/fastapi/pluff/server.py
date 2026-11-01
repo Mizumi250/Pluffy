@@ -110,9 +110,10 @@ async def api(request: Request, rest: str):
     path = request.url.path
     m = re.match(r"^/api/([^/]+)", path)
     router = m and routers.get(m.group(1))
-    if router:
-        body, files = await _read_body(request)
-        out = await router.dispatch(request, path, body, files)
+    body, files = await _read_body(request)
+    candidates = ([router] if router else []) + [candidate for candidate in routers.values() if candidate is not router]
+    for candidate in candidates:
+        out = await candidate.dispatch(request, path, body, files)
         if out is not None:
             return out
     return to_starlette(JsonResponse({"message": "Not Found"}, 404))

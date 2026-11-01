@@ -27,7 +27,7 @@
 - **FastAPI is a runnable backend.** Setup creates a Python virtual environment, `start.js` runs the API and worker, and `export.js` installs the exported backend dependencies.
 - **Python backend variants:** backend code bodies may use `:py` for FastAPI, alongside Laravel `:php` and Express `:ts`.
 - **FastAPI runtime parity work:** multipart uploads, native notification inbox routes, declared realtime-channel authorization, and notification broadcast channel types are wired into the engine.
-- **Ollama Studio:** added a Python-specific Tatemono that sends prompts only to a local Ollama service by default.
+- **AI Studio:** the `ollama-studio` Tatemono uses a server-configured OpenAI-compatible API; its API key stays in the FastAPI backend environment.
 
 **WHAT'S NEW IN v12.0 (vs v11.0):**
 
@@ -231,7 +231,7 @@ Await database/model operations, for example `await Ticket.where('status', 'open
 `request.validate({...})` returns validated values and preserves Laravel's 422 error shape.
 Custom endpoint bodies may import standard-library modules as needed. See
 `tatemonos/fastapi-test/core.tsx` for working examples; `tatemonos/ollama-studio/core.tsx`
-shows a Python-only local-model endpoint.
+shows a Python-only OpenAI-compatible API endpoint.
 
 FastAPI implements the DSL surface used by Pluff's Laravel builders, including isolated
 SQLite/PostgreSQL schemas, CRUD/auth/policies, queues and schedules, mail/notifications,
@@ -279,7 +279,9 @@ Express mail HTML supports escaped `{{ $value }}` and raw `{!! $value !!}` inter
 - `start.js` runs Uvicorn and the Python queue/scheduler worker from `engine/backend/fastapi/.venv`. Realtime WebSockets run inside the FastAPI service; there is no separate Reverb process.
 - FastAPI supports the shared Laravel-style authentication, CRUD, middleware, policies, jobs, schedules, mail, notifications, realtime, and upload builders. Notification inbox routes use the native notification table; declared private/presence channel rules are checked before signing.
 - FastAPI notification `MailMessage` supports `greeting()`, ordered `line()` / `action()` content, and `salutation()`. Python broadcast bodies can exclude the caller with `broadcast_to(channel, event, data, except_socket_id=request.header('X-Socket-ID'))`, matching Laravel's `toOthers()` behavior.
-- The `ollama-studio` Tatemono intentionally has only a `:py` endpoint body. It defaults to `http://127.0.0.1:11434` and `llama3.2`; set `PLUFF_AI_MODEL` to select another installed local Ollama model. It does not send prompts to an external provider.
+- FastAPI-ready Tatemono examples with `:py` bodies: `body-endpoint-handler`, `body-mail-notification`, `crud-test`, `dtr-geofencing`, `fastapi-test`, `jo-payroll`, `job-test`, `kotoba`, `middleware-test`, `ollama-studio` (AI Studio), `queue-flow`, and `scheduler-test`.
+- These requested Tatemono do not yet have `:py` variants, so they are not FastAPI test targets yet: `mail-test`, `notification-test`, `broadcast-test`, `events-test`, `inventory-management`, and `roles-test`. Add and validate Python variants before testing them with FastAPI; selecting them without a matching variant will fail DSL validation.
+- AI Studio (`tatemonos/ollama-studio/core.tsx`) defaults to Gemini's OpenAI-compatible endpoint (`https://generativelanguage.googleapis.com/v1beta/openai/`) and `gemini-3.6-flash`. Set `PLUFF_AI_API_KEY` to a Gemini API key from Google AI Studio in `engine/backend/fastapi/.env`; do not reuse an OpenAI key or put any key in Tatemono/browser code. Free-tier eligibility and rate limits depend on Google's current account, region, and model limits; HTTP 429 means a quota or rate limit has been reached. Prompts are sent to the configured provider. The endpoint accepts requests only from the local machine; add authentication and rate limiting before exposing it publicly.
 - Exported FastAPI backends create a local `.venv` and install `requirements.txt`. PostgreSQL settings are copied from the configured engine environment; SQLite remains the default.
 
 * * *

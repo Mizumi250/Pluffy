@@ -17,13 +17,19 @@ class MessageController:
 
     @staticmethod
     async def store(request, response):
-        validated = await request.validate({'content': 'required|string|max:500', 'channel_type': 'sometimes|string|max:50'})
-        message = await Message.create(validated)
-        channel_type = validated.get('channel_type') or 'public'
-        _u = await request.auth_user()
-        ev = MessageSentEvents[channel_type](message.to_json())
-        ev.user_id = _u.id if _u else None
-        broadcast(ev)
+        validated = await request.validate({
+            'content': 'required|string|max:500',
+            'channel_type': 'sometimes|string|max:50',
+        })
+        channel_type = validated.get('channel_type') or 'public'
+        event_class = MessageSentEvents.get(channel_type)
+        if event_class is None:
+            raise HttpException(422, 'channel_type must be public, private, or presence.')
+        message = await Message.create({**validated, 'channel_type': channel_type})
+        user = await request.auth_user()
+        broadcast_event = event_class(message.to_json())
+        broadcast_event.user_id = user.id if user else None
+        broadcast(broadcast_event)
         return response.json(message, 201)
 
     @staticmethod

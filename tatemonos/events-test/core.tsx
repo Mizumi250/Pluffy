@@ -249,6 +249,86 @@ class CleanupTempFiles implements ShouldQueue {
 }
 /* @arkzen:listeners:CleanupTempFiles:end */
 
+/* @arkzen:listener:py:SendWelcomeEmail
+*/
+await EventLog.create({
+    'event_name': 'UserSignedUp',
+    'listener_name': 'SendWelcomeEmail',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:SendWelcomeEmail:end */
+
+/* @arkzen:listener:py:UpdateUserStats
+*/
+await EventLog.create({
+    'event_name': 'UserSignedUp',
+    'listener_name': 'UpdateUserStats',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:UpdateUserStats:end */
+
+/* @arkzen:listener:py:NotifyAdmins
+*/
+await EventLog.create({
+    'event_name': 'UserSignedUp',
+    'listener_name': 'NotifyAdmins',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:NotifyAdmins:end */
+
+/* @arkzen:listener:py:ProcessPayment
+*/
+await EventLog.create({
+    'event_name': 'OrderPlaced',
+    'listener_name': 'ProcessPayment',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:ProcessPayment:end */
+
+/* @arkzen:listener:py:UpdateInventory
+*/
+await EventLog.create({
+    'event_name': 'OrderPlaced',
+    'listener_name': 'UpdateInventory',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:UpdateInventory:end */
+
+/* @arkzen:listener:py:SendOrderConfirmation
+*/
+await EventLog.create({
+    'event_name': 'OrderPlaced',
+    'listener_name': 'SendOrderConfirmation',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:SendOrderConfirmation:end */
+
+/* @arkzen:listener:py:LogExportActivity
+*/
+await EventLog.create({
+    'event_name': 'DataExported',
+    'listener_name': 'LogExportActivity',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:LogExportActivity:end */
+
+/* @arkzen:listener:py:CleanupTempFiles
+*/
+await EventLog.create({
+    'event_name': 'DataExported',
+    'listener_name': 'CleanupTempFiles',
+    'status': 'completed',
+    'payload': json.dumps(event.data),
+})
+/* @arkzen:listener:py:CleanupTempFiles:end */
+
 /* @arkzen:endpoint:index */
 public function index(Request $request): JsonResponse
 {
@@ -273,6 +353,22 @@ public function clearLog(Request $request): JsonResponse
 /* @arkzen:endpoint:ts:clearLog */
 return response.json({ ok: true, endpoint: 'clearLog', input: request.all() })
 /* @arkzen:endpoint:ts:clearLog:end */
+
+/* @arkzen:endpoint:py:index
+*/
+results = await EventLog.query().latest().paginate(
+    request.input('per_page', 100),
+    request.input('page', 1),
+    request.url(),
+)
+return response.json(results)
+/* @arkzen:endpoint:py:index:end */
+
+/* @arkzen:endpoint:py:clearLog
+*/
+await EventLog.query().delete()
+return response.json({'message': 'Log cleared'})
+/* @arkzen:endpoint:py:clearLog:end */
 
 /* @arkzen:web:components:shared */
 
