@@ -28,7 +28,24 @@ const JoinScreenExpo = () => {
   const [error,     setError]     = useState<string | null>(null)
   const [myTicket,  setMyTicket]  = useState<MyTicketData | null>(null)
 
-  const QUEUE_ID = 1
+  const [QUEUE_ID, setQueueId] = useState<number | null>(null)
+
+  // Same rule as the web pages: use the first active queue instead of a hardcoded id.
+  useEffect(() => {
+    const resolveQueue = async () => {
+      try {
+        const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/queues`)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: { id: number; is_active?: boolean | number }) => queue.is_active)
+        if (active) setQueueId(active.id)
+      } catch {
+        // no queue available
+      }
+    }
+    resolveQueue()
+  }, [])
 
   const refreshTicket = useCallback(async (queueId: number, ticketNumber: string) => {
     try {
@@ -46,7 +63,7 @@ const JoinScreenExpo = () => {
   }, [step, myTicket])
 
   const join = async () => {
-    if (!name.trim()) return
+    if (!name.trim() || QUEUE_ID === null) return
     setLoading(true)
     setError(null)
     try {
@@ -219,14 +236,14 @@ const JoinScreenExpo = () => {
             onSubmitEditing={join}
           />
           <Text className="text-xs text-neutral-400">
-            You'll join the General queue (queue #1)
+            You'll join the General queue (queue #{QUEUE_ID ?? '…'})
           </Text>
         </View>
 
         {/* Get ticket button */}
         <TouchableOpacity
           onPress={join}
-          disabled={!name.trim() || loading}
+          disabled={!name.trim() || loading || QUEUE_ID === null}
           activeOpacity={0.8}
           className={`py-4 rounded-2xl items-center ${!name.trim() || loading ? 'bg-neutral-300' : 'bg-neutral-900'}`}
         >

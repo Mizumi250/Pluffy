@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — notification-test [Expo]
 // Source: @arkzen:native:components (notification-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:17:48.978Z
+// Generated: 2026-11-01T13:24:19.478Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — queue-flow [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:17:49.335Z
+// Generated: 2026-11-01T13:40:07.465Z
 // ============================================================
 
 /* @arkzen:native:components:shared + @arkzen:import:rn */const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PressSection [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:17:41.335Z
+// Generated: 2026-11-01T13:24:10.740Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

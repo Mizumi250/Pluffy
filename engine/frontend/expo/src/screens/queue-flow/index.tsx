@@ -26,12 +26,32 @@ const IndexScreenExpo = () => {
   const [loading, setLoading] = useState(true)
   const prevServing = useRef<string | null>(null)
 
-  const QUEUE_ID = 1
+  const [QUEUE_ID, setQueueId] = useState<number | null>(null)
+
+  // Same rule as the web pages: use the first active queue instead of a hardcoded id.
+  useEffect(() => {
+    const resolveQueue = async () => {
+      try {
+        const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/queues`)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: { id: number; is_active?: boolean | number }) => queue.is_active)
+        if (active) setQueueId(active.id)
+        else setLoading(false)
+      } catch {
+        setLoading(false)
+      }
+    }
+    resolveQueue()
+  }, [])
 
   const load = useCallback(async () => {
+    if (QUEUE_ID === null) return
     try {
       const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/status/${QUEUE_ID}`)
       const data = await res.json() as NativeQueueStatus
+      if (!res.ok) throw new Error('Unable to load queue status')
       setStatus(data)
       if (data.serving && data.serving.ticket_number !== prevServing.current) {
         prevServing.current = data.serving.ticket_number
@@ -41,7 +61,7 @@ const IndexScreenExpo = () => {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [])
+  }, [QUEUE_ID])
 
   useEffect(() => {
     load()
@@ -78,9 +98,11 @@ const IndexScreenExpo = () => {
             <SpinRing label={riskLabel} sub="queue risk level" />
             <View className="px-5 pb-4">
               <Text className="text-center text-xs text-neutral-400">
-                {status?.total_waiting === 0
-                  ? 'No one is waiting right now'
-                  : `${status?.total_waiting} waiting · avg ${fmtWait(status?.queue?.avg_wait_minutes ?? 5)}`
+                {!status
+                  ? 'Queue unavailable'
+                  : status.total_waiting === 0
+                    ? 'No one is waiting right now'
+                    : `${status.total_waiting} waiting · avg ${fmtWait(status.queue?.avg_wait_minutes ?? 5)}`
                 }
               </Text>
             </View>

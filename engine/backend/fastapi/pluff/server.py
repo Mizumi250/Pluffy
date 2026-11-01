@@ -47,12 +47,25 @@ async def health():
     return {"status": "ok", "engine": "Pluff FastAPI Backend Engine", "backend": "fastapi", "variant": "py", "version": "1.0.0"}
 
 
+# Registry routes are public (no engine secret), same as Laravel and Express:
+# the Hubs poll them from the browser/device and cannot send x-arkzen-secret.
 @app.get("/arkzen/registry")
-async def registry(request: Request):
-    if (bad := _guard(request)):
-        return bad
+async def registry():
     f = REPO_ROOT / "arkzen.json"
     return json.loads(f.read_text("utf-8")) if f.exists() else {"project": REPO_ROOT.name}
+
+
+# Expo Hub polls this every 3s. Reads expo-registry.json written by the Expo watcher.
+@app.get("/arkzen/expo-registry")
+async def expo_registry():
+    empty = {"engine": "1.0.0", "project": "expo", "modules": []}
+    f = REPO_ROOT / "engine" / "frontend" / "expo" / "expo-registry.json"
+    if not f.exists():
+        return empty
+    try:
+        return json.loads(f.read_text("utf-8"))
+    except ValueError as e:
+        return JSONResponse({**empty, "error": str(e)}, status_code=500)
 
 
 @app.post("/arkzen/build")

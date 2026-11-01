@@ -29,7 +29,25 @@ const AdminScreenExpo = () => {
   const [refreshing, setRefreshing] = useState(false)
   const [toast,    setToast]    = useState<{ type: 'success' | 'error'; msg: string } | null>(null)
 
-  const QUEUE_ID = 1
+  const [QUEUE_ID, setQueueId] = useState<number | null>(null)
+
+  // Same rule as the web pages: use the first active queue instead of a hardcoded id.
+  useEffect(() => {
+    const resolveQueue = async () => {
+      try {
+        const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/queues`)
+        const data = await res.json()
+        if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+        const queues = Array.isArray(data) ? data : data.data ?? []
+        const active = queues.find((queue: { id: number; is_active?: boolean | number }) => queue.is_active)
+        if (active) setQueueId(active.id)
+        else setLoading(false)
+      } catch {
+        setLoading(false)
+      }
+    }
+    resolveQueue()
+  }, [])
 
   const showToast = (type: 'success' | 'error', msg: string) => {
     setToast({ type, msg })
@@ -37,15 +55,17 @@ const AdminScreenExpo = () => {
   }
 
   const load = useCallback(async () => {
+    if (QUEUE_ID === null) return
     try {
       const res  = await arkzenFetch(`${BACKEND_URL}/api/queue-flow/status/${QUEUE_ID}`)
       const data = await res.json() as NativeQueueStatus
+      if (!res.ok) throw new Error('Unable to load queue status')
       setStatus(data)
     } catch {} finally {
       setLoading(false)
       setRefreshing(false)
     }
-  }, [])
+  }, [QUEUE_ID])
 
   useEffect(() => {
     load()
@@ -195,7 +215,7 @@ const AdminScreenExpo = () => {
           <View className="bg-neutral-100 rounded-2xl px-4 py-3">
             <Text className="text-xs text-neutral-500 font-mono leading-5">
               backend: /api/queue-flow/call-next{'\n'}
-              queue_id: {QUEUE_ID}{'\n'}
+              queue_id: {QUEUE_ID ?? '…'}{'\n'}
               no auth required
             </Text>
           </View>

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusBadge [Expo]
 // Source: @arkzen:native:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:17:43.086Z
+// Generated: 2026-11-01T13:24:12.506Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
