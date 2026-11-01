@@ -1829,7 +1829,7 @@ const IndexScreen = () => {
   const [empLoading,     setEmpLoading]     = useState(true)
   const [recordsLoading, setRecordsLoading] = useState(false)
 
-  const BASE = process.env.EXPO_PUBLIC_API_URL ?? ''
+  const BASE = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000'
 
   const loadEmployees = async () => {
     setEmpLoading(true)
@@ -2028,7 +2028,7 @@ const AdminScreen = () => {
   const [officeRadius,    setOfficeRadius]     = useState('')
   const [showSettings,    setShowSettings]    = useState(false)
 
-  const BASE = process.env.EXPO_PUBLIC_API_URL ?? ''
+  const BASE = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? process.env.EXPO_PUBLIC_API_URL ?? 'http://localhost:8000'
 
   const loadAll = async () => {
     setAllLoading(true)

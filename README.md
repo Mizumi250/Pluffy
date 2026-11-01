@@ -72,7 +72,7 @@ start.js          starts the backend, the queue, real-time and the frontends
 setup.js          one-time setup
 export.js         turns a tatemono into a standalone project
 pluffy-*.js       the AI tools
-PLUFF_GUIDELINES_v13.md   the full language reference
+PLUFF_GUIDELINES_v1.md   the full language reference
 ```
 
 ---

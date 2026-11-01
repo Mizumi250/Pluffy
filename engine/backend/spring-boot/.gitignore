@@ -1,0 +1,7 @@
+target/
+.env
+src-generated/
+.build/
+database/arkzen/
+database/pluff.sqlite
+storage/
