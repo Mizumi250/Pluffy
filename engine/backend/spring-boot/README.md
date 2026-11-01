@@ -7,7 +7,7 @@ Java in `dev.pluff.runtime`, so it stays easy to read and to compile-check.
 ## Done (compiles with plain `javac`, partly exercised)
 | File | What it is |
 |---|---|
-| `pom.xml` | Spring Boot 3.3.5, Java 17, sqlite-jdbc, Java-WebSocket, snakeyaml, spring-security-crypto |
+| `pom.xml` | Spring Boot 3.5.16 (supports Java 17 up to 25), Java 17 minimum, sqlite-jdbc, Java-WebSocket, snakeyaml, spring-security-crypto |
 | `runtime/Support.java` | env/.env, studly/snake, sqlNow, Laravel-style ISO timestamps |
 | `runtime/Json.java` | own JSON reader/writer (insertion-ordered, no Jackson) |
 | `runtime/Errors.java` | HttpException, ValidationException (422 summary like Laravel), Authentication/Authorization/ModelNotFound |

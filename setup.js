@@ -4,7 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
-//        node setup.js --backend [laravel|laravel-inertia|express|fastapi|aspnet]
+//        node setup.js --backend [laravel|laravel-inertia|express|fastapi|aspnet|spring-boot]
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -86,7 +86,7 @@ const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'la
 // ACTIVE_BACKEND above stays the PHP flow's default; alternate engines install separately.
 const SELECTED_BACKEND = activeStack === 'react-inertia'
   ? 'laravel-inertia'
-  : (['express', 'fastapi', 'aspnet'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
+  : (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
 let backendName = ACTIVE_BACKEND
 let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
 function useBackend(name) {
@@ -149,6 +149,7 @@ const BACKEND_STACKS = {
   'express':         { category: 'backend', dir: path.join(BACKEND_DIR, 'express') },
   'fastapi':         { category: 'backend', dir: path.join(BACKEND_DIR, 'fastapi') },
   'aspnet':          { category: 'backend', dir: path.join(BACKEND_DIR, 'aspnet') },
+  'spring-boot':     { category: 'backend', dir: path.join(BACKEND_DIR, 'spring-boot') },
 }
 const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
 
@@ -162,6 +163,7 @@ function cacheDirsFor(stack) {
     if (stack === 'express') return [path.join(dir, 'node_modules'), path.join(dir, '.build')]
     if (stack === 'fastapi') return [path.join(dir, '.venv')]
     if (stack === 'aspnet') return [path.join(dir, 'bin'), path.join(dir, 'obj')]
+    if (stack === 'spring-boot') return [path.join(dir, 'target')]
     return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
   }
   const meta = FRONTEND_STACKS[stack]
@@ -206,6 +208,7 @@ function stackInstalled(stack) {
   if (stack === 'express') return expressInstalled()
   if (stack === 'fastapi') return fastapiInstalled()
   if (stack === 'aspnet') return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
+  if (stack === 'spring-boot') return springBootInstalled()
   if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
   return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
@@ -360,6 +363,63 @@ function installAspnetBackend({ force = false } = {}) {
   return true
 }
 
+// Spring Boot: Maven resolves every dependency and writes target/classpath.txt,
+// which is also the "installed" marker (no Maven wrapper is bundled).
+function springBootInstalled() {
+  return fs.existsSync(path.join(BACKEND_STACKS['spring-boot'].dir, 'target', 'classpath.txt'))
+}
+
+function javaMajorVersion() {
+  try {
+    const out = spawnSync('java', ['-version'], { encoding: 'utf-8', windowsHide: true })
+    const text = `${out.stderr ?? ''}${out.stdout ?? ''}`
+    const match = text.match(/version "(\d+)(?:\.(\d+))?/)
+    if (!match) return null
+    return match[1] === '1' ? Number(match[2]) : Number(match[1])
+  } catch {
+    return null
+  }
+}
+
+function installSpringBootBackend({ force = false } = {}) {
+  const dir = BACKEND_STACKS['spring-boot'].dir
+  if (!fs.existsSync(path.join(dir, 'pom.xml'))) {
+    error('engine/backend/spring-boot is missing (no pom.xml)')
+    return false
+  }
+  if (!commandExists('java')) {
+    error('Java not found — install JDK 17+ before using the Spring Boot backend')
+    return false
+  }
+  const javaMajor = javaMajorVersion()
+  if (javaMajor !== null && javaMajor < 17) {
+    error(`Java ${javaMajor} found — the Spring Boot backend needs JDK 17 or newer`)
+    return false
+  }
+  if (!commandExists('mvn')) {
+    error('Maven not found — install Apache Maven 3.9+ before using the Spring Boot backend')
+    return false
+  }
+  if (springBootInstalled() && !force) {
+    success('spring-boot already installed — skip (use --force to reinstall)')
+    return true
+  }
+  if (force && fs.existsSync(path.join(dir, 'target'))) removeDir(path.join(dir, 'target'))
+  log('Resolving Spring Boot backend packages (Maven)...')
+  if (!run('mvn -B -q dependency:build-classpath -Dmdep.outputFile=target/classpath.txt', dir) || !springBootInstalled()) {
+    error('Maven could not resolve the Spring Boot dependencies (check your internet connection and ~/.m2)')
+    return false
+  }
+  const envPath = path.join(dir, '.env')
+  if (!fs.existsSync(envPath) && fs.existsSync(path.join(dir, '.env.example'))) {
+    fs.copyFileSync(path.join(dir, '.env.example'), envPath)
+    success('Created engine/backend/spring-boot/.env')
+  }
+  configureSpringBootDatabase()
+  success('Spring Boot backend packages resolved')
+  return true
+}
+
 // Express reads ARKZEN_DB_DRIVER / DB_* from its own .env (same keys Laravel uses).
 function configureExpressDatabase() {
   const envPath = path.join(BACKEND_STACKS.express.dir, '.env')
@@ -418,10 +478,29 @@ function configureAspnetDatabase() {
   success(`ASP.NET .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
 }
 
+function configureSpringBootDatabase() {
+  const envPath = path.join(BACKEND_STACKS['spring-boot'].dir, '.env')
+  if (!fs.existsSync(envPath)) return
+  let env = fs.readFileSync(envPath, 'utf-8')
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
+  env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
+  if (activeDatabase === 'pgsql') {
+    const pg = pgSettings(env)
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+  }
+  fs.writeFileSync(envPath, env)
+  success(`Spring Boot .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
+}
+
 function installBackend(name, { force = false } = {}) {
   if (name === 'express') return installExpressBackend({ force })
   if (name === 'fastapi') return installFastapiBackend({ force })
   if (name === 'aspnet') return installAspnetBackend({ force })
+  if (name === 'spring-boot') return installSpringBootBackend({ force })
   if (stackInstalled(name) && !force) {
     success(`${name} already installed — skip (use --force to reinstall)`)
     return true
@@ -595,6 +674,7 @@ function printSetupHelp() {
     node setup.js --backend express            (Node only, no PHP needed)
     node setup.js --backend fastapi            (Python 3 required)
     node setup.js --backend aspnet             (.NET 8 SDK required)
+    node setup.js --backend spring-boot        (JDK 17+ and Maven required)
     node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
   Package manager:
@@ -630,6 +710,9 @@ function checkRequirements({ desktop = true } = {}) {
     }
   } else if (SELECTED_BACKEND === 'aspnet') {
     checks.push({ cmd: 'dotnet', name: '.NET SDK 8+' })
+  } else if (SELECTED_BACKEND === 'spring-boot') {
+    checks.push({ cmd: 'java', name: 'Java JDK 17+' })
+    checks.push({ cmd: 'mvn', name: 'Apache Maven' })
   } else if (SELECTED_BACKEND !== 'express') {
     checks.push({ cmd: 'php', name: 'PHP' })
     checks.push({ cmd: 'composer', name: 'Composer' })
@@ -1124,7 +1207,7 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
-  if (['express', 'fastapi', 'aspnet'].includes(cli.backendName ?? SELECTED_BACKEND)) {
+  if (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(cli.backendName ?? SELECTED_BACKEND)) {
     const backend = cli.backendName ?? SELECTED_BACKEND
     process.exit(installBackend(backend, { force: cli.force }) ? 0 : 1)
   }
@@ -1137,7 +1220,7 @@ if (cli.backendOnly) {
 if (cli.databaseOnly) {
   divider()
   log(`Database: ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'} (one isolated database per tatemono)`)
-  const installed = Object.keys(BACKEND_STACKS).filter(name => !['express', 'fastapi'].includes(name) &&
+  const installed = Object.keys(BACKEND_STACKS).filter(name => !['express', 'fastapi', 'aspnet', 'spring-boot'].includes(name) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, 'vendor', 'autoload.php')) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, '.env')))
   const expressReady = expressInstalled()
@@ -1152,13 +1235,18 @@ if (cli.databaseOnly) {
     configureAspnetDatabase()
     log('ASP.NET creates isolated databases when Tatemono schemas are built.')
   }
+  if (springBootInstalled()) {
+    log('Applying to spring-boot...')
+    configureSpringBootDatabase()
+    log('Spring Boot creates isolated databases when Tatemono schemas are built.')
+  }
   if (fastapiReady) {
     log('Applying to fastapi...')
     configureFastapiDatabase()
     log('FastAPI creates isolated databases when Tatemono schemas are built.')
   }
   if (!installed.length) {
-    if (expressReady || fastapiReady || aspnetInstalled()) process.exit(0)
+    if (expressReady || fastapiReady || aspnetInstalled() || springBootInstalled()) process.exit(0)
     warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
     process.exit(0)
   }
@@ -1201,7 +1289,7 @@ initRegistry()
 setupFrontend()
 if (activeDesktopStack) setupDesktopStack()
 if (activeAppStack) setupAppStack()
-if (['express', 'fastapi', 'aspnet'].includes(SELECTED_BACKEND)) installBackend(SELECTED_BACKEND)
+if (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(SELECTED_BACKEND)) installBackend(SELECTED_BACKEND)
 else setupBackend()
 if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

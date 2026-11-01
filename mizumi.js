@@ -13,7 +13,7 @@
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
 //    node mizumi.js desktop <stack> ← switch desktop stack
-//    node mizumi.js backend <name> ← switch active backend (laravel, express, fastapi, django, spring-boot, aspnet)
+//    node mizumi.js backend <name> ← switch active backend (laravel, express, fastapi, spring-boot, aspnet)
 //    node mizumi.js deps         ← install / uninstall node_modules
 //    node mizumi.js stack        ← show active web + app + desktop stack + backend + database
 //    node mizumi.js stacks       ← list all stacks
@@ -105,6 +105,7 @@ const BACKEND_STACKS = {
   'express':         'engine/backend/express',
   'fastapi':         'engine/backend/fastapi',
   'aspnet':          'engine/backend/aspnet',
+  'spring-boot':     'engine/backend/spring-boot',
 }
 // Backends you can select as the active one (arkzen.json "activeBackend").
 // `variant` is the DSL block suffix the backend reads (names not final, see TEMP_PLUFF_FEATURE_PLAN.md).
@@ -113,7 +114,6 @@ const BACKEND_TARGETS = {
   'laravel':     { dir: 'engine/backend/laravel',     variant: 'php',  label: 'Laravel (PHP), reference backend' },
   'express':     { dir: 'engine/backend/express',     variant: 'ts',   label: 'Express (TypeScript)' },
   'fastapi':     { dir: 'engine/backend/fastapi',     variant: 'py',   label: 'FastAPI (Python)' },
-  'django':      { dir: 'engine/backend/django',      variant: 'py',   label: 'Django (Python)' },
   'spring-boot': { dir: 'engine/backend/spring-boot', variant: 'java', label: 'Spring Boot (Java)' },
   'aspnet':      { dir: 'engine/backend/aspnet',      variant: 'cs',   label: 'ASP.NET Core (C#)' },
 }
@@ -126,7 +126,6 @@ const BACKEND_LABELS = {
   'laravel-inertia': 'Laravel + Inertia backend (react-inertia)',
   'express':         BACKEND_TARGETS['express'].label,
   'fastapi':         BACKEND_TARGETS['fastapi'].label,
-  'django':          BACKEND_TARGETS['django'].label,
   'spring-boot':     BACKEND_TARGETS['spring-boot'].label,
   'aspnet':          BACKEND_TARGETS['aspnet'].label,
 }
@@ -166,7 +165,7 @@ function isBackendInstalled(name) {
   if (name === 'fastapi') return fs.existsSync(path.join(dir, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
     process.platform === 'win32' ? 'python.exe' : 'python'))
   if (name === 'aspnet') return fs.existsSync(path.join(dir, 'obj', 'project.assets.json'))
-  if (name === 'fastapi' || name === 'django') return fs.existsSync(path.join(dir, '.venv'))
+  if (name === 'spring-boot') return fs.existsSync(path.join(dir, 'target', 'classpath.txt'))
   return true
 }
 
@@ -657,7 +656,7 @@ async function cmdSwitchBackend(backendArg) {
   } else if (!isBackendInstalled(backend)) {
     info(`Dependencies missing for ${backend}`)
   }
-  if (['express', 'fastapi', 'aspnet'].includes(backend)) info(`start.js, setup.js, and export.js support ${backend}.`)
+  if (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(backend)) info(`start.js, setup.js, and export.js support ${backend}.`)
   else if (backend !== 'laravel') info('start.js refuses to run this backend until it is built')
   info(`Tatemonos without a :${backendVariant(backend)} variant will be inactive on this backend`)
 }
@@ -748,7 +747,7 @@ async function cmdDeps(actionArg, stackArg) {
     divider()
     const chosen = await picker('node_modules — install / free disk space?', [
       { label: 'Show disk usage',                 sub: 'which stacks are installed', value: 'status' },
-      { label: 'Install a stack',                 sub: 'npm install (frontend, express) / dotnet restore (aspnet) / composer install (laravel)', value: 'install' },
+      { label: 'Install a stack',                 sub: 'npm install (frontend, express) / dotnet restore (aspnet) / mvn dependency resolve (spring-boot) / composer install (laravel)', value: 'install' },
       { label: 'Uninstall a stack',               sub: 'delete node_modules (frontend, express) / vendor (laravel)', value: 'uninstall' },
       { label: 'Prune unused',                    sub: 'keep only active web + app + desktop + backend', value: 'prune' },
     ])
@@ -1019,7 +1018,7 @@ async function interactiveMenu() {
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
     { label: 'Desktopスタック切替 Switch desktop stack', sub: 'tauri / electron',            value: 'desktop'    },
-    { label: 'Backend切替      Switch backend',          sub: 'laravel / express / fastapi / django / spring-boot / aspnet', value: 'backend' },
+    { label: 'Backend切替      Switch backend',          sub: 'laravel / express / fastapi / spring-boot / aspnet', value: 'backend' },
     { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
@@ -1080,7 +1079,7 @@ function printHelp() {
     ['mizumi start --skip=desktop',  '→ Start everything except chosen platforms'],
     ['mizumi app <stack>',       '→ Switch app stack'],
     ['mizumi desktop <stack>',   '→ Switch desktop stack (tauri / electron)'],
-    ['mizumi backend <name>',   '→ Switch backend (laravel, express, fastapi, django, spring-boot, aspnet)'],
+    ['mizumi backend <name>',   '→ Switch backend (laravel, express, fastapi, spring-boot, aspnet)'],
     ['mizumi db <sqlite|postgresql>', '→ Switch database (one isolated DB per tatemono)'],
     ['mizumi deps',              '→ Install / uninstall deps (frontend + backend)'],
     ['mizumi deps prune',        '→ Delete deps of unused stacks'],
@@ -1103,7 +1102,7 @@ function printHelp() {
   console.log(`  ${paint(c.gray, 'Web:')} nextjs, react-vite, react-inertia, astro, tanstack-start`)
   console.log(`  ${paint(c.gray, 'App:')} expo, react-native, lynx`)
   console.log(`  ${paint(c.gray, 'Desktop:')} tauri, electron`)
-  console.log(`  ${paint(c.gray, 'Backend:')} laravel, express, fastapi, django, spring-boot, aspnet  (laravel-inertia is automatic with react-inertia)`)
+  console.log(`  ${paint(c.gray, 'Backend:')} laravel, express, fastapi, spring-boot, aspnet  (laravel-inertia is automatic with react-inertia)`)
   console.log()
 }
 

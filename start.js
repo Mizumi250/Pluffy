@@ -74,10 +74,15 @@ const activeBackend = activeStack === 'react-inertia' ? 'laravel-inertia' : (ark
 const IS_EXPRESS = activeBackend === 'express'
 const IS_FASTAPI = activeBackend === 'fastapi'
 const IS_ASPNET = activeBackend === 'aspnet'
+const IS_SPRING = activeBackend === 'spring-boot'
+// Spring Boot entry points (compiled from engine/backend/spring-boot/src/main/java).
+// Change these if the Java classes live under a different package.
+const SPRING_SERVER_CLASS = 'dev.pluff.Server'
+const SPRING_WORKER_CLASS = 'dev.pluff.Worker'
 const PYTHON_ENV = IS_FASTAPI
   ? { ...process.env, PYTHONUTF8: process.env.PYTHONUTF8 || '1' }
   : process.env
-const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'fastapi', 'aspnet']
+const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'fastapi', 'aspnet', 'spring-boot']
 if (!IMPLEMENTED_BACKENDS.includes(activeBackend)) {
   console.log(`\n  ✗ Backend "${activeBackend}" is selected but not built yet. Run: node mizumi.js backend laravel\n`)
   process.exit(1)
@@ -90,6 +95,17 @@ const WEB_DIR = path.join(STACKS_DIR, activeStack)
 const TAURI_DIR = path.join(STACKS_DIR, 'tauri')
 const ELECTRON_DIR = path.join(STACKS_DIR, 'electron')
 const APP_DIR = activeAppStack ? path.join(STACKS_DIR, activeAppStack) : null
+
+// Spring Boot is launched straight from the Maven classpath (target/classpath.txt),
+// so no spring-boot-maven-plugin is needed in pom.xml.
+function springClasspath() {
+  const deps = fs.readFileSync(path.join(BACKEND_DIR, 'target', 'classpath.txt'), 'utf-8').trim()
+  return [path.join(BACKEND_DIR, 'target', 'classes'), deps].join(path.delimiter)
+}
+
+function springClassFile(className) {
+  return path.join(BACKEND_DIR, 'target', 'classes', ...className.split('.')) + '.class'
+}
 
 function spawnCli(command, args, options) {
   if (process.platform === 'win32' && (command === 'npm' || command === 'npx')) {
@@ -142,6 +158,33 @@ function checkSetup() {
       fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
       console.log('  ✓ Created engine/backend/aspnet/.env from .env.example')
     }
+  } else if (IS_SPRING) {
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'pom.xml'))) {
+      console.log('\n  ✗ Spring Boot engine is missing. Run: node setup.js --backend spring-boot\n')
+      process.exit(1)
+    }
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'target', 'classpath.txt'))) {
+      console.log('\n  ✗ Spring Boot packages are missing. Run: node mizumi.js deps install spring-boot\n')
+      process.exit(1)
+    }
+    const envFile = path.join(BACKEND_DIR, '.env')
+    if (!fs.existsSync(envFile) && fs.existsSync(path.join(BACKEND_DIR, '.env.example'))) {
+      fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
+      console.log('  ✓ Created engine/backend/spring-boot/.env from .env.example')
+    }
+    console.log('  … Compiling Spring Boot backend (mvn compile)')
+    try {
+      execSync('mvn -B -q compile', { cwd: BACKEND_DIR, stdio: 'pipe' })
+    } catch (e) {
+      const msg = (e.stdout || e.stderr || e.message || '').toString().trim().split('\n').slice(0, 12).join('\n    ')
+      console.log(`\n  ✗ Spring Boot compile failed:\n    ${msg}\n`)
+      process.exit(1)
+    }
+    if (!fs.existsSync(springClassFile(SPRING_SERVER_CLASS))) {
+      console.log(`\n  ✗ Spring Boot entry point ${SPRING_SERVER_CLASS} was not found after compiling.`)
+      console.log('    The Spring Boot backend is still work in progress (see engine/backend/spring-boot/README.md).\n')
+      process.exit(1)
+    }
   } else if (IS_FASTAPI) {
     const python = path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
       process.platform === 'win32' ? 'python.exe' : 'python')
@@ -191,7 +234,7 @@ function checkSetup() {
 }
 
 function startBackend() {
-  const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : 'Laravel'
+  const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : IS_SPRING ? 'Spring Boot' : 'Laravel'
   log('backend', `Starting ${backendName} on http://localhost:8000`)
 
   const proc = IS_EXPRESS
@@ -206,6 +249,12 @@ function startBackend() {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
           env: { ...process.env, ASPNETCORE_URLS: 'http://0.0.0.0:8000' },
+        })
+    : IS_SPRING
+      ? spawn('java', ['-cp', springClasspath(), SPRING_SERVER_CLASS], {
+          cwd: BACKEND_DIR,
+          stdio: 'pipe',
+          env: { ...process.env, PORT: '8000' },
         })
     : spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
         cwd: BACKEND_DIR,
@@ -234,7 +283,13 @@ function startQueueWorker() {
     log('queue', 'ASP.NET queue/scheduler support is not implemented yet; no worker was started')
     return null
   }
-  log('queue', IS_EXPRESS
+  if (IS_SPRING && !fs.existsSync(springClassFile(SPRING_WORKER_CLASS))) {
+    log('queue', `Spring Boot queue/scheduler worker (${SPRING_WORKER_CLASS}) is not implemented yet; no worker was started`)
+    return null
+  }
+  log('queue', IS_SPRING
+    ? `Starting queue worker + scheduler (java ${SPRING_WORKER_CLASS})`
+    : IS_EXPRESS
     ? 'Starting queue worker + scheduler (tsx src/worker.ts)'
     : IS_FASTAPI
       ? 'Starting queue worker + scheduler (python -m pluff.worker)'
@@ -243,7 +298,9 @@ function startQueueWorker() {
   let crashes = 0
   const spawnWorker = () => {
     const startedAt = Date.now()
-    const proc = IS_EXPRESS
+    const proc = IS_SPRING
+      ? spawn('java', ['-cp', springClasspath(), SPRING_WORKER_CLASS], { cwd: BACKEND_DIR, stdio: 'pipe', env: process.env })
+      : IS_EXPRESS
       ? spawn('npx', ['tsx', 'src/worker.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: process.env })
       : IS_FASTAPI
         ? spawn(path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
@@ -270,7 +327,8 @@ function startQueueWorker() {
         crashes += 1
         const instant = Date.now() - startedAt < 4000
         if (instant && crashes >= 3) {
-          log('queue', IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express'
+          log('queue', IS_SPRING ? 'Stopped restarting. Spring Boot worker is not booting — run: node mizumi.js deps install spring-boot'
+            : IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express'
             : IS_FASTAPI ? 'Stopped restarting. FastAPI worker is not booting — run: node mizumi.js deps install fastapi'
             : 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
           return
@@ -485,7 +543,7 @@ console.log('╚═════════════════════�
 checkSetup()
 
 // Storage symlink (Laravel only; Express has its own storage handler)
-if (!IS_EXPRESS && !IS_FASTAPI && !IS_ASPNET) {
+if (!IS_EXPRESS && !IS_FASTAPI && !IS_ASPNET && !IS_SPRING) {
   try {
     execSync('php artisan storage:link --force', {
       cwd: BACKEND_DIR,
@@ -503,7 +561,7 @@ let queue = null
 let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
-reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET ? null : startReverb()
+reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET || IS_SPRING ? null : startReverb()
 if (IS_ASPNET) log('backend', 'ASP.NET realtime services are not implemented yet')
 
 // Start web stack
