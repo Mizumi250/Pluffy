@@ -4,7 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
-//        node setup.js --backend [laravel|laravel-inertia|express]
+//        node setup.js --backend [laravel|laravel-inertia|express|aspnet]
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -47,8 +47,10 @@ const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeD
 // Stack → backend mapping (setupBackend can retarget this via useBackend)
 const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'laravel'
 // What the user selected in arkzen.json (node mizumi.js backend). react-inertia always forces laravel-inertia.
-// ACTIVE_BACKEND above stays the PHP flow's default; Express is installed through installBackend('express').
-const SELECTED_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : (activeBackendChoice === 'express' ? 'express' : 'laravel')
+// ACTIVE_BACKEND above stays the PHP flow's default; alternate engines install separately.
+const SELECTED_BACKEND = activeStack === 'react-inertia'
+  ? 'laravel-inertia'
+  : (['express', 'aspnet'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
 let backendName = ACTIVE_BACKEND
 let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
 function useBackend(name) {
@@ -105,11 +107,11 @@ const FRONTEND_STACKS = {
   'electron':       { category: 'desktop', dir: path.join(FRONTEND_DIR, 'electron') },
 }
 
-// PHP backends — "installed" means composer vendor/ exists
 const BACKEND_STACKS = {
   'laravel':         { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel') },
   'laravel-inertia': { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel-inertia') },
-  'express':         { category: 'backend', dir: path.join(BACKEND_DIR, 'express') },   // Node: "installed" means node_modules exists
+  'express':         { category: 'backend', dir: path.join(BACKEND_DIR, 'express') },
+  'aspnet':          { category: 'backend', dir: path.join(BACKEND_DIR, 'aspnet') },
 }
 const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
 
@@ -121,6 +123,7 @@ function cacheDirsFor(stack) {
   if (BACKEND_STACKS[stack]) {
     const dir = BACKEND_STACKS[stack].dir
     if (stack === 'express') return [path.join(dir, 'node_modules'), path.join(dir, '.build')]
+    if (stack === 'aspnet') return [path.join(dir, 'bin'), path.join(dir, 'obj')]
     return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
   }
   const meta = FRONTEND_STACKS[stack]
@@ -163,6 +166,7 @@ function formatBytes(n) {
 
 function stackInstalled(stack) {
   if (stack === 'express') return expressInstalled()
+  if (stack === 'aspnet') return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
   if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
   return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
@@ -240,6 +244,37 @@ function installExpressBackend({ force = false } = {}) {
   return true
 }
 
+function aspnetInstalled() {
+  return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
+}
+
+function installAspnetBackend({ force = false } = {}) {
+  const dir = BACKEND_STACKS.aspnet.dir
+  const project = path.join(dir, 'Pluff.AspNet.csproj')
+  if (!fs.existsSync(project)) {
+    error('engine/backend/aspnet is missing (no Pluff.AspNet.csproj)')
+    return false
+  }
+  if (!commandExists('dotnet')) {
+    error('.NET SDK not found — install the .NET 8 SDK before using the ASP.NET backend')
+    return false
+  }
+  if (force && fs.existsSync(path.join(dir, 'obj'))) removeDir(path.join(dir, 'obj'))
+  log('Restoring ASP.NET backend packages...')
+  if (!run('dotnet restore Pluff.AspNet.csproj', dir)) {
+    error('dotnet restore failed for ASP.NET backend')
+    return false
+  }
+  const envPath = path.join(dir, '.env')
+  if (!fs.existsSync(envPath) && fs.existsSync(path.join(dir, '.env.example'))) {
+    fs.copyFileSync(path.join(dir, '.env.example'), envPath)
+    success('Created engine/backend/aspnet/.env')
+  }
+  configureAspnetDatabase()
+  success('ASP.NET backend packages restored')
+  return true
+}
+
 // Express reads ARKZEN_DB_DRIVER / DB_* from its own .env (same keys Laravel uses).
 function configureExpressDatabase() {
   const envPath = path.join(BACKEND_STACKS.express.dir, '.env')
@@ -262,8 +297,27 @@ function configureExpressDatabase() {
   }
 }
 
+function configureAspnetDatabase() {
+  const envPath = path.join(BACKEND_STACKS.aspnet.dir, '.env')
+  if (!fs.existsSync(envPath)) return
+  let env = fs.readFileSync(envPath, 'utf-8')
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
+  env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
+  if (activeDatabase === 'pgsql') {
+    const pg = pgSettings(env)
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+  }
+  fs.writeFileSync(envPath, env)
+  success(`ASP.NET .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
+}
+
 function installBackend(name, { force = false } = {}) {
   if (name === 'express') return installExpressBackend({ force })
+  if (name === 'aspnet') return installAspnetBackend({ force })
   if (stackInstalled(name) && !force) {
     success(`${name} already installed — skip (use --force to reinstall)`)
     return true
@@ -431,10 +485,11 @@ function printSetupHelp() {
   Full setup (active stacks only — does not install every frontend):
     node setup.js
 
-  Backend only (composer vendor, or npm install for express):
+  Backend only (Composer, npm, or .NET restore):
     node setup.js --backend                    (active backend)
     node setup.js --backend laravel-inertia
     node setup.js --backend express            (Node only, no PHP needed)
+    node setup.js --backend aspnet             (.NET 8 SDK required)
     node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
   Package manager:
@@ -463,7 +518,9 @@ function checkRequirements({ desktop = true } = {}) {
     { cmd: 'npm',  name: 'npm' },
   ]
   // PHP is only needed when a Laravel backend is the one in use.
-  if (SELECTED_BACKEND !== 'express') {
+  if (SELECTED_BACKEND === 'aspnet') {
+    checks.push({ cmd: 'dotnet', name: '.NET SDK 8+' })
+  } else if (SELECTED_BACKEND !== 'express') {
     checks.push({ cmd: 'php', name: 'PHP' })
     checks.push({ cmd: 'composer', name: 'Composer' })
   }
@@ -957,8 +1014,9 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
-  if ((cli.backendName ?? SELECTED_BACKEND) === 'express') {
-    process.exit(installExpressBackend({ force: cli.force }) ? 0 : 1)
+  if (['express', 'aspnet'].includes(cli.backendName ?? SELECTED_BACKEND)) {
+    const backend = cli.backendName ?? SELECTED_BACKEND
+    process.exit(installBackend(backend, { force: cli.force }) ? 0 : 1)
   }
   checkRequirements({ desktop: false }) // backend-only never needs Rust/Tauri
   useBackend(cli.backendName ?? ACTIVE_BACKEND)
@@ -978,8 +1036,13 @@ if (cli.databaseOnly) {
     configureExpressDatabase()
     log('Express creates one isolated database per tatemono when it builds. Restart the backend to pick up the new driver.')
   }
+  if (aspnetInstalled()) {
+    log('Applying to aspnet...')
+    configureAspnetDatabase()
+    log('ASP.NET creates isolated databases when Tatemono schemas are built.')
+  }
   if (!installed.length) {
-    if (expressReady) process.exit(0)
+    if (expressReady || aspnetInstalled()) process.exit(0)
     warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
     process.exit(0)
   }
@@ -1022,7 +1085,7 @@ initRegistry()
 setupFrontend()
 if (activeDesktopStack) setupDesktopStack()
 if (activeAppStack) setupAppStack()
-if (SELECTED_BACKEND === 'express') installExpressBackend()
+if (SELECTED_BACKEND === 'express' || SELECTED_BACKEND === 'aspnet') installBackend(SELECTED_BACKEND)
 else setupBackend()
 if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

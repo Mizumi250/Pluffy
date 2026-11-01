@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — shan-shan [Expo]
 // Source: @arkzen:native:components (shan-shan)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:27.664Z
+// Generated: 2026-11-01T08:12:56.603Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

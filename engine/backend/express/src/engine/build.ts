@@ -40,7 +40,8 @@ export async function loadModule(slug: string): Promise<void> {
   })
   const mod: Any = await import(pathToFileURL(outfile).href)
   routers.set(slug, mod.router)
-  routePrefixes.set(slug, mod.routePrefixes ?? [`/api/${slug}`])
+  const prefixes: string[] = mod.routePrefixes ?? []
+  routePrefixes.set(slug, prefixes.length ? prefixes : [`/api/${slug}`])
   modules.set(slug, { name: slug, jobs: mod.jobs, listeners: mod.listeners, events: mod.events, listenerMap: mod.listenerMap })
   unregisterTatemonoCommands(slug)
   for (const C of mod.commands ?? []) registerCommand(slug, C)

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — broadcast-test [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:32:57.161Z
+// Generated: 2026-11-01T08:12:25.282Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

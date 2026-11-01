@@ -48,6 +48,18 @@ import { activeBackendVariant, resolveActiveBackend } from './backends'
 const BACKEND_URL          = process.env.ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 const ARKZEN_ENGINE_SECRET = process.env.ARKZEN_ENGINE_SECRET ?? 'arkzen-engine-secret'
 
+function backendLabel(backend = resolveActiveBackend()): string {
+  return ({
+    laravel: 'Laravel',
+    'laravel-inertia': 'Laravel Inertia',
+    express: 'Express',
+    aspnet: 'ASP.NET Core',
+    fastapi: 'FastAPI',
+    django: 'Django',
+    'spring-boot': 'Spring Boot',
+  } as Record<string, string>)[backend] ?? backend
+}
+
 export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<void> {
   const hasBackend =
     tatemono.databases.length                             > 0 ||
@@ -68,7 +80,9 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     return
   }
 
-  console.log(`[Arkzen Bridge] Sending to Laravel: ${tatemono.meta.name}`)
+  const backend = resolveActiveBackend()
+  const label = backendLabel(backend)
+  console.log(`[Arkzen Bridge] Sending to ${label}: ${tatemono.meta.name}`)
   if (tatemono.databases.length)    console.log(`[Arkzen Bridge]   Tables: ${tatemono.databases.map(d => d.table).join(', ')}`)
   if (tatemono.apis.length)         console.log(`[Arkzen Bridge]   Resources: ${tatemono.apis.map(a => a.model).join(', ')}`)
   if (tatemono.customRoutes.length) console.log(`[Arkzen Bridge]   Custom routes: ${tatemono.customRoutes.map(c => c.controller).join(', ')}`)
@@ -87,7 +101,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
   const payload = {
     // v5.6: which backend + DSL variant this payload was parsed for.
     // Laravel ignores these. Other backends refuse a payload for a different variant.
-    backend:        resolveActiveBackend(),
+    backend,
     backendVariant: activeBackendVariant(),
 
     name:    tatemono.meta.name,
@@ -159,7 +173,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Laravel backend returned ${response.status}: ${errorText}`)
+      throw new Error(`${label} backend returned ${response.status}: ${errorText}`)
     }
 
     const result = await response.json() as {
@@ -167,15 +181,17 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
       message: string
       steps:   string[]
       errors:  string[]
+      warnings?: string[]
     }
 
     console.log(`[Arkzen Bridge] ✓ Backend build complete: ${tatemono.meta.name}`)
     result.steps?.forEach(step => console.log(`  ✓ ${step}`))
     result.errors?.forEach(err  => console.log(`  ✗ ${err}`))
+    result.warnings?.forEach(warning => console.warn(`  ⚠ ${warning}`))
 
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error(`[Arkzen Bridge] Cannot reach Laravel at ${BACKEND_URL}. Is it running?`)
+      throw new Error(`[Arkzen Bridge] Cannot reach ${label} at ${BACKEND_URL}. Is it running?`)
     }
     throw error
   }
@@ -189,7 +205,8 @@ export async function triggerBackendRemove(
     tables:      string[]
   }
 ): Promise<void> {
-  console.log(`[Arkzen Bridge] Removing from Laravel: ${tatemononName}`)
+  const label = backendLabel()
+  console.log(`[Arkzen Bridge] Removing from ${label}: ${tatemononName}`)
 
   const payload = {
     name:        tatemononName,
@@ -210,7 +227,7 @@ export async function triggerBackendRemove(
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Laravel backend returned ${response.status}: ${errorText}`)
+      throw new Error(`${label} backend returned ${response.status}: ${errorText}`)
     }
 
     const result = await response.json()
@@ -218,7 +235,7 @@ export async function triggerBackendRemove(
 
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      console.warn(`[Arkzen Bridge] ⚠ Cannot reach Laravel. Manual cleanup may be needed.`)
+      console.warn(`[Arkzen Bridge] ⚠ Cannot reach ${label}. Manual cleanup may be needed.`)
       return
     }
     throw error

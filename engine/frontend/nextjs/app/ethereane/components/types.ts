@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — ethereane
 // Source: @arkzen:components (ethereane)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T05:48:17.905Z
+// Generated: 2026-11-01T08:12:46.546Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

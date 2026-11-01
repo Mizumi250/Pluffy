@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LocationWidget [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:00.909Z
+// Generated: 2026-11-01T08:12:31.898Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

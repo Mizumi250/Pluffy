@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — upload-test [Expo]
 // Source: @arkzen:native:components (upload-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:29.132Z
+// Generated: 2026-11-01T08:12:58.130Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

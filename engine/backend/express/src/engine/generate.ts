@@ -494,7 +494,7 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     `export const events: LoadedModule['events'] = { ${eventClasses.join(', ')} }\n` +
     `export const listenerMap: LoadedModule['listenerMap'] = ${JSON.stringify(listenerMap)}\n` +
     `export const commands = [${cmdClasses.join(', ')}]\n` +
-    `export const routePrefixes = ${JSON.stringify([...apis.map(a => String(a.prefix ?? '').replace(/\/+$/, '')).filter(Boolean), ...((p.customRoutes ?? []).flatMap((r: any) => (r.routes ?? []).map((x: any) => String(x.route ?? '').split('/').slice(0, 3).join('/'))))])}\n`
+    `export const routePrefixes = ${JSON.stringify([...new Set([...apis.map(a => String(a.prefix ?? '').replace(/\/+$/, '')).filter(Boolean), ...(hasAuth ? [`${prefixOf}/auth`] : []), ...((p.customRoutes ?? []).flatMap((r: any) => (r.routes ?? []).map((x: any) => String(x.route ?? '').split('/').slice(0, 3).join('/'))))])])}\n`
 
   return { files, registry: { models: [...modelNames.values(), ...(hasAuth ? ['User'] : [])], controllers: controllerNames, tables: dbs.map(d => T(d.table)) }, warnings }
 }

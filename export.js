@@ -49,6 +49,7 @@ const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
 const activeBackend = isInertia ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
 const isExpress = activeBackend === 'express'
+const isAspnet = activeBackend === 'aspnet'
 
 // Paths — backend is stack-aware
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isDesktop ? 'react-vite' : activeStack)
@@ -674,7 +675,7 @@ if (fs.existsSync(srcAssetsPath)) {
 // Skip: Native (no backend), Inertia (monolith manages its own)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
   log('Writing standalone bootstrap/app.php...')
 
   fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
@@ -714,7 +715,7 @@ return $app;
 `)
   success('bootstrap/app.php (single tatemono DB connection registered)')
 } else {
-  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isNative ? ' (Native)' : ''))
+  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -728,7 +729,7 @@ return $app;
 // Skip: Native (no backend), Inertia (Laravel-Inertia handles routes)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
   log('Writing ModuleRouteServiceProvider...')
 
   const routeFilePath = `routes/modules/${tatName}.php`
@@ -769,7 +770,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
     success('bootstrap/providers.php → ModuleRouteServiceProvider registered')
   }
 } else {
-  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isNative ? ' (Native)' : ''))
+  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -784,7 +785,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
 // Skip: Native (no backend), Inertia (monolith has its own providers)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
   const provPath = path.join(PROJ_BACK, 'bootstrap', 'providers.php')
   if (fs.existsSync(provPath)) {
     log('Stripping engine-only providers...')
@@ -833,6 +834,20 @@ if (!isNative && hasBackend) {
       hasRealtime ? 'REVERB_APP_KEY=arkzen-key' : '',
       hasRealtime ? 'REVERB_APP_SECRET=arkzen-secret' : '',
     ].filter(Boolean).join('\n') + '\n'
+  } else if (isAspnet) {
+    env = [
+      `ASPNETCORE_URLS=http://0.0.0.0:${backendPort}`,
+      'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
+      `ARKZEN_DB_DRIVER=${isPg ? 'pgsql' : 'sqlite'}`,
+      `ARKZEN_DB_PREFIX=${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}`,
+      ...(isPg ? [
+        `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`,
+        `DB_PORT=${engineEnvValue('DB_PORT', '5432')}`,
+        `DB_DATABASE=${pgDatabaseName}`,
+        `DB_USERNAME=${engineEnvValue('DB_USERNAME', 'postgres')}`,
+        `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`,
+      ] : []),
+    ].join('\n') + '\n'
   } else env = env
     .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)
     .replace(/APP_ENV=.*/,              'APP_ENV=local')
@@ -849,7 +864,7 @@ if (!isNative && hasBackend) {
     .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
     .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
-  if (isPg && !isExpress) {
+  if (isPg && !isExpress && !isAspnet) {
     env = env
       .replace(/^DB_CONNECTION=.*$/m,       'DB_CONNECTION=pgsql')
       .replace(/^#?[ \t]*DB_HOST=.*$/m,     `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`)
@@ -860,7 +875,7 @@ if (!isNative && hasBackend) {
     env += '\nARKZEN_DB_DRIVER=pgsql\n'
   }
 
-  if (hasRealtime && !isExpress && !env.includes('REVERB_APP_ID=')) {
+  if (hasRealtime && !isExpress && !isAspnet && !env.includes('REVERB_APP_ID=')) {
     env += [
       '',
       'REVERB_APP_ID=arkzen',
@@ -873,7 +888,7 @@ if (!isNative && hasBackend) {
   }
 
   fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-  success(`.env written (${isExpress ? 'Express' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
+  success(`.env written (${isExpress ? 'Express' : isAspnet ? 'ASP.NET Core' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
 } else {
   skip('.env (Native)')
 }
@@ -1288,7 +1303,17 @@ if (!isInertia && !isNative) {
 // excluded from the copy and installed fresh in the exported project.
 // ─────────────────────────────────────────────
 
-if (!isNative && hasBackend && isExpress) {
+if (!isNative && hasBackend && isAspnet) {
+  log('Restoring ASP.NET Core dependencies...')
+  try {
+    execSync('dotnet restore Pluff.AspNet.csproj', { cwd: PROJ_BACK, stdio: 'pipe' })
+    success('dotnet restore complete')
+  } catch (e) {
+    warn('dotnet restore failed — run manually: cd backend && dotnet restore Pluff.AspNet.csproj')
+    const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
+    msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
+  }
+} else if (!isNative && hasBackend && isExpress) {
   log('Installing Express dependencies...')
   try {
     execSync('npm install --no-audit --no-fund', { cwd: PROJ_BACK, stdio: 'pipe' })
@@ -1298,7 +1323,7 @@ if (!isNative && hasBackend && isExpress) {
     const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
     msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
   }
-} else if (!isNative && hasBackend) {
+} else if (!isNative && hasBackend && !isAspnet) {
   log('Installing Composer dependencies...')
   try {
     execSync('composer install --no-interaction --prefer-dist --optimize-autoloader --quiet', {
@@ -1397,7 +1422,9 @@ const startLines = [
   hasBackend && !isInertia ? `console.log('  Backend:  http://localhost:8001')` : null,
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
-  hasBackend && hasRealtime ? `console.log('  ${isExpress ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
+  hasBackend && hasRealtime && !isAspnet ? `console.log('  ${isExpress ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
+  isAspnet && hasJobs ? `console.log('  WARNING: ASP.NET queue/scheduler support is not implemented yet')` : null,
+  isAspnet && hasRealtime ? `console.log('  WARNING: ASP.NET realtime support is not implemented yet')` : null,
   isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
   !isInertia && !isNative && !isTauri ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
   isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
@@ -1406,18 +1433,20 @@ const startLines = [
   hasBackend && !isInertia
     ? (isExpress
       ? `const backend  = run('backend',  'npm', ['start'], BACK, 'backend')`
-      : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
+      : isAspnet
+        ? `const backend  = run('backend',  'dotnet', ['run', '--no-restore', '--project', 'Pluff.AspNet.csproj'], BACK, 'backend')`
+        : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
     : null,
   // Inertia: php artisan serve from project root, Vite runs alongside
   isInertia && hasBackend  ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8000'], __dirname, 'backend')` : null,
-  hasBackend && hasJobs && !isInertia
+  hasBackend && hasJobs && !isInertia && !isAspnet
     ? (isExpress
       ? `const queue    = run('queue',    'npm', ['run', 'queue'], BACK, 'queue')`
       : `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], BACK, 'queue')`)
     : null,
   hasBackend && hasJobs && isInertia
     ? `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], __dirname, 'queue')` : null,
-  hasBackend && hasRealtime && !isInertia
+  hasBackend && hasRealtime && !isInertia && !isAspnet
     ? (isExpress
       ? null
       : `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], BACK, 'reverb')`)
@@ -1436,7 +1465,7 @@ const startLines = [
   !isInertia && !isNative && !isTauri
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
   ``,
-  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress ? ' reverb,' : ''} frontend].filter(Boolean)`,
+  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs && !isAspnet ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress && !isAspnet ? ' reverb,' : ''} frontend].filter(Boolean)`,
   ``,
   `process.on('SIGINT', () => {`,
   `  services.forEach(s => s && s.kill())`,
@@ -1492,11 +1521,14 @@ const nativeNote = isNative
 const tauriNote = isTauri
   ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
   : ''
+const aspnetNote = isAspnet
+  ? `\n> **ASP.NET Core status:** Auth, CRUD, and C# endpoint/middleware variants are supported. Policies, queues, realtime, and file storage still need ASP.NET implementations.\n`
+  : ''
 
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
 
 Generated by Arkzen export.js v10.
-${inertiaNote}${nativeNote}${tauriNote}
+${inertiaNote}${nativeNote}${tauriNote}${aspnetNote}
 ## Start
 
 \`\`\`bash
@@ -1504,13 +1536,13 @@ node start.js
 \`\`\`
 
 | Service  | URL                                          |
-|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime ? `\n| Realtime | ws://localhost:${isExpress ? '8080' : '8081'}                          |` : ''}
+|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime && !isAspnet ? `\n| Realtime | ws://localhost:${isExpress ? '8080' : '8081'}                          |` : ''}
 ${hasBackend && !isInertia ? `
 ## Manual backend setup (if needed)
 
 \`\`\`bash
 cd backend
-${isExpress ? 'npm install\nnpm start' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
+${isExpress ? 'npm install\nnpm start' : isAspnet ? 'dotnet restore Pluff.AspNet.csproj\ndotnet run --project Pluff.AspNet.csproj' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
 \`\`\`
 ` : ''}`)
 

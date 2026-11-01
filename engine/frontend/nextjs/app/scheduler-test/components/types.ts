@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — scheduler-test
 // Source: @arkzen:components (scheduler-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T05:48:41.786Z
+// Generated: 2026-11-01T08:13:34.890Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LessonPlayer [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:10.756Z
+// Generated: 2026-11-01T08:12:41.209Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

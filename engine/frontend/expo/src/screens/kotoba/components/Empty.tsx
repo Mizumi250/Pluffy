@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Empty [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:10.738Z
+// Generated: 2026-11-01T08:12:41.147Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
