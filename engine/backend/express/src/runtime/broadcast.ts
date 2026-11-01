@@ -15,6 +15,43 @@ const secret = () => env('REVERB_APP_SECRET', 'pluff-secret')!
 export const signChannel = (socketId: string, channel: string, channelData?: string) =>
   `${key()}:${crypto.createHmac('sha256', secret()).update(channelData ? `${socketId}:${channel}:${channelData}` : `${socketId}:${channel}`).digest('hex')}`
 
+export interface ChannelAuthorizationRule {
+  channel: string
+  type: 'private' | 'presence'
+  auth?: string
+}
+
+export function authorizeChannel(channel: string, user: any, rules: ChannelAuthorizationRule[]) {
+  const type = channel.startsWith('private-') ? 'private' : channel.startsWith('presence-') ? 'presence' : null
+  if (!type || !user) return null
+  const name = channel.slice(type.length + 1)
+
+  for (const rule of rules) {
+    if (rule.type !== type) continue
+    const captures: string[] = []
+    const pattern = rule.channel.split(/(\{[^}]+\})/g).map(part => {
+      if (/^\{[^}]+\}$/.test(part)) {
+        captures.push(part.slice(1, -1))
+        return '([^.]+)'
+      }
+      return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    }).join('')
+    const match = new RegExp(`^${pattern}$`).exec(name)
+    if (!match) continue
+
+    const auth = rule.auth ?? 'authenticated'
+    if (auth === 'owner' && (captures.length === 0 || String(user.id) !== match[1])) continue
+    if (auth === 'admin' && user.role !== 'admin') continue
+    return {
+      type,
+      channelData: type === 'presence'
+        ? JSON.stringify({ user_id: user.id, user_info: { name: user.name ?? user.email } })
+        : undefined,
+    }
+  }
+  return null
+}
+
 const out = (ws: WebSocket, event: string, data: any, channel?: string) =>
   ws.readyState === WebSocket.OPEN && ws.send(JSON.stringify({ event, ...(channel ? { channel } : {}), data: typeof data === 'string' ? data : JSON.stringify(data) }))
 

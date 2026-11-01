@@ -1,0 +1,56 @@
+{
+  "table": "employees",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "name": {
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    "email": {
+      "type": "string",
+      "length": 255,
+      "unique": true,
+      "nullable": false
+    },
+    "avatar": {
+      "type": "string",
+      "length": 500,
+      "nullable": true
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 3,
+    "data": [
+      {
+        "name": "Alex Rivera",
+        "email": "alex@example.com",
+        "avatar": "https://i.pravatar.cc/150?img=1",
+        "is_active": true
+      },
+      {
+        "name": "Jamie Chen",
+        "email": "jamie@example.com",
+        "avatar": "https://i.pravatar.cc/150?img=5",
+        "is_active": true
+      },
+      {
+        "name": "Taylor Smith",
+        "email": "taylor@example.com",
+        "avatar": "https://i.pravatar.cc/150?img=8",
+        "is_active": true
+      }
+    ]
+  }
+}

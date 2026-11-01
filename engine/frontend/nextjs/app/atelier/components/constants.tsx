@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — atelier
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:32.227Z
+// Generated: 2026-11-01T11:53:36.825Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -17,6 +17,12 @@ Eloquent-like `Model`/`QueryBuilder` (+ paginator JSON), Laravel rule-string val
 database/mail/broadcast notifications, Pusher-protocol realtime server (public/private/presence), multipart storage,
 JSON resources, model factories, command/job/event dispatch endpoints, and streaming `/sse` plus `/sse-poll` routes.
 
+Realtime channel declarations accept Laravel-style `type` and `auth` values (`authenticated`, `owner`, or `admin`).
+Notification `channel_type` selects private, public, or presence broadcast channels. Mail HTML supports escaped/raw
+Blade-style interpolation, comments, `@if`/`@elseif`/`@else`, and `@foreach`; it does not execute PHP or implement
+arbitrary Blade directives. Validation includes Laravel's common conditional/required rules, distinct values, IP
+versions, string prefixes/suffixes, and decimal precision in addition to the rules listed by the runtime.
+
 ## Writing `:ts` bodies
 Bodies are async function bodies. Available names: `request`, `response`, every generated model (plus `User` when `auth: true`),
 `Hash`, `DB`, `abort`, `dispatch`, `event`, `broadcast`, `Mail`, `notify`, `Storage`, `Log`, `Command`, `Job`.

@@ -23,10 +23,18 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Web:** Next.js, React + Vite, TanStack Start, Astro, or React with Inertia
 - **Mobile:** Expo, bare React Native, or Lynx
 - **Desktop:** Tauri or Electron
-- **Backend:** Laravel (reference), Express (TypeScript equivalent), or FastAPI (python)
+- **Backend:** Laravel (PHP), Express (TypeScript), FastAPI (Python), Spring Boot (Java), or ASP.NET Core (C#). Go (Chi) and Rust (Axum) are planned targets.
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 
-You choose the stacks you like, and the tatemono doesn't change when you switch.
+Frontend stack changes usually don't require Tatemono edits. Backend-specific code uses `:php`, `:ts`, or `:py` variants for implemented targets; Go `:go` and Rust `:rs` variants are planned. Shared DSL sections stay shared.
+
+### Go and Rust backend plans
+
+The Go target is planned around **Chi**, a lightweight router built on Go's
+standard `net/http` interfaces. The Rust target is planned around **Axum**,
+using the Tokio async runtime and Tower middleware ecosystem. These stacks are
+selected for the planned backends; their directories are scaffolds only, and
+neither backend currently builds Tatemono definitions.
 
 **The things apps keep needing, already handled.**
 
@@ -40,7 +48,7 @@ When a tatemono is ready, you can export it as a standalone project and take it 
 
 ## Meet the tatemonos
 
-The `tatemonos/` folder is a small gallery of what the engine has built so far: café and portfolio sites, a payroll system, a queue manager, a geofenced time clock, a social language-learning app called Kotoba, and plenty of experiments along the way. A few are concept sites made for demonstration and portfolio purposes, and they say so on the page.
+The `tatemonos/` folder is a small gallery of what the engine has built so far: café and portfolio sites, a payroll system, a queue manager, a geofenced time clock, a social language-learning app called Kotoba, a FastAPI fixture, and Ollama Studio for local AI chat.
 
 They're also the best way to learn the language. Open any `core.tsx` and you'll see how a whole app reads in one place.
 
@@ -56,6 +64,7 @@ The project also has an AI side. A fine-tuned model learns the tatemono language
 - a scanner that turns the tatemonos themselves into training data
 
 It's bring-your-own-model: you point Pluffy at a model server, such as a local one or a Colab tunnel, and it does the rest.
+The `ollama-studio` Tatemono is intentionally local-only: it sends prompts to Ollama on `127.0.0.1` and does not contact an external provider.
 
 ---
 
@@ -65,14 +74,14 @@ It's bring-your-own-model: you point Pluffy at a model server, such as a local o
 tatemonos/        every tatemono: <name>/core.tsx (plus assets)
 engine/
   frontend/       the web, mobile and desktop stacks
-  backend/        Laravel reference backend, Express equivalent, and generators
+  backend/        Laravel, Express and FastAPI implementations; Spring Boot, ASP.NET Core, Go and Rust targets
 projects/         exported, standalone projects
 mizumi.js         the friendly front door (the menu is bilingual: English / 日本語)
 start.js          starts the backend, the queue, real-time and the frontends
 setup.js          one-time setup
 export.js         turns a tatemono into a standalone project
 pluffy-*.js       the AI tools
-PLUFF_GUIDELINES_v1.md   the full language reference
+PLUFF_GUIDELINES_v13.md  the full language reference
 ```
 
 ---
@@ -89,8 +98,9 @@ It will show you what's available, and from there you can set things up, start t
 
 When you want to learn the language itself, `PLUFF_GUIDELINES_v13.md` is the reference. It covers every block a tatemono can contain.
 
-Pluffy runs on Windows, Linux and Termux on Android. It needs Node. PHP with Composer is only required
-when using the Laravel reference backend or the React-Inertia stack; Express uses Node and npm.
+Pluffy runs on Windows, Linux and Termux on Android. It needs Node. Python 3 is required for FastAPI;
+PHP with Composer is required for the Laravel reference backend or React-Inertia; Express uses Node and npm.
+Ollama Studio also expects a local Ollama server at `127.0.0.1:11434`.
 
 ---
 
@@ -113,4 +123,3 @@ Samples of what Pluff made so far:
 
 as the engine and its ai improve so as the output
 (the future PLUFFY ex Arkzen output will show here)
-

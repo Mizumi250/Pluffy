@@ -4,7 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
-//        node setup.js --backend [laravel|laravel-inertia|express|aspnet]
+//        node setup.js --backend [laravel|laravel-inertia|express|fastapi|aspnet]
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -41,6 +41,42 @@ if (fs.existsSync(arkzenJsonPath)) {
   } catch {}
 }
 
+function findSystemPython() {
+  const candidates = process.platform === 'win32'
+    ? [['py', ['-3']], ['python', []], ['python3', []]]
+    : [['python3', []], ['python', []]]
+  for (const [command, prefix] of candidates) {
+    const result = spawnSync(command, [...prefix, '--version'], { stdio: 'ignore', windowsHide: true })
+    if (!result.error && result.status === 0) return { command, prefix }
+  }
+  if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+    const installDir = path.join(process.env.LOCALAPPDATA, 'Programs', 'Python')
+    if (fs.existsSync(installDir)) {
+      const installs = fs.readdirSync(installDir, { withFileTypes: true })
+        .filter(entry => entry.isDirectory() && /^Python\d+$/i.test(entry.name))
+        .map(entry => path.join(installDir, entry.name, 'python.exe'))
+        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      for (const command of installs) {
+        const result = spawnSync(command, ['--version'], { stdio: 'ignore', windowsHide: true })
+        if (!result.error && result.status === 0) return { command, prefix: [] }
+      }
+    }
+  }
+  return null
+}
+
+function fastapiPythonPath(dir = BACKEND_STACKS.fastapi.dir) {
+  return path.join(dir, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+    process.platform === 'win32' ? 'python.exe' : 'python')
+}
+
+function fastapiInstalled() {
+  const python = fastapiPythonPath()
+  if (!fs.existsSync(python)) return false
+  const result = spawnSync(python, ['-c', 'import fastapi, uvicorn, sqlalchemy, yaml, dotenv, multipart, bcrypt, croniter, websockets'], { stdio: 'ignore', windowsHide: true })
+  return !result.error && result.status === 0
+}
+
 const DESKTOP_STACKS = ['tauri', 'electron']
 const isDesktop = activeDesktopStack !== null && DESKTOP_STACKS.includes(activeDesktopStack)
 
@@ -50,7 +86,7 @@ const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'la
 // ACTIVE_BACKEND above stays the PHP flow's default; alternate engines install separately.
 const SELECTED_BACKEND = activeStack === 'react-inertia'
   ? 'laravel-inertia'
-  : (['express', 'aspnet'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
+  : (['express', 'fastapi', 'aspnet'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
 let backendName = ACTIVE_BACKEND
 let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
 function useBackend(name) {
@@ -111,6 +147,7 @@ const BACKEND_STACKS = {
   'laravel':         { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel') },
   'laravel-inertia': { category: 'backend', dir: path.join(BACKEND_DIR, 'laravel-inertia') },
   'express':         { category: 'backend', dir: path.join(BACKEND_DIR, 'express') },
+  'fastapi':         { category: 'backend', dir: path.join(BACKEND_DIR, 'fastapi') },
   'aspnet':          { category: 'backend', dir: path.join(BACKEND_DIR, 'aspnet') },
 }
 const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
@@ -123,6 +160,7 @@ function cacheDirsFor(stack) {
   if (BACKEND_STACKS[stack]) {
     const dir = BACKEND_STACKS[stack].dir
     if (stack === 'express') return [path.join(dir, 'node_modules'), path.join(dir, '.build')]
+    if (stack === 'fastapi') return [path.join(dir, '.venv')]
     if (stack === 'aspnet') return [path.join(dir, 'bin'), path.join(dir, 'obj')]
     return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
   }
@@ -166,6 +204,7 @@ function formatBytes(n) {
 
 function stackInstalled(stack) {
   if (stack === 'express') return expressInstalled()
+  if (stack === 'fastapi') return fastapiInstalled()
   if (stack === 'aspnet') return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
   if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
@@ -244,6 +283,52 @@ function installExpressBackend({ force = false } = {}) {
   return true
 }
 
+function installFastapiBackend({ force = false } = {}) {
+  const dir = BACKEND_STACKS.fastapi.dir
+  const requirements = path.join(dir, 'requirements.txt')
+  if (!fs.existsSync(requirements)) {
+    error('engine/backend/fastapi is missing (no requirements.txt)')
+    return false
+  }
+  const systemPython = findSystemPython()
+  if (!systemPython) {
+    error('Python 3 was not found. Install Python 3 and ensure `python` or `py -3` is available.')
+    return false
+  }
+
+  const venv = path.join(dir, '.venv')
+  if (force && fs.existsSync(venv)) removeDir(venv)
+  const python = fastapiPythonPath(dir)
+  if (!fs.existsSync(python)) {
+    log('Creating FastAPI virtual environment...')
+    const created = spawnSync(systemPython.command, [...systemPython.prefix, '-m', 'venv', '.venv'], {
+      cwd: dir, stdio: 'inherit', windowsHide: true,
+    })
+    if (created.error || created.status !== 0 || !fs.existsSync(python)) {
+      error('Could not create the FastAPI virtual environment')
+      return false
+    }
+  }
+
+  log('Installing FastAPI backend packages...')
+  const installed = spawnSync(python, ['-m', 'pip', 'install', '-r', 'requirements.txt'], {
+    cwd: dir, stdio: 'inherit', windowsHide: true,
+  })
+  if (installed.error || installed.status !== 0 || !fastapiInstalled()) {
+    error('FastAPI dependency installation failed or the environment is incomplete')
+    return false
+  }
+
+  const envPath = path.join(dir, '.env')
+  if (!fs.existsSync(envPath) && fs.existsSync(path.join(dir, '.env.example'))) {
+    fs.copyFileSync(path.join(dir, '.env.example'), envPath)
+    success('Created engine/backend/fastapi/.env')
+  }
+  configureFastapiDatabase()
+  success('FastAPI backend packages installed')
+  return true
+}
+
 function aspnetInstalled() {
   return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
 }
@@ -297,6 +382,24 @@ function configureExpressDatabase() {
   }
 }
 
+function configureFastapiDatabase() {
+  const envPath = path.join(BACKEND_STACKS.fastapi.dir, '.env')
+  if (!fs.existsSync(envPath)) return
+  let env = fs.readFileSync(envPath, 'utf-8')
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
+  env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
+  if (activeDatabase === 'pgsql') {
+    const pg = pgSettings(env)
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+  }
+  fs.writeFileSync(envPath, env)
+  success(`FastAPI .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
+}
+
 function configureAspnetDatabase() {
   const envPath = path.join(BACKEND_STACKS.aspnet.dir, '.env')
   if (!fs.existsSync(envPath)) return
@@ -317,6 +420,7 @@ function configureAspnetDatabase() {
 
 function installBackend(name, { force = false } = {}) {
   if (name === 'express') return installExpressBackend({ force })
+  if (name === 'fastapi') return installFastapiBackend({ force })
   if (name === 'aspnet') return installAspnetBackend({ force })
   if (stackInstalled(name) && !force) {
     success(`${name} already installed — skip (use --force to reinstall)`)
@@ -485,10 +589,11 @@ function printSetupHelp() {
   Full setup (active stacks only — does not install every frontend):
     node setup.js
 
-  Backend only (Composer, npm, or .NET restore):
+  Backend only (Composer, npm, Python venv, or .NET restore):
     node setup.js --backend                    (active backend)
     node setup.js --backend laravel-inertia
     node setup.js --backend express            (Node only, no PHP needed)
+    node setup.js --backend fastapi            (Python 3 required)
     node setup.js --backend aspnet             (.NET 8 SDK required)
     node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
@@ -517,8 +622,13 @@ function checkRequirements({ desktop = true } = {}) {
     { cmd: 'node', name: 'Node.js' },
     { cmd: 'npm',  name: 'npm' },
   ]
-  // PHP is only needed when a Laravel backend is the one in use.
-  if (SELECTED_BACKEND === 'aspnet') {
+  if (SELECTED_BACKEND === 'fastapi') {
+    if (findSystemPython()) success('Python 3 found')
+    else {
+      error('Python 3 not found — install Python 3 and ensure `python` or `py -3` is available')
+      allGood = false
+    }
+  } else if (SELECTED_BACKEND === 'aspnet') {
     checks.push({ cmd: 'dotnet', name: '.NET SDK 8+' })
   } else if (SELECTED_BACKEND !== 'express') {
     checks.push({ cmd: 'php', name: 'PHP' })
@@ -1014,7 +1124,7 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
-  if (['express', 'aspnet'].includes(cli.backendName ?? SELECTED_BACKEND)) {
+  if (['express', 'fastapi', 'aspnet'].includes(cli.backendName ?? SELECTED_BACKEND)) {
     const backend = cli.backendName ?? SELECTED_BACKEND
     process.exit(installBackend(backend, { force: cli.force }) ? 0 : 1)
   }
@@ -1027,10 +1137,11 @@ if (cli.backendOnly) {
 if (cli.databaseOnly) {
   divider()
   log(`Database: ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'} (one isolated database per tatemono)`)
-  const installed = Object.keys(BACKEND_STACKS).filter(name =>
+  const installed = Object.keys(BACKEND_STACKS).filter(name => !['express', 'fastapi'].includes(name) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, 'vendor', 'autoload.php')) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, '.env')))
   const expressReady = expressInstalled()
+  const fastapiReady = fastapiInstalled()
   if (expressReady) {
     log('Applying to express...')
     configureExpressDatabase()
@@ -1041,8 +1152,13 @@ if (cli.databaseOnly) {
     configureAspnetDatabase()
     log('ASP.NET creates isolated databases when Tatemono schemas are built.')
   }
+  if (fastapiReady) {
+    log('Applying to fastapi...')
+    configureFastapiDatabase()
+    log('FastAPI creates isolated databases when Tatemono schemas are built.')
+  }
   if (!installed.length) {
-    if (expressReady || aspnetInstalled()) process.exit(0)
+    if (expressReady || fastapiReady || aspnetInstalled()) process.exit(0)
     warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
     process.exit(0)
   }
@@ -1085,7 +1201,7 @@ initRegistry()
 setupFrontend()
 if (activeDesktopStack) setupDesktopStack()
 if (activeAppStack) setupAppStack()
-if (SELECTED_BACKEND === 'express' || SELECTED_BACKEND === 'aspnet') installBackend(SELECTED_BACKEND)
+if (['express', 'fastapi', 'aspnet'].includes(SELECTED_BACKEND)) installBackend(SELECTED_BACKEND)
 else setupBackend()
 if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

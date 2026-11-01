@@ -1,0 +1,35 @@
+{
+  "table": "uploaded_files",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": true
+    },
+    "original_name": {
+      "type": "string"
+    },
+    "stored_name": {
+      "type": "string"
+    },
+    "mime_type": {
+      "type": "string"
+    },
+    "size_bytes": {
+      "type": "integer"
+    },
+    "disk_path": {
+      "type": "string"
+    },
+    "is_image": {
+      "type": "boolean"
+    }
+  },
+  "indexes": []
+}

@@ -1,0 +1,29 @@
+{
+  "table": "ping_logs",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "message": {
+      "type": "string",
+      "nullable": false
+    },
+    "headers_ok": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 2,
+    "data": [
+      {
+        "message": "First ping",
+        "headers_ok": true
+      },
+      {
+        "message": "Second ping",
+        "headers_ok": false
+      }
+    ]
+  }
+}

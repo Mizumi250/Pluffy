@@ -1,0 +1,29 @@
+{
+  "table": "likes",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "post_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false
+    }
+  },
+  "indexes": [
+    {
+      "columns": [
+        "post_id",
+        "user_id"
+      ],
+      "unique": true
+    }
+  ]
+}

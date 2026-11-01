@@ -1,0 +1,29 @@
+{
+  "table": "circle_members",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "circle_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false
+    }
+  },
+  "indexes": [
+    {
+      "columns": [
+        "circle_id",
+        "user_id"
+      ],
+      "unique": true
+    }
+  ]
+}

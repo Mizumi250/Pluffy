@@ -1,0 +1,43 @@
+{
+  "table": "send_log",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": true
+    },
+    "to_email": {
+      "type": "string",
+      "nullable": true
+    },
+    "subject": {
+      "type": "string",
+      "nullable": true
+    },
+    "mail_class": {
+      "type": "string",
+      "nullable": true
+    },
+    "kind": {
+      "type": "string",
+      "length": 20,
+      "default": "mail"
+    },
+    "status": {
+      "type": "string",
+      "length": 20,
+      "default": "sent"
+    },
+    "error": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

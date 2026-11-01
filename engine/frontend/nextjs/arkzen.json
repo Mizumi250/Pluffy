@@ -13,7 +13,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:51.656Z",
-      "lastUpdated": "2026-11-01T08:12:33.825Z",
+      "lastUpdated": "2026-11-01T11:53:37.829Z",
       "auth": true
     },
     {
@@ -25,7 +25,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:52.276Z",
-      "lastUpdated": "2026-11-01T08:12:35.487Z",
+      "lastUpdated": "2026-11-01T11:53:38.450Z",
       "auth": false
     },
     {
@@ -39,7 +39,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:52.924Z",
-      "lastUpdated": "2026-11-01T08:12:36.033Z",
+      "lastUpdated": "2026-11-01T11:53:39.078Z",
       "auth": true
     },
     {
@@ -53,7 +53,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:53.210Z",
-      "lastUpdated": "2026-11-01T08:12:36.841Z",
+      "lastUpdated": "2026-11-01T11:53:39.873Z",
       "auth": true
     },
     {
@@ -65,7 +65,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:53.480Z",
-      "lastUpdated": "2026-11-01T08:12:40.078Z",
+      "lastUpdated": "2026-11-01T11:53:41.278Z",
       "auth": false
     },
     {
@@ -78,7 +78,7 @@
         "admin"
       ],
       "registered": "2026-05-01T09:26:53.848Z",
-      "lastUpdated": "2026-11-01T08:12:41.446Z",
+      "lastUpdated": "2026-11-01T11:53:41.956Z",
       "auth": false
     },
     {
@@ -90,7 +90,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.054Z",
-      "lastUpdated": "2026-11-01T08:12:43.602Z",
+      "lastUpdated": "2026-11-01T11:53:42.343Z",
       "auth": false
     },
     {
@@ -102,7 +102,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.306Z",
-      "lastUpdated": "2026-11-01T08:12:48.463Z",
+      "lastUpdated": "2026-11-01T11:53:43.501Z",
       "auth": false
     },
     {
@@ -114,7 +114,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:54.554Z",
-      "lastUpdated": "2026-11-01T08:12:57.170Z",
+      "lastUpdated": "2026-11-01T11:53:45.925Z",
       "auth": false
     },
     {
@@ -132,7 +132,7 @@
         "payslip"
       ],
       "registered": "2026-05-01T09:26:54.808Z",
-      "lastUpdated": "2026-11-01T08:13:03.368Z",
+      "lastUpdated": "2026-11-01T11:53:46.894Z",
       "auth": false
     },
     {
@@ -144,7 +144,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:55.121Z",
-      "lastUpdated": "2026-11-01T08:13:07.902Z",
+      "lastUpdated": "2026-11-01T11:53:47.328Z",
       "auth": false
     },
     {
@@ -158,7 +158,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:55.397Z",
-      "lastUpdated": "2026-11-01T08:13:26.719Z",
+      "lastUpdated": "2026-11-01T11:53:50.298Z",
       "auth": true
     },
     {
@@ -170,7 +170,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:55.644Z",
-      "lastUpdated": "2026-11-01T08:13:28.072Z",
+      "lastUpdated": "2026-11-01T11:53:50.686Z",
       "auth": false
     },
     {
@@ -184,7 +184,7 @@
         "features"
       ],
       "registered": "2026-05-01T09:26:55.808Z",
-      "lastUpdated": "2026-11-01T08:13:29.850Z",
+      "lastUpdated": "2026-11-01T11:53:51.020Z",
       "auth": false
     },
     {
@@ -198,7 +198,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:56.063Z",
-      "lastUpdated": "2026-11-01T08:13:30.617Z",
+      "lastUpdated": "2026-11-01T11:53:51.592Z",
       "auth": true
     },
     {
@@ -210,7 +210,7 @@
         "index"
       ],
       "registered": "2026-05-01T09:26:56.225Z",
-      "lastUpdated": "2026-11-01T08:13:30.957Z",
+      "lastUpdated": "2026-11-01T11:53:52.253Z",
       "auth": false
     },
     {
@@ -224,7 +224,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.192Z",
-      "lastUpdated": "2026-11-01T08:13:34.582Z",
+      "lastUpdated": "2026-11-01T11:53:53.311Z",
       "auth": true
     },
     {
@@ -236,7 +236,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.499Z",
-      "lastUpdated": "2026-11-01T08:13:35.289Z",
+      "lastUpdated": "2026-11-01T11:53:53.890Z",
       "auth": false
     },
     {
@@ -248,7 +248,7 @@
         "dashboard"
       ],
       "registered": "2026-05-01T09:26:57.754Z",
-      "lastUpdated": "2026-11-01T08:13:44.242Z",
+      "lastUpdated": "2026-11-01T11:53:55.499Z",
       "auth": false
     },
     {
@@ -262,7 +262,7 @@
         "admin"
       ],
       "registered": "2026-05-03T02:23:38.494Z",
-      "lastUpdated": "2026-11-01T08:13:32.557Z",
+      "lastUpdated": "2026-11-01T11:53:52.879Z",
       "auth": false
     },
     {
@@ -274,7 +274,7 @@
         "index"
       ],
       "registered": "2026-05-13T10:51:31.044Z",
-      "lastUpdated": "2026-11-01T08:12:27.903Z",
+      "lastUpdated": "2026-11-01T11:53:35.658Z",
       "auth": false
     },
     {
@@ -286,7 +286,7 @@
         "index"
       ],
       "registered": "2026-05-14T16:18:56.852Z",
-      "lastUpdated": "2026-11-01T08:12:30.734Z",
+      "lastUpdated": "2026-11-01T11:53:36.191Z",
       "auth": false
     },
     {
@@ -298,7 +298,7 @@
         "index"
       ],
       "registered": "2026-05-23T08:36:31.379Z",
-      "lastUpdated": "2026-11-01T08:13:46.269Z",
+      "lastUpdated": "2026-11-01T11:53:56.173Z",
       "auth": false
     },
     {
@@ -310,7 +310,7 @@
         "index"
       ],
       "registered": "2026-05-29T04:43:14.326Z",
-      "lastUpdated": "2026-11-01T08:13:40.168Z",
+      "lastUpdated": "2026-11-01T11:53:54.391Z",
       "auth": false
     },
     {
@@ -320,7 +320,7 @@
       "filePath": "tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-05-29T11:51:25.727Z",
-      "lastUpdated": "2026-11-01T08:12:54.793Z",
+      "lastUpdated": "2026-11-01T11:53:45.071Z",
       "auth": false
     },
     {
@@ -332,7 +332,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:22.316Z",
-      "lastUpdated": "2026-11-01T08:12:32.640Z",
+      "lastUpdated": "2026-11-01T11:53:36.945Z",
       "auth": false
     },
     {
@@ -344,7 +344,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:27.642Z",
-      "lastUpdated": "2026-11-01T08:12:38.031Z",
+      "lastUpdated": "2026-11-01T11:53:40.203Z",
       "auth": false
     },
     {
@@ -356,7 +356,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:30.434Z",
-      "lastUpdated": "2026-11-01T08:12:45.026Z",
+      "lastUpdated": "2026-11-01T11:53:42.675Z",
       "auth": false
     },
     {
@@ -368,7 +368,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:30.750Z",
-      "lastUpdated": "2026-11-01T08:12:47.639Z",
+      "lastUpdated": "2026-11-01T11:53:43.066Z",
       "auth": false
     },
     {
@@ -380,7 +380,7 @@
         "index"
       ],
       "registered": "2026-06-19T13:19:31.891Z",
-      "lastUpdated": "2026-11-01T08:12:56.432Z",
+      "lastUpdated": "2026-11-01T11:53:45.414Z",
       "auth": false
     },
     {
@@ -398,7 +398,7 @@
         "chain-guest"
       ],
       "registered": "2026-06-19T13:19:34.412Z",
-      "lastUpdated": "2026-11-01T08:13:25.572Z",
+      "lastUpdated": "2026-11-01T11:53:49.913Z",
       "auth": false
     },
     {
@@ -410,7 +410,7 @@
         "index"
       ],
       "registered": "2026-10-09T13:26:12.241Z",
-      "lastUpdated": "2026-11-01T08:13:24.001Z",
+      "lastUpdated": "2026-11-01T11:53:49.624Z",
       "auth": false
     },
     {
@@ -425,7 +425,7 @@
         "editor"
       ],
       "registered": "2026-10-09T13:26:13.156Z",
-      "lastUpdated": "2026-11-01T08:13:43.274Z",
+      "lastUpdated": "2026-11-01T11:53:55.147Z",
       "auth": true
     },
     {
@@ -438,7 +438,7 @@
         "appointments"
       ],
       "registered": "2026-10-24T13:18:32.723Z",
-      "lastUpdated": "2026-11-01T08:12:39.403Z",
+      "lastUpdated": "2026-11-01T11:53:40.799Z",
       "auth": false
     },
     {
@@ -461,7 +461,7 @@
         "profile"
       ],
       "registered": "2026-10-27T08:12:55.386Z",
-      "lastUpdated": "2026-11-01T08:13:17.995Z",
+      "lastUpdated": "2026-11-01T11:53:49.126Z",
       "auth": true,
       "desktopConfig": {
         "window": {
@@ -484,7 +484,7 @@
         "index"
       ],
       "registered": "2026-10-31T12:45:13.398Z",
-      "lastUpdated": "2026-11-01T08:12:49.337Z",
+      "lastUpdated": "2026-11-01T11:53:43.954Z",
       "auth": true
     },
     {
@@ -496,7 +496,7 @@
         "index"
       ],
       "registered": "2026-11-01T01:25:40.704Z",
-      "lastUpdated": "2026-11-01T08:12:50.811Z",
+      "lastUpdated": "2026-11-01T11:53:44.406Z",
       "auth": true
     },
     {
@@ -508,8 +508,20 @@
         "index"
       ],
       "registered": "2026-11-01T03:47:30.828Z",
-      "lastUpdated": "2026-11-01T08:12:53.125Z",
+      "lastUpdated": "2026-11-01T11:53:44.813Z",
       "auth": true
+    },
+    {
+      "name": "ollama-studio",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "tatemonos/ollama-studio/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-11-01T11:17:42.101Z",
+      "lastUpdated": "2026-11-01T11:53:51.998Z",
+      "auth": false
     }
   ]
 }

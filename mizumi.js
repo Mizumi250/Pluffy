@@ -98,11 +98,12 @@ const DESKTOP_LABELS = {
   'tauri':    'Tauri desktop (wraps the running web stack)',
   'electron': 'Electron desktop (wraps the running web stack)',
 }
-// Backends that setup.js / deps know how to install today (laravel via composer, express via npm).
+// Backends that setup.js / deps know how to install today.
 const BACKEND_STACKS = {
   'laravel':         'engine/backend/laravel',
   'laravel-inertia': 'engine/backend/laravel-inertia',
   'express':         'engine/backend/express',
+  'fastapi':         'engine/backend/fastapi',
   'aspnet':          'engine/backend/aspnet',
 }
 // Backends you can select as the active one (arkzen.json "activeBackend").
@@ -162,6 +163,8 @@ function isBackendInstalled(name) {
   if (name === 'laravel' || name === 'laravel-inertia') return fs.existsSync(path.join(dir, 'vendor', 'autoload.php'))
   if (name === 'express') return fs.existsSync(path.join(dir, 'node_modules', 'tsx', 'dist', 'cli.mjs')) &&
     fs.existsSync(path.join(dir, 'node_modules', 'better-sqlite3', 'build', 'Release', 'better_sqlite3.node'))
+  if (name === 'fastapi') return fs.existsSync(path.join(dir, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+    process.platform === 'win32' ? 'python.exe' : 'python'))
   if (name === 'aspnet') return fs.existsSync(path.join(dir, 'obj', 'project.assets.json'))
   if (name === 'fastapi' || name === 'django') return fs.existsSync(path.join(dir, '.venv'))
   return true
@@ -175,7 +178,7 @@ function isStackInstalled(stack) {
 
 function hintIfMissing(stack) {
   if (!stack || stack === 'none' || isStackInstalled(stack)) return
-  info(`node_modules missing for ${stack}`)
+  info(`${BACKEND_TARGETS[stack] ? 'Backend dependencies' : 'node_modules'} missing for ${stack}`)
   info(`Install: node mizumi.js deps install ${stack}`)
 }
 
@@ -654,7 +657,7 @@ async function cmdSwitchBackend(backendArg) {
   } else if (!isBackendInstalled(backend)) {
     info(`Dependencies missing for ${backend}`)
   }
-  if (backend === 'express' || backend === 'aspnet') info(`start.js, setup.js, and export.js support ${backend}.`)
+  if (['express', 'fastapi', 'aspnet'].includes(backend)) info(`start.js, setup.js, and export.js support ${backend}.`)
   else if (backend !== 'laravel') info('start.js refuses to run this backend until it is built')
   info(`Tatemonos without a :${backendVariant(backend)} variant will be inactive on this backend`)
 }

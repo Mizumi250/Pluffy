@@ -49,6 +49,7 @@ const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
 const activeBackend = isInertia ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
 const isExpress = activeBackend === 'express'
+const isFastapi = activeBackend === 'fastapi'
 const isAspnet = activeBackend === 'aspnet'
 
 // Paths — backend is stack-aware
@@ -71,6 +72,30 @@ function success(msg) { console.log(`  ✓ ${msg}`) }
 function warn(msg)    { console.log(`  ⚠ ${msg}`) }
 function skip(msg)    { console.log(`  – ${msg} (skipped)`) }
 function divider()    { console.log('\n' + '─'.repeat(50)) }
+
+function findSystemPython() {
+  const candidates = process.platform === 'win32'
+    ? [['py', ['-3']], ['python', []], ['python3', []]]
+    : [['python3', []], ['python', []]]
+  for (const [command, prefix] of candidates) {
+    const result = spawnSync(command, [...prefix, '--version'], { stdio: 'ignore', windowsHide: true })
+    if (!result.error && result.status === 0) return { command, prefix }
+  }
+  if (process.platform === 'win32' && process.env.LOCALAPPDATA) {
+    const installDir = path.join(process.env.LOCALAPPDATA, 'Programs', 'Python')
+    if (fs.existsSync(installDir)) {
+      const installs = fs.readdirSync(installDir, { withFileTypes: true })
+        .filter(entry => entry.isDirectory() && /^Python\d+$/i.test(entry.name))
+        .map(entry => path.join(installDir, entry.name, 'python.exe'))
+        .sort((a, b) => b.localeCompare(a, undefined, { numeric: true }))
+      for (const command of installs) {
+        const result = spawnSync(command, ['--version'], { stdio: 'ignore', windowsHide: true })
+        if (!result.error && result.status === 0) return { command, prefix: [] }
+      }
+    }
+  }
+  return null
+}
 
 // ─────────────────────────────────────────────
 // VALIDATE INPUT
@@ -232,6 +257,9 @@ if (buildResult.status === 0 && buildOut.includes('[export-build] OK')) {
 const BACKEND_EXCLUDE_FILTER = (src) => {
   const rel = path.relative(BACKEND_DIR, src).replace(/\\/g, '/')
   if (rel.startsWith('vendor/')  || rel === 'vendor')  return false
+  if (rel.startsWith('.venv/') || rel === '.venv')       return false
+  if (rel.split('/').includes('__pycache__'))            return false
+  if (rel === '.env')                                   return false
   if (src.endsWith('.sqlite'))                          return false
   if (rel.includes('Controllers/Arkzen/ArkzenEngineController.php')) return false
   if (rel.includes('Middleware/ArkzenEngineMiddleware.php'))          return false
@@ -675,7 +703,7 @@ if (fs.existsSync(srcAssetsPath)) {
 // Skip: Native (no backend), Inertia (monolith manages its own)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet) {
   log('Writing standalone bootstrap/app.php...')
 
   fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
@@ -715,7 +743,7 @@ return $app;
 `)
   success('bootstrap/app.php (single tatemono DB connection registered)')
 } else {
-  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
+  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -729,7 +757,7 @@ return $app;
 // Skip: Native (no backend), Inertia (Laravel-Inertia handles routes)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet) {
   log('Writing ModuleRouteServiceProvider...')
 
   const routeFilePath = `routes/modules/${tatName}.php`
@@ -770,7 +798,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
     success('bootstrap/providers.php → ModuleRouteServiceProvider registered')
   }
 } else {
-  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
+  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -785,7 +813,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
 // Skip: Native (no backend), Inertia (monolith has its own providers)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isAspnet) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet) {
   const provPath = path.join(PROJ_BACK, 'bootstrap', 'providers.php')
   if (fs.existsSync(provPath)) {
     log('Stripping engine-only providers...')
@@ -834,6 +862,25 @@ if (!isNative && hasBackend) {
       hasRealtime ? 'REVERB_APP_KEY=arkzen-key' : '',
       hasRealtime ? 'REVERB_APP_SECRET=arkzen-secret' : '',
     ].filter(Boolean).join('\n') + '\n'
+  } else if (isFastapi) {
+    env = [
+      `PORT=${backendPort}`,
+      `APP_URL=http://localhost:${backendPort}`,
+      'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
+      `ARKZEN_DB_DRIVER=${isPg ? 'pgsql' : 'sqlite'}`,
+      `ARKZEN_DB_PREFIX=${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}`,
+      'QUEUE_CONNECTION=database',
+      hasRealtime ? 'REVERB_PORT=8080' : '',
+      hasRealtime ? 'REVERB_APP_KEY=pluff-key' : '',
+      hasRealtime ? 'REVERB_APP_SECRET=pluff-secret' : '',
+      ...(isPg ? [
+        `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`,
+        `DB_PORT=${engineEnvValue('DB_PORT', '5432')}`,
+        `DB_DATABASE=${pgDatabaseName}`,
+        `DB_USERNAME=${engineEnvValue('DB_USERNAME', 'postgres')}`,
+        `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`,
+      ] : []),
+    ].filter(Boolean).join('\n') + '\n'
   } else if (isAspnet) {
     env = [
       `ASPNETCORE_URLS=http://0.0.0.0:${backendPort}`,
@@ -864,7 +911,7 @@ if (!isNative && hasBackend) {
     .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
     .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
-  if (isPg && !isExpress && !isAspnet) {
+  if (isPg && !isExpress && !isFastapi && !isAspnet) {
     env = env
       .replace(/^DB_CONNECTION=.*$/m,       'DB_CONNECTION=pgsql')
       .replace(/^#?[ \t]*DB_HOST=.*$/m,     `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`)
@@ -875,7 +922,7 @@ if (!isNative && hasBackend) {
     env += '\nARKZEN_DB_DRIVER=pgsql\n'
   }
 
-  if (hasRealtime && !isExpress && !isAspnet && !env.includes('REVERB_APP_ID=')) {
+  if (hasRealtime && !isExpress && !isFastapi && !isAspnet && !env.includes('REVERB_APP_ID=')) {
     env += [
       '',
       'REVERB_APP_ID=arkzen',
@@ -888,7 +935,7 @@ if (!isNative && hasBackend) {
   }
 
   fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-  success(`.env written (${isExpress ? 'Express' : isAspnet ? 'ASP.NET Core' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
+  success(`.env written (${isExpress ? 'Express' : isFastapi ? 'FastAPI' : isAspnet ? 'ASP.NET Core' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
 } else {
   skip('.env (Native)')
 }
@@ -1323,6 +1370,32 @@ if (!isNative && hasBackend && isAspnet) {
     const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
     msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
   }
+} else if (!isNative && hasBackend && isFastapi) {
+  log('Creating FastAPI virtual environment...')
+  const systemPython = findSystemPython()
+  if (!systemPython) {
+    warn('Python 3 was not found — install Python 3, then run `python -m venv .venv` and `pip install -r requirements.txt` in backend/')
+  } else {
+    const venv = spawnSync(systemPython.command, [...systemPython.prefix, '-m', 'venv', '.venv'], {
+      cwd: PROJ_BACK, stdio: 'pipe', windowsHide: true,
+    })
+    const python = path.join(PROJ_BACK, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+      process.platform === 'win32' ? 'python.exe' : 'python')
+    if (venv.error || venv.status !== 0 || !fs.existsSync(python)) {
+      warn('Could not create the FastAPI virtual environment; run `python -m venv .venv` in backend/')
+    } else {
+      const installed = spawnSync(python, ['-m', 'pip', 'install', '-r', 'requirements.txt'], {
+        cwd: PROJ_BACK, stdio: 'pipe', windowsHide: true,
+      })
+      if (installed.error || installed.status !== 0) {
+        const pythonCommand = path.join('.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+          process.platform === 'win32' ? 'python.exe' : 'python')
+        warn(`FastAPI dependency installation failed — run manually: cd backend && "${pythonCommand}" -m pip install -r requirements.txt`)
+      } else {
+        success('FastAPI dependencies installed')
+      }
+    }
+  }
 } else if (!isNative && hasBackend && !isAspnet) {
   log('Installing Composer dependencies...')
   try {
@@ -1403,6 +1476,7 @@ const startLines = [
   `const __dirname = path.dirname(fileURLToPath(import.meta.url))`,
   !isInertia && !isNative ? `const FRONT = path.join(__dirname, 'frontend')` : null,
   hasBackend && !isInertia ? `const BACK  = path.join(__dirname, 'backend')` : null,
+  hasBackend && isFastapi ? `const PYTHON = path.join(BACK, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin', process.platform === 'win32' ? 'python.exe' : 'python')` : null,
   ``,
   `function run(label, cmd, args, cwd, color) {`,
   `  const colors = { frontend:'\\x1b[36m', backend:'\\x1b[35m', queue:'\\x1b[33m', reverb:'\\x1b[34m' }`,
@@ -1410,7 +1484,7 @@ const startLines = [
   `  const windowsScript = process.platform === 'win32' && (cmd === 'npm' || cmd === 'npx')`,
   `  const executable = windowsScript ? (process.env.ComSpec || 'cmd.exe') : cmd`,
   `  const commandArgs = windowsScript ? ['/d', '/s', '/c', cmd + '.cmd ' + args.map(arg => JSON.stringify(arg)).join(' ')] : args`,
-  `  const p = spawn(executable, commandArgs, { cwd, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '1' } })`,
+  `  const p = spawn(executable, commandArgs, { cwd, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '1'${isFastapi ? `, PYTHONUTF8: process.env.PYTHONUTF8 || '1'` : ''} } })`,
   `  const out = d => String(d).trim().split('\\n').forEach(l => l && console.log(\`\${c}[\${label}]\${r} \${l}\`))`,
   `  p.stdout?.on('data', out)`,
   `  p.stderr?.on('data', out)`,
@@ -1422,7 +1496,7 @@ const startLines = [
   hasBackend && !isInertia ? `console.log('  Backend:  http://localhost:8001')` : null,
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
-  hasBackend && hasRealtime && !isAspnet ? `console.log('  ${isExpress ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
+  hasBackend && hasRealtime && !isAspnet ? `console.log('  ${isExpress || isFastapi ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
   isAspnet && hasJobs ? `console.log('  WARNING: ASP.NET queue/scheduler support is not implemented yet')` : null,
   isAspnet && hasRealtime ? `console.log('  WARNING: ASP.NET realtime support is not implemented yet')` : null,
   isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
@@ -1435,18 +1509,22 @@ const startLines = [
       ? `const backend  = run('backend',  'npm', ['start'], BACK, 'backend')`
       : isAspnet
         ? `const backend  = run('backend',  'dotnet', ['run', '--no-restore', '--project', 'Pluff.AspNet.csproj'], BACK, 'backend')`
-        : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
+        : isFastapi
+          ? `const backend  = run('backend', PYTHON, ['-m', 'uvicorn', 'pluff.server:app', '--host', '0.0.0.0', '--port', '8001'], BACK, 'backend')`
+          : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
     : null,
   // Inertia: php artisan serve from project root, Vite runs alongside
   isInertia && hasBackend  ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8000'], __dirname, 'backend')` : null,
   hasBackend && hasJobs && !isInertia && !isAspnet
     ? (isExpress
       ? `const queue    = run('queue',    'npm', ['run', 'queue'], BACK, 'queue')`
-      : `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], BACK, 'queue')`)
+      : isFastapi
+        ? `const queue    = run('queue', PYTHON, ['-m', 'pluff.worker'], BACK, 'queue')`
+        : `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], BACK, 'queue')`)
     : null,
   hasBackend && hasJobs && isInertia
     ? `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], __dirname, 'queue')` : null,
-  hasBackend && hasRealtime && !isInertia && !isAspnet
+  hasBackend && hasRealtime && !isInertia && !isAspnet && !isFastapi
     ? (isExpress
       ? null
       : `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], BACK, 'reverb')`)
@@ -1465,7 +1543,7 @@ const startLines = [
   !isInertia && !isNative && !isTauri
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
   ``,
-  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs && !isAspnet ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress && !isAspnet ? ' reverb,' : ''} frontend].filter(Boolean)`,
+  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs && !isAspnet ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress && !isFastapi && !isAspnet ? ' reverb,' : ''} frontend].filter(Boolean)`,
   ``,
   `process.on('SIGINT', () => {`,
   `  services.forEach(s => s && s.kill())`,
@@ -1524,11 +1602,14 @@ const tauriNote = isTauri
 const aspnetNote = isAspnet
   ? `\n> **ASP.NET Core status:** Auth, CRUD, and C# endpoint/middleware variants are supported. Policies, queues, realtime, and file storage still need ASP.NET implementations.\n`
   : ''
+const fastapiNote = isFastapi
+  ? `\n> **FastAPI backend:** Python 3 is required. The exported backend uses a local virtual environment; install Ollama separately if this Tatemono uses Ollama Studio.\n`
+  : ''
 
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
 
 Generated by Arkzen export.js v10.
-${inertiaNote}${nativeNote}${tauriNote}${aspnetNote}
+${inertiaNote}${nativeNote}${tauriNote}${fastapiNote}${aspnetNote}
 ## Start
 
 \`\`\`bash
@@ -1536,13 +1617,13 @@ node start.js
 \`\`\`
 
 | Service  | URL                                          |
-|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime && !isAspnet ? `\n| Realtime | ws://localhost:${isExpress ? '8080' : '8081'}                          |` : ''}
+|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime && !isAspnet ? `\n| Realtime | ws://localhost:${isExpress || isFastapi ? '8080' : '8081'}                          |` : ''}
 ${hasBackend && !isInertia ? `
 ## Manual backend setup (if needed)
 
 \`\`\`bash
 cd backend
-${isExpress ? 'npm install\nnpm start' : isAspnet ? 'dotnet restore Pluff.AspNet.csproj\ndotnet run --project Pluff.AspNet.csproj' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
+${isExpress ? 'npm install\nnpm start' : isFastapi ? 'python -m venv .venv\n.venv/bin/python -m pip install -r requirements.txt\n# Windows: .venv\\\\Scripts\\\\python.exe -m pip install -r requirements.txt' : isAspnet ? 'dotnet restore Pluff.AspNet.csproj\ndotnet run --project Pluff.AspNet.csproj' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
 \`\`\`
 ` : ''}`)
 

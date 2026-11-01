@@ -1,0 +1,89 @@
+{
+  "table": "inventories",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "name": {
+      "type": "string",
+      "length": 255,
+      "nullable": false
+    },
+    "sku": {
+      "type": "string",
+      "length": 100,
+      "unique": true,
+      "nullable": false
+    },
+    "quantity": {
+      "type": "integer",
+      "default": 0,
+      "nullable": false
+    },
+    "price": {
+      "type": "decimal",
+      "precision": 10,
+      "scale": 2,
+      "nullable": false
+    },
+    "category": {
+      "type": "string",
+      "length": 100,
+      "nullable": true
+    },
+    "description": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 5,
+    "data": [
+      {
+        "name": "Wireless Keyboard",
+        "sku": "WK-001",
+        "quantity": 50,
+        "price": 1299,
+        "category": "Electronics",
+        "description": "Compact wireless keyboard"
+      },
+      {
+        "name": "USB Hub 4-Port",
+        "sku": "UH-001",
+        "quantity": 120,
+        "price": 450,
+        "category": "Electronics",
+        "description": "4-port USB 3.0 hub"
+      },
+      {
+        "name": "Notebook A5",
+        "sku": "NB-001",
+        "quantity": 200,
+        "price": 85,
+        "category": "Stationery",
+        "description": "A5 lined notebook"
+      },
+      {
+        "name": "Office Chair",
+        "sku": "OC-001",
+        "quantity": 15,
+        "price": 8500,
+        "category": "Furniture",
+        "description": "Ergonomic office chair"
+      },
+      {
+        "name": "Monitor Stand",
+        "sku": "MS-001",
+        "quantity": 30,
+        "price": 750,
+        "category": "Furniture",
+        "description": "Adjustable monitor stand"
+      }
+    ]
+  }
+}

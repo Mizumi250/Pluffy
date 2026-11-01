@@ -71,20 +71,37 @@ async def remove(request: Request):
 
 
 async def _read_body(request: Request):
+    ctype = request.headers.get("content-type", "")
+    if "multipart/form-data" in ctype:
+        form = await request.form()
+        body = {}
+        files = {}
+        for key, value in form.multi_items():
+            if hasattr(value, "filename"):
+                name = key[:-2] if key.endswith("[]") else key
+                content = await value.read()
+                upload = {"originalname": value.filename or "upload",
+                          "mimetype": value.content_type or "application/octet-stream",
+                          "size": len(content), "buffer": content}
+                files.setdefault(name, []).append(upload)
+            else:
+                body[key] = value
+        body.update(files)
+        return body, files
+
     raw = await request.body()
     if not raw:
-        return {}
-    ctype = request.headers.get("content-type", "")
+        return {}, {}
     try:
         if "json" in ctype:
             data = json.loads(raw)
-            return data if isinstance(data, dict) else {}
+            return (data if isinstance(data, dict) else {}), {}
         if "x-www-form-urlencoded" in ctype:
             from urllib.parse import parse_qs
-            return {k: (v[-1] if v else "") for k, v in parse_qs(raw.decode(), keep_blank_values=True).items()}
+            return {k: (v[-1] if v else "") for k, v in parse_qs(raw.decode(), keep_blank_values=True).items()}, {}
     except ValueError:
-        return {}
-    return {}
+        return {}, {}
+    return {}, {}
 
 
 # /api/<tatemono>/... is dispatched to that tatemono's generated router (hot-swapped on rebuild).
@@ -94,7 +111,8 @@ async def api(request: Request, rest: str):
     m = re.match(r"^/api/([^/]+)", path)
     router = m and routers.get(m.group(1))
     if router:
-        out = await router.dispatch(request, path, await _read_body(request))
+        body, files = await _read_body(request)
+        out = await router.dispatch(request, path, body, files)
         if out is not None:
             return out
     return to_starlette(JsonResponse({"message": "Not Found"}, 404))

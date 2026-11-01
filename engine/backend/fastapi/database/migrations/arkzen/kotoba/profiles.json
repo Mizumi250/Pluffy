@@ -1,0 +1,89 @@
+{
+  "table": "profiles",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false,
+      "unique": true
+    },
+    "display_name": {
+      "type": "string",
+      "length": 80,
+      "nullable": false
+    },
+    "bio": {
+      "type": "text",
+      "nullable": true
+    },
+    "native_lang": {
+      "type": "string",
+      "length": 8,
+      "default": "en"
+    },
+    "learning_lang": {
+      "type": "string",
+      "length": 8,
+      "default": "es"
+    },
+    "level": {
+      "type": "string",
+      "length": 4,
+      "default": "A1"
+    },
+    "country": {
+      "type": "string",
+      "length": 80,
+      "nullable": true
+    },
+    "interests": {
+      "type": "string",
+      "length": 500,
+      "nullable": true
+    },
+    "avatar_color": {
+      "type": "string",
+      "length": 16,
+      "default": "#121212"
+    },
+    "xp": {
+      "type": "integer",
+      "default": 0
+    },
+    "streak": {
+      "type": "integer",
+      "default": 0
+    },
+    "best_streak": {
+      "type": "integer",
+      "default": 0
+    },
+    "last_active": {
+      "type": "date",
+      "nullable": true
+    },
+    "daily_goal": {
+      "type": "integer",
+      "default": 3
+    },
+    "words_written": {
+      "type": "integer",
+      "default": 0
+    },
+    "messages_sent": {
+      "type": "integer",
+      "default": 0
+    },
+    "onboarded": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": []
+}

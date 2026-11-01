@@ -1,0 +1,31 @@
+{
+  "table": "job_results",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "job_name": {
+      "type": "string",
+      "length": 100,
+      "nullable": false
+    },
+    "status": {
+      "type": "string",
+      "length": 50,
+      "nullable": false
+    },
+    "result": {
+      "type": "text",
+      "nullable": true
+    },
+    "processed_at": {
+      "type": "datetime",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

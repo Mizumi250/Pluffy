@@ -1,0 +1,37 @@
+{
+  "table": "conversations",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_a": {
+      "type": "integer",
+      "nullable": false
+    },
+    "user_b": {
+      "type": "integer",
+      "nullable": false
+    },
+    "last_message": {
+      "type": "text",
+      "nullable": true
+    },
+    "last_at": {
+      "type": "datetime",
+      "nullable": true
+    }
+  },
+  "indexes": [
+    {
+      "columns": [
+        "user_a",
+        "user_b"
+      ],
+      "unique": true
+    }
+  ]
+}

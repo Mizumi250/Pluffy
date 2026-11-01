@@ -465,6 +465,49 @@ return response.json({
 })
 /* @arkzen:endpoint:ts:summary:end */
 
+/* @arkzen:endpoint:py:summary
+*/
+active_orders = await JobOrder.where('status', 'active').get()
+inactive_count = await JobOrder.where('status', 'inactive').count()
+
+def _number(value):
+    return float(value or 0)
+
+total_cash = sum(1 for order in active_orders if order.disbursement_type == 'CASH')
+total_atm = sum(1 for order in active_orders if order.disbursement_type == 'ATM')
+total_basic_pay = sum(_number(order.basic_pay) for order in active_orders)
+total_sss = sum(_number(order.sss_amount) for order in active_orders)
+total_hdmf_premium = sum(_number(order.hdmf_premium) for order in active_orders)
+total_hdmf_mpl = sum(_number(order.hdmf_mpl) for order in active_orders)
+total_calamity_loan = sum(_number(order.calamity_loan) for order in active_orders)
+total_deductions = total_sss + total_hdmf_premium + total_hdmf_mpl + total_calamity_loan
+funding_breakdown = {}
+group_breakdown = {}
+for order in active_orders:
+    funding = '' if order.funding is None else str(order.funding)
+    group = '' if order.jor_pyrl_group is None else str(order.jor_pyrl_group)
+    funding_breakdown.setdefault(funding, {'count': 0, 'total_pay': 0})
+    funding_breakdown[funding]['count'] += 1
+    funding_breakdown[funding]['total_pay'] += _number(order.basic_pay)
+    group_breakdown[group] = group_breakdown.get(group, 0) + 1
+
+return response.json({
+    'total_active': len(active_orders),
+    'total_inactive': inactive_count,
+    'total_atm': total_atm,
+    'total_cash': total_cash,
+    'total_basic_pay': total_basic_pay,
+    'total_sss': total_sss,
+    'total_hdmf_premium': total_hdmf_premium,
+    'total_hdmf_mpl': total_hdmf_mpl,
+    'total_calamity_loan': total_calamity_loan,
+    'total_deductions': total_deductions,
+    'net_pay': total_basic_pay - total_deductions,
+    'funding_breakdown': funding_breakdown,
+    'group_breakdown': group_breakdown,
+})
+/* @arkzen:endpoint:py:summary:end */
+
 /* @arkzen:endpoint:php:byGroup
 */
 $group = request()->route('group');
@@ -477,6 +520,13 @@ return response()->json($orders);
 return response.json({ ok: true, endpoint: 'byGroup', input: request.all() })
 /* @arkzen:endpoint:ts:byGroup:end */
 
+/* @arkzen:endpoint:py:byGroup
+*/
+group = request.route('group')
+orders = await JobOrder.where('jor_pyrl_group', group).where('status', 'active').order_by('jor_number').get()
+return response.json(orders)
+/* @arkzen:endpoint:py:byGroup:end */
+
 /* @arkzen:endpoint:php:appointments
 */
 $orders = \App\Models\Arkzen\JoPayroll\JobOrder::whereNotNull('appointment_order')->orderBy('appointment_order')->get();
@@ -487,6 +537,12 @@ return response()->json($orders);
 */
 return response.json({ ok: true, endpoint: 'appointments', input: request.all() })
 /* @arkzen:endpoint:ts:appointments:end */
+
+/* @arkzen:endpoint:py:appointments
+*/
+orders = await JobOrder.query().where_not_null('appointment_order').order_by('appointment_order').get()
+return response.json(orders)
+/* @arkzen:endpoint:py:appointments:end */
 
 /* @arkzen:web:layout:app */
 

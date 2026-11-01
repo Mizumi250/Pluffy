@@ -71,11 +71,13 @@ def dumps(data) -> str:
 class Request:
     """Laravel-style request. Unknown attributes read the input (request.title == request.input('title'))."""
 
-    def __init__(self, raw: StarletteRequest, slug: str = "", body=None, params: dict | None = None):
+    def __init__(self, raw: StarletteRequest, slug: str = "", body=None, params: dict | None = None,
+                 files: dict | None = None):
         self.raw = raw
         self.slug = slug
         self._body = body if isinstance(body, dict) else {}
         self._params = params or {}
+        self._files = files or {}
         self._user = None
         self._query = {k: (v[-1] if v else None) for k, v in parse_qs(raw.url.query, keep_blank_values=True).items()}
 
@@ -121,6 +123,15 @@ class Request:
             for k in (ks if isinstance(ks, (list, tuple)) else [ks]):
                 a.pop(k, None)
         return a
+
+    def files(self, key: str | None = None):
+        if key is None:
+            return self._files
+        return self._files.get(key, [])
+
+    def file(self, key: str):
+        value = self._files.get(key, [])
+        return value[0] if value else None
 
     def merge(self, obj: dict):
         self._body.update(obj)
@@ -178,7 +189,8 @@ class Request:
 
     async def validate(self, rules: dict, messages: dict | None = None) -> dict:
         db = connection(self.slug) if self.slug else None
-        return await validate(self.all(), rules, db=db, slug=self.slug or None, messages=messages)
+        return await validate(self.all(), rules, db=db, slug=self.slug or None, messages=messages,
+                              files=self._files)
 
 
 _NO = object()
@@ -257,14 +269,14 @@ class Router:
         pat = re.sub(r"\{(\w+)\??\}", r"(?P<\1>[^/]+)", re.sub(r"([.+*?^$()|\\])", r"\\\1", path).replace("\\{", "{").replace("\\}", "}"))
         self.routes.append((method.upper(), re.compile("^" + pat + "/?$"), chain, handler))
 
-    async def dispatch(self, raw: StarletteRequest, path: str, body) -> StarletteResponse | None:
+    async def dispatch(self, raw: StarletteRequest, path: str, body, files: dict | None = None) -> StarletteResponse | None:
         for method, pat, chain, handler in self.routes:
             if method != raw.method:
                 continue
             m = pat.match(path)
             if not m:
                 continue
-            request = Request(raw, self.slug, body, m.groupdict())
+            request = Request(raw, self.slug, body, m.groupdict(), files)
             try:
                 for mw in chain:
                     out = await mw(request)

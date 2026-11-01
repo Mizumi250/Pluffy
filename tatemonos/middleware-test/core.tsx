@@ -64,6 +64,16 @@ return $next($request);
 return next()
 /* @arkzen:middleware:ts:requireJson:end */
 
+/* @arkzen:middleware:py:requireJson
+*/
+if not request.is_json():
+    return response.json({
+        'message': 'Content-Type: application/json is required for this endpoint.',
+        'hint': 'Set the Content-Type header to application/json',
+    }, 415)
+return await next()
+/* @arkzen:middleware:py:requireJson:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

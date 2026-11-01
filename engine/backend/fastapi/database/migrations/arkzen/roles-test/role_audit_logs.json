@@ -1,0 +1,21 @@
+{
+  "table": "role_audit_logs",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "user_id": {
+      "type": "integer",
+      "nullable": true
+    },
+    "action": {
+      "type": "string"
+    },
+    "role_required": {
+      "type": "string"
+    },
+    "granted": {
+      "type": "boolean"
+    }
+  },
+  "indexes": []
+}

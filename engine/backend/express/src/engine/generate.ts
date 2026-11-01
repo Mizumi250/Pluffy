@@ -373,10 +373,12 @@ ${methodBody(body, 'handle', ': Promise<number>')}
   for (const [name, cfg] of Object.entries(notifs)) {
     const cls = `${studly(name)}Notification`
     const channels = Array.isArray(cfg.channels) ? cfg.channels : String(cfg.channels ?? 'database').split(',').map((s: string) => s.trim())
+    const channelType = ['public', 'presence'].includes(cfg.channel_type) ? cfg.channel_type : 'private'
     const mailBody = dec(cfg.toMail_body).trim()
     nt += `export class ${cls} extends Notification {
   static tatemono = ${q(slug)}
   static channels = ${JSON.stringify(channels)}
+  static channelType = ${q(channelType)} as 'private' | 'public' | 'presence'
   toDatabase(notifiable: any) { return { message: ${q(cfg.message ?? 'You have a new notification.')}, type: ${q(cls)} } }
 ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMail(notifiable: any) { return new MailMessage().subject(${q(cfg.subject ?? cls)}).line(${q(cfg.message ?? 'You have a new notification.')}) }\n`}}\n\n`
   }
@@ -431,6 +433,15 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
   let rts = `// ARKZEN GENERATED ROUTES: ${slug}\n${IMPORTS}${modelImports}import { Router } from 'express'\nimport * as C from './controllers'\nimport { middlewareFns } from './middleware'\n\n`
   rts += `export function buildRouter(): Router {\n  const r = Router()\n  const S = ${q(slug)}\n  const mw = (name: string) => {\n    if (name === 'auth' || name.startsWith('auth:')) return authMiddleware(S)\n    if (name.startsWith('role:')) return roleMiddleware(...name.slice(5).split(','))\n    const fn = middlewareFns[name]\n    if (!fn) throw new Error('Unknown middleware: ' + name)\n    return wrapMiddleware(S, fn)\n  }\n`
   if (hasAuth) {
+    const channelRules: Any[] = Object.entries(realtimes)
+      .filter(([, cfg]) => !cfg.channel && ['private', 'presence'].includes(cfg.type ?? 'private'))
+      .map(([channel, cfg]) => ({ channel, type: cfg.type ?? 'private', auth: cfg.auth ?? 'authenticated' }))
+    if (hasNotifications) {
+      const notificationTypes = new Set(Object.values(notifs).map((cfg: Any) =>
+        ['public', 'presence'].includes(cfg.channel_type) ? cfg.channel_type : 'private'))
+      if (notificationTypes.has('private')) channelRules.push({ channel: `${slug}.{id}`, type: 'private', auth: 'owner' })
+      if (notificationTypes.has('presence')) channelRules.push({ channel: `${slug}.{id}`, type: 'presence', auth: 'owner' })
+    }
     rts += `
   r.post(${q(prefixOf + '/auth/register')}, handle(S, async (request, response) => {
     const v = await request.validate({ name: 'required|string|max:255', email: 'required|email|unique:users,email', password: 'required|string|min:8|confirmed' })
@@ -454,16 +465,14 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
   r.post(${q(prefixOf + '/auth/broadcasting/auth')}, authMiddleware(S), handle(S, async (request, response) => {
     const user = request.user()
     const socketId = request.input('socket_id'), channel = request.input('channel_name')
-    if (!socketId || !channel) return response.json({ message: 'Missing socket_id or channel_name.' }, 422)
-    const { signChannel } = await import('@pluff/runtime')
-    if (channel.startsWith(${q(`presence-${slug}`)})) {
-      const channelData = JSON.stringify({ user_id: user.id, user_info: { name: user.name ?? user.email } })
-      return response.json({ auth: signChannel(socketId, channel, channelData), channel_data: channelData })
-    }
-    const prefix = ${q(`private-${slug}.`)}
-    if (!channel.startsWith(prefix)) return response.json({ message: 'Invalid channel prefix.' }, 403)
-    if (Number(channel.slice(prefix.length)) !== Number(user.id)) return response.json({ message: 'Forbidden.' }, 403)
-    return response.json({ auth: signChannel(socketId, channel) })
+    if (typeof socketId !== 'string' || typeof channel !== 'string' || !socketId || !channel) return response.json({ message: 'Missing socket_id or channel_name.' }, 422)
+    const { authorizeChannel, signChannel } = await import('@pluff/runtime')
+    const authorization = authorizeChannel(channel, user, ${JSON.stringify(channelRules)})
+    if (!authorization) return response.json({ message: 'Forbidden.' }, 403)
+    return response.json({
+      auth: signChannel(socketId, channel, authorization.channelData),
+      ...(authorization.channelData ? { channel_data: authorization.channelData } : {}),
+    })
   }))
 `
   }

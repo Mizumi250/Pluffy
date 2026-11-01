@@ -72,8 +72,12 @@ const INERTIA_BACKEND_DIR = path.join(ENGINE_DIR, 'backend', 'laravel-inertia')
 // Active backend (arkzen.json "activeBackend"). react-inertia always uses its own Laravel.
 const activeBackend = activeStack === 'react-inertia' ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
 const IS_EXPRESS = activeBackend === 'express'
+const IS_FASTAPI = activeBackend === 'fastapi'
 const IS_ASPNET = activeBackend === 'aspnet'
-const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'aspnet']
+const PYTHON_ENV = IS_FASTAPI
+  ? { ...process.env, PYTHONUTF8: process.env.PYTHONUTF8 || '1' }
+  : process.env
+const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'fastapi', 'aspnet']
 if (!IMPLEMENTED_BACKENDS.includes(activeBackend)) {
   console.log(`\n  ✗ Backend "${activeBackend}" is selected but not built yet. Run: node mizumi.js backend laravel\n`)
   process.exit(1)
@@ -138,6 +142,18 @@ function checkSetup() {
       fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
       console.log('  ✓ Created engine/backend/aspnet/.env from .env.example')
     }
+  } else if (IS_FASTAPI) {
+    const python = path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+      process.platform === 'win32' ? 'python.exe' : 'python')
+    if (!fs.existsSync(python)) {
+      console.log('\n  ✗ FastAPI packages are missing. Run: node mizumi.js deps install fastapi\n')
+      process.exit(1)
+    }
+    const envFile = path.join(BACKEND_DIR, '.env')
+    if (!fs.existsSync(envFile) && fs.existsSync(path.join(BACKEND_DIR, '.env.example'))) {
+      fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
+      console.log('  ✓ Created engine/backend/fastapi/.env from .env.example')
+    }
   } else {
   const artisan = path.join(BACKEND_DIR, 'artisan')
   if (!fs.existsSync(artisan)) {
@@ -175,11 +191,16 @@ function checkSetup() {
 }
 
 function startBackend() {
-  const backendName = IS_EXPRESS ? 'Express' : IS_ASPNET ? 'ASP.NET Core' : 'Laravel'
+  const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : 'Laravel'
   log('backend', `Starting ${backendName} on http://localhost:8000`)
 
   const proc = IS_EXPRESS
     ? spawn('npx', ['tsx', 'src/server.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, PORT: '8000' } })
+    : IS_FASTAPI
+      ? spawn(path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+          process.platform === 'win32' ? 'python.exe' : 'python'),
+        ['-m', 'uvicorn', 'pluff.server:app', '--host', '0.0.0.0', '--port', '8000'],
+        { cwd: BACKEND_DIR, stdio: 'pipe', env: { ...PYTHON_ENV, PORT: '8000' } })
     : IS_ASPNET
       ? spawn('dotnet', ['run', '--no-restore', '--project', 'Pluff.AspNet.csproj'], {
           cwd: BACKEND_DIR,
@@ -215,14 +236,20 @@ function startQueueWorker() {
   }
   log('queue', IS_EXPRESS
     ? 'Starting queue worker + scheduler (tsx src/worker.ts)'
-    : 'Starting queue worker (php artisan queue:work --queue=default,heavy --sleep=3 --tries=3)')
+    : IS_FASTAPI
+      ? 'Starting queue worker + scheduler (python -m pluff.worker)'
+      : 'Starting queue worker (php artisan queue:work --queue=default,heavy --sleep=3 --tries=3)')
 
   let crashes = 0
   const spawnWorker = () => {
     const startedAt = Date.now()
     const proc = IS_EXPRESS
       ? spawn('npx', ['tsx', 'src/worker.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: process.env })
-      : spawn('php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], {
+      : IS_FASTAPI
+        ? spawn(path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
+            process.platform === 'win32' ? 'python.exe' : 'python'), ['-m', 'pluff.worker'],
+          { cwd: BACKEND_DIR, stdio: 'pipe', env: PYTHON_ENV })
+        : spawn('php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
           env: process.env,
@@ -243,7 +270,9 @@ function startQueueWorker() {
         crashes += 1
         const instant = Date.now() - startedAt < 4000
         if (instant && crashes >= 3) {
-          log('queue', IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express' : 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
+          log('queue', IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express'
+            : IS_FASTAPI ? 'Stopped restarting. FastAPI worker is not booting — run: node mizumi.js deps install fastapi'
+            : 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
           return
         }
         log('queue', `Exited with code ${code}, restarting in 3 seconds...`)
@@ -456,7 +485,7 @@ console.log('╚═════════════════════�
 checkSetup()
 
 // Storage symlink (Laravel only; Express has its own storage handler)
-if (!IS_EXPRESS && !IS_ASPNET) {
+if (!IS_EXPRESS && !IS_FASTAPI && !IS_ASPNET) {
   try {
     execSync('php artisan storage:link --force', {
       cwd: BACKEND_DIR,
@@ -474,7 +503,7 @@ let queue = null
 let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
-reverb  = IS_EXPRESS || IS_ASPNET ? null : startReverb()
+reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET ? null : startReverb()
 if (IS_ASPNET) log('backend', 'ASP.NET realtime services are not implemented yet')
 
 // Start web stack

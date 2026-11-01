@@ -1,5 +1,6 @@
 // Laravel-style validation: 'required|string|max:255', arrays, wildcards, unique/exists.
 import type { Knex } from 'knex'
+import { isIP } from 'node:net'
 import { ValidationException } from './errors'
 import { slugToConn } from './support'
 
@@ -29,6 +30,8 @@ function expand(rules: Rules, data: any): Rules {
 
 const MSG: Record<string, string> = {
   required: 'The :attribute field is required.',
+  present: 'The :attribute field must be present.',
+  prohibited: 'The :attribute field is prohibited.',
   string: 'The :attribute field must be a string.',
   integer: 'The :attribute field must be an integer.',
   numeric: 'The :attribute field must be a number.',
@@ -51,9 +54,21 @@ const MSG: Record<string, string> = {
   same: 'The :attribute field and :other must match.',
   different: 'The :attribute field and :other must be different.',
   accepted: 'The :attribute field must be accepted.',
+  declined: 'The :attribute field must be declined.',
   filled: 'The :attribute field must have a value.',
   digits: 'The :attribute field must be :digits digits.',
   ip: 'The :attribute field must be a valid IP address.',
+  ipv4: 'The :attribute field must be a valid IPv4 address.',
+  ipv6: 'The :attribute field must be a valid IPv6 address.',
+  distinct: 'The :attribute field has a duplicate value.',
+  lowercase: 'The :attribute field must be lowercase.',
+  uppercase: 'The :attribute field must be uppercase.',
+  starts_with: 'The :attribute field must start with one of the following: :values.',
+  ends_with: 'The :attribute field must end with one of the following: :values.',
+  doesnt_start_with: 'The :attribute field must not start with one of the following: :values.',
+  doesnt_end_with: 'The :attribute field must not end with one of the following: :values.',
+  not_regex: 'The :attribute field format is invalid.',
+  decimal: 'The :attribute field must have the specified number of decimal places.',
   file: 'The :attribute field must be a file.',
   image: 'The :attribute field must be an image.',
   mimes: 'The :attribute field must be a file of type: :values.',
@@ -86,6 +101,7 @@ async function check(rule: string, p: string[], v: any, key: string, ctx: Ctx, n
     case 'numeric': return v !== '' && v !== null && !isNaN(Number(v)) && typeof v !== 'boolean' ? null : fail()
     case 'boolean': return [true, false, 1, 0, '1', '0', 'true', 'false'].includes(v) ? null : fail()
     case 'accepted': return ['yes', 'on', 1, '1', true, 'true'].includes(v) ? null : fail()
+    case 'declined': return ['no', 'off', 0, '0', false, 'false'].includes(v) ? null : fail()
     case 'email':   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(v)) ? null : fail()
     case 'url':     try { new URL(String(v)); return null } catch { return fail() }
     case 'array':   return Array.isArray(v) || (!!v && typeof v === 'object' && !ArrayBuffer.isView(v)) ? null : fail()
@@ -95,7 +111,20 @@ async function check(rule: string, p: string[], v: any, key: string, ctx: Ctx, n
     case 'alpha':   return /^[A-Za-z]+$/.test(String(v)) ? null : fail()
     case 'alpha_num': return /^[A-Za-z0-9]+$/.test(String(v)) ? null : fail()
     case 'alpha_dash': return /^[A-Za-z0-9_-]+$/.test(String(v)) ? null : fail()
-    case 'ip':      return /^(\d{1,3}\.){3}\d{1,3}$|^[0-9a-f:]+$/i.test(String(v)) ? null : fail()
+    case 'ip':      return isIP(String(v)) ? null : fail()
+    case 'ipv4':    return isIP(String(v)) === 4 ? null : fail()
+    case 'ipv6':    return isIP(String(v)) === 6 ? null : fail()
+    case 'lowercase': return String(v) === String(v).toLowerCase() ? null : fail()
+    case 'uppercase': return String(v) === String(v).toUpperCase() ? null : fail()
+    case 'starts_with': return p.some(prefix => String(v).startsWith(prefix)) ? null : fail().replace(':values', p.join(', '))
+    case 'ends_with': return p.some(suffix => String(v).endsWith(suffix)) ? null : fail().replace(':values', p.join(', '))
+    case 'doesnt_start_with': return p.some(prefix => String(v).startsWith(prefix)) ? fail().replace(':values', p.join(', ')) : null
+    case 'doesnt_end_with': return p.some(suffix => String(v).endsWith(suffix)) ? fail().replace(':values', p.join(', ')) : null
+    case 'decimal': {
+      if (isNaN(Number(v))) return fail()
+      const places = String(v).split('.')[1]?.length ?? 0
+      return places >= Number(p[0] ?? 0) && (p[1] === undefined || places <= Number(p[1])) ? null : fail()
+    }
     case 'digits':  return new RegExp(`^\\d{${p[0]}}$`).test(String(v)) ? null : fail().replace(':digits', p[0])
     case 'min':     return sizeOf(v, numeric) >= Number(p[0]) ? null : sizeMsg('min', v, numeric, key, p)
     case 'max':     return sizeOf(v, numeric) <= Number(p[0]) ? null : sizeMsg('max', v, numeric, key, p)
@@ -109,6 +138,22 @@ async function check(rule: string, p: string[], v: any, key: string, ctx: Ctx, n
     case 'in':      return p.includes(String(v)) ? null : fail()
     case 'not_in':  return !p.includes(String(v)) ? null : fail()
     case 'regex':   { const m = p.join(',').match(/^\/(.*)\/([a-z]*)$/s); return m && new RegExp(m[1], m[2]).test(String(v)) ? null : fail() }
+    case 'not_regex': { const m = p.join(',').match(/^\/(.*)\/([a-z]*)$/s); return !m ? fail() : new RegExp(m[1], m[2]).test(String(v)) ? fail() : null }
+    case 'distinct': {
+      const parts = key.split('.')
+      const index = parts.reduce((last, part, i) => /^\d+$/.test(part) ? i : last, -1)
+      if (index === -1) return null
+      const siblings = getPath(ctx.data, parts.slice(0, index).join('.'))
+      if (!Array.isArray(siblings)) return null
+      const field = parts.slice(index + 1).join('.')
+      const values = siblings.map(item => getPath(item, field))
+      const current = getPath(ctx.data, key)
+      const canonical = (value: any) => p[0] === 'ignore_case' && typeof value === 'string' ? value.toLowerCase() : value
+      const equal = (value: any) => p.includes('strict')
+        ? canonical(value) === canonical(current)
+        : canonical(value) == canonical(current)
+      return values.filter(equal).length > 1 ? fail() : null
+    }
     case 'confirmed': return v === ctx.data[`${key}_confirmation`] ? null : fail()
     case 'same':    return v === getPath(ctx.data, p[0]) ? null : fail().replace(':other', p[0])
     case 'different': return v !== getPath(ctx.data, p[0]) ? null : fail().replace(':other', p[0])
@@ -159,8 +204,35 @@ export async function validate(data: Record<string, any>, rules: Rules, opts: Va
 
     if (names.includes('sometimes') && v === undefined) continue
     const missing = isEmpty(v)
+    const dependencyIs = (rule: typeof parsed[number]) => rule.p.slice(1).some(value => String(getPath(ctx.data, rule.p[0])) === value)
+    const dependenciesPresent = (rule: typeof parsed[number]) => rule.p.map(field => !isEmpty(getPath(ctx.data, field)))
     const requiredIf = parsed.find(r => r.n === 'required_if')
-    const mustHave = names.includes('required') || (requiredIf && String(getPath(ctx.data, requiredIf.p[0])) === requiredIf.p[1])
+    const requiredUnless = parsed.find(r => r.n === 'required_unless')
+    const requiredWith = parsed.find(r => r.n === 'required_with')
+    const requiredWithAll = parsed.find(r => r.n === 'required_with_all')
+    const requiredWithout = parsed.find(r => r.n === 'required_without')
+    const requiredWithoutAll = parsed.find(r => r.n === 'required_without_all')
+    const acceptedIf = parsed.find(r => r.n === 'accepted_if' && dependencyIs(r))
+    const withPresence = (rule?: typeof parsed[number]) => rule ? dependenciesPresent(rule).some(Boolean) : false
+    const withoutPresence = (rule?: typeof parsed[number]) => rule ? dependenciesPresent(rule).some(value => !value) : false
+    const mustHave = names.includes('required')
+      || !!requiredIf && dependencyIs(requiredIf)
+      || !!requiredUnless && !dependencyIs(requiredUnless)
+      || withPresence(requiredWith)
+      || !!requiredWithAll && dependenciesPresent(requiredWithAll).every(Boolean)
+      || withoutPresence(requiredWithout)
+      || !!requiredWithoutAll && dependenciesPresent(requiredWithoutAll).every(value => !value)
+      || !!acceptedIf
+    const prohibitedIf = parsed.find(r => r.n === 'prohibited_if' && dependencyIs(r))
+    const prohibitedUnless = parsed.find(r => r.n === 'prohibited_unless' && !dependencyIs(r))
+    if (names.includes('present') && v === undefined) {
+      (errors[key] ??= []).push(opts.messages?.[`${key}.present`] ?? MSG.present.replace(':attribute', attr(key)))
+      continue
+    }
+    if ((names.includes('prohibited') || prohibitedIf || prohibitedUnless) && !missing) {
+      (errors[key] ??= []).push(opts.messages?.[`${key}.prohibited`] ?? MSG.prohibited.replace(':attribute', attr(key)))
+      continue
+    }
     if (missing) {
       if (mustHave) (errors[key] ??= []).push(opts.messages?.[`${key}.required`] ?? MSG.required.replace(':attribute', attr(key)))
       else if (names.includes('filled') && v !== undefined) (errors[key] ??= []).push(MSG.filled.replace(':attribute', attr(key)))
@@ -168,8 +240,10 @@ export async function validate(data: Record<string, any>, rules: Rules, opts: Va
     }
     const numeric = names.includes('numeric') || names.includes('integer')
     for (const r of parsed) {
-      if (['required', 'nullable', 'sometimes', 'bail', 'filled', 'required_if'].includes(r.n)) continue
-      const m = await check(r.n, r.p, v, key, ctx, numeric)
+      if (['required', 'nullable', 'sometimes', 'bail', 'filled', 'present', 'required_if', 'required_unless', 'required_with', 'required_with_all', 'required_without', 'required_without_all', 'prohibited', 'prohibited_if', 'prohibited_unless'].includes(r.n)) continue
+      const rule = r.n === 'accepted_if' ? { n: 'accepted', p: [] as string[] } : r
+      if (r.n === 'accepted_if' && !acceptedIf) continue
+      const m = await check(rule.n, rule.p, v, key, ctx, numeric)
       if (m) { (errors[key] ??= []).push(opts.messages?.[`${key}.${r.n}`] ?? m); if (names.includes('bail')) break }
     }
     if (!errors[key]) {

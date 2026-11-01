@@ -1,0 +1,44 @@
+{
+  "table": "tickets",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "user_id": {
+      "type": "foreignId",
+      "nullable": true
+    },
+    "title": {
+      "type": "string",
+      "length": 255
+    },
+    "status": {
+      "type": "string",
+      "length": 30,
+      "default": "open"
+    },
+    "priority": {
+      "type": "integer",
+      "default": 1
+    },
+    "done": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 2,
+    "data": [
+      {
+        "title": "Seeded ticket A",
+        "status": "open",
+        "priority": 2
+      },
+      {
+        "title": "Seeded ticket B",
+        "status": "closed",
+        "priority": 1
+      }
+    ]
+  }
+}

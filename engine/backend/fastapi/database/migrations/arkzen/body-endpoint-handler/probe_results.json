@@ -1,0 +1,61 @@
+{
+  "table": "probe_results",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "source": {
+      "type": "string",
+      "length": 50,
+      "nullable": false
+    },
+    "probe": {
+      "type": "string",
+      "length": 100,
+      "nullable": false
+    },
+    "payload": {
+      "type": "text",
+      "nullable": true
+    },
+    "result": {
+      "type": "text",
+      "nullable": true
+    },
+    "ok": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 3,
+    "data": [
+      {
+        "source": "seeder",
+        "probe": "init-check",
+        "payload": "{\"msg\":\"seeded\"}",
+        "result": "Seeded probe entry",
+        "ok": true
+      },
+      {
+        "source": "seeder",
+        "probe": "health-ping",
+        "payload": null,
+        "result": "All systems nominal",
+        "ok": true
+      },
+      {
+        "source": "seeder",
+        "probe": "error-sample",
+        "payload": "{\"trigger\":\"simulated\"}",
+        "result": "Simulated failure recorded",
+        "ok": false
+      }
+    ]
+  }
+}

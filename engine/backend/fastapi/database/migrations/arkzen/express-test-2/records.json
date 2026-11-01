@@ -1,0 +1,43 @@
+{
+  "table": "records",
+  "timestamps": true,
+  "softDeletes": true,
+  "columns": {
+    "user_id": {
+      "type": "foreignId",
+      "nullable": true
+    },
+    "title": {
+      "type": "string",
+      "length": 255
+    },
+    "status": {
+      "type": "string",
+      "length": 30,
+      "default": "open"
+    },
+    "priority": {
+      "type": "integer",
+      "default": 1
+    },
+    "done": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "data": [
+      {
+        "title": "Seeded record A",
+        "status": "open",
+        "priority": 2
+      },
+      {
+        "title": "Seeded record B",
+        "status": "closed",
+        "priority": 1
+      }
+    ]
+  }
+}

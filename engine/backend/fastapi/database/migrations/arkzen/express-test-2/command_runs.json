@@ -1,0 +1,30 @@
+{
+  "table": "command_runs",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "command_name": {
+      "type": "string"
+    },
+    "signature": {
+      "type": "string"
+    },
+    "exit_code": {
+      "type": "integer",
+      "default": 0
+    },
+    "output": {
+      "type": "text",
+      "nullable": true
+    },
+    "triggered_by": {
+      "type": "string",
+      "default": "manual"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

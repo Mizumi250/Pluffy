@@ -91,8 +91,8 @@ async def _drop(c: _Client) -> None:
     _clients.pop(c.ws, None)
 
 
-def broadcast_to(channel: str, event: str, data) -> None:
-    targets = list(_channels.get(channel, ()))
+def broadcast_to(channel: str, event: str, data, except_socket_id: str | None = None) -> None:
+    targets = [c for c in _channels.get(channel, ()) if c.id != except_socket_id]
     if not targets:
         return
     try:

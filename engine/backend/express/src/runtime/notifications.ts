@@ -18,6 +18,7 @@ export class MailMessage {
 export class Notification {
   static tatemono = ''
   static channels: string[] = ['database']
+  static channelType: 'private' | 'public' | 'presence' = 'private'
   static subject = ''
   static template = ''
   constructor(public notifiable?: any, public data: Record<string, any> = {}) {}
@@ -69,7 +70,11 @@ export async function notify(notifiable: any, n: Notification) {
         await sendMail(notifiable.email, mailable)
       }
     } else if (ch === 'broadcast') {
-      broadcastTo(`private-${slug}.${notifiable.id}`, 'Illuminate\\Notifications\\Events\\BroadcastNotificationCreated', n.toBroadcast(notifiable))
+      const channelType = (n.constructor as typeof Notification).channelType
+      const channel = channelType === 'public'
+        ? `${slug}.notifications`
+        : `${channelType}-${slug}.${notifiable.id}`
+      broadcastTo(channel, `${slug}.notification`, n.toBroadcast(notifiable))
     }
   }
 }

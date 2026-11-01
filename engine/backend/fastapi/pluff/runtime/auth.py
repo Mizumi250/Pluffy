@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import hashlib
+import re
 import secrets
 
 import bcrypt
@@ -142,7 +143,7 @@ async def resolve_user_from_request(request: Request):
     return await _resolve_user(request.slug, request.bearer_token())
 
 
-def register_auth_routes(r, slug: str, prefix: str) -> None:
+def register_auth_routes(r, slug: str, prefix: str, channel_auths: dict | None = None) -> None:
     """register / login / logout / me / broadcasting auth, same bodies as the Laravel AuthController."""
     from .errors import ValidationException
     from .broadcast import sign_channel
@@ -178,20 +179,43 @@ def register_auth_routes(r, slug: str, prefix: str) -> None:
         socket_id, channel = request.input("socket_id"), request.input("channel_name")
         if not socket_id or not channel:
             return JsonResponse({"message": "Missing socket_id or channel_name."}, 422)
-        if str(channel).startswith(f"presence-{slug}"):
-            import json
-            data = json.dumps({"user_id": user.id, "user_info": {"name": user.name or user.email}}, separators=(",", ":"))
-            return JsonResponse({"auth": sign_channel(socket_id, channel, data), "channel_data": data})
-        pfx = f"private-{slug}."
-        if not str(channel).startswith(pfx):
-            return JsonResponse({"message": "Invalid channel prefix."}, 403)
-        try:
-            same = int(str(channel)[len(pfx):]) == int(user.id)
-        except ValueError:
-            same = False
-        if not same:
-            return JsonResponse({"message": "Forbidden."}, 403)
-        return JsonResponse({"auth": sign_channel(socket_id, channel)})
+        import json
+
+        channel = str(channel)
+        for pattern, config in (channel_auths or {}).items():
+            channel_type = config.get("type", "private")
+            prefix_by_type = {"private": "private-", "presence": "presence-", "public": ""}
+            channel_prefix = prefix_by_type.get(channel_type)
+            if channel_prefix is None or not channel.startswith(channel_prefix):
+                continue
+            bare_name = channel[len(channel_prefix):]
+            regex = ""
+            cursor = 0
+            for match in re.finditer(r"\{(\w+)\}", pattern):
+                regex += re.escape(pattern[cursor:match.start()])
+                regex += r"(?P<" + match.group(1) + r">[^.]+)"
+                cursor = match.end()
+            regex += re.escape(pattern[cursor:])
+            match = re.fullmatch(regex, bare_name)
+            if not match:
+                continue
+
+            rule = config.get("auth", "authenticated")
+            params = match.groupdict()
+            if rule == "owner":
+                owner_id = params.get("id") or next(iter(params.values()), None)
+                if owner_id is None or str(owner_id) != str(user.id):
+                    return JsonResponse({"message": "Forbidden."}, 403)
+            elif rule == "admin" and user.role != "admin":
+                return JsonResponse({"message": "Forbidden."}, 403)
+
+            if channel_type == "presence":
+                data = json.dumps({"user_id": user.id, "user_info": {"name": user.name or user.email}},
+                                  separators=(",", ":"))
+                return JsonResponse({"auth": sign_channel(socket_id, channel, data), "channel_data": data})
+            return JsonResponse({"auth": sign_channel(socket_id, channel)})
+
+        return JsonResponse({"message": "Invalid channel or unauthorized."}, 403)
 
     r.add("POST", f"{prefix}/auth/register", [], register)
     r.add("POST", f"{prefix}/auth/login", [], login)

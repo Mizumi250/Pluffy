@@ -1,0 +1,18 @@
+{
+  "table": "event_log",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "event_name": {
+      "type": "string"
+    },
+    "listener": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

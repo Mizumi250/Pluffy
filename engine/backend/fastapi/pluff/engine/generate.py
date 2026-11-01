@@ -164,7 +164,7 @@ def generate(p: Any) -> Any:
 
     # ── controllers ──
     controller_names: list[str] = []
-    ctl = f"# ARKZEN GENERATED CONTROLLERS: {slug}\n{common}"
+    ctl = f"# ARKZEN GENERATED CONTROLLERS: {slug}\n{common}import json\nimport time\nfrom urllib.parse import quote\n"
     if policy_names:
         ctl += f"from .policies import {', '.join(policy_names)}\n"
     ctl += "from .mails import mail_classes\nfrom .notifications import notification_classes\nfrom .realtime import MessageSentEvents\n\n\n"
@@ -188,23 +188,59 @@ def generate(p: Any) -> Any:
             etype = ep.get("type")
             lines: str
             if name == "index":
-                query = ep.get("query") or {}
-                m = re.search(r"default:(\d+)", str(query.get("per_page") or ""))
-                per_page = m.group(1) if m else "15"
-                s = "query = " + f"{M}.query()\n"
-                if "search" in query:
-                    s += ("if request.filled('search'):\n    term = '%' + str(request.input('search')) + '%'\n"
-                          "    def _search(w):\n        w.or_where('name', 'like', term)\n        w.or_where('description', 'like', term)\n"
-                          "    query.where(_search)\n")
-                for k in [k for k in query if k not in ("search", "per_page")]:
-                    s += f"if request.filled({q(k)}):\n    query.where({q(k)}, request.input({q(k)}))\n"
-                if resp_type == "array":
-                    s += "return response.json(await query.order_by('created_at', 'desc').get())\n"
+                if etype == "upload_index":
+                    lines = (f"records = await {M}.latest().get()\n"
+                             "for record in records:\n"
+                             "    record.url = '/storage/' + str(record.disk_path).lstrip('/') if record.is_image else None\n"
+                             "return response.json({'data': records})\n")
+                elif M == "Notification":
+                    lines = ("user = request.user()\n"
+                             "db = connection(request.slug)\n"
+                             "table = prefixed_table(request.slug, 'notifications')\n"
+                             "records = await db.table(table).where('notifiable_type', 'user').where('notifiable_id', user.id).latest().get()\n"
+                             "for record in records:\n"
+                             "    record['data'] = json.loads(record['data']) if isinstance(record.get('data'), str) else record.get('data', {})\n"
+                             "return response.json({'data': records})\n")
                 else:
-                    s += f"return response.json(await query.order_by('created_at', 'desc').paginate(request.input('per_page', {per_page}), request.input('page', 1), request.url()))\n"
-                lines = s
+                    query = ep.get("query") or {}
+                    m = re.search(r"default:(\d+)", str(query.get("per_page") or ""))
+                    per_page = m.group(1) if m else "15"
+                    s = "query = " + f"{M}.query()\n"
+                    if "search" in query:
+                        s += ("if request.filled('search'):\n    term = '%' + str(request.input('search')) + '%'\n"
+                              "    def _search(w):\n        w.or_where('name', 'like', term)\n        w.or_where('description', 'like', term)\n"
+                              "    query.where(_search)\n")
+                    for k in [k for k in query if k not in ("search", "per_page")]:
+                        s += f"if request.filled({q(k)}):\n    query.where({q(k)}, request.input({q(k)}))\n"
+                    if resp_type == "array":
+                        s += "return response.json(await query.order_by('created_at', 'desc').get())\n"
+                    else:
+                        s += f"return response.json(await query.order_by('created_at', 'desc').paginate(request.input('per_page', {per_page}), request.input('page', 1), request.url()))\n"
+                    lines = s
             elif name == "store":
-                if etype == "broadcast":
+                if etype == "command_run":
+                    signatures = {
+                        command: cfg.get("signature") or f"{slug}:{command}"
+                        for command, cfg in consoles.items()
+                    }
+                    lines = (f"validated = await request.validate({rules(ep.get('validation'))})\n"
+                             f"signature = {signatures!r}.get(validated['command'])\n"
+                             "entry = commands.get(signature) if signature else None\n"
+                             f"if entry is None or entry[0] != {q(slug)}:\n"
+                             "    return response.json({'message': 'Invalid command'}, 400)\n"
+                             "started = time.perf_counter()\noutput = ''\n"
+                             "try:\n    exit_code = await run_command(signature)\n"
+                             "except Exception as exc:\n"
+                             "    exit_code = Command.FAILURE\n"
+                             "    output = str(exc)\n"
+                             "    Log.error(f'{signature}: {exc}')\n"
+                             "command_run = await " + M + ".create({"
+                             "'command_name': validated['command'], 'signature': signature, "
+                             "'exit_code': exit_code, 'output': output, "
+                             "'triggered_by': validated.get('triggered_by', 'manual'), "
+                             "'duration_ms': int((time.perf_counter() - started) * 1000)})\n"
+                             "return response.json(command_run, 201)\n")
+                elif etype == "broadcast":
                     lines = (f"validated = await request.validate({rules(ep.get('validation'))})\nmessage = await {M}.create(validated)\n"
                              "channel_type = validated.get('channel_type') or 'public'\n_u = await request.auth_user()\n"
                              "ev = MessageSentEvents[channel_type](message.to_json())\nev.user_id = _u.id if _u else None\nbroadcast(ev)\n"
@@ -219,8 +255,18 @@ def generate(p: Any) -> Any:
                     lines = (f"validated = await request.validate({rules(ep.get('validation'))})\nuser = request.user()\n"
                              "Cls = notification_classes.get(validated['notification'])\nif Cls is None:\n    raise Exception('Unknown notification type: ' + str(validated['notification']))\n"
                              "await notify(user, Cls(user))\nreturn response.json({'message': 'Notification triggered successfully', 'type': validated['notification']}, 201)\n")
-                elif etype in ("upload", "upload_index", "upload_destroy", "upload_url"):
-                    lines = "return response.json({'message': 'Upload endpoints are not supported on the FastAPI backend yet'}, 501)\n"
+                elif etype == "upload":
+                    lines = (f"validated = await request.validate({rules(ep.get('validation'))})\n"
+                             "user = request.user() or await request.auth_user()\n"
+                             "uploaded = []\n"
+                             "for file in request.files('files'):\n"
+                             f"    stored_name = Storage.put({q('arkzen/' + slug)}, file)\n"
+                             "    is_image = str(file.get('mimetype', '')).startswith('image/')\n"
+                             f"    record = await {M}.create({{'user_id': user.id if user else None, 'original_name': file['originalname'], 'stored_name': stored_name.rsplit('/', 1)[-1], 'mime_type': file.get('mimetype', 'application/octet-stream'), 'size_bytes': file['size'], 'disk_path': stored_name, 'is_image': is_image}})\n"
+                             "    if is_image:\n"
+                             "        record.url = '/storage/' + stored_name.lstrip('/')\n"
+                             "    uploaded.append(record)\n"
+                             "return response.json({'data': uploaded}, 201)\n")
                 else:
                     lines = (f"{auth('create')}validated = await request.validate({rules(ep.get('validation'))})\n"
                              f"{v} = await {M}.create(validated)\nreturn response.json({v}, 201)\n")
@@ -230,12 +276,29 @@ def generate(p: Any) -> Any:
                 lines = f"{find}{auth('update')}validated = await request.validate({rules(ep.get('validation'))})\nawait {v}.update(validated)\nreturn response.json({v})\n"
             elif name == "destroy":
                 if etype == "upload_destroy":
-                    lines = "return response.json({'message': 'Upload endpoints are not supported on the FastAPI backend yet'}, 501)\n"
+                    lines = (f"{find}Storage.delete({v}.disk_path)\nawait {v}.delete()\n"
+                             "return response.json({'message': 'File deleted'})\n")
+                elif M == "Notification":
+                    lines = ("user = request.user()\n"
+                             "db = connection(request.slug)\n"
+                             "table = prefixed_table(request.slug, 'notifications')\n"
+                             "record = await db.table(table).where('id', request.route('id')).where('notifiable_type', 'user').where('notifiable_id', user.id).first()\n"
+                             "if record is None:\n    raise ModelNotFoundException('Notification')\n"
+                             "await db.table(table).where('id', record['id']).delete()\n"
+                             "return response.json({'message': 'Notification deleted'})\n")
                 else:
                     msg = (ep.get("response") or {}).get("value") or f"{M} deleted successfully"
                     lines = f"{find}{auth('delete')}await {v}.delete()\nreturn response.json({{'message': {q(msg)}}})\n"
             elif name == "fileUrl":
-                lines = "return response.json({'message': 'Upload endpoints are not supported on the FastAPI backend yet'}, 501)\n"
+                lines = (f"{find}disk_path = {v}.disk_path\n"
+                         "if not Storage.exists(disk_path):\n    return response.json({'message': 'File not found'}, 404)\n"
+                         f"return RawResponse(Storage.read(disk_path), headers={{'Content-Type': {v}.mime_type or 'application/octet-stream', 'Content-Disposition': 'attachment; filename*=UTF-8\\'\\'' + quote({v}.original_name or 'download', safe='')}})\n")
+            elif name == "readAll" and M == "Notification":
+                lines = ("user = request.user()\n"
+                         "db = connection(request.slug)\n"
+                         "table = prefixed_table(request.slug, 'notifications')\n"
+                         "db.execute(f'UPDATE {qi(table)} SET {qi(\"read_at\")} = :now WHERE {qi(\"notifiable_type\")} = :kind AND {qi(\"notifiable_id\")} = :user_id AND {qi(\"read_at\")} IS NULL', {'now': sql_now(), 'kind': 'user', 'user_id': user.id})\n"
+                         "return response.json({'message': 'All notifications marked as read'})\n")
             elif name == "adminOnly":
                 lines = (f"user = request.user()\ngranted = bool(user) and user.role == 'admin'\n"
                          f"await {M}.create({{'user_id': user.id if user else None, 'action': 'GET /admin-only', 'role_required': 'admin', 'granted': granted}})\n"
@@ -338,10 +401,12 @@ def generate(p: Any) -> Any:
         ch = cfg.get("channels")
         channels = ch if isinstance(ch, list) else [s.strip() for s in str(ch or "database").split(",")]
         msg = cfg.get("message") or "You have a new notification."
+        channel_type = cfg.get("channel_type") if cfg.get("channel_type") in ("private", "public", "presence") else "private"
         mail_body = dec(cfg.get("toMail_body")).strip()
         to_mail = (f"    def to_mail(self, notifiable):\n{ind(mail_body, 8)}\n" if mail_body else
                    f"    def to_mail(self, notifiable):\n        return MailMessage().subject({q(cfg.get('subject') or cls)}).line({q(msg)})\n")
-        nt += (f"class {cls}(Notification):\n    tatemono = {q(slug)}\n    channels = {channels!r}\n\n"
+        nt += (f"class {cls}(Notification):\n    tatemono = {q(slug)}\n    channels = {channels!r}\n"
+               f"    channel_type = {q(channel_type)}\n\n"
                f"    def to_database(self, notifiable):\n        return {{'message': {q(msg)}, 'type': {q(cls)}}}\n\n{to_mail}\n\n")
         for k in dict.fromkeys([name, name.replace("_", "-")]):
             notif_map.append(f"{q(k)}: {studly(name)}Notification")
@@ -351,9 +416,14 @@ def generate(p: Any) -> Any:
     # ── realtime (broadcast events) ──
     rt = f"# ARKZEN GENERATED REALTIME: {slug}\n{IMPORTS}\n\n"
     bc_classes: list[tuple[str, str]] = []
+    auth_channels: dict[str, dict[str, str]] = {}
     for name, cfg in realtimes.items():
         if not cfg.get("channel"):
-            continue                                   # channel declarations only; auth is handled by /broadcasting/auth
+            auth_channels[name] = {
+                "type": cfg.get("type") if cfg.get("type") in ("private", "public", "presence") else "private",
+                "auth": cfg.get("auth") if cfg.get("auth") in ("owner", "admin", "authenticated") else "authenticated",
+            }
+            continue
         typ = cfg.get("type") or "public"
         cls = studly(name)
         channel = re.sub(r"\.\{id\}$", "", str(cfg["channel"]))
@@ -375,7 +445,9 @@ def generate(p: Any) -> Any:
            "        fn = middleware_fns.get(name)\n        if fn is None:\n            raise Exception('Unknown middleware: ' + name)\n"
            "        return middleware(S, fn)\n\n")
     if has_auth:
-        rts += f"    register_auth_routes(r, S, {q(prefix)})\n"
+        if notifs:
+            auth_channels.setdefault(f"{slug}.{{id}}", {"type": "private", "auth": "owner"})
+        rts += f"    register_auth_routes(r, S, {q(prefix)}, {auth_channels!r})\n"
     for api in apis:
         for name, ep in (api.get("endpoints") or {}).items():
             chain = [f"mw({q(str(m).strip())})" for m in (api.get("middleware") or [])]

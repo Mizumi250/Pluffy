@@ -1,0 +1,35 @@
+{
+  "table": "alerts",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "kind": {
+      "type": "string",
+      "length": 24,
+      "nullable": false
+    },
+    "text": {
+      "type": "string",
+      "length": 500,
+      "nullable": false
+    },
+    "ref": {
+      "type": "integer",
+      "nullable": true
+    },
+    "is_read": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": []
+}

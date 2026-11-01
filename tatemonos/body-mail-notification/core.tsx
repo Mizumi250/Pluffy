@@ -199,6 +199,46 @@ try {
 }
 /* @arkzen:endpoint:ts:sendMail:end */
 
+/* @arkzen:endpoint:py:sendMail
+*/
+validated = await request.validate({
+    'mail': 'required|string|in:welcome,receipt,alert',
+    'to': 'required|email',
+})
+mail_key = validated['mail']
+mail_class = mail_classes.get(mail_key)
+if mail_class is None:
+    return response.json({'message': 'Unknown mail type: ' + mail_key}, 422)
+mail_data = {
+    'welcome': ['Test User', 'Arkzen'],
+    'receipt': ['ORD-001', '$9.99', 'Arkzen Test Item'],
+    'alert': ['This is a test alert from Arkzen.', '/'],
+}
+user = await request.auth_user()
+try:
+    await Mail.to(validated['to']).send(mail_class(*mail_data[mail_key]))
+    log = await SendLog.create({
+        'user_id': user.id if user else None,
+        'to_email': validated['to'],
+        'subject': mail_key,
+        'mail_class': mail_class.__name__,
+        'kind': 'mail',
+        'status': 'sent',
+    })
+    return response.json(log, 201)
+except Exception as exc:
+    log = await SendLog.create({
+        'user_id': user.id if user else None,
+        'to_email': validated['to'],
+        'subject': mail_key,
+        'mail_class': mail_class.__name__,
+        'kind': 'mail',
+        'status': 'failed',
+        'error': str(exc),
+    })
+    return response.json(log, 201)
+/* @arkzen:endpoint:py:sendMail:end */
+
 /* @arkzen:endpoint:php:notify
 */
 $validated = $request->validate([
@@ -277,6 +317,48 @@ try {
 }
 /* @arkzen:endpoint:ts:notify:end */
 
+/* @arkzen:endpoint:py:notify
+*/
+validated = await request.validate({
+    'notification': 'required|string|in:action-required,summary',
+    'message': 'sometimes|string|max:255',
+})
+user = await request.auth_user()
+notification_class = notification_classes.get(validated['notification'])
+if notification_class is None:
+    return response.json({'message': 'Unknown notification type: ' + validated['notification']}, 422)
+try:
+    notification = notification_class(user)
+    if 'message' in validated:
+        notification.message = validated['message']
+        notification.data['message'] = validated['message']
+        notification.to_database = lambda _notifiable: {
+            'message': notification.message,
+            'type': type(notification).__name__,
+        }
+    await notify(user, notification)
+    log = await SendLog.create({
+        'user_id': user.id if user else None,
+        'to_email': user.email if user else None,
+        'subject': validated['notification'],
+        'mail_class': notification_class.__name__,
+        'kind': 'notification',
+        'status': 'sent',
+    })
+    return response.json(log, 201)
+except Exception as exc:
+    log = await SendLog.create({
+        'user_id': user.id if user else None,
+        'to_email': user.email if user else None,
+        'subject': validated['notification'],
+        'mail_class': notification_class.__name__,
+        'kind': 'notification',
+        'status': 'failed',
+        'error': str(exc),
+    })
+    return response.json(log, 201)
+/* @arkzen:endpoint:py:notify:end */
+
 /* @arkzen:endpoint:php:clearLog
 */
 $user = $request->user('sanctum');
@@ -290,6 +372,13 @@ const user = await request.authUser()
 await SendLog.where('user_id', user?.id ?? null).delete()
 return response.json({ message: 'Log cleared' })
 /* @arkzen:endpoint:ts:clearLog:end */
+
+/* @arkzen:endpoint:py:clearLog
+*/
+user = await request.auth_user()
+await SendLog.where('user_id', user.id if user else None).delete()
+return response.json({'message': 'Log cleared'})
+/* @arkzen:endpoint:py:clearLog:end */
 
 /* @arkzen:mail:php:welcome
 subject: "Welcome to Arkzen — blade_body injection test"
@@ -327,6 +416,34 @@ data:
 */
 <p>welcome</p>
 /* @arkzen:mail:ts:welcome:end */
+
+/* @arkzen:mail:py:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f8fafc; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; color: #1e293b; margin-bottom: 8px; }
+    p { color: #475569; line-height: 1.6; }
+    .badge { display: inline-block; background: #0f172a; color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome, {{ name }}!</h1>
+    <p>You are now part of <strong>{{ app_name }}</strong>. This email was generated from a <code>blade_body</code> block injected via the Arkzen DSL — no manually created Blade file required.</p>
+    <span class="badge">✓ blade_body injection works</span>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:py:welcome:end */
 
 /* @arkzen:mail:php:receipt
 subject: "Your receipt — blade_body injection test"
@@ -372,6 +489,40 @@ data:
 <p>receipt</p>
 /* @arkzen:mail:ts:receipt:end */
 
+/* @arkzen:mail:py:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f0fdf4; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border: 1px solid #bbf7d0; }
+    h1 { color: #15803d; font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    td { padding: 8px 0; border-bottom: 1px solid #f0fdf4; color: #374151; }
+    td:last-child { text-align: right; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧾 Receipt #{{ order_id }}</h1>
+    <table>
+      <tr><td>Item</td><td>{{ item_name }}</td></tr>
+      <tr><td>Amount</td><td>{{ amount }}</td></tr>
+      <tr><td>Status</td><td>✅ Paid</td></tr>
+    </table>
+    <p style="margin-top:16px;font-size:12px;color:#6b7280;">blade_body injected receipt — no stub used.</p>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:py:receipt:end */
+
 /* @arkzen:mail:php:alert
 subject: "⚠ Action Required — blade_body injection test"
 data:
@@ -410,6 +561,35 @@ data:
 <p>alert</p>
 /* @arkzen:mail:ts:alert:end */
 
+/* @arkzen:mail:py:alert
+subject: "⚠ Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #fff7ed; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border-left: 4px solid #f97316; }
+    h1 { color: #c2410c; font-size: 18px; }
+    p { color: #374151; }
+    a { display: inline-block; margin-top: 16px; background: #f97316; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚠ Action Required</h1>
+    <p>{{ alert_message }}</p>
+    <a href="{{ action_url }}">Take Action</a>
+    <p style="margin-top:16px;font-size:12px;color:#9ca3af;">Injected via blade_body — MailBuilder v3.1 test.</p>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:py:alert:end */
+
 /* @arkzen:notifications:php:action-required
 channels: [mail, database]
 channel_type: private
@@ -434,6 +614,28 @@ subject: "Action Required"
 return new MailMessage().subject('action-required').line('action-required')
 /* @arkzen:notifications:ts:action-required:end */
 
+/* @arkzen:notifications:py:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
+subject: "Action Required"
+*/
+import html
+
+message = getattr(self, 'message', None)
+if message is None:
+    message = 'You have a pending action that requires your attention.'
+return (
+    MailMessage()
+    .subject('⚠ Action Required — toMail_body injection test')
+    .greeting('Hello!')
+    .line(html.escape(str(message)))
+    .line('This toMail() body was injected via the Arkzen DSL — not a stub.')
+    .action('Review Now', '/')
+    .line('NotificationBuilder v3.9 toMail_body injection confirmed ✓')
+)
+/* @arkzen:notifications:py:action-required:end */
+
 /* @arkzen:notifications:php:summary
 channels: [mail, database]
 channel_type: private
@@ -457,6 +659,28 @@ subject: "Activity Summary"
 */
 return new MailMessage().subject('summary').line('summary')
 /* @arkzen:notifications:ts:summary:end */
+
+/* @arkzen:notifications:py:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
+subject: "Activity Summary"
+*/
+import html
+
+message = getattr(self, 'message', None)
+if message is None:
+    message = 'Here is your latest activity summary.'
+return (
+    MailMessage()
+    .subject('📊 Activity Summary — toMail_body injection test')
+    .greeting('Hi there!')
+    .line(html.escape(str(message)))
+    .line('Notifications: 2 unread | Mails: 3 sent | Status: All healthy')
+    .action('View Dashboard', '/')
+    .salutation('Cheers, Arkzen Engine')
+)
+/* @arkzen:notifications:py:summary:end */
 
 /* @arkzen:web:components:shared */
 

@@ -154,6 +154,27 @@ return response.json({
 })
 /* @arkzen:endpoint:ts:echo:end */
 
+/* @arkzen:endpoint:py:echo
+*/
+input_data = request.all()
+field_count = len(input_data)
+record = await ProbeResult.create({
+    'source': 'endpoint-body',
+    'probe': 'echo',
+    'payload': json.dumps(input_data, ensure_ascii=False),
+    'result': f'Echoed {field_count} field(s) — ControllerBuilder v7.0 body injection ✓',
+    'ok': True,
+})
+return response.json({
+    'injected': True,
+    'builder': 'ControllerBuilder v7.0',
+    'method': 'echo',
+    'field_count': field_count,
+    'echo': input_data,
+    'probe_id': record.id,
+})
+/* @arkzen:endpoint:py:echo:end */
+
 /* @arkzen:endpoint:php:stats
 */
 $total   = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::count();
@@ -190,6 +211,23 @@ return response.json({
   sources,
 })
 /* @arkzen:endpoint:ts:stats:end */
+
+/* @arkzen:endpoint:py:stats
+*/
+total = await ProbeResult.count()
+passed = await ProbeResult.where('ok', True).count()
+failed = await ProbeResult.where('ok', False).count()
+sources = list(dict.fromkeys(await ProbeResult.query().pluck('source')))
+return response.json({
+    'injected': True,
+    'builder': 'ControllerBuilder v7.0',
+    'method': 'stats',
+    'total': total,
+    'passed': passed,
+    'failed': failed,
+    'sources': sources,
+})
+/* @arkzen:endpoint:py:stats:end */
 
 /* ─── CustomRouteBuilder body injection ───────────────────────────────────────
    @arkzen:routes DSL block declares standalone routes without a model.
@@ -235,6 +273,18 @@ return response.json({
   message: 'CustomRouteBuilder handler body injection confirmed ✓',
 })
 /* @arkzen:handler:ts:ping:end */
+
+/* @arkzen:handler:py:ping
+*/
+return response.json({
+    'injected': True,
+    'builder': 'CustomRouteBuilder v2.0',
+    'handler': 'ping',
+    'status': 'ok',
+    'timestamp': now().isoformat(timespec='seconds'),
+    'message': 'CustomRouteBuilder handler body injection confirmed ✓',
+})
+/* @arkzen:handler:py:ping:end */
 
 /* @arkzen:handler:php:recordHandler
 */
@@ -282,6 +332,29 @@ return response.json({
 })
 /* @arkzen:handler:ts:recordHandler:end */
 
+/* @arkzen:handler:py:recordHandler
+*/
+validated = await request.validate({
+    'probe': 'required|string|max:100',
+    'payload': 'nullable|string',
+    'ok': 'sometimes|boolean',
+})
+record = await ProbeResult.create({
+    'source': 'handler-body',
+    'probe': validated['probe'],
+    'payload': validated.get('payload'),
+    'result': 'Recorded via CustomRouteBuilder handler body injection ✓',
+    'ok': validated.get('ok') if validated.get('ok') is not None else True,
+})
+return response.json({
+    'injected': True,
+    'builder': 'CustomRouteBuilder v2.0',
+    'handler': 'recordHandler',
+    'probe_id': record.id,
+    'probe': record.probe,
+})
+/* @arkzen:handler:py:recordHandler:end */
+
 /* @arkzen:handler:php:latest
 */
 $latest = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::latest()->take(5)->get();
@@ -305,6 +378,18 @@ return response.json({
   results: latest,
 })
 /* @arkzen:handler:ts:latest:end */
+
+/* @arkzen:handler:py:latest
+*/
+latest = await ProbeResult.latest().take(5).get()
+return response.json({
+    'injected': True,
+    'builder': 'CustomRouteBuilder v2.0',
+    'handler': 'latest',
+    'count': len(latest),
+    'results': latest,
+})
+/* @arkzen:handler:py:latest:end */
 
 /* @arkzen:web:components:shared */
 

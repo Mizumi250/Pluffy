@@ -128,6 +128,11 @@ return true;
 return item?.status !== 'archived'
 /* @arkzen:policy:ts:update:end */
 
+/* @arkzen:policy:py:update
+*/
+return item.status != 'archived'
+/* @arkzen:policy:py:update:end */
+
 /* @arkzen:policy:php:delete
 */
 // Prevent deletion of archived items (must restore first)
@@ -142,6 +147,11 @@ return true;
 */
 return item?.status !== 'archived'
 /* @arkzen:policy:ts:delete:end */
+
+/* @arkzen:policy:py:delete
+*/
+return item.status != 'archived'
+/* @arkzen:policy:py:delete:end */
 
 /* @arkzen:web:components:shared */
 

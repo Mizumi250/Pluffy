@@ -1,0 +1,18 @@
+{
+  "table": "job_results",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "job_name": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "result": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

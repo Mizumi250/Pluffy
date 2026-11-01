@@ -1,0 +1,47 @@
+{
+  "table": "time_records",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "employee_id": {
+      "type": "foreignId",
+      "foreign": "employees.id",
+      "nullable": false
+    },
+    "type": {
+      "type": "string",
+      "length": 10,
+      "nullable": false
+    },
+    "timestamp": {
+      "type": "datetime",
+      "nullable": false
+    },
+    "latitude": {
+      "type": "decimal",
+      "precision": 10,
+      "scale": 8,
+      "nullable": true
+    },
+    "longitude": {
+      "type": "decimal",
+      "precision": 11,
+      "scale": 8,
+      "nullable": true
+    },
+    "within_geofence": {
+      "type": "boolean",
+      "default": false
+    },
+    "notes": {
+      "type": "text",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

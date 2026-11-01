@@ -1,0 +1,28 @@
+{
+  "table": "shikaku_saves",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "project_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "frames_json": {
+      "type": "longText",
+      "nullable": false
+    },
+    "version": {
+      "type": "integer",
+      "default": 1
+    }
+  },
+  "indexes": [],
+  "seeder": {
+    "count": 0
+  }
+}

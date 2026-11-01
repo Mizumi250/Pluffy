@@ -1,9 +1,9 @@
-# PLUFF GUIDELINES v13.0
+# PLUFF GUIDELINES v13.2
 
 ## For AI — Generating & Editing Tatemono Files
 
-**VERSION:** 13.0
-**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the 37 tatemonos in `tatemonos/`.
+**VERSION:** 13.2
+**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), the FastAPI backend (`engine/backend/fastapi`), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the tatemonos in `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
 
@@ -15,6 +15,19 @@
 - **`:ts` body conventions** (Express) documented next to each backend block (Sections 8-18), including custom runtime equivalents for uploads, resources, factories, queues, commands, events, notifications, realtime, and streaming SSE.
 - **Sections 27 / 28B / 29** updated: 37 tatemonos (including `express-test` and `express-test-2`), Express runtime/export behavior, multi-backend quirks, and the backend checklist.
 - **The old Laravel code blocks are now the `:php` variant.** Sections 9B-18 are rewritten with `:php` (Laravel) and `:ts` (Express) side by side. A plain unsuffixed code body is only a fallback the engine still reads as `:php` for tatemonos not converted yet.
+
+**WHAT'S NEW IN v13.1 (vs v13.0):**
+
+- **Clarified Express parity scope:** “Laravel parity” means matching the Laravel builders and runtime features that Pluff's engine uses or exposes through its DSL—not recreating unrelated Laravel framework internals. Any difference in an engine-used feature is a parity gap to fix.
+- **Express mail templates:** documented the implemented safe Blade subset: interpolation, comments, conditional branches, and loops. Arbitrary Blade directives and PHP execution are not supported.
+- **Express parity additions:** realtime channel authorization values, notification broadcast channel types, and additional Laravel-style validation rules are documented in Section 1E.
+
+**WHAT'S NEW IN v13.2 (vs v13.1):**
+
+- **FastAPI is a runnable backend.** Setup creates a Python virtual environment, `start.js` runs the API and worker, and `export.js` installs the exported backend dependencies.
+- **Python backend variants:** backend code bodies may use `:py` for FastAPI, alongside Laravel `:php` and Express `:ts`.
+- **FastAPI runtime parity work:** multipart uploads, native notification inbox routes, declared realtime-channel authorization, and notification broadcast channel types are wired into the engine.
+- **Ollama Studio:** added a Python-specific Tatemono that sends prompts only to a local Ollama service by default.
 
 **WHAT'S NEW IN v12.0 (vs v11.0):**
 
@@ -39,11 +52,11 @@ Pluff is a full-stack scaffolding engine. A single file called a **Tatemono** de
 
 No shared auth, components, stores, or database between tatemonos. Every tatemono stands alone. The engine watches `tatemonos/<name>/core.tsx`, parses it, and (re)builds backend + frontend on every save. A tatemono can be exported as a standalone project.
 
-**The Tatemono DSL is the same across stacks.** The engine picks the right output for the active web / app / desktop stack.
+**The shared Tatemono DSL is consistent across stacks.** Backend code bodies use the active backend's variant (`:php`, `:ts`, or `:py`); the engine picks the right output for the active web / app / desktop stack. Backend parity is measured against the Laravel features the Pluff engine uses and exposes—not unrelated framework capabilities.
 
 **Common to all stacks:**
 
-- Backend: **Laravel 13 + Sanctum + Reverb** (reference backend) or **Express (TypeScript)**, chosen per project (Section 1E). Every backend implements the same Laravel-flavoured vocabulary (rule-string validation, `role:` middleware, policies, queues, mail, notifications, Pusher-protocol realtime, scheduler).
+- Backend: **Laravel 13 + Sanctum + Reverb** (reference backend), **Express (TypeScript)**, or **FastAPI (Python)**, chosen per project (Section 1E). Backend parity is scoped to the Laravel builder/runtime features Pluff uses or exposes through its DSL—not unrelated framework internals.
 - Database: SQLite (default) or PostgreSQL — one isolated database per tatemono
 - Web animation: GSAP + Framer Motion · Native animation: Reanimated / Moti (Expo, RN) or `@lynx-js/motion` (Lynx)
 - Icons: Lucide React (web primary), Hero Icons (secondary)
@@ -75,6 +88,7 @@ Backends (project-level, see Section 1E):
 | `laravel`         | `:php`      | implemented (reference) | all decoupled web stacks, and app stacks |
 | `laravel-inertia` | `:php`      | implemented | `react-inertia` only; chosen automatically, cannot be swapped for another backend |
 | `express`         | `:ts`       | implemented (custom Laravel-compatible runtime) | decoupled web stacks, and app stacks |
+| `fastapi`         | `:py`       | implemented (Python runtime) | decoupled web stacks, and app stacks |
 
 Desktop targets reuse the web blocks for their rendered UI. A small desktop-specific config block controls the desktop shell window; it does not create separate desktop pages or components.
 
@@ -89,9 +103,9 @@ node mizumi.js web <stack>            # switch web stack
 node mizumi.js app <stack>            # switch app stack (expo | react-native | lynx)
 node mizumi.js desktop <stack>        # switch desktop stack (tauri | electron)
 node mizumi.js db <sqlite|postgresql> # switch database driver
-node mizumi.js backend <n>           # switch backend (laravel | express)
+node mizumi.js backend <n>           # switch backend (laravel | express | fastapi)
 node mizumi.js deps install express  # install the Express backend deps (npm); Laravel uses composer via setup.js
-node setup.js --backend [laravel|laravel-inertia|express]   # install one backend
+node setup.js --backend [laravel|laravel-inertia|express|fastapi] # install one backend
 # Express extras (inside engine/backend/express):  npm run queue  → jobs + schedules   ·   npm run pluff -- <signature>  → run a console command
 node mizumi.js deps [prune | install <stack> | uninstall <stack>]
 node mizumi.js export                 # wizard
@@ -112,7 +126,7 @@ Every tatemono gets its own isolated database. The driver is a **project setting
 
 Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both.
 
-Backends are a separate project-level choice (Section 1E). Only Laravel and Express are implemented; do not generate DSL for any other backend.
+Backends are a separate project-level choice (Section 1E). Laravel, Express, and FastAPI are implemented; do not assume other variant names are runnable backends.
 
 * * *
 
@@ -150,13 +164,13 @@ A backend block is **shared** or a **variant**.
 | **Shared** (pure config, read by every backend, no suffix) | `meta`, `database:<table>`, `api:<n>`, `routes`, `realtime:<id>`, `events:<id>`, and `notifications:<id>` / `mail:<id>` **with no body** | Write once. Never add a suffix. |
 | **Variant** (contain backend-specific code) | `endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` **with a body** | One block per backend that should run the tatemono. |
 
-Express consumes every shared backend block through its native runtime: `database` creates
-the isolated schema, `api` creates Laravel-shaped controllers/routes/resources, `routes`
-creates custom Express routes, `realtime` maps to WebSocket/SSE broadcasting, `events`
-maps to events and listeners, YAML-only `jobs` and `console` create queue/command
-definitions, and YAML-only `mail` / `notifications` create their corresponding
-transport classes. Body-bearing blocks use the `:ts` variant for Express and the `:php`
-variant for Laravel; the shared YAML header is not discarded when the body differs.
+Express and FastAPI consume the shared backend blocks through their runtimes: `database`
+creates the isolated schema, `api` creates Laravel-shaped controllers and routes, `routes`
+creates custom routes, `realtime` maps to Pusher-protocol broadcasting, `events` maps to
+events and listeners, YAML-only `jobs` and `console` create queue/command definitions, and
+YAML-only `mail` / `notifications` create transport classes. Body-bearing blocks use `:php`
+for Laravel, `:ts` for Express, and `:py` for FastAPI; the shared YAML header is not discarded
+when the body differs.
 
 For `jobs` and `console` the YAML header (`queue`, `tries`, `timeout`, `signature`, `description`, `schedule`) is repeated in each variant; only the body differs. A `jobs` / `console` block with **no body** (YAML only) is shared and generates a stub on every backend.
 
@@ -179,7 +193,15 @@ return $next($request);
 /* @arkzen:middleware:php:requireJson:end */
 ```
 
-Tokens: `php` (laravel, laravel-inertia) · `ts` (express). Tag *shape* (A/B/C/D, Section 3D) does not change with the suffix: `endpoint` / `handler` / `policy` / `middleware` / `listener` stay Shape D; `jobs` / `console` / `notifications` / `mail` stay Shape B.
+Tokens: `php` (laravel, laravel-inertia) · `ts` (express) · `py` (fastapi). Tag *shape* (A/B/C/D, Section 3D) does not change with the suffix: `endpoint` / `handler` / `policy` / `middleware` / `listener` stay Shape D; `jobs` / `console` / `notifications` / `mail` stay Shape B.
+
+```tsx
+/* @arkzen:endpoint:py:stats
+*/
+total = await Ticket.count()
+return response.json({'total': total})
+/* @arkzen:endpoint:py:stats:end */
+```
 
 ### How the active backend picks a block
 
@@ -188,7 +210,7 @@ For each (marker, name):
 1. A block with the **active variant suffix** wins.
 2. Else an **unsuffixed block with a code body** is read as `:php` (compatibility fallback for tatemonos not converted yet; usable only when the active variant is `php`).
 3. Else an **unsuffixed YAML-only block** is shared and usable everywhere.
-4. Else there is **no usable block**: that block is not emitted and the validator reports the tatemono as **inactive on this backend**, e.g. `@arkzen:endpoint:stats has no :ts variant for backend "express" (found: php). Add /* @arkzen:endpoint:ts:stats ... :end */ or switch backend.`
+4. Else there is **no usable block**: that block is not emitted and the validator reports the tatemono as **inactive on this backend**, e.g. a missing `:py` variant while FastAPI is active. Add the active backend's variant or switch backend.
 
 Consequences for generating tatemonos:
 
@@ -197,13 +219,27 @@ Consequences for generating tatemonos:
 - **Keep code bodies to the minimum.** Prefer shared constructs (custom `routes`, YAML-only `mail` / `notifications`, standard CRUD endpoints, `policy: true` with simple rules) so fewer variants are needed. Every body you write must be written once per backend you want to support.
 - **`:php` is Laravel's form of every code block** (it is what used to be the plain, unsuffixed block). Always write the suffix. An unsuffixed code body is only a compatibility fallback that the engine still reads as `:php` for tatemonos that have not been converted yet.
 
-Authentication follows the same split: Laravel uses Sanctum session/token middleware,
-while Express uses its Sanctum-shaped token table and `auth:sanctum` middleware. Express
-sets and clears the tatemono auth cookie, accepts that cookie or a bearer header on
-protected routes, and exposes the same `register`, `login`, `logout`, and `me` response
-shapes. The frontend auth store still hydrates and calls `me` before rendering a
-tatemono page, matching Laravel's session restoration behavior.
-- Only `:php` and `:ts` exist. Default to the variant(s) the user names; if the user does not say, ask which backend is active rather than guessing.
+Authentication follows the same DSL split: Laravel uses Sanctum session/token middleware,
+while Express and FastAPI use Sanctum-shaped token tables and `auth:sanctum` middleware.
+Backend-specific implementations must preserve the shared request/response behavior.
+
+### `:py` bodies (FastAPI)
+
+Python bodies are async function bodies generated into the FastAPI backend. They can use
+`request`, `response`, generated models, and public helpers imported by `pluff.runtime`.
+Await database/model operations, for example `await Ticket.where('status', 'open').get()`.
+`request.validate({...})` returns validated values and preserves Laravel's 422 error shape.
+Custom endpoint bodies may import standard-library modules as needed. See
+`tatemonos/fastapi-test/core.tsx` for working examples; `tatemonos/ollama-studio/core.tsx`
+shows a Python-only local-model endpoint.
+
+FastAPI implements the DSL surface used by Pluff's Laravel builders, including isolated
+SQLite/PostgreSQL schemas, CRUD/auth/policies, queues and schedules, mail/notifications,
+Pusher-protocol realtime, and multipart upload endpoints. Its validation runtime supports
+common Laravel-style rule strings; verify any specific rule in the Python runtime before
+depending on it. Files are exposed through `request.files('field')` as a list of file
+metadata dictionaries (`originalname`, `mimetype`, `size`, `buffer`) and stored with
+`Storage.put(directory, file)`.
 
 ### `:ts` bodies (Express)
 
@@ -220,11 +256,11 @@ Bodies are async function bodies. Names in scope: `request`, `response`, every g
 | `console:ts:name` | body of `handle()`; `this.info(...)`; `return Command.SUCCESS` | `signature` + quoted cron `schedule`; the whole method is also accepted |
 | `notifications:ts:name` | body of `toMail(notifiable)`, returns `new MailMessage()...` | only if you need custom mail content; otherwise YAML-only (shared) |
 
-Model API is Eloquent-like: `Model.create({...})`, `Model.where('col', val)`, `.orWhere`, `.get()`, `.first()`, `.firstOrFail()`, `.findOrFail(id)`, `.count()`, `.paginate(perPage, page)`, `.update({...})`, `.delete()`, `.withTrashed()`, instance `.save()` / `.fill()` / `.delete()`. Request API: `request.input(key, default)`, `request.route(name)`, `request.user()`, `request.isJson()`, `request.bearerToken()`, `await request.validate({ field: 'required|string' })` (422 bodies identical to Laravel's).
+Model API is Eloquent-like: `Model.create({...})`, `Model.where('col', val)`, `.orWhere`, `.get()`, `.first()`, `.firstOrFail()`, `.findOrFail(id)`, `.count()`, `.paginate(perPage, page)`, `.update({...})`, `.delete()`, `.withTrashed()`, instance `.save()` / `.fill()` / `.delete()`. Request API: `request.input(key, default)`, `request.route(name)`, `request.user()`, `request.isJson()`, `request.bearerToken()`, `await request.validate({ field: 'required|string' })`. Validation errors use Laravel's 422 response shape. Parity is required for validation rules used by Pluff's Laravel builders and DSL; Laravel-only rules outside that surface are not implied.
 
 Differences from PHP to remember: no `$` prefix, `await` on every DB call, `request.route('name')` is allowed (PHP handlers must use `$params[n]`), and `return response.json(...)` replaces `response()->json(...)`.
 
-Mail templates on Express accept `{{ var }}`, `{{ $var }}` and `{!! var !!}` placeholders only (a Blade-compatible subset): no `@if` / `@foreach`.
+Express mail HTML supports escaped `{{ $value }}` and raw `{!! $value !!}` interpolation, Blade comments, `@if` / `@elseif` / `@else`, and `@foreach` over arrays or objects. Conditions support basic literals, property paths, boolean operators, and comparisons. This is a deliberately bounded subset: it does not execute PHP or support arbitrary Blade directives, components, layouts, or view helpers. Unsupported template behavior must be implemented in a `:ts` mail body or kept Laravel-only.
 
 ### Express compatibility notes
 
@@ -232,8 +268,19 @@ Mail templates on Express accept `{{ var }}`, `{{ $var }}` and `{!! var !!}` pla
 - `resource` uses a Laravel-shaped JSON projection; `factory` provides `make`, `create`, `createMany`, `count`, and `state`.
 - `command_run`, `job_dispatch`, and `event_fire` use generated command/job/event registries and name matching; custom `:ts` endpoint bodies remain the most explicit option.
 - Realtime uses the Pusher protocol for WebSockets. Generated `/sse` routes are true streaming Server-Sent Events with keep-alive heartbeats; `/sse-poll` remains available for polling clients.
+- Realtime channel authorization reads declared private/presence channel patterns and supports `authenticated` (default), `owner`, and `admin`; `owner` compares the user's ID with a `{placeholder}` in the channel name. Public channels do not use the auth endpoint. Notification `channel_type` supports private, public, and presence broadcast destinations.
+- Express validation includes common Laravel-style rules, including conditional required/accepted/prohibited rules, `distinct`, IPv4/IPv6, string prefixes/suffixes, and decimal precision. Unsupported Laravel rules are not silently equivalent; confirm the runtime implementation before relying on one.
 - `export.js` selects the active backend: Express exports use the Express backend and npm; Laravel/Inertia exports use their Laravel backend and Composer.
 - Express needs `tsx` and the native `better-sqlite3` binding. `start.js` stops with an install hint if either is missing (a likely trouble spot on Termux/ARM64).
+
+### FastAPI compatibility notes
+
+- Select `fastapi` with `node mizumi.js backend fastapi`, then install Python dependencies with `node setup.js --backend fastapi`.
+- `start.js` runs Uvicorn and the Python queue/scheduler worker from `engine/backend/fastapi/.venv`. Realtime WebSockets run inside the FastAPI service; there is no separate Reverb process.
+- FastAPI supports the shared Laravel-style authentication, CRUD, middleware, policies, jobs, schedules, mail, notifications, realtime, and upload builders. Notification inbox routes use the native notification table; declared private/presence channel rules are checked before signing.
+- FastAPI notification `MailMessage` supports `greeting()`, ordered `line()` / `action()` content, and `salutation()`. Python broadcast bodies can exclude the caller with `broadcast_to(channel, event, data, except_socket_id=request.header('X-Socket-ID'))`, matching Laravel's `toOthers()` behavior.
+- The `ollama-studio` Tatemono intentionally has only a `:py` endpoint body. It defaults to `http://127.0.0.1:11434` and `llama3.2`; set `PLUFF_AI_MODEL` to select another installed local Ollama model. It does not send prompts to an external provider.
+- Exported FastAPI backends create a local `.venv` and install `requirements.txt`. PostgreSQL settings are copied from the configured engine environment; SQLite remains the default.
 
 * * *
 
@@ -1871,11 +1918,11 @@ These come from reading the engine source. They are not hypothetical — but tes
 10. **Table/model warnings are heuristics.** The validator appends a literal `s` when suggesting a table name, so `Inventory` is reported as expecting `inventorys` even when the declared table is `inventories`; the Laravel model builder writes its table explicitly. Singular `send_log` and `event_log` also warn because plural snake_case is preferred. These are warnings, not parse errors; keep table declarations and raw SQL references aligned if renaming.
 11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
-12. **Backend is project-level and variants are per block.** A tatemono that has code bodies only for `:php` is *inactive* (not broken) on Express, and the reverse. The validator message names the missing `:<variant>` block. Check which backend is active (`node mizumi.js stack`) before debugging a "missing endpoint".
-13. **Backend variant coverage.** Backend tatemonos now carry explicit `:php` and `:ts` variants for every body-bearing block. Shared YAML-only backend blocks remain unsuffixed. `express-test-2` remains the consolidated Express parity fixture.
+12. **Backend is project-level and variants are per block.** A tatemono that has code bodies only for `:php` is *inactive* (not broken) on Express or FastAPI. The validator message names the missing `:<variant>` block. Check which backend is active (`node mizumi.js stack`) before debugging a "missing endpoint".
+13. **Backend variant coverage.** Tatemonos intended to run on Laravel, Express, and FastAPI carry explicit `:php`, `:ts`, and `:py` variants for every body-bearing block. Shared YAML-only backend blocks remain unsuffixed. `express-test-2` and `fastapi-test` are the backend-specific parity fixtures.
 14. **`react-inertia` forces `laravel-inertia`.** `node mizumi.js backend <n>` refuses any backend other than Laravel while that web stack is active (switch the web stack first with `node mizumi.js web <stack>`).
-15. **Express compatibility boundary:** Express is a custom Laravel-compatible implementation, not Laravel internals. Verify behavior where an application depends on framework-specific internals; the supported DSL surfaces have runtime equivalents, including streaming SSE, uploads, resources, factories, queues, commands, events, mail, notifications, and realtime.
-16. **Realtime channel names:** Express matches Laravel channel naming. Public channels use their declared name; private/presence channels append `.userId` only when the declared channel contains `{id}`. Static private/presence channels do not receive an implicit suffix.
+15. **Express compatibility boundary:** Express must match the Laravel builders/runtime features Pluff uses or exposes through its DSL, including streaming SSE, uploads, resources, factories, queues, commands, events, mail, notifications, and realtime. Laravel facilities outside that integration (for example unrelated framework internals) are out of scope. If a Laravel feature used by a Pluff builder behaves differently on Express, treat it as a parity bug.
+16. **Realtime channel authorization:** Express authorizes private/presence subscriptions using each declared channel pattern and its `auth` value (`authenticated`, `owner`, or `admin`). `owner` requires a matching placeholder, such as `{id}`. Public channels are subscribed to without channel authorization.
 17. **Two copies of the engine core.** `backends.ts` / `parser.ts` / `validator.ts` exist under `engine/shared/arkzen/engine-core/` and again in each frontend's `arkzen/core/` folder, and `mizumi.js` keeps its own copy of the backend → variant map for display. A suffix rename or new backend must be changed in all of them.
 
 * * *
@@ -1972,7 +2019,7 @@ Before finalizing any tatemono, verify:
 - [ ] `jobs` / `console` variants repeat the YAML header (`queue`, `tries`, `timeout`, `signature`, `schedule`)
 - [ ] `:ts` bodies use `await` for DB calls, `response.json(body, status)`, `request.route('name')` / `params`, and `return next()` in middleware
 - [ ] Express targets use the documented custom equivalents for uploads, `resource` / `factory`, `command_run` / `job_dispatch` / `event_fire`, and streaming SSE
-- [ ] Mail / notification bodies avoided (YAML-only) unless custom content is required; Express mail templates use only `{{ var }}` / `{{ $var }}` / `{!! var !!}`
+- [ ] Mail / notification bodies avoided (YAML-only) unless custom content is required; Express mail templates use only the documented safe subset (interpolation, comments, basic conditions, and loops), not arbitrary Blade/PHP
 
 **WEB**
 - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
@@ -1999,4 +2046,4 @@ Before finalizing any tatemono, verify:
 
 * * *
 
-_End of PLUFF GUIDELINES v13.0._
+_End of PLUFF GUIDELINES v13.1._

@@ -1,0 +1,37 @@
+{
+  "table": "lesson_results",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "lesson_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "score": {
+      "type": "integer",
+      "default": 0
+    },
+    "best": {
+      "type": "integer",
+      "default": 0
+    }
+  },
+  "indexes": [
+    {
+      "columns": [
+        "user_id",
+        "lesson_id"
+      ],
+      "unique": true
+    }
+  ]
+}

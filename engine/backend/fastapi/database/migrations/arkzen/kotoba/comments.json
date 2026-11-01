@@ -1,0 +1,51 @@
+{
+  "table": "comments",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "post_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "user_id": {
+      "type": "integer",
+      "nullable": false
+    },
+    "author_name": {
+      "type": "string",
+      "length": 80,
+      "nullable": false
+    },
+    "author_color": {
+      "type": "string",
+      "length": 16,
+      "nullable": true
+    },
+    "body": {
+      "type": "text",
+      "nullable": false
+    },
+    "is_correction": {
+      "type": "boolean",
+      "default": false
+    },
+    "corrected": {
+      "type": "text",
+      "nullable": true
+    },
+    "explanation": {
+      "type": "text",
+      "nullable": true
+    },
+    "accepted": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "indexes": []
+}

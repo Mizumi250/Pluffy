@@ -10,16 +10,27 @@ definition:
 
 - **Laravel (PHP)** — existing backend target.
 - **Express (JavaScript/TypeScript)** — additional backend target.
-- **Python** — FastAPI and/or Django target.
+- **Python** — FastAPI target.
 - **Java** — Spring Boot target.
 - **C#** — ASP.NET Core target.
+- **Go** — Go with Chi (`net/http`-based router).
+- **Rust** — Rust with Axum (Tokio/Tower async stack).
 
 Each target needs to implement the Tatemono features Pluff supports, including
 database models and migrations, APIs, authentication, jobs, events, and other
 declared backend behavior.
 
-Other possible targets to consider later: Go, Rust, Ruby, Elixir, Kotlin, Dart,
-and Scala. These are candidates, not part of the initial target list.
+Backend targets are implementation stacks (a language plus a framework and
+supporting libraries), not just language labels. Chi keeps Go's standard
+`net/http` request, response, and middleware conventions while providing
+composable routing for generated APIs, avoiding a heavier framework lock-in.
+Axum is a modern, actively used Rust framework built around Tokio and Tower;
+its async handlers, extractors, and middleware model fit Pluff's generated
+routes and runtime services. These are the selected stacks for the Go and Rust
+targets.
+
+Other possible targets to consider later: Ruby, Elixir, Kotlin, Dart, and
+Scala. These are candidates, not part of the current target list.
 
 ## Backend DSL: Shared Blocks and Variant Blocks
 
@@ -65,8 +76,8 @@ A backend block is either **shared** or a **variant**.
 - `notifications` and `mail` blocks that carry a body.
 
 Suffix names are not final. Proposed: name variants after the language, as in
-`:php`, `:ts`, `:py`, `:java`, `:cs`, following the same idea as the existing
-`:expo` / `:rn` frontend variants.
+`:php`, `:ts`, `:py`, `:java`, `:cs`, `:go`, and `:rs`, following the same idea
+as the existing `:expo` / `:rn` frontend variants.
 
 ### How variants work
 
@@ -92,10 +103,10 @@ and tatemono authors never see the difference.
 
 ### Backends to add (in this order of planning)
 
-Laravel is done. New: Express (TypeScript), Python (FastAPI and/or Django), Java
-(Spring Boot) and C# (ASP.NET Core). Supabase is an integration and may reuse the
-TypeScript variants. The later candidates (Go, Rust, Ruby, Elixir, Kotlin, Dart,
-Scala) are not part of the current plan.
+Laravel is done. New: Express (TypeScript), Python (FastAPI), Java (Spring
+Boot), C# (ASP.NET Core), Go (Chi), and Rust (Axum). Supabase is an integration
+and may reuse the TypeScript variants. The later candidates (Ruby, Elixir,
+Kotlin, Dart, and Scala) are not part of the current plan.
 
 ### Migration note
 

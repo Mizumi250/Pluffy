@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — mail-test
 // Source: @arkzen:components (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:13:26.204Z
+// Generated: 2026-11-01T11:53:50.157Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — body-mail-notification
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:12:35.927Z
+// Generated: 2026-11-01T11:53:38.811Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

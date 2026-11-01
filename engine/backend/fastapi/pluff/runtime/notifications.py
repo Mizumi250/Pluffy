@@ -1,6 +1,7 @@
 """Notifications: database (Laravel-compatible table), mail and broadcast channels."""
 from __future__ import annotations
 
+import html as _html
 import json
 import uuid
 
@@ -15,30 +16,51 @@ __all__ = ["MailMessage", "Notification", "notify"]
 class MailMessage:
     def __init__(self):
         self.subject_ = ""
-        self.lines: list[str] = []
+        self.intro_lines: list[str] = []
+        self.outro_lines: list[str] = []
+        self.greeting_: str | None = None
+        self.salutation_: str | None = None
         self.action_text = ""
         self.action_url = ""
+        self._after_action = False
 
     def subject(self, s: str):
         self.subject_ = s
         return self
 
+    def greeting(self, s: str):
+        self.greeting_ = s
+        return self
+
     def line(self, s: str):
-        self.lines.append(s)
+        (self.outro_lines if self._after_action else self.intro_lines).append(s)
         return self
 
     def action(self, text: str, url: str):
         self.action_text, self.action_url = text, url
+        self._after_action = True
+        return self
+
+    def salutation(self, s: str):
+        self.salutation_ = s
         return self
 
     def html(self) -> str:
-        out = "".join(f"<p>{l}</p>" for l in self.lines)
-        return out + (f'<p><a href="{self.action_url}">{self.action_text}</a></p>' if self.action_url else "")
+        out = f"<p>{self.greeting_}</p>" if self.greeting_ else ""
+        out += "".join(f"<p>{line}</p>" for line in self.intro_lines)
+        if self.action_url:
+            out += (f'<p><a href="{_html.escape(self.action_url, quote=True)}">'
+                    f'{_html.escape(self.action_text)}</a></p>')
+        out += "".join(f"<p>{line}</p>" for line in self.outro_lines)
+        if self.salutation_:
+            out += f"<p>{self.salutation_}</p>"
+        return out
 
 
 class Notification:
     tatemono = ""
     channels: list[str] = ["database"]
+    channel_type = "private"
     subject = ""
     template = ""
 
@@ -83,5 +105,8 @@ async def notify(notifiable, n: Notification) -> None:
                         return {"subject": m.subject_, "html": m.html()}
                 await send_mail(notifiable.email, _Built({}))
         elif ch == "broadcast":
-            broadcast_to(f"private-{slug}.{notifiable.id}", "Illuminate\\Notifications\\Events\\BroadcastNotificationCreated",
+            channel_type = getattr(type(n), "channel_type", "private")
+            channel = (f"{slug}.notifications" if channel_type == "public"
+                       else f"{channel_type}-{slug}.{notifiable.id}")
+            broadcast_to(channel, "Illuminate\\Notifications\\Events\\BroadcastNotificationCreated",
                          n.to_broadcast(notifiable))

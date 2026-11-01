@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/circles
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T08:13:15.214Z
+// Generated: 2026-11-01T11:53:48.802Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

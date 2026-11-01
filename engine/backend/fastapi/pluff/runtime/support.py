@@ -113,7 +113,13 @@ class _Log:
     @staticmethod
     def _p(prefix: str, m, ctx, stream) -> None:
         extra = "" if ctx is None else f" {ctx}"
-        print(f"[Pluff] {prefix}{m}{extra}", file=stream, flush=True)
+        message = f"[Pluff] {prefix}{m}{extra}"
+        try:
+            print(message, file=stream, flush=True)
+        except UnicodeEncodeError:
+            encoding = getattr(stream, "encoding", None) or "utf-8"
+            safe_message = message.encode(encoding, errors="backslashreplace").decode(encoding)
+            print(safe_message, file=stream, flush=True)
 
     def info(self, m, ctx=None):  self._p("", m, ctx, sys.stdout)
     def warn(self, m, ctx=None):  self._p("⚠ ", m, ctx, sys.stderr)

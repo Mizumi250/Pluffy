@@ -327,7 +327,7 @@ function extractAllNamedSections(content: string, marker: string): ArkzenSection
 
     // Extract the identifier (everything until whitespace or */)
     const afterOpen = content.slice(openIdx + openPattern.length)
-    const identMatch = afterOpen.match(/^([a-zA-Z0-9_-]+)/)
+    const identMatch = afterOpen.match(/^([a-zA-Z0-9_.{}-]+)/)
     if (!identMatch) { searchFrom = openIdx + openPattern.length; continue }
 
     const identifier = identMatch[1]

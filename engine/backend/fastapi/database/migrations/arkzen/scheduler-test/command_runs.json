@@ -1,0 +1,42 @@
+{
+  "table": "command_runs",
+  "timestamps": true,
+  "softDeletes": false,
+  "columns": {
+    "id": {
+      "type": "integer",
+      "primary": true,
+      "autoIncrement": true
+    },
+    "command_name": {
+      "type": "string",
+      "length": 100,
+      "nullable": false
+    },
+    "signature": {
+      "type": "string",
+      "length": 150,
+      "nullable": false
+    },
+    "exit_code": {
+      "type": "integer",
+      "nullable": false,
+      "default": 0
+    },
+    "output": {
+      "type": "text",
+      "nullable": true
+    },
+    "triggered_by": {
+      "type": "string",
+      "length": 50,
+      "nullable": false,
+      "default": "manual"
+    },
+    "duration_ms": {
+      "type": "integer",
+      "nullable": true
+    }
+  },
+  "indexes": []
+}

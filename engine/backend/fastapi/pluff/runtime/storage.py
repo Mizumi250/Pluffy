@@ -13,22 +13,41 @@ STORAGE_ROOT = BACKEND_DIR / "storage" / "public"
 
 class _Storage:
     @staticmethod
+    def _path(rel: str) -> Path:
+        path = (STORAGE_ROOT / rel).resolve()
+        if not path.is_relative_to(STORAGE_ROOT.resolve()):
+            raise ValueError("Storage path must remain inside the public disk")
+        return path
+
+    @staticmethod
     def put(directory: str, file: dict) -> str:
         ext = Path(file["originalname"]).suffix
-        rel = f"{directory}/{secrets.token_hex(16)}{ext}"
-        ensure_dir(STORAGE_ROOT / directory)
-        (STORAGE_ROOT / rel).write_bytes(file["buffer"])
+        relative_dir = Path(directory)
+        if relative_dir.is_absolute() or ".." in relative_dir.parts:
+            raise ValueError("Storage directory must be relative to the public disk")
+        rel = (relative_dir / f"{secrets.token_hex(16)}{ext}").as_posix()
+        path = _Storage._path(rel)
+        ensure_dir(path.parent)
+        path.write_bytes(file["buffer"])
         return rel
 
     @staticmethod
     def delete(rel: str) -> None:
-        p = STORAGE_ROOT / rel
+        p = _Storage._path(rel)
         if p.exists():
             p.unlink()
 
     @staticmethod
     def exists(rel: str) -> bool:
-        return (STORAGE_ROOT / rel).exists()
+        return _Storage._path(rel).is_file()
+
+    @staticmethod
+    def path(rel: str) -> Path:
+        return _Storage._path(rel)
+
+    @staticmethod
+    def read(rel: str) -> bytes:
+        return _Storage._path(rel).read_bytes()
 
     @staticmethod
     def url(rel: str) -> str:
