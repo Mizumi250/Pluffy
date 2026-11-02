@@ -116,6 +116,26 @@ public final class Conn {
     }
   }
 
+  /** Runs body in one transaction (commit on return, rollback on exception). Nested calls join the outer transaction. */
+  public synchronized <T> T transaction(java.util.function.Supplier<T> body) {
+    try {
+      if (!c.getAutoCommit()) return body.get();
+      c.setAutoCommit(false);
+      try {
+        T result = body.get();
+        c.commit();
+        return result;
+      } catch (RuntimeException | Error e) {
+        try { c.rollback(); } catch (SQLException ignored) { }
+        throw e;
+      } finally {
+        c.setAutoCommit(true);
+      }
+    } catch (SQLException e) {
+      throw wrap(e, "TRANSACTION");
+    }
+  }
+
   public synchronized boolean hasTable(String name) {
     try {
       DatabaseMetaData md = c.getMetaData();

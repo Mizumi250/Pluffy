@@ -28,3 +28,30 @@ Java in `dev.pluff.runtime`, so it stays easy to read and to compile-check.
   Only the files above were compiled (with plain javac) and the JSON/validator parts executed.
 - The SQL layer has now run against real SQLite (Debian sqlite-jdbc 3.44). That found one bug: `getGeneratedKeys()` is not implemented there, so `Conn.insert` uses `last_insert_rowid()` on SQLite.
 - Postgres code paths are still untested.
+
+## `:java` tatemono variants (body contract, proposed)
+
+`:java` blocks sit next to `:php` / `:ts` / `:py` blocks. The generator is not written yet, so this is the contract the existing `:java` bodies were written against. Every body is compiled as the body of a generated method that `throws Exception`. These imports are implied: `dev.pluff.runtime.*`, `static dev.pluff.runtime.Support.*` (so `mapOf(...)` and `sqlNow()` work bare), `java.util.*`, `java.math.*`, plus the tatemono's generated models.
+
+| Block | Variables in scope | Returns |
+|---|---|---|
+| `endpoint`, `handler` | `Request request`, `Response response`; handlers also get `List<Object> params` | `Object` |
+| `middleware` | `request`, `response`, `Next next` (call `next.run()`) | `Object` |
+| `policy` | `Model user`, `Model item` (item may be null) | `boolean` |
+| `jobs` | `this.data` (`Map<String,Object>`) | nothing |
+| `listener` | `Event event` (`event.data` is a `Map<String,Object>`) | nothing |
+| `console` | `this.info(String)` | `Command.SUCCESS` / `Command.FAILURE` |
+| `notifications` | `Model user` | `MailMessage` |
+
+Helpers a body may call, and what exists today:
+
+- `Request`: `all()`, `input(k)`, `input(k, default)`, `validate(Map rules)` (Laravel rule strings), `user()`, `authUser()`, `route(name)`, `isJson()`, `ip()`. Not written yet.
+- `Response`: `json(body)`, `json(body, status)`. Not written yet.
+- Generated models: static `query()`, `where(...)`, `whereIn(...)`, `count()`, `all()`, `find(id)`, `findOrFail(id)`, `create(Map)`. Instance methods and the query builder already exist (`Model`, `QueryBuilder`). The static finders are for the generator to emit.
+- `Support.mapOf(k, v, ...)`: insertion-ordered map that allows null values (`Map.of` does not). Exists.
+- `DB.transaction(() -> ...)`: one transaction per tatemono database, rollback on exception. Backed by `Conn.transaction`, which exists. The `DB` wrapper is for the generator.
+- `Mail.has/to/send/className`, `Notify.has/send/className`, `Command`, `Next`, `Event`: for the generator.
+
+Bodies compile with `--release 17`, so they avoid Java 19+ APIs such as virtual-thread executors. Decimal columns are returned as strings (`"10.00"`); read them with `new BigDecimal(model.str("col"))`.
+
+`tatemonos/spring-test` (basic connections) and `tatemonos/spring-ledger` (transactions, BigDecimal math, concurrent transfers, scheduled reconciliation) are written for this backend.

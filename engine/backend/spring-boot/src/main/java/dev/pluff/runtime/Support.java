@@ -83,6 +83,14 @@ public final class Support {
     return raw.startsWith(p + "_") ? raw : p + "_" + raw;
   }
 
+  /** Insertion-ordered map from alternating key/value args; unlike Map.of it allows null values (used by :java tatemono bodies). */
+  public static Map<String, Object> mapOf(Object... kv) {
+    if (kv.length % 2 != 0) throw new IllegalArgumentException("mapOf needs key/value pairs");
+    Map<String, Object> out = new java.util.LinkedHashMap<>();
+    for (int i = 0; i < kv.length; i += 2) out.put(String.valueOf(kv[i]), kv[i + 1]);
+    return out;
+  }
+
   public static String lcfirst(String s) { return s.isEmpty() ? s : Character.toLowerCase(s.charAt(0)) + s.substring(1); }
 
   /** 'JobResult' -> 'job_result'. */
