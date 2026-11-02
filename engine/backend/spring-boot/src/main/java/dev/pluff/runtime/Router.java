@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.concurrent.Callable;
 
 /** Small method/path router used by generated tatemono modules. */
 public final class Router {
@@ -60,6 +61,17 @@ public final class Router {
 
   public static String currentTatemono() { return CURRENT_TATEMONO.get(); }
 
+  public static <T> T withTatemono(String slug, Callable<T> body) throws Exception {
+    String previous = CURRENT_TATEMONO.get();
+    CURRENT_TATEMONO.set(slug);
+    try {
+      return body.call();
+    } finally {
+      if (previous == null) CURRENT_TATEMONO.remove();
+      else CURRENT_TATEMONO.set(previous);
+    }
+  }
+
   public Router add(String method, String path, List<Middleware> middleware, Handler handler) {
     List<String> names = new ArrayList<>();
     StringBuilder regex = new StringBuilder("^");
@@ -91,13 +103,10 @@ public final class Router {
       Map<String, Object> params = new LinkedHashMap<>();
       for (int i = 0; i < route.names.size(); i++) params.put(route.names.get(i), matcher.group(i + 1));
       request.setRouteParams(params);
-      String previous = CURRENT_TATEMONO.get();
-      CURRENT_TATEMONO.set(slug);
       try {
-        return new Dispatch(true, invoke(route, 0, request, response));
-      } finally {
-        if (previous == null) CURRENT_TATEMONO.remove();
-        else CURRENT_TATEMONO.set(previous);
+        return new Dispatch(true, withTatemono(slug, () -> invoke(route, 0, request, response)));
+      } catch (Exception error) {
+        throw error;
       }
     }
     return new Dispatch(false, null);

@@ -329,6 +329,86 @@ await EventLog.create({
 })
 /* @arkzen:listener:py:CleanupTempFiles:end */
 
+/* @arkzen:listener:java:SendWelcomeEmail
+*/
+EventLog.create(mapOf(
+    "event_name", "UserSignedUp",
+    "listener_name", "SendWelcomeEmail",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:SendWelcomeEmail:end */
+
+/* @arkzen:listener:java:UpdateUserStats
+*/
+EventLog.create(mapOf(
+    "event_name", "UserSignedUp",
+    "listener_name", "UpdateUserStats",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:UpdateUserStats:end */
+
+/* @arkzen:listener:java:NotifyAdmins
+*/
+EventLog.create(mapOf(
+    "event_name", "UserSignedUp",
+    "listener_name", "NotifyAdmins",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:NotifyAdmins:end */
+
+/* @arkzen:listener:java:ProcessPayment
+*/
+EventLog.create(mapOf(
+    "event_name", "OrderPlaced",
+    "listener_name", "ProcessPayment",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:ProcessPayment:end */
+
+/* @arkzen:listener:java:UpdateInventory
+*/
+EventLog.create(mapOf(
+    "event_name", "OrderPlaced",
+    "listener_name", "UpdateInventory",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:UpdateInventory:end */
+
+/* @arkzen:listener:java:SendOrderConfirmation
+*/
+EventLog.create(mapOf(
+    "event_name", "OrderPlaced",
+    "listener_name", "SendOrderConfirmation",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:SendOrderConfirmation:end */
+
+/* @arkzen:listener:java:LogExportActivity
+*/
+EventLog.create(mapOf(
+    "event_name", "DataExported",
+    "listener_name", "LogExportActivity",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:LogExportActivity:end */
+
+/* @arkzen:listener:java:CleanupTempFiles
+*/
+EventLog.create(mapOf(
+    "event_name", "DataExported",
+    "listener_name", "CleanupTempFiles",
+    "status", "completed",
+    "payload", Json.stringify(event.data)
+));
+/* @arkzen:listener:java:CleanupTempFiles:end */
+
 /* @arkzen:endpoint:index */
 public function index(Request $request): JsonResponse
 {
@@ -369,6 +449,21 @@ return response.json(results)
 await EventLog.query().delete()
 return response.json({'message': 'Log cleared'})
 /* @arkzen:endpoint:py:clearLog:end */
+
+/* @arkzen:endpoint:java:index
+*/
+return response.json(EventLog.query().latest().paginate(
+    request.input("per_page", 100),
+    request.input("page", 1),
+    request.url()
+));
+/* @arkzen:endpoint:java:index:end */
+
+/* @arkzen:endpoint:java:clearLog
+*/
+EventLog.query().delete();
+return response.json(mapOf("message", "Log cleared"));
+/* @arkzen:endpoint:java:clearLog:end */
 
 /* @arkzen:web:components:shared */
 

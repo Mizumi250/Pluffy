@@ -85,6 +85,88 @@ endpoints:
       value: Demoted to user
 */
 
+/* @arkzen:endpoint:php:adminOnly
+*/
+$user = $request->user();
+$granted = $user && $user->role === 'admin';
+RoleAuditLog::create([
+    'user_id' => $user?->id,
+    'action' => 'GET /admin-only',
+    'role_required' => 'admin',
+    'granted' => $granted,
+]);
+if (!$granted) {
+    return response()->json(['message' => '✗ Access denied — admin role required'], 403);
+}
+return response()->json(['message' => '✓ Access granted — you are admin']);
+/* @arkzen:endpoint:php:adminOnly:end */
+
+/* @arkzen:endpoint:ts:adminOnly
+*/
+const user = request.user()
+const granted = !!user && user.role === 'admin'
+await RoleAuditLog.create({
+  user_id: user?.id ?? null,
+  action: 'GET /admin-only',
+  role_required: 'admin',
+  granted,
+})
+if (!granted) return response.json({ message: '✗ Access denied — admin role required' }, 403)
+return response.json({ message: '✓ Access granted — you are admin' })
+/* @arkzen:endpoint:ts:adminOnly:end */
+
+/* @arkzen:endpoint:php:userOnly
+*/
+$user = $request->user();
+RoleAuditLog::create([
+    'user_id' => $user?->id,
+    'action' => 'GET /user-only',
+    'role_required' => 'user',
+    'granted' => true,
+]);
+return response()->json(['message' => '✓ Access granted — open to all authenticated users']);
+/* @arkzen:endpoint:php:userOnly:end */
+
+/* @arkzen:endpoint:ts:userOnly
+*/
+const user = request.user()
+await RoleAuditLog.create({
+  user_id: user?.id ?? null,
+  action: 'GET /user-only',
+  role_required: 'user',
+  granted: true,
+})
+return response.json({ message: '✓ Access granted — open to all authenticated users' })
+/* @arkzen:endpoint:ts:userOnly:end */
+
+/* @arkzen:endpoint:php:promote
+*/
+$user = $request->user();
+$user->update(['role' => 'admin']);
+return response()->json(['message' => 'Promoted to admin', 'user' => $user->fresh()]);
+/* @arkzen:endpoint:php:promote:end */
+
+/* @arkzen:endpoint:ts:promote
+*/
+const user = request.user()
+await user.update({ role: 'admin' })
+return response.json({ message: 'Promoted to admin', user: await user.fresh() })
+/* @arkzen:endpoint:ts:promote:end */
+
+/* @arkzen:endpoint:php:demote
+*/
+$user = $request->user();
+$user->update(['role' => 'user']);
+return response()->json(['message' => 'Demoted to user', 'user' => $user->fresh()]);
+/* @arkzen:endpoint:php:demote:end */
+
+/* @arkzen:endpoint:ts:demote
+*/
+const user = request.user()
+await user.update({ role: 'user' })
+return response.json({ message: 'Demoted to user', user: await user.fresh() })
+/* @arkzen:endpoint:ts:demote:end */
+
 /* @arkzen:endpoint:py:adminOnly
 */
 user = request.user()
@@ -125,6 +207,48 @@ user = request.user()
 await user.update({'role': 'user'})
 return response.json({'message': 'Demoted to user', 'user': await user.fresh()})
 /* @arkzen:endpoint:py:demote:end */
+
+/* @arkzen:endpoint:java:adminOnly
+*/
+Model user = request.authUser();
+boolean granted = user != null && "admin".equals(user.str("role"));
+RoleAuditLog.create(mapOf(
+    "user_id", user == null ? null : user.get("id"),
+    "action", "GET /admin-only",
+    "role_required", "admin",
+    "granted", granted
+));
+if (!granted) {
+    return response.json(mapOf("message", "✗ Access denied — admin role required"), 403);
+}
+return response.json(mapOf("message", "✓ Access granted — you are admin"));
+/* @arkzen:endpoint:java:adminOnly:end */
+
+/* @arkzen:endpoint:java:userOnly
+*/
+Model user = request.authUser();
+RoleAuditLog.create(mapOf(
+    "user_id", user == null ? null : user.get("id"),
+    "action", "GET /user-only",
+    "role_required", "user",
+    "granted", true
+));
+return response.json(mapOf("message", "✓ Access granted — open to all authenticated users"));
+/* @arkzen:endpoint:java:userOnly:end */
+
+/* @arkzen:endpoint:java:promote
+*/
+Model user = request.authUser();
+user.update(mapOf("role", "admin"));
+return response.json(mapOf("message", "Promoted to admin", "user", user.fresh()));
+/* @arkzen:endpoint:java:promote:end */
+
+/* @arkzen:endpoint:java:demote
+*/
+Model user = request.authUser();
+user.update(mapOf("role", "user"));
+return response.json(mapOf("message", "Demoted to user", "user", user.fresh()));
+/* @arkzen:endpoint:java:demote:end */
 
 /* @arkzen:web:components:shared */
 

@@ -150,11 +150,6 @@ if (!request.isJson()) {
 return next()
 /* @arkzen:middleware:ts:requireJson:end */
 
-/* @arkzen:middleware:php:requireJson
-*/
-return $next($request);
-/* @arkzen:middleware:php:requireJson:end */
-
 /* @arkzen:policy:ts:delete
 */
 return user?.role === 'admin'

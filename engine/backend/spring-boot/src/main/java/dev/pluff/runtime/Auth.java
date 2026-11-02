@@ -146,7 +146,9 @@ public final class Auth {
       plain = bearer.substring(separator + 1);
     }
     String table = Support.prefixedTable(request.slug(), "personal_access_tokens");
-    QueryBuilder<Map<String, Object>> query = Database.connection(request.slug()).table(table)
+    Conn database = Database.connection(request.slug());
+    if (!database.hasTable(table)) return null;
+    QueryBuilder<Map<String, Object>> query = database.table(table)
         .where("token", sha256(plain));
     if (idPart != null) query.where("id", idPart);
     Map<String, Object> token = query.first();

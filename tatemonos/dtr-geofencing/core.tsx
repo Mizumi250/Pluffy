@@ -626,6 +626,167 @@ await DtrSetting.update_or_create(
 return response.json({'success': True})
 /* @arkzen:endpoint:py:update_office:end */
 
+/* @arkzen:endpoint:java:my_records
+*/
+Object employeeId = request.route("employee_id");
+List<TimeRecord> records = TimeRecord.query()
+    .where("employee_id", employeeId)
+    .orderBy("timestamp", "desc")
+    .take(50)
+    .get();
+List<Map<String, Object>> results = new ArrayList<>();
+for (TimeRecord record : records) {
+    Map<String, Object> row = Json.parseObject(Json.stringify(record));
+    row.put("employee", Employee.find(record.get("employee_id")));
+    results.add(row);
+}
+return response.json(results);
+/* @arkzen:endpoint:java:my_records:end */
+
+/* @arkzen:endpoint:java:check_in
+*/
+Object employeeId = request.input("employee_id");
+Object latitude = request.input("latitude");
+Object longitude = request.input("longitude");
+Object notes = request.input("notes");
+DtrSetting geofenceSetting = DtrSetting.query().where("key", "geofencing_enabled").first();
+boolean geofencingEnabled = geofenceSetting != null && "true".equals(String.valueOf(geofenceSetting.get("value")));
+boolean withinGeofence = true;
+if (geofencingEnabled && latitude != null && longitude != null) {
+    DtrSetting officeLatitudeSetting = DtrSetting.query().where("key", "office_latitude").first();
+    DtrSetting officeLongitudeSetting = DtrSetting.query().where("key", "office_longitude").first();
+    DtrSetting radiusSetting = DtrSetting.query().where("key", "geofence_radius_meters").first();
+    Object rawOfficeLatitude = officeLatitudeSetting == null ? null : officeLatitudeSetting.get("value");
+    Object rawOfficeLongitude = officeLongitudeSetting == null ? null : officeLongitudeSetting.get("value");
+    Object rawRadius = radiusSetting == null ? null : radiusSetting.get("value");
+    double officeLatitude = rawOfficeLatitude == null || String.valueOf(rawOfficeLatitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawOfficeLatitude));
+    double officeLongitude = rawOfficeLongitude == null || String.valueOf(rawOfficeLongitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawOfficeLongitude));
+    double radius = rawRadius == null || String.valueOf(rawRadius).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawRadius));
+    double lat1 = Math.toRadians(officeLatitude);
+    double lon1 = Math.toRadians(officeLongitude);
+    double lat2 = Math.toRadians(latitude == null || String.valueOf(latitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(latitude)));
+    double lon2 = Math.toRadians(longitude == null || String.valueOf(longitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(longitude)));
+    double dlat = lat2 - lat1;
+    double dlon = lon2 - lon1;
+    double a = Math.pow(Math.sin(dlat / 2), 2)
+        + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+    double distance = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0.0, 1.0 - a)));
+    withinGeofence = distance <= radius;
+    if (!withinGeofence) {
+        return response.json(mapOf(
+            "error", "Geofence violation",
+            "message", "You must be within " + radius + " meters of the office to check in.",
+            "distance", Math.round(distance * 10.0) / 10.0
+        ), 403);
+    }
+}
+TimeRecord record = TimeRecord.create(mapOf(
+    "employee_id", employeeId,
+    "type", "in",
+    "timestamp", sqlNow(),
+    "latitude", latitude,
+    "longitude", longitude,
+    "within_geofence", withinGeofence,
+    "notes", notes
+));
+Map<String, Object> recordJson = Json.parseObject(Json.stringify(record));
+recordJson.put("employee", Employee.find(employeeId));
+return response.json(mapOf(
+    "success", true,
+    "record", recordJson,
+    "within_geofence", withinGeofence,
+    "geofencing_enabled", geofencingEnabled
+));
+/* @arkzen:endpoint:java:check_in:end */
+
+/* @arkzen:endpoint:java:check_out
+*/
+Object employeeId = request.input("employee_id");
+Object latitude = request.input("latitude");
+Object longitude = request.input("longitude");
+Object notes = request.input("notes");
+DtrSetting geofenceSetting = DtrSetting.query().where("key", "geofencing_enabled").first();
+boolean geofencingEnabled = geofenceSetting != null && "true".equals(String.valueOf(geofenceSetting.get("value")));
+boolean withinGeofence = true;
+if (geofencingEnabled && latitude != null && longitude != null) {
+    DtrSetting officeLatitudeSetting = DtrSetting.query().where("key", "office_latitude").first();
+    DtrSetting officeLongitudeSetting = DtrSetting.query().where("key", "office_longitude").first();
+    DtrSetting radiusSetting = DtrSetting.query().where("key", "geofence_radius_meters").first();
+    Object rawOfficeLatitude = officeLatitudeSetting == null ? null : officeLatitudeSetting.get("value");
+    Object rawOfficeLongitude = officeLongitudeSetting == null ? null : officeLongitudeSetting.get("value");
+    Object rawRadius = radiusSetting == null ? null : radiusSetting.get("value");
+    double officeLatitude = rawOfficeLatitude == null || String.valueOf(rawOfficeLatitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawOfficeLatitude));
+    double officeLongitude = rawOfficeLongitude == null || String.valueOf(rawOfficeLongitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawOfficeLongitude));
+    double radius = rawRadius == null || String.valueOf(rawRadius).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(rawRadius));
+    double lat1 = Math.toRadians(officeLatitude);
+    double lon1 = Math.toRadians(officeLongitude);
+    double lat2 = Math.toRadians(latitude == null || String.valueOf(latitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(latitude)));
+    double lon2 = Math.toRadians(longitude == null || String.valueOf(longitude).isBlank() ? 0.0 : Double.parseDouble(String.valueOf(longitude)));
+    double dlat = lat2 - lat1;
+    double dlon = lon2 - lon1;
+    double a = Math.pow(Math.sin(dlat / 2), 2)
+        + Math.cos(lat1) * Math.cos(lat2) * Math.pow(Math.sin(dlon / 2), 2);
+    double distance = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0.0, 1.0 - a)));
+    withinGeofence = distance <= radius;
+    if (!withinGeofence) {
+        return response.json(mapOf(
+            "error", "Geofence violation",
+            "message", "You must be within " + radius + " meters of the office to check out.",
+            "distance", Math.round(distance * 10.0) / 10.0
+        ), 403);
+    }
+}
+TimeRecord record = TimeRecord.create(mapOf(
+    "employee_id", employeeId,
+    "type", "out",
+    "timestamp", sqlNow(),
+    "latitude", latitude,
+    "longitude", longitude,
+    "within_geofence", withinGeofence,
+    "notes", notes
+));
+Map<String, Object> recordJson = Json.parseObject(Json.stringify(record));
+recordJson.put("employee", Employee.find(employeeId));
+return response.json(mapOf(
+    "success", true,
+    "record", recordJson,
+    "within_geofence", withinGeofence,
+    "geofencing_enabled", geofencingEnabled
+));
+/* @arkzen:endpoint:java:check_out:end */
+
+/* @arkzen:endpoint:java:toggle_geofencing
+*/
+Object enabledValue = request.input("enabled");
+boolean enabled = !(enabledValue == null || Boolean.FALSE.equals(enabledValue)
+    || enabledValue instanceof Number && ((Number) enabledValue).doubleValue() == 0.0
+    || enabledValue instanceof String && ("".equals(enabledValue) || "0".equals(enabledValue)));
+DtrSetting geofencingSetting = DtrSetting.query().where("key", "geofencing_enabled").first();
+if (geofencingSetting == null) {
+    DtrSetting.create(mapOf("key", "geofencing_enabled", "value", enabled ? "true" : "false"));
+} else {
+    geofencingSetting.update(mapOf("value", enabled ? "true" : "false"));
+}
+return response.json(mapOf("success", true, "geofencing_enabled", enabledValue));
+/* @arkzen:endpoint:java:toggle_geofencing:end */
+
+/* @arkzen:endpoint:java:update_office
+*/
+String[] settingKeys = {"office_latitude", "office_longitude", "geofence_radius_meters"};
+String[] inputKeys = {"lat", "lng", "radius"};
+for (int i = 0; i < settingKeys.length; i++) {
+    Object inputValue = request.input(inputKeys[i]);
+    String value = inputValue == null ? "" : String.valueOf(inputValue);
+    DtrSetting setting = DtrSetting.query().where("key", settingKeys[i]).first();
+    if (setting == null) {
+        DtrSetting.create(mapOf("key", settingKeys[i], "value", value));
+    } else {
+        setting.update(mapOf("value", value));
+    }
+}
+return response.json(mapOf("success", true));
+/* @arkzen:endpoint:java:update_office:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

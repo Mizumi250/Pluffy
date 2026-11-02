@@ -153,6 +153,16 @@ return item?.status !== 'archived'
 return item.status != 'archived'
 /* @arkzen:policy:py:delete:end */
 
+/* @arkzen:policy:java:update
+*/
+return item == null || !"archived".equals(item.str("status"));
+/* @arkzen:policy:java:update:end */
+
+/* @arkzen:policy:java:delete
+*/
+return item == null || !"archived".equals(item.str("status"));
+/* @arkzen:policy:java:delete:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

@@ -155,6 +155,15 @@ items = await Inventory.where('quantity', '<', 20).order_by('quantity', 'asc').g
 return response.json({'data': items, 'count': len(items)})
 /* @arkzen:endpoint:py:lowStock:end */
 
+/* @arkzen:endpoint:java:lowStock
+*/
+List<Inventory> items = Inventory.query()
+    .where("quantity", "<", 20)
+    .orderBy("quantity", "asc")
+    .get();
+return response.json(mapOf("data", items, "count", items.size()));
+/* @arkzen:endpoint:java:lowStock:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

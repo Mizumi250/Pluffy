@@ -229,6 +229,46 @@ return response.json({
 })
 /* @arkzen:endpoint:py:stats:end */
 
+/* @arkzen:endpoint:java:echo
+*/
+Map<String, Object> input = request.all();
+int fieldCount = input.size();
+ProbeResult record = ProbeResult.create(mapOf(
+    "source", "endpoint-body",
+    "probe", "echo",
+    "payload", Json.stringify(input),
+    "result", "Echoed " + fieldCount + " field(s) — ControllerBuilder v7.0 body injection ✓",
+    "ok", true
+));
+return response.json(mapOf(
+    "injected", true,
+    "builder", "ControllerBuilder v7.0",
+    "method", "echo",
+    "field_count", fieldCount,
+    "echo", input,
+    "probe_id", record.id()
+));
+/* @arkzen:endpoint:java:echo:end */
+
+/* @arkzen:endpoint:java:stats
+*/
+long total = ProbeResult.count();
+long passed = ProbeResult.query().where("ok", true).count();
+long failed = ProbeResult.query().where("ok", false).count();
+List<ProbeResult> sourceRows = ProbeResult.query().select("source").get();
+Set<Object> sources = new LinkedHashSet<>();
+for (ProbeResult probe : sourceRows) sources.add(probe.get("source"));
+return response.json(mapOf(
+    "injected", true,
+    "builder", "ControllerBuilder v7.0",
+    "method", "stats",
+    "total", total,
+    "passed", passed,
+    "failed", failed,
+    "sources", sources
+));
+/* @arkzen:endpoint:java:stats:end */
+
 /* ─── CustomRouteBuilder body injection ───────────────────────────────────────
    @arkzen:routes DSL block declares standalone routes without a model.
    @arkzen:handler:name blocks inject PHP into the generated handler method.
@@ -390,6 +430,55 @@ return response.json({
     'results': latest,
 })
 /* @arkzen:handler:py:latest:end */
+
+/* @arkzen:handler:java:ping
+*/
+return response.json(mapOf(
+    "injected", true,
+    "builder", "CustomRouteBuilder v2.0",
+    "handler", "ping",
+    "status", "ok",
+    "timestamp", java.time.Instant.now().toString(),
+    "message", "CustomRouteBuilder handler body injection confirmed ✓"
+));
+/* @arkzen:handler:java:ping:end */
+
+/* @arkzen:handler:java:recordHandler
+*/
+Map<String, Object> validated = request.validate(mapOf(
+    "probe", "required|string|max:100",
+    "payload", "nullable|string",
+    "ok", "sometimes|boolean"
+));
+Object okValue = validated.get("ok");
+ProbeResult record = ProbeResult.create(mapOf(
+    "source", "handler-body",
+    "probe", validated.get("probe"),
+    "payload", validated.get("payload"),
+    "result", "Recorded via CustomRouteBuilder handler body injection ✓",
+    "ok", okValue == null || Boolean.TRUE.equals(okValue)
+        || "1".equals(String.valueOf(okValue)) || "true".equalsIgnoreCase(String.valueOf(okValue))
+));
+return response.json(mapOf(
+    "injected", true,
+    "builder", "CustomRouteBuilder v2.0",
+    "handler", "recordHandler",
+    "probe_id", record.id(),
+    "probe", record.get("probe")
+));
+/* @arkzen:handler:java:recordHandler:end */
+
+/* @arkzen:handler:java:latest
+*/
+List<ProbeResult> latest = ProbeResult.query().latest().take(5).get();
+return response.json(mapOf(
+    "injected", true,
+    "builder", "CustomRouteBuilder v2.0",
+    "handler", "latest",
+    "count", latest.size(),
+    "results", latest
+));
+/* @arkzen:handler:java:latest:end */
 
 /* @arkzen:web:components:shared */
 

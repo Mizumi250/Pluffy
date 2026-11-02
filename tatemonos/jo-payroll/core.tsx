@@ -508,6 +508,58 @@ return response.json({
 })
 /* @arkzen:endpoint:py:summary:end */
 
+/* @arkzen:endpoint:java:summary
+*/
+List<JobOrder> activeOrders = JobOrder.query().where("status", "active").get();
+long inactiveCount = JobOrder.query().where("status", "inactive").count();
+long totalCash = 0;
+long totalAtm = 0;
+double totalBasicPay = 0;
+double totalSss = 0;
+double totalHdmfPremium = 0;
+double totalHdmfMpl = 0;
+double totalCalamityLoan = 0;
+Map<String, Map<String, Object>> fundingBreakdown = new LinkedHashMap<>();
+Map<String, Integer> groupBreakdown = new LinkedHashMap<>();
+for (JobOrder order : activeOrders) {
+    if ("CASH".equals(order.str("disbursement_type"))) totalCash++;
+    if ("ATM".equals(order.str("disbursement_type"))) totalAtm++;
+    Object basicPayValue = order.get("basic_pay");
+    double basicPay = basicPayValue == null ? 0 : Double.parseDouble(String.valueOf(basicPayValue));
+    Object sssValue = order.get("sss_amount");
+    Object hdmfPremiumValue = order.get("hdmf_premium");
+    Object hdmfMplValue = order.get("hdmf_mpl");
+    Object calamityLoanValue = order.get("calamity_loan");
+    totalBasicPay += basicPay;
+    totalSss += sssValue == null ? 0 : Double.parseDouble(String.valueOf(sssValue));
+    totalHdmfPremium += hdmfPremiumValue == null ? 0 : Double.parseDouble(String.valueOf(hdmfPremiumValue));
+    totalHdmfMpl += hdmfMplValue == null ? 0 : Double.parseDouble(String.valueOf(hdmfMplValue));
+    totalCalamityLoan += calamityLoanValue == null ? 0 : Double.parseDouble(String.valueOf(calamityLoanValue));
+    String funding = order.str("funding") == null ? "" : order.str("funding");
+    Map<String, Object> fundingTotals = fundingBreakdown.computeIfAbsent(funding, key -> mapOf("count", 0, "total_pay", 0.0));
+    fundingTotals.put("count", ((Number) fundingTotals.get("count")).intValue() + 1);
+    fundingTotals.put("total_pay", ((Number) fundingTotals.get("total_pay")).doubleValue() + basicPay);
+    String group = order.str("jor_pyrl_group") == null ? "" : order.str("jor_pyrl_group");
+    groupBreakdown.put(group, groupBreakdown.getOrDefault(group, 0) + 1);
+}
+double totalDeductions = totalSss + totalHdmfPremium + totalHdmfMpl + totalCalamityLoan;
+return response.json(mapOf(
+    "total_active", activeOrders.size(),
+    "total_inactive", inactiveCount,
+    "total_atm", totalAtm,
+    "total_cash", totalCash,
+    "total_basic_pay", totalBasicPay,
+    "total_sss", totalSss,
+    "total_hdmf_premium", totalHdmfPremium,
+    "total_hdmf_mpl", totalHdmfMpl,
+    "total_calamity_loan", totalCalamityLoan,
+    "total_deductions", totalDeductions,
+    "net_pay", totalBasicPay - totalDeductions,
+    "funding_breakdown", fundingBreakdown,
+    "group_breakdown", groupBreakdown
+));
+/* @arkzen:endpoint:java:summary:end */
+
 /* @arkzen:endpoint:php:byGroup
 */
 $group = request()->route('group');
@@ -519,6 +571,17 @@ return response()->json($orders);
 */
 return response.json({ ok: true, endpoint: 'byGroup', input: request.all() })
 /* @arkzen:endpoint:ts:byGroup:end */
+
+/* @arkzen:endpoint:java:byGroup
+*/
+Object group = request.route("group");
+List<JobOrder> orders = JobOrder.query()
+    .where("jor_pyrl_group", group)
+    .where("status", "active")
+    .orderBy("jor_number")
+    .get();
+return response.json(orders);
+/* @arkzen:endpoint:java:byGroup:end */
 
 /* @arkzen:endpoint:py:byGroup
 */
@@ -537,6 +600,15 @@ return response()->json($orders);
 */
 return response.json({ ok: true, endpoint: 'appointments', input: request.all() })
 /* @arkzen:endpoint:ts:appointments:end */
+
+/* @arkzen:endpoint:java:appointments
+*/
+List<JobOrder> orders = JobOrder.query()
+    .whereNotNull("appointment_order")
+    .orderBy("appointment_order")
+    .get();
+return response.json(orders);
+/* @arkzen:endpoint:java:appointments:end */
 
 /* @arkzen:endpoint:py:appointments
 */

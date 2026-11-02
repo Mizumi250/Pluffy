@@ -274,6 +274,46 @@ return response.json({
 })
 /* @arkzen:handler:ts:join_queue:end */
 
+/* @arkzen:handler:java:join_queue
+*/
+Object queueId = request.input("queue_id");
+Object customerName = request.input("customer_name", "Guest");
+Queue queue = Queue.findOrFail(queueId);
+Object maxPosition = Ticket.query()
+    .where("queue_id", queueId)
+    .whereIn("status", List.of("waiting", "serving"))
+    .max("position");
+long nextPosition = Support.toLong(maxPosition, 0) + 1;
+Ticket ticket = Ticket.create(mapOf(
+    "queue_id", queueId,
+    "ticket_number", queue.str("prefix") + "-" + String.format(Locale.ROOT, "%03d", nextPosition),
+    "customer_name", customerName,
+    "status", "waiting",
+    "position", nextPosition
+));
+long waiting = Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "waiting")
+    .where("position", "<", ticket.get("position"))
+    .count();
+try {
+    Broadcast.broadcastTo(
+        "queue-flow." + String.valueOf(queueId),
+        "queue-flow.queue-updated",
+        mapOf("queue_id", queueId, "action", "joined", "ticket", ticket),
+        request.header("X-Socket-ID")
+    );
+} catch (RuntimeException error) {
+    Log.warn("[QueueFlow] broadcast failed: " + error.getMessage());
+}
+long averageWait = Support.toLong(queue.get("avg_wait_minutes"), 5);
+return response.json(mapOf(
+    "ticket", ticket,
+    "position", waiting + 1,
+    "estimated_wait", waiting * averageWait
+));
+/* @arkzen:handler:java:join_queue:end */
+
 /* @arkzen:handler:py:join_queue
 */
 queue_id = request.input('queue_id')
@@ -376,6 +416,35 @@ except Exception as exc:
 return response.json({'ticket': next_ticket})
 /* @arkzen:handler:py:call_next:end */
 
+/* @arkzen:handler:java:call_next
+*/
+Object queueId = request.input("queue_id");
+Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "serving")
+    .update(mapOf("status", "done", "served_at", sqlNow()));
+Ticket nextTicket = Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "waiting")
+    .orderBy("position")
+    .first();
+if (nextTicket == null) {
+    return response.json(mapOf("message", "No more tickets in queue", "ticket", null));
+}
+nextTicket.update(mapOf("status", "serving", "called_at", sqlNow()));
+try {
+    Broadcast.broadcastTo(
+        "queue-flow." + String.valueOf(queueId),
+        "queue-flow.queue-updated",
+        mapOf("queue_id", queueId, "action", "called", "ticket", nextTicket),
+        request.header("X-Socket-ID")
+    );
+} catch (RuntimeException error) {
+    Log.warn("[QueueFlow] broadcast failed: " + error.getMessage());
+}
+return response.json(mapOf("ticket", nextTicket));
+/* @arkzen:handler:java:call_next:end */
+
 /* @arkzen:handler:php:queue_status
 */
 $queueId = $params[0] ?? null;
@@ -439,6 +508,29 @@ return response.json({
 })
 /* @arkzen:handler:py:queue_status:end */
 
+/* @arkzen:handler:java:queue_status
+*/
+Object queueId = params.isEmpty() ? null : params.get(0);
+Queue queue = Queue.findOrFail(queueId);
+Ticket serving = Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "serving")
+    .first();
+List<Ticket> waiting = Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "waiting")
+    .orderBy("position")
+    .get();
+long doneCount = Ticket.query().where("queue_id", queueId).where("status", "done").count();
+return response.json(mapOf(
+    "queue", queue,
+    "serving", serving,
+    "waiting", waiting,
+    "done_count", doneCount,
+    "total_waiting", waiting.size()
+));
+/* @arkzen:handler:java:queue_status:end */
+
 /* @arkzen:handler:php:my_ticket
 */
 $ticketNumber = $params[1] ?? null;
@@ -501,6 +593,31 @@ return response.json({
     'is_done': ticket.status == 'done',
 })
 /* @arkzen:handler:py:my_ticket:end */
+
+/* @arkzen:handler:java:my_ticket
+*/
+Object queueId = params.size() > 0 ? params.get(0) : null;
+Object ticketNumber = params.size() > 1 ? params.get(1) : null;
+Ticket ticket = Ticket.query()
+    .where("ticket_number", ticketNumber)
+    .where("queue_id", queueId)
+    .firstOrFail();
+long ahead = Ticket.query()
+    .where("queue_id", queueId)
+    .where("status", "waiting")
+    .where("position", "<", ticket.get("position"))
+    .count();
+Queue queue = Queue.find(queueId);
+long averageWait = queue == null ? 5 : Support.toLong(queue.get("avg_wait_minutes"), 5);
+boolean isWaiting = "waiting".equals(ticket.str("status"));
+return response.json(mapOf(
+    "ticket", ticket,
+    "position", isWaiting ? ahead + 1 : 0,
+    "estimated_wait", ahead * averageWait,
+    "is_serving", "serving".equals(ticket.str("status")),
+    "is_done", "done".equals(ticket.str("status"))
+));
+/* @arkzen:handler:java:my_ticket:end */
 
 /* @arkzen:routes
 controller: QueueController

@@ -6,6 +6,9 @@ import static dev.pluff.runtime.Support.*;
 public final class GeneratedModule {
   private GeneratedModule() {}
   public static Router createRouter() throws Exception {
+    JobDispatcher.unregister("spring-ledger");
+    EventDispatcher.unregister("spring-ledger");
+    CommandRegistry.unregister("spring-ledger");
     Router router = new Router("spring-ledger");
     Map<String, Map<String, Object>> mailTemplates = mailTemplates();
     router.add("GET", "/api/spring-ledger/accounts", List.of(), (request, response) -> {
@@ -58,5 +61,15 @@ public final class GeneratedModule {
   }
   private static Router.Middleware customMiddleware(String name) {
     throw new IllegalArgumentException("Unknown middleware: " + name);
+  }
+  private static Notification notificationFor(String name) {
+    return switch (name) {
+      default -> null;
+    };
+  }
+  private static Map<String, Object> objectMap(Object value) {
+    Map<String, Object> out = new LinkedHashMap<>();
+    if (value instanceof Map<?, ?> values) values.forEach((key, item) -> out.put(String.valueOf(key), item));
+    return out;
   }
 }

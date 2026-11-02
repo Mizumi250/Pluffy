@@ -1,6 +1,7 @@
 package dev.pluff.engine;
 
 import dev.pluff.runtime.Support;
+import dev.pluff.runtime.Json;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -163,18 +164,108 @@ public final class Generate {
     return body.isEmpty() ? null : body;
   }
 
+  private static Map<String, Map<String, Object>> sections(Object rawSections) {
+    Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+    for (Object raw : list(rawSections)) {
+      if (!(raw instanceof String)) continue;
+      Object parsed = new org.yaml.snakeyaml.Yaml().load(String.valueOf(raw));
+      for (Map.Entry<String, Object> entry : map(parsed).entrySet()) {
+        if (entry.getValue() instanceof Map<?, ?>) result.put(entry.getKey(), map(entry.getValue()));
+      }
+    }
+    return result;
+  }
+
+  private static Map<String, Object> objectMap(Object value) {
+    Map<String, Object> result = new LinkedHashMap<>();
+    if (value instanceof Map<?, ?> values) {
+      values.forEach((key, item) -> result.put(String.valueOf(key), item));
+    }
+    return result;
+  }
+
   private static String perPage(Map<String, Object> query) {
     String raw = text(query.get("per_page"), "15");
     java.util.regex.Matcher matcher = java.util.regex.Pattern.compile("(?:default:)?(\\d+)").matcher(raw);
     return matcher.matches() ? matcher.group(1) : "15";
   }
 
-  private static String endpointBody(String model, String endpointName, Map<String, Object> endpoint) {
+  private static String endpointBody(String model, String endpointName, Map<String, Object> endpoint,
+                                     String slug, boolean usePolicy) {
     String body = bodyStatements(text(endpoint.get("body"), null));
     if (body != null) return body;
 
     String variable = snake(model);
     String name = endpointName.toLowerCase();
+    String type = text(endpoint.get("type"), "");
+    if ("job_dispatch".equals(type)) {
+      return "Map<String, Object> validated = request.validate(mapOf(\"job\", \"required|string\"));\n"
+          + "String jobName = String.valueOf(validated.get(\"job\")).replace('_', '-');\n"
+          + "Object rawData = request.input(\"data\", Map.of());\n"
+          + "Map<String, Object> data = objectMap(rawData);\n"
+          + "JobDispatcher.dispatch(" + quote(slug) + ", jobName, data);\n"
+          + "return response.json(mapOf(\"message\", \"Job dispatched\"), 202);";
+    }
+    if ("event_fire".equals(type)) {
+      return "Map<String, Object> validated = request.validate(mapOf(\"event\", \"required|string\", \"payload\", \"sometimes|array\"));\n"
+          + "String eventName = String.valueOf(validated.get(\"event\")).replace('_', '-');\n"
+          + "EventDispatcher.fire(" + quote(slug) + ", eventName, objectMap(validated.get(\"payload\")));\n"
+          + "return response.json(mapOf(\"message\", \"Event fired\"), 202);";
+    }
+    if ("command_run".equals(type)) {
+      return "Map<String, Object> validated = request.validate(mapOf(\"command\", \"required|string\", \"triggered_by\", \"sometimes|string\"));\n"
+          + "String commandName = String.valueOf(validated.get(\"command\")).replace('_', '-');\n"
+          + "long started = System.nanoTime();\n"
+          + "CommandRegistry.CommandResult run = CommandRegistry.runFor(" + quote(slug) + ", commandName);\n"
+          + "if (run == null) return response.json(mapOf(\"message\", \"Invalid command\"), 400);\n"
+          + model + " result = " + model + ".create(mapOf(\"command_name\", commandName, \"signature\", run.signature(), "
+          + "\"exit_code\", run.exitCode(), \"output\", run.output(), \"triggered_by\", validated.getOrDefault(\"triggered_by\", \"manual\"), "
+          + "\"duration_ms\", (System.nanoTime() - started) / 1_000_000));\n"
+          + "return response.json(result, 201);";
+    }
+    if ("notification_trigger".equals(type)) {
+      return "Map<String, Object> validated = request.validate(mapOf(\"notification\", \"required|string\"));\n"
+          + "Model user = request.authUser();\n"
+          + "Notification notification = notificationFor(String.valueOf(validated.get(\"notification\")).replace('_', '-'));\n"
+          + "if (notification == null) return response.json(mapOf(\"message\", \"Unknown notification: \" + validated.get(\"notification\")), 400);\n"
+          + "NotificationDispatcher.notify(user, notification);\n"
+          + "return response.json(mapOf(\"message\", \"Notification triggered successfully\", \"type\", validated.get(\"notification\")), 201);";
+    }
+    if ("Notification".equals(model)) {
+      if (name.equals("index")) {
+        return "Model user = request.authUser();\n"
+            + "List<Map<String, Object>> records = DB.table(\"notifications\")\n"
+            + "    .where(\"notifiable_type\", \"user\")\n"
+            + "    .where(\"notifiable_id\", user.get(\"id\"))\n"
+            + "    .latest()\n"
+            + "    .get();\n"
+            + "for (Map<String, Object> record : records) {\n"
+            + "    Object data = record.get(\"data\");\n"
+            + "    if (data instanceof String json) record.put(\"data\", Json.parseObject(json));\n"
+            + "}\n"
+            + "return response.json(mapOf(\"data\", records));";
+      }
+      if (name.equals("destroy")) {
+        return "Model user = request.authUser();\n"
+            + "Map<String, Object> record = DB.table(\"notifications\")\n"
+            + "    .where(\"id\", request.route(\"id\"))\n"
+            + "    .where(\"notifiable_type\", \"user\")\n"
+            + "    .where(\"notifiable_id\", user.get(\"id\"))\n"
+            + "    .first();\n"
+            + "if (record == null) throw new Errors.ModelNotFoundException(\"Notification\", request.route(\"id\"));\n"
+            + "DB.table(\"notifications\").where(\"id\", record.get(\"id\")).delete();\n"
+            + "return response.json(mapOf(\"message\", \"Notification deleted\"));";
+      }
+      if (name.equals("readall")) {
+        return "Model user = request.authUser();\n"
+            + "DB.table(\"notifications\")\n"
+            + "    .where(\"notifiable_type\", \"user\")\n"
+            + "    .where(\"notifiable_id\", user.get(\"id\"))\n"
+            + "    .where(\"read_at\", null)\n"
+            + "    .update(mapOf(\"read_at\", sqlNow()));\n"
+            + "return response.json(mapOf(\"message\", \"All notifications marked as read\"));";
+      }
+    }
     if ("mail_send".equals(text(endpoint.get("type"), ""))) {
       Map<String, Object> rules = map(endpoint.get("validation"));
       return "Map<String, Object> validated = request.validate(" + mapLiteral(rules) + ");\n"
@@ -225,15 +316,24 @@ public final class Generate {
       return model + " " + variable + " = " + model + ".findOrFail(request.route(\"id\"));\nreturn response.json(" + variable + ");";
     if (name.equals("update")) {
       Map<String, Object> rules = map(endpoint.get("validation"));
+      String policy = usePolicy
+          ? "Model user = request.authUser();\nif (!policyUpdate" + model + "(user, " + variable + ")) throw new Errors.AuthorizationException();\n"
+          : "";
       return model + " " + variable + " = " + model + ".findOrFail(request.route(\"id\"));\n"
+          + policy
           + "Map<String, Object> validated = request.validate(" + mapLiteral(rules) + ");\n"
           + variable + ".update(validated);\nreturn response.json(" + variable + ");";
     }
-    if (name.equals("destroy"))
+    if (name.equals("destroy")) {
+      String policy = usePolicy
+          ? "Model user = request.authUser();\nif (!policyDelete" + model + "(user, " + variable + ")) throw new Errors.AuthorizationException();\n"
+          : "";
       return model + " " + variable + " = " + model + ".findOrFail(request.route(\"id\"));\n"
+          + policy
           + variable + ".delete();\nreturn response.json(mapOf(\"message\", \"Deleted successfully\"));";
-    throw new IllegalArgumentException("Endpoint " + model + "." + endpointName
-        + " needs an @arkzen:endpoint:java body or a supported CRUD name");
+    }
+    return "return response.json(mapOf(\"message\", "
+        + quote("Endpoint " + endpointName + " is not implemented yet") + "), 501);";
   }
 
   private static String middlewareBody(Map<String, Object> snippets) {
@@ -274,8 +374,25 @@ public final class Generate {
         String path = normalizedPath(prefix + "/" + route);
         List<String> middleware = new ArrayList<>();
         for (Object rawName : list(api.get("middleware"))) middleware.add(String.valueOf(rawName).trim());
-        String code = endpointBody(model, endpointEntry.getKey(), endpoint);
+        String code = endpointBody(model, endpointEntry.getKey(), endpoint,
+            text(payload.get("name"), ""), enabled(api.get("policy")));
         routes.add(new RouterRoute(method, path, middleware, code));
+      }
+    }
+    for (Object rawCustomRoute : list(payload.get("customRoutes"))) {
+      Map<String, Object> customRoute = map(rawCustomRoute);
+      List<String> middleware = new ArrayList<>();
+      for (Object rawName : list(customRoute.get("middleware"))) middleware.add(String.valueOf(rawName).trim());
+      for (Object rawEntry : list(customRoute.get("routes"))) {
+        Map<String, Object> entry = map(rawEntry);
+        String body = bodyStatements(text(entry.get("body"), null));
+        if (body == null) {
+          throw new IllegalArgumentException("Custom route handler " + text(entry.get("handler"), "handle")
+              + " is missing its :java body");
+        }
+        routes.add(new RouterRoute(text(entry.get("method"), "GET").toUpperCase(),
+            normalizedPath(text(entry.get("route"), "/")), middleware,
+            "return " + identifier(text(entry.get("handler"), "handle")) + "(request, response);"));
       }
     }
     routes.sort((a, b) -> Integer.compare(dynamicSegments(a.path), dynamicSegments(b.path)));
@@ -299,13 +416,53 @@ public final class Generate {
   private static String moduleSource(Map<String, Object> payload, List<RouterRoute> routes) {
     String slug = text(payload.get("name"), "");
     String pkg = "dev.pluff.generated." + slug.replace('-', '_');
+    Map<String, Map<String, Object>> jobs = sections(payload.get("jobs"));
+    Map<String, Map<String, Object>> events = sections(payload.get("events"));
+    Map<String, Map<String, Object>> consoles = sections(payload.get("consoles"));
+    Map<String, Map<String, Object>> notifications = sections(payload.get("notifications"));
     StringBuilder out = new StringBuilder("package ").append(pkg).append(";\n")
         .append("import dev.pluff.runtime.*;\nimport java.util.*;\nimport java.math.*;\nimport static dev.pluff.runtime.Support.*;\n")
         .append("public final class GeneratedModule {\n")
         .append("  private GeneratedModule() {}\n")
         .append("  public static Router createRouter() throws Exception {\n")
+        .append("    JobDispatcher.unregister(").append(quote(slug)).append(");\n")
+        .append("    EventDispatcher.unregister(").append(quote(slug)).append(");\n")
+        .append("    CommandRegistry.unregister(").append(quote(slug)).append(");\n")
         .append("    Router router = new Router(").append(quote(slug)).append(");\n")
         .append("    Map<String, Map<String, Object>> mailTemplates = mailTemplates();\n");
+    for (Map.Entry<String, Map<String, Object>> entry : jobs.entrySet()) {
+      String body = decode(text(entry.getValue().get("body"), "")).trim();
+      if (body.isEmpty()) continue;
+      String cls = identifier(studly(entry.getKey()) + "Job");
+      String queue = text(entry.getValue().get("queue"), "default");
+      int tries = Support.toInt(entry.getValue().get("tries"), 3);
+      int timeout = Support.toInt(entry.getValue().get("timeout"), 60);
+      out.append("    JobDispatcher.register(").append(quote(slug)).append(", ").append(quote(entry.getKey()))
+          .append(", data -> new ").append(cls).append("(data));\n");
+    }
+    for (Map.Entry<String, Map<String, Object>> entry : events.entrySet()) {
+      List<Object> listeners = list(entry.getValue().get("listeners"));
+      Map<String, Object> bodies = decodedBodies(entry.getValue().get("listener_bodies"));
+      for (Object rawListener : listeners) {
+        String listener = identifier(String.valueOf(rawListener));
+        String body = decode(text(bodies.get(listener), "")).trim();
+        if (body.isEmpty())
+          throw new IllegalArgumentException("Event " + entry.getKey() + " listener " + listener + " is missing its :java body");
+        out.append("    EventDispatcher.register(").append(quote(slug)).append(", ")
+            .append(quote(entry.getKey())).append(", event -> {\n")
+            .append(indent(body, 6)).append("\n    });\n");
+      }
+    }
+    for (Map.Entry<String, Map<String, Object>> entry : consoles.entrySet()) {
+      String body = decode(text(entry.getValue().get("body"), "")).trim();
+      if (body.isEmpty()) continue;
+      String cls = identifier(studly(entry.getKey()) + "Command");
+      String signature = text(entry.getValue().get("signature"), slug + ":" + entry.getKey());
+      String description = text(entry.getValue().get("description"), "");
+      String schedule = text(entry.getValue().get("schedule"), null);
+      out.append("    CommandRegistry.register(").append(quote(slug)).append(", ")
+          .append("() -> new ").append(cls).append("());\n");
+    }
     if (enabled(payload.get("auth"))) {
       out.append("    router.add(\"POST\", ").append(quote("/api/" + slug + "/auth/register"))
           .append(", Auth.registerHandler(").append(quote(slug)).append("));\n")
@@ -344,7 +501,170 @@ public final class Generate {
     out.append(mailTemplateEntries(payload));
     out.append("    return templates;\n  }\n");
     out.append(middlewareBody(map(payload.get("middlewareSnippets"))));
+    out.append(policyMethods(payload));
+    out.append(customHandlerMethods(payload));
+    out.append(jobClasses(jobs));
+    out.append(commandClasses(slug, consoles));
+    out.append(notificationClasses(slug, notifications));
+    out.append("  private static Notification notificationFor(String name) {\n    return switch (name) {\n");
+    for (String notification : notifications.keySet()) {
+      out.append("      case ").append(quote(notification)).append(" -> new ")
+          .append(identifier(studly(notification) + "Notification")).append("();\n");
+    }
+    out.append("      default -> null;\n    };\n  }\n")
+        .append("  private static Map<String, Object> objectMap(Object value) {\n")
+        .append("    Map<String, Object> out = new LinkedHashMap<>();\n")
+        .append("    if (value instanceof Map<?, ?> values) values.forEach((key, item) -> out.put(String.valueOf(key), item));\n")
+        .append("    return out;\n  }\n");
     out.append("}\n");
+    return out.toString();
+  }
+
+  private static Map<String, Object> decodedBodies(Object encoded) {
+    String raw = decode(text(encoded, ""));
+    if (raw.isBlank()) return Map.of();
+    return objectMap(Json.parse(raw));
+  }
+
+  private static String customHandlerMethods(Map<String, Object> payload) {
+    Map<String, String> handlers = new LinkedHashMap<>();
+    for (Object rawGroup : list(payload.get("customRoutes"))) {
+      for (Object rawEntry : list(map(rawGroup).get("routes"))) {
+        Map<String, Object> route = map(rawEntry);
+        String handler = identifier(text(route.get("handler"), "handle"));
+        String body = bodyStatements(text(route.get("body"), null));
+        if (body == null) throw new IllegalArgumentException("Custom route handler " + handler + " is missing its :java body");
+        String previous = handlers.putIfAbsent(handler, body);
+        if (previous != null && !previous.equals(body))
+          throw new IllegalArgumentException("Custom route handler name has multiple Java bodies: " + handler);
+      }
+    }
+
+    StringBuilder out = new StringBuilder();
+    boolean canSeed = handlers.containsKey("community_seed");
+    for (Map.Entry<String, String> entry : handlers.entrySet()) {
+      String handler = entry.getKey();
+      String body = entry.getValue();
+      if (canSeed && List.of("me", "home").contains(handler)) {
+        body = "if (Post.count() == 0) community_seed(request, response);\n" + body;
+      }
+      out.append("  public static Object ").append(handler)
+          .append("(Request request, Response response) throws Exception {\n")
+          .append("    List<Object> params = new ArrayList<>(request.route().values());\n")
+          .append(indent(body, 4)).append("\n  }\n");
+    }
+    return out.toString();
+  }
+
+  private static String policyMethods(Map<String, Object> payload) {
+    Map<String, Object> snippets = map(payload.get("policySnippets"));
+    List<Object> databases = list(payload.get("databases"));
+    StringBuilder out = new StringBuilder();
+    for (Object rawApi : list(payload.get("apis"))) {
+      Map<String, Object> api = map(rawApi);
+      if (!enabled(api.get("policy"))) continue;
+      String model = identifier(text(api.get("model"), ""));
+      String table = findTable(databases, model);
+      Map<String, Object> database = new LinkedHashMap<>();
+      for (Object rawDatabase : databases) {
+        Map<String, Object> candidate = map(rawDatabase);
+        if (table != null && table.equals(text(candidate.get("table"), ""))) {
+          database = candidate;
+          break;
+        }
+      }
+      String owner = null;
+      Map<String, Object> columns = map(database.get("columns"));
+      for (String column : List.of("user_id", "owner_id", "created_by", "author_id")) {
+        if (columns.containsKey(column)) { owner = column; break; }
+      }
+      String update = decode(text(snippets.get("update"), "")).trim();
+      String delete = decode(text(snippets.get("delete"), "")).trim();
+      String defaultPolicy = owner == null
+          ? "return user != null && \"admin\".equals(user.get(\"role\"));"
+          : "return user != null && (java.util.Objects.equals(user.get(\"id\"), item.get(" + quote(owner)
+              + ")) || \"admin\".equals(user.get(\"role\")));";
+      if (update.isEmpty()) update = defaultPolicy;
+      if (delete.isEmpty()) delete = defaultPolicy;
+      out.append("  private static boolean policyUpdate").append(model).append("(Model user, Model model) {\n")
+          .append("    Model item = model;\n").append(indent(update, 4)).append("\n  }\n")
+          .append("  private static boolean policyDelete").append(model).append("(Model user, Model model) {\n")
+          .append("    Model item = model;\n").append(indent(delete, 4)).append("\n  }\n");
+    }
+    return out.toString();
+  }
+
+  private static String jobClasses(Map<String, Map<String, Object>> jobs) {
+    StringBuilder out = new StringBuilder();
+    for (Map.Entry<String, Map<String, Object>> entry : jobs.entrySet()) {
+      Map<String, Object> config = entry.getValue();
+      String body = decode(text(config.get("body"), "")).trim();
+      if (body.isEmpty()) continue;
+      String cls = identifier(studly(entry.getKey()) + "Job");
+      String queue = quote(text(config.get("queue"), "default"));
+      int tries = Support.toInt(config.get("tries"), 3);
+      int timeout = Support.toInt(config.get("timeout"), 60);
+      out.append("  public static final class ").append(cls).append(" extends Job {\n")
+          .append("    public ").append(cls).append("(Map<String, Object> data) { super(data, ").append(queue)
+          .append(", ").append(tries).append(", ").append(timeout).append("); }\n")
+          .append("    @Override public void handle() throws Exception {\n").append(indent(body, 6))
+          .append("\n    }\n  }\n");
+    }
+    return out.toString();
+  }
+
+  private static String commandClasses(String slug, Map<String, Map<String, Object>> commands) {
+    StringBuilder out = new StringBuilder();
+    for (Map.Entry<String, Map<String, Object>> entry : commands.entrySet()) {
+      Map<String, Object> config = entry.getValue();
+      String body = decode(text(config.get("body"), "")).trim();
+      if (body.isEmpty()) continue;
+      String cls = identifier(studly(entry.getKey()) + "Command");
+      String signature = quote(text(config.get("signature"), slug + ":" + entry.getKey()));
+      String description = quote(text(config.get("description"), ""));
+      String schedule = config.get("schedule") == null ? "null" : quote(String.valueOf(config.get("schedule")));
+      out.append("  public static final class ").append(cls).append(" extends Command {\n")
+          .append("    public ").append(cls).append("() { super(").append(signature).append(", ")
+          .append(description).append(", ").append(schedule).append("); }\n")
+          .append("    @Override public int handle() throws Exception {\n").append(indent(body, 6))
+          .append("\n    }\n  }\n");
+    }
+    return out.toString();
+  }
+
+  private static String notificationClasses(String slug, Map<String, Map<String, Object>> notifications) {
+    StringBuilder out = new StringBuilder();
+    for (Map.Entry<String, Map<String, Object>> entry : notifications.entrySet()) {
+      Map<String, Object> config = entry.getValue();
+      String cls = identifier(studly(entry.getKey()) + "Notification");
+      List<String> channels = new ArrayList<>();
+      Object rawChannels = config.get("channels");
+      if (rawChannels instanceof List<?>) {
+        for (Object channel : list(rawChannels)) channels.add(String.valueOf(channel));
+      } else {
+        String raw = text(rawChannels, "database");
+        for (String channel : raw.split(",")) if (!channel.isBlank()) channels.add(channel.trim());
+      }
+      String channelType = text(config.get("channel_type"), "private");
+      String channel = "public".equals(channelType) ? slug + ".notifications" : slug;
+      String message = text(config.get("message"), "You have a new notification.");
+      String subject = text(config.get("subject"), cls);
+      String body = decode(text(config.get("toMail_body"), "")).trim();
+      if (body.startsWith("return mapOf(") && body.endsWith(");"))
+        body = body.replaceFirst("^return mapOf\\(", "return MailMessage.fromMap(mapOf(")
+            .replaceFirst("\\);\\s*$", "));");
+      if (body.isEmpty()) body = "return new MailMessage().subject(" + quote(subject) + ").line(" + quote(message) + ");";
+      out.append("  public static final class ").append(cls).append(" extends Notification {\n")
+          .append("    @Override public String tatemono() { return ").append(quote(slug)).append("; }\n")
+          .append("    @Override public String name() { return ").append(quote(cls)).append("; }\n")
+          .append("    @Override public List<String> channels() { return ").append(listLiteral(channels)).append("; }\n")
+          .append("    @Override public String channelType() { return ").append(quote(channelType)).append("; }\n")
+          .append("    @Override public String channel() { return ").append(quote(channel)).append("; }\n")
+          .append("    @Override public Map<String, Object> toDatabase(Model notifiable) { return mapOf(\"message\", ")
+          .append(quote(message)).append(", \"type\", name()); }\n")
+          .append("    @Override public MailMessage toMail(Model notifiable) {\n").append(indent(body, 6))
+          .append("\n    }\n  }\n");
+    }
     return out.toString();
   }
 
@@ -383,6 +703,10 @@ public final class Generate {
         result.put(section.getKey(), Map.of("type", type, "auth", auth));
       }
     }
+    if (enabled(payload.get("auth")) && !list(payload.get("notifications")).isEmpty()) {
+      String slug = text(payload.get("name"), "");
+      result.putIfAbsent(slug + ".{id}", Map.of("type", "private", "auth", "owner"));
+    }
     return result;
   }
 
@@ -402,18 +726,24 @@ public final class Generate {
     List<Object> databases = list(payload.get("databases"));
     Map<String, String> files = new LinkedHashMap<>();
     String sourceRoot = "dev/pluff/generated/" + slug.replace('-', '_') + "/";
-    Set<String> generatedModels = new java.util.LinkedHashSet<>();
+    Map<String, String> modelNames = new LinkedHashMap<>();
     for (Object rawApi : list(payload.get("apis"))) {
-      String model = identifier(text(map(rawApi).get("model"), ""));
+      Map<String, Object> api = map(rawApi);
+      String model = identifier(text(api.get("model"), ""));
+      if ("Notification".equals(model)) continue;
       String table = findTable(databases, model);
       if (table == null) throw new IllegalArgumentException("No database block found for model " + model);
-      for (Object rawDb : databases) {
-        Map<String, Object> db = map(rawDb);
-        if (table.equals(text(db.get("table"), ""))) {
-          if (generatedModels.add(model)) files.put(sourceRoot + model + ".java", modelSource(slug, model, db));
-          break;
-        }
+      modelNames.put(table, model);
+    }
+    Set<String> generatedModels = new java.util.LinkedHashSet<>();
+    for (Object rawDb : databases) {
+      Map<String, Object> db = map(rawDb);
+      String table = text(db.get("table"), "");
+      String model = identifier(modelNames.getOrDefault(table, modelForTable(table)));
+      if (!generatedModels.add(model)) {
+        throw new IllegalArgumentException("Multiple database tables map to Java model " + model);
       }
+      files.put(sourceRoot + model + ".java", modelSource(slug, model, db));
     }
     List<RouterRoute> routes = routes(payload);
     files.put(sourceRoot + "GeneratedModule.java", moduleSource(payload, routes));

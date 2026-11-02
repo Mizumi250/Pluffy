@@ -194,23 +194,6 @@
     "lines": 1790,
     "estimated_tokens": 27812
   },
-  "clinic-appointment-booking": {
-    "description": "Book clinic appointments — CRUD for patients and appointments",
-    "meta_description": "Book clinic appointments — CRUD for patients and appointments",
-    "blocks": [
-      "meta",
-      "meta:web",
-      "database:patients",
-      "database:appointments",
-      "api:patients",
-      "api:appointments",
-      "web:components:shared",
-      "web:page:index",
-      "web:page:appointments"
-    ],
-    "lines": 423,
-    "estimated_tokens": 4972
-  },
   "crud-test": {
     "description": "Build an admin dashboard for testing a full resource workflow: create, view, edit, and delete records, with validation and clear status feedback.",
     "meta_description": "Tests the full CRUD pipeline — Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.",

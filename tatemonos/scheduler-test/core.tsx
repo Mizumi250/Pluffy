@@ -119,6 +119,25 @@ this.info('[Express] cleanup-temp')
 return Command.SUCCESS
 /* @arkzen:console:ts:cleanup-temp:end */
 
+/* @arkzen:console:java:cleanup-temp
+signature: scheduler-test:cleanup-temp
+description: Deletes temporary files older than 24h
+schedule: '0 * * * *'
+*/
+long start = System.nanoTime();
+this.info("[Arkzen:scheduler-test] Running cleanup-temp...");
+CommandRun.create(mapOf(
+    "command_name", "cleanup-temp",
+    "signature", "scheduler-test:cleanup-temp",
+    "exit_code", 0,
+    "output", "Cleanup completed successfully.",
+    "triggered_by", "schedule",
+    "duration_ms", (System.nanoTime() - start) / 1_000_000
+));
+this.info("[Arkzen:scheduler-test] ✓ Done");
+return Command.SUCCESS;
+/* @arkzen:console:java:cleanup-temp:end */
+
 /* @arkzen:console:py:cleanup-temp
 signature: scheduler-test:cleanup-temp
 description: Deletes temporary files older than 24h
@@ -172,6 +191,25 @@ schedule: '0 8 * * *'
 this.info('[Express] generate-report')
 return Command.SUCCESS
 /* @arkzen:console:ts:generate-report:end */
+
+/* @arkzen:console:java:generate-report
+signature: scheduler-test:generate-report
+description: Generates a daily activity report
+schedule: '0 8 * * *'
+*/
+long start = System.nanoTime();
+this.info("[Arkzen:scheduler-test] Generating report...");
+CommandRun.create(mapOf(
+    "command_name", "generate-report",
+    "signature", "scheduler-test:generate-report",
+    "exit_code", 0,
+    "output", "Daily report generated successfully.",
+    "triggered_by", "schedule",
+    "duration_ms", (System.nanoTime() - start) / 1_000_000
+));
+this.info("[Arkzen:scheduler-test] ✓ Done");
+return Command.SUCCESS;
+/* @arkzen:console:java:generate-report:end */
 
 /* @arkzen:console:py:generate-report
 signature: scheduler-test:generate-report
@@ -236,6 +274,24 @@ this.info('[Express] ping-health done')
 return Command.SUCCESS
 /* @arkzen:console:ts:ping-health:end */
 
+/* @arkzen:console:java:ping-health
+signature: scheduler-test:ping-health
+description: Pings all services and records health status
+schedule: '0-59/5 * * * *'
+*/
+long start = System.nanoTime();
+CommandRun.create(mapOf(
+    "command_name", "ping-health",
+    "signature", "scheduler-test:ping-health",
+    "exit_code", 0,
+    "output", "All services healthy.",
+    "triggered_by", "schedule",
+    "duration_ms", (System.nanoTime() - start) / 1_000_000
+));
+this.info("[Arkzen:scheduler-test] ✓ Done");
+return Command.SUCCESS;
+/* @arkzen:console:java:ping-health:end */
+
 /* @arkzen:console:py:ping-health
 signature: scheduler-test:ping-health
 description: Pings all services and records health status
@@ -298,6 +354,25 @@ await CommandRun.create({
 this.info('[Express] sync-data done')
 return Command.SUCCESS
 /* @arkzen:console:ts:sync-data:end */
+
+/* @arkzen:console:java:sync-data
+signature: scheduler-test:sync-data
+description: Syncs data from external source
+schedule: '0-59/15 * * * *'
+*/
+long start = System.nanoTime();
+this.info("[Arkzen:scheduler-test] Syncing data...");
+CommandRun.create(mapOf(
+    "command_name", "sync-data",
+    "signature", "scheduler-test:sync-data",
+    "exit_code", 0,
+    "output", "Data synced successfully.",
+    "triggered_by", "schedule",
+    "duration_ms", (System.nanoTime() - start) / 1_000_000
+));
+this.info("[Arkzen:scheduler-test] ✓ Done");
+return Command.SUCCESS;
+/* @arkzen:console:java:sync-data:end */
 
 /* @arkzen:console:py:sync-data
 signature: scheduler-test:sync-data

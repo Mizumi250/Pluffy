@@ -6,6 +6,9 @@ import static dev.pluff.runtime.Support.*;
 public final class GeneratedModule {
   private GeneratedModule() {}
   public static Router createRouter() throws Exception {
+    JobDispatcher.unregister("auth-test");
+    EventDispatcher.unregister("auth-test");
+    CommandRegistry.unregister("auth-test");
     Router router = new Router("auth-test");
     Map<String, Map<String, Object>> mailTemplates = mailTemplates();
     router.add("POST", "/api/auth-test/auth/register", Auth.registerHandler("auth-test"));
@@ -21,5 +24,15 @@ public final class GeneratedModule {
   }
   private static Router.Middleware customMiddleware(String name) {
     throw new IllegalArgumentException("Unknown middleware: " + name);
+  }
+  private static Notification notificationFor(String name) {
+    return switch (name) {
+      default -> null;
+    };
+  }
+  private static Map<String, Object> objectMap(Object value) {
+    Map<String, Object> out = new LinkedHashMap<>();
+    if (value instanceof Map<?, ?> values) values.forEach((key, item) -> out.put(String.valueOf(key), item));
+    return out;
   }
 }

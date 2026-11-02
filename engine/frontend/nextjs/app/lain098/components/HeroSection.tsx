@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — HeroSection
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T06:15:06.054Z
+// Generated: 2026-11-02T09:55:58.320Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

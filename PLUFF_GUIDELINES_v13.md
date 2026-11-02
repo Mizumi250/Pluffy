@@ -155,6 +155,8 @@ The Electron and Tauri shells wrap the whole web app, so this setting is shared 
 
 **The backend is not part of a tatemono.** It is a project setting (`arkzen.json` → `activeBackend`; `react-inertia` forces `laravel-inertia`). The same tatemono file builds on any backend that can read it. Laravel is the **reference backend**: every other backend imitates Laravel's behaviour, so the DSL has one vocabulary (rule strings like `required|string|max:255`, `role:admin`, `policy: true`, queue/mail/notification semantics) on every backend, and each backend implements it behind the scenes.
 
+**Spring Boot parity scope:** add `:java` variants only to Tatemono that already have Laravel (`:php`), Express (`:ts`), and FastAPI (`:py`) implementations. Features that exist only in Tatemono without those three backend variants are outside this parity scope, not missing Spring parity. For example, `upload-test` has upload DSL but no Laravel, Express, or FastAPI variants. Keep the current planned fixture list and coverage details in the Spring Boot backend README.
+
 ### Shared blocks vs variant blocks
 
 A backend block is **shared** or a **variant**.
@@ -1967,7 +1969,6 @@ shan-shan               v2.0.0  auth:false  web:index
 shikaku                 v1.0.0  auth:true   web:login,register,index,editor                                                                 realtime (project channel)
 upload-test             v1.0.0  auth:false  web:dashboard                     native:dashboard             lynx:dashboard                   upload endpoints
 visual-lab              v1.0.0  auth:false  web:index                                                                                       web:script (three.js)
-clinic-appointment-booking v1.0.0  auth:false  web:index,appointments
 express-test            v1.0.0  auth:true   web:index                                                                                     backend variants (:ts + :php), Express end-to-end test
 express-test-2          v1.0.0   auth:true   web:index                                                                                     consolidated Express parity fixture (:ts)
 kotoba                  v1.0.0  auth:true   web:chat,circles,dashboard,feed,index,learn,login,partners,profile,progress,register,review   native/lynx not audited   backend variants (`:php` + `:ts`)

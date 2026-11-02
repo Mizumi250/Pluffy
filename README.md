@@ -26,19 +26,11 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Backend:** Laravel (PHP), Express (TypeScript), FastAPI (Python), Spring Boot (Java), or ASP.NET Core (C#). Go (Chi) and Rust (Axum) are planned targets.
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 
-Frontend stack changes usually don't require Tatemono edits. Backend-specific code uses `:php`, `:ts`, or `:py` variants for implemented targets; Go `:go` and Rust `:rs` variants are planned. Shared DSL sections stay shared.
-
-### Go and Rust backend plans
-
-The Go target is planned around **Chi**, a lightweight router built on Go's
-standard `net/http` interfaces. The Rust target is planned around **Axum**,
-using the Tokio async runtime and Tower middleware ecosystem. These stacks are
-selected for the planned backends; their directories are scaffolds only, and
-neither backend currently builds Tatemono definitions.
+The same Tatemono DSL powers multiple frontend and backend targets, with backend-specific variants where needed.
 
 **The things apps keep needing, already handled.**
 
-Sign-in and registration, real-time updates, notifications, email, background jobs, scheduled tasks, file uploads, roles and policies, and error pages. You say what you want in the file and the engine generates the rest.
+Auth, real-time updates, notifications, email, background jobs, scheduling, uploads, roles, policies, and error pages—all built from the Tatemono.
 
 **A way out when you're done.**
 
@@ -68,38 +60,7 @@ AI Studio demonstrates provider-backed chat through the FastAPI backend. Provide
 
 ---
 
-## A look around the house
-
-```
-tatemonos/        every tatemono: <name>/core.tsx (plus assets)
-engine/
-  frontend/       the web, mobile and desktop stacks
-  backend/        Laravel, Express and FastAPI implementations; Spring Boot, ASP.NET Core, Go and Rust targets
-projects/         exported, standalone projects
-mizumi.js         the friendly front door (the menu is bilingual: English / 日本語)
-start.js          starts the backend, the queue, real-time and the frontends
-setup.js          one-time setup
-export.js         turns a tatemono into a standalone project
-pluffy-*.js       the AI tools
-PLUFF_GUIDELINES_v13.md  the full language reference
-```
-
----
-
-## Where to begin
-
-Come in through the front door:
-
-```bash
-node mizumi.js
-```
-
-It will show you what's available, and from there you can set things up, start the engine, switch stacks or generate a tatemono.
-
-When you want to learn the language itself, `PLUFF_GUIDELINES_v13.md` is the reference. It covers every block a tatemono can contain.
-
-Pluffy runs on Windows, Linux and Termux on Android. It needs Node. Python 3 is required for FastAPI;
-PHP with Composer is required for the Laravel reference backend or React-Inertia; Express uses Node and npm.
+Explore the [Tatemono examples](./tatemonos/) or browse the [language reference](./PLUFF_GUIDELINES_v13.md).
 
 ---
 
@@ -122,5 +83,3 @@ Samples of what Pluff made so far:
 
 as the engine and its ai improve so as the output
 (the future PLUFFY ex Arkzen output will show here)
-
-

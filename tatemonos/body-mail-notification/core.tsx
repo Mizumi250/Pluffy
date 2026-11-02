@@ -380,6 +380,115 @@ await SendLog.where('user_id', user.id if user else None).delete()
 return response.json({'message': 'Log cleared'})
 /* @arkzen:endpoint:py:clearLog:end */
 
+/* @arkzen:endpoint:java:sendMail
+*/
+Map<String, Object> validated = request.validate(mapOf(
+    "mail", "required|string|in:welcome,receipt,alert",
+    "to", "required|email"
+));
+String mailKey = String.valueOf(validated.get("mail"));
+Map<String, Object> template = mailTemplates.get(mailKey);
+if (template == null) {
+    return response.json(mapOf("message", "Unknown mail type: " + mailKey), 422);
+}
+Map<String, Object> mailData = switch (mailKey) {
+    case "welcome" -> mapOf("name", "Test User", "app_name", "Arkzen");
+    case "receipt" -> mapOf("order_id", "ORD-001", "amount", "$9.99", "item_name", "Arkzen Test Item");
+    case "alert" -> mapOf("alert_message", "This is a test alert from Arkzen.", "action_url", "/");
+    default -> mapOf();
+};
+Model user = request.authUser();
+String to = String.valueOf(validated.get("to"));
+String mailClass = studly(mailKey) + "Mail";
+try {
+    Mail.send(to, template, mailData);
+    SendLog log = SendLog.create(mapOf(
+        "user_id", user == null ? null : user.get("id"),
+        "to_email", to,
+        "subject", mailKey,
+        "mail_class", mailClass,
+        "kind", "mail",
+        "status", "sent"
+    ));
+    return response.json(log, 201);
+} catch (Exception error) {
+    SendLog log = SendLog.create(mapOf(
+        "user_id", user == null ? null : user.get("id"),
+        "to_email", to,
+        "subject", mailKey,
+        "mail_class", mailClass,
+        "kind", "mail",
+        "status", "failed",
+        "error", String.valueOf(error.getMessage())
+    ));
+    return response.json(log, 201);
+}
+/* @arkzen:endpoint:java:sendMail:end */
+
+/* @arkzen:endpoint:java:notify
+*/
+Map<String, Object> validated = request.validate(mapOf(
+    "notification", "required|string|in:action-required,summary",
+    "message", "sometimes|string|max:255"
+));
+Model user = request.authUser();
+String notificationKey = String.valueOf(validated.get("notification"));
+String notificationClass = studly(notificationKey) + "Notification";
+Object rawMessage = validated.get("message");
+String message = rawMessage == null
+    ? ("action-required".equals(notificationKey)
+        ? "You have a pending action that requires your attention."
+        : "Here is your latest activity summary.")
+    : String.valueOf(rawMessage);
+String subject = "action-required".equals(notificationKey)
+    ? "⚠ Action Required — toMail_body injection test"
+    : "📊 Activity Summary — toMail_body injection test";
+String template = "action-required".equals(notificationKey)
+    ? "<p>Hello!</p><p>{{ $message }}</p><p>This toMail() body was injected via the Arkzen DSL — not a stub.</p><p><a href=\"/\">Review Now</a></p><p>NotificationBuilder v3.9 toMail_body injection confirmed ✓</p>"
+    : "<p>Hi there!</p><p>{{ $message }}</p><p>Notifications: 2 unread | Mails: 3 sent | Status: All healthy</p><p><a href=\"/\">View Dashboard</a></p><p>Cheers, Arkzen Engine</p>";
+try {
+    Mail.send(user.str("email"), mapOf("subject", subject, "template", template), mapOf("message", message));
+    String now = sqlNow();
+    DB.table("notifications").insert(mapOf(
+        "id", java.util.UUID.randomUUID().toString(),
+        "type", notificationClass,
+        "notifiable_type", user.getClass().getName(),
+        "notifiable_id", user.get("id"),
+        "data", Json.stringify(mapOf("message", message, "type", notificationClass)),
+        "read_at", null,
+        "created_at", now,
+        "updated_at", now
+    ));
+    SendLog log = SendLog.create(mapOf(
+        "user_id", user.get("id"),
+        "to_email", user.str("email"),
+        "subject", notificationKey,
+        "mail_class", notificationClass,
+        "kind", "notification",
+        "status", "sent"
+    ));
+    return response.json(log, 201);
+} catch (Exception error) {
+    SendLog log = SendLog.create(mapOf(
+        "user_id", user.get("id"),
+        "to_email", user.str("email"),
+        "subject", notificationKey,
+        "mail_class", notificationClass,
+        "kind", "notification",
+        "status", "failed",
+        "error", String.valueOf(error.getMessage())
+    ));
+    return response.json(log, 201);
+}
+/* @arkzen:endpoint:java:notify:end */
+
+/* @arkzen:endpoint:java:clearLog
+*/
+Model user = request.authUser();
+SendLog.query().where("user_id", user == null ? null : user.get("id")).delete();
+return response.json(mapOf("message", "Log cleared"));
+/* @arkzen:endpoint:java:clearLog:end */
+
 /* @arkzen:mail:php:welcome
 subject: "Welcome to Arkzen — blade_body injection test"
 data:
@@ -589,6 +698,133 @@ data:
 </body>
 </html>
 /* @arkzen:mail:py:alert:end */
+
+/* @arkzen:mail:java:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f8fafc; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; color: #1e293b; margin-bottom: 8px; }
+    p { color: #475569; line-height: 1.6; }
+    .badge { display: inline-block; background: #0f172a; color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome, {{ $name }}!</h1>
+    <p>You are now part of <strong>{{ $app_name }}</strong>. This email was generated from a <code>blade_body</code> block injected via the Arkzen DSL — no manually created Blade file required.</p>
+    <span class="badge">✓ blade_body injection works</span>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:java:welcome:end */
+
+/* @arkzen:mail:java:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f0fdf4; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border: 1px solid #bbf7d0; }
+    h1 { color: #15803d; font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    td { padding: 8px 0; border-bottom: 1px solid #f0fdf4; color: #374151; }
+    td:last-child { text-align: right; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧾 Receipt #{{ $order_id }}</h1>
+    <table>
+      <tr><td>Item</td><td>{{ $item_name }}</td></tr>
+      <tr><td>Amount</td><td>{{ $amount }}</td></tr>
+      <tr><td>Status</td><td>✅ Paid</td></tr>
+    </table>
+    <p style="margin-top:16px;font-size:12px;color:#6b7280;">blade_body injected receipt — no stub used.</p>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:java:receipt:end */
+
+/* @arkzen:mail:java:alert
+subject: "⚠ Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
+*/
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #fff7ed; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border-left: 4px solid #f97316; }
+    h1 { color: #c2410c; font-size: 18px; }
+    p { color: #374151; }
+    a { display: inline-block; margin-top: 16px; background: #f97316; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚠ Action Required</h1>
+    <p>{{ $alert_message }}</p>
+    <a href="{{ $action_url }}">Take Action</a>
+    <p style="margin-top:16px;font-size:12px;color:#9ca3af;">Injected via blade_body — MailBuilder v3.1 test.</p>
+  </div>
+</body>
+</html>
+/* @arkzen:mail:java:alert:end */
+
+/* @arkzen:notifications:java:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
+subject: "Action Required"
+*/
+return mapOf(
+    "subject", "⚠ Action Required — toMail_body injection test",
+    "greeting", "Hello!",
+    "lines", List.of(
+        "You have a pending action that requires your attention.",
+        "This toMail() body was injected via the Arkzen DSL — not a stub.",
+        "NotificationBuilder v3.9 toMail_body injection confirmed ✓"
+    ),
+    "action", mapOf("label", "Review Now", "url", "/")
+);
+/* @arkzen:notifications:java:action-required:end */
+
+/* @arkzen:notifications:java:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
+subject: "Activity Summary"
+*/
+return mapOf(
+    "subject", "📊 Activity Summary — toMail_body injection test",
+    "greeting", "Hi there!",
+    "lines", List.of(
+        "Here is your latest activity summary.",
+        "Notifications: 2 unread | Mails: 3 sent | Status: All healthy"
+    ),
+    "action", mapOf("label", "View Dashboard", "url", "/"),
+    "salutation", "Cheers, Arkzen Engine"
+);
+/* @arkzen:notifications:java:summary:end */
 
 /* @arkzen:notifications:php:action-required
 channels: [mail, database]

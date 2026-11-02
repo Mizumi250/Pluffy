@@ -1,6 +1,9 @@
 package dev.pluff.engine;
 
 import dev.pluff.runtime.Database;
+import dev.pluff.runtime.CommandRegistry;
+import dev.pluff.runtime.EventDispatcher;
+import dev.pluff.runtime.JobDispatcher;
 import dev.pluff.runtime.Log;
 import dev.pluff.runtime.Router;
 import dev.pluff.runtime.Support;
@@ -162,6 +165,9 @@ public final class Build {
     String slug = name(payload);
     if (!slug.matches("[a-z0-9][a-z0-9-]*")) throw new IllegalArgumentException("Invalid tatemono name: " + slug);
     ROUTERS.remove(slug);
+    CommandRegistry.unregister(slug);
+    JobDispatcher.unregister(slug);
+    EventDispatcher.unregister(slug);
     URLClassLoader loader = LOADERS.remove(slug);
     if (loader != null) loader.close();
     deleteTree(GENERATED.resolve(slug));

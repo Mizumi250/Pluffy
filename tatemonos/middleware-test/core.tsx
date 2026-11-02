@@ -59,6 +59,17 @@ if (!$request->isJson()) {
 return $next($request);
 /* @arkzen:middleware:php:requireJson:end */
 
+/* @arkzen:middleware:java:requireJson
+*/
+if (!request.isJson()) {
+    return response.json(mapOf(
+        "message", "Content-Type: application/json is required for this endpoint.",
+        "hint", "Set the Content-Type header to application/json"
+    ), 415);
+}
+return next.run();
+/* @arkzen:middleware:java:requireJson:end */
+
 /* @arkzen:middleware:ts:requireJson
 */
 return next()

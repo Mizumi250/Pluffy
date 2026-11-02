@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — WorkChapter
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T06:15:06.070Z
+// Generated: 2026-11-02T09:55:58.328Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

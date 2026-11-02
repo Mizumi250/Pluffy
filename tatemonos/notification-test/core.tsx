@@ -60,6 +60,16 @@ subject: "Database Ping"
 */
 /* @arkzen:notifications:database-ping:end */
 
+/* @arkzen:notifications:php:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('Database Ping')
+    ->line('You have a new database notification');
+/* @arkzen:notifications:php:database-ping:end */
+
 /* @arkzen:notifications:ts:database-ping
 channels: [database]
 message: "You have a new database notification"
@@ -74,6 +84,18 @@ message: "This is a test mail notification"
 subject: "Mail Ping from Arkzen"
 */
 /* @arkzen:notifications:mail-ping:end */
+
+/* @arkzen:notifications:php:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('Mail Ping from Arkzen')
+    ->line('This is a test mail notification')
+    ->action('View', url('/'))
+    ->line('Thank you for using our application.');
+/* @arkzen:notifications:php:mail-ping:end */
 
 /* @arkzen:notifications:ts:mail-ping
 channels: [mail]
@@ -90,6 +112,17 @@ message: "Real-time notification received on your private channel!"
 subject: "Broadcast Ping (Private)"
 */
 /* @arkzen:notifications:broadcast-ping:end */
+
+/* @arkzen:notifications:php:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('Broadcast Ping (Private)')
+    ->line('Real-time notification received on your private channel!');
+/* @arkzen:notifications:php:broadcast-ping:end */
 
 /* @arkzen:notifications:ts:broadcast-ping
 channels: [broadcast, database]
@@ -108,6 +141,17 @@ subject: "Broadcast Ping (Public)"
 */
 /* @arkzen:notifications:broadcast-ping-public:end */
 
+/* @arkzen:notifications:php:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('Broadcast Ping (Public)')
+    ->line('This broadcast went to the public notification channel!');
+/* @arkzen:notifications:php:broadcast-ping-public:end */
+
 /* @arkzen:notifications:ts:broadcast-ping-public
 channels: [broadcast, database]
 channel_type: public
@@ -124,6 +168,19 @@ message: "This notification was sent to all three channels simultaneously"
 subject: "All Channels Test"
 */
 /* @arkzen:notifications:all-channels:end */
+
+/* @arkzen:notifications:php:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return (new \Illuminate\Notifications\Messages\MailMessage)
+    ->subject('All Channels Test')
+    ->line('This notification was sent to all three channels simultaneously')
+    ->action('View', url('/'))
+    ->line('Thank you for using our application.');
+/* @arkzen:notifications:php:all-channels:end */
 
 /* @arkzen:notifications:ts:all-channels
 channels: [database, mail, broadcast]
@@ -176,6 +233,59 @@ subject: "All Channels Test"
 */
 return MailMessage().subject('All Channels Test').line('This notification was sent to all three channels simultaneously')
 /* @arkzen:notifications:py:all-channels:end */
+
+/* @arkzen:notifications:java:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return new MailMessage()
+    .subject("Database Ping")
+    .line("You have a new database notification");
+/* @arkzen:notifications:java:database-ping:end */
+
+/* @arkzen:notifications:java:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return new MailMessage()
+    .subject("Mail Ping from Arkzen")
+    .line("This is a test mail notification");
+/* @arkzen:notifications:java:mail-ping:end */
+
+/* @arkzen:notifications:java:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return new MailMessage()
+    .subject("Broadcast Ping (Private)")
+    .line("Real-time notification received on your private channel!");
+/* @arkzen:notifications:java:broadcast-ping:end */
+
+/* @arkzen:notifications:java:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return new MailMessage()
+    .subject("Broadcast Ping (Public)")
+    .line("This broadcast went to the public notification channel!");
+/* @arkzen:notifications:java:broadcast-ping-public:end */
+
+/* @arkzen:notifications:java:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return new MailMessage()
+    .subject("All Channels Test")
+    .line("This notification was sent to all three channels simultaneously");
+/* @arkzen:notifications:java:all-channels:end */
 
 /* @arkzen:web:components:shared */
 

@@ -6,6 +6,9 @@ import static dev.pluff.runtime.Support.*;
 public final class GeneratedModule {
   private GeneratedModule() {}
   public static Router createRouter() throws Exception {
+    JobDispatcher.unregister("middleware-test");
+    EventDispatcher.unregister("middleware-test");
+    CommandRegistry.unregister("middleware-test");
     Router router = new Router("middleware-test");
     Map<String, Map<String, Object>> mailTemplates = mailTemplates();
     router.add("GET", "/api/middleware-test/ping", List.of(customMiddleware("requireJson")), (request, response) -> {
@@ -23,7 +26,28 @@ public final class GeneratedModule {
     Map<String, Map<String, Object>> templates = new LinkedHashMap<>();
     return templates;
   }
-  private static Router.Middleware customMiddleware(String name) {
-    throw new IllegalArgumentException("Unknown middleware: " + name);
+  private static Router.Middleware customMiddleware(String name) throws Exception {
+    return switch (name) {
+      case "requireJson" -> (request, response, next) -> {
+        if (!request.isJson()) {
+            return response.json(mapOf(
+                "message", "Content-Type: application/json is required for this endpoint.",
+                "hint", "Set the Content-Type header to application/json"
+            ), 415);
+        }
+        return next.run();
+      };
+      default -> throw new IllegalArgumentException("Unknown middleware: " + name);
+    };
+  }
+  private static Notification notificationFor(String name) {
+    return switch (name) {
+      default -> null;
+    };
+  }
+  private static Map<String, Object> objectMap(Object value) {
+    Map<String, Object> out = new LinkedHashMap<>();
+    if (value instanceof Map<?, ?> values) values.forEach((key, item) -> out.put(String.valueOf(key), item));
+    return out;
   }
 }

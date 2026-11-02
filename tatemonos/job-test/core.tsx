@@ -72,6 +72,14 @@ return response()->json($results);
 return response.json({ ok: true, endpoint: 'index', input: request.all() })
 /* @arkzen:endpoint:ts:index:end */
 
+/* @arkzen:endpoint:java:index
+*/
+Map<String, Object> results = JobResult.query()
+    .orderBy("created_at", "desc")
+    .paginate(request.input("per_page", 15), request.input("page", 1), request.url());
+return response.json(results);
+/* @arkzen:endpoint:java:index:end */
+
 /* @arkzen:endpoint:py:index
 */
 query = JobResult.query().order_by('created_at', 'desc')
@@ -116,6 +124,22 @@ await JobResult.create({
   processed_at: now(),
 })
 /* @arkzen:jobs:ts:process-data:end */
+
+/* @arkzen:jobs:java:process-data
+queue: default
+tries: 3
+timeout: 30
+*/
+long start = System.nanoTime();
+Thread.sleep(2000);
+long elapsedMillis = (System.nanoTime() - start) / 1_000_000;
+JobResult.create(mapOf(
+    "job_name", "process-data",
+    "status", "completed",
+    "result", "Data processed successfully in " + elapsedMillis + "ms",
+    "processed_at", sqlNow()
+));
+/* @arkzen:jobs:java:process-data:end */
 
 /* @arkzen:jobs:py:process-data
 queue: default
@@ -169,6 +193,22 @@ await JobResult.create({
 })
 /* @arkzen:jobs:ts:heavy-computation:end */
 
+/* @arkzen:jobs:java:heavy-computation
+queue: heavy
+tries: 1
+timeout: 120
+*/
+long start = System.nanoTime();
+Thread.sleep(5000);
+long elapsedMillis = (System.nanoTime() - start) / 1_000_000;
+JobResult.create(mapOf(
+    "job_name", "heavy-computation",
+    "status", "completed",
+    "result", "Heavy computation completed in " + elapsedMillis + "ms",
+    "processed_at", sqlNow()
+));
+/* @arkzen:jobs:java:heavy-computation:end */
+
 /* @arkzen:jobs:py:heavy-computation
 queue: heavy
 tries: 1
@@ -205,6 +245,14 @@ timeout: 10
 */
 Log.info('[Express] always-fails', this.data)
 /* @arkzen:jobs:ts:always-fails:end */
+
+/* @arkzen:jobs:java:always-fails
+queue: default
+tries: 2
+timeout: 10
+*/
+throw new IllegalStateException("This job always fails");
+/* @arkzen:jobs:java:always-fails:end */
 
 /* @arkzen:jobs:py:always-fails
 queue: default
