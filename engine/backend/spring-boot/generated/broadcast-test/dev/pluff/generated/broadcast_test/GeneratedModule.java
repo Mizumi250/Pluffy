@@ -22,8 +22,26 @@ public final class GeneratedModule {
     });
     router.add("POST", "/api/broadcast-test/messages", List.of(), (request, response) -> {
       Map<String, Object> validated = request.validate(Support.mapOf("content", "required|string|max:500", "channel_type", "sometimes|string|max:50"));
-      Message created = Message.create(validated);
-      return response.json(created, 201);
+      Object rawChannelType = validated.get("channel_type");
+      String channelType = rawChannelType == null || String.valueOf(rawChannelType).isBlank() ? "public" : String.valueOf(rawChannelType);
+      Map<String, String> channels = Map.ofEntries(Map.entry("public", "broadcast-test-public"), Map.entry("private", "broadcast-test"), Map.entry("presence", "broadcast-test-presence"));
+      Map<String, String> eventNames = Map.ofEntries(Map.entry("public", "broadcast-test.message-sent-public"), Map.entry("private", "broadcast-test.message-sent-private"), Map.entry("presence", "broadcast-test.message-sent-presence"));
+      Map<String, Boolean> channelHasIds = Map.ofEntries(Map.entry("public", false), Map.entry("private", true), Map.entry("presence", false));
+      if (!channels.containsKey(channelType)) return response.json(mapOf("message", "channel_type must be public, private, presence."), 422);
+      Map<String, Object> messageValues = new LinkedHashMap<>(validated);
+      messageValues.put("channel_type", channelType);
+      Message message = Message.create(messageValues);
+      Model user = request.authUser();
+      Broadcast.Event broadcastEvent = new Broadcast.Event() {};
+      broadcastEvent.tatemono = "broadcast-test";
+      broadcastEvent.eventName = eventNames.get(channelType);
+      broadcastEvent.channelType = channelType;
+      broadcastEvent.channel = channels.get(channelType);
+      broadcastEvent.channelHasId = Boolean.TRUE.equals(channelHasIds.get(channelType));
+      broadcastEvent.userId = user == null ? null : user.id();
+      broadcastEvent.data = objectMap(message.toJson());
+      Broadcast.broadcast(broadcastEvent);
+      return response.json(message, 201);
     });
     router.add("DELETE", "/api/broadcast-test/messages/{id}", List.of(), (request, response) -> {
       Message message = Message.findOrFail(request.route("id"));

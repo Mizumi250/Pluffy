@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE HOOKS — kotoba [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:24:15.799Z
+// Generated: 2026-11-02T10:56:16.316Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

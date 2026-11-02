@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — job-test [Expo]
 // Source: @arkzen:native:components (job-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:24:15.273Z
+// Generated: 2026-11-02T10:56:13.365Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

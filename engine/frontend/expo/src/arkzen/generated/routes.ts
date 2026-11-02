@@ -116,6 +116,12 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'notification-test', screenName: 'index', routePath: '/notification-test', layout: 'guest', auth: false },
 // ROUTE:portfolio-test:index:/portfolio-test:guest:false
   { tatName: 'portfolio-test', screenName: 'index', routePath: '/portfolio-test', layout: 'guest', auth: false },
+// ROUTE:queue-flow:index:/queue-flow:default:false
+  { tatName: 'queue-flow', screenName: 'index', routePath: '/queue-flow', layout: 'default', auth: false },
+// ROUTE:queue-flow:join:/queue-flow/join:default:false
+  { tatName: 'queue-flow', screenName: 'join', routePath: '/queue-flow/join', layout: 'default', auth: false },
+// ROUTE:queue-flow:admin:/queue-flow/admin:default:false
+  { tatName: 'queue-flow', screenName: 'admin', routePath: '/queue-flow/admin', layout: 'default', auth: false },
 // ROUTE:roles-test:login:/roles-test/login:guest:false
   { tatName: 'roles-test', screenName: 'login', routePath: '/roles-test/login', layout: 'guest', auth: false },
 // ROUTE:roles-test:register:/roles-test/register:guest:false
@@ -134,12 +140,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'upload-test', screenName: 'dashboard', routePath: '/upload-test/dashboard', layout: 'default', auth: false },
 // ROUTE:upload-test:index:/upload-test:default:false
   { tatName: 'upload-test', screenName: 'index', routePath: '/upload-test', layout: 'default', auth: false },
-// ROUTE:queue-flow:index:/queue-flow:default:false
-  { tatName: 'queue-flow', screenName: 'index', routePath: '/queue-flow', layout: 'default', auth: false },
-// ROUTE:queue-flow:join:/queue-flow/join:default:false
-  { tatName: 'queue-flow', screenName: 'join', routePath: '/queue-flow/join', layout: 'default', auth: false },
-// ROUTE:queue-flow:admin:/queue-flow/admin:default:false
-  { tatName: 'queue-flow', screenName: 'admin', routePath: '/queue-flow/admin', layout: 'default', auth: false },
 ]
 
 export function getLoginRoute(tatName: string): string {

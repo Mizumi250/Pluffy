@@ -66,24 +66,6 @@ endpoints:
       value: Message deleted
 */
 
-/* @arkzen:endpoint:py:store
-*/
-validated = await request.validate({
-    'content': 'required|string|max:500',
-    'channel_type': 'sometimes|string|max:50',
-})
-channel_type = validated.get('channel_type') or 'public'
-event_class = MessageSentEvents.get(channel_type)
-if event_class is None:
-    raise HttpException(422, 'channel_type must be public, private, or presence.')
-message = await Message.create({**validated, 'channel_type': channel_type})
-user = await request.auth_user()
-broadcast_event = event_class(message.to_json())
-broadcast_event.user_id = user.id if user else None
-broadcast(broadcast_event)
-return response.json(message, 201)
-/* @arkzen:endpoint:py:store:end */
-
 /* @arkzen:realtime:broadcast-test-public
 type: public
 */

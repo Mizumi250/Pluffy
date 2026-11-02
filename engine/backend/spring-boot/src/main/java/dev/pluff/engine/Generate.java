@@ -190,14 +190,66 @@ public final class Generate {
     return matcher.matches() ? matcher.group(1) : "15";
   }
 
+  private static String broadcastEndpointBody(String model, Map<String, Object> endpoint, String slug,
+                                             List<Object> rawRealtimes) {
+    Map<String, String> channels = new LinkedHashMap<>();
+    Map<String, String> eventNames = new LinkedHashMap<>();
+    Map<String, Boolean> channelHasIds = new LinkedHashMap<>();
+    for (Map.Entry<String, Map<String, Object>> entry : sections(rawRealtimes).entrySet()) {
+      Map<String, Object> config = entry.getValue();
+      if (!config.containsKey("channel")) continue;
+      String type = text(config.get("type"), "public");
+      if (!Set.of("public", "private", "presence").contains(type) || channels.containsKey(type)) continue;
+      String channel = String.valueOf(config.get("channel"));
+      boolean hasId = channel.endsWith(".{id}");
+      if (hasId) channel = channel.substring(0, channel.length() - ".{id}".length());
+      channels.put(type, channel);
+      eventNames.put(type, slug + "." + entry.getKey());
+      channelHasIds.put(type, hasId);
+    }
+
+    Map<String, Object> rules = map(endpoint.get("validation"));
+    List<String> channelIdEntries = new ArrayList<>();
+    for (Map.Entry<String, Boolean> entry : channelHasIds.entrySet()) {
+      channelIdEntries.add("Map.entry(" + quote(entry.getKey()) + ", " + entry.getValue() + ")");
+    }
+    String channelIdLiteral = channelIdEntries.isEmpty()
+        ? "Map.of()"
+        : "Map.ofEntries(" + String.join(", ", channelIdEntries) + ")";
+    return "Map<String, Object> validated = request.validate(" + mapLiteral(rules) + ");\n"
+        + "Object rawChannelType = validated.get(\"channel_type\");\n"
+        + "String channelType = rawChannelType == null || String.valueOf(rawChannelType).isBlank() "
+        + "? \"public\" : String.valueOf(rawChannelType);\n"
+        + "Map<String, String> channels = " + stringMapLiteral(channels) + ";\n"
+        + "Map<String, String> eventNames = " + stringMapLiteral(eventNames) + ";\n"
+        + "Map<String, Boolean> channelHasIds = " + channelIdLiteral + ";\n"
+        + "if (!channels.containsKey(channelType)) return response.json(mapOf(\"message\", "
+        + quote("channel_type must be " + String.join(", ", channels.keySet()) + ".") + "), 422);\n"
+        + "Map<String, Object> messageValues = new LinkedHashMap<>(validated);\n"
+        + "messageValues.put(\"channel_type\", channelType);\n"
+        + model + " message = " + model + ".create(messageValues);\n"
+        + "Model user = request.authUser();\n"
+        + "Broadcast.Event broadcastEvent = new Broadcast.Event() {};\n"
+        + "broadcastEvent.tatemono = " + quote(slug) + ";\n"
+        + "broadcastEvent.eventName = eventNames.get(channelType);\n"
+        + "broadcastEvent.channelType = channelType;\n"
+        + "broadcastEvent.channel = channels.get(channelType);\n"
+        + "broadcastEvent.channelHasId = Boolean.TRUE.equals(channelHasIds.get(channelType));\n"
+        + "broadcastEvent.userId = user == null ? null : user.id();\n"
+        + "broadcastEvent.data = objectMap(message.toJson());\n"
+        + "Broadcast.broadcast(broadcastEvent);\n"
+        + "return response.json(message, 201);";
+  }
+
   private static String endpointBody(String model, String endpointName, Map<String, Object> endpoint,
-                                     String slug, boolean usePolicy) {
+                                     String slug, boolean usePolicy, List<Object> rawRealtimes) {
     String body = bodyStatements(text(endpoint.get("body"), null));
     if (body != null) return body;
 
     String variable = snake(model);
     String name = endpointName.toLowerCase();
     String type = text(endpoint.get("type"), "");
+    if ("broadcast".equals(type)) return broadcastEndpointBody(model, endpoint, slug, rawRealtimes);
     if ("job_dispatch".equals(type)) {
       return "Map<String, Object> validated = request.validate(mapOf(\"job\", \"required|string\"));\n"
           + "String jobName = String.valueOf(validated.get(\"job\")).replace('_', '-');\n"
@@ -375,7 +427,7 @@ public final class Generate {
         List<String> middleware = new ArrayList<>();
         for (Object rawName : list(api.get("middleware"))) middleware.add(String.valueOf(rawName).trim());
         String code = endpointBody(model, endpointEntry.getKey(), endpoint,
-            text(payload.get("name"), ""), enabled(api.get("policy")));
+            text(payload.get("name"), ""), enabled(api.get("policy")), list(payload.get("realtimes")));
         routes.add(new RouterRoute(method, path, middleware, code));
       }
     }
