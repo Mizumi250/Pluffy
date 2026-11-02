@@ -33,12 +33,18 @@ public sealed class TatemonoDatabase
         }
 
         await connection.OpenAsync(cancellationToken);
+        if (_driver == "sqlite")
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = "PRAGMA foreign_keys = ON";
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
         return connection;
     }
 
     public async Task ApplySchemaAsync(DbConnection connection, string slug, JsonArray databases, CancellationToken cancellationToken)
     {
-        foreach (var definition in databases.OfType<JsonObject>())
+        foreach (var definition in OrderDefinitions(slug, databases.OfType<JsonObject>().ToList()))
         {
             var table = RequiredIdentifier(StringValue(definition["table"]), "database table");
             var columns = definition["columns"] as JsonObject ?? new JsonObject();
@@ -64,7 +70,19 @@ public sealed class TatemonoDatabase
                 if (config["unique"]?.GetValue<bool>() == true) pieces.Add("UNIQUE");
                 if (config["default"] is JsonValue defaultValue)
                     pieces.Add($"DEFAULT {SqlLiteral(defaultValue)}");
-                definitions.Add(string.Join(' ', pieces));
+                if (StringValue(config["foreign"]) is { } foreign)
+                {
+                    var separator = foreign.IndexOf('.');
+                    var referenceTable = separator < 0 ? foreign : foreign[..separator];
+                    var referenceColumn = separator < 0 || separator == foreign.Length - 1
+                        ? "id"
+                        : foreign[(separator + 1)..];
+                    var onDelete = (StringValue(config["onDelete"]) ?? "cascade").ToUpperInvariant();
+                    if (onDelete is not ("CASCADE" or "RESTRICT" or "SET NULL" or "SET DEFAULT" or "NO ACTION"))
+                        throw new InvalidOperationException($"Unsupported foreign-key onDelete action \"{onDelete}\".");
+                    pieces.Add($"REFERENCES {Quote(PrefixedTable(slug, referenceTable))} ({Quote(referenceColumn)}) ON DELETE {onDelete}");
+                }
+                definitions.Add(string.Join(" ", pieces));
             }
 
             if (definition["timestamps"]?.GetValue<bool>() != false)
@@ -80,6 +98,7 @@ public sealed class TatemonoDatabase
             command.CommandText = $"CREATE TABLE IF NOT EXISTS {Quote(tableName)} ({string.Join(", ", definitions)})";
             await command.ExecuteNonQueryAsync(cancellationToken);
             await AddMissingColumnsAsync(connection, tableName, columns, cancellationToken);
+            await ApplyIndexesAsync(connection, tableName, definition["indexes"] as JsonArray, cancellationToken);
         }
     }
 
@@ -182,7 +201,7 @@ public sealed class TatemonoDatabase
 
     public async Task SeedTablesAsync(DbConnection connection, string slug, JsonArray databases, CancellationToken cancellationToken)
     {
-        foreach (var definition in databases.OfType<JsonObject>())
+        foreach (var definition in OrderDefinitions(slug, databases.OfType<JsonObject>().ToList()))
         {
             if (definition["seeder"]?["data"] is not JsonArray rows || rows.Count == 0) continue;
             var table = Quote(PrefixedTable(slug, StringValue(definition["table"]) ?? ""));
@@ -231,8 +250,83 @@ public sealed class TatemonoDatabase
         if (File.Exists(file)) File.Delete(file);
     }
 
-    public static string PrefixedTable(string slug, string table) =>
-        RequiredIdentifier($"{slug.Replace('-', '_')}_{table}", "table");
+    public static string PrefixedTable(string slug, string table)
+    {
+        var prefix = RequiredIdentifier(slug.Replace('-', '_'), "table prefix");
+        var name = RequiredIdentifier(table, "table");
+        return name.StartsWith(prefix + "_", StringComparison.OrdinalIgnoreCase)
+            ? name
+            : RequiredIdentifier($"{prefix}_{name}", "table");
+    }
+
+    private async Task ApplyIndexesAsync(
+        DbConnection connection,
+        string table,
+        JsonArray? indexes,
+        CancellationToken cancellationToken)
+    {
+        foreach (var index in indexes ?? new JsonArray())
+        {
+            var config = index as JsonObject;
+            var rawColumns = config?["columns"] ?? config?["column"] ?? index;
+            string[] columns;
+            if (rawColumns is JsonArray array)
+            {
+                columns = array.Select(StringValue).Where(value => !string.IsNullOrWhiteSpace(value)).Cast<string>().ToArray();
+            }
+            else if (rawColumns is JsonValue value && StringValue(value) is { } name)
+            {
+                columns = [name];
+            }
+            else
+            {
+                columns = Array.Empty<string>();
+            }
+            if (columns.Length == 0) continue;
+
+            var safeColumns = columns.Select(name => RequiredIdentifier(name, "index column")).ToArray();
+            var unique = config?["unique"]?.GetValue<bool>() == true;
+            var indexName = RequiredIdentifier(
+                $"{table}_{string.Join('_', safeColumns)}_{(unique ? "unique" : "index")}",
+                "index");
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"CREATE {(unique ? "UNIQUE " : "")}INDEX IF NOT EXISTS {Quote(indexName)} ON {Quote(table)} ({string.Join(", ", safeColumns.Select(Quote))})";
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
+    private static IReadOnlyList<JsonObject> OrderDefinitions(string slug, IReadOnlyList<JsonObject> definitions)
+    {
+        var byTable = definitions
+            .Where(definition => !string.IsNullOrWhiteSpace(StringValue(definition["table"])))
+            .GroupBy(definition => StringValue(definition["table"])!, StringComparer.OrdinalIgnoreCase)
+            .ToDictionary(group => group.Key, group => group.First(), StringComparer.OrdinalIgnoreCase);
+        foreach (var (table, definition) in byTable.ToArray())
+            byTable.TryAdd(PrefixedTable(slug, table), definition);
+        var ordered = new List<JsonObject>();
+        var visited = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var visiting = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void Visit(JsonObject definition)
+        {
+            var table = StringValue(definition["table"])!;
+            if (visited.Contains(table) || !visiting.Add(table)) return;
+            foreach (var column in (definition["columns"] as JsonObject ?? new JsonObject()).Select(pair => pair.Value as JsonObject))
+            {
+                var foreign = StringValue(column?["foreign"]);
+                if (string.IsNullOrWhiteSpace(foreign)) continue;
+                var separator = foreign.IndexOf('.');
+                var reference = separator < 0 ? foreign : foreign[..separator];
+                if (byTable.TryGetValue(reference, out var dependency)) Visit(dependency);
+            }
+            visiting.Remove(table);
+            visited.Add(table);
+            ordered.Add(definition);
+        }
+
+        foreach (var definition in definitions) Visit(definition);
+        return ordered;
+    }
 
     private async Task AddMissingColumnsAsync(DbConnection connection, string table, JsonObject columns, CancellationToken cancellationToken)
     {

@@ -250,6 +250,100 @@ user.update(mapOf("role", "user"));
 return response.json(mapOf("message", "Demoted to user", "user", user.fresh()));
 /* @arkzen:endpoint:java:demote:end */
 
+/* @arkzen:endpoint:cs:adminOnly
+*/
+var granted = user is not null && user["role"]?.ToString() == "admin";
+var auditUserId = long.TryParse(user?["id"]?.ToString(), out var parsedAuditUserId)
+    ? parsedAuditUserId
+    : (long?)null;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "roles_test_role_audit_logs" (user_id, action, role_required, granted, created_at, updated_at)
+    VALUES (@user_id, @action, @role_required, @granted, @created, @updated)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@user_id"] = auditUserId,
+        ["@action"] = "GET /admin-only",
+        ["@role_required"] = "admin",
+        ["@granted"] = granted,
+        ["@created"] = DateTime.UtcNow,
+        ["@updated"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+if (!granted)
+    return Results.Json(new { message = "Access denied — admin role required" }, statusCode: 403);
+return Results.Json(new { message = "Access granted — you are admin" });
+/* @arkzen:endpoint:cs:adminOnly:end */
+
+/* @arkzen:endpoint:cs:userOnly
+*/
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var userId = long.Parse(user["id"]!.ToString());
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "roles_test_role_audit_logs" (user_id, action, role_required, granted, created_at, updated_at)
+    VALUES (@user_id, @action, @role_required, @granted, @created, @updated)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@user_id"] = userId,
+        ["@action"] = "GET /user-only",
+        ["@role_required"] = "user",
+        ["@granted"] = true,
+        ["@created"] = DateTime.UtcNow,
+        ["@updated"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return Results.Json(new { message = "Access granted — open to all authenticated users" });
+/* @arkzen:endpoint:cs:userOnly:end */
+
+/* @arkzen:endpoint:cs:promote
+*/
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var userId = long.Parse(user["id"]!.ToString());
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    "UPDATE \"roles_test_users\" SET role = @role, updated_at = @updated WHERE id = @id",
+    new Dictionary<string, object?>
+    {
+        ["@role"] = "admin",
+        ["@updated"] = DateTime.UtcNow,
+        ["@id"] = userId
+    },
+    Context.RequestAborted);
+var promoted = (await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT id, name, email, role, created_at, updated_at FROM \"roles_test_users\" WHERE id = @id",
+    new Dictionary<string, object?> { ["@id"] = userId },
+    Context.RequestAborted)).FirstOrDefault();
+return Results.Json(new { message = "Promoted to admin", user = promoted });
+/* @arkzen:endpoint:cs:promote:end */
+
+/* @arkzen:endpoint:cs:demote
+*/
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var userId = long.Parse(user["id"]!.ToString());
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    "UPDATE \"roles_test_users\" SET role = @role, updated_at = @updated WHERE id = @id",
+    new Dictionary<string, object?>
+    {
+        ["@role"] = "user",
+        ["@updated"] = DateTime.UtcNow,
+        ["@id"] = userId
+    },
+    Context.RequestAborted);
+var demoted = (await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT id, name, email, role, created_at, updated_at FROM \"roles_test_users\" WHERE id = @id",
+    new Dictionary<string, object?> { ["@id"] = userId },
+    Context.RequestAborted)).FirstOrDefault();
+return Results.Json(new { message = "Demoted to user", user = demoted });
+/* @arkzen:endpoint:cs:demote:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

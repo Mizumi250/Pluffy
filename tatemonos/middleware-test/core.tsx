@@ -70,6 +70,17 @@ if (!request.isJson()) {
 return next.run();
 /* @arkzen:middleware:java:requireJson:end */
 
+/* @arkzen:middleware:cs:requireJson
+*/
+if (!Context.Request.HasJsonContentType())
+    return Results.Json(new
+    {
+        message = "Content-Type: application/json is required for this endpoint.",
+        hint = "Set the Content-Type header to application/json"
+    }, statusCode: 415);
+return null;
+/* @arkzen:middleware:cs:requireJson:end */
+
 /* @arkzen:middleware:ts:requireJson
 */
 return next()

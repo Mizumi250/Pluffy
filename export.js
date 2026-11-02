@@ -1645,7 +1645,7 @@ const tauriNote = isTauri
   ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
   : ''
 const aspnetNote = isAspnet
-  ? `\n> **ASP.NET Core status:** Auth, CRUD, and C# endpoint/middleware variants are supported. Policies, queues, realtime, and file storage still need ASP.NET implementations.\n`
+  ? `\n> **ASP.NET Core status:** Auth, CRUD validation, update/delete policies, and C# endpoint/middleware variants are supported. Queue/scheduler workers, realtime, and file storage still need ASP.NET implementations.\n`
   : ''
 const springNote = isSpring
   ? `\n> **Spring Boot status:** JDK 17+ and Apache Maven are required. The Spring Boot backend is work in progress: queues, realtime and file storage may not be implemented yet.\n`

@@ -616,6 +616,85 @@ orders = await JobOrder.query().where_not_null('appointment_order').order_by('ap
 return response.json(orders)
 /* @arkzen:endpoint:py:appointments:end */
 
+/* @arkzen:endpoint:cs:summary
+*/
+var activeOrders = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"jo_payroll_job_orders\" WHERE status = @status",
+    new Dictionary<string, object?> { ["@status"] = "active" },
+    Context.RequestAborted);
+var inactiveCount = await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"jo_payroll_job_orders\" WHERE status = @status",
+    new Dictionary<string, object?> { ["@status"] = "inactive" },
+    Context.RequestAborted);
+decimal Number(JsonObject row, string column) =>
+    decimal.TryParse(row[column]?.ToString(), System.Globalization.NumberStyles.Number,
+        System.Globalization.CultureInfo.InvariantCulture, out var value) ? value : 0m;
+var cashCount = activeOrders.Count(order => order["disbursement_type"]?.ToString() == "CASH");
+var atmCount = activeOrders.Count(order => order["disbursement_type"]?.ToString() == "ATM");
+var totalBasicPay = activeOrders.Sum(order => Number(order, "basic_pay"));
+var totalSss = activeOrders.Sum(order => Number(order, "sss_amount"));
+var totalHdmfPremium = activeOrders.Sum(order => Number(order, "hdmf_premium"));
+var totalHdmfMpl = activeOrders.Sum(order => Number(order, "hdmf_mpl"));
+var totalCalamityLoan = activeOrders.Sum(order => Number(order, "calamity_loan"));
+var fundingBreakdown = activeOrders
+    .GroupBy(order => order["funding"]?.ToString() ?? "")
+    .ToDictionary(group => group.Key, group => new
+    {
+        count = group.Count(),
+        total_pay = group.Sum(order => Number(order, "basic_pay"))
+    });
+var groupBreakdown = activeOrders
+    .GroupBy(order => order["jor_pyrl_group"]?.ToString() ?? "")
+    .ToDictionary(group => group.Key, group => group.Count());
+var totalDeductions = totalSss + totalHdmfPremium + totalHdmfMpl + totalCalamityLoan;
+return Results.Json(new
+{
+    total_active = activeOrders.Count,
+    total_inactive = inactiveCount,
+    total_atm = atmCount,
+    total_cash = cashCount,
+    total_basic_pay = totalBasicPay,
+    total_sss = totalSss,
+    total_hdmf_premium = totalHdmfPremium,
+    total_hdmf_mpl = totalHdmfMpl,
+    total_calamity_loan = totalCalamityLoan,
+    total_deductions = totalDeductions,
+    net_pay = totalBasicPay - totalDeductions,
+    funding_breakdown = fundingBreakdown,
+    group_breakdown = groupBreakdown
+});
+/* @arkzen:endpoint:cs:summary:end */
+
+/* @arkzen:endpoint:cs:byGroup
+*/
+var group = RouteValues.GetValueOrDefault("group");
+var ordersForGroup = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    SELECT * FROM "jo_payroll_job_orders"
+    WHERE jor_pyrl_group = @group AND status = @status
+    ORDER BY jor_number
+    """,
+    new Dictionary<string, object?> { ["@group"] = group, ["@status"] = "active" },
+    Context.RequestAborted);
+return Results.Json(ordersForGroup);
+/* @arkzen:endpoint:cs:byGroup:end */
+
+/* @arkzen:endpoint:cs:appointments
+*/
+var appointments = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    SELECT * FROM "jo_payroll_job_orders"
+    WHERE appointment_order IS NOT NULL
+    ORDER BY appointment_order
+    """,
+    cancellationToken: Context.RequestAborted);
+return Results.Json(appointments);
+/* @arkzen:endpoint:cs:appointments:end */
+
 /* @arkzen:web:layout:app */
 
 'use client'

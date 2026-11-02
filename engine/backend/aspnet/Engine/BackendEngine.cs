@@ -155,7 +155,7 @@ public sealed class BackendEngine
                 var source = DecodeBody(route["body"]);
                 if (string.IsNullOrWhiteSpace(source))
                     return await RespondNotImplementedAsync(context, $"Handler {StringValue(route["handler"]) ?? "handle"}");
-                await ExecuteSnippetAsync(context, slug, source, values);
+                await ExecuteSnippetAsync(context, slug, module, source, values);
                 return true;
             }
         }
@@ -267,20 +267,34 @@ public sealed class BackendEngine
                     var routeMethod = (StringValue(endpoint["method"]) ?? "GET").ToUpperInvariant();
                     var route = JoinPath(prefix, StringValue(endpoint["route"]) ?? "/");
                     if (method != routeMethod || !TryMatch(route, path, out var values)) continue;
-                    if (api["policy"]?.GetValue<bool>() == true)
-                        return await RespondNotImplementedAsync(context, $"Policy for {StringValue(api["model"]) ?? "API"}");
                     if (await RunMiddlewareAsync(context, module, api["middleware"] as JsonArray, slug, values)) return true;
+                    var type = StringValue(endpoint["type"]) ?? (name.ToLowerInvariant() switch
+                    {
+                        "index" => "index",
+                        "show" => "show",
+                        "store" => "store",
+                        "update" => "update",
+                        "destroy" => "destroy",
+                        _ => null
+                    });
+                    if (IsPolicyProtectedAction(type) &&
+                        await RunPolicyAsync(context, slug, api, module, type!, values)) return true;
                     var source = DecodeBody(endpoint["body"]);
                     if (string.IsNullOrWhiteSpace(source))
                     {
-                        var type = StringValue(endpoint["type"]);
                         if (type is not ("index" or "show" or "store" or "update" or "destroy"))
                             return await RespondNotImplementedAsync(context, $"Endpoint {name}");
-                        await ExecuteCrudAsync(context, slug, api, module, type!, values);
+                        await ExecuteCrudAsync(
+                            context, slug, api, module, type!, values,
+                            endpoint["validation"], endpoint["query"] as JsonObject, endpoint["response"] as JsonObject);
                     }
                     else
                     {
-                        await ExecuteSnippetAsync(context, slug, source, values);
+                        if (endpoint["validation"] is not null &&
+                            (routeMethod is "POST" or "PUT" or "PATCH") &&
+                            !await ValidateSnippetAsync(context, slug, api, module, endpoint, values))
+                            return true;
+                        await ExecuteSnippetAsync(context, slug, module, source, values);
                     }
                     return true;
                 }
@@ -304,16 +318,126 @@ public sealed class BackendEngine
             };
             if (crudType is null) continue;
             TryMatch(crudType is "show" or "update" or "destroy" ? idRoute : resourcePath, path, out var routeValues);
-            if (api["policy"]?.GetValue<bool>() == true)
-                return await RespondNotImplementedAsync(context, $"Policy for {model}");
             if (await RunMiddlewareAsync(context, module, api["middleware"] as JsonArray, slug, routeValues)) return true;
+            if (IsPolicyProtectedAction(crudType) &&
+                await RunPolicyAsync(context, slug, api, module, crudType, routeValues)) return true;
             await ExecuteCrudAsync(context, slug, api, module, crudType, routeValues);
             return true;
         }
         return false;
     }
 
-    private async Task ExecuteCrudAsync(HttpContext context, string slug, JsonObject api, JsonObject module, string action, IReadOnlyDictionary<string, string> routeValues)
+    private async Task<bool> RunPolicyAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string action,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        if (api["policy"]?.GetValue<bool>() != true) return false;
+        if (!routeValues.TryGetValue("id", out var routeId))
+            return await RespondNotImplementedAsync(context, $"Policy for {StringValue(api["model"]) ?? "API"} requires an id route value");
+
+        var model = StringValue(api["model"]) ?? "API";
+        var table = TatemonoDatabase.Quote(FindTable(slug, model, module));
+        var id = DbRouteValue(routeId);
+        var body = await ReadBodyAsync(context);
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var authenticated = await ResolveUserAsync(context, connection, slug, context.RequestAborted);
+
+        await using var find = connection.CreateCommand();
+        find.CommandText = $"SELECT * FROM {table} WHERE id = @id";
+        TatemonoDatabase.AddParameter(find, "@id", id);
+        await using var reader = await find.ExecuteReaderAsync(context.RequestAborted);
+        if (!await reader.ReadAsync(context.RequestAborted))
+        {
+            await Results.Json(new { message = "Not Found" }, statusCode: StatusCodes.Status404NotFound).ExecuteAsync(context);
+            return true;
+        }
+        var item = await ReadRowAsync(reader, context.RequestAborted);
+        await reader.DisposeAsync();
+
+        var policyName = action == "update" ? "update" : "delete";
+        var snippets = module["policySnippets"] as JsonObject;
+        var source = DecodeBody(snippets?[policyName]);
+        bool allowed;
+        if (!string.IsNullOrWhiteSpace(source))
+        {
+            try
+            {
+                allowed = await VariantExecutor.EvaluatePolicyAsync(
+                    source, context, body, connection, routeValues, authenticated.User, item);
+            }
+            catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+            {
+                throw;
+            }
+            catch (Exception exception)
+            {
+                Console.Error.WriteLine($"[ASP.NET policy:{model}.{policyName}] {exception}");
+                if (!context.Response.HasStarted)
+                    await Results.Json(new { message = $"C# policy {model}.{policyName} failed.", error = exception.Message },
+                        statusCode: StatusCodes.Status500InternalServerError).ExecuteAsync(context);
+                return true;
+            }
+        }
+        else
+        {
+            var definition = FindDatabaseDefinition(model, module);
+            var columns = definition?["columns"] as JsonObject;
+            var ownerColumn = new[] { "user_id", "owner_id", "created_by", "author_id" }
+                .FirstOrDefault(name => columns?.ContainsKey(name) == true);
+            var isAdmin = string.Equals(StringValue(authenticated.User?["role"]), "admin", StringComparison.OrdinalIgnoreCase);
+            var isOwner = ownerColumn is not null &&
+                string.Equals(StringValue(authenticated.User?["id"]), StringValue(item[ownerColumn]), StringComparison.Ordinal);
+            allowed = authenticated.User is not null && (isAdmin || isOwner);
+        }
+
+        if (allowed) return false;
+        await Results.Json(new { message = "This action is unauthorized." }, statusCode: StatusCodes.Status403Forbidden).ExecuteAsync(context);
+        return true;
+    }
+
+    private static bool IsPolicyProtectedAction(string? action) => action is "update" or "destroy";
+
+    private async Task<bool> ValidateSnippetAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        JsonObject endpoint,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        var model = StringValue(api["model"]) ?? "";
+        var definition = FindDatabaseDefinition(model, module);
+        var body = await ReadBodyAsync(context);
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var errors = await TatemonoValidator.ValidateAsync(
+            body,
+            endpoint["validation"],
+            connection,
+            slug,
+            StringValue(definition?["table"]) ?? Pluralize(SnakeCase(model)),
+            routeValues.TryGetValue("id", out var routeId) ? DbRouteValue(routeId) : null,
+            context.RequestAborted);
+        if (errors.Count == 0) return true;
+
+        await Results.Json(new { message = "The given data was invalid.", errors },
+            statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
+        return false;
+    }
+
+    private async Task ExecuteCrudAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string action,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonNode? validationRules = null,
+        JsonObject? queryConfig = null,
+        JsonObject? responseConfig = null)
     {
         var model = StringValue(api["model"]) ?? "";
         var definition = FindDatabaseDefinition(model, module);
@@ -323,15 +447,97 @@ public sealed class BackendEngine
         await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
         var tableSql = TatemonoDatabase.Quote(table);
         var id = routeValues.TryGetValue("id", out var routeId) ? DbRouteValue(routeId) : null;
+        if (action is "store" or "update" && validationRules is not null)
+        {
+            var errors = await TatemonoValidator.ValidateAsync(
+                body, validationRules, connection, slug,
+                StringValue(definition?["table"]) ?? Pluralize(SnakeCase(model)),
+                id,
+                context.RequestAborted);
+            if (errors.Count != 0)
+            {
+                await Results.Json(new { message = "The given data was invalid.", errors },
+                    statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
+                return;
+            }
+        }
         switch (action)
         {
             case "index":
             {
                 await using var command = connection.CreateCommand();
-                command.CommandText = $"SELECT * FROM {tableSql} ORDER BY id DESC";
+                var where = new List<string>();
+                if (context.Request.Query.TryGetValue("search", out var searchValue) &&
+                    !string.IsNullOrWhiteSpace(searchValue.ToString()))
+                {
+                    var searchableColumns = new[] { "name", "description" }
+                        .Where(column => declaredColumns?.ContainsKey(column) == true)
+                        .ToArray();
+                    if (searchableColumns.Length > 0)
+                    {
+                        where.Add("(" + string.Join(" OR ", searchableColumns.Select(column => $"{TatemonoDatabase.Quote(column)} LIKE @search")) + ")");
+                        TatemonoDatabase.AddParameter(command, "@search", $"%{searchValue}%");
+                    }
+                }
+
+                if (queryConfig is not null)
+                {
+                    foreach (var (column, _) in queryConfig)
+                    {
+                        if (column is "search" or "per_page" ||
+                            declaredColumns?.ContainsKey(column) != true ||
+                            !context.Request.Query.TryGetValue(column, out var filter) ||
+                            string.IsNullOrWhiteSpace(filter.ToString())) continue;
+                        var parameter = $"@filter{command.Parameters.Count}";
+                        where.Add($"{TatemonoDatabase.Quote(column)} = {parameter}");
+                        TatemonoDatabase.AddParameter(command, parameter, filter.ToString());
+                    }
+                }
+
+                var whereSql = where.Count == 0 ? "" : " WHERE " + string.Join(" AND ", where);
+                command.CommandText = $"SELECT * FROM {tableSql}{whereSql} ORDER BY {(declaredColumns?.ContainsKey("created_at") == true ? "\"created_at\"" : "\"id\"")} DESC";
+                var perPage = ReadPageSize(context, queryConfig);
+                var page = ReadPositiveInt(context.Request.Query["page"], 1);
+                var paginated = !string.Equals(StringValue(responseConfig?["type"]), "array", StringComparison.OrdinalIgnoreCase);
+                long total = 0;
+                if (paginated)
+                {
+                    await using var count = connection.CreateCommand();
+                    count.CommandText = $"SELECT COUNT(*) FROM {tableSql}{whereSql}";
+                    foreach (DbParameter parameter in command.Parameters)
+                    {
+                        var cloned = count.CreateParameter();
+                        cloned.ParameterName = parameter.ParameterName;
+                        cloned.Value = parameter.Value;
+                        count.Parameters.Add(cloned);
+                    }
+                    total = Convert.ToInt64(await count.ExecuteScalarAsync(context.RequestAborted), System.Globalization.CultureInfo.InvariantCulture);
+                    command.CommandText += " LIMIT @limit OFFSET @offset";
+                    TatemonoDatabase.AddParameter(command, "@limit", perPage);
+                    TatemonoDatabase.AddParameter(command, "@offset", (page - 1) * perPage);
+                }
                 await using var reader = await command.ExecuteReaderAsync(context.RequestAborted);
                 var rows = await ReadRowsAsync(reader, context.RequestAborted);
-                await Results.Json(rows).ExecuteAsync(context);
+                if (!paginated)
+                {
+                    await Results.Json(rows).ExecuteAsync(context);
+                    return;
+                }
+                await Results.Json(new
+                {
+                    current_page = page,
+                    data = rows,
+                    first_page_url = PageUrl(context, 1),
+                    from = rows.Count == 0 ? (long?)null : (long)((page - 1) * perPage + 1),
+                    last_page = Math.Max(1L, (long)Math.Ceiling(total / (double)perPage)),
+                    last_page_url = PageUrl(context, Math.Max(1L, (long)Math.Ceiling(total / (double)perPage))),
+                    next_page_url = page * (long)perPage < total ? PageUrl(context, page + 1) : null,
+                    path = context.Request.Path.Value,
+                    per_page = perPage,
+                    prev_page_url = page > 1 ? PageUrl(context, page - 1) : null,
+                    to = rows.Count == 0 ? (long?)null : (long)((page - 1) * perPage + rows.Count),
+                    total
+                }).ExecuteAsync(context);
                 return;
             }
             case "show":
@@ -412,13 +618,21 @@ public sealed class BackendEngine
         }
     }
 
-    private async Task ExecuteSnippetAsync(HttpContext context, string slug, string source, IReadOnlyDictionary<string, string> routeValues)
+    private async Task ExecuteSnippetAsync(
+        HttpContext context,
+        string slug,
+        JsonObject module,
+        string source,
+        IReadOnlyDictionary<string, string> routeValues)
     {
         var body = await ReadBodyAsync(context);
         await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
         try
         {
-            if (!await VariantExecutor.ExecuteAsync(source, context, body, connection, routeValues))
+            JsonObject? user = null;
+            if (IsTruthy(module["auth"]))
+                user = (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User;
+            if (!await VariantExecutor.ExecuteAsync(source, context, body, connection, routeValues, user))
                 context.Response.StatusCode = StatusCodes.Status204NoContent;
         }
         catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
@@ -457,8 +671,8 @@ public sealed class BackendEngine
                     await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
                     return true;
                 }
-                await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
-                var user = await ResolveUserAsync(context, connection, slug, context.RequestAborted);
+                await using var authConnection = await _database.OpenAsync(slug, context.RequestAborted);
+                var user = await ResolveUserAsync(context, authConnection, slug, context.RequestAborted);
                 if (user.User is not null) continue;
                 await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
                 return true;
@@ -470,8 +684,8 @@ public sealed class BackendEngine
                     await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
                     return true;
                 }
-                await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
-                var authenticated = await ResolveUserAsync(context, connection, slug, context.RequestAborted);
+                await using var roleConnection = await _database.OpenAsync(slug, context.RequestAborted);
+                var authenticated = await ResolveUserAsync(context, roleConnection, slug, context.RequestAborted);
                 if (authenticated.User is null)
                 {
                     await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
@@ -495,7 +709,10 @@ public sealed class BackendEngine
             await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
             try
             {
-                if (await VariantExecutor.ExecuteAsync(source, context, body, connection, routeValues)) return true;
+                JsonObject? user = null;
+                if (IsTruthy(module["auth"]))
+                    user = (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User;
+                if (await VariantExecutor.ExecuteAsync(source, context, body, connection, routeValues, user)) return true;
             }
             catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
             {
@@ -535,17 +752,9 @@ public sealed class BackendEngine
             if (payload[feature] is JsonArray { Count: > 0 })
                 warnings.Add($"ASP.NET does not yet execute the {feature} DSL sections.");
         }
-        foreach (var database in (payload["databases"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
-        {
-            if (database["indexes"] is JsonArray { Count: > 0 } ||
-                (database["columns"] as JsonObject)?.Any(column => column.Value?["foreign"] is not null) == true)
-                warnings.Add($"ASP.NET does not yet apply indexes/foreign keys for table {StringValue(database["table"])}.");
-        }
         foreach (var api in (payload["apis"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
         {
             var model = StringValue(api["model"]) ?? "API";
-            if (api["policy"]?.GetValue<bool>() == true)
-                warnings.Add($"ASP.NET policy execution is not implemented for {model}; protected policy routes return HTTP 501.");
             if (api["factory"]?.GetValue<bool>() == true)
                 warnings.Add($"ASP.NET factory generation is not implemented for {model}.");
         }
@@ -620,8 +829,35 @@ public sealed class BackendEngine
     {
         var left = (prefix ?? "").Trim('/');
         var right = route.Trim('/');
-        var joined = string.Join('/', new[] { left, right }.Where(part => part.Length > 0));
+        var joined = string.Join("/", new[] { left, right }.Where(part => part.Length > 0));
         return "/" + joined;
+    }
+
+    private static int ReadPageSize(HttpContext context, JsonObject? queryConfig)
+    {
+        var fallback = 15;
+        var configured = StringValue(queryConfig?["per_page"]);
+        if (configured is not null)
+        {
+            var match = Regex.Match(configured, @"default\s*:?\s*(\d+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            if (match.Success && int.TryParse(match.Groups[1].Value, out var defaultPageSize) && defaultPageSize > 0)
+                fallback = defaultPageSize;
+        }
+        return ReadPositiveInt(context.Request.Query["per_page"], fallback);
+    }
+
+    private static int ReadPositiveInt(string? value, int fallback) =>
+        int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed) &&
+        parsed > 0
+            ? parsed
+            : fallback;
+
+    private static string PageUrl(HttpContext context, long page)
+    {
+        var query = context.Request.Query.ToDictionary(pair => pair.Key, pair => (string?)pair.Value.ToString(),
+            StringComparer.OrdinalIgnoreCase);
+        query["page"] = page.ToString(System.Globalization.CultureInfo.InvariantCulture);
+        return (context.Request.Path.Value ?? "/") + QueryString.Create(query).Value;
     }
 
     private static bool TryMatch(string template, string path, out IReadOnlyDictionary<string, string> values)

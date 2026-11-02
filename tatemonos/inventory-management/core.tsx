@@ -164,6 +164,16 @@ List<Inventory> items = Inventory.query()
 return response.json(mapOf("data", items, "count", items.size()));
 /* @arkzen:endpoint:java:lowStock:end */
 
+/* @arkzen:endpoint:cs:lowStock
+*/
+var lowStockItems = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"inventory_management_inventories\" WHERE quantity < @threshold ORDER BY quantity ASC",
+    new Dictionary<string, object?> { ["@threshold"] = 20 },
+    Context.RequestAborted);
+return Results.Json(new { data = lowStockItems, count = lowStockItems.Count });
+/* @arkzen:endpoint:cs:lowStock:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

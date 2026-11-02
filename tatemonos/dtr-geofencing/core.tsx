@@ -787,6 +787,286 @@ for (int i = 0; i < settingKeys.length; i++) {
 return response.json(mapOf("success", true));
 /* @arkzen:endpoint:java:update_office:end */
 
+/* @arkzen:endpoint:cs:my_records
+*/
+if (!long.TryParse(RouteValues.GetValueOrDefault("employee_id"), out var employeeId))
+    return Results.BadRequest(new { message = "employee_id must be an integer." });
+var records = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
+           e.avatar AS employee__avatar, e.is_active AS employee__is_active
+    FROM "dtr_time_records" tr
+    LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    WHERE tr.employee_id = @employee_id
+    ORDER BY tr."timestamp" DESC
+    LIMIT 50
+    """,
+    new Dictionary<string, object?> { ["@employee_id"] = employeeId },
+    Context.RequestAborted);
+foreach (var record in records)
+{
+    var employee = new JsonObject();
+    foreach (var column in new[] { "id", "name", "email", "avatar", "is_active" })
+    {
+        var key = $"employee__{column}";
+        if (record.TryGetPropertyValue(key, out var value))
+        {
+            employee[column] = value?.DeepClone();
+            record.Remove(key);
+        }
+    }
+    record["employee"] = employee["id"] is null ? null : employee;
+}
+return Results.Json(records);
+/* @arkzen:endpoint:cs:my_records:end */
+
+/* @arkzen:endpoint:cs:check_in
+*/
+var validationRules = JsonNode.Parse("""{"employee_id":"required|integer|exists:employees,id","latitude":"nullable|numeric","longitude":"nullable|numeric","notes":"nullable|string"}""");
+var validationErrors = await TatemonoValidator.ValidateAsync(
+    Body, validationRules, Database, "dtr-geofencing", "time_records", null, Context.RequestAborted);
+if (validationErrors.Count > 0)
+    return Results.Json(new { message = "The given data was invalid.", errors = validationErrors }, statusCode: 422);
+
+var employeeIdValue = long.Parse(Body["employee_id"]!.ToString());
+var latitudeValue = Body["latitude"]?.ToString();
+var longitudeValue = Body["longitude"]?.ToString();
+var settings = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT key, value FROM \"dtr_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
+    new Dictionary<string, object?>
+    {
+        ["@enabled"] = "geofencing_enabled",
+        ["@lat"] = "office_latitude",
+        ["@lng"] = "office_longitude",
+        ["@radius"] = "geofence_radius_meters"
+    },
+    Context.RequestAborted);
+var settingValues = settings.ToDictionary(row => row["key"]!.ToString(), row => row["value"]?.ToString());
+var geofencingEnabled = settingValues.GetValueOrDefault("geofencing_enabled") == "true";
+var withinGeofence = true;
+if (geofencingEnabled && latitudeValue is not null && longitudeValue is not null)
+{
+    var officeLatitude = double.TryParse(settingValues.GetValueOrDefault("office_latitude"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var officeLat) ? officeLat : 0;
+    var officeLongitude = double.TryParse(settingValues.GetValueOrDefault("office_longitude"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var officeLng) ? officeLng : 0;
+    var radius = double.TryParse(settingValues.GetValueOrDefault("geofence_radius_meters"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var configuredRadius) ? configuredRadius : 0;
+    var lat1 = double.DegreesToRadians(officeLatitude);
+    var lon1 = double.DegreesToRadians(officeLongitude);
+    var lat2 = double.DegreesToRadians(double.Parse(latitudeValue, System.Globalization.CultureInfo.InvariantCulture));
+    var lon2 = double.DegreesToRadians(double.Parse(longitudeValue, System.Globalization.CultureInfo.InvariantCulture));
+    var deltaLatitude = lat2 - lat1;
+    var deltaLongitude = lon2 - lon1;
+    var haversine = Math.Pow(Math.Sin(deltaLatitude / 2), 2)
+        + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLongitude / 2), 2);
+    var distance = 6371000 * 2 * Math.Atan2(Math.Sqrt(haversine), Math.Sqrt(Math.Max(0, 1 - haversine)));
+    withinGeofence = distance <= radius;
+    if (!withinGeofence)
+        return Results.Json(new
+        {
+            error = "Geofence violation",
+            message = $"You must be within {radius} meters of the office to check in.",
+            distance = Math.Round(distance, 1)
+        }, statusCode: 403);
+}
+
+var recordId = await ScriptDatabase.ScalarAsync(
+    Database,
+    """
+    INSERT INTO "dtr_time_records"
+        (employee_id, "type", "timestamp", latitude, longitude, within_geofence, notes, created_at, updated_at)
+    VALUES (@employee_id, @type, @timestamp, @latitude, @longitude, @within_geofence, @notes, @created_at, @updated_at)
+    RETURNING id
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@employee_id"] = employeeIdValue,
+        ["@type"] = "in",
+        ["@timestamp"] = DateTime.UtcNow,
+        ["@latitude"] = latitudeValue,
+        ["@longitude"] = longitudeValue,
+        ["@within_geofence"] = withinGeofence,
+        ["@notes"] = Body["notes"]?.ToString(),
+        ["@created_at"] = DateTime.UtcNow,
+        ["@updated_at"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+var createdRecord = (await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
+           e.avatar AS employee__avatar, e.is_active AS employee__is_active
+    FROM "dtr_time_records" tr LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    WHERE tr.id = @id
+    """,
+    new Dictionary<string, object?> { ["@id"] = recordId },
+    Context.RequestAborted)).First();
+var employee = new JsonObject();
+foreach (var column in new[] { "id", "name", "email", "avatar", "is_active" })
+{
+    var key = $"employee__{column}";
+    employee[column] = createdRecord[key]?.DeepClone();
+    createdRecord.Remove(key);
+}
+createdRecord["employee"] = employee;
+return Results.Json(new { success = true, record = createdRecord, within_geofence = withinGeofence, geofencing_enabled = geofencingEnabled });
+/* @arkzen:endpoint:cs:check_in:end */
+
+/* @arkzen:endpoint:cs:check_out
+*/
+var validationRules = JsonNode.Parse("""{"employee_id":"required|integer|exists:employees,id","latitude":"nullable|numeric","longitude":"nullable|numeric","notes":"nullable|string"}""");
+var validationErrors = await TatemonoValidator.ValidateAsync(
+    Body, validationRules, Database, "dtr-geofencing", "time_records", null, Context.RequestAborted);
+if (validationErrors.Count > 0)
+    return Results.Json(new { message = "The given data was invalid.", errors = validationErrors }, statusCode: 422);
+
+var employeeIdValue = long.Parse(Body["employee_id"]!.ToString());
+var latitudeValue = Body["latitude"]?.ToString();
+var longitudeValue = Body["longitude"]?.ToString();
+var settings = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT key, value FROM \"dtr_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
+    new Dictionary<string, object?>
+    {
+        ["@enabled"] = "geofencing_enabled",
+        ["@lat"] = "office_latitude",
+        ["@lng"] = "office_longitude",
+        ["@radius"] = "geofence_radius_meters"
+    },
+    Context.RequestAborted);
+var settingValues = settings.ToDictionary(row => row["key"]!.ToString(), row => row["value"]?.ToString());
+var geofencingEnabled = settingValues.GetValueOrDefault("geofencing_enabled") == "true";
+var withinGeofence = true;
+if (geofencingEnabled && latitudeValue is not null && longitudeValue is not null)
+{
+    var officeLatitude = double.TryParse(settingValues.GetValueOrDefault("office_latitude"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var officeLat) ? officeLat : 0;
+    var officeLongitude = double.TryParse(settingValues.GetValueOrDefault("office_longitude"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var officeLng) ? officeLng : 0;
+    var radius = double.TryParse(settingValues.GetValueOrDefault("geofence_radius_meters"), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var configuredRadius) ? configuredRadius : 0;
+    var lat1 = double.DegreesToRadians(officeLatitude);
+    var lon1 = double.DegreesToRadians(officeLongitude);
+    var lat2 = double.DegreesToRadians(double.Parse(latitudeValue, System.Globalization.CultureInfo.InvariantCulture));
+    var lon2 = double.DegreesToRadians(double.Parse(longitudeValue, System.Globalization.CultureInfo.InvariantCulture));
+    var deltaLatitude = lat2 - lat1;
+    var deltaLongitude = lon2 - lon1;
+    var haversine = Math.Pow(Math.Sin(deltaLatitude / 2), 2)
+        + Math.Cos(lat1) * Math.Cos(lat2) * Math.Pow(Math.Sin(deltaLongitude / 2), 2);
+    var distance = 6371000 * 2 * Math.Atan2(Math.Sqrt(haversine), Math.Sqrt(Math.Max(0, 1 - haversine)));
+    withinGeofence = distance <= radius;
+    if (!withinGeofence)
+        return Results.Json(new
+        {
+            error = "Geofence violation",
+            message = $"You must be within {radius} meters of the office to check out.",
+            distance = Math.Round(distance, 1)
+        }, statusCode: 403);
+}
+
+var recordId = await ScriptDatabase.ScalarAsync(
+    Database,
+    """
+    INSERT INTO "dtr_time_records"
+        (employee_id, "type", "timestamp", latitude, longitude, within_geofence, notes, created_at, updated_at)
+    VALUES (@employee_id, @type, @timestamp, @latitude, @longitude, @within_geofence, @notes, @created_at, @updated_at)
+    RETURNING id
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@employee_id"] = employeeIdValue,
+        ["@type"] = "out",
+        ["@timestamp"] = DateTime.UtcNow,
+        ["@latitude"] = latitudeValue,
+        ["@longitude"] = longitudeValue,
+        ["@within_geofence"] = withinGeofence,
+        ["@notes"] = Body["notes"]?.ToString(),
+        ["@created_at"] = DateTime.UtcNow,
+        ["@updated_at"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+var createdRecord = (await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
+           e.avatar AS employee__avatar, e.is_active AS employee__is_active
+    FROM "dtr_time_records" tr LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    WHERE tr.id = @id
+    """,
+    new Dictionary<string, object?> { ["@id"] = recordId },
+    Context.RequestAborted)).First();
+var employee = new JsonObject();
+foreach (var column in new[] { "id", "name", "email", "avatar", "is_active" })
+{
+    var key = $"employee__{column}";
+    employee[column] = createdRecord[key]?.DeepClone();
+    createdRecord.Remove(key);
+}
+createdRecord["employee"] = employee;
+return Results.Json(new { success = true, record = createdRecord, within_geofence = withinGeofence, geofencing_enabled = geofencingEnabled });
+/* @arkzen:endpoint:cs:check_out:end */
+
+/* @arkzen:endpoint:cs:toggle_geofencing
+*/
+var enabledValue = Body["enabled"];
+var enabledText = enabledValue?.ToString();
+var enabled = enabledValue is not null && enabledText is not ("false" or "0" or "");
+var currentSetting = (await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT id FROM \"dtr_dtr_settings\" WHERE key = @key",
+    new Dictionary<string, object?> { ["@key"] = "geofencing_enabled" },
+    Context.RequestAborted)).FirstOrDefault();
+if (currentSetting is null)
+{
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        "INSERT INTO \"dtr_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
+        new Dictionary<string, object?> { ["@key"] = "geofencing_enabled", ["@value"] = enabled ? "true" : "false", ["@created"] = DateTime.UtcNow, ["@updated"] = DateTime.UtcNow },
+        Context.RequestAborted);
+}
+else
+{
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        "UPDATE \"dtr_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
+        new Dictionary<string, object?> { ["@key"] = "geofencing_enabled", ["@value"] = enabled ? "true" : "false", ["@updated"] = DateTime.UtcNow },
+        Context.RequestAborted);
+}
+return Results.Json(new { success = true, geofencing_enabled = enabled });
+/* @arkzen:endpoint:cs:toggle_geofencing:end */
+
+/* @arkzen:endpoint:cs:update_office
+*/
+var settingsToWrite = new (string Key, string? Value)[]
+{
+    ("office_latitude", Body["lat"]?.ToString()),
+    ("office_longitude", Body["lng"]?.ToString()),
+    ("geofence_radius_meters", Body["radius"]?.ToString())
+};
+foreach (var (key, value) in settingsToWrite)
+{
+    var currentSetting = (await ScriptDatabase.QueryAsync(
+        Database,
+        "SELECT id FROM \"dtr_dtr_settings\" WHERE key = @key",
+        new Dictionary<string, object?> { ["@key"] = key },
+        Context.RequestAborted)).FirstOrDefault();
+    if (currentSetting is null)
+    {
+        await ScriptDatabase.ExecuteAsync(
+            Database,
+            "INSERT INTO \"dtr_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
+            new Dictionary<string, object?> { ["@key"] = key, ["@value"] = value ?? "", ["@created"] = DateTime.UtcNow, ["@updated"] = DateTime.UtcNow },
+            Context.RequestAborted);
+    }
+    else
+    {
+        await ScriptDatabase.ExecuteAsync(
+            Database,
+            "UPDATE \"dtr_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
+            new Dictionary<string, object?> { ["@key"] = key, ["@value"] = value ?? "", ["@updated"] = DateTime.UtcNow },
+            Context.RequestAborted);
+    }
+}
+return Results.Json(new { success = true });
+/* @arkzen:endpoint:cs:update_office:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

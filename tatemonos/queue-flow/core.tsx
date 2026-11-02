@@ -619,6 +619,195 @@ return response.json(mapOf(
 ));
 /* @arkzen:handler:java:my_ticket:end */
 
+/* @arkzen:handler:cs:join_queue
+*/
+if (!long.TryParse(Body["queue_id"]?.ToString(), out var queueId))
+    return Results.BadRequest(new { message = "A valid queue_id is required." });
+
+var queueRows = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT id, prefix, avg_wait_minutes FROM \"queue_flow_queues\" WHERE id = @id",
+    new Dictionary<string, object?> { ["@id"] = queueId },
+    Context.RequestAborted);
+if (queueRows.Count == 0) return Results.NotFound(new { message = "Queue not found." });
+var queue = queueRows[0];
+var maxPositionValue = await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT MAX(position) FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status IN ('waiting', 'serving')",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId },
+    Context.RequestAborted);
+var position = maxPositionValue is null or DBNull
+    ? 1L
+    : Convert.ToInt64(maxPositionValue, System.Globalization.CultureInfo.InvariantCulture) + 1;
+var now = DateTime.UtcNow;
+var customerName = string.IsNullOrWhiteSpace(Body["customer_name"]?.ToString())
+    ? "Guest"
+    : Body["customer_name"]!.ToString();
+var ticketRows = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    INSERT INTO "queue_flow_tickets"
+        (queue_id, ticket_number, customer_name, status, position, created_at, updated_at)
+    VALUES (@queue_id, @ticket_number, @customer_name, 'waiting', @position, @created_at, @updated_at)
+    RETURNING *
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@queue_id"] = queueId,
+        ["@ticket_number"] = $"{queue["prefix"]}-{position:000}",
+        ["@customer_name"] = customerName,
+        ["@position"] = position,
+        ["@created_at"] = now,
+        ["@updated_at"] = now
+    },
+    Context.RequestAborted);
+if (ticketRows.Count == 0) throw new InvalidOperationException("Ticket insert returned no row.");
+var ticket = ticketRows[0];
+var waitingValue = await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'waiting' AND position < @position",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId, ["@position"] = position },
+    Context.RequestAborted);
+var waiting = Convert.ToInt64(waitingValue, System.Globalization.CultureInfo.InvariantCulture);
+var averageWait = queue["avg_wait_minutes"] is null
+    ? 5L
+    : Convert.ToInt64(queue["avg_wait_minutes"]!.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+return Results.Json(new
+{
+    ticket,
+    position = waiting + 1,
+    estimated_wait = waiting * averageWait
+});
+/* @arkzen:handler:cs:join_queue:end */
+
+/* @arkzen:handler:cs:call_next
+*/
+if (!long.TryParse(Body["queue_id"]?.ToString(), out var queueId))
+    return Results.BadRequest(new { message = "A valid queue_id is required." });
+
+await using (var transaction = await Database.BeginTransactionAsync(Context.RequestAborted))
+{
+    var now = DateTime.UtcNow;
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        "UPDATE \"queue_flow_tickets\" SET status = 'done', served_at = @served_at, updated_at = @updated_at WHERE queue_id = @queue_id AND status = 'serving'",
+        new Dictionary<string, object?>
+        {
+            ["@served_at"] = now,
+            ["@updated_at"] = now,
+            ["@queue_id"] = queueId
+        },
+        Context.RequestAborted,
+        transaction);
+    var nextRows = await ScriptDatabase.QueryAsync(
+        Database,
+        "SELECT * FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'waiting' ORDER BY position LIMIT 1",
+        new Dictionary<string, object?> { ["@queue_id"] = queueId },
+        Context.RequestAborted,
+        transaction);
+    if (nextRows.Count == 0)
+    {
+        await transaction.CommitAsync(Context.RequestAborted);
+        return Results.Json(new { message = "No more tickets in queue", ticket = (object?)null });
+    }
+
+    var ticket = nextRows[0];
+    var calledAt = DateTime.UtcNow;
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        "UPDATE \"queue_flow_tickets\" SET status = 'serving', called_at = @called_at, updated_at = @updated_at WHERE id = @id",
+        new Dictionary<string, object?>
+        {
+            ["@called_at"] = calledAt,
+            ["@updated_at"] = calledAt,
+            ["@id"] = ticket["id"]!.ToString()
+        },
+        Context.RequestAborted,
+        transaction);
+    await transaction.CommitAsync(Context.RequestAborted);
+    ticket["status"] = "serving";
+    ticket["called_at"] = System.Text.Json.JsonSerializer.SerializeToNode(calledAt);
+    ticket["updated_at"] = System.Text.Json.JsonSerializer.SerializeToNode(calledAt);
+    return Results.Json(new { ticket });
+}
+/* @arkzen:handler:cs:call_next:end */
+
+/* @arkzen:handler:cs:queue_status
+*/
+if (!RouteValues.TryGetValue("queue_id", out var queueIdText) ||
+    !long.TryParse(queueIdText, out var queueId))
+    return Results.BadRequest(new { message = "A valid queue_id is required." });
+
+var queueRows = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"queue_flow_queues\" WHERE id = @id",
+    new Dictionary<string, object?> { ["@id"] = queueId },
+    Context.RequestAborted);
+if (queueRows.Count == 0) return Results.NotFound(new { message = "Queue not found." });
+var servingRows = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'serving' LIMIT 1",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId },
+    Context.RequestAborted);
+var waiting = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'waiting' ORDER BY position",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId },
+    Context.RequestAborted);
+var doneValue = await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'done'",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId },
+    Context.RequestAborted);
+return Results.Json(new
+{
+    queue = queueRows[0],
+    serving = servingRows.Count == 0 ? null : servingRows[0],
+    waiting,
+    done_count = Convert.ToInt64(doneValue, System.Globalization.CultureInfo.InvariantCulture),
+    total_waiting = waiting.Count
+});
+/* @arkzen:handler:cs:queue_status:end */
+
+/* @arkzen:handler:cs:my_ticket
+*/
+if (!RouteValues.TryGetValue("queue_id", out var queueIdText) ||
+    !long.TryParse(queueIdText, out var queueId) ||
+    !RouteValues.TryGetValue("ticket_number", out var ticketNumber))
+    return Results.BadRequest(new { message = "A valid queue_id and ticket number are required." });
+
+var ticketRows = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"queue_flow_tickets\" WHERE ticket_number = @ticket_number AND queue_id = @queue_id LIMIT 1",
+    new Dictionary<string, object?> { ["@ticket_number"] = ticketNumber, ["@queue_id"] = queueId },
+    Context.RequestAborted);
+if (ticketRows.Count == 0) return Results.NotFound(new { message = "Ticket not found." });
+var ticket = ticketRows[0];
+var aheadValue = await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"queue_flow_tickets\" WHERE queue_id = @queue_id AND status = 'waiting' AND position < @position",
+    new Dictionary<string, object?> { ["@queue_id"] = queueId, ["@position"] = ticket["position"]!.ToString() },
+    Context.RequestAborted);
+var ahead = Convert.ToInt64(aheadValue, System.Globalization.CultureInfo.InvariantCulture);
+var queueRows = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT avg_wait_minutes FROM \"queue_flow_queues\" WHERE id = @id",
+    new Dictionary<string, object?> { ["@id"] = queueId },
+    Context.RequestAborted);
+var averageWait = queueRows.Count == 0 || queueRows[0]["avg_wait_minutes"] is null
+    ? 5L
+    : Convert.ToInt64(queueRows[0]["avg_wait_minutes"]!.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+var status = ticket["status"]?.ToString();
+return Results.Json(new
+{
+    ticket,
+    position = status == "waiting" ? ahead + 1 : 0,
+    estimated_wait = ahead * averageWait,
+    is_serving = status == "serving",
+    is_done = status == "done"
+});
+/* @arkzen:handler:cs:my_ticket:end */
+
 /* @arkzen:routes
 controller: QueueController
 middleware: []

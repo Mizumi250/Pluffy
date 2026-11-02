@@ -14,19 +14,29 @@ public sealed class VariantGlobals
     public JsonObject Body { get; }
     public DbConnection Database { get; }
     public IReadOnlyDictionary<string, string> RouteValues { get; }
+    public JsonObject? user { get; }
+    public JsonObject? item { get; }
 
-    public VariantGlobals(HttpContext context, JsonObject body, DbConnection database, IReadOnlyDictionary<string, string> routeValues)
+    public VariantGlobals(
+        HttpContext context,
+        JsonObject body,
+        DbConnection database,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject? user = null,
+        JsonObject? item = null)
     {
         Context = context;
         Body = body;
         Database = database;
         RouteValues = routeValues;
+        this.user = user;
+        this.item = item;
     }
 }
 
 public static class VariantExecutor
 {
-    private static readonly ConcurrentDictionary<string, ScriptRunner<object?>> Runners = new();
+    private static readonly ConcurrentDictionary<string, Script<object?>> Scripts = new();
     private static readonly ScriptOptions Options = ScriptOptions.Default
         .AddReferences(
             typeof(HttpContext).Assembly,
@@ -39,25 +49,24 @@ public static class VariantExecutor
             "System.Collections.Generic",
             "System.Text.Json",
             "System.Text.Json.Nodes",
+            "Pluff.AspNet.Runtime",
             "Microsoft.AspNetCore.Http",
             "Microsoft.AspNetCore.Http.Results");
+
+    private static Script<object?> GetScript(string source) =>
+        Scripts.GetOrAdd(source, code => CSharpScript.Create<object?>(code, Options, typeof(VariantGlobals)));
 
     public static async Task<bool> ExecuteAsync(
         string source,
         HttpContext context,
         JsonObject body,
         DbConnection database,
-        IReadOnlyDictionary<string, string> routeValues)
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject? user = null)
     {
-        var runner = Runners.GetOrAdd(source, code =>
-        {
-            var script = CSharpScript.Create<object?>(code, Options, typeof(VariantGlobals));
-            return script.CreateDelegate();
-        });
-
-        var state = await runner(
-            new VariantGlobals(context, body, database, routeValues),
-            context.RequestAborted);
+        var state = await GetScript(source).RunAsync(
+            new VariantGlobals(context, body, database, routeValues, user),
+            cancellationToken: context.RequestAborted);
         if (context.Response.HasStarted) return true;
 
         switch (state.ReturnValue)
@@ -71,5 +80,22 @@ public static class VariantExecutor
                 await Results.Json(state.ReturnValue).ExecuteAsync(context);
                 return true;
         }
+    }
+
+    public static async Task<bool> EvaluatePolicyAsync(
+        string source,
+        HttpContext context,
+        JsonObject body,
+        DbConnection database,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject? user,
+        JsonObject item)
+    {
+        var state = await GetScript(source).RunAsync(
+            new VariantGlobals(context, body, database, routeValues, user, item),
+            cancellationToken: context.RequestAborted);
+        return state.ReturnValue is bool allowed
+            ? allowed
+            : throw new InvalidOperationException("A C# policy must return true or false.");
     }
 }

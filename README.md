@@ -28,9 +28,11 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 
 The same Tatemono DSL powers multiple frontend and backend targets, with backend-specific variants where needed.
 
-**The things apps keep needing, already handled.**
+Backend feature coverage is still being brought into parity. ASP.NET Core currently has isolated databases, auth, CRUD validation and policies, plus C# endpoint, handler and middleware variants; queue/scheduler workers, realtime and file storage are not implemented yet.
 
-Auth, real-time updates, notifications, email, background jobs, scheduling, uploads, roles, policies, and error pages—all built from the Tatemono.
+**The things apps keep needing, already handled—with coverage that varies by backend.**
+
+Auth, real-time updates, notifications, email, background jobs, scheduling, uploads, roles, policies, and error pages are described by the Tatemono DSL. Each backend implements its supported features in its own engine; unsupported features are not implied to work everywhere.
 
 **A way out when you're done.**
 

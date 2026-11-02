@@ -163,6 +163,16 @@ return item == null || !"archived".equals(item.str("status"));
 return item == null || !"archived".equals(item.str("status"));
 /* @arkzen:policy:java:delete:end */
 
+/* @arkzen:policy:cs:update
+*/
+return item?["status"]?.ToString() != "archived";
+/* @arkzen:policy:cs:update:end */
+
+/* @arkzen:policy:cs:delete
+*/
+return item?["status"]?.ToString() != "archived";
+/* @arkzen:policy:cs:delete:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

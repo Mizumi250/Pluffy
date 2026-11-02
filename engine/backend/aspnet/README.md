@@ -28,20 +28,38 @@ if (!Context.Request.Headers.ContainsKey("X-Demo-Key"))
 /* @arkzen:middleware:cs:requireKey:end */
 ```
 
-`Context`, `Body`, `Database`, and `RouteValues` are available in endpoint and
-handler scripts. A script may return an ASP.NET `IResult`; a non-null ordinary
-value is serialized as JSON. Handler and endpoint script bodies are compiled
-when first invoked, and compilation/runtime errors are returned as HTTP 500
-responses with a server-side diagnostic. Middleware bodies may return an
-`IResult` to stop the request; returning no value continues to the route.
+`Context`, `Body`, `Database`, `RouteValues`, and the authenticated `user` (if
+present) are available in endpoint, handler, and middleware scripts.
+`ScriptDatabase.QueryAsync`, `ScalarAsync`, and `ExecuteAsync` provide
+parameterized ADO.NET helpers and accept an optional `DbTransaction`. A script
+may return an ASP.NET `IResult`; a non-null ordinary value is serialized as
+JSON. Handler and endpoint script bodies are compiled when first invoked, and
+compilation/runtime errors are returned as HTTP 500 responses with a
+server-side diagnostic. Middleware bodies may return an `IResult` to stop the
+request; returning no value continues to the route.
 
-The initial engine supports isolated SQLite/PostgreSQL databases, basic
-table/column creation, standard CRUD routes, token authentication, role
-middleware, custom routes, and `:cs` endpoint/handler/middleware bodies.
-Laravel-specific facilities that do not yet have an ASP.NET implementation
-(including policies, queues, and realtime services) must not be assumed to
-work; unsupported endpoints return HTTP 501 rather than a success-shaped
-placeholder.
+The engine supports isolated SQLite/PostgreSQL databases, dependency-ordered
+table/column creation, indexes and foreign keys, standard CRUD routes, declared
+validation rules, token authentication, role middleware, update/delete
+policies, custom routes, and `:cs`
+endpoint/handler/middleware bodies. Policies can use `user` and `item` JSON
+objects in C# snippets; without a snippet, the engine uses owner-column
+(`user_id`, `owner_id`, `created_by`, or `author_id`) or admin-role checks.
+
+Queue/scheduler workers, realtime services, and file storage are not implemented
+yet. The engine reports unsupported features rather than returning a
+success-shaped placeholder. `tatemonos/aspnet-test` and
+`tatemonos/aspnet-ledger` exercise the C# endpoint and transaction contracts.
+`tatemonos/spring-ledger` also includes a C# transaction variant alongside its
+Java implementation. `tatemonos/queue-flow` has C# handlers for its queue
+database routes; realtime broadcasting remains unsupported.
+
+The shared-fixture C# variants are still in progress. Matching `:cs` bodies
+currently cover `body-endpoint-handler`, `crud-test`, `dtr-geofencing`,
+`inventory-management`, `jo-payroll`, `middleware-test`, and `roles-test`; the
+`queue-flow` handlers and `spring-ledger` transaction are also available, but
+the other fixtures in the Spring parity set do not yet have full C# body
+coverage.
 
 Install dependencies with `dotnet restore Pluff.AspNet.csproj`, then start with
 `dotnet run --project Pluff.AspNet.csproj --urls http://0.0.0.0:8000`.

@@ -269,6 +269,65 @@ return response.json(mapOf(
 ));
 /* @arkzen:endpoint:java:stats:end */
 
+/* @arkzen:endpoint:cs:echo
+*/
+var input = (JsonObject)Body.DeepClone();
+var fieldCount = input.Count;
+var result = await ScriptDatabase.ScalarAsync(
+    Database,
+    """
+    INSERT INTO "body_endpoint_handler_probe_results"
+        (source, probe, payload, result, ok, created_at, updated_at)
+    VALUES (@source, @probe, @payload, @result, @ok, @created, @updated)
+    RETURNING id
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@source"] = "endpoint-body",
+        ["@probe"] = "echo",
+        ["@payload"] = input.ToJsonString(),
+        ["@result"] = $"Echoed {fieldCount} field(s) — ControllerBuilder v7.0 body injection ✓",
+        ["@ok"] = true,
+        ["@created"] = DateTime.UtcNow,
+        ["@updated"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return Results.Json(new
+{
+    injected = true,
+    builder = "ControllerBuilder v7.0",
+    method = "echo",
+    field_count = fieldCount,
+    echo = input,
+    probe_id = result
+});
+/* @arkzen:endpoint:cs:echo:end */
+
+/* @arkzen:endpoint:cs:stats
+*/
+var total = await ScriptDatabase.ScalarAsync(
+    Database, "SELECT COUNT(*) FROM \"body_endpoint_handler_probe_results\"", cancellationToken: Context.RequestAborted);
+var passed = await ScriptDatabase.ScalarAsync(
+    Database, "SELECT COUNT(*) FROM \"body_endpoint_handler_probe_results\" WHERE ok = @ok",
+    new Dictionary<string, object?> { ["@ok"] = true }, Context.RequestAborted);
+var failed = await ScriptDatabase.ScalarAsync(
+    Database, "SELECT COUNT(*) FROM \"body_endpoint_handler_probe_results\" WHERE ok = @ok",
+    new Dictionary<string, object?> { ["@ok"] = false }, Context.RequestAborted);
+var sources = await ScriptDatabase.QueryAsync(
+    Database, "SELECT DISTINCT source FROM \"body_endpoint_handler_probe_results\" ORDER BY source",
+    cancellationToken: Context.RequestAborted);
+return Results.Json(new
+{
+    injected = true,
+    builder = "ControllerBuilder v7.0",
+    method = "stats",
+    total,
+    passed,
+    failed,
+    sources = sources.Select(row => row["source"]?.ToString()).ToArray()
+});
+/* @arkzen:endpoint:cs:stats:end */
+
 /* ─── CustomRouteBuilder body injection ───────────────────────────────────────
    @arkzen:routes DSL block declares standalone routes without a model.
    @arkzen:handler:name blocks inject PHP into the generated handler method.
@@ -479,6 +538,72 @@ return response.json(mapOf(
     "results", latest
 ));
 /* @arkzen:handler:java:latest:end */
+
+/* @arkzen:handler:cs:ping
+*/
+return Results.Json(new
+{
+    injected = true,
+    builder = "CustomRouteBuilder v2.0",
+    handler = "ping",
+    status = "ok",
+    timestamp = DateTimeOffset.UtcNow.ToString("O"),
+    message = "CustomRouteBuilder handler body injection confirmed ✓"
+});
+/* @arkzen:handler:cs:ping:end */
+
+/* @arkzen:handler:cs:recordHandler
+*/
+var rules = JsonNode.Parse("""{"probe":"required|string|max:100","payload":"nullable|string","ok":"sometimes|boolean"}""");
+var validationErrors = await TatemonoValidator.ValidateAsync(
+    Body, rules, Database, "body-endpoint-handler", "probe_results", null, Context.RequestAborted);
+if (validationErrors.Count > 0)
+    return Results.Json(new { message = "The given data was invalid.", errors = validationErrors }, statusCode: 422);
+var okValue = Body["ok"]?.ToString();
+var record = await ScriptDatabase.ScalarAsync(
+    Database,
+    """
+    INSERT INTO "body_endpoint_handler_probe_results"
+        (source, probe, payload, result, ok, created_at, updated_at)
+    VALUES (@source, @probe, @payload, @result, @ok, @created, @updated)
+    RETURNING id
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@source"] = "handler-body",
+        ["@probe"] = Body["probe"]?.ToString(),
+        ["@payload"] = Body["payload"]?.ToString(),
+        ["@result"] = "Recorded via CustomRouteBuilder handler body injection ✓",
+        ["@ok"] = okValue is null or "true" or "1",
+        ["@created"] = DateTime.UtcNow,
+        ["@updated"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return Results.Json(new
+{
+    injected = true,
+    builder = "CustomRouteBuilder v2.0",
+    handler = "recordHandler",
+    probe_id = record,
+    probe = Body["probe"]?.ToString()
+});
+/* @arkzen:handler:cs:recordHandler:end */
+
+/* @arkzen:handler:cs:latest
+*/
+var latest = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"body_endpoint_handler_probe_results\" ORDER BY id DESC LIMIT 5",
+    cancellationToken: Context.RequestAborted);
+return Results.Json(new
+{
+    injected = true,
+    builder = "CustomRouteBuilder v2.0",
+    handler = "latest",
+    count = latest.Count,
+    results = latest
+});
+/* @arkzen:handler:cs:latest:end */
 
 /* @arkzen:web:components:shared */
 
