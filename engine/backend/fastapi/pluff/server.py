@@ -34,6 +34,121 @@ ensure_dir(STORAGE_ROOT)
 app.mount("/storage", StaticFiles(directory=str(STORAGE_ROOT)), name="storage")
 
 SECRET = env("ARKZEN_ENGINE_SECRET", "arkzen-engine-secret")
+_HUB_BACKEND_LABELS = {
+    "laravel": "Laravel",
+    "laravel-inertia": "Laravel",
+    "express": "Express",
+    "fastapi": "FastAPI / Django",
+    "django": "FastAPI / Django",
+    "spring-boot": "Spring Boot",
+    "aspnet": "ASP.NET",
+}
+_HUB_VARIANT_LABELS = {
+    "php": "Laravel",
+    "ts": "Express",
+    "py": "FastAPI / Django",
+    "java": "Spring Boot",
+    "cs": "ASP.NET",
+}
+_HUB_CODE_MARKERS = "endpoint|handler|middleware|policy|listener|listeners|job|jobs|console|mail|notification|notifications"
+
+
+def _hub_page_names(source: str) -> list[str]:
+    return list(dict.fromkeys(
+        match.group(1)
+        for match in re.finditer(r"/\* @arkzen:(?:web|native):page:(?!layout:)([a-zA-Z0-9_-]+)", source)
+        if match.group(1) not in {"end", "layout"}
+    ))
+
+
+def _hub_backend_variants(source: str, active_backend: str) -> list[str]:
+    variants = []
+    pattern = re.compile(
+        rf"^/\* @arkzen:({_HUB_CODE_MARKERS}):(?:(php|ts|py|java|cs):)?([a-zA-Z0-9_-]+)(?:\s+\*/)?\s*$",
+        re.MULTILINE,
+    )
+    for match in pattern.finditer(source):
+        marker, variant, name = match.groups()
+        closing = (
+            f"/* @arkzen:{marker}:{variant}:{name}:end */"
+            if variant else f"/* @arkzen:{marker}:{name}:end */"
+        )
+        inline_close = match.group(0).find("*/")
+        opening_end = match.start() + inline_close if inline_close >= 0 else source.find("*/", match.end())
+        if opening_end < 0:
+            continue
+        closing_start = source.find(closing, opening_end + 2)
+        if closing_start < 0 or not source[opening_end + 2:closing_start].strip():
+            continue
+        variants.append(_HUB_VARIANT_LABELS[variant or "php"])
+
+    variants = list(dict.fromkeys(variants))
+    has_backend = re.search(
+        r"auth:\s*true|@arkzen:(?:api|database|auth|jobs|events|mail|notifications|routes|realtime|console|store)",
+        source,
+    )
+    if not variants and has_backend:
+        variants.append(_HUB_BACKEND_LABELS.get(active_backend, "Laravel"))
+    return variants
+
+
+def _enrich_hub_registry(registry: dict) -> dict:
+    active_stack = registry.get("activeStack", "nextjs")
+    active_backend = "laravel-inertia" if active_stack == "react-inertia" else registry.get("activeBackend", "laravel")
+    modules = {}
+    for source_file in (REPO_ROOT / "tatemonos").glob("*/core.tsx"):
+        source = source_file.read_text("utf-8")
+        meta_match = re.search(r"/\* @arkzen:meta\b([\s\S]*?)\*/", source)
+        if not meta_match:
+            continue
+        meta = meta_match.group(1)
+        name_match = re.search(r"^\s*name:\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s#]+))", meta, re.MULTILINE)
+        if not name_match:
+            continue
+        name = next(value for value in name_match.groups() if value is not None)
+        version_match = re.search(r"^\s*version:\s*(?:\"([^\"]*)\"|'([^']*)'|([^\s#]+))", meta, re.MULTILINE)
+        version = next((value for value in version_match.groups() if value is not None), "1.0.0") if version_match else "1.0.0"
+        existing = modules.setdefault(name, {})
+        existing.update({
+            "name": name,
+            "version": version,
+            "status": existing.get("status", "active"),
+            "filePath": source_file.relative_to(REPO_ROOT).as_posix(),
+            "pages": _hub_page_names(source),
+            "auth": bool(re.search(r"^\s*auth:\s*true\s*$", meta, re.MULTILINE | re.IGNORECASE)),
+        })
+
+    for module in registry.get("modules", []):
+        if isinstance(module, dict) and module.get("name"):
+            modules.setdefault(module["name"], {}).update(module)
+
+    for module in modules.values():
+        file_path = module.get("filePath", f"tatemonos/{module['name']}/core.tsx")
+        source_file = (REPO_ROOT / file_path).resolve()
+        try:
+            source_file.relative_to(REPO_ROOT.resolve())
+        except ValueError:
+            module.update({"frontend": [], "backend": []})
+            continue
+        if not source_file.is_file():
+            module.update({"frontend": [], "backend": []})
+            continue
+        source = source_file.read_text("utf-8")
+        has_web = bool(re.search(r"@arkzen:(?:web:|meta:web\b)", source))
+        has_app = bool(re.search(r"@arkzen:(?:native:|meta:native\b)", source))
+        frontend = []
+        if has_web:
+            frontend.extend(["Next.js", "React + Vite", "React + Inertia", "Astro", "TanStack Start", "Tauri", "Electron"])
+        if has_app:
+            frontend.extend(["Expo", "React Native", "Lynx"])
+        module["frontend"] = list(dict.fromkeys(frontend))
+        module["backend"] = _hub_backend_variants(source, active_backend)
+
+    registry["activeBackend"] = active_backend
+    registry["activeStack"] = active_stack
+    registry["activeDatabase"] = registry.get("activeDatabase", "sqlite")
+    registry["modules"] = list(modules.values())
+    return registry
 
 
 def _guard(request: Request):
@@ -52,7 +167,8 @@ async def health():
 @app.get("/arkzen/registry")
 async def registry():
     f = REPO_ROOT / "arkzen.json"
-    return json.loads(f.read_text("utf-8")) if f.exists() else {"project": REPO_ROOT.name}
+    data = json.loads(f.read_text("utf-8")) if f.exists() else {"project": REPO_ROOT.name}
+    return _enrich_hub_registry(data)
 
 
 # Expo Hub polls this every 3s. Reads expo-registry.json written by the Expo watcher.

@@ -168,8 +168,8 @@ Express and FastAPI consume the shared backend blocks through their runtimes: `d
 creates the isolated schema, `api` creates Laravel-shaped controllers and routes, `routes`
 creates custom routes, `realtime` maps to Pusher-protocol broadcasting, `events` maps to
 events and listeners, YAML-only `jobs` and `console` create queue/command definitions, and
-YAML-only `mail` / `notifications` create transport classes. Body-bearing blocks use `:php`
-for Laravel, `:ts` for Express, and `:py` for FastAPI; the shared YAML header is not discarded
+YAML-only `mail` / `notifications` create transport classes. Body-bearing blocks use `:php` for Laravel, `:ts` for Express, `:py` for FastAPI, and `:java`
+for Spring Boot where that feature is implemented; the shared YAML header is not discarded
 when the body differs.
 
 For `jobs` and `console` the YAML header (`queue`, `tries`, `timeout`, `signature`, `description`, `schedule`) is repeated in each variant; only the body differs. A `jobs` / `console` block with **no body** (YAML only) is shared and generates a stub on every backend.
@@ -1071,7 +1071,7 @@ Class: `\App\Notifications\Arkzen\{SlugNs}\{Studly}Notification`. Requires `auth
 
 **Backend notes:** with **no body** a `notifications` block is shared (Express supports the `database`, `mail` and `broadcast` channels). A body makes it a variant: `:php` replaces `toMail()`; on Express use `@arkzen:notifications:ts:name` with a `toMail(notifiable)` body returning `new MailMessage().subject(...).line(...)`.
 
-## SECTION 16 — @arkzen:mail:identifier (shared; `:php` / `:ts` only with a body)
+## SECTION 16 — @arkzen:mail:identifier (shared; `:php` / `:ts` / `:py` / `:java` bodies)
 
 YAML inside the opening comment (`subject`, `data:` = field → type). Close with `:end`. Optional Blade/HTML body between `*/` and `:end` becomes the email view.
 
@@ -1089,7 +1089,7 @@ data:
 
 Class: `\App\Mail\Arkzen\{SlugNs}\{Studly}Mail` (`welcome-mail` → `WelcomeMailMail`: the engine appends `Mail` to the studly name — keep identifiers short, e.g. `welcome`). Trigger via an api endpoint with `type: mail_send`.
 
-**Backend notes:** with **no body** a `mail` block is shared and gets a generated template. A Blade/HTML body makes it a variant, and on Express only `{{ var }}`, `{{ $var }}` and `{!! var !!}` placeholders are rendered (no Blade directives). To stay shared on every backend, keep mail YAML-only unless you need custom markup.
+**Backend notes:** with **no body** a `mail` block is shared and gets a generated template. A Blade/HTML body makes it a variant. Express, FastAPI, and Spring Boot render `{{ var }}`, `{{ $var }}`, and `{!! var !!}` placeholders; Spring Boot escapes the double-brace forms. Spring Boot supports the `mail_send` endpoint and logs delivery by default; SMTP delivery requires `MAIL_MAILER=smtp` and SMTP environment settings. To stay shared on every backend, keep mail YAML-only unless you need custom markup.
 
 ## SECTION 17 — @arkzen:console:identifier (shared) / @arkzen:console:php:identifier / @arkzen:console:ts:identifier (Artisan + scheduler)
 

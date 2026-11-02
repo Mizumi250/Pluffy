@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — animation-lab
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:14:09.465Z
+// Generated: 2026-11-02T06:14:41.234Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

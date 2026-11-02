@@ -1,0 +1,1 @@
+{"table":"send_log","timestamps":true,"softDeletes":false,"columns":{"user_id":{"type":"foreignId","nullable":true},"channel":{"type":"string"},"target":{"type":"string"},"status":{"type":"string"}},"indexes":[]}

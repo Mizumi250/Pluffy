@@ -1,0 +1,1 @@
+{"table":"messages","timestamps":true,"softDeletes":false,"columns":{"id":{"type":"integer","primary":true,"autoIncrement":true},"content":{"type":"string","length":500,"nullable":false},"channel_type":{"type":"string","length":50,"nullable":true}},"indexes":[]}

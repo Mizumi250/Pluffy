@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server'
 import * as fs from 'fs'
 import * as path from 'path'
-import { enrichHubRegistry } from '../../../../../../shared/arkzen/hub/registry'
+import { readHubRegistry } from '../../../../../../shared/arkzen/hub/registry'
 
 export async function GET() {
   try {
@@ -13,14 +13,8 @@ export async function GET() {
     }
 
     const rootConfigPath = path.join(repoRoot, 'arkzen.json')
-    const registry = JSON.parse(fs.readFileSync(registryPath, 'utf-8'))
-    const activeConfig = fs.existsSync(rootConfigPath) ? JSON.parse(fs.readFileSync(rootConfigPath, 'utf-8')) : registry
-    const enriched = enrichHubRegistry({
-      ...registry,
-      activeStack: activeConfig.activeStack ?? registry.activeStack,
-      activeBackend: activeConfig.activeBackend ?? registry.activeBackend,
-      activeDatabase: activeConfig.activeDatabase ?? registry.activeDatabase,
-    }, repoRoot)
+    const enriched = readHubRegistry(registryPath, repoRoot, rootConfigPath)
+    if (!enriched) return NextResponse.json({ error: 'Registry not found' }, { status: 404 })
     return NextResponse.json(enriched)
   } catch (error) {
     return NextResponse.json(

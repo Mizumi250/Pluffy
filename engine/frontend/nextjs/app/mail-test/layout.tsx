@@ -6,11 +6,11 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'mail-test',
-  description: 'Tests Laravel Mail system. Send emails via SMTP/Mailtrap. Logs attempts. Updated to v6 named mail format.',
+  description: 'Tests backend email delivery with configurable SMTP and mail logs.',
   openGraph: {
     type: 'website',
     title: 'mail-test',
-    description: 'Tests Laravel Mail system. Send emails via SMTP/Mailtrap. Logs attempts. Updated to v6 named mail format.',
+    description: 'Tests backend email delivery with configurable SMTP and mail logs.',
   },
 }
 

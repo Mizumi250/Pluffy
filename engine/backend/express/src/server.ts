@@ -8,6 +8,7 @@ import { REPO_ROOT, BACKEND_DIR, env, Log } from './runtime/support'
 import { startRealtime } from './runtime/broadcast'
 import { STORAGE_ROOT } from './runtime/storage'
 import { buildTatemono, removeTatemono, loadAllGenerated, routers, routePrefixes } from './engine/build'
+import { readHubRegistry } from '../../../shared/arkzen/hub/registry'
 
 export const app = express()
 app.use(cors())
@@ -24,7 +25,7 @@ const engine = express.Router()
 engine.get('/health', (_q, r) => void r.json({ status: 'ok', engine: 'Pluff Express Backend Engine', backend: 'express', variant: 'ts', version: '1.0.0' }))
 engine.get('/registry', (_q, r) => {
   const f = path.join(REPO_ROOT, 'arkzen.json')
-  r.json(fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf-8')) : { project: path.basename(REPO_ROOT) })
+  r.json(readHubRegistry(f, REPO_ROOT) ?? { project: path.basename(REPO_ROOT) })
 })
 engine.get('/expo-registry', (_q, r) => {
   const f = path.join(REPO_ROOT, 'engine', 'frontend', 'expo', 'expo-registry.json')

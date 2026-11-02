@@ -1,0 +1,1 @@
+{"table":"follows","timestamps":true,"softDeletes":false,"columns":{"id":{"type":"integer","primary":true,"autoIncrement":true},"follower_id":{"type":"integer","nullable":false},"following_id":{"type":"integer","nullable":false}},"indexes":[{"columns":["follower_id","following_id"],"unique":true}]}

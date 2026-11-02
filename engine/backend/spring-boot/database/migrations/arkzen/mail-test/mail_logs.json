@@ -1,0 +1,1 @@
+{"table":"mail_logs","timestamps":true,"softDeletes":false,"columns":{"id":{"type":"integer","primary":true,"autoIncrement":true},"user_id":{"type":"integer","nullable":true},"to_email":{"type":"string"},"subject":{"type":"string"},"mail_class":{"type":"string"},"status":{"type":"string","default":"sent"},"error":{"type":"text","nullable":true}},"indexes":[]}

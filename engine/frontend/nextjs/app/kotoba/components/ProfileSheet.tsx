@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ProfileSheet
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-01T13:14:23.760Z
+// Generated: 2026-11-02T06:15:01.542Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

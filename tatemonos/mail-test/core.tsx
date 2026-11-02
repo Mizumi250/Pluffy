@@ -1,8 +1,13 @@
 /* @arkzen:meta
 name: mail-test
 version: 2.0.0
-description: Tests Laravel Mail system. Send emails via SMTP/Mailtrap. Logs attempts. Updated to v6 named mail format.
+description: Tests backend email delivery with configurable SMTP and mail logs.
 auth: true
+auth_seed:
+  users:
+    - name: Mail Test User
+      email: test@arkzen.local
+      password: password
 */
 
 /* @arkzen:web:config
@@ -66,13 +71,15 @@ endpoints:
       type: single
 */
 
-/* @arkzen:mail:welcome-mail
+/* @arkzen:mail:php:welcome-mail
 subject: "Welcome to Arkzen"
 data:
   username: string
   app_name: string
 */
-/* @arkzen:mail:welcome-mail:end */
+<p>Welcome, {{ $username }}!</p>
+<p>Thanks for joining {{ $app_name }}.</p>
+/* @arkzen:mail:php:welcome-mail:end */
 
 /* @arkzen:mail:ts:welcome-mail
 subject: "Welcome to Arkzen"
@@ -83,14 +90,17 @@ data:
 <p>welcome-mail</p>
 /* @arkzen:mail:ts:welcome-mail:end */
 
-/* @arkzen:mail:order-confirmation
+/* @arkzen:mail:php:order-confirmation
 subject: "Your order has been confirmed"
 data:
   order_id: string
   total: string
   customer_name: string
 */
-/* @arkzen:mail:order-confirmation:end */
+<p>Hi {{ $customer_name }},</p>
+<p>Your order {{ $order_id }} has been confirmed.</p>
+<p>Total: {{ $total }}</p>
+/* @arkzen:mail:php:order-confirmation:end */
 
 /* @arkzen:mail:ts:order-confirmation
 subject: "Your order has been confirmed"
@@ -102,13 +112,16 @@ data:
 <p>order-confirmation</p>
 /* @arkzen:mail:ts:order-confirmation:end */
 
-/* @arkzen:mail:password-reset
+/* @arkzen:mail:php:password-reset
 subject: "Reset your password"
 data:
   reset_link: string
   expires_in: string
 */
-/* @arkzen:mail:password-reset:end */
+<p>Use this link to reset your password:</p>
+<p><a href="{{ $reset_link }}">Reset password</a></p>
+<p>This link expires in {{ $expires_in }}.</p>
+/* @arkzen:mail:php:password-reset:end */
 
 /* @arkzen:mail:ts:password-reset
 subject: "Reset your password"
@@ -129,6 +142,16 @@ data:
 <p>Thanks for joining {{ app_name }}.</p>
 /* @arkzen:mail:py:welcome-mail:end */
 
+/* @arkzen:mail:java:welcome-mail
+subject: "Welcome to Arkzen"
+data:
+  username: string
+  app_name: string
+*/
+<p>Welcome, {{ username }}!</p>
+<p>Thanks for joining {{ app_name }}.</p>
+/* @arkzen:mail:java:welcome-mail:end */
+
 /* @arkzen:mail:py:order-confirmation
 subject: "Your order has been confirmed"
 data:
@@ -141,6 +164,18 @@ data:
 <p>Total: {{ total }}</p>
 /* @arkzen:mail:py:order-confirmation:end */
 
+/* @arkzen:mail:java:order-confirmation
+subject: "Your order has been confirmed"
+data:
+  order_id: string
+  total: string
+  customer_name: string
+*/
+<p>Hi {{ customer_name }},</p>
+<p>Your order {{ order_id }} has been confirmed.</p>
+<p>Total: {{ total }}</p>
+/* @arkzen:mail:java:order-confirmation:end */
+
 /* @arkzen:mail:py:password-reset
 subject: "Reset your password"
 data:
@@ -151,6 +186,17 @@ data:
 <p><a href="{{ reset_link }}">Reset password</a></p>
 <p>This link expires in {{ expires_in }}.</p>
 /* @arkzen:mail:py:password-reset:end */
+
+/* @arkzen:mail:java:password-reset
+subject: "Reset your password"
+data:
+  reset_link: string
+  expires_in: string
+*/
+<p>Use this link to reset your password:</p>
+<p><a href="{{ reset_link }}">Reset password</a></p>
+<p>This link expires in {{ expires_in }}.</p>
+/* @arkzen:mail:java:password-reset:end */
 
 /* @arkzen:web:components:shared */
 
