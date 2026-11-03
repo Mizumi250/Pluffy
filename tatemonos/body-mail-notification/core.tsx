@@ -489,6 +489,239 @@ SendLog.query().where("user_id", user == null ? null : user.get("id")).delete();
 return response.json(mapOf("message", "Log cleared"));
 /* @arkzen:endpoint:java:clearLog:end */
 
+/* @arkzen:endpoint:cs:sendMail
+*/
+var mailKey = Body["mail"]?.ToString() ?? "";
+var to = Body["to"]?.ToString() ?? "";
+var mails = new Dictionary<string, (string Subject, string Template, Dictionary<string, object?> Data)>
+{
+    ["welcome"] = (
+        "Welcome to Arkzen — blade_body injection test",
+        """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f8fafc; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
+    h1 { font-size: 22px; color: #1e293b; margin-bottom: 8px; }
+    p { color: #475569; line-height: 1.6; }
+    .badge { display: inline-block; background: #0f172a; color: #fff; border-radius: 6px; padding: 4px 12px; font-size: 12px; margin-top: 16px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Welcome, {{ $name }}!</h1>
+    <p>You are now part of <strong>{{ $app_name }}</strong>. This email was generated from a <code>blade_body</code> block injected via the Arkzen DSL — no manually created Blade file required.</p>
+    <span class="badge">✓ blade_body injection works</span>
+  </div>
+</body>
+</html>
+""",
+        new Dictionary<string, object?> { ["name"] = "Test User", ["app_name"] = "Arkzen" }),
+    ["receipt"] = (
+        "Your receipt — blade_body injection test",
+        """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #f0fdf4; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border: 1px solid #bbf7d0; }
+    h1 { color: #15803d; font-size: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 16px; }
+    td { padding: 8px 0; border-bottom: 1px solid #f0fdf4; color: #374151; }
+    td:last-child { text-align: right; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>🧾 Receipt #{{ $order_id }}</h1>
+    <table>
+      <tr><td>Item</td><td>{{ $item_name }}</td></tr>
+      <tr><td>Amount</td><td>{{ $amount }}</td></tr>
+      <tr><td>Status</td><td>✅ Paid</td></tr>
+    </table>
+    <p style="margin-top:16px;font-size:12px;color:#6b7280;">blade_body injected receipt — no stub used.</p>
+  </div>
+</body>
+</html>
+""",
+        new Dictionary<string, object?> { ["order_id"] = "ORD-001", ["amount"] = "$9.99", ["item_name"] = "Arkzen Test Item" }),
+    ["alert"] = (
+        "⚠ Action Required — blade_body injection test",
+        """
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: sans-serif; background: #fff7ed; margin: 0; padding: 32px; }
+    .card { background: #fff; border-radius: 12px; padding: 32px; max-width: 520px; margin: auto; border-left: 4px solid #f97316; }
+    h1 { color: #c2410c; font-size: 18px; }
+    p { color: #374151; }
+    a { display: inline-block; margin-top: 16px; background: #f97316; color: #fff; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>⚠ Action Required</h1>
+    <p>{{ $alert_message }}</p>
+    <a href="{{ $action_url }}">Take Action</a>
+    <p style="margin-top:16px;font-size:12px;color:#9ca3af;">Injected via blade_body — MailBuilder v3.1 test.</p>
+  </div>
+</body>
+</html>
+""",
+        new Dictionary<string, object?> { ["alert_message"] = "This is a test alert from Arkzen.", ["action_url"] = "/" }),
+};
+if (!mails.TryGetValue(mailKey, out var mail))
+    return Results.Json(new { message = "Unknown mail type: " + mailKey }, statusCode: 422);
+
+long? userId = long.TryParse(user?["id"]?.ToString(), out var parsedUserId) ? parsedUserId : null;
+var mailClass = char.ToUpper(mailKey[0]) + mailKey[1..] + "Mail";
+string status;
+string? failure = null;
+try
+{
+    await Mail.SendAsync(to, mail.Subject, mail.Template, mail.Data, Context.RequestAborted);
+    status = "sent";
+}
+catch (Exception error) when (error is not OperationCanceledException)
+{
+    status = "failed";
+    failure = error.Message;
+}
+var now = DateTime.UtcNow;
+var rows = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    INSERT INTO "body_mail_notification_send_log"
+        (user_id, to_email, subject, mail_class, kind, status, error, created_at, updated_at)
+    VALUES (@user_id, @to_email, @subject, @mail_class, @kind, @status, @error, @created, @updated)
+    RETURNING *
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@user_id"] = userId,
+        ["@to_email"] = to,
+        ["@subject"] = mailKey,
+        ["@mail_class"] = mailClass,
+        ["@kind"] = "mail",
+        ["@status"] = status,
+        ["@error"] = failure,
+        ["@created"] = now,
+        ["@updated"] = now
+    },
+    Context.RequestAborted);
+return Results.Json(rows[0], statusCode: 201);
+/* @arkzen:endpoint:cs:sendMail:end */
+
+/* @arkzen:endpoint:cs:notify
+*/
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var notificationKey = Body["notification"]?.ToString() ?? "";
+var actionRequired = notificationKey == "action-required";
+var notificationClass = string.Concat(notificationKey.Split('-').Select(part => char.ToUpper(part[0]) + part[1..])) + "Notification";
+var message = string.IsNullOrWhiteSpace(Body["message"]?.ToString())
+    ? (actionRequired
+        ? "You have a pending action that requires your attention."
+        : "Here is your latest activity summary.")
+    : Body["message"]!.ToString();
+var subject = actionRequired
+    ? "⚠ Action Required — toMail_body injection test"
+    : "📊 Activity Summary — toMail_body injection test";
+var template = actionRequired
+    ? "<p>Hello!</p><p>{{ $message }}</p><p>This toMail() body was injected via the Arkzen DSL — not a stub.</p><p><a href=\"/\">Review Now</a></p><p>NotificationBuilder v3.9 toMail_body injection confirmed ✓</p>"
+    : "<p>Hi there!</p><p>{{ $message }}</p><p>Notifications: 2 unread | Mails: 3 sent | Status: All healthy</p><p><a href=\"/\">View Dashboard</a></p><p>Cheers, Arkzen Engine</p>";
+var email = user["email"]?.ToString() ?? "";
+long? userId = long.TryParse(user["id"]?.ToString(), out var parsedUserId) ? parsedUserId : null;
+string status;
+string? failure = null;
+try
+{
+    await Mail.SendAsync(email, subject, template, new Dictionary<string, object?> { ["message"] = message }, Context.RequestAborted);
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        """
+        CREATE TABLE IF NOT EXISTS "body_mail_notification_notifications" (
+            id TEXT PRIMARY KEY,
+            type TEXT NOT NULL,
+            notifiable_type TEXT NOT NULL,
+            notifiable_id BIGINT NOT NULL,
+            data TEXT NOT NULL,
+            read_at TIMESTAMP NULL,
+            created_at TIMESTAMP NULL,
+            updated_at TIMESTAMP NULL
+        )
+        """,
+        cancellationToken: Context.RequestAborted);
+    var stamp = DateTime.UtcNow;
+    await ScriptDatabase.ExecuteAsync(
+        Database,
+        """
+        INSERT INTO "body_mail_notification_notifications"
+            (id, type, notifiable_type, notifiable_id, data, read_at, created_at, updated_at)
+        VALUES (@id, @type, @notifiable_type, @notifiable_id, @data, @read_at, @created, @updated)
+        """,
+        new Dictionary<string, object?>
+        {
+            ["@id"] = Guid.NewGuid().ToString(),
+            ["@type"] = notificationClass,
+            ["@notifiable_type"] = "body_mail_notification_users",
+            ["@notifiable_id"] = userId,
+            ["@data"] = JsonSerializer.Serialize(new { message, type = notificationClass }),
+            ["@read_at"] = null,
+            ["@created"] = stamp,
+            ["@updated"] = stamp
+        },
+        Context.RequestAborted);
+    status = "sent";
+}
+catch (Exception error) when (error is not OperationCanceledException)
+{
+    status = "failed";
+    failure = error.Message;
+}
+var logged = DateTime.UtcNow;
+var rows = await ScriptDatabase.QueryAsync(
+    Database,
+    """
+    INSERT INTO "body_mail_notification_send_log"
+        (user_id, to_email, subject, mail_class, kind, status, error, created_at, updated_at)
+    VALUES (@user_id, @to_email, @subject, @mail_class, @kind, @status, @error, @created, @updated)
+    RETURNING *
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@user_id"] = userId,
+        ["@to_email"] = email,
+        ["@subject"] = notificationKey,
+        ["@mail_class"] = notificationClass,
+        ["@kind"] = "notification",
+        ["@status"] = status,
+        ["@error"] = failure,
+        ["@created"] = logged,
+        ["@updated"] = logged
+    },
+    Context.RequestAborted);
+return Results.Json(rows[0], statusCode: 201);
+/* @arkzen:endpoint:cs:notify:end */
+
+/* @arkzen:endpoint:cs:clearLog
+*/
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var userId = long.Parse(user["id"]!.ToString());
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    "DELETE FROM \"body_mail_notification_send_log\" WHERE user_id = @user_id",
+    new Dictionary<string, object?> { ["@user_id"] = userId },
+    Context.RequestAborted);
+return Results.Json(new { message = "Log cleared" });
+/* @arkzen:endpoint:cs:clearLog:end */
+
 /* @arkzen:mail:php:welcome
 subject: "Welcome to Arkzen — blade_body injection test"
 data:
