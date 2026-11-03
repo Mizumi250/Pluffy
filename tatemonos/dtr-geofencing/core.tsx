@@ -796,8 +796,8 @@ var records = await ScriptDatabase.QueryAsync(
     """
     SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
            e.avatar AS employee__avatar, e.is_active AS employee__is_active
-    FROM "dtr_time_records" tr
-    LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    FROM "dtr_geofencing_time_records" tr
+    LEFT JOIN "dtr_geofencing_employees" e ON e.id = tr.employee_id
     WHERE tr.employee_id = @employee_id
     ORDER BY tr."timestamp" DESC
     LIMIT 50
@@ -834,7 +834,7 @@ var latitudeValue = Body["latitude"]?.ToString();
 var longitudeValue = Body["longitude"]?.ToString();
 var settings = await ScriptDatabase.QueryAsync(
     Database,
-    "SELECT key, value FROM \"dtr_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
+    "SELECT key, value FROM \"dtr_geofencing_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
     new Dictionary<string, object?>
     {
         ["@enabled"] = "geofencing_enabled",
@@ -873,7 +873,7 @@ if (geofencingEnabled && latitudeValue is not null && longitudeValue is not null
 var recordId = await ScriptDatabase.ScalarAsync(
     Database,
     """
-    INSERT INTO "dtr_time_records"
+    INSERT INTO "dtr_geofencing_time_records"
         (employee_id, "type", "timestamp", latitude, longitude, within_geofence, notes, created_at, updated_at)
     VALUES (@employee_id, @type, @timestamp, @latitude, @longitude, @within_geofence, @notes, @created_at, @updated_at)
     RETURNING id
@@ -896,7 +896,7 @@ var createdRecord = (await ScriptDatabase.QueryAsync(
     """
     SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
            e.avatar AS employee__avatar, e.is_active AS employee__is_active
-    FROM "dtr_time_records" tr LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    FROM "dtr_geofencing_time_records" tr LEFT JOIN "dtr_geofencing_employees" e ON e.id = tr.employee_id
     WHERE tr.id = @id
     """,
     new Dictionary<string, object?> { ["@id"] = recordId },
@@ -925,7 +925,7 @@ var latitudeValue = Body["latitude"]?.ToString();
 var longitudeValue = Body["longitude"]?.ToString();
 var settings = await ScriptDatabase.QueryAsync(
     Database,
-    "SELECT key, value FROM \"dtr_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
+    "SELECT key, value FROM \"dtr_geofencing_dtr_settings\" WHERE key IN (@enabled, @lat, @lng, @radius)",
     new Dictionary<string, object?>
     {
         ["@enabled"] = "geofencing_enabled",
@@ -964,7 +964,7 @@ if (geofencingEnabled && latitudeValue is not null && longitudeValue is not null
 var recordId = await ScriptDatabase.ScalarAsync(
     Database,
     """
-    INSERT INTO "dtr_time_records"
+    INSERT INTO "dtr_geofencing_time_records"
         (employee_id, "type", "timestamp", latitude, longitude, within_geofence, notes, created_at, updated_at)
     VALUES (@employee_id, @type, @timestamp, @latitude, @longitude, @within_geofence, @notes, @created_at, @updated_at)
     RETURNING id
@@ -987,7 +987,7 @@ var createdRecord = (await ScriptDatabase.QueryAsync(
     """
     SELECT tr.*, e.id AS employee__id, e.name AS employee__name, e.email AS employee__email,
            e.avatar AS employee__avatar, e.is_active AS employee__is_active
-    FROM "dtr_time_records" tr LEFT JOIN "dtr_employees" e ON e.id = tr.employee_id
+    FROM "dtr_geofencing_time_records" tr LEFT JOIN "dtr_geofencing_employees" e ON e.id = tr.employee_id
     WHERE tr.id = @id
     """,
     new Dictionary<string, object?> { ["@id"] = recordId },
@@ -1010,14 +1010,14 @@ var enabledText = enabledValue?.ToString();
 var enabled = enabledValue is not null && enabledText is not ("false" or "0" or "");
 var currentSetting = (await ScriptDatabase.QueryAsync(
     Database,
-    "SELECT id FROM \"dtr_dtr_settings\" WHERE key = @key",
+    "SELECT id FROM \"dtr_geofencing_dtr_settings\" WHERE key = @key",
     new Dictionary<string, object?> { ["@key"] = "geofencing_enabled" },
     Context.RequestAborted)).FirstOrDefault();
 if (currentSetting is null)
 {
     await ScriptDatabase.ExecuteAsync(
         Database,
-        "INSERT INTO \"dtr_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
+        "INSERT INTO \"dtr_geofencing_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
         new Dictionary<string, object?> { ["@key"] = "geofencing_enabled", ["@value"] = enabled ? "true" : "false", ["@created"] = DateTime.UtcNow, ["@updated"] = DateTime.UtcNow },
         Context.RequestAborted);
 }
@@ -1025,11 +1025,11 @@ else
 {
     await ScriptDatabase.ExecuteAsync(
         Database,
-        "UPDATE \"dtr_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
+        "UPDATE \"dtr_geofencing_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
         new Dictionary<string, object?> { ["@key"] = "geofencing_enabled", ["@value"] = enabled ? "true" : "false", ["@updated"] = DateTime.UtcNow },
         Context.RequestAborted);
 }
-return Results.Json(new { success = true, geofencing_enabled = enabled });
+return Results.Json(new { success = true, geofencing_enabled = enabledValue?.DeepClone() });
 /* @arkzen:endpoint:cs:toggle_geofencing:end */
 
 /* @arkzen:endpoint:cs:update_office
@@ -1044,14 +1044,14 @@ foreach (var (key, value) in settingsToWrite)
 {
     var currentSetting = (await ScriptDatabase.QueryAsync(
         Database,
-        "SELECT id FROM \"dtr_dtr_settings\" WHERE key = @key",
+        "SELECT id FROM \"dtr_geofencing_dtr_settings\" WHERE key = @key",
         new Dictionary<string, object?> { ["@key"] = key },
         Context.RequestAborted)).FirstOrDefault();
     if (currentSetting is null)
     {
         await ScriptDatabase.ExecuteAsync(
             Database,
-            "INSERT INTO \"dtr_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
+            "INSERT INTO \"dtr_geofencing_dtr_settings\" (key, value, created_at, updated_at) VALUES (@key, @value, @created, @updated)",
             new Dictionary<string, object?> { ["@key"] = key, ["@value"] = value ?? "", ["@created"] = DateTime.UtcNow, ["@updated"] = DateTime.UtcNow },
             Context.RequestAborted);
     }
@@ -1059,7 +1059,7 @@ foreach (var (key, value) in settingsToWrite)
     {
         await ScriptDatabase.ExecuteAsync(
             Database,
-            "UPDATE \"dtr_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
+            "UPDATE \"dtr_geofencing_dtr_settings\" SET value = @value, updated_at = @updated WHERE key = @key",
             new Dictionary<string, object?> { ["@key"] = key, ["@value"] = value ?? "", ["@updated"] = DateTime.UtcNow },
             Context.RequestAborted);
     }

@@ -896,7 +896,11 @@ public sealed class BackendEngine
         context.Request.EnableBuffering();
         try
         {
-            if (await JsonNode.ParseAsync(context.Request.Body, cancellationToken: context.RequestAborted) is JsonObject body) return body;
+            // GET/DELETE clients often send a JSON Content-Type with no body at all.
+            using var reader = new StreamReader(context.Request.Body, leaveOpen: true);
+            var text = await reader.ReadToEndAsync(context.RequestAborted);
+            if (string.IsNullOrWhiteSpace(text)) return new JsonObject();
+            if (JsonNode.Parse(text) is JsonObject body) return body;
             throw new InvalidDataException("Request body must be a JSON object.");
         }
         catch (JsonException)

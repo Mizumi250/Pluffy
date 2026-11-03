@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — notification-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T09:58:12.651Z
+// Generated: 2026-11-03T02:14:37.303Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

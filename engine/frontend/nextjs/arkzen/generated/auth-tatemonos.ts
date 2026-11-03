@@ -15,5 +15,6 @@ export const AUTH_TATEMONOS: string[] = [
   "kotoba",
   "express-test",
   "express-test-2",
-  "fastapi-test"
+  "fastapi-test",
+  "aspnet-test"
 ];

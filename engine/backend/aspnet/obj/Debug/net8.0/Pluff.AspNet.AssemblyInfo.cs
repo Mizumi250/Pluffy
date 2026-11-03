@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Pluff.AspNet")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+29cade476c3e847f2dc10b2902d7845477cd6216")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+cf401a966b0726b0dcef89628be7afa7f34c7901")]
 [assembly: System.Reflection.AssemblyProductAttribute("Pluff.AspNet")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Pluff.AspNet")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
