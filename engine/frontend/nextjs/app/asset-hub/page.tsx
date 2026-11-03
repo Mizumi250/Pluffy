@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — asset-hub/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T06:51:32.990Z
+// Generated: 2026-11-03T12:34:16.187Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

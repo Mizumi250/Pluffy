@@ -3882,6 +3882,1135 @@ export async function kt<T = any>(path: string, opts: { method?: string; json?: 
 
 /* @arkzen:web:script:end */
 
+/* @arkzen:handler:go:me
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if count, err := Post.Query().Count(ctx); err != nil {
+    return response.Error(500, "Could not check community seed data")
+} else if count == 0 {
+    if err := community_seed(ctx); err != nil {
+        return response.Error(500, "Could not seed the community")
+    }
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name, "avatar_color": "#121212"},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+return response.JSON(map[string]any{
+    "data": profile,
+    "user": map[string]any{"id": user.ID, "name": user.Name, "email": user.Email},
+})
+/* @arkzen:handler:go:me:end */
+
+/* @arkzen:handler:go:update_me
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+updates := request.Only("display_name", "bio", "native_lang", "learning_lang", "level", "country", "interests", "daily_goal", "onboarded")
+if len(updates) == 0 {
+    return response.JSON(422, map[string]any{"message": "Provide at least one profile field to update"})
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name, "avatar_color": "#121212"},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+if err := profile.Update(ctx, updates); err != nil {
+    return response.Error(422, "Could not update learner profile")
+}
+return response.JSON(map[string]any{"data": profile})
+/* @arkzen:handler:go:update_me:end */
+
+/* @arkzen:handler:go:bump
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+amount := params.Int(0)
+if amount < 0 {
+    return response.JSON(422, map[string]any{"message": "XP amount cannot be negative"})
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+if err := profile.Increment(ctx, "xp", amount); err != nil {
+    return response.Error(500, "Could not add XP")
+}
+profile, err = profile.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload learner profile")
+}
+return response.JSON(map[string]any{"data": profile, "xp_awarded": amount})
+/* @arkzen:handler:go:bump:end */
+
+/* @arkzen:handler:go:notify
+*/
+recipientID := params.Int(0)
+kind := params.String(1)
+text := params.String(2)
+referenceID := params.NullableInt(3)
+if kind == "" || text == "" || len(text) > 500 {
+    return response.JSON(422, map[string]any{"message": "Alert kind and text are required"})
+}
+alert, err := Alert.Create(ctx, map[string]any{
+    "user_id": recipientID, "kind": kind, "text": text,
+    "ref": referenceID, "is_read": false,
+})
+if err != nil {
+    return response.Error(500, "Could not create alert")
+}
+return response.JSON(map[string]any{"data": alert})
+/* @arkzen:handler:go:notify:end */
+
+/* @arkzen:handler:go:community_seed
+*/
+if count, err := Post.Query().Count(ctx); err != nil {
+    return err
+} else if count > 0 {
+    return nil
+}
+seeds := []map[string]any{
+    {"name": "Maya", "display_name": "Maya R.", "lang": "es", "body": "¡Hola! Hoy aprendí una frase nueva."},
+    {"name": "Luca", "display_name": "Luca P.", "lang": "it", "body": "La mia parola preferita è meraviglioso."},
+    {"name": "Ana", "display_name": "Ana C.", "lang": "fr", "body": "J'apprends un peu chaque jour."},
+}
+for i, seed := range seeds {
+    user, err := User.Create(ctx, map[string]any{"name": seed["name"], "email": fmt.Sprintf("learner-%d@kotoba.test", i+1)})
+    if err != nil {
+        return err
+    }
+    color := []string{"#3f6b4f", "#8a6a2f", "#7a3b34"}[i]
+    profile, err := Profile.Create(ctx, map[string]any{
+        "user_id": user.ID, "display_name": seed["display_name"],
+        "learning_lang": seed["lang"], "avatar_color": color,
+    })
+    if err != nil {
+        return err
+    }
+    if _, err := Post.Create(ctx, map[string]any{
+        "user_id": user.ID, "author_name": profile.DisplayName,
+        "author_color": color, "lang": seed["lang"], "kind": "moment",
+        "body": seed["body"], "likes_count": 0, "comments_count": 0,
+    }); err != nil {
+        return err
+    }
+}
+return nil
+/* @arkzen:handler:go:community_seed:end */
+
+/* @arkzen:handler:go:home
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+if profile == nil {
+    profile, err = Profile.Create(ctx, map[string]any{"user_id": user.ID, "display_name": user.Name})
+}
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+missions, _ := Mission.Query().WhereIn("lang", []string{profile.LearningLang, "any"}).OrderBy("position", "asc").Get(ctx)
+var mission any
+if len(missions) > 0 {
+    mission = missions[time.Now().YearDay()%len(missions)]
+}
+today := time.Now().UTC().Format("2006-01-02")
+dueCards, _ := VocabCard.Query().Where("user_id", user.ID).WhereAny(map[string]any{"due_date": nil, "due_date<=": today}).Count(ctx)
+doneLessonIDs, _ := LessonResult.Query().Where("user_id", user.ID).Pluck(ctx, "lesson_id")
+nextLesson, _ := Lesson.Query().Where("lang", profile.LearningLang).WhereNotIn("id", doneLessonIDs).OrderBy("position", "asc").First(ctx)
+unreadAlerts, _ := Alert.Query().Where("user_id", user.ID).Where("is_read", false).Count(ctx)
+postsToday, _ := Post.Query().Where("user_id", user.ID).WhereDate("created_at", today).Count(ctx)
+messagesToday, _ := Message.Query().Where("sender_id", user.ID).WhereDate("created_at", today).Count(ctx)
+lessonsToday, _ := LessonResult.Query().Where("user_id", user.ID).WhereDate("updated_at", today).Count(ctx)
+helpNeeded, _ := Post.Query().Where("corrections_count", 0).Where("user_id", "!=", user.ID).Where("lang", profile.NativeLang).Count(ctx)
+missionDone := false
+if selected, ok := mission.(MissionRecord); ok {
+    missionDone, _ = Post.Query().Where("user_id", user.ID).Where("mission_id", selected.ID).WhereDate("created_at", today).Exists(ctx)
+}
+circles, _ := CircleMember.Query().Where("user_id", user.ID).Count(ctx)
+return response.JSON(map[string]any{
+    "profile": profile, "mission": mission, "mission_done": missionDone,
+    "due": dueCards, "next_lesson": nextLesson, "unread": unreadAlerts,
+    "today_activity": postsToday + messagesToday + lessonsToday,
+    "help_needed": helpNeeded, "circles": circles,
+})
+/* @arkzen:handler:go:home:end */
+
+/* @arkzen:handler:go:feed
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+query := Post.Query().OrderBy("id", "desc")
+if lang := request.Input("lang"); lang != "" {
+    query = query.Where("lang", lang)
+}
+switch request.InputOr("scope", "all") {
+case "following":
+    followedIDs, err := Follow.Query().Where("follower_id", user.ID).Pluck(ctx, "following_id")
+    if err != nil {
+        return response.Error(500, "Could not load followed learners")
+    }
+    query = query.WhereIn("user_id", append(followedIDs, user.ID))
+case "mine":
+    query = query.Where("user_id", user.ID)
+case "help":
+    query = query.Where("lang", profile.NativeLang).Where("user_id", "!=", user.ID).Where("corrections_count", 0)
+}
+if missionID := request.Int("mission_id"); missionID > 0 {
+    query = query.Where("mission_id", missionID)
+}
+posts, err := query.Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load community feed")
+}
+postIDs := make([]int, 0, len(posts))
+for _, post := range posts {
+    postIDs = append(postIDs, post.ID)
+}
+likedIDs, _ := Like.Query().Where("user_id", user.ID).WhereIn("post_id", postIDs).PluckInt(ctx, "post_id")
+for _, post := range posts {
+    post.Liked = false
+    for _, likedID := range likedIDs {
+        if likedID == post.ID {
+            post.Liked = true
+            break
+        }
+    }
+}
+return response.JSON(map[string]any{"data": posts})
+/* @arkzen:handler:go:feed:end */
+
+/* @arkzen:handler:go:create_post
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+body := strings.TrimSpace(request.String("body"))
+lang := request.Input("lang")
+kind := request.InputOr("kind", "moment")
+translation := request.Input("translation")
+if body == "" || len(body) > 1500 || lang == "" || len(lang) > 8 ||
+    !IsOneOf(kind, "moment", "question", "mission") || len(translation) > 1500 {
+    return response.JSON(422, map[string]any{"message": "Post fields are invalid"})
+}
+profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": user.ID}, map[string]any{"display_name": user.Name})
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+post, err := Post.Create(ctx, map[string]any{
+    "user_id": user.ID, "author_name": profile.DisplayName,
+    "author_color": profile.AvatarColor, "author_native": profile.NativeLang,
+    "lang": lang, "kind": kind, "mission_id": request.NullableInt("mission_id"),
+    "body": body, "translation": translation, "likes_count": 0,
+    "comments_count": 0, "corrections_count": 0,
+})
+if err != nil {
+    return response.Error(500, "Could not publish post")
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+xp := 10
+if kind == "mission" {
+    xp = 20
+}
+profile.XP += xp
+words := len(strings.Fields(body))
+if words < 1 {
+    words = 1
+}
+profile.WordsWritten += words
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(201, map[string]any{"data": post.With("liked", false)})
+/* @arkzen:handler:go:create_post:end */
+
+/* @arkzen:handler:go:delete_post
+*/
+user := request.User()
+postID := params.Int(0)
+post, err := Post.Query().Where("id", postID).Where("user_id", user.ID).First(ctx)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+if _, err := post.Delete(ctx); err != nil {
+    return response.Error(500, "Could not delete post")
+}
+return response.JSON(map[string]any{"message": "Post deleted"})
+/* @arkzen:handler:go:delete_post:end */
+
+/* @arkzen:handler:go:toggle_like
+*/
+user := request.User()
+postID := params.Int(0)
+post, err := Post.Find(ctx, postID)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+existing, err := Like.Query().Where("post_id", postID).Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check like status")
+}
+liked := existing == nil
+if liked {
+    if _, err := Like.Create(ctx, map[string]any{"post_id": postID, "user_id": user.ID}); err != nil {
+        return response.Error(500, "Could not like post")
+    }
+    _ = post.Increment(ctx, "likes_count", 1)
+    if post.UserID != user.ID {
+        profile, err := Profile.FirstOrCreate(ctx,
+            map[string]any{"user_id": user.ID},
+            map[string]any{"display_name": user.Name},
+        )
+        if err != nil {
+            return response.Error(500, "Could not load learner profile")
+        }
+        name := user.Name
+        if profile != nil {
+            name = profile.DisplayName
+        }
+        _, _ = Alert.Create(ctx, map[string]any{
+            "user_id": post.UserID, "kind": "like", "text": name + " liked your post",
+            "ref": postID, "is_read": false,
+        })
+    }
+} else {
+    if _, err := existing.Delete(ctx); err != nil {
+        return response.Error(500, "Could not remove like")
+    }
+    _ = post.Decrement(ctx, "likes_count", 1)
+}
+post, _ = post.Refresh(ctx)
+return response.JSON(map[string]any{"liked": liked, "likes_count": post.LikesCount})
+/* @arkzen:handler:go:toggle_like:end */
+
+/* @arkzen:handler:go:list_comments
+*/
+postID := params.Int(0)
+comments, err := Comment.Query().Where("post_id", postID).OrderBy("id", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load comments")
+}
+return response.JSON(map[string]any{"data": comments})
+/* @arkzen:handler:go:list_comments:end */
+
+/* @arkzen:handler:go:add_comment
+*/
+user := request.User()
+postID := params.Int(0)
+body := strings.TrimSpace(request.String("body"))
+corrected := request.Input("corrected")
+explanation := request.Input("explanation")
+isCorrection := request.Bool("is_correction") && corrected != ""
+if body == "" || len(body) > 1000 || len(corrected) > 1500 || len(explanation) > 1000 {
+    return response.JSON(422, map[string]any{"message": "Comment fields are invalid"})
+}
+profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": user.ID}, map[string]any{"display_name": user.Name})
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+post, err := Post.Find(ctx, postID)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+comment, err := Comment.Create(ctx, map[string]any{
+    "post_id": postID, "user_id": user.ID, "author_name": profile.DisplayName,
+    "author_color": profile.AvatarColor, "body": body, "is_correction": isCorrection,
+    "corrected": corrected, "explanation": explanation,
+})
+if err != nil {
+    return response.Error(500, "Could not add comment")
+}
+_ = post.Increment(ctx, "comments_count", 1)
+if isCorrection {
+    _ = post.Increment(ctx, "corrections_count", 1)
+}
+kind, xp := "comment", 5
+notice := profile.DisplayName + " commented on your post"
+if isCorrection {
+    kind, xp = "correction", 15
+    notice = profile.DisplayName + " corrected your post"
+}
+_, _ = Alert.Create(ctx, map[string]any{
+    "user_id": post.UserID, "kind": kind, "text": notice, "ref": postID, "is_read": false,
+})
+today := time.Now().UTC()
+if profile.LastActiveDate() != today.Format("2006-01-02") {
+    if profile.LastActiveDate() == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = today.Format("2006-01-02")
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += xp
+_ = profile.Save(ctx)
+return response.JSON(201, map[string]any{"data": comment})
+/* @arkzen:handler:go:add_comment:end */
+
+/* @arkzen:handler:go:accept_correction
+*/
+user := request.User()
+commentID := params.Int(0)
+comment, err := Comment.Find(ctx, commentID)
+if err != nil || comment == nil {
+    return response.Error(404, "Correction not found")
+}
+post, err := Post.Find(ctx, comment.PostID)
+if err != nil || post == nil || post.UserID != user.ID {
+    return response.Error(403, "Only the post author can accept a correction")
+}
+if !comment.IsCorrection || strings.TrimSpace(comment.Corrected) == "" {
+    return response.JSON(422, map[string]any{"message": "This comment has no proposed correction"})
+}
+if err := comment.Update(ctx, map[string]any{"accepted": true}); err != nil {
+    return response.Error(500, "Could not accept correction")
+}
+_ = post.Update(ctx, map[string]any{"body": comment.Corrected})
+_ = post.Increment(ctx, "corrections_count", 1)
+return response.JSON(map[string]any{"message": "Correction accepted", "post": post})
+/* @arkzen:handler:go:accept_correction:end */
+
+/* @arkzen:handler:go:list_lessons
+*/
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+lessons, err := Lesson.Query().Where("lang", profile.LearningLang).
+    Where("level", profile.Level).OrderBy("position", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load lessons")
+}
+for _, lesson := range lessons {
+    lesson.Result, _ = LessonResult.Query().Where("user_id", user.ID).Where("lesson_id", lesson.ID).First(ctx)
+}
+return response.JSON(map[string]any{"data": lessons})
+/* @arkzen:handler:go:list_lessons:end */
+
+/* @arkzen:handler:go:complete_lesson
+*/
+user := request.User()
+lessonID := params.Int(0)
+score := request.Int("score")
+if score < 0 || score > 100 {
+    return response.JSON(422, map[string]any{"message": "Score must be between 0 and 100"})
+}
+lesson, err := Lesson.Find(ctx, lessonID)
+if err != nil || lesson == nil {
+    return response.Error(404, "Lesson not found")
+}
+result, first, err := LessonResult.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID, "lesson_id": lessonID},
+    map[string]any{"score": score, "best": score},
+)
+if err != nil {
+    return response.Error(500, "Could not save lesson result")
+}
+best := result.Best
+if score > best {
+    best = score
+}
+if err := result.Update(ctx, map[string]any{"score": score, "best": best}); err != nil {
+    return response.Error(500, "Could not update lesson result")
+}
+xp := 5
+if first {
+    xp = int(math.Round(float64(lesson.XP) * math.Max(0.4, float64(score)/100)))
+}
+cardsAdded := 0
+pairs, err := lesson.VocabularyPairs("v")
+if err != nil {
+    return response.Error(500, "Could not read lesson vocabulary")
+}
+for _, pair := range pairs {
+    _, created, err := VocabCard.FirstOrCreate(ctx,
+        map[string]any{"user_id": user.ID, "lang": lesson.Lang, "term": pair.Term},
+        map[string]any{"meaning": pair.Meaning, "source": "lesson", "due_date": time.Now().Format("2006-01-02")},
+    )
+    if err != nil {
+        return response.Error(500, "Could not add lesson vocabulary")
+    }
+    if created {
+        cardsAdded++
+    }
+}
+if err := Profile.Query().Where("user_id", user.ID).Increment(ctx, "xp", xp); err != nil {
+    return response.Error(500, "Could not award lesson XP")
+}
+return response.JSON(map[string]any{"xp": xp, "cards_added": cardsAdded, "first": first})
+/* @arkzen:handler:go:complete_lesson:end */
+
+/* @arkzen:handler:go:list_cards
+*/
+user := request.User()
+base := VocabCard.Query().Where("user_id", user.ID)
+if lang := request.Input("lang"); lang != "" {
+    base = base.Where("lang", lang)
+}
+total, err := base.Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count vocabulary cards")
+}
+today := time.Now().Format("2006-01-02")
+dueQuery := base.WhereAny(map[string]any{"due_date": nil, "due_date<=": today})
+dueCount, err := dueQuery.Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count due vocabulary cards")
+}
+if request.Input("due") == "1" {
+    base = base.WhereAny(map[string]any{"due_date": nil, "due_date<=": today})
+}
+if search := request.Input("q"); search != "" {
+    base = base.WhereAny(map[string]any{"term like": "%" + search + "%", "meaning like": "%" + search + "%"})
+}
+cards, err := base.OrderBy("due_date", "asc").OrderBy("id", "asc").Limit(200).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load vocabulary cards")
+}
+return response.JSON(map[string]any{"data": cards, "total": total, "due_count": dueCount})
+/* @arkzen:handler:go:list_cards:end */
+
+/* @arkzen:handler:go:add_card
+*/
+user := request.User()
+term := strings.TrimSpace(request.String("term"))
+meaning := strings.TrimSpace(request.String("meaning"))
+if term == "" || meaning == "" {
+    return response.JSON(422, map[string]any{"message": "Term and meaning are required"})
+}
+lang := request.Input("lang")
+if lang == "" || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "A valid language code is required"})
+}
+card, created, err := VocabCard.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID, "lang": lang, "term": term},
+    map[string]any{
+        "meaning": meaning, "example": request.Input("example"),
+        "source": request.InputOr("source", "manual"),
+        "due_date": time.Now().Format("2006-01-02"),
+    },
+)
+if err != nil {
+    return response.Error(500, "Could not save vocabulary card")
+}
+status := 200
+if created {
+    status = 201
+}
+return response.JSON(status, map[string]any{"data": card, "created": created})
+/* @arkzen:handler:go:add_card:end */
+
+/* @arkzen:handler:go:review_card
+*/
+user := request.User()
+cardID := params.Int(0)
+grade := request.IntOr("grade", 2)
+if grade < 0 {
+    grade = 0
+} else if grade > 3 {
+    grade = 3
+}
+card, err := VocabCard.Query().Where("id", cardID).Where("user_id", user.ID).First(ctx)
+if err != nil || card == nil {
+    return response.Error(404, "Vocabulary card not found")
+}
+ease := card.Ease
+interval := card.IntervalDays
+reps := card.Reps
+lapses := card.Lapses
+due := time.Now()
+if grade == 0 {
+    reps = 0
+    lapses++
+    ease = math.Max(1.3, ease-0.2)
+    interval = 0
+} else {
+    reps++
+    if reps == 1 {
+        interval = 1
+        if grade == 3 {
+            interval = 3
+        }
+    } else if reps == 2 {
+        interval = 4
+        if grade == 1 {
+            interval = 2
+        } else if grade == 3 {
+            interval = 7
+        }
+    } else if reps > 2 {
+        multiplier := ease
+        if grade == 1 {
+            multiplier = 1.2
+        } else if grade == 3 {
+            multiplier = ease * 1.3
+        }
+        interval = int(math.Round(float64(interval) * multiplier))
+        if interval < 1 {
+            interval = 1
+        }
+    }
+    if grade == 1 {
+        ease = math.Max(1.3, ease-0.15)
+    } else if grade == 3 {
+        ease += 0.15
+    }
+    due = due.AddDate(0, 0, interval)
+}
+if err := card.Update(ctx, map[string]any{
+    "ease": ease, "interval_days": interval, "reps": reps,
+    "lapses": lapses, "due_date": due.Format("2006-01-02"),
+}); err != nil {
+    return response.Error(500, "Could not save card review")
+}
+_ = Profile.Query().Where("user_id", user.ID).Increment(ctx, "xp", 2)
+return response.JSON(map[string]any{"data": card})
+/* @arkzen:handler:go:review_card:end */
+
+/* @arkzen:handler:go:delete_card
+*/
+user := request.User()
+cardID := params.Int(0)
+deleted, err := VocabCard.Query().Where("id", cardID).Where("user_id", user.ID).Delete(ctx)
+if err != nil {
+    return response.Error(500, "Could not delete vocabulary card")
+}
+if deleted == 0 {
+    return response.Error(404, "Vocabulary card not found")
+}
+return response.JSON(map[string]any{"message": "Card deleted"})
+/* @arkzen:handler:go:delete_card:end */
+
+/* @arkzen:handler:go:partners
+*/
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+partners, err := Profile.Query().WhereNot("user_id", user.ID).
+    Where("learning_lang", profile.NativeLang).OrderBy("xp", "desc").Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load language partners")
+}
+for _, partner := range partners {
+    partner.Following, _ = Follow.Query().Where("follower_id", user.ID).
+        Where("following_id", partner.UserID).Exists(ctx)
+}
+return response.JSON(map[string]any{"data": partners})
+/* @arkzen:handler:go:partners:end */
+
+/* @arkzen:handler:go:view_profile
+*/
+user := request.User()
+targetID := params.Int(0)
+profile, err := Profile.Query().Where("user_id", targetID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+posts, _ := Post.Query().Where("user_id", targetID).OrderBy("created_at", "desc").Limit(30).Get(ctx)
+following, _ := Follow.Query().Where("follower_id", user.ID).Where("following_id", targetID).Exists(ctx)
+followers, _ := Follow.Query().Where("following_id", targetID).Count(ctx)
+return response.JSON(map[string]any{
+    "profile": profile, "posts": posts, "is_following": following, "followers_count": followers,
+})
+/* @arkzen:handler:go:view_profile:end */
+
+/* @arkzen:handler:go:toggle_follow
+*/
+user := request.User()
+targetID := params.Int(0)
+if targetID == user.ID {
+    return response.JSON(422, map[string]any{"message": "You cannot follow yourself"})
+}
+if _, err := Profile.Query().Where("user_id", targetID).First(ctx); err != nil {
+    return response.Error(404, "Learner profile not found")
+}
+follow, err := Follow.Query().Where("follower_id", user.ID).Where("following_id", targetID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check follow status")
+}
+following := follow == nil
+if following {
+    if _, err := Follow.Create(ctx, map[string]any{"follower_id": user.ID, "following_id": targetID}); err != nil {
+        return response.Error(500, "Could not follow learner")
+    }
+    _, _ = Alert.Create(ctx, map[string]any{
+        "user_id": targetID, "kind": "follow", "text": user.Name + " started following you.",
+        "ref": user.ID, "is_read": false,
+    })
+} else if _, err := follow.Delete(ctx); err != nil {
+    return response.Error(500, "Could not unfollow learner")
+}
+return response.JSON(map[string]any{"following": following})
+/* @arkzen:handler:go:toggle_follow:end */
+
+/* @arkzen:handler:go:list_conversations
+*/
+user := request.User()
+conversations, err := Conversation.Query().
+    WhereAny(map[string]any{"user_a": user.ID, "user_b": user.ID}).
+    OrderBy("last_at", "desc").OrderBy("id", "desc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load conversations")
+}
+return response.JSON(map[string]any{"data": conversations})
+/* @arkzen:handler:go:list_conversations:end */
+
+/* @arkzen:handler:go:start_conversation
+*/
+user := request.User()
+otherID := request.Int("user_id")
+if otherID <= 0 || otherID == user.ID {
+    return response.JSON(422, map[string]any{"message": "Choose another learner to start a conversation"})
+}
+lowID, highID := user.ID, otherID
+if lowID > highID {
+    lowID, highID = highID, lowID
+}
+conversation, err := Conversation.Query().Where("user_a", lowID).Where("user_b", highID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not find conversation")
+}
+if conversation == nil {
+    conversation, err = Conversation.Create(ctx, map[string]any{"user_a": lowID, "user_b": highID})
+    if err != nil {
+        return response.Error(500, "Could not start conversation")
+    }
+}
+return response.JSON(201, map[string]any{"data": conversation})
+/* @arkzen:handler:go:start_conversation:end */
+
+/* @arkzen:handler:go:list_messages
+*/
+user := request.User()
+query := Message.Query()
+if conversationID := request.Int("conversation_id"); conversationID > 0 {
+    conversation, err := Conversation.Find(ctx, conversationID)
+    if err != nil || conversation == nil {
+        return response.Error(404, "Conversation not found")
+    }
+    if conversation.UserA != user.ID && conversation.UserB != user.ID {
+        return response.JSON(403, map[string]any{"message": "Not your conversation"})
+    }
+    query = query.Where("conversation_id", conversationID)
+} else if circleID := request.Int("circle_id"); circleID > 0 {
+    member, err := CircleMember.Query().Where("circle_id", circleID).Where("user_id", user.ID).Exists(ctx)
+    if err != nil {
+        return response.Error(500, "Could not check circle membership")
+    }
+    if !member {
+        return response.JSON(403, map[string]any{"message": "Join this circle first"})
+    }
+    query = query.Where("circle_id", circleID)
+} else {
+    return response.JSON(422, map[string]any{"message": "conversation_id or circle_id required"})
+}
+if afterID := request.Int("after_id"); afterID > 0 {
+    query = query.Where("id", ">", afterID)
+}
+messages, err := query.OrderBy("id", "desc").Limit(100).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load messages")
+}
+messages.Reverse()
+return response.JSON(map[string]any{"data": messages})
+/* @arkzen:handler:go:list_messages:end */
+
+/* @arkzen:handler:go:send_message
+*/
+user := request.User()
+conversationID := request.Int("conversation_id")
+body := strings.TrimSpace(request.String("body"))
+lang := request.Input("lang")
+circleID := request.NullableInt("circle_id")
+if body == "" || len(body) > 2000 || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "Message must be 1–2000 characters and language at most 8 characters"})
+}
+var conversation *ConversationRecord
+var conversationRef any
+recipientIDs := []int{}
+if conversationID > 0 {
+    conversation, err = Conversation.Find(ctx, conversationID)
+    if err != nil || conversation == nil {
+        return response.Error(404, "Conversation not found")
+    }
+    if conversation.UserA != user.ID && conversation.UserB != user.ID {
+        return response.JSON(403, map[string]any{"message": "Not your conversation"})
+    }
+    conversationRef = conversationID
+    recipientIDs = []int{conversation.UserA, conversation.UserB}
+    circleID = nil
+} else if circleID != nil {
+    members, err := CircleMember.Query().Where("circle_id", *circleID).Get(ctx)
+    if err != nil {
+        return response.Error(500, "Could not load circle members")
+    }
+    joined := false
+    for _, member := range members {
+        recipientIDs = append(recipientIDs, member.UserID)
+        joined = joined || member.UserID == user.ID
+    }
+    if !joined {
+        return response.JSON(403, map[string]any{"message": "Join this circle first"})
+    }
+} else {
+    return response.JSON(422, map[string]any{"message": "conversation_id or circle_id required"})
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+message, err := Message.Create(ctx, map[string]any{
+    "conversation_id": conversationRef, "circle_id": circleID,
+    "sender_id": user.ID, "sender_name": profile.DisplayName,
+    "sender_color": profile.AvatarColor, "body": body, "lang": lang,
+})
+if err != nil {
+    return response.Error(500, "Could not send message")
+}
+if conversation != nil {
+    preview := body
+    if len(preview) > 200 {
+        preview = preview[:200]
+    }
+    if err := conversation.Update(ctx, map[string]any{"last_message": preview, "last_at": time.Now()}); err != nil {
+        return response.Error(500, "Could not update conversation")
+    }
+}
+payload := message.ToMap()
+scope := "dm"
+if circleID != nil {
+    scope = "circle"
+}
+payload["scope"] = scope
+for _, recipientID := range recipientIDs {
+    if recipientID != user.ID {
+        _ = MessageEvents.Broadcast(ctx, recipientID, payload)
+    }
+}
+wordCount := len(strings.Fields(body))
+if wordCount < 1 {
+    wordCount = 1
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += 3
+profile.WordsWritten += wordCount
+profile.MessagesSent++
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(201, map[string]any{"data": payload})
+/* @arkzen:handler:go:send_message:end */
+
+/* @arkzen:handler:go:correct_message
+*/
+user := request.User()
+messageID := params.Int(0)
+corrected := strings.TrimSpace(request.String("corrected"))
+note := request.Input("note")
+if corrected == "" || len(corrected) > 2000 || len(note) > 500 {
+    return response.JSON(422, map[string]any{"message": "Correction is required and note must be at most 500 characters"})
+}
+message, err := Message.Find(ctx, messageID)
+if err != nil || message == nil {
+    return response.Error(404, "Message not found")
+}
+if message.SenderID == user.ID {
+    return response.JSON(422, map[string]any{"message": "You cannot correct your own message"})
+}
+recipients := []int{}
+if message.ConversationID != nil {
+    conversation, err := Conversation.Find(ctx, *message.ConversationID)
+    if err == nil && conversation != nil {
+        recipients = []int{conversation.UserA, conversation.UserB}
+    }
+} else if message.CircleID != nil {
+    recipients, _ = CircleMember.Query().Where("circle_id", *message.CircleID).PluckInt(ctx, "user_id")
+}
+isMember := false
+for _, recipientID := range recipients {
+    if recipientID == user.ID {
+        isMember = true
+        break
+    }
+}
+if !isMember {
+    return response.JSON(403, map[string]any{"message": "Not allowed"})
+}
+if err := message.Update(ctx, map[string]any{
+    "corrected": corrected, "note": note, "corrected_by": user.ID,
+}); err != nil {
+    return response.Error(500, "Could not save message correction")
+}
+payload := message.ToMap()
+payload["scope"] = "dm"
+if message.CircleID != nil {
+    payload["scope"] = "circle"
+}
+payload["updated"] = true
+for _, recipientID := range recipients {
+    if recipientID != user.ID {
+        _ = MessageEvents.Broadcast(ctx, recipientID, payload)
+    }
+}
+profile, _ := Profile.Query().Where("user_id", user.ID).First(ctx)
+name := user.Name
+if profile != nil {
+    name = profile.DisplayName
+}
+_, _ = Alert.Create(ctx, map[string]any{
+    "user_id": message.SenderID, "kind": "correction",
+    "text": name + " suggested a correction in chat", "ref": message.ID, "is_read": false,
+})
+profile, err = Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name},
+)
+if err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += 10
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(map[string]any{"data": payload})
+/* @arkzen:handler:go:correct_message:end */
+
+/* @arkzen:handler:go:list_circles
+*/
+user := request.User()
+lang := request.Input("lang")
+circleIDs, err := CircleMember.Query().Where("user_id", user.ID).Pluck(ctx, "circle_id")
+if err != nil {
+    return response.Error(500, "Could not load circle memberships")
+}
+query := Circle.Query().OrderBy("members_count", "desc").OrderBy("id", "desc")
+if lang != "" {
+    query = query.Where("lang", lang)
+}
+circles, err := query.Limit(60).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load circles")
+}
+for _, circle := range circles {
+    circle.Joined = false
+    for _, circleID := range circleIDs {
+        if circleID == circle.ID {
+            circle.Joined = true
+            break
+        }
+    }
+}
+return response.JSON(map[string]any{"data": circles})
+/* @arkzen:handler:go:list_circles:end */
+
+/* @arkzen:handler:go:create_circle
+*/
+user := request.User()
+name := strings.TrimSpace(request.String("name"))
+if name == "" || len(name) > 80 {
+    return response.JSON(422, map[string]any{"message": "Circle name must be between 1 and 80 characters"})
+}
+lang := request.Input("lang")
+if lang == "" || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "A valid language code is required"})
+}
+level := request.InputOr("level", "A1")
+if !IsOneOf(level, "A1", "A2", "B1", "B2", "C1", "C2") {
+    return response.JSON(422, map[string]any{"message": "Invalid language level"})
+}
+circle, err := Circle.Create(ctx, map[string]any{
+    "name": name, "emoji": request.InputOr("emoji", "message-circle"),
+    "lang": lang, "level": level, "description": request.Input("description"),
+    "owner_id": user.ID, "members_count": 1,
+})
+if err != nil {
+    return response.Error(500, "Could not create circle")
+}
+if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circle.ID, "user_id": user.ID}); err != nil {
+    return response.Error(500, "Could not add circle owner")
+}
+return response.JSON(201, map[string]any{"data": circle, "joined": true})
+/* @arkzen:handler:go:create_circle:end */
+
+/* @arkzen:handler:go:toggle_join
+*/
+user := request.User()
+circleID := params.Int(0)
+circle, err := Circle.Find(ctx, circleID)
+if err != nil || circle == nil {
+    return response.Error(404, "Circle not found")
+}
+membership, err := CircleMember.Query().Where("circle_id", circleID).Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check circle membership")
+}
+joined := membership == nil
+if joined {
+    if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circleID, "user_id": user.ID}); err != nil {
+        return response.Error(500, "Could not join circle")
+    }
+    _ = circle.Increment(ctx, "members_count", 1)
+} else {
+    if circle.OwnerID == user.ID {
+        return response.JSON(422, map[string]any{"message": "Owners cannot leave their own circle"})
+    }
+    if _, err := membership.Delete(ctx); err != nil {
+        return response.Error(500, "Could not leave circle")
+    }
+    if circle.MembersCount > 1 {
+        _ = circle.Decrement(ctx, "members_count", 1)
+    }
+}
+circle, _ = circle.Refresh(ctx)
+return response.JSON(map[string]any{"joined": joined, "members_count": circle.MembersCount})
+/* @arkzen:handler:go:toggle_join:end */
+
+/* @arkzen:handler:go:list_alerts
+*/
+user := request.User()
+alerts, err := Alert.Query().Where("user_id", user.ID).OrderBy("id", "desc").Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load alerts")
+}
+return response.JSON(map[string]any{"data": alerts})
+/* @arkzen:handler:go:list_alerts:end */
+
+/* @arkzen:handler:go:read_alerts
+*/
+user := request.User()
+updated, err := Alert.Query().Where("user_id", user.ID).Where("is_read", false).
+    Update(ctx, map[string]any{"is_read": true})
+if err != nil {
+    return response.Error(500, "Could not mark alerts as read")
+}
+return response.JSON(map[string]any{"message": "Alerts marked as read", "updated": updated})
+/* @arkzen:handler:go:read_alerts:end */
+
+/* @arkzen:handler:go:progress
+*/
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+start := time.Now().UTC().Truncate(24 * time.Hour).AddDate(0, 0, -13)
+days := map[string]int{}
+for i := 0; i < 14; i++ {
+    days[start.AddDate(0, 0, i).Format("2006-01-02")] = 0
+}
+posts, _ := Post.Query().Where("user_id", user.ID).Where("created_at", ">=", start).Get(ctx)
+messages, _ := Message.Query().Where("sender_id", user.ID).Where("created_at", ">=", start).Get(ctx)
+results, _ := LessonResult.Query().Where("user_id", user.ID).Where("updated_at", ">=", start).Get(ctx)
+for _, post := range posts {
+    day := post.CreatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+for _, message := range messages {
+    day := message.CreatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+for _, result := range results {
+    day := result.UpdatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+series := make([]map[string]any, 0, 14)
+for i := 0; i < 14; i++ {
+    day := start.AddDate(0, 0, i).Format("2006-01-02")
+    series = append(series, map[string]any{"date": day, "count": days[day]})
+}
+postIDs, _ := Post.Query().Where("user_id", user.ID).Pluck(ctx, "id")
+cards, _ := VocabCard.Query().Where("user_id", user.ID).Count(ctx)
+mastered, _ := VocabCard.Query().Where("user_id", user.ID).Where("reps", ">=", 4).Count(ctx)
+lessonCount, _ := LessonResult.Query().Where("user_id", user.ID).Count(ctx)
+correctionsGiven, _ := Comment.Query().Where("user_id", user.ID).Where("is_correction", true).Count(ctx)
+correctionsReceived, _ := Comment.Query().Where("is_correction", true).WhereIn("post_id", postIDs).Count(ctx)
+correctionsAccepted, _ := Comment.Query().Where("is_correction", true).Where("accepted", true).WhereIn("post_id", postIDs).Count(ctx)
+level := profile.XP/100 + 1
+return response.JSON(map[string]any{
+    "profile": profile, "series": series,
+    "stats": map[string]any{
+        "cards": cards, "mastered": mastered, "lessons": lessonCount,
+        "posts": len(postIDs), "corrections_given": correctionsGiven,
+        "corrections_received": correctionsReceived, "corrections_accepted": correctionsAccepted,
+        "words_written": profile.WordsWritten, "messages_sent": profile.MessagesSent,
+    },
+    "level": level, "level_progress": profile.XP % 100,
+})
+/* @arkzen:handler:go:progress:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

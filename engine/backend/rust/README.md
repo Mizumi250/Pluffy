@@ -94,10 +94,15 @@ column filters, `search` over name/title/description where present, page sizing,
 and soft-delete filtering. Declared required/string/numeric/boolean/email/min/max
 validation rules are supported.
 
-Routes declaring middleware return `501` rather than silently bypassing it.
-Unknown/non-CRUD endpoint types and custom endpoint bodies also return `501`.
-Rust does not interpret or execute `:rs` handler snippets; endpoint bodies,
-custom middleware, policies, authentication, and non-CRUD DSL behavior are not
-implemented. Build responses include warnings for these limitations. API
-registration is dynamic from the persisted module definition; it does not
-generate Rust source code. Database seeder rows are not applied yet.
+The built-in `requireJson` middleware checks JSON media types and rejects
+invalid requests with `415`; unknown middleware returns `501`. Rust provides
+purpose-built emulations for the `body-endpoint-handler` `echo`, `stats`,
+`ping`, `recordHandler`, and `latest` operations and the `inventory-management`
+`lowStock` endpoint when their corresponding bodies are present. These return
+equivalent response shapes and persist/query the declared module tables;
+arbitrary custom source is never evaluated. Other custom endpoint bodies,
+arbitrary middleware, policies, authentication, and non-CRUD DSL behavior
+remain unsupported and return `501` with build warnings. API registration is
+dynamic from the persisted module definition; it does not generate or execute
+arbitrary Rust source code.
+Database seeder rows are not applied yet.

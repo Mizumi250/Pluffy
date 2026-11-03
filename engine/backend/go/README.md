@@ -5,9 +5,7 @@ for routing and the pure-Go `modernc.org/sqlite` driver for isolated module
 databases. The current engine provides the Arkzen health, registry, build, and
 remove contract. Builds validate module/API/table definitions, prepare
 isolated SQLite schemas, persist module and API route registrations, and
-expose CRUD routes immediately and after restart. Custom `:go` endpoint,
-handler, and middleware bodies and non-CRUD endpoints are not executed or
-implemented.
+expose CRUD routes immediately and after restart. Arbitrary `:go` endpoint, handler, and middleware bodies are not executed.
 
 ## Run
 
@@ -88,11 +86,69 @@ return 403. CRUD responses use JSON `data` envelopes, explicit 4xx/5xx errors,
 and 404 responses for missing records. The registry retains route configuration
 so CRUD remains active after the server restarts.
 
-The current CRUD implementation does not execute controller code, custom
-`:go` handlers/endpoints/middleware, auth, policies, resource transformers,
-custom query filters, seeders, or non-CRUD endpoints. Index returns records
-ordered by primary key; `per_page` and `page` are supported, including the
-default 15-row limit when the endpoint response type is `paginated`.
+The engine never executes arbitrary controller code or custom `:go`
+endpoint/handler bodies. It uses explicit module/operation allowlists and
+implements these bounded emulations:
+
+| Tatemono | Supported Go-engine behavior |
+| --- | --- |
+| `body-endpoint-handler` | `echo` and `stats` endpoints; `ping`, `recordHandler`, and `latest` custom routes. Endpoint/handler body presence is checked, but source is not evaluated. |
+| `inventory-management` | Seeds the declared inventory rows and `lowStock` queries declared rows below 20 units. |
+| `job-test` | Records only `process-data`, `heavy-computation`, and `always-fails` synchronously in `job_results`. It does not run queue workers, retries, or source delays. |
+| `scheduler-test` | Records only `cleanup-temp`, `generate-report`, `ping-health`, and `sync-data`; no command or cron job is executed. |
+| `events-test` | Maps the three declared events to their fixed listener names and records completion rows synchronously; listener source and asynchronous execution are not run. |
+| `broadcast-test` | Persists messages and returns broadcast metadata with `delivered: false`; no WebSocket event or `/api/broadcast-test/sse-poll/{channelType}` route is provided. |
+| `queue-flow` | Implements the allowlisted `join_queue`, `call_next`, `queue_status`, and `my_ticket` route state transitions from route metadata. Broadcast metadata is simulated and not delivered. |
+| `dtr-geofencing` | Implements check-in/out, employee record lookup, setting updates, and distance-based geofence checks using the module's documented default office settings. |
+| `jo-payroll` | Implements payroll summary, group lookup, and appointment-order queries over declared `job_orders` rows. |
+| `mail-test`, `body-mail-notification` | Logs allowlisted mail/notification requests with `status: simulated`; no SMTP delivery or notification channel is used. |
+| `crud-test` | Uses the schema-aware CRUD routes described above. |
+| `middleware-test` | Supports its `requireJson` middleware and schema-aware ping-log CRUD. |
+
+Custom endpoint operations and custom route handlers are allowlisted by
+Tatemono name, operation/handler, and (for custom routes) the declared method
+and path. A non-empty `:go` endpoint/handler body is required only for
+`body-endpoint-handler`; its contents are ignored. Queue-flow behavior is
+selected solely from its exact route and handler metadata. Unsupported custom
+endpoint types return `501`, and unsupported/mismatched custom route handlers
+fail build validation. These constraints prevent arbitrary code evaluation
+while allowing the small set of fixed behaviors above.
+
+Declared `database.seeder.data` rows are inserted when the module is built.
+Rebuilding a module with seed rows clears that table and restores the declared
+seed set, matching the other backend engines; tables without seed rows are not
+cleared. Seed row fields must be declared columns (or declared timestamps),
+and values must be JSON scalars.
+
+When `auth: true`, the Go engine creates module-isolated users and token tables
+and serves the standard `/api/<module>/auth/register`, `/login`, `/me`, and
+`/logout` routes. Auth seed users are upserted by email; omitted seed passwords
+default to `password`. Register requires `name`, `email`, `password`, and
+`password_confirmation`; passwords use bcrypt hashes compatible with the
+Laravel/Express auth engines. Access tokens use the Sanctum-style `id|secret`
+format with only the SHA-256 token hash stored, and can be revoked at logout.
+No initial account is created unless `authSeed.users` is configured; register
+an account before logging in. The Go engine does not create browser sessions or
+role middleware. Mail and notification
+emulations behind `auth` middleware can be reached with a valid module bearer
+token. `notification-test`'s inbox routes still require a Laravel-managed
+notifications table that Go does not create. Kotoba's custom social, lessons,
+vocabulary, messaging, circles, and alerts handlers are not in the Go route
+allowlist; route authentication does not implement those custom handlers.
+
+The Go source-language payload contains jobs and scheduler console snippets,
+but the engine does not execute them: job queue timing, worker retries and
+failed-job transport, cron scheduling, and external sync/health checks are not
+performed. It likewise does not deliver SMTP mail, notifications, WebSocket/
+SSE broadcasts, or asynchronous event listeners. Policies, resource
+transformers, custom query filters, and other custom handlers remain
+unsupported. The built-in `requireJson` middleware checks JSON media types and
+rejects invalid requests with `415`; unknown middleware returns `501`. Index
+routes order generically by primary key; job/event/broadcast logs and DTR time
+records use newest-first timestamp ordering. `per_page` and `page` are
+supported, including the default 15-row limit when the endpoint response type
+is `paginated`, but responses use the engine's `{data,count}` envelope rather
+than Laravel's full paginator metadata.
 
 ## Build and test
 

@@ -499,6 +499,86 @@ await ScriptDatabase.ExecuteAsync(
 return 0;
 /* @arkzen:console:cs:sync-data:end */
 
+/* @arkzen:console:go:cleanup-temp
+signature: scheduler-test:cleanup-temp
+description: Deletes temporary files older than 24h
+schedule: '0 * * * *'
+*/
+started := time.Now()
+if _, err := CommandRun.Create(ctx, map[string]any{
+    "command_name": "cleanup-temp",
+    "signature": "scheduler-test:cleanup-temp",
+    "exit_code": 0,
+    "output": "Cleanup completed successfully.",
+    "triggered_by": "schedule",
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+Log.Info("[Arkzen:scheduler-test] Cleanup completed")
+return nil
+/* @arkzen:console:go:cleanup-temp:end */
+
+/* @arkzen:console:go:generate-report
+signature: scheduler-test:generate-report
+description: Generates a daily activity report
+schedule: '0 8 * * *'
+*/
+started := time.Now()
+if _, err := CommandRun.Create(ctx, map[string]any{
+    "command_name": "generate-report",
+    "signature": "scheduler-test:generate-report",
+    "exit_code": 0,
+    "output": "Daily report generated successfully.",
+    "triggered_by": "schedule",
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+Log.Info("[Arkzen:scheduler-test] Daily report generated")
+return nil
+/* @arkzen:console:go:generate-report:end */
+
+/* @arkzen:console:go:ping-health
+signature: scheduler-test:ping-health
+description: Pings all services and records health status
+schedule: '0-59/5 * * * *'
+*/
+started := time.Now()
+if _, err := CommandRun.Create(ctx, map[string]any{
+    "command_name": "ping-health",
+    "signature": "scheduler-test:ping-health",
+    "exit_code": 0,
+    "output": "All services healthy.",
+    "triggered_by": "schedule",
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+Log.Info("[Arkzen:scheduler-test] All services healthy")
+return nil
+/* @arkzen:console:go:ping-health:end */
+
+/* @arkzen:console:go:sync-data
+signature: scheduler-test:sync-data
+description: Syncs data from external source
+schedule: '0-59/15 * * * *'
+*/
+started := time.Now()
+if _, err := CommandRun.Create(ctx, map[string]any{
+    "command_name": "sync-data",
+    "signature": "scheduler-test:sync-data",
+    "exit_code": 0,
+    "output": "Data synced successfully.",
+    "triggered_by": "schedule",
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+Log.Info("[Arkzen:scheduler-test] Data synced successfully")
+return nil
+/* @arkzen:console:go:sync-data:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

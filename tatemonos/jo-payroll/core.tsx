@@ -838,6 +838,73 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 
 /* @arkzen:web:layout:app:end */
 
+/* @arkzen:endpoint:go:summary
+*/
+activeOrders, err := JobOrder.Query().Where("status", "active").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load active job orders")
+}
+inactiveCount, err := JobOrder.Query().Where("status", "inactive").Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count inactive job orders")
+}
+counts := map[string]int{"ATM": 0, "CASH": 0}
+fundingBreakdown := map[string]map[string]any{}
+groupBreakdown := map[string]int{}
+var basicPay, sss, hdmfPremium, hdmfMpl, calamityLoan float64
+for _, order := range activeOrders {
+    counts[order.DisbursementType]++
+    basicPay += order.BasicPay
+    sss += order.SSSAmount
+    hdmfPremium += order.HDMFPremium
+    hdmfMpl += order.HDMFMpl
+    calamityLoan += order.CalamityLoan
+    funding := order.Funding
+    if _, ok := fundingBreakdown[funding]; !ok {
+        fundingBreakdown[funding] = map[string]any{"count": 0, "total_pay": float64(0)}
+    }
+    fundingBreakdown[funding]["count"] = fundingBreakdown[funding]["count"].(int) + 1
+    fundingBreakdown[funding]["total_pay"] = fundingBreakdown[funding]["total_pay"].(float64) + order.BasicPay
+    groupBreakdown[order.JorPyrlGroup]++
+}
+totalDeductions := sss + hdmfPremium + hdmfMpl + calamityLoan
+return response.JSON(map[string]any{
+    "total_active": len(activeOrders), "total_inactive": inactiveCount,
+    "total_atm": counts["ATM"], "total_cash": counts["CASH"],
+    "total_basic_pay": basicPay, "total_sss": sss,
+    "total_hdmf_premium": hdmfPremium, "total_hdmf_mpl": hdmfMpl,
+    "total_calamity_loan": calamityLoan, "total_deductions": totalDeductions,
+    "net_pay": basicPay - totalDeductions, "funding_breakdown": fundingBreakdown,
+    "group_breakdown": groupBreakdown,
+})
+/* @arkzen:endpoint:go:summary:end */
+
+/* @arkzen:endpoint:go:byGroup
+*/
+group := request.Route("group")
+orders, err := JobOrder.Query().
+    Where("jor_pyrl_group", group).
+    Where("status", "active").
+    OrderBy("jor_number", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load job orders for group")
+}
+return response.JSON(orders)
+/* @arkzen:endpoint:go:byGroup:end */
+
+/* @arkzen:endpoint:go:appointments
+*/
+orders, err := JobOrder.Query().
+    WhereNotNull("appointment_order").
+    OrderBy("appointment_order", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load appointment job orders")
+}
+return response.JSON(orders)
+/* @arkzen:endpoint:go:appointments:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

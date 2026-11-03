@@ -1767,7 +1767,11 @@ public sealed class BackendEngine
 
     private static async Task AuthValidationErrorAsync(HttpContext context, string message, string field)
     {
-        await Results.Json(new { message, errors = new Dictionary<string, string[]> { [field] = [message] } },
+        await Results.Json(new
+        {
+            message = "The given data was invalid.",
+            errors = new Dictionary<string, string[]> { [field] = [message] }
+        },
             statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
     }
 

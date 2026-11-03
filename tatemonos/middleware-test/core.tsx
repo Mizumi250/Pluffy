@@ -96,6 +96,31 @@ if not request.is_json():
 return await next()
 /* @arkzen:middleware:py:requireJson:end */
 
+/* @arkzen:middleware:go:requireJson
+*/
+mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
+if err != nil || (mediaType != "application/json" && !strings.HasSuffix(mediaType, "+json")) {
+    return response.JSON(415, map[string]string{
+        "message": "Content-Type: application/json is required for this endpoint.",
+        "hint":    "Set the Content-Type header to application/json",
+    })
+}
+return next()
+/* @arkzen:middleware:go:requireJson:end */
+
+/* @arkzen:middleware:rs:requireJson
+*/
+let media_type = request.headers().get(CONTENT_TYPE).and_then(|value| value.to_str().ok()).unwrap_or_default();
+let media_type = media_type.split(';').next().unwrap_or_default().trim().to_ascii_lowercase();
+if media_type != "application/json" && !media_type.ends_with("+json") {
+    return response.json(json!({
+        "message": "Content-Type: application/json is required for this endpoint.",
+        "hint": "Set the Content-Type header to application/json"
+    }), 415);
+}
+next().await
+/* @arkzen:middleware:rs:requireJson:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

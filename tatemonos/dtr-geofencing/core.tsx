@@ -1067,6 +1067,129 @@ foreach (var (key, value) in settingsToWrite)
 return Results.Json(new { success = true });
 /* @arkzen:endpoint:cs:update_office:end */
 
+/* @arkzen:endpoint:go:my_records
+*/
+employeeID := request.Route("employee_id")
+records, err := TimeRecord.Query().
+    Where("employee_id", employeeID).
+    With("employee").
+    OrderBy("timestamp", "desc").
+    Limit(50).
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load time records")
+}
+return response.JSON(records)
+/* @arkzen:endpoint:go:my_records:end */
+
+/* @arkzen:endpoint:go:check_in
+*/
+employeeID := request.Input("employee_id")
+latitude, hasLatitude := request.Float("latitude")
+longitude, hasLongitude := request.Float("longitude")
+notes := request.Input("notes")
+enabled := DtrSetting.Value(ctx, "geofencing_enabled") == "true"
+withinGeofence := true
+if enabled && hasLatitude && hasLongitude {
+    officeLat := DtrSetting.FloatValue(ctx, "office_latitude")
+    officeLng := DtrSetting.FloatValue(ctx, "office_longitude")
+    radius := DtrSetting.FloatValue(ctx, "geofence_radius_meters")
+    const earthRadius = 6371000.0
+    lat1, lat2 := latitude*math.Pi/180, officeLat*math.Pi/180
+    dLat := (latitude - officeLat) * math.Pi / 180
+    dLng := (longitude - officeLng) * math.Pi / 180
+    a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLng/2)*math.Sin(dLng/2)
+    distance := earthRadius * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+    withinGeofence = distance <= radius
+    if !withinGeofence {
+        return response.JSON(403, map[string]any{
+            "error": "Geofence violation",
+            "message": fmt.Sprintf("You must be within %.0f meters of the office to check in.", radius),
+            "distance": math.Round(distance*10) / 10,
+        })
+    }
+}
+record, err := TimeRecord.Create(ctx, map[string]any{
+    "employee_id": employeeID, "type": "in", "timestamp": time.Now(),
+    "latitude": latitude, "longitude": longitude, "within_geofence": withinGeofence, "notes": notes,
+})
+if err != nil {
+    return response.Error(500, "Could not create check-in record")
+}
+record, err = record.With("employee").Load(ctx)
+if err != nil {
+    return response.Error(500, "Could not load employee details")
+}
+return response.JSON(map[string]any{"success": true, "record": record, "within_geofence": withinGeofence, "geofencing_enabled": enabled})
+/* @arkzen:endpoint:go:check_in:end */
+
+/* @arkzen:endpoint:go:check_out
+*/
+employeeID := request.Input("employee_id")
+latitude, hasLatitude := request.Float("latitude")
+longitude, hasLongitude := request.Float("longitude")
+notes := request.Input("notes")
+enabled := DtrSetting.Value(ctx, "geofencing_enabled") == "true"
+withinGeofence := true
+if enabled && hasLatitude && hasLongitude {
+    officeLat := DtrSetting.FloatValue(ctx, "office_latitude")
+    officeLng := DtrSetting.FloatValue(ctx, "office_longitude")
+    radius := DtrSetting.FloatValue(ctx, "geofence_radius_meters")
+    const earthRadius = 6371000.0
+    lat1, lat2 := latitude*math.Pi/180, officeLat*math.Pi/180
+    dLat := (latitude - officeLat) * math.Pi / 180
+    dLng := (longitude - officeLng) * math.Pi / 180
+    a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLng/2)*math.Sin(dLng/2)
+    distance := earthRadius * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+    withinGeofence = distance <= radius
+    if !withinGeofence {
+        return response.JSON(403, map[string]any{
+            "error": "Geofence violation",
+            "message": fmt.Sprintf("You must be within %.0f meters of the office to check out.", radius),
+            "distance": math.Round(distance*10) / 10,
+        })
+    }
+}
+record, err := TimeRecord.Create(ctx, map[string]any{
+    "employee_id": employeeID, "type": "out", "timestamp": time.Now(),
+    "latitude": latitude, "longitude": longitude, "within_geofence": withinGeofence, "notes": notes,
+})
+if err != nil {
+    return response.Error(500, "Could not create check-out record")
+}
+record, err = record.With("employee").Load(ctx)
+if err != nil {
+    return response.Error(500, "Could not load employee details")
+}
+return response.JSON(map[string]any{"success": true, "record": record, "within_geofence": withinGeofence, "geofencing_enabled": enabled})
+/* @arkzen:endpoint:go:check_out:end */
+
+/* @arkzen:endpoint:go:toggle_geofencing
+*/
+enabled := request.Bool("enabled")
+if err := DtrSetting.UpdateOrCreate(ctx, "geofencing_enabled", strconv.FormatBool(enabled)); err != nil {
+    return response.Error(500, "Could not update geofencing setting")
+}
+return response.JSON(map[string]any{"success": true, "geofencing_enabled": enabled})
+/* @arkzen:endpoint:go:toggle_geofencing:end */
+
+/* @arkzen:endpoint:go:update_office
+*/
+latitude := request.Input("lat")
+longitude := request.Input("lng")
+radius := request.Input("radius")
+for key, value := range map[string]string{
+    "office_latitude": latitude,
+    "office_longitude": longitude,
+    "geofence_radius_meters": radius,
+} {
+    if err := DtrSetting.UpdateOrCreate(ctx, key, value); err != nil {
+        return response.Error(500, "Could not update office settings")
+    }
+}
+return response.JSON(map[string]any{"success": true})
+/* @arkzen:endpoint:go:update_office:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

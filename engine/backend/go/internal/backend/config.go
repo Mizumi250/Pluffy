@@ -10,10 +10,13 @@ import (
 const defaultEngineSecret = "arkzen-engine-secret"
 
 type Config struct {
-	Port       int
-	Secret     string
-	StorageDir string
-	RootDir    string
+	Port             int
+	RealtimePort     int
+	RealtimeAppKey   string
+	RealtimeSecret   string
+	Secret           string
+	StorageDir       string
+	RootDir          string
 }
 
 func LoadConfig() (Config, error) {
@@ -43,7 +46,27 @@ func LoadConfig() (Config, error) {
 		rootDir = absolute
 	}
 
-	return Config{Port: port, Secret: secret, StorageDir: storageDir, RootDir: rootDir}, nil
+	realtimePort := 8080
+	if value := os.Getenv("REVERB_PORT"); value != "" {
+		parsed, err := strconv.Atoi(value)
+		if err != nil || parsed < 1 || parsed > 65535 {
+			return Config{}, fmt.Errorf("REVERB_PORT must be an integer from 1 to 65535")
+		}
+		realtimePort = parsed
+	}
+	realtimeAppKey := os.Getenv("REVERB_APP_KEY")
+	if realtimeAppKey == "" {
+		realtimeAppKey = "arkzen-key"
+	}
+	realtimeSecret := os.Getenv("REVERB_APP_SECRET")
+	if realtimeSecret == "" {
+		realtimeSecret = "arkzen-secret"
+	}
+
+	return Config{
+		Port: port, RealtimePort: realtimePort, RealtimeAppKey: realtimeAppKey,
+		RealtimeSecret: realtimeSecret, Secret: secret, StorageDir: storageDir, RootDir: rootDir,
+	}, nil
 }
 
 func (c Config) Address() string {

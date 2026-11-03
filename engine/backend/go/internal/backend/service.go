@@ -37,7 +37,7 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 	if len(problems) > 0 {
 		return Registration{}, fmt.Errorf("validation failed: %v", problems)
 	}
-	if err := ensureSQLiteSchema(s.storageDir, payload.Name, payload.Databases); err != nil {
+	if err := ensureSQLiteSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed); err != nil {
 		return Registration{}, fmt.Errorf("initialize isolated SQLite database: %w", err)
 	}
 	tables := make([]string, 0, len(payload.Databases))
@@ -63,8 +63,11 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 	registration := Registration{
 		Name:           payload.Name,
 		BackendVariant: "go",
+		Auth:           payload.Auth,
 		Tables:         tables,
 		APIs:           apis,
+		CustomRoutes:   payload.CustomRoutes,
+		Realtimes:      payload.Realtimes,
 		RegisteredAt:   time.Now().UTC(),
 	}
 	if err := s.store.Register(registration); err != nil {

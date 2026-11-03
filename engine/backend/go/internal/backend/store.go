@@ -12,11 +12,14 @@ import (
 )
 
 type Registration struct {
-	Name           string    `json:"name"`
-	BackendVariant string    `json:"backendVariant"`
-	Tables         []string  `json:"tables"`
-	APIs           []APIBlock `json:"apis,omitempty"`
-	RegisteredAt   time.Time `json:"registeredAt"`
+	Name           string        `json:"name"`
+	BackendVariant string        `json:"backendVariant"`
+	Auth           bool          `json:"auth,omitempty"`
+	Tables         []string      `json:"tables"`
+	APIs           []APIBlock    `json:"apis,omitempty"`
+	CustomRoutes   []CustomRoute `json:"customRoutes,omitempty"`
+	Realtimes      []string      `json:"realtimes,omitempty"`
+	RegisteredAt   time.Time     `json:"registeredAt"`
 }
 
 type registryFile struct {
@@ -24,9 +27,9 @@ type registryFile struct {
 }
 
 type Store struct {
-	mu       sync.RWMutex
-	path     string
-	modules  map[string]Registration
+	mu      sync.RWMutex
+	path    string
+	modules map[string]Registration
 }
 
 func OpenStore(storageDir string) (*Store, error) {

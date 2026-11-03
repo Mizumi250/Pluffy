@@ -191,6 +191,28 @@ var lowStockItems = await ScriptDatabase.QueryAsync(
 return Results.Json(new { data = lowStockItems, count = lowStockItems.Count });
 /* @arkzen:endpoint:cs:lowStock:end */
 
+/* @arkzen:endpoint:go:lowStock
+*/
+items, err := Inventory.Query().
+    Where("quantity", "<", 20).
+    OrderBy("quantity", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load low-stock inventory")
+}
+return response.JSON(map[string]any{"data": items, "count": len(items)})
+/* @arkzen:endpoint:go:lowStock:end */
+
+/* @arkzen:endpoint:rs:lowStock
+*/
+let items = Inventory::query()
+    .where_column("quantity", "<", 20)
+    .order_by("quantity", "asc")
+    .get()
+    .await?;
+return response.json(json!({"data": items, "count": items.len()}));
+/* @arkzen:endpoint:rs:lowStock:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

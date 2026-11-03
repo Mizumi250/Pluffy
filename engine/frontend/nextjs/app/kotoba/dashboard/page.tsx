@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/dashboard
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T06:51:43.783Z
+// Generated: 2026-11-03T12:28:31.467Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

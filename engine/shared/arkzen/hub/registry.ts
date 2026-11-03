@@ -48,7 +48,7 @@ const BACKEND_VARIANTS: Record<string, string> = {
   rs: 'Rust',
 }
 
-function parseMeta(source: string): { name: string; version: string; auth: boolean } | null {
+function parseMeta(source: string): { name: string; version: string; auth: boolean; backend?: string } | null {
   const block = source.match(/\/\* @arkzen:meta\b([\s\S]*?)\*\//)?.[1]
   if (!block) return null
   const field = (name: string) => {
@@ -61,6 +61,7 @@ function parseMeta(source: string): { name: string; version: string; auth: boole
     name,
     version: field('version') ?? '1.0.0',
     auth: /^true$/i.test(field('auth') ?? 'false'),
+    backend: field('backend'),
   }
 }
 
@@ -123,9 +124,13 @@ function addBackendVariants(source: string, variants: Set<string>): void {
 function moduleBackends(source: string, activeBackend: string): string[] {
   const variants = new Set<string>()
   addBackendVariants(source, variants)
+  const backendTarget = parseMeta(source)?.backend
+  const targetLabel = backendTarget ? BACKEND_LABELS[backendTarget] : undefined
+  const variantLabels = [...variants].map(variant => BACKEND_VARIANTS[variant]).filter((label): label is string => Boolean(label))
+  if (targetLabel) return [...new Set([...variantLabels, targetLabel])]
   const hasBackend = /auth:\s*true|@arkzen:(?:api|database|auth|jobs|events|mail|notifications|routes|realtime|console|store)/.test(source)
   if (!variants.size && hasBackend) return [BACKEND_LABELS[activeBackend] ?? 'Laravel']
-  return [...variants].map(variant => BACKEND_VARIANTS[variant]).filter((label): label is string => Boolean(label))
+  return variantLabels
 }
 
 export function enrichHubRegistry(registry: HubRegistry, repoRoot: string): HubRegistry {

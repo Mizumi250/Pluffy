@@ -4,6 +4,7 @@ import (
 	"crypto/subtle"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -16,9 +17,10 @@ const maxRequestBody = 10 << 20
 var errBodyTooLarge = errors.New("request body exceeds 10 MiB")
 
 type Handler struct {
-	secret  string
-	service *Service
-	rootDir string
+	secret    string
+	service   *Service
+	rootDir   string
+	realtime  *RealtimeHub
 }
 
 func NewHandler(config Config) (http.Handler, error) {
@@ -32,13 +34,22 @@ func NewHandler(config Config) (http.Handler, error) {
 	if err != nil {
 		return nil, err
 	}
-	handler := &Handler{secret: config.Secret, service: service, rootDir: config.RootDir}
+	if config.RealtimeAppKey == "" {
+		config.RealtimeAppKey = "arkzen-key"
+	}
+	if config.RealtimeSecret == "" {
+		config.RealtimeSecret = "arkzen-secret"
+	}
+	handler := &Handler{
+		secret: config.Secret, service: service, rootDir: config.RootDir,
+		realtime: NewRealtimeHub(config.RealtimeAppKey, config.RealtimeSecret),
+	}
 	router := chi.NewRouter()
 	router.NotFound(handler.apiOrNotFound)
 	router.Get("/arkzen/health", handler.health)
 	router.Get("/arkzen/registry", handler.registry)
-	router.Post("/arkzen/build", handler.authenticate(http.HandlerFunc(handler.build)))
-	router.Post("/arkzen/remove", handler.authenticate(http.HandlerFunc(handler.remove)))
+	router.Method(http.MethodPost, "/arkzen/build", handler.authenticate(http.HandlerFunc(handler.build)))
+	router.Method(http.MethodPost, "/arkzen/remove", handler.authenticate(http.HandlerFunc(handler.remove)))
 	return router, nil
 }
 
@@ -94,6 +105,17 @@ func (h *Handler) build(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	steps := []string{"Isolated SQLite database ready", "Declared tables ready"}
+	if payload.Auth {
+		steps = append(steps, "Auth tables ready")
+		if payload.AuthSeed != nil && len(payload.AuthSeed.Users) > 0 {
+			steps = append(steps, fmt.Sprintf("Seeded %d auth user(s)", len(payload.AuthSeed.Users)))
+		}
+	}
+	for _, database := range payload.Databases {
+		if database.Seeder != nil && len(database.Seeder.Data) > 0 {
+			steps = append(steps, fmt.Sprintf("Seeded %d rows: %s (reset)", len(database.Seeder.Data), database.Table))
+		}
+	}
 	if len(registration.APIs) > 0 {
 		steps = append(steps, "CRUD API routes registered")
 	}
@@ -140,7 +162,7 @@ func (h *Handler) remove(w http.ResponseWriter, r *http.Request) {
 	}
 	writeJSON(w, http.StatusOK, map[string]any{
 		"success": true, "message": "Module removed",
-		"steps": []string{"Module registration removed", "Isolated SQLite database removed"},
+		"steps":  []string{"Module registration removed", "Isolated SQLite database removed"},
 		"errors": []string{},
 	})
 }

@@ -1232,6 +1232,165 @@ return new Dictionary<string, object?>
 };
 /* @arkzen:notifications:cs:summary:end */
 
+/* @arkzen:endpoint:go:sendMail
+*/
+mailKey := request.Input("mail")
+to := request.Input("to")
+if !IsOneOf(mailKey, "welcome", "receipt", "alert") || !IsEmail(to) {
+    return response.JSON(422, map[string]any{"message": "A supported mail type and valid recipient are required"})
+}
+user := request.User()
+var userID any
+if user != nil {
+    userID = user.ID
+}
+mailData := map[string]map[string]any{
+    "welcome": {"name": "Test User", "app_name": "Arkzen"},
+    "receipt": {"order_id": "ORD-001", "amount": "$9.99", "item_name": "Arkzen Test Item"},
+    "alert": {"alert_message": "This is a test alert from Arkzen.", "action_url": request.BaseURL()},
+}
+mailClass := Mailer.ClassName(mailKey)
+_, deliveryErr := Mailer.RenderAndSend(ctx, mailKey, to, mailData[mailKey])
+status := "sent"
+values := map[string]any{
+    "user_id": userID, "to_email": to, "subject": mailKey,
+    "mail_class": mailClass, "kind": "mail", "status": status,
+}
+if deliveryErr != nil {
+    status = "failed"
+    values["status"] = status
+    values["error"] = deliveryErr.Error()
+}
+log, saveErr := SendLog.Create(ctx, values)
+if saveErr != nil {
+    return response.Error(500, "Could not save mail delivery log")
+}
+return response.JSON(201, log)
+/* @arkzen:endpoint:go:sendMail:end */
+
+/* @arkzen:endpoint:go:notify
+*/
+notificationKey := request.Input("notification")
+message := request.Input("message")
+if !IsOneOf(notificationKey, "action-required", "summary") || len(message) > 255 {
+    return response.JSON(422, map[string]any{"message": "A supported notification type and a message of at most 255 characters are required"})
+}
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+deliveryErr := NotificationService.Send(ctx, user, notificationKey, message)
+status := "sent"
+values := map[string]any{
+    "user_id": user.ID, "to_email": user.Email, "subject": notificationKey,
+    "mail_class": NotificationService.ClassName(notificationKey),
+    "kind": "notification", "status": status,
+}
+if deliveryErr != nil {
+    status = "failed"
+    values["status"] = status
+    values["error"] = deliveryErr.Error()
+}
+log, err := SendLog.Create(ctx, values)
+if err != nil {
+    return response.Error(500, "Could not save notification delivery log")
+}
+return response.JSON(201, log)
+/* @arkzen:endpoint:go:notify:end */
+
+/* @arkzen:endpoint:go:clearLog
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if _, err := SendLog.Query().Where("user_id", user.ID).Delete(ctx); err != nil {
+    return response.Error(500, "Could not clear delivery log")
+}
+return response.JSON(map[string]any{"message": "Log cleared"})
+/* @arkzen:endpoint:go:clearLog:end */
+
+/* @arkzen:notifications:go:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
+subject: "Action Required"
+*/
+return NotificationMessage{
+    Subject: "⚠ Action Required — toMail_body injection test",
+    Greeting: "Hello!",
+    Lines: []string{
+        notification.MessageOr("You have a pending action that requires your attention."),
+        "This toMail() body was injected via the Arkzen DSL — not a stub.",
+    },
+    ActionLabel: "Review Now",
+    ActionURL: "/",
+    Salutation: "NotificationBuilder v3.9 toMail_body injection confirmed ✓",
+}
+/* @arkzen:notifications:go:action-required:end */
+
+/* @arkzen:notifications:go:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
+subject: "Activity Summary"
+*/
+return NotificationMessage{
+    Subject: "📊 Activity Summary — toMail_body injection test",
+    Greeting: "Hi there!",
+    Lines: []string{
+        notification.MessageOr("Here is your latest activity summary."),
+        "Notifications: 2 unread | Mails: 3 sent | Status: All healthy",
+    },
+    ActionLabel: "View Dashboard",
+    ActionURL: "/",
+    Salutation: "Cheers, Arkzen Engine",
+}
+/* @arkzen:notifications:go:summary:end */
+
+/* @arkzen:mail:go:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
+*/
+<!DOCTYPE html>
+<html lang="en"><body>
+  <h1>Welcome, {{ index . "name" }}!</h1>
+  <p>Thanks for joining {{ index . "app_name" }}.</p>
+  <p>This Go mail template is rendered from the welcome data.</p>
+</body></html>
+/* @arkzen:mail:go:welcome:end */
+
+/* @arkzen:mail:go:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
+*/
+<!DOCTYPE html>
+<html lang="en"><body>
+  <h1>Receipt for order {{ index . "order_id" }}</h1>
+  <p>Item: {{ index . "item_name" }}</p>
+  <p>Amount paid: {{ index . "amount" }}</p>
+</body></html>
+/* @arkzen:mail:go:receipt:end */
+
+/* @arkzen:mail:go:alert
+subject: "⚠ Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
+*/
+<!DOCTYPE html>
+<html lang="en"><body>
+  <h1>Action required</h1>
+  <p>{{ index . "alert_message" }}</p>
+  <p><a href="{{ index . "action_url" }}">Review alert</a></p>
+</body></html>
+/* @arkzen:mail:go:alert:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

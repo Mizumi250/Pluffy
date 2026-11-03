@@ -65,6 +65,8 @@ const STACK_GROUPS = [
       ['django', 'Django'],
       ['spring-boot', 'Spring Boot'],
       ['aspnet', 'ASP.NET'],
+      ['go', 'Go'],
+      ['rust', 'Rust'],
     ],
   },
   {

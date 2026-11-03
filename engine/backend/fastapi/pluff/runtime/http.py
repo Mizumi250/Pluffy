@@ -215,7 +215,7 @@ to_starlette = _to_starlette
 def render_error(e: BaseException) -> StarletteResponse:
     """Maps an exception to Laravel's JSON error body."""
     if isinstance(e, ValidationException):
-        return _to_starlette(JsonResponse({"message": e.summary(), "errors": e.errors}, 422))
+        return _to_starlette(JsonResponse({"message": str(e), "errors": e.errors}, 422))
     if isinstance(e, AuthenticationException):
         return _to_starlette(JsonResponse({"message": "Unauthenticated."}, 401))
     if isinstance(e, AuthorizationException):

@@ -280,7 +280,7 @@ public class Server implements CommandLineRunner {
     private static ResponseEntity<?> renderError(Throwable error) {
       if (error instanceof Errors.ValidationException) {
         Errors.ValidationException validation = (Errors.ValidationException) error;
-        return json(Map.of("message", validation.summary(), "errors", validation.errors), 422);
+        return json(Map.of("message", validation.getMessage(), "errors", validation.errors), 422);
       }
       if (error instanceof Errors.AuthenticationException) return json(Map.of("message", "Unauthenticated."), 401);
       if (error instanceof Errors.AuthorizationException) return json(Map.of("message", error.getMessage()), 403);

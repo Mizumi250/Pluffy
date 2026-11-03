@@ -2,8 +2,10 @@ package backend
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
+	"mime"
 	"net/http"
 	"net/url"
 	"sort"
@@ -60,16 +62,40 @@ func endpointMethod(operation string, endpoint EndpointConfig) string {
 }
 
 type matchedEndpoint struct {
-	registration Registration
-	api          APIBlock
-	operation    string
-	endpoint     EndpointConfig
-	id           string
+	registration  Registration
+	api           APIBlock
+	operation     string
+	endpoint      EndpointConfig
+	id            string
+	customHandler string
 }
 
 func (h *Handler) apiOrNotFound(w http.ResponseWriter, r *http.Request) {
 	path := normalizeRequestPath(r.URL.Path)
 	registrations := h.service.Registrations()
+	for _, registration := range registrations {
+		if h.serveAuthRoute(w, r, registration, path) {
+			return
+		}
+		if r.Method == http.MethodGet {
+			for _, api := range registration.APIs {
+				hasBroadcast := false
+				for _, endpoint := range api.Endpoints {
+					if endpoint.Type == "broadcast" {
+						hasBroadcast = true
+						break
+					}
+				}
+				if hasBroadcast {
+					_, matched := matchRoute("/api/"+registration.Name+"/sse-poll/{channelType}", path)
+					if matched {
+						h.pollBroadcastMessages(w, r, registration, api, path)
+						return
+					}
+				}
+			}
+		}
+	}
 	var pathMatch *matchedEndpoint
 	var methodMatch *matchedEndpoint
 	methodMatches := 0
@@ -108,12 +134,41 @@ func (h *Handler) apiOrNotFound(w http.ResponseWriter, r *http.Request) {
 				allowed = append(allowed, method)
 			}
 		}
+		for _, customRoute := range registration.CustomRoutes {
+			for _, route := range customRoute.Routes {
+				id, matched := matchRoute(route.Route, path)
+				if !matched {
+					continue
+				}
+				candidate := matchedEndpoint{
+					registration:  registration,
+					api:           APIBlock{Table: "probe_results", Middleware: customRoute.Middleware},
+					endpoint:      EndpointConfig{Method: route.Method, Route: route.Route, Body: route.Body},
+					customHandler: route.Handler,
+					id:            id,
+				}
+				if pathMatch == nil {
+					pathCandidate := candidate
+					pathCandidate.operation = route.Method
+					pathMatch = &pathCandidate
+				}
+				if strings.EqualFold(route.Method, r.Method) {
+					methodCandidate := candidate
+					methodMatch = &methodCandidate
+					methodMatches++
+				}
+				allowed = append(allowed, strings.ToUpper(route.Method))
+			}
+		}
 	}
 	if methodMatches > 1 {
 		writeJSON(w, http.StatusConflict, map[string]string{"message": "Ambiguous API route registration"})
 		return
 	}
 	if methodMatch != nil {
+		if !h.runMiddleware(w, r, *methodMatch) {
+			return
+		}
 		h.serveAPI(w, r, *methodMatch)
 		return
 	}
@@ -124,6 +179,49 @@ func (h *Handler) apiOrNotFound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusNotFound, map[string]string{"message": "Not Found"})
+}
+
+func (h *Handler) runMiddleware(w http.ResponseWriter, r *http.Request, match matchedEndpoint) bool {
+	for _, middleware := range match.api.Middleware {
+		switch middleware {
+		case "auth", "auth:sanctum":
+			if !match.registration.Auth {
+				writeJSON(w, http.StatusNotImplemented, map[string]string{
+					"message": "Authentication middleware is not enabled for this module",
+				})
+				return false
+			}
+			_, _, ok, err := h.resolveAuthUser(r, match.registration.Name)
+			if err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+				return false
+			}
+			if !ok {
+				writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "Unauthenticated."})
+				return false
+			}
+		case "requireJson":
+			contentType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+			if err != nil || !isJSONMediaType(contentType) {
+				writeJSON(w, http.StatusUnsupportedMediaType, map[string]string{
+					"message": "Content-Type: application/json is required for this endpoint.",
+					"hint":    "Set the Content-Type header to application/json",
+				})
+				return false
+			}
+		default:
+			writeJSON(w, http.StatusNotImplemented, map[string]string{
+				"message": fmt.Sprintf("Middleware %q is not implemented by the Go engine", middleware),
+			})
+			return false
+		}
+	}
+	return true
+}
+
+func isJSONMediaType(mediaType string) bool {
+	mediaType = strings.ToLower(mediaType)
+	return mediaType == "application/json" || strings.HasSuffix(mediaType, "+json")
 }
 
 func normalizeRequestPath(path string) string {
@@ -189,6 +287,13 @@ func uniqueStrings(values []string) []string {
 }
 
 func (h *Handler) serveAPI(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
+	if match.customHandler != "" {
+		h.serveCustomRoute(w, r, match)
+		return
+	}
+	if h.serveBuiltinAPI(w, r, match) {
+		return
+	}
 	db, err := openModuleDatabase(h.service.storageDir, match.registration.Name)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to open module database"})
@@ -204,7 +309,7 @@ func (h *Handler) serveAPI(w http.ResponseWriter, r *http.Request, match matched
 	table := quoteIdentifier(match.api.Table)
 	switch match.operation {
 	case "index":
-		h.indexRecords(w, r, db, table, match.api, primaryKey)
+		h.indexRecords(w, r, db, table, match.api, primaryKey, match.registration.Name)
 	case "show":
 		h.showRecord(w, db, table, match.api, primaryKey, match.id)
 	case "store":
@@ -213,8 +318,197 @@ func (h *Handler) serveAPI(w http.ResponseWriter, r *http.Request, match matched
 		h.updateRecord(w, r, db, table, match.api, columns, primaryKey, match.id)
 	case "destroy":
 		h.destroyRecord(w, db, table, match.api, primaryKey, match.id)
+	case "echo":
+		h.echoProbe(w, r, db, table, columns, primaryKey)
+	case "stats":
+		h.probeStats(w, db, match.api.Table, columns)
+	case "lowStock":
+		h.lowStock(w, db, match.api.Table)
 	default:
 		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Unsupported API operation"})
+	}
+}
+
+func (h *Handler) lowStock(w http.ResponseWriter, db *sql.DB, tableName string) {
+	rows, err := db.Query("SELECT * FROM "+quoteIdentifier(tableName)+` WHERE "quantity" < ? ORDER BY "quantity" ASC`, 20)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to query low-stock inventory"})
+		return
+	}
+	records, scanErr := scanRecords(rows)
+	closeErr := rows.Close()
+	if scanErr != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read low-stock inventory"})
+		return
+	}
+	if closeErr != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to finish reading low-stock inventory"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"data": records, "count": len(records)})
+}
+
+func (h *Handler) echoProbe(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, columns map[string]struct{}, primary string) {
+	input, ok := readObjectBody(w, r)
+	if !ok {
+		return
+	}
+	payload, err := json.Marshal(input)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not encode echo payload"})
+		return
+	}
+	recordInput := map[string]any{
+		"source":  "endpoint-body",
+		"probe":   "echo",
+		"payload": string(payload),
+		"result":  fmt.Sprintf("Echoed %d field(s) — Go endpoint emulation", len(input)),
+		"ok":      true,
+	}
+	prepareTimestamps(recordInput, columns, true)
+	record, err := insertRecord(db, table, recordInput, columns, primary)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record echo probe"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"injected": true, "builder": "Go endpoint emulation", "method": "echo",
+		"field_count": len(input), "echo": input, "probe_id": record[primary],
+	})
+}
+
+func (h *Handler) probeStats(w http.ResponseWriter, db *sql.DB, table string, columns map[string]struct{}) {
+	for _, column := range []string{"source", "ok"} {
+		if _, exists := columns[column]; !exists {
+			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": "Go endpoint emulation for stats requires source and ok columns"})
+			return
+		}
+	}
+	var total, passed, failed int
+	query := "SELECT COUNT(*), COALESCE(SUM(CASE WHEN \"ok\" THEN 1 ELSE 0 END), 0), COALESCE(SUM(CASE WHEN NOT \"ok\" THEN 1 ELSE 0 END), 0) FROM " + quoteIdentifier(table)
+	if err := db.QueryRow(query).Scan(&total, &passed, &failed); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Could not load probe statistics: %v", err)})
+		return
+	}
+	rows, err := db.Query("SELECT DISTINCT \"source\" FROM " + quoteIdentifier(table) + " ORDER BY \"source\"")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not load probe sources"})
+		return
+	}
+	defer rows.Close()
+	sources := []string{}
+	for rows.Next() {
+		var source string
+		if err := rows.Scan(&source); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not read probe sources"})
+			return
+		}
+		sources = append(sources, source)
+	}
+	if err := rows.Err(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not read probe sources"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{
+		"injected": true, "builder": "Go endpoint emulation", "method": "stats",
+		"total": total, "passed": passed, "failed": failed, "sources": sources,
+	})
+}
+
+func (h *Handler) serveCustomRoute(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
+	if match.registration.Name == "queue-flow" {
+		h.serveQueueRoute(w, r, match)
+		return
+	}
+	switch match.customHandler {
+	case "ping":
+		writeJSON(w, http.StatusOK, map[string]any{
+			"injected": true, "builder": "CustomRouteBuilder Go emulation",
+			"handler": "ping", "status": "ok",
+			"timestamp": time.Now().UTC().Format(time.RFC3339),
+			"message":   "CustomRouteBuilder handler body injection confirmed",
+		})
+	case "recordHandler":
+		input, ok := readObjectBody(w, r)
+		if !ok {
+			return
+		}
+		probe, valid := input["probe"].(string)
+		if !valid || strings.TrimSpace(probe) == "" || len([]rune(probe)) > 100 {
+			writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
+				"message": "Validation failed",
+				"errors":  []string{"probe is required, string, and at most 100 characters"},
+			})
+			return
+		}
+		if value, exists := input["payload"]; exists && value != nil {
+			if _, valid := value.(string); !valid {
+				writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
+					"message": "Validation failed", "errors": []string{"payload must be a string"},
+				})
+				return
+			}
+		}
+		okValue := true
+		if value, exists := input["ok"]; exists {
+			boolean, valid := value.(bool)
+			if !valid {
+				writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
+					"message": "Validation failed", "errors": []string{"ok must be a boolean"},
+				})
+				return
+			}
+			okValue = boolean
+		}
+		db, err := openModuleDatabase(h.service.storageDir, match.registration.Name)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to open module database"})
+			return
+		}
+		defer db.Close()
+		columns, primary, err := inspectColumns(db, match.api.Table)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to inspect probe table"})
+			return
+		}
+		recordInput := map[string]any{
+			"source": "handler-body", "probe": probe, "payload": input["payload"],
+			"result": "Recorded via CustomRouteBuilder handler body injection", "ok": okValue,
+		}
+		prepareTimestamps(recordInput, columns, true)
+		record, err := insertRecord(db, quoteIdentifier(match.api.Table), recordInput, columns, primary)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record probe"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"injected": true, "builder": "CustomRouteBuilder Go emulation",
+			"handler": "recordHandler", "probe_id": record[primary], "probe": probe,
+		})
+	case "latest":
+		db, err := openModuleDatabase(h.service.storageDir, match.registration.Name)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to open module database"})
+			return
+		}
+		defer db.Close()
+		records, err := db.Query(`SELECT * FROM "probe_results" ORDER BY "id" DESC LIMIT 5`)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not load latest probes"})
+			return
+		}
+		defer records.Close()
+		rows, err := scanRecords(records)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not read latest probes"})
+			return
+		}
+		writeJSON(w, http.StatusOK, map[string]any{
+			"injected": true, "builder": "CustomRouteBuilder Go emulation",
+			"handler": "latest", "count": len(rows), "results": rows,
+		})
+	default:
+		writeJSON(w, http.StatusNotImplemented, map[string]string{"message": "Custom route handler is not implemented by the Go engine"})
 	}
 }
 
@@ -267,38 +561,54 @@ func inspectColumns(db *sql.DB, table string) (map[string]struct{}, string, erro
 	return columns, primary, nil
 }
 
-func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, api APIBlock, primary string) {
+func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, api APIBlock, primary, module string) {
 	query := "SELECT * FROM " + table
 	args := []any{}
 	if api.SoftDeletes {
 		query += " WHERE \"deleted_at\" IS NULL"
 	}
-	query += " ORDER BY " + quoteIdentifier(primary)
+	orderColumn := primary
+	descending := false
+	switch {
+	case module == "job-test" && api.Table == "job_results":
+		orderColumn, descending = "created_at", true
+	case module == "events-test" && api.Table == "event_log":
+		orderColumn, descending = "created_at", true
+	case module == "broadcast-test" && api.Table == "messages":
+		orderColumn, descending = "created_at", true
+	case module == "dtr-geofencing" && api.Table == "time_records":
+		orderColumn, descending = "timestamp", true
+	}
+	order := " ORDER BY " + quoteIdentifier(orderColumn)
+	if descending {
+		order += " DESC, " + quoteIdentifier(primary) + " DESC"
+	}
+	query += order
+	limit := 0
 	if raw := r.URL.Query().Get("per_page"); raw != "" {
-		limit, err := strconv.Atoi(raw)
+		var err error
+		limit, err = strconv.Atoi(raw)
 		if err != nil || limit < 1 || limit > 1000 {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "per_page must be an integer from 1 to 1000"})
 			return
 		}
-		query += " LIMIT ?"
-		args = append(args, limit)
 	} else if api.Endpoints["index"].Response.Type == "paginated" {
-		query += " LIMIT 15"
+		limit = 15
 	}
+	page := 1
 	if raw := r.URL.Query().Get("page"); raw != "" {
-		page, err := strconv.Atoi(raw)
+		var err error
+		page, err = strconv.Atoi(raw)
 		if err != nil || page < 1 || page > 1000000 {
 			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "page must be an integer from 1 to 1000000"})
 			return
 		}
-		if len(args) == 0 {
-			if api.Endpoints["index"].Response.Type == "paginated" {
-				query = strings.TrimSuffix(query, " ORDER BY "+quoteIdentifier(primary)) + " LIMIT 15"
-			} else {
-				query += " LIMIT -1"
-			}
-		}
-		query += " OFFSET ?"
+	}
+	if limit > 0 {
+		query += " LIMIT ? OFFSET ?"
+		args = append(args, limit, (page-1)*limit)
+	} else if page > 1 {
+		query += " LIMIT -1 OFFSET ?"
 		args = append(args, (page-1)*15)
 	}
 	rows, err := db.Query(query, args...)

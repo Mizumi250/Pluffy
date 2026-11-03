@@ -167,6 +167,15 @@ fn discover_repository_root() -> Option<PathBuf> {
     }
 }
 
+fn is_json_content_type(content_type: Option<&str>) -> bool {
+    let media_type = content_type
+        .and_then(|value| value.split(';').next())
+        .map(str::trim)
+        .unwrap_or_default()
+        .to_ascii_lowercase();
+    media_type == "application/json" || media_type.ends_with("+json")
+}
+
 async fn registry(
     axum::extract::State(state): axum::extract::State<AppState>,
 ) -> Response {
@@ -253,6 +262,11 @@ async fn dispatch(
     let method = request.method().clone();
     let path = request.uri().path().to_owned();
     let query_string = request.uri().query().unwrap_or_default().to_owned();
+    let content_type = request
+        .headers()
+        .get(header::CONTENT_TYPE)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_owned);
     let body_bytes = match axum::body::to_bytes(request.into_body(), 2 * 1024 * 1024).await {
         Ok(body) => body,
         Err(error) => {
@@ -289,16 +303,31 @@ async fn dispatch(
     let modules = state.modules.read().await.clone();
     for (slug, module) in modules {
         if let Some(route) = api::match_route(&module, method.as_str(), &path) {
-            if !route.middleware.is_empty() {
-                return (
-                    StatusCode::NOT_IMPLEMENTED,
-                    Json(json!({"message": "API middleware execution is not implemented by the Rust engine"})),
-                )
-                    .into_response();
+            for middleware in &route.middleware {
+                match middleware.as_str() {
+                    Some("requireJson") if !is_json_content_type(content_type.as_deref()) => {
+                        return (
+                            StatusCode::UNSUPPORTED_MEDIA_TYPE,
+                            Json(json!({
+                                "message": "Content-Type: application/json is required for this endpoint.",
+                                "hint": "Set the Content-Type header to application/json"
+                            })),
+                        )
+                            .into_response();
+                    }
+                    Some("requireJson") => {}
+                    _ => {
+                        return (
+                            StatusCode::NOT_IMPLEMENTED,
+                            Json(json!({"message": format!("Middleware {} is not implemented by the Rust engine", middleware)})),
+                        )
+                            .into_response();
+                    }
+                }
             }
             if route.endpoint.get("body").is_some_and(|body| {
                 body.as_str().map_or(!body.is_null(), |body| !body.trim().is_empty())
-            }) {
+            }) && !route.supported {
                 return (
                     StatusCode::NOT_IMPLEMENTED,
                     Json(json!({"message": "Custom endpoint body execution is not implemented by the Rust engine"})),
@@ -881,5 +910,38 @@ mod tests {
         .await;
         assert_eq!(status, StatusCode::NOT_IMPLEMENTED);
         assert!(body["message"].as_str().unwrap().contains("Custom endpoint body"));
+    }
+
+    #[tokio::test]
+    async fn require_json_middleware_rejects_missing_content_type() {
+        let directory = tempfile::tempdir().unwrap();
+        let state = test_state(directory.path());
+        state.modules.write().await.insert(
+            "middleware-test".to_owned(),
+            json!({
+                "name": "middleware-test",
+                "databases": [{"table": "ping_logs", "columns": {"message": {"type": "string"}}}],
+                "apis": [{
+                    "model": "PingLog",
+                    "controller": "PingLogController",
+                    "table": "ping_logs",
+                    "prefix": "/api/middleware-test",
+                    "middleware": ["requireJson"],
+                    "endpoints": {
+                        "store": {"method": "POST", "route": "/ping"}
+                    }
+                }]
+            }),
+        );
+        let request = Request::builder()
+            .method(Method::POST)
+            .uri("/api/middleware-test/ping")
+            .body(Body::from(r#"{"message":"blocked"}"#))
+            .unwrap();
+        let response = app(state).oneshot(request).await.unwrap();
+        assert_eq!(response.status(), StatusCode::UNSUPPORTED_MEDIA_TYPE);
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        let body: Value = serde_json::from_slice(&body).unwrap();
+        assert!(body["message"].as_str().unwrap().contains("application/json"));
     }
 }

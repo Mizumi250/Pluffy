@@ -262,6 +262,61 @@ timeout: 10
 raise Exception('This job always fails')
 /* @arkzen:jobs:py:always-fails:end */
 
+/* @arkzen:endpoint:go:index
+*/
+results, err := JobResult.Query().
+    OrderBy("created_at", "desc").
+    Paginate(ctx, request.QueryInt("per_page", 15))
+if err != nil {
+    return response.Error(500, "Could not load job results")
+}
+return response.JSON(results)
+/* @arkzen:endpoint:go:index:end */
+
+/* @arkzen:jobs:go:process-data
+queue: default
+tries: 3
+timeout: 30
+*/
+started := time.Now()
+time.Sleep(2 * time.Second)
+_, err := JobResult.Create(ctx, map[string]any{
+    "job_name": "process-data",
+    "status": "completed",
+    "result": fmt.Sprintf("Data processed successfully in %dms", time.Since(started).Milliseconds()),
+    "processed_at": time.Now(),
+})
+if err != nil {
+    return err
+}
+/* @arkzen:jobs:go:process-data:end */
+
+/* @arkzen:jobs:go:heavy-computation
+queue: heavy
+tries: 1
+timeout: 120
+*/
+started := time.Now()
+time.Sleep(5 * time.Second)
+_, err := JobResult.Create(ctx, map[string]any{
+    "job_name": "heavy-computation",
+    "status": "completed",
+    "result": fmt.Sprintf("Heavy computation completed in %dms", time.Since(started).Milliseconds()),
+    "processed_at": time.Now(),
+})
+if err != nil {
+    return err
+}
+/* @arkzen:jobs:go:heavy-computation:end */
+
+/* @arkzen:jobs:go:always-fails
+queue: default
+tries: 2
+timeout: 10
+*/
+return errors.New("This job always fails")
+/* @arkzen:jobs:go:always-fails:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

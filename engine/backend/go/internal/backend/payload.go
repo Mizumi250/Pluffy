@@ -15,8 +15,36 @@ var (
 type BuildPayload struct {
 	Name           string               `json:"name"`
 	BackendVariant string               `json:"backendVariant"`
+	Auth           bool                 `json:"auth"`
+	AuthSeed       *AuthSeed            `json:"authSeed"`
 	Databases      []DatabaseDefinition `json:"databases"`
 	APIs           []APIBlock           `json:"apis"`
+	CustomRoutes   []CustomRoute        `json:"customRoutes"`
+	Realtimes      []string             `json:"realtimes"`
+}
+
+type AuthSeed struct {
+	Users []AuthSeedUser `json:"users"`
+}
+
+type AuthSeedUser struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+	Role     string `json:"role"`
+}
+
+type CustomRoute struct {
+	Controller string             `json:"controller"`
+	Middleware []string           `json:"middleware"`
+	Routes     []CustomRouteEntry `json:"routes"`
+}
+
+type CustomRouteEntry struct {
+	Method  string `json:"method"`
+	Route   string `json:"route"`
+	Handler string `json:"handler"`
+	Body    string `json:"body"`
 }
 
 type DatabaseDefinition struct {
@@ -24,6 +52,12 @@ type DatabaseDefinition struct {
 	Columns     map[string]ColumnDefinition `json:"columns"`
 	Timestamps  *bool                       `json:"timestamps"`
 	SoftDeletes bool                        `json:"softDeletes"`
+	Seeder      *SeederDefinition           `json:"seeder"`
+}
+
+type SeederDefinition struct {
+	Count int                          `json:"count"`
+	Data  []map[string]json.RawMessage `json:"data"`
 }
 
 type ColumnDefinition struct {
@@ -36,18 +70,21 @@ type ColumnDefinition struct {
 }
 
 type APIBlock struct {
-	Name      string                    `json:"name"`
-	Model      string `json:"model"`
-	Controller string `json:"controller"`
-	Table      string                    `json:"table"`
-	Prefix     string                    `json:"prefix"`
-	SoftDeletes bool                     `json:"softDeletes,omitempty"`
-	Endpoints  map[string]EndpointConfig `json:"endpoints"`
+	Name        string                    `json:"name"`
+	Model       string                    `json:"model"`
+	Controller  string                    `json:"controller"`
+	Table       string                    `json:"table"`
+	Prefix      string                    `json:"prefix"`
+	Middleware  []string                  `json:"middleware"`
+	SoftDeletes bool                      `json:"softDeletes,omitempty"`
+	Endpoints   map[string]EndpointConfig `json:"endpoints"`
 }
 
 type EndpointConfig struct {
 	Method     string            `json:"method"`
 	Route      string            `json:"route"`
+	Body       string            `json:"body"`
+	Type       string            `json:"type"`
 	Validation map[string]string `json:"validation"`
 	Response   struct {
 		Type  string `json:"type"`
@@ -64,6 +101,16 @@ func ValidateBuild(payload BuildPayload) []string {
 	}
 	if payload.BackendVariant != "" && payload.BackendVariant != "go" {
 		problems = append(problems, fmt.Sprintf("Payload was parsed for the :%s variant but this backend (go) reads :go. Switch the active backend and let the watcher rebuild.", payload.BackendVariant))
+	}
+	if payload.AuthSeed != nil && len(payload.AuthSeed.Users) > 0 && !payload.Auth {
+		problems = append(problems, "authSeed requires auth to be enabled")
+	}
+	if payload.Auth && payload.AuthSeed != nil {
+		for index, user := range payload.AuthSeed.Users {
+			if strings.TrimSpace(user.Email) != "" && !validAuthEmail(user.Email) {
+				problems = append(problems, fmt.Sprintf("Invalid auth seed email at row %d", index+1))
+			}
+		}
 	}
 
 	tables := make(map[string]struct{}, len(payload.Databases))
@@ -90,6 +137,37 @@ func ValidateBuild(payload BuildPayload) []string {
 				problems = append(problems, fmt.Sprintf("Invalid default for %s.%s: expected a string, number, boolean, or null", database.Table, column))
 			}
 		}
+		var seedRows []map[string]json.RawMessage
+		if database.Seeder != nil {
+			seedRows = database.Seeder.Data
+		}
+		for rowIndex, row := range seedRows {
+			for column, value := range row {
+				if !sqlNamePattern.MatchString(column) {
+					problems = append(problems, fmt.Sprintf("Invalid seed column %q in table %q", column, database.Table))
+					continue
+				}
+				_, declared := database.Columns[column]
+				timestamps := database.Timestamps == nil || *database.Timestamps
+				if !declared && column == "id" {
+					hasPrimary := false
+					for _, definition := range database.Columns {
+						if definition.Primary {
+							hasPrimary = true
+							break
+						}
+					}
+					declared = !hasPrimary
+				}
+				if !declared && !(timestamps && (column == "created_at" || column == "updated_at")) {
+					problems = append(problems, fmt.Sprintf("Seed column %q is not declared in table %q", column, database.Table))
+					continue
+				}
+				if !validDefault(value) {
+					problems = append(problems, fmt.Sprintf("Invalid seed value for %s.%s at row %d: expected a scalar", database.Table, column, rowIndex+1))
+				}
+			}
+		}
 	}
 	routeSignatures := make(map[string]string)
 	for index, api := range payload.APIs {
@@ -112,7 +190,9 @@ func ValidateBuild(payload BuildPayload) []string {
 			endpoints = defaultEndpoints()
 		}
 		for operation, endpoint := range endpoints {
-			if !isCRUDOperation(operation) {
+			if !isCRUDOperation(operation) &&
+				!isSupportedCustomEndpoint(payload.Name, operation, endpoint) &&
+				!isSupportedNamedEndpoint(payload.Name, operation) {
 				problems = append(problems, fmt.Sprintf("api block %q endpoint %q is not a supported CRUD operation", api.Name, operation))
 				continue
 			}
@@ -122,7 +202,11 @@ func ValidateBuild(payload BuildPayload) []string {
 			if endpoint.Route != "" && !validRoutePath(endpoint.Route) {
 				problems = append(problems, fmt.Sprintf("api block %q endpoint %q has an invalid route %q", api.Name, operation, endpoint.Route))
 			}
-			if isCRUDOperation(operation) && (endpoint.Route == "" || validRoutePath(endpoint.Route)) && (endpoint.Method == "" || validHTTPMethod(endpoint.Method)) {
+			if (isCRUDOperation(operation) ||
+				isSupportedCustomEndpoint(payload.Name, operation, endpoint) ||
+				isSupportedNamedEndpoint(payload.Name, operation)) &&
+				(endpoint.Route == "" || validRoutePath(endpoint.Route)) &&
+				(endpoint.Method == "" || validHTTPMethod(endpoint.Method)) {
 				signature := routeSignature(endpointMethod(operation, endpoint), joinRoute(prefix, endpointRoute(operation, endpoint)))
 				if previous, exists := routeSignatures[signature]; exists {
 					problems = append(problems, fmt.Sprintf("API route %q is declared by both %q and %q", signature, previous, api.Name))
@@ -138,7 +222,88 @@ func ValidateBuild(payload BuildPayload) []string {
 			}
 		}
 	}
+	for _, customRoute := range payload.CustomRoutes {
+		for _, route := range customRoute.Routes {
+			if !isSupportedCustomHandler(payload.Name, route) {
+				problems = append(problems, fmt.Sprintf("custom route handler %q is not supported by the Go engine", route.Handler))
+				continue
+			}
+			if payload.Name == "body-endpoint-handler" && strings.TrimSpace(route.Body) == "" {
+				problems = append(problems, fmt.Sprintf("custom route handler %q requires a :go body", route.Handler))
+			}
+			if !validHTTPMethod(route.Method) {
+				problems = append(problems, fmt.Sprintf("custom route handler %q has unsupported method %q", route.Handler, route.Method))
+			}
+			if !validRoutePath(route.Route) {
+				problems = append(problems, fmt.Sprintf("custom route handler %q has an invalid route %q", route.Handler, route.Route))
+			}
+		}
+	}
 	return problems
+}
+
+func isSupportedCustomEndpoint(module, operation string, endpoint EndpointConfig) bool {
+	if strings.TrimSpace(endpoint.Body) == "" {
+		return false
+	}
+	switch module {
+	case "body-endpoint-handler":
+		return operation == "echo" || operation == "stats"
+	case "inventory-management":
+		return operation == "lowStock"
+	}
+	return false
+}
+
+func isSupportedNamedEndpoint(module, operation string) bool {
+	switch module {
+	case "events-test":
+		return operation == "clearLog"
+	case "dtr-geofencing":
+		switch operation {
+		case "my_records", "check_in", "check_out", "toggle_geofencing", "update_office":
+			return true
+		}
+	case "jo-payroll":
+		return operation == "summary" || operation == "byGroup" || operation == "appointments"
+	case "roles-test":
+		return operation == "adminOnly" || operation == "userOnly" || operation == "promote" || operation == "demote"
+	case "notification-test":
+		return operation == "readAll"
+	case "body-mail-notification":
+		return operation == "sendMail" || operation == "notify" || operation == "clearLog"
+	case "kotoba":
+		return operation == "status"
+	}
+	return false
+}
+
+func isSupportedCustomHandler(module string, route CustomRouteEntry) bool {
+	path := normalizeRoutePath(route.Route)
+	method := strings.ToUpper(route.Method)
+	switch module {
+	case "body-endpoint-handler":
+		switch route.Handler {
+		case "ping":
+			return method == "GET" && path == "/api/body-endpoint-handler/ping"
+		case "recordHandler":
+			return method == "POST" && path == "/api/body-endpoint-handler/record-handler"
+		case "latest":
+			return method == "GET" && path == "/api/body-endpoint-handler/latest"
+		}
+	case "queue-flow":
+		switch route.Handler {
+		case "join_queue":
+			return method == "POST" && path == "/api/queue-flow/join"
+		case "call_next":
+			return method == "POST" && path == "/api/queue-flow/call-next"
+		case "queue_status":
+			return method == "GET" && path == "/api/queue-flow/status/{queue_id}"
+		case "my_ticket":
+			return method == "GET" && path == "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}"
+		}
+	}
+	return false
 }
 
 func routeSignature(method, path string) string {

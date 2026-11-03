@@ -679,6 +679,121 @@ await ScriptDatabase.ExecuteAsync(
 return Results.Json(new { message = "Log cleared" });
 /* @arkzen:endpoint:cs:clearLog:end */
 
+/* @arkzen:endpoint:go:index
+*/
+results, err := EventLog.Query().
+    OrderBy("created_at", "desc").
+    Paginate(ctx, request.QueryInt("per_page", 100), request.QueryInt("page", 1), request.URL())
+if err != nil {
+    return response.Error(500, "Could not load event log")
+}
+return response.JSON(results)
+/* @arkzen:endpoint:go:index:end */
+
+/* @arkzen:endpoint:go:clearLog
+*/
+if _, err := EventLog.Query().Delete(ctx); err != nil {
+    return response.Error(500, "Could not clear event log")
+}
+return response.JSON(map[string]any{"message": "Log cleared"})
+/* @arkzen:endpoint:go:clearLog:end */
+
+/* @arkzen:listener:go:SendWelcomeEmail
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "UserSignedUp", "listener_name": "SendWelcomeEmail",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:SendWelcomeEmail:end */
+
+/* @arkzen:listener:go:UpdateUserStats
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "UserSignedUp", "listener_name": "UpdateUserStats",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:UpdateUserStats:end */
+
+/* @arkzen:listener:go:NotifyAdmins
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "UserSignedUp", "listener_name": "NotifyAdmins",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:NotifyAdmins:end */
+
+/* @arkzen:listener:go:ProcessPayment
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "OrderPlaced", "listener_name": "ProcessPayment",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:ProcessPayment:end */
+
+/* @arkzen:listener:go:UpdateInventory
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "OrderPlaced", "listener_name": "UpdateInventory",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:UpdateInventory:end */
+
+/* @arkzen:listener:go:SendOrderConfirmation
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "OrderPlaced", "listener_name": "SendOrderConfirmation",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:SendOrderConfirmation:end */
+
+/* @arkzen:listener:go:LogExportActivity
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "DataExported", "listener_name": "LogExportActivity",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:LogExportActivity:end */
+
+/* @arkzen:listener:go:CleanupTempFiles
+*/
+started := time.Now()
+if _, err := EventLog.Create(ctx, map[string]any{
+    "event_name": "DataExported", "listener_name": "CleanupTempFiles",
+    "status": "completed", "payload": event.Data,
+    "duration_ms": time.Since(started).Milliseconds(),
+}); err != nil {
+    return err
+}
+/* @arkzen:listener:go:CleanupTempFiles:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

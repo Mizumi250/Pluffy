@@ -71,7 +71,7 @@ class RegistryReader
 
             $source = File::get($sourcePath);
             $hasBackend = preg_match('/auth:\\s*true|@arkzen:(?:api|database|auth|jobs|events|mail|notifications|routes|realtime|console|store)/', $source) === 1;
-            $hasVariant = preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):(?:php|ts|py|java|cs)\\b/', $source) === 1;
+            $hasVariant = preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):(?:php|ts|py|java|cs|go|rs)\\b/', $source) === 1;
             $hasLaravel = preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):php\\b/', $source) === 1;
             $backend = [];
             if ($hasBackend && ($hasLaravel || !$hasVariant)) $backend[] = 'Laravel';
@@ -79,6 +79,8 @@ class RegistryReader
             if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):py\\b/', $source)) $backend[] = 'FastAPI / Django';
             if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):java\\b/', $source)) $backend[] = 'Spring Boot';
             if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):cs\\b/', $source)) $backend[] = 'ASP.NET';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):go\\b/', $source)) $backend[] = 'Go';
+            if (preg_match('/@arkzen:(?:endpoint|handler|middleware|policy|listener|job|console|mail|notification):rs\\b/', $source)) $backend[] = 'Rust';
 
             $frontend = [];
             $hasWeb = preg_match('/@arkzen:(?:web:|meta:web\\b)/', $source) === 1;

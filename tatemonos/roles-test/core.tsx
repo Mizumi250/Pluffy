@@ -344,6 +344,74 @@ var demoted = (await ScriptDatabase.QueryAsync(
 return Results.Json(new { message = "Demoted to user", user = demoted });
 /* @arkzen:endpoint:cs:demote:end */
 
+/* @arkzen:endpoint:go:adminOnly
+*/
+user := request.User()
+granted := user != nil && user.Role == "admin"
+var userID any
+if user != nil {
+    userID = user.ID
+}
+_, err := RoleAuditLog.Create(ctx, map[string]any{
+    "user_id": userID, "action": "GET /admin-only",
+    "role_required": "admin", "granted": granted,
+})
+if err != nil {
+    return response.Error(500, "Could not record role audit")
+}
+if !granted {
+    return response.JSON(403, map[string]any{"message": "✗ Access denied — admin role required"})
+}
+return response.JSON(map[string]any{"message": "✓ Access granted — you are admin"})
+/* @arkzen:endpoint:go:adminOnly:end */
+
+/* @arkzen:endpoint:go:userOnly
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if _, err := RoleAuditLog.Create(ctx, map[string]any{
+    "user_id": user.ID, "action": "GET /user-only",
+    "role_required": "user", "granted": true,
+}); err != nil {
+    return response.Error(500, "Could not record role audit")
+}
+return response.JSON(map[string]any{"message": "✓ Access granted — open to all authenticated users"})
+/* @arkzen:endpoint:go:userOnly:end */
+
+/* @arkzen:endpoint:go:promote
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if err := user.Update(ctx, map[string]any{"role": "admin"}); err != nil {
+    return response.Error(500, "Could not promote user")
+}
+updated, err := user.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload user")
+}
+return response.JSON(map[string]any{"message": "Promoted to admin", "user": updated})
+/* @arkzen:endpoint:go:promote:end */
+
+/* @arkzen:endpoint:go:demote
+*/
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if err := user.Update(ctx, map[string]any{"role": "user"}); err != nil {
+    return response.Error(500, "Could not demote user")
+}
+updated, err := user.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload user")
+}
+return response.JSON(map[string]any{"message": "Demoted to user", "user": updated})
+/* @arkzen:endpoint:go:demote:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

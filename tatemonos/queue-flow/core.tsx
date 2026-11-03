@@ -954,6 +954,138 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 // WEB SHARED COMPONENTS
 // ─────────────────────────────────────────────────────────────────────────────
 
+/* @arkzen:handler:go:join_queue
+*/
+queueID := request.Input("queue_id")
+customerName := request.InputOr("customer_name", "Guest")
+queue, err := Queue.FindOrFail(ctx, queueID)
+if err != nil {
+    return response.Error(404, "Queue not found")
+}
+lastPosition, err := Ticket.Query().
+    Where("queue_id", queueID).
+    WhereIn("status", []string{"waiting", "serving"}).
+    Max(ctx, "position")
+if err != nil {
+    return response.Error(500, "Could not determine queue position")
+}
+ticket, err := Ticket.Create(ctx, map[string]any{
+    "queue_id": queueID,
+    "ticket_number": fmt.Sprintf("%s-%03d", queue.Prefix, lastPosition+1),
+    "customer_name": customerName,
+    "status": "waiting",
+    "position": lastPosition + 1,
+})
+if err != nil {
+    return response.Error(500, "Could not create ticket")
+}
+waiting, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    Where("position", "<", ticket.Position).
+    Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not calculate wait time")
+}
+if err := QueueEvents.Broadcast(ctx, "queue-updated", map[string]any{
+    "queue_id": queueID, "action": "joined", "ticket": ticket,
+}); err != nil {
+    Log.Warn("Queue update broadcast failed", map[string]any{"error": err.Error()})
+}
+return response.JSON(map[string]any{
+    "ticket": ticket,
+    "position": waiting + 1,
+    "estimated_wait": waiting * queue.AvgWaitMinutes,
+})
+/* @arkzen:handler:go:join_queue:end */
+
+/* @arkzen:handler:go:call_next
+*/
+queueID := request.Input("queue_id")
+if _, err := Ticket.Query().Where("queue_id", queueID).Where("status", "serving").
+    Update(ctx, map[string]any{"status": "done", "served_at": time.Now()}); err != nil {
+    return response.Error(500, "Could not finish the serving ticket")
+}
+next, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    OrderBy("position", "asc").
+    First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load the next ticket")
+}
+if next == nil {
+    return response.JSON(map[string]any{"message": "No more tickets in queue", "ticket": nil})
+}
+if err := next.Update(ctx, map[string]any{"status": "serving", "called_at": time.Now()}); err != nil {
+    return response.Error(500, "Could not call the next ticket")
+}
+if err := QueueEvents.Broadcast(ctx, "queue-updated", map[string]any{
+    "queue_id": queueID, "action": "called", "ticket": next,
+}); err != nil {
+    Log.Warn("Queue update broadcast failed", map[string]any{"error": err.Error()})
+}
+return response.JSON(map[string]any{"ticket": next})
+/* @arkzen:handler:go:call_next:end */
+
+/* @arkzen:handler:go:queue_status
+*/
+queueID := params[0]
+queue, err := Queue.FindOrFail(ctx, queueID)
+if err != nil {
+    return response.Error(404, "Queue not found")
+}
+serving, err := Ticket.Query().Where("queue_id", queueID).Where("status", "serving").First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load serving ticket")
+}
+waiting, err := Ticket.Query().Where("queue_id", queueID).Where("status", "waiting").OrderBy("position", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load waiting tickets")
+}
+doneCount, err := Ticket.Query().Where("queue_id", queueID).Where("status", "done").Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count completed tickets")
+}
+return response.JSON(map[string]any{
+    "queue": queue, "serving": serving, "waiting": waiting,
+    "done_count": doneCount, "total_waiting": len(waiting),
+})
+/* @arkzen:handler:go:queue_status:end */
+
+/* @arkzen:handler:go:my_ticket
+*/
+queueID, ticketNumber := params[0], params[1]
+ticket, err := Ticket.Query().
+    Where("ticket_number", ticketNumber).
+    Where("queue_id", queueID).
+    First(ctx)
+if err != nil || ticket == nil {
+    return response.Error(404, "Ticket not found")
+}
+ahead, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    Where("position", "<", ticket.Position).
+    Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not calculate ticket position")
+}
+queue, _ := Queue.Find(ctx, queueID)
+waitMinutes := 5
+if queue != nil {
+    waitMinutes = queue.AvgWaitMinutes
+}
+position := 0
+if ticket.Status == "waiting" {
+    position = ahead + 1
+}
+return response.JSON(map[string]any{
+    "ticket": ticket, "position": position, "estimated_wait": ahead * waitMinutes,
+    "is_serving": ticket.Status == "serving", "is_done": ticket.Status == "done",
+})
+/* @arkzen:handler:go:my_ticket:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

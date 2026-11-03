@@ -97,7 +97,7 @@ function send(res: ExRes, out: any) {
 /** Maps an exception to Laravel's JSON error body. */
 export function renderError(res: ExRes, e: any) {
   if (res.headersSent) return
-  if (e instanceof ValidationException) return void res.status(422).json({ message: e.summary(), errors: e.errors })
+  if (e instanceof ValidationException) return void res.status(422).json({ message: e.message, errors: e.errors })
   if (e instanceof AuthenticationException) return void res.status(401).json({ message: 'Unauthenticated.' })
   if (e instanceof AuthorizationException)  return void res.status(403).json({ message: e.message })
   if (e instanceof ModelNotFoundException)  return void res.status(404).json({ message: e.message })

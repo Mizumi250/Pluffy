@@ -64,13 +64,13 @@ pub fn match_route(module: &Value, method: &str, path: &str) -> Option<MatchedRo
                         schema: schema.clone(),
                         model: model.to_owned(),
                         middleware,
-                        supported: is_crud_name(name)
-                            && match endpoint_object.get("type") {
+                        supported: (is_crud_name(name) || is_supported_custom_endpoint(name, endpoint))
+                            && (!is_crud_name(name) || match endpoint_object.get("type") {
                                 None => true,
                                 Some(kind) => kind.as_str().is_some_and(|kind| {
                                     matches!(kind, "index" | "show" | "store" | "update" | "destroy")
                                 }),
-                            }
+                            })
                             && validation_supported(endpoint_object.get("validation")),
                     });
                 }
@@ -93,21 +93,69 @@ pub fn match_route(module: &Value, method: &str, path: &str) -> Option<MatchedRo
             }
         }
     }
+    for group in module.get("customRoutes").and_then(Value::as_array).into_iter().flatten() {
+        let middleware = group
+            .get("middleware")
+            .and_then(Value::as_array)
+            .cloned()
+            .unwrap_or_default();
+        for route in group.get("routes").and_then(Value::as_array).into_iter().flatten() {
+            let route_method = route.get("method").and_then(Value::as_str).unwrap_or("GET");
+            let route_path = route.get("route").and_then(Value::as_str).unwrap_or("/");
+            let Some(handler) = route.get("handler").and_then(Value::as_str) else {
+                continue;
+            };
+            if !route_method.eq_ignore_ascii_case(method) || !match_path(route_path, path) {
+                continue;
+            }
+            let name = format!("handler:{handler}");
+            let table = "probe_results";
+            let schema = module
+                .get("databases")
+                .and_then(Value::as_array)
+                .into_iter()
+                .flatten()
+                .find(|database| database["table"].as_str() == Some(table))
+                .cloned()
+                .unwrap_or_else(|| json!({}));
+            return Some(MatchedRoute {
+                name: name.clone(),
+                endpoint: route.clone(),
+                table: table.to_owned(),
+                schema,
+                model: "ProbeResult".to_owned(),
+                middleware: middleware.clone(),
+                supported: is_supported_custom_endpoint(&name, route),
+            });
+        }
+    }
     None
 }
 
 pub fn route_count(module: &Value) -> usize {
-    let Some(apis) = module.get("apis").and_then(Value::as_array) else {
-        return 0;
-    };
-    apis.iter()
+    let api_count: usize = module
+        .get("apis")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
         .map(|api| match api.get("endpoints").and_then(Value::as_object) {
-            Some(endpoints) if !endpoints.is_empty() => {
-                endpoints.keys().filter(|name| is_crud_name(name)).count()
-            }
+            Some(endpoints) if !endpoints.is_empty() => endpoints
+                .iter()
+                .filter(|(name, endpoint)| {
+                    is_crud_name(name) || is_supported_custom_endpoint(name, endpoint)
+                })
+                .count(),
             _ => 5,
         })
-        .sum()
+        .sum();
+    api_count
+        + module
+            .get("customRoutes")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .map(|group| group.get("routes").and_then(Value::as_array).map_or(0, Vec::len))
+            .sum::<usize>()
 }
 
 pub fn warnings(module: &Value) -> Vec<String> {
@@ -133,9 +181,11 @@ pub fn warnings(module: &Value) -> Vec<String> {
                 .get("body")
                 .is_some_and(|body| body.as_str().map_or(!body.is_null(), |body| !body.trim().is_empty()))
             {
-                warnings.push(format!(
-                    "Endpoint {name} has a custom body; Rust does not execute DSL handler bodies"
-                ));
+                if !is_supported_custom_endpoint(name, endpoint) {
+                    warnings.push(format!(
+                        "Endpoint {name} has a custom body; Rust does not execute DSL handler bodies"
+                    ));
+                }
             } else if !is_crud_name(name) {
                 warnings.push(format!(
                     "Endpoint {name} is registered but unsupported requests return 501"
@@ -154,6 +204,23 @@ pub fn warnings(module: &Value) -> Vec<String> {
                 ));
             }
         }
+        for route in module
+            .get("customRoutes")
+            .and_then(Value::as_array)
+            .into_iter()
+            .flatten()
+            .flat_map(|group| group.get("routes").and_then(Value::as_array).into_iter().flatten())
+        {
+            let handler = route.get("handler").and_then(Value::as_str).unwrap_or_default();
+            let name = format!("handler:{handler}");
+            if route.get("body").and_then(Value::as_str).is_some_and(|body| !body.trim().is_empty())
+                && !is_supported_custom_endpoint(&name, route)
+            {
+                warnings.push(format!(
+                    "Custom route handler {handler} has a body; Rust does not execute this handler"
+                ));
+            }
+        }
     }
     warnings.sort();
     warnings.dedup();
@@ -162,6 +229,14 @@ pub fn warnings(module: &Value) -> Vec<String> {
 
 fn is_crud_name(name: &str) -> bool {
     matches!(name, "index" | "show" | "store" | "update" | "destroy")
+}
+
+fn is_supported_custom_endpoint(name: &str, endpoint: &Value) -> bool {
+    matches!(name, "echo" | "stats" | "lowStock" | "handler:ping" | "handler:recordHandler" | "handler:latest")
+        && endpoint
+            .get("body")
+            .and_then(Value::as_str)
+            .is_some_and(|body| !body.trim().is_empty())
 }
 
 fn validation_supported(validation: Option<&Value>) -> bool {
@@ -264,11 +339,234 @@ pub fn execute(
         "store" => store(&connection, table, endpoint, schema, body),
         "update" => with_id(&connection, table, endpoint, schema, model, path, "update", body),
         "destroy" => with_id(&connection, table, endpoint, schema, model, path, "destroy", body),
+        "echo" => echo_probe(&connection, table, schema, body),
+        "stats" => probe_stats(&connection, table),
+        "lowStock" => low_stock(&connection, table, schema),
+        "handler:ping" => ping_handler(),
+        "handler:recordHandler" => record_probe_handler(&connection, table, schema, body),
+        "handler:latest" => latest_probe_handler(&connection, table, schema),
         _ => (
             axum::http::StatusCode::NOT_IMPLEMENTED,
             json!({"message": format!("Endpoint {action} is not implemented by the Rust engine")}),
         ),
     }
+}
+
+fn low_stock(connection: &Connection, table: &str, schema: &Value) -> (axum::http::StatusCode, Value) {
+    let sql = format!(
+        "SELECT * FROM {} WHERE \"quantity\" < ?1 ORDER BY \"quantity\" ASC",
+        quote(table)
+    );
+    match read_rows(connection, &sql, vec![SqlValue::Integer(20)], schema) {
+        Ok(items) => (
+            axum::http::StatusCode::OK,
+            json!({"data": items, "count": items.len()}),
+        ),
+        Err(error) => internal_error(format!("Could not query low-stock inventory: {error}")),
+    }
+}
+
+fn echo_probe(connection: &Connection, table: &str, schema: &Value, body: &Value) -> (axum::http::StatusCode, Value) {
+    let Some(input) = body.as_object() else {
+        return validation_error(vec!["Request body must be a JSON object".to_owned()]);
+    };
+    let payload = match serde_json::to_string(body) {
+        Ok(payload) => payload,
+        Err(error) => return internal_error(format!("Could not encode echo payload: {error}")),
+    };
+    let fields = json!({
+        "source": "endpoint-body",
+        "probe": "echo",
+        "payload": payload,
+        "result": format!("Echoed {} field(s) — Rust endpoint emulation", input.len()),
+        "ok": true
+    });
+    let (status, record) = store(connection, table, &json!({}), schema, &fields);
+    if status != axum::http::StatusCode::CREATED {
+        return (status, record);
+    }
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "injected": true,
+            "builder": "Rust endpoint emulation",
+            "method": "echo",
+            "field_count": input.len(),
+            "echo": body,
+            "probe_id": record["id"]
+        }),
+    )
+}
+
+fn ping_handler() -> (axum::http::StatusCode, Value) {
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "injected": true,
+            "builder": "CustomRouteBuilder Rust emulation",
+            "handler": "ping",
+            "status": "ok",
+            "timestamp": utc_timestamp(),
+            "message": "CustomRouteBuilder handler body injection confirmed"
+        }),
+    )
+}
+
+fn record_probe_handler(
+    connection: &Connection,
+    table: &str,
+    schema: &Value,
+    body: &Value,
+) -> (axum::http::StatusCode, Value) {
+    let Some(input) = body.as_object() else {
+        return validation_error(vec!["Request body must be a JSON object".to_owned()]);
+    };
+    let Some(probe) = input
+        .get("probe")
+        .and_then(Value::as_str)
+        .filter(|probe| !probe.trim().is_empty())
+    else {
+        return validation_error(vec!["The probe field is required and must be a string.".to_owned()]);
+    };
+    if probe.chars().count() > 100 {
+        return validation_error(vec!["The probe field may not be greater than 100 characters.".to_owned()]);
+    }
+    if let Some(payload) = input.get("payload").filter(|value| !value.is_null()) {
+        if !payload.is_string() {
+            return validation_error(vec!["The payload field must be a string.".to_owned()]);
+        }
+    }
+    let ok = match input.get("ok") {
+        None => true,
+        Some(Value::Bool(value)) => *value,
+        Some(_) => return validation_error(vec!["The ok field must be a boolean.".to_owned()]),
+    };
+    let fields = json!({
+        "source": "handler-body",
+        "probe": probe,
+        "payload": input.get("payload").cloned().unwrap_or(Value::Null),
+        "result": "Recorded via CustomRouteBuilder handler body injection",
+        "ok": ok
+    });
+    let (status, record) = store(connection, table, &json!({}), schema, &fields);
+    if status != axum::http::StatusCode::CREATED {
+        return (status, record);
+    }
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "injected": true,
+            "builder": "CustomRouteBuilder Rust emulation",
+            "handler": "recordHandler",
+            "probe_id": record["id"],
+            "probe": probe
+        }),
+    )
+}
+
+fn latest_probe_handler(
+    connection: &Connection,
+    table: &str,
+    schema: &Value,
+) -> (axum::http::StatusCode, Value) {
+    if !table_exists(connection, table) {
+        return internal_error(format!("Configured table \"{table}\" does not exist"));
+    }
+    let query = format!("SELECT * FROM {} ORDER BY \"id\" DESC LIMIT 5", quote(table));
+    let results = match read_rows(connection, &query, Vec::new(), schema) {
+        Ok(results) => results,
+        Err(error) => return internal_error(format!("Could not load latest probes: {error}")),
+    };
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "injected": true,
+            "builder": "CustomRouteBuilder Rust emulation",
+            "handler": "latest",
+            "count": results.len(),
+            "results": results
+        }),
+    )
+}
+
+fn probe_stats(connection: &Connection, table: &str) -> (axum::http::StatusCode, Value) {
+    if !table_exists(connection, table) {
+        return internal_error(format!("Configured table \"{table}\" does not exist"));
+    }
+    let columns = match column_names(connection, table) {
+        Ok(columns) => columns,
+        Err(error) => return internal_error(format!("Could not inspect {table}: {error}")),
+    };
+    if !columns.iter().any(|column| column == "source")
+        || !columns.iter().any(|column| column == "ok")
+    {
+        return (
+            axum::http::StatusCode::NOT_IMPLEMENTED,
+            json!({"message": "Rust endpoint emulation for stats requires source and ok columns"}),
+        );
+    }
+    let query = format!(
+        "SELECT COUNT(*), COALESCE(SUM(CASE WHEN \"ok\" THEN 1 ELSE 0 END), 0), \
+         COALESCE(SUM(CASE WHEN NOT \"ok\" THEN 1 ELSE 0 END), 0) FROM {}",
+        quote(table)
+    );
+    let (total, passed, failed) = match connection.query_row(&query, [], |row| {
+        Ok((row.get::<_, i64>(0)?, row.get::<_, i64>(1)?, row.get::<_, i64>(2)?))
+    }) {
+        Ok(counts) => counts,
+        Err(error) => return internal_error(format!("Could not load probe statistics: {error}")),
+    };
+    let sources_query = format!("SELECT DISTINCT \"source\" FROM {} ORDER BY \"source\"", quote(table));
+    let mut statement = match connection.prepare(&sources_query) {
+        Ok(statement) => statement,
+        Err(error) => return internal_error(format!("Could not load probe sources: {error}")),
+    };
+    let sources = match statement.query_map([], |row| row.get::<_, String>(0)) {
+        Ok(rows) => match rows.collect::<Result<Vec<_>, _>>() {
+            Ok(sources) => sources,
+            Err(error) => return internal_error(format!("Could not read probe sources: {error}")),
+        },
+        Err(error) => return internal_error(format!("Could not load probe sources: {error}")),
+    };
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "injected": true,
+            "builder": "Rust endpoint emulation",
+            "method": "stats",
+            "total": total,
+            "passed": passed,
+            "failed": failed,
+            "sources": sources
+        }),
+    )
+}
+
+fn utc_timestamp() -> String {
+    use std::time::{SystemTime, UNIX_EPOCH};
+
+    let seconds = SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .unwrap_or_default()
+        .as_secs() as i64;
+    let days = seconds.div_euclid(86_400);
+    let day_seconds = seconds.rem_euclid(86_400);
+    let z = days + 719_468;
+    let era = if z >= 0 { z } else { z - 146_096 }.div_euclid(146_097);
+    let day_of_era = z - era * 146_097;
+    let year_of_era = (day_of_era - day_of_era / 1_460 + day_of_era / 36_524 - day_of_era / 146_096) / 365;
+    let mut year = year_of_era + era * 400;
+    let day_of_year = day_of_era - (365 * year_of_era + year_of_era / 4 - year_of_era / 100);
+    let month_prime = (5 * day_of_year + 2) / 153;
+    let day = day_of_year - (153 * month_prime + 2) / 5 + 1;
+    let month = month_prime + if month_prime < 10 { 3 } else { -9 };
+    year += if month <= 2 { 1 } else { 0 };
+    format!(
+        "{year:04}-{month:02}-{day:02}T{:02}:{:02}:{:02}Z",
+        day_seconds / 3_600,
+        (day_seconds % 3_600) / 60,
+        day_seconds % 60
+    )
 }
 
 fn open_connection(database_dir: &Path, slug: &str) -> Result<Connection, String> {
@@ -866,5 +1164,202 @@ mod tests {
     #[test]
     fn unknown_validation_rules_are_explicit_errors() {
         assert!(validate_rule("name", Some(&json!("x")), "required|alpha_dash").unwrap().contains("not supported"));
+    }
+
+    #[test]
+    fn custom_echo_and_stats_endpoints_are_emulated() {
+        let directory = tempfile::tempdir().unwrap();
+        let payload = json!({
+            "name": "body-endpoint-handler",
+            "databases": [{
+                "table": "probe_results",
+                "timestamps": true,
+                "columns": {
+                    "source": {"type": "string", "nullable": false},
+                    "probe": {"type": "string", "nullable": false},
+                    "payload": {"type": "text", "nullable": true},
+                    "result": {"type": "text", "nullable": true},
+                    "ok": {"type": "boolean", "default": true}
+                }
+            }],
+            "apis": [{
+                "model": "ProbeResult",
+                "controller": "ProbeResultController",
+                "table": "probe_results",
+                "prefix": "/api/body-endpoint-handler",
+                "endpoints": {
+                    "echo": {"method": "POST", "route": "/echo", "body": "ZWNobyBib2R5"},
+                    "stats": {"method": "GET", "route": "/stats", "body": "c3RhdHMgYm9keQ=="}
+                }
+            }],
+            "customRoutes": [{
+                "controller": "ProbeUtilController",
+                "middleware": [],
+                "routes": [
+                    {"method": "GET", "route": "/api/body-endpoint-handler/ping", "handler": "ping", "body": "cGluZyBib2R5"},
+                    {"method": "POST", "route": "/api/body-endpoint-handler/record-handler", "handler": "recordHandler", "body": "cmVjb3JkIGJvZHk="},
+                    {"method": "GET", "route": "/api/body-endpoint-handler/latest", "handler": "latest", "body": "bGF0ZXN0IGJvZHk="}
+                ]
+            }]
+        });
+        super::super::database::apply_schema(directory.path(), "body-endpoint-handler", &payload).unwrap();
+        let module = &payload;
+        assert_eq!(route_count(module), 5);
+        let matched = match_route(module, "POST", "/api/body-endpoint-handler/echo").unwrap();
+        assert!(matched.supported);
+        assert!(warnings(module).is_empty());
+
+        let echo_endpoint = &module["apis"][0]["endpoints"]["echo"];
+        let (status, echo) = execute(
+            directory.path(),
+            "body-endpoint-handler",
+            "probe_results",
+            "echo",
+            echo_endpoint,
+            &module["databases"][0],
+            "ProbeResult",
+            "/api/body-endpoint-handler/echo",
+            &json!({"message": "hello", "count": 2}),
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(echo["injected"], true);
+        assert_eq!(echo["field_count"], 2);
+        assert_eq!(echo["echo"]["message"], "hello");
+        assert_eq!(echo["probe_id"], 1);
+
+        let stats_endpoint = &module["apis"][0]["endpoints"]["stats"];
+        let (status, stats) = execute(
+            directory.path(),
+            "body-endpoint-handler",
+            "probe_results",
+            "stats",
+            stats_endpoint,
+            &module["databases"][0],
+            "ProbeResult",
+            "/api/body-endpoint-handler/stats",
+            &Value::Null,
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(stats["total"], 1);
+        assert_eq!(stats["passed"], 1);
+        assert_eq!(stats["failed"], 0);
+        assert_eq!(stats["sources"], json!(["endpoint-body"]));
+
+        let ping_route = match_route(module, "GET", "/api/body-endpoint-handler/ping").unwrap();
+        assert_eq!(ping_route.name, "handler:ping");
+        assert!(ping_route.supported);
+        let (status, ping) = execute(
+            directory.path(),
+            "body-endpoint-handler",
+            "probe_results",
+            "handler:ping",
+            &ping_route.endpoint,
+            &ping_route.schema,
+            "ProbeResult",
+            "/api/body-endpoint-handler/ping",
+            &Value::Null,
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(ping["handler"], "ping");
+        assert!(ping["timestamp"].as_str().unwrap().ends_with('Z'));
+
+        let record_route = match_route(module, "POST", "/api/body-endpoint-handler/record-handler").unwrap();
+        let (status, record) = execute(
+            directory.path(),
+            "body-endpoint-handler",
+            "probe_results",
+            &record_route.name,
+            &record_route.endpoint,
+            &record_route.schema,
+            &record_route.model,
+            "/api/body-endpoint-handler/record-handler",
+            &json!({"probe": "handler check", "payload": "sample"}),
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(record["probe"], "handler check");
+
+        let latest_route = match_route(module, "GET", "/api/body-endpoint-handler/latest").unwrap();
+        let (status, latest) = execute(
+            directory.path(),
+            "body-endpoint-handler",
+            "probe_results",
+            &latest_route.name,
+            &latest_route.endpoint,
+            &latest_route.schema,
+            &latest_route.model,
+            "/api/body-endpoint-handler/latest",
+            &Value::Null,
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(latest["count"], 2);
+    }
+
+    #[test]
+    fn low_stock_endpoint_returns_ordered_inventory() {
+        let directory = tempfile::tempdir().unwrap();
+        let module = json!({
+            "name": "inventory-management",
+            "databases": [{
+                "table": "inventories",
+                "timestamps": false,
+                "columns": {
+                    "name": {"type": "string", "nullable": false},
+                    "quantity": {"type": "integer", "default": 0}
+                }
+            }],
+            "apis": [{
+                "name": "inventories",
+                "model": "Inventory",
+                "controller": "InventoryController",
+                "table": "inventories",
+                "prefix": "/api/inventories",
+                "endpoints": {
+                    "lowStock": {"method": "GET", "route": "/low-stock", "body": "bG93IHN0b2NrIGVtdWxhdGlvbg=="}
+                }
+            }]
+        });
+        super::super::database::apply_schema(directory.path(), "inventory-management", &module).unwrap();
+        let definition = &module["databases"][0];
+        for (name, quantity) in [("zero", 0), ("low", 15), ("boundary", 20), ("stocked", 50)] {
+            let (status, _) = execute(
+                directory.path(),
+                "inventory-management",
+                "inventories",
+                "store",
+                &Value::Null,
+                definition,
+                "Inventory",
+                "/api/inventories/",
+                &json!({"name": name, "quantity": quantity}),
+                "",
+            );
+            assert_eq!(status, axum::http::StatusCode::CREATED);
+        }
+
+        assert_eq!(route_count(&module), 1);
+        assert!(warnings(&module).is_empty());
+        let matched = match_route(&module, "GET", "/api/inventories/low-stock").unwrap();
+        assert!(matched.supported);
+        let (status, response) = execute(
+            directory.path(),
+            "inventory-management",
+            &matched.table,
+            &matched.name,
+            &matched.endpoint,
+            &matched.schema,
+            &matched.model,
+            "/api/inventories/low-stock",
+            &Value::Null,
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(response["count"], 2);
+        assert_eq!(response["data"][0]["name"], "zero");
+        assert_eq!(response["data"][1]["name"], "low");
     }
 }

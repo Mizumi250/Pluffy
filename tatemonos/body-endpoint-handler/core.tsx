@@ -1,7 +1,7 @@
 /* @arkzen:meta
 name: body-endpoint-handler
 version: 1.0.0
-description: "Tests ControllerBuilder v7.0 @arkzen:endpoint body injection and CustomRouteBuilder v2.0 @arkzen:handler body injection. Both builders accept base64-encoded PHP between the DSL block markers. This tatemono verifies that custom api endpoint methods and standalone route handlers use the injected PHP body instead of the Not implemented stub."
+description: "Tests ControllerBuilder endpoint bodies and CustomRouteBuilder handlers across backend variants. Go and Rust provide purpose-built emulations for echo, stats, ping, recordHandler, and latest."
 auth: false
 */
 
@@ -109,7 +109,7 @@ endpoints:
 /* ─── ControllerBuilder body injection ────────────────────────────────────────
    @arkzen:endpoint:echo  →  injected into ProbeResultController::echo()
    The block name must match the endpoint key exactly (case-sensitive).
-   PHP between */ and :end is base64-encoded by parser.ts and stored as
+   PHP body content is base64-encoded by parser.ts and stored as
    $endpoint['body'] which ControllerBuilder::generateCustomMethod() decodes.
    ─────────────────────────────────────────────────────────────────────────── */
 
@@ -327,6 +327,91 @@ return Results.Json(new
     sources = sources.Select(row => row["source"]?.ToString()).ToArray()
 });
 /* @arkzen:endpoint:cs:stats:end */
+
+/* @arkzen:endpoint:go:echo
+*/
+input, err := request.JSON()
+if err != nil {
+    return response.JSON(400, map[string]string{"message": "Request body must be a JSON object"})
+}
+payload, _ := json.Marshal(input)
+record, err := database.Insert("probe_results", map[string]any{
+    "source": "endpoint-body",
+    "probe": "echo",
+    "payload": string(payload),
+    "result": fmt.Sprintf("Echoed %d field(s) — Go endpoint emulation", len(input)),
+    "ok": true,
+})
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not record echo probe"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true,
+    "builder": "Go endpoint emulation",
+    "method": "echo",
+    "field_count": len(input),
+    "echo": input,
+    "probe_id": record["id"],
+})
+/* @arkzen:endpoint:go:echo:end */
+
+/* @arkzen:endpoint:rs:echo
+*/
+let input = request.json_object()?;
+let payload = serde_json::to_string(&input)?;
+let record = database.insert("probe_results", json!({
+    "source": "endpoint-body",
+    "probe": "echo",
+    "payload": payload,
+    "result": format!("Echoed {} field(s) — Rust endpoint emulation", input.len()),
+    "ok": true,
+}))?;
+response.json(StatusCode::OK, json!({
+    "injected": true,
+    "builder": "Rust endpoint emulation",
+    "method": "echo",
+    "field_count": input.len(),
+    "echo": input,
+    "probe_id": record["id"],
+}))
+/* @arkzen:endpoint:rs:echo:end */
+
+/* @arkzen:endpoint:go:stats
+*/
+var total, passed, failed int
+if err := database.QueryRow(`SELECT COUNT(*), SUM(CASE WHEN ok THEN 1 ELSE 0 END), SUM(CASE WHEN NOT ok THEN 1 ELSE 0 END) FROM probe_results`).Scan(&total, &passed, &failed); err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load probe statistics"})
+}
+sources, err := database.Query(`SELECT DISTINCT source FROM probe_results ORDER BY source`)
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load probe sources"})
+}
+defer sources.Close()
+var sourceNames []string
+for sources.Next() {
+    var source string
+    if err := sources.Scan(&source); err != nil {
+        return response.JSON(500, map[string]string{"message": "Could not read probe sources"})
+    }
+    sourceNames = append(sourceNames, source)
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "Go endpoint emulation", "method": "stats",
+    "total": total, "passed": passed, "failed": failed, "sources": sourceNames,
+})
+/* @arkzen:endpoint:go:stats:end */
+
+/* @arkzen:endpoint:rs:stats
+*/
+let (total, passed, failed) = database.query_row(
+    "SELECT COUNT(*), SUM(CASE WHEN ok THEN 1 ELSE 0 END), SUM(CASE WHEN NOT ok THEN 1 ELSE 0 END) FROM probe_results",
+)?;
+let sources = database.query_column("SELECT DISTINCT source FROM probe_results ORDER BY source")?;
+response.json(StatusCode::OK, json!({
+    "injected": true, "builder": "Rust endpoint emulation", "method": "stats",
+    "total": total, "passed": passed, "failed": failed, "sources": sources,
+}))
+/* @arkzen:endpoint:rs:stats:end */
 
 /* ─── CustomRouteBuilder body injection ───────────────────────────────────────
    @arkzen:routes DSL block declares standalone routes without a model.
@@ -604,6 +689,101 @@ return Results.Json(new
     results = latest
 });
 /* @arkzen:handler:cs:latest:end */
+
+/* @arkzen:handler:go:ping
+*/
+return response.JSON(200, map[string]any{
+    "injected": true,
+    "builder": "CustomRouteBuilder Go emulation",
+    "handler": "ping",
+    "status": "ok",
+    "timestamp": time.Now().UTC().Format(time.RFC3339),
+    "message": "CustomRouteBuilder handler body injection confirmed",
+})
+/* @arkzen:handler:go:ping:end */
+
+/* @arkzen:handler:rs:ping
+*/
+response.json(StatusCode::OK, json!({
+    "injected": true,
+    "builder": "CustomRouteBuilder Rust emulation",
+    "handler": "ping",
+    "status": "ok",
+    "timestamp": utc_now_rfc3339(),
+    "message": "CustomRouteBuilder handler body injection confirmed"
+}))
+/* @arkzen:handler:rs:ping:end */
+
+/* @arkzen:handler:go:recordHandler
+*/
+input, err := request.JSON()
+if err != nil {
+    return response.JSON(400, map[string]string{"message": "Request body must be a JSON object"})
+}
+probe, ok := input["probe"].(string)
+if !ok || strings.TrimSpace(probe) == "" || len([]rune(probe)) > 100 {
+    return response.JSON(422, map[string]any{"message": "Validation failed", "errors": []string{"probe is required, string, and at most 100 characters"}})
+}
+okValue := true
+if value, exists := input["ok"]; exists {
+    parsed, valid := value.(bool)
+    if !valid {
+        return response.JSON(422, map[string]any{"message": "Validation failed", "errors": []string{"ok must be a boolean"}})
+    }
+    okValue = parsed
+}
+result, err := database.Insert("probe_results", map[string]any{
+    "source": "handler-body", "probe": probe, "payload": input["payload"],
+    "result": "Recorded via CustomRouteBuilder handler body injection", "ok": okValue,
+})
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not record probe"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "CustomRouteBuilder Go emulation",
+    "handler": "recordHandler", "probe_id": result["id"], "probe": probe,
+})
+/* @arkzen:handler:go:recordHandler:end */
+
+/* @arkzen:handler:rs:recordHandler
+*/
+let input = request.json_object()?;
+let probe = input.get("probe").and_then(Value::as_str).filter(|value| !value.trim().is_empty())
+    .ok_or(ValidationError::required("probe"))?;
+if probe.chars().count() > 100 {
+    return response.validation_error("probe must be at most 100 characters");
+}
+let record = database.insert("probe_results", json!({
+    "source": "handler-body", "probe": probe, "payload": input.get("payload"),
+    "result": "Recorded via CustomRouteBuilder handler body injection",
+    "ok": input.get("ok").unwrap_or(&Value::Bool(true))
+}))?;
+response.json(StatusCode::OK, json!({
+    "injected": true, "builder": "CustomRouteBuilder Rust emulation",
+    "handler": "recordHandler", "probe_id": record["id"], "probe": probe
+}))
+/* @arkzen:handler:rs:recordHandler:end */
+
+/* @arkzen:handler:go:latest
+*/
+records, err := database.Query(`SELECT * FROM probe_results ORDER BY id DESC LIMIT 5`)
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load latest probes"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "CustomRouteBuilder Go emulation",
+    "handler": "latest", "count": len(records), "results": records,
+})
+/* @arkzen:handler:go:latest:end */
+
+/* @arkzen:handler:rs:latest
+*/
+let results = database.query("SELECT * FROM probe_results ORDER BY id DESC LIMIT 5")?;
+response.json(StatusCode::OK, json!({
+    "injected": true, "builder": "CustomRouteBuilder Rust emulation",
+    "handler": "latest", "count": results.len(), "results": results
+}))
+/* @arkzen:handler:rs:latest:end */
 
 /* @arkzen:web:components:shared */
 

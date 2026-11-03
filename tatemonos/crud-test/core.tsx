@@ -173,6 +173,16 @@ return item?["status"]?.ToString() != "archived";
 return item?["status"]?.ToString() != "archived";
 /* @arkzen:policy:cs:delete:end */
 
+/* @arkzen:policy:go:update
+*/
+return item == nil || item.Status != "archived"
+/* @arkzen:policy:go:update:end */
+
+/* @arkzen:policy:go:delete
+*/
+return item == nil || item.Status != "archived"
+/* @arkzen:policy:go:delete:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'
