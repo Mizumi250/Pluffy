@@ -57,6 +57,8 @@ function backendLabel(backend = resolveActiveBackend()): string {
     fastapi: 'FastAPI',
     django: 'Django',
     'spring-boot': 'Spring Boot',
+    go: 'Go',
+    rust: 'Rust',
   } as Record<string, string>)[backend] ?? backend
 }
 

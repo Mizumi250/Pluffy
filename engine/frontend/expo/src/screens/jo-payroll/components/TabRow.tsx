@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — TabRow [Expo]
 // Source: @arkzen:native:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T10:56:07.827Z
+// Generated: 2026-11-03T08:19:03.081Z
 // ============================================================
 
 import React, { useEffect, useMemo, useState } from 'react'

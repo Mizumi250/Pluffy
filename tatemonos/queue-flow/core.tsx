@@ -672,6 +672,17 @@ var waiting = Convert.ToInt64(waitingValue, System.Globalization.CultureInfo.Inv
 var averageWait = queue["avg_wait_minutes"] is null
     ? 5L
     : Convert.ToInt64(queue["avg_wait_minutes"]!.ToString(), System.Globalization.CultureInfo.InvariantCulture);
+await BroadcastHub.BroadcastToAsync(
+    $"queue-flow.{queueId}",
+    "queue-flow.queue-updated",
+    new JsonObject
+    {
+        ["queue_id"] = queueId,
+        ["action"] = "joined",
+        ["ticket"] = ticket.DeepClone()
+    },
+    Context.RequestAborted,
+    Context.Request.Headers["X-Socket-ID"].ToString());
 return Results.Json(new
 {
     ticket,
@@ -728,6 +739,17 @@ await using (var transaction = await Database.BeginTransactionAsync(Context.Requ
     ticket["status"] = "serving";
     ticket["called_at"] = System.Text.Json.JsonSerializer.SerializeToNode(calledAt);
     ticket["updated_at"] = System.Text.Json.JsonSerializer.SerializeToNode(calledAt);
+    await BroadcastHub.BroadcastToAsync(
+        $"queue-flow.{queueId}",
+        "queue-flow.queue-updated",
+        new JsonObject
+        {
+            ["queue_id"] = queueId,
+            ["action"] = "called",
+            ["ticket"] = ticket.DeepClone()
+        },
+        Context.RequestAborted,
+        Context.Request.Headers["X-Socket-ID"].ToString());
     return Results.Json(new { ticket });
 }
 /* @arkzen:handler:cs:call_next:end */

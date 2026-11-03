@@ -21,6 +21,8 @@ class RegistryReader
         'django' => 'FastAPI / Django',
         'spring-boot' => 'Spring Boot',
         'aspnet' => 'ASP.NET',
+        'go' => 'Go',
+        'rust' => 'Rust',
     ];
 
     // ─────────────────────────────────────────────
@@ -167,7 +169,7 @@ class RegistryReader
 
     private static function backendVariants(string $source): array
     {
-        $pattern = '/^\\/\\* @arkzen:(' . self::CODE_MARKERS . '):(?:(php|ts|py|java|cs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*\\/)?\\s*$/m';
+        $pattern = '/^\\/\\* @arkzen:(' . self::CODE_MARKERS . '):(?:(php|ts|py|java|cs|go|rs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*\\/)?\\s*$/m';
         preg_match_all($pattern, $source, $matches, PREG_SET_ORDER | PREG_OFFSET_CAPTURE);
         $labels = [
             'php' => 'Laravel',
@@ -175,6 +177,8 @@ class RegistryReader
             'py' => 'FastAPI / Django',
             'java' => 'Spring Boot',
             'cs' => 'ASP.NET',
+            'go' => 'Go',
+            'rs' => 'Rust',
         ];
         $variants = [];
         foreach ($matches as $match) {

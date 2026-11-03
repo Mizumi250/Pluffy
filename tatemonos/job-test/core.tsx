@@ -270,6 +270,89 @@ import React, { useState, useEffect } from 'react'
 import { Cpu } from 'lucide-react'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 
+/* @arkzen:endpoint:cs:index
+*/
+var page = int.TryParse(Context.Request.Query["page"], out var requestedPage) ? Math.Max(1, requestedPage) : 1;
+var perPage = int.TryParse(Context.Request.Query["per_page"], out var requestedPerPage)
+    ? Math.Clamp(requestedPerPage, 1, 100)
+    : 15;
+var total = Convert.ToInt64(await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"job_test_job_results\"",
+    cancellationToken: Context.RequestAborted));
+var results = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"job_test_job_results\" ORDER BY id DESC LIMIT @limit OFFSET @offset",
+    new Dictionary<string, object?>
+    {
+        ["@limit"] = perPage,
+        ["@offset"] = (page - 1) * perPage
+    },
+    Context.RequestAborted);
+return Results.Json(new
+{
+    data = results,
+    current_page = page,
+    per_page = perPage,
+    total,
+    last_page = Math.Max(1, (int)Math.Ceiling(total / (double)perPage))
+});
+/* @arkzen:endpoint:cs:index:end */
+
+/* @arkzen:jobs:cs:process-data
+queue: default
+tries: 3
+timeout: 30
+*/
+var processStarted = System.Diagnostics.Stopwatch.StartNew();
+await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(2), Context.RequestAborted);
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "job_test_job_results"
+        (job_name, status, result, processed_at, created_at, updated_at)
+    VALUES (@name, 'completed', @result, @processed, @processed, @processed)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@name"] = "process-data",
+        ["@result"] = $"Data processed successfully in {processStarted.ElapsedMilliseconds}ms",
+        ["@processed"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+/* @arkzen:jobs:cs:process-data:end */
+
+/* @arkzen:jobs:cs:heavy-computation
+queue: heavy
+tries: 1
+timeout: 120
+*/
+var computationStarted = System.Diagnostics.Stopwatch.StartNew();
+await System.Threading.Tasks.Task.Delay(TimeSpan.FromSeconds(5), Context.RequestAborted);
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "job_test_job_results"
+        (job_name, status, result, processed_at, created_at, updated_at)
+    VALUES (@name, 'completed', @result, @processed, @processed, @processed)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@name"] = "heavy-computation",
+        ["@result"] = $"Heavy computation completed in {computationStarted.ElapsedMilliseconds}ms",
+        ["@processed"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+/* @arkzen:jobs:cs:heavy-computation:end */
+
+/* @arkzen:jobs:cs:always-fails
+queue: default
+tries: 2
+timeout: 10
+*/
+throw new InvalidOperationException("This job always fails");
+/* @arkzen:jobs:cs:always-fails:end */
+
 /* @arkzen:web:components:shared:end */
 
 /* @arkzen:web:page:dashboard */

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — CanvasEngine
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T02:14:40.563Z
+// Generated: 2026-11-03T06:51:51.361Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

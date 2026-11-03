@@ -42,6 +42,8 @@ _HUB_BACKEND_LABELS = {
     "django": "FastAPI / Django",
     "spring-boot": "Spring Boot",
     "aspnet": "ASP.NET",
+    "go": "Go",
+    "rust": "Rust",
 }
 _HUB_VARIANT_LABELS = {
     "php": "Laravel",
@@ -49,6 +51,8 @@ _HUB_VARIANT_LABELS = {
     "py": "FastAPI / Django",
     "java": "Spring Boot",
     "cs": "ASP.NET",
+    "go": "Go",
+    "rs": "Rust",
 }
 _HUB_CODE_MARKERS = "endpoint|handler|middleware|policy|listener|listeners|job|jobs|console|mail|notification|notifications"
 
@@ -64,7 +68,7 @@ def _hub_page_names(source: str) -> list[str]:
 def _hub_backend_variants(source: str, active_backend: str) -> list[str]:
     variants = []
     pattern = re.compile(
-        rf"^/\* @arkzen:({_HUB_CODE_MARKERS}):(?:(php|ts|py|java|cs):)?([a-zA-Z0-9_-]+)(?:\s+\*/)?\s*$",
+        rf"^/\* @arkzen:({_HUB_CODE_MARKERS}):(?:(php|ts|py|java|cs|go|rs):)?([a-zA-Z0-9_-]+)(?:\s+\*/)?\s*$",
         re.MULTILINE,
     )
     for match in pattern.finditer(source):

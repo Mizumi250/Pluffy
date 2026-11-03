@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ShellFx [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T10:56:16.374Z
+// Generated: 2026-11-03T08:19:11.484Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

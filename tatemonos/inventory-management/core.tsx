@@ -149,6 +149,23 @@ endpoints:
       type: array
 */
 
+/* @arkzen:endpoint:php:lowStock
+*/
+$items = \App\Models\Arkzen\InventoryManagement\Inventory::where('quantity', '<', 20)
+    ->orderBy('quantity')
+    ->get();
+return response()->json(['data' => $items, 'count' => $items->count()]);
+/* @arkzen:endpoint:php:lowStock:end */
+
+/* @arkzen:endpoint:ts:lowStock
+*/
+const items = await Inventory.query()
+  .where('quantity', '<', 20)
+  .orderBy('quantity')
+  .get()
+return response.json({ data: items, count: items.length })
+/* @arkzen:endpoint:ts:lowStock:end */
+
 /* @arkzen:endpoint:py:lowStock
 */
 items = await Inventory.where('quantity', '<', 20).order_by('quantity', 'asc').get()

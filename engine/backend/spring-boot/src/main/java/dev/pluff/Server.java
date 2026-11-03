@@ -204,9 +204,9 @@ public class Server implements CommandLineRunner {
     private static List<String> hubBackendVariants(String source, String activeBackend) {
       Map<String, String> labels = Map.of(
           "php", "Laravel", "ts", "Express", "py", "FastAPI / Django",
-          "java", "Spring Boot", "cs", "ASP.NET");
+          "java", "Spring Boot", "cs", "ASP.NET", "go", "Go", "rs", "Rust");
       Matcher matcher = Pattern.compile(
-          "^/\\* @arkzen:(endpoint|handler|middleware|policy|listener|listeners|job|jobs|console|mail|notification|notifications):(?:(php|ts|py|java|cs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*/)?\\s*$",
+          "^/\\* @arkzen:(endpoint|handler|middleware|policy|listener|listeners|job|jobs|console|mail|notification|notifications):(?:(php|ts|py|java|cs|go|rs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*/)?\\s*$",
           Pattern.MULTILINE).matcher(source);
       Set<String> variants = new LinkedHashSet<>();
       while (matcher.find()) {
@@ -232,6 +232,8 @@ public class Server implements CommandLineRunner {
           case "fastapi", "django" -> "FastAPI / Django";
           case "spring-boot" -> "Spring Boot";
           case "aspnet" -> "ASP.NET";
+          case "go" -> "Go";
+          case "rust" -> "Rust";
           default -> "Laravel";
         };
         variants.add(label);

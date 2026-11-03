@@ -52,6 +52,8 @@ const isExpress = activeBackend === 'express'
 const isFastapi = activeBackend === 'fastapi'
 const isAspnet = activeBackend === 'aspnet'
 const isSpring = activeBackend === 'spring-boot'
+const isGo = activeBackend === 'go'
+const isRust = activeBackend === 'rust'
 // Spring Boot entry points (engine/backend/spring-boot/src/main/java). Adjust if the package changes.
 const SPRING_SERVER_CLASS = 'dev.pluff.Server'
 const SPRING_WORKER_CLASS = 'dev.pluff.Worker'
@@ -63,7 +65,7 @@ const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 const springWorkerReady = isSpring &&
   fs.existsSync(path.join(BACKEND_DIR, 'src', 'main', 'java', ...SPRING_WORKER_CLASS.split('.')) + '.java')
 // Backends whose queue/scheduler process is not available (ASP.NET always, Spring Boot until its Worker exists)
-const noQueueProcess = isAspnet || (isSpring && !springWorkerReady)
+const noQueueProcess = isAspnet || isGo || isRust || (isSpring && !springWorkerReady)
 
 // Database — each tatemono has its own sqlite file or Postgres database
 const isPg      = arkzenJson.activeDatabase === 'pgsql'
@@ -156,6 +158,11 @@ const hasRealtime = content.includes('@arkzen:realtime') || content.includes('@a
 const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events')
 const tatSnake    = tatName.replace(/-/g, '_')
 const pgDatabaseName = `${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}_${tatSnake}`.toLowerCase()
+
+if (!isNative && hasBackend && isPg && (isGo || isRust)) {
+  console.log(`\n  ✗ ${isGo ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before exporting.\n`)
+  process.exit(1)
+}
 
 divider()
 console.log(`\n  ARKZEN — Exporting tatemono: ${tatName}\n`)
@@ -268,6 +275,7 @@ const BACKEND_EXCLUDE_FILTER = (src) => {
   if (rel.startsWith('.venv/') || rel === '.venv')       return false
   if (rel.split('/').includes('__pycache__'))            return false
   if (isSpring && (rel === 'target' || rel.startsWith('target/'))) return false
+  if (isRust && (rel === 'target' || rel.startsWith('target/'))) return false
   if (rel === '.env')                                   return false
   if (src.endsWith('.sqlite'))                          return false
   if (rel.includes('Controllers/Arkzen/ArkzenEngineController.php')) return false
@@ -650,18 +658,19 @@ if (!isNative && hasBackend && isPg) {
 } else if (!isNative && hasBackend) {
   log('Copying SQLite database...')
 
-  const engSqlite  = path.join(BACKEND_DIR, 'database', 'arkzen', `${tatName}.sqlite`)
-  const destDbDir  = path.join(PROJ_BACK, 'database', 'arkzen')
+  const databaseRelativeDir = isGo ? path.join('storage', 'databases') : path.join('database', 'arkzen')
+  const engSqlite  = path.join(BACKEND_DIR, databaseRelativeDir, `${tatName}.sqlite`)
+  const destDbDir  = path.join(PROJ_BACK, databaseRelativeDir)
   const destSqlite = path.join(destDbDir, `${tatName}.sqlite`)
 
   fs.mkdirSync(destDbDir, { recursive: true })
 
   if (fs.existsSync(engSqlite) && fs.statSync(engSqlite).size > 0) {
     fs.copyFileSync(engSqlite, destSqlite)
-    success(`database/arkzen/${tatName}.sqlite copied (pre-built, already migrated)`)
+    success(`${databaseRelativeDir}/${tatName}.sqlite copied (pre-built, already migrated)`)
   } else {
     fs.writeFileSync(destSqlite, '')
-    warn(`database/arkzen/${tatName}.sqlite not found in engine — created empty, will migrate`)
+    warn(`${databaseRelativeDir}/${tatName}.sqlite not found in engine — created empty; the backend build will configure its schema`)
   }
 } else {
   skip('SQLite copy' + (isNative ? ' (Native)' : ' (frontend-only)'))
@@ -712,7 +721,7 @@ if (fs.existsSync(srcAssetsPath)) {
 // Skip: Native (no backend), Inertia (monolith manages its own)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust) {
   log('Writing standalone bootstrap/app.php...')
 
   fs.mkdirSync(path.join(PROJ_BACK, 'bootstrap'), { recursive: true })
@@ -752,7 +761,7 @@ return $app;
 `)
   success('bootstrap/app.php (single tatemono DB connection registered)')
 } else {
-  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isSpring ? ' (Spring Boot backend)' : isNative ? ' (Native)' : ''))
+  skip('bootstrap/app.php' + (isInertia ? ' (Inertia monolith manages its own)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isSpring ? ' (Spring Boot backend)' : isGo ? ' (Go backend)' : isRust ? ' (Rust backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -766,7 +775,7 @@ return $app;
 // Skip: Native (no backend), Inertia (Laravel-Inertia handles routes)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust) {
   log('Writing ModuleRouteServiceProvider...')
 
   const routeFilePath = `routes/modules/${tatName}.php`
@@ -807,7 +816,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
     success('bootstrap/providers.php → ModuleRouteServiceProvider registered')
   }
 } else {
-  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isSpring ? ' (Spring Boot backend)' : isNative ? ' (Native)' : ''))
+  skip('ModuleRouteServiceProvider' + (isInertia ? ' (Inertia)' : isExpress ? ' (Express backend)' : isFastapi ? ' (FastAPI backend)' : isAspnet ? ' (ASP.NET Core backend)' : isSpring ? ' (Spring Boot backend)' : isGo ? ' (Go backend)' : isRust ? ' (Rust backend)' : isNative ? ' (Native)' : ''))
 }
 
 // ─────────────────────────────────────────────
@@ -822,7 +831,7 @@ class ModuleRouteServiceProvider extends ServiceProvider
 // Skip: Native (no backend), Inertia (monolith has its own providers)
 // ─────────────────────────────────────────────
 
-if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring) {
+if (!isNative && !isInertia && hasBackend && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust) {
   const provPath = path.join(PROJ_BACK, 'bootstrap', 'providers.php')
   if (fs.existsSync(provPath)) {
     log('Stripping engine-only providers...')
@@ -858,6 +867,7 @@ if (!isNative && hasBackend) {
   let env = fs.existsSync(envExPath) ? fs.readFileSync(envExPath, 'utf-8') : ''
 
   const relativeSqlitePath = `database/arkzen/${tatName}.sqlite`
+  const backendDatabasePath = isGo ? `storage/databases/${tatName}.sqlite` : relativeSqlitePath
   const backendPort = isInertia ? '8000' : '8001'
 
   if (isExpress) {
@@ -921,6 +931,19 @@ if (!isNative && hasBackend) {
         `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`,
       ] : []),
     ].join('\n') + '\n'
+  } else if (isGo) {
+    env = [
+      `PORT=${backendPort}`,
+      'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
+      'PLUFF_STORAGE_DIR=storage',
+    ].join('\n') + '\n'
+  } else if (isRust) {
+    env = [
+      `PORT=${backendPort}`,
+      'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
+      'ARKZEN_MODULE_DIR=storage/arkzen-modules',
+      'ARKZEN_DATABASE_DIR=database/arkzen',
+    ].join('\n') + '\n'
   } else env = env
     .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)
     .replace(/APP_ENV=.*/,              'APP_ENV=local')
@@ -937,7 +960,7 @@ if (!isNative && hasBackend) {
     .replace(/CACHE_STORE=.*/,          'CACHE_STORE=file')
     .replace(/BROADCAST_CONNECTION=.*/, hasRealtime ? 'BROADCAST_CONNECTION=reverb' : 'BROADCAST_CONNECTION=log')
 
-  if (isPg && !isExpress && !isFastapi && !isAspnet && !isSpring) {
+  if (isPg && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust) {
     env = env
       .replace(/^DB_CONNECTION=.*$/m,       'DB_CONNECTION=pgsql')
       .replace(/^#?[ \t]*DB_HOST=.*$/m,     `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`)
@@ -948,7 +971,7 @@ if (!isNative && hasBackend) {
     env += '\nARKZEN_DB_DRIVER=pgsql\n'
   }
 
-  if (hasRealtime && !isExpress && !isFastapi && !isAspnet && !isSpring && !env.includes('REVERB_APP_ID=')) {
+  if (hasRealtime && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust && !env.includes('REVERB_APP_ID=')) {
     env += [
       '',
       'REVERB_APP_ID=arkzen',
@@ -961,7 +984,7 @@ if (!isNative && hasBackend) {
   }
 
   fs.writeFileSync(path.join(PROJ_BACK, '.env'), env)
-  success(`.env written (${isExpress ? 'Express' : isFastapi ? 'FastAPI' : isAspnet ? 'ASP.NET Core' : isSpring ? 'Spring Boot' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : relativeSqlitePath}, port → ${backendPort})`)
+  success(`.env written (${isExpress ? 'Express' : isFastapi ? 'FastAPI' : isAspnet ? 'ASP.NET Core' : isSpring ? 'Spring Boot' : isGo ? 'Go' : isRust ? 'Rust' : 'Laravel'}; DB → ${isPg ? `pgsql ${pgDatabaseName}` : backendDatabasePath}, port → ${backendPort})`)
 } else {
   skip('.env (Native)')
 }
@@ -1432,7 +1455,27 @@ if (!isNative && hasBackend && isSpring) {
       }
     }
   }
-} else if (!isNative && hasBackend && !isAspnet && !isSpring) {
+} else if (!isNative && hasBackend && isGo) {
+  log('Downloading Go dependencies...')
+  try {
+    execSync('go mod download', { cwd: PROJ_BACK, stdio: 'pipe' })
+    success('Go dependencies downloaded')
+  } catch (e) {
+    warn('Go dependency download failed — run manually: cd backend && go mod download')
+    const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
+    msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
+  }
+} else if (!isNative && hasBackend && isRust) {
+  log('Downloading Rust dependencies...')
+  try {
+    execSync('cargo fetch', { cwd: PROJ_BACK, stdio: 'pipe' })
+    success('Rust dependencies downloaded')
+  } catch (e) {
+    warn('Rust dependency download failed — run manually: cd backend && cargo fetch')
+    const msg = (e.stdout || e.stderr || e.message || '').toString().trim()
+    msg.split('\n').slice(0, 5).forEach(l => l.trim() && warn('  ' + l))
+  }
+} else if (!isNative && hasBackend && !isAspnet && !isSpring && !isGo && !isRust) {
   log('Installing Composer dependencies...')
   try {
     execSync('composer install --no-interaction --prefer-dist --optimize-autoloader --quiet', {
@@ -1507,23 +1550,26 @@ log('Writing start.js...')
 
 const startLines = [
   isSpring ? `import { spawn, execSync } from 'node:child_process'` : `import { spawn } from 'node:child_process'`,
-  isSpring ? `import fs from 'node:fs'` : null,
+  isSpring || isGo || isRust ? `import fs from 'node:fs'` : null,
   `import path from 'node:path'`,
   `import { fileURLToPath } from 'node:url'`,
   `const __dirname = path.dirname(fileURLToPath(import.meta.url))`,
   !isInertia && !isNative ? `const FRONT = path.join(__dirname, 'frontend')` : null,
   hasBackend && !isInertia ? `const BACK  = path.join(__dirname, 'backend')` : null,
+  hasBackend && (isGo || isRust) ? `const BACKEND_ENV = { ...process.env, PLUFF_ROOT: __dirname }` : null,
+  hasBackend && (isGo || isRust) ? `const envPath = path.join(BACK, '.env')` : null,
+  hasBackend && (isGo || isRust) ? `if (fs.existsSync(envPath)) for (const line of fs.readFileSync(envPath, 'utf-8').split(/\\r?\\n/)) { const match = line.match(/^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*=\\s*(.*?)\\s*$/); if (match && process.env[match[1]] === undefined) BACKEND_ENV[match[1]] = match[2].replace(/^(['"])(.*)\\1$/, '$2') }` : null,
   hasBackend && isSpring ? `const springCp = () => [path.join(BACK, 'target', 'classes'), fs.readFileSync(path.join(BACK, 'target', 'classpath.txt'), 'utf-8').trim()].join(path.delimiter)` : null,
   hasBackend && isSpring ? `try { execSync('mvn -B -q compile', { cwd: BACK, stdio: 'inherit' }) } catch { console.log('  Spring Boot compile failed - fix the errors above, then run node start.js again'); process.exit(1) }` : null,
   hasBackend && isFastapi ? `const PYTHON = path.join(BACK, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin', process.platform === 'win32' ? 'python.exe' : 'python')` : null,
   ``,
-  `function run(label, cmd, args, cwd, color) {`,
+  `function run(label, cmd, args, cwd, color, env = process.env) {`,
   `  const colors = { frontend:'\\x1b[36m', backend:'\\x1b[35m', queue:'\\x1b[33m', reverb:'\\x1b[34m' }`,
   `  const c = colors[color] || '', r = '\\x1b[0m'`,
   `  const windowsScript = process.platform === 'win32' && (cmd === 'npm' || cmd === 'npx')`,
   `  const executable = windowsScript ? (process.env.ComSpec || 'cmd.exe') : cmd`,
   `  const commandArgs = windowsScript ? ['/d', '/s', '/c', cmd + '.cmd ' + args.map(arg => JSON.stringify(arg)).join(' ')] : args`,
-  `  const p = spawn(executable, commandArgs, { cwd, stdio: 'pipe', env: { ...process.env, FORCE_COLOR: '1'${isFastapi ? `, PYTHONUTF8: process.env.PYTHONUTF8 || '1'` : ''} } })`,
+  `  const p = spawn(executable, commandArgs, { cwd, stdio: 'pipe', env: { ...env, FORCE_COLOR: '1'${isFastapi ? `, PYTHONUTF8: process.env.PYTHONUTF8 || '1'` : ''} } })`,
   `  const out = d => String(d).trim().split('\\n').forEach(l => l && console.log(\`\${c}[\${label}]\${r} \${l}\`))`,
   `  p.stdout?.on('data', out)`,
   `  p.stderr?.on('data', out)`,
@@ -1535,11 +1581,13 @@ const startLines = [
   hasBackend && !isInertia ? `console.log('  Backend:  http://localhost:8001')` : null,
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
   hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
-  hasBackend && hasRealtime && !isAspnet && !isSpring ? `console.log('  ${isExpress || isFastapi ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
+  hasBackend && hasRealtime && !isAspnet && !isSpring && !isGo && !isRust ? `console.log('  ${isExpress || isFastapi ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
   isAspnet && hasJobs ? `console.log('  WARNING: ASP.NET queue/scheduler support is not implemented yet')` : null,
   isAspnet && hasRealtime ? `console.log('  WARNING: ASP.NET realtime support is not implemented yet')` : null,
   isSpring && hasJobs && !springWorkerReady ? `console.log('  WARNING: Spring Boot queue/scheduler support is not implemented yet')` : null,
   isSpring && hasRealtime ? `console.log('  WARNING: Spring Boot realtime support is not implemented yet')` : null,
+  (isGo || isRust) && hasJobs ? `console.log('  WARNING: ${isGo ? 'Go' : 'Rust'} queue/scheduler support is not implemented yet')` : null,
+  (isGo || isRust) && hasRealtime ? `console.log('  WARNING: ${isGo ? 'Go' : 'Rust'} realtime support is not implemented yet')` : null,
   isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
   !isInertia && !isNative && !isTauri ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
   isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
@@ -1552,6 +1600,10 @@ const startLines = [
         ? `const backend  = run('backend',  'java', ['-cp', springCp(), '${SPRING_SERVER_CLASS}'], BACK, 'backend')`
       : isAspnet
         ? `const backend  = run('backend',  'dotnet', ['run', '--no-restore', '--project', 'Pluff.AspNet.csproj'], BACK, 'backend')`
+      : isGo
+        ? `const backend  = run('backend', 'go', ['run', './cmd/server'], BACK, 'backend', BACKEND_ENV)`
+      : isRust
+        ? `const backend  = run('backend', 'cargo', ['run'], BACK, 'backend', BACKEND_ENV)`
         : isFastapi
           ? `const backend  = run('backend', PYTHON, ['-m', 'uvicorn', 'pluff.server:app', '--host', '0.0.0.0', '--port', '8001'], BACK, 'backend')`
           : `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8001'], BACK, 'backend')`)
@@ -1569,7 +1621,7 @@ const startLines = [
     : null,
   hasBackend && hasJobs && isInertia
     ? `const queue    = run('queue',    'php', ['artisan', 'queue:work', '--queue=default,heavy', '--sleep=3', '--tries=3'], __dirname, 'queue')` : null,
-  hasBackend && hasRealtime && !isInertia && !isAspnet && !isFastapi && !isSpring
+  hasBackend && hasRealtime && !isInertia && !isAspnet && !isFastapi && !isSpring && !isGo && !isRust
     ? (isExpress
       ? null
       : `const reverb   = run('reverb',   'php', ['artisan', 'reverb:start', '--host=0.0.0.0', '--port=8081', '--debug'], BACK, 'reverb')`)
@@ -1588,7 +1640,7 @@ const startLines = [
   !isInertia && !isNative && !isTauri
     ? `const frontend = run('frontend', 'npm',  ['run', 'dev'], FRONT, 'frontend')` : null,
   ``,
-  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs && !noQueueProcess ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress && !isFastapi && !isAspnet && !isSpring ? ' reverb,' : ''} frontend].filter(Boolean)`,
+  `const services = [${hasBackend ? ' backend,' : ''}${hasBackend && hasJobs && !noQueueProcess ? ' queue,' : ''}${hasBackend && hasRealtime && !isExpress && !isFastapi && !isAspnet && !isSpring && !isGo && !isRust ? ' reverb,' : ''} frontend].filter(Boolean)`,
   ``,
   `process.on('SIGINT', () => {`,
   `  services.forEach(s => s && s.kill())`,
@@ -1645,7 +1697,7 @@ const tauriNote = isTauri
   ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
   : ''
 const aspnetNote = isAspnet
-  ? `\n> **ASP.NET Core status:** Auth, CRUD validation, update/delete policies, and C# endpoint/middleware variants are supported. Queue/scheduler workers, realtime, and file storage still need ASP.NET implementations.\n`
+  ? `\n> **ASP.NET Core status:** Auth, CRUD validation, update/delete policies, C# endpoint/middleware variants, and Pusher-compatible realtime are supported. Queue/scheduler workers and file storage still need ASP.NET implementations.\n`
   : ''
 const springNote = isSpring
   ? `\n> **Spring Boot status:** JDK 17+ and Apache Maven are required. The Spring Boot backend is work in progress: queues, realtime and file storage may not be implemented yet.\n`
@@ -1653,11 +1705,17 @@ const springNote = isSpring
 const fastapiNote = isFastapi
   ? `\n> **FastAPI backend:** Python 3 is required. The exported backend uses a local virtual environment; install Ollama separately if this Tatemono uses Ollama Studio.\n`
   : ''
+const goNote = isGo
+  ? `\n> **Go backend:** Go 1.22+ is required. Common CRUD API routes and SQLite schema setup are supported. Custom \`:go\` handlers, middleware/auth policies, PostgreSQL, queues, and realtime are not available yet.\n`
+  : ''
+const rustNote = isRust
+  ? `\n> **Rust backend:** Install rustup with Cargo. Common CRUD API routes and SQLite schema setup are supported. Custom \`:rs\` handlers, middleware/auth policies, PostgreSQL, queues, and realtime are not available yet.\n`
+  : ''
 
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
 
 Generated by Arkzen export.js v10.
-${inertiaNote}${nativeNote}${tauriNote}${fastapiNote}${aspnetNote}${springNote}
+${inertiaNote}${nativeNote}${tauriNote}${fastapiNote}${aspnetNote}${springNote}${goNote}${rustNote}
 ## Start
 
 \`\`\`bash
@@ -1665,13 +1723,13 @@ node start.js
 \`\`\`
 
 | Service  | URL                                          |
-|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime && !isAspnet && !isSpring ? `\n| Realtime | ws://localhost:${isExpress || isFastapi ? '8080' : '8081'}                          |` : ''}
+|----------|----------------------------------------------|${hasBackend && !isInertia ? '\n| Backend  | http://localhost:8001                        |' : ''}${isInertia ? '\n| App      | http://localhost:8000 (Laravel + Vite)       |' : ''}${isTauri ? '\n| Desktop  | Tauri window                                  |' : ''}${!isInertia && !isNative && !isTauri ? '\n| Frontend | http://localhost:3001                        |' : ''}${hasBackend && hasRealtime && !isAspnet && !isSpring && !isGo && !isRust ? `\n| Realtime | ws://localhost:${isExpress || isFastapi ? '8080' : '8081'}                          |` : ''}
 ${hasBackend && !isInertia ? `
 ## Manual backend setup (if needed)
 
 \`\`\`bash
 cd backend
-${isExpress ? 'npm install\nnpm start' : isFastapi ? 'python -m venv .venv\n.venv/bin/python -m pip install -r requirements.txt\n# Windows: .venv\\\\Scripts\\\\python.exe -m pip install -r requirements.txt' : isAspnet ? 'dotnet restore Pluff.AspNet.csproj\ndotnet run --project Pluff.AspNet.csproj' : isSpring ? 'mvn -B dependency:build-classpath -Dmdep.outputFile=target/classpath.txt\nmvn -B compile\n# then run: java -cp "target/classes:$(cat target/classpath.txt)" ${SPRING_SERVER_CLASS}   (Windows uses ; instead of :)' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
+${isExpress ? 'npm install\nnpm start' : isFastapi ? 'python -m venv .venv\n.venv/bin/python -m pip install -r requirements.txt\n# Windows: .venv\\\\Scripts\\\\python.exe -m pip install -r requirements.txt' : isAspnet ? 'dotnet restore Pluff.AspNet.csproj\ndotnet run --project Pluff.AspNet.csproj' : isSpring ? 'mvn -B dependency:build-classpath -Dmdep.outputFile=target/classpath.txt\nmvn -B compile\n# then run: java -cp "target/classes:$(cat target/classpath.txt)" ${SPRING_SERVER_CLASS}   (Windows uses ; instead of :)' : isGo ? 'go mod download\ncd ..\nnode start.js   # loads backend/.env and starts both services' : isRust ? 'cargo fetch\ncargo run' : 'composer install\nphp artisan key:generate\nphp artisan migrate\nphp artisan db:seed   # if seeders exist'}
 \`\`\`
 ` : ''}`)
 
@@ -1681,6 +1739,8 @@ fs.writeFileSync(path.join(PROJECT_DIR, '.gitignore'), [
   '**/.next/',
   '**/.env',
   '**/.env.local',
+  ...(isGo ? ['backend/storage/'] : []),
+  ...(isRust ? ['backend/target/'] : []),
   '*.log',
   '.DS_Store',
 ].join('\n'))
@@ -1693,6 +1753,6 @@ divider()
 console.log(`\n  ✓ EXPORTED: ${tatName}`)
 console.log(`  Version:  v10`)
 console.log(`  Stack:    ${activeStack}`)
-if (hasBackend) console.log(`  DB:       ${isInertia ? '' : 'backend/'}database/arkzen/${tatName}.sqlite`)
+if (hasBackend) console.log(`  DB:       ${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`)
 console.log(`  Run:      cd projects/${tatName} && node start.js`)
 divider()

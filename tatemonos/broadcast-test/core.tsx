@@ -25,6 +25,9 @@ columns:
     type: integer
     primary: true
     autoIncrement: true
+  user_id:
+    type: integer
+    nullable: true
   content:
     type: string
     length: 500

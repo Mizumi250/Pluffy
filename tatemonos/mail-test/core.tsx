@@ -198,6 +198,39 @@ data:
 <p>This link expires in {{ expires_in }}.</p>
 /* @arkzen:mail:java:password-reset:end */
 
+/* @arkzen:mail:cs:welcome-mail
+subject: "Welcome to Arkzen"
+data:
+  username: string
+  app_name: string
+*/
+<p>Welcome, {{ $username }}!</p>
+<p>Thanks for joining {{ $app_name }}.</p>
+/* @arkzen:mail:cs:welcome-mail:end */
+
+/* @arkzen:mail:cs:order-confirmation
+subject: "Your order has been confirmed"
+data:
+  order_id: string
+  total: string
+  customer_name: string
+*/
+<p>Hi {{ $customer_name }},</p>
+<p>Your order {{ $order_id }} has been confirmed.</p>
+<p>Total: {{ $total }}</p>
+/* @arkzen:mail:cs:order-confirmation:end */
+
+/* @arkzen:mail:cs:password-reset
+subject: "Reset your password"
+data:
+  reset_link: string
+  expires_in: string
+*/
+<p>Use this link to reset your password:</p>
+<p><a href="{{ $reset_link }}">Reset password</a></p>
+<p>This link expires in {{ $expires_in }}.</p>
+/* @arkzen:mail:cs:password-reset:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

@@ -2,14 +2,14 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LocationWidget [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T10:55:53.568Z
+// Generated: 2026-11-03T08:18:42.864Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as Location from 'expo-location'
 import { usePathname, useRouter } from 'expo-router'
 import { AlertCircle, CalendarClock, CheckCircle, ChevronDown, LogIn, LogOut, MapPin, Navigation, RefreshCw, Settings, XCircle } from 'lucide-react-native'
-import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { create } from 'zustand'
@@ -25,14 +25,28 @@ export const LocationWidget = () => {
 
   const requestLocation = useCallback(async () => {
     setLocationStatus('fetching')
-    const { status } = await Location.requestForegroundPermissionsAsync()
-    if (status !== 'granted') { setLocationStatus('denied'); return }
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') { setLocationStatus('denied'); return }
 
-    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
-    const { latitude, longitude } = loc.coords
-    setCurrentPosition({ lat: latitude, lng: longitude })
-    if (settings) setDistanceToOffice(calcDistance(latitude, longitude, settings.office_latitude, settings.office_longitude))
-    setLocationStatus('success')
+      if (Platform.OS === 'android') await Location.enableNetworkProviderAsync()
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+        mayShowUserSettingsDialog: true,
+      })
+      const { latitude, longitude } = loc.coords
+      setCurrentPosition({ lat: latitude, lng: longitude })
+      if (settings) setDistanceToOffice(calcDistance(latitude, longitude, settings.office_latitude, settings.office_longitude))
+      setLocationStatus('success')
+    } catch (error) {
+      setLocationStatus('idle')
+      setCurrentPosition(null)
+      setDistanceToOffice(null)
+      Alert.alert(
+        'Location unavailable',
+        `${error instanceof Error ? error.message : 'Unable to get your location.'} Turn on device location and try again.`,
+      )
+    }
   }, [settings])
 
   if (locationStatus === 'idle') return (

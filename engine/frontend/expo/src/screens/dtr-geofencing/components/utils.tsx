@@ -2,14 +2,14 @@
 // ARKZEN GENERATED NATIVE UTILITIES — dtr-geofencing [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-02T10:55:53.559Z
+// Generated: 2026-11-03T08:18:42.814Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import * as Location from 'expo-location'
 import { usePathname, useRouter } from 'expo-router'
 import { AlertCircle, CalendarClock, CheckCircle, ChevronDown, LogIn, LogOut, MapPin, Navigation, RefreshCw, Settings, XCircle } from 'lucide-react-native'
-import { ActivityIndicator, FlatList, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Alert, FlatList, Platform, Pressable, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import Animated, { Easing, FadeInDown, useAnimatedStyle, useSharedValue, withDelay, withTiming } from 'react-native-reanimated'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { create } from 'zustand'

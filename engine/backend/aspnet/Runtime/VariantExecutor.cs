@@ -82,6 +82,20 @@ public static class VariantExecutor
         }
     }
 
+    public static async Task<object?> ExecuteValueAsync(
+        string source,
+        HttpContext context,
+        JsonObject body,
+        DbConnection database,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject? user = null)
+    {
+        var state = await GetScript(source).RunAsync(
+            new VariantGlobals(context, body, database, routeValues, user),
+            cancellationToken: context.RequestAborted);
+        return state.ReturnValue;
+    }
+
     public static async Task<bool> EvaluatePolicyAsync(
         string source,
         HttpContext context,

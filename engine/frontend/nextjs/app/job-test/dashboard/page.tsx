@@ -3,11 +3,14 @@
 // ARKZEN GENERATED PAGE — job-test/dashboard
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T02:14:32.691Z
+// Generated: 2026-11-03T06:51:42.653Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
+import { Math } from '../components/Math'
+import { Max } from '../components/Max'
+import { results } from '../components/utils'
 import { GuestLayout } from '@/arkzen/core/layouts/GuestLayout'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { Cpu } from 'lucide-react'

@@ -4,7 +4,7 @@
 // PLUFF — SETUP SCRIPT
 // Run this ONCE to set up Pluff on your machine.
 // Usage: node setup.js
-//        node setup.js --backend [laravel|laravel-inertia|express|fastapi|aspnet|spring-boot]
+//        node setup.js --backend [laravel|laravel-inertia|express|fastapi|aspnet|spring-boot|go|rust]
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -86,7 +86,7 @@ const ACTIVE_BACKEND = activeStack === 'react-inertia' ? 'laravel-inertia' : 'la
 // ACTIVE_BACKEND above stays the PHP flow's default; alternate engines install separately.
 const SELECTED_BACKEND = activeStack === 'react-inertia'
   ? 'laravel-inertia'
-  : (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
+  : (['express', 'fastapi', 'aspnet', 'spring-boot', 'go', 'rust'].includes(activeBackendChoice) ? activeBackendChoice : 'laravel')
 let backendName = ACTIVE_BACKEND
 let ACTIVE_BACKEND_DIR = path.join(BACKEND_DIR, backendName)
 function useBackend(name) {
@@ -150,6 +150,8 @@ const BACKEND_STACKS = {
   'fastapi':         { category: 'backend', dir: path.join(BACKEND_DIR, 'fastapi') },
   'aspnet':          { category: 'backend', dir: path.join(BACKEND_DIR, 'aspnet') },
   'spring-boot':     { category: 'backend', dir: path.join(BACKEND_DIR, 'spring-boot') },
+  'go':              { category: 'backend', dir: path.join(BACKEND_DIR, 'go') },
+  'rust':            { category: 'backend', dir: path.join(BACKEND_DIR, 'rust') },
 }
 const ALL_DEP_STACKS = { ...FRONTEND_STACKS, ...BACKEND_STACKS }
 
@@ -164,6 +166,8 @@ function cacheDirsFor(stack) {
     if (stack === 'fastapi') return [path.join(dir, '.venv')]
     if (stack === 'aspnet') return [path.join(dir, 'bin'), path.join(dir, 'obj')]
     if (stack === 'spring-boot') return [path.join(dir, 'target')]
+    if (stack === 'go') return []
+    if (stack === 'rust') return [path.join(dir, 'target')]
     return [path.join(dir, 'vendor'), path.join(dir, 'node_modules')]
   }
   const meta = FRONTEND_STACKS[stack]
@@ -209,6 +213,8 @@ function stackInstalled(stack) {
   if (stack === 'fastapi') return fastapiInstalled()
   if (stack === 'aspnet') return fs.existsSync(path.join(BACKEND_STACKS.aspnet.dir, 'obj', 'project.assets.json'))
   if (stack === 'spring-boot') return springBootInstalled()
+  if (stack === 'go') return goInstalled()
+  if (stack === 'rust') return rustInstalled()
   if (BACKEND_STACKS[stack]) return fs.existsSync(path.join(BACKEND_STACKS[stack].dir, 'vendor', 'autoload.php'))
   const meta = FRONTEND_STACKS[stack]
   return !!(meta && fs.existsSync(path.join(meta.dir, 'node_modules')))
@@ -369,6 +375,54 @@ function springBootInstalled() {
   return fs.existsSync(path.join(BACKEND_STACKS['spring-boot'].dir, 'target', 'classpath.txt'))
 }
 
+function goInstalled() {
+  const dir = BACKEND_STACKS.go.dir
+  return fs.existsSync(path.join(dir, 'go.mod')) && fs.existsSync(path.join(dir, 'go.sum'))
+}
+
+function rustInstalled() {
+  const dir = BACKEND_STACKS.rust.dir
+  return fs.existsSync(path.join(dir, 'Cargo.toml')) && fs.existsSync(path.join(dir, 'Cargo.lock'))
+}
+
+function installGoBackend() {
+  const dir = BACKEND_STACKS.go.dir
+  if (!fs.existsSync(path.join(dir, 'go.mod'))) {
+    error('engine/backend/go is missing (no go.mod)')
+    return false
+  }
+  if (!commandExists('go')) {
+    error('Go SDK not found — install Go 1.22 or newer before using the Go backend')
+    return false
+  }
+  log('Downloading Go backend dependencies...')
+  if (!run('go mod download', dir)) {
+    error('go mod download failed for the Go backend')
+    return false
+  }
+  success('Go backend dependencies downloaded')
+  return true
+}
+
+function installRustBackend() {
+  const dir = BACKEND_STACKS.rust.dir
+  if (!fs.existsSync(path.join(dir, 'Cargo.toml'))) {
+    error('engine/backend/rust is missing (no Cargo.toml)')
+    return false
+  }
+  if (!commandExists('cargo')) {
+    error('Rust toolchain not found — install rustup (including Cargo) before using the Rust backend')
+    return false
+  }
+  log('Downloading Rust backend dependencies...')
+  if (!run('cargo fetch', dir)) {
+    error('cargo fetch failed for the Rust backend')
+    return false
+  }
+  success('Rust backend dependencies downloaded')
+  return true
+}
+
 function javaMajorVersion() {
   try {
     const out = spawnSync('java', ['-version'], { encoding: 'utf-8', windowsHide: true })
@@ -497,10 +551,16 @@ function configureSpringBootDatabase() {
 }
 
 function installBackend(name, { force = false } = {}) {
+  if ((name === 'go' || name === 'rust') && activeDatabase === 'pgsql') {
+    error(`${name === 'go' ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before setup`)
+    return false
+  }
   if (name === 'express') return installExpressBackend({ force })
   if (name === 'fastapi') return installFastapiBackend({ force })
   if (name === 'aspnet') return installAspnetBackend({ force })
   if (name === 'spring-boot') return installSpringBootBackend({ force })
+  if (name === 'go') return installGoBackend()
+  if (name === 'rust') return installRustBackend()
   if (stackInstalled(name) && !force) {
     success(`${name} already installed — skip (use --force to reinstall)`)
     return true
@@ -675,6 +735,8 @@ function printSetupHelp() {
     node setup.js --backend fastapi            (Python 3 required)
     node setup.js --backend aspnet             (.NET 8 SDK required)
     node setup.js --backend spring-boot        (JDK 17+ and Maven required)
+    node setup.js --backend go                 (Go 1.22+ required)
+    node setup.js --backend rust               (rustup / Cargo required)
     node setup.js --database          (apply sqlite / pgsql from arkzen.json to installed backends)
 
   Package manager:
@@ -713,6 +775,10 @@ function checkRequirements({ desktop = true } = {}) {
   } else if (SELECTED_BACKEND === 'spring-boot') {
     checks.push({ cmd: 'java', name: 'Java JDK 17+' })
     checks.push({ cmd: 'mvn', name: 'Apache Maven' })
+  } else if (SELECTED_BACKEND === 'go') {
+    checks.push({ cmd: 'go', name: 'Go 1.22+' })
+  } else if (SELECTED_BACKEND === 'rust') {
+    checks.push({ cmd: 'cargo', name: 'Cargo (Rust toolchain)' })
   } else if (SELECTED_BACKEND !== 'express') {
     checks.push({ cmd: 'php', name: 'PHP' })
     checks.push({ cmd: 'composer', name: 'Composer' })
@@ -1207,7 +1273,7 @@ if (cli.backendOnly) {
     error(`Unknown backend: ${cli.backendName} (use: ${Object.keys(BACKEND_STACKS).join(', ')})`)
     process.exit(1)
   }
-  if (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(cli.backendName ?? SELECTED_BACKEND)) {
+  if (['express', 'fastapi', 'aspnet', 'spring-boot', 'go', 'rust'].includes(cli.backendName ?? SELECTED_BACKEND)) {
     const backend = cli.backendName ?? SELECTED_BACKEND
     process.exit(installBackend(backend, { force: cli.force }) ? 0 : 1)
   }
@@ -1289,7 +1355,7 @@ initRegistry()
 setupFrontend()
 if (activeDesktopStack) setupDesktopStack()
 if (activeAppStack) setupAppStack()
-if (['express', 'fastapi', 'aspnet', 'spring-boot'].includes(SELECTED_BACKEND)) installBackend(SELECTED_BACKEND)
+if (['express', 'fastapi', 'aspnet', 'spring-boot', 'go', 'rust'].includes(SELECTED_BACKEND)) installBackend(SELECTED_BACKEND)
 else setupBackend()
 if (cli.pruneUnused) pruneUnusedStacks({ force: true })
 printDone()

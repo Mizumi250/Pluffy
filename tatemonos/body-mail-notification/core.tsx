@@ -1151,6 +1151,87 @@ return (
 )
 /* @arkzen:notifications:py:summary:end */
 
+/* @arkzen:mail:cs:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
+*/
+<div>
+  <h1>Welcome, {{ $name }}!</h1>
+  <p>You are now part of <strong>{{ $app_name }}</strong>.</p>
+  <p>This email was generated from the ASP.NET mail template.</p>
+</div>
+/* @arkzen:mail:cs:welcome:end */
+
+/* @arkzen:mail:cs:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
+*/
+<div>
+  <h1>Receipt #{{ $order_id }}</h1>
+  <p>Item: {{ $item_name }}</p>
+  <p>Amount: {{ $amount }}</p>
+  <p>Status: Paid</p>
+</div>
+/* @arkzen:mail:cs:receipt:end */
+
+/* @arkzen:mail:cs:alert
+subject: "Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
+*/
+<div>
+  <h1>Action Required</h1>
+  <p>{{ $alert_message }}</p>
+  <p><a href="{{ $action_url }}">Take Action</a></p>
+</div>
+/* @arkzen:mail:cs:alert:end */
+
+/* @arkzen:notifications:cs:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
+subject: "Action Required"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "⚠ Action Required — toMail_body injection test",
+    ["greeting"] = "Hello!",
+    ["lines"] = new[]
+    {
+        "You have a pending action that requires your attention.",
+        "This toMail() body was injected via the Arkzen DSL — not a stub.",
+        "NotificationBuilder v3.9 toMail_body injection confirmed ✓"
+    },
+    ["action"] = new Dictionary<string, string> { ["label"] = "Review Now", ["url"] = "/" }
+};
+/* @arkzen:notifications:cs:action-required:end */
+
+/* @arkzen:notifications:cs:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
+subject: "Activity Summary"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "📊 Activity Summary — toMail_body injection test",
+    ["greeting"] = "Hi there!",
+    ["lines"] = new[]
+    {
+        "Here is your latest activity summary.",
+        "Notifications: 2 unread | Mails: 3 sent | Status: All healthy"
+    },
+    ["action"] = new Dictionary<string, string> { ["label"] = "View Dashboard", ["url"] = "/" },
+    ["salutation"] = "Cheers, Arkzen Engine"
+};
+/* @arkzen:notifications:cs:summary:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

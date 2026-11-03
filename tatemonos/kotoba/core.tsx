@@ -3541,6 +3541,171 @@ return response.json(Support.mapOf("profile", profile, "series", series, "stats"
     "level", (int) Math.floor(xp / 100.0) + 1, "level_progress", xp % 100));
 /* @arkzen:handler:java:progress:end */
 
+/* @arkzen:handler:cs:me
+*/
+return await KotobaHandlers.ExecuteAsync("me", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:me:end */
+
+/* @arkzen:handler:cs:update_me
+*/
+return await KotobaHandlers.ExecuteAsync("update_me", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:update_me:end */
+
+/* @arkzen:handler:cs:bump
+*/
+return await KotobaHandlers.ExecuteAsync("bump", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:bump:end */
+
+/* @arkzen:handler:cs:notify
+*/
+return await KotobaHandlers.ExecuteAsync("notify", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:notify:end */
+
+/* @arkzen:handler:cs:community_seed
+*/
+return await KotobaHandlers.ExecuteAsync("community_seed", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:community_seed:end */
+
+/* @arkzen:handler:cs:home
+*/
+return await KotobaHandlers.ExecuteAsync("home", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:home:end */
+
+/* @arkzen:handler:cs:feed
+*/
+return await KotobaHandlers.ExecuteAsync("feed", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:feed:end */
+
+/* @arkzen:handler:cs:create_post
+*/
+return await KotobaHandlers.ExecuteAsync("create_post", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:create_post:end */
+
+/* @arkzen:handler:cs:delete_post
+*/
+return await KotobaHandlers.ExecuteAsync("delete_post", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:delete_post:end */
+
+/* @arkzen:handler:cs:toggle_like
+*/
+return await KotobaHandlers.ExecuteAsync("toggle_like", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:toggle_like:end */
+
+/* @arkzen:handler:cs:list_comments
+*/
+return await KotobaHandlers.ExecuteAsync("list_comments", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_comments:end */
+
+/* @arkzen:handler:cs:add_comment
+*/
+return await KotobaHandlers.ExecuteAsync("add_comment", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:add_comment:end */
+
+/* @arkzen:handler:cs:accept_correction
+*/
+return await KotobaHandlers.ExecuteAsync("accept_correction", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:accept_correction:end */
+
+/* @arkzen:handler:cs:list_lessons
+*/
+return await KotobaHandlers.ExecuteAsync("list_lessons", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_lessons:end */
+
+/* @arkzen:handler:cs:complete_lesson
+*/
+return await KotobaHandlers.ExecuteAsync("complete_lesson", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:complete_lesson:end */
+
+/* @arkzen:handler:cs:list_cards
+*/
+return await KotobaHandlers.ExecuteAsync("list_cards", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_cards:end */
+
+/* @arkzen:handler:cs:add_card
+*/
+return await KotobaHandlers.ExecuteAsync("add_card", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:add_card:end */
+
+/* @arkzen:handler:cs:review_card
+*/
+return await KotobaHandlers.ExecuteAsync("review_card", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:review_card:end */
+
+/* @arkzen:handler:cs:delete_card
+*/
+return await KotobaHandlers.ExecuteAsync("delete_card", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:delete_card:end */
+
+/* @arkzen:handler:cs:partners
+*/
+return await KotobaHandlers.ExecuteAsync("partners", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:partners:end */
+
+/* @arkzen:handler:cs:view_profile
+*/
+return await KotobaHandlers.ExecuteAsync("view_profile", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:view_profile:end */
+
+/* @arkzen:handler:cs:toggle_follow
+*/
+return await KotobaHandlers.ExecuteAsync("toggle_follow", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:toggle_follow:end */
+
+/* @arkzen:handler:cs:list_conversations
+*/
+return await KotobaHandlers.ExecuteAsync("list_conversations", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_conversations:end */
+
+/* @arkzen:handler:cs:start_conversation
+*/
+return await KotobaHandlers.ExecuteAsync("start_conversation", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:start_conversation:end */
+
+/* @arkzen:handler:cs:list_messages
+*/
+return await KotobaHandlers.ExecuteAsync("list_messages", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_messages:end */
+
+/* @arkzen:handler:cs:send_message
+*/
+return await KotobaHandlers.ExecuteAsync("send_message", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:send_message:end */
+
+/* @arkzen:handler:cs:correct_message
+*/
+return await KotobaHandlers.ExecuteAsync("correct_message", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:correct_message:end */
+
+/* @arkzen:handler:cs:list_circles
+*/
+return await KotobaHandlers.ExecuteAsync("list_circles", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_circles:end */
+
+/* @arkzen:handler:cs:create_circle
+*/
+return await KotobaHandlers.ExecuteAsync("create_circle", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:create_circle:end */
+
+/* @arkzen:handler:cs:toggle_join
+*/
+return await KotobaHandlers.ExecuteAsync("toggle_join", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:toggle_join:end */
+
+/* @arkzen:handler:cs:list_alerts
+*/
+return await KotobaHandlers.ExecuteAsync("list_alerts", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:list_alerts:end */
+
+/* @arkzen:handler:cs:read_alerts
+*/
+return await KotobaHandlers.ExecuteAsync("read_alerts", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:read_alerts:end */
+
+/* @arkzen:handler:cs:progress
+*/
+return await KotobaHandlers.ExecuteAsync("progress", Context, Body, Database, RouteValues, user);
+/* @arkzen:handler:cs:progress:end */
+
 /* @arkzen:web:style */
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Serif+JP:wght@500;700&display=swap');
 :root {

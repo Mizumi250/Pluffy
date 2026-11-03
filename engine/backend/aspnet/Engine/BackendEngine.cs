@@ -19,9 +19,11 @@ public sealed class BackendEngine
     private readonly string _backendDirectory = Directory.GetCurrentDirectory();
     private readonly string _modulesDirectory;
     private readonly TatemonoDatabase _database;
+    private readonly BackgroundTaskQueue _backgroundTasks;
 
-    public BackendEngine()
+    public BackendEngine(BackgroundTaskQueue backgroundTasks)
     {
+        _backgroundTasks = backgroundTasks;
         _modulesDirectory = Path.Combine(_backendDirectory, "storage", "arkzen-modules");
         _database = new TatemonoDatabase(_backendDirectory);
         LoadModules();
@@ -67,6 +69,11 @@ public sealed class BackendEngine
             {
                 await _database.EnsureAuthTablesAsync(connection, slug, payload["authSeed"], cancellationToken);
                 steps.Add("Auth tables and seed users ready");
+            }
+            if (payload["notifications"] is JsonArray { Count: > 0 })
+            {
+                await _database.EnsureNotificationsTableAsync(connection, slug, cancellationToken);
+                steps.Add("Database notifications table ready");
             }
 
             Directory.CreateDirectory(_modulesDirectory);
@@ -130,6 +137,7 @@ public sealed class BackendEngine
         {
             foreach (var (slug, module) in Modules)
             {
+                if (await TryBroadcastAuthAsync(context, module, method, path, slug)) return;
                 if (await TryAuthRouteAsync(context, module, method, path, slug)) return;
                 if (await TryApiRoutesAsync(context, module, method, path, slug)) return;
                 if (await TryCustomRoutesAsync(context, module, method, path, slug)) return;
@@ -253,12 +261,64 @@ public sealed class BackendEngine
         return true;
     }
 
+    private async Task<bool> TryBroadcastAuthAsync(HttpContext context, JsonObject module, string method, string path, string slug)
+    {
+        if (method != "POST" || path != $"/api/{slug}/auth/broadcasting/auth") return false;
+        if (!IsTruthy(module["auth"]))
+        {
+            await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
+            return true;
+        }
+
+        var body = await ReadBodyAsync(context);
+        var socketId = StringValue(body["socket_id"]);
+        var channel = StringValue(body["channel_name"]);
+        if (string.IsNullOrWhiteSpace(socketId) || string.IsNullOrWhiteSpace(channel))
+        {
+            await Results.Json(new { message = "Missing socket_id or channel_name." },
+                statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
+            return true;
+        }
+
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var authenticated = await ResolveUserAsync(context, connection, slug, context.RequestAborted);
+        if (authenticated.User is null)
+        {
+            await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
+            return true;
+        }
+
+        var authorization = BroadcastHub.AuthorizeChannel(
+            socketId,
+            channel,
+            authenticated.User,
+            ReadBroadcastChannelRules(module, slug));
+        if (authorization is null)
+        {
+            await Results.Json(new { message = "Forbidden." }, statusCode: StatusCodes.Status403Forbidden).ExecuteAsync(context);
+            return true;
+        }
+
+        authorization.Remove("channel_data", out var channelData);
+        await Results.Json(new
+        {
+            auth = StringValue(authorization["auth"]),
+            channel_data = channelData?.GetValue<string>()
+        }, statusCode: StatusCodes.Status200OK).ExecuteAsync(context);
+        return true;
+    }
+
     private async Task<bool> TryApiRoutesAsync(HttpContext context, JsonObject module, string method, string path, string slug)
     {
         if (module["apis"] is not JsonArray apis) return false;
         foreach (var api in apis.OfType<JsonObject>())
         {
             var prefix = StringValue(api["prefix"]);
+            if (method == "GET" &&
+                api["endpoints"] is JsonObject broadcastEndpoints &&
+                broadcastEndpoints.Any(endpoint => StringEquals(endpoint.Value?["type"], "broadcast")) &&
+                TryMatch($"/api/{slug}/sse-poll/{{channelType}}", path, out var pollValues))
+                return await PollBroadcastMessagesAsync(context, module, api, slug, pollValues);
             if (api["endpoints"] is JsonObject endpoints && endpoints.Count > 0)
             {
                 foreach (var (name, value) in endpoints)
@@ -279,10 +339,18 @@ public sealed class BackendEngine
                     });
                     if (IsPolicyProtectedAction(type) &&
                         await RunPolicyAsync(context, slug, api, module, type!, values)) return true;
+                    if (type is "mail_send" or "notification_trigger")
+                        return await ExecuteMessageEndpointAsync(context, slug, module, api, type, values);
+                    if (StringEquals(api["model"], "Notification") &&
+                        HasNotificationTrigger(api))
+                        return await ExecuteNativeNotificationEndpointAsync(
+                            context, slug, api, module, name, type, values, endpoint["response"]);
+                    if (type is "job_dispatch" or "event_fire" or "command_run")
+                        return await ExecuteDslEndpointAsync(context, slug, module, api, endpoint, type, values);
                     var source = DecodeBody(endpoint["body"]);
                     if (string.IsNullOrWhiteSpace(source))
                     {
-                        if (type is not ("index" or "show" or "store" or "update" or "destroy"))
+                        if (type is not ("index" or "show" or "store" or "update" or "destroy" or "broadcast"))
                             return await RespondNotImplementedAsync(context, $"Endpoint {name}");
                         await ExecuteCrudAsync(
                             context, slug, api, module, type!, values,
@@ -447,7 +515,7 @@ public sealed class BackendEngine
         await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
         var tableSql = TatemonoDatabase.Quote(table);
         var id = routeValues.TryGetValue("id", out var routeId) ? DbRouteValue(routeId) : null;
-        if (action is "store" or "update" && validationRules is not null)
+        if (action is "store" or "update" or "broadcast" && validationRules is not null)
         {
             var errors = await TatemonoValidator.ValidateAsync(
                 body, validationRules, connection, slug,
@@ -578,6 +646,56 @@ public sealed class BackendEngine
                 await Results.Json(await ReadRowAsync(reader, context.RequestAborted), statusCode: 201).ExecuteAsync(context);
                 return;
             }
+            case "broadcast":
+            {
+                var values = WritableColumns(body, declaredColumns);
+                var channelType = StringValue(body["channel_type"]) ?? "public";
+                JsonObject? authenticatedUser = null;
+                if (IsTruthy(module["auth"]))
+                    authenticatedUser = (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User;
+                if ((channelType is "private" or "presence") && authenticatedUser is null)
+                {
+                    await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
+                    return;
+                }
+                if (declaredColumns?.ContainsKey("user_id") == true)
+                    values["user_id"] = authenticatedUser?["id"] is { } userId
+                        ? DbRouteValue(userId.ToString())
+                        : null;
+                values["channel_type"] = channelType;
+                if (definition?["timestamps"]?.GetValue<bool>() != false)
+                {
+                    var now = DateTime.UtcNow;
+                    values.TryAdd("created_at", now);
+                    values.TryAdd("updated_at", now);
+                }
+
+                var eventTarget = BroadcastHub.ResolveEvent(module["realtimes"], slug, channelType, authenticatedUser);
+                if (eventTarget is null)
+                {
+                    await Results.Json(new { message = $"No {channelType} broadcast channel is configured." },
+                        statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
+                    return;
+                }
+
+                await using var command = connection.CreateCommand();
+                var names = values.Keys.Select(TatemonoDatabase.Quote).ToArray();
+                command.CommandText = $"INSERT INTO {tableSql} ({string.Join(", ", names)}) VALUES ({string.Join(", ", values.Keys.Select((_, index) => $"@p{index}"))}) RETURNING *";
+                AddValues(command, values);
+                await using var reader = await command.ExecuteReaderAsync(context.RequestAborted);
+                if (!await reader.ReadAsync(context.RequestAborted))
+                    throw new InvalidOperationException($"Insert into {table} returned no row.");
+                var message = await ReadRowAsync(reader, context.RequestAborted);
+                await reader.DisposeAsync();
+                await BroadcastHub.BroadcastToAsync(
+                    eventTarget.Value.Channel,
+                    eventTarget.Value.Event,
+                    message,
+                    context.RequestAborted,
+                    context.Request.Headers["X-Socket-ID"].ToString());
+                await Results.Json(message, statusCode: StatusCodes.Status201Created).ExecuteAsync(context);
+                return;
+            }
             case "update":
             {
                 var values = WritableColumns(body, declaredColumns);
@@ -616,6 +734,72 @@ public sealed class BackendEngine
                 return;
             }
         }
+    }
+
+    private async Task<bool> PollBroadcastMessagesAsync(
+        HttpContext context,
+        JsonObject module,
+        JsonObject api,
+        string slug,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        var channelType = routeValues.TryGetValue("channelType", out var requestedType) ? requestedType : "";
+        if (channelType is not ("public" or "private" or "presence"))
+        {
+            await Results.BadRequest(new { message = "Unknown broadcast channel type." }).ExecuteAsync(context);
+            return true;
+        }
+
+        var model = StringValue(api["model"]) ?? "";
+        var definition = FindDatabaseDefinition(model, module);
+        var declaredColumns = definition?["columns"] as JsonObject;
+        if (channelType == "private" && declaredColumns?.ContainsKey("user_id") != true)
+        {
+            await Results.Json(new { message = "Private broadcast polling requires a user_id column." },
+                statusCode: StatusCodes.Status501NotImplemented).ExecuteAsync(context);
+            return true;
+        }
+
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        JsonObject? user = null;
+        if (channelType is "private" or "presence")
+        {
+            user = (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User;
+            if (user is null)
+            {
+                await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized).ExecuteAsync(context);
+                return true;
+            }
+        }
+
+        var afterId = ReadPositiveLong(context.Request.Query["after_id"], 0);
+        var table = TatemonoDatabase.Quote(FindTable(slug, model, module));
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"SELECT * FROM {table} WHERE channel_type = @channel_type AND id > @after_id";
+        TatemonoDatabase.AddParameter(command, "@channel_type", channelType);
+        TatemonoDatabase.AddParameter(command, "@after_id", afterId);
+        if (channelType == "private")
+        {
+            command.CommandText += " AND user_id = @user_id";
+            TatemonoDatabase.AddParameter(command, "@user_id", user?["id"]?.ToString());
+        }
+        command.CommandText += " ORDER BY id LIMIT 50";
+        await using var reader = await command.ExecuteReaderAsync(context.RequestAborted);
+        var rows = await ReadRowsAsync(reader, context.RequestAborted);
+        var eventTarget = BroadcastHub.ResolveEvent(module["realtimes"], slug, channelType, user);
+        var messages = new JsonArray();
+        var lastId = afterId;
+        foreach (var row in rows)
+        {
+            if (long.TryParse(StringValue(row["id"]), out var id)) lastId = Math.Max(lastId, id);
+            messages.Add(new JsonObject
+            {
+                ["event"] = eventTarget?.Event,
+                ["data"] = row
+            });
+        }
+        await Results.Json(new { messages, last_id = lastId }).ExecuteAsync(context);
+        return true;
     }
 
     private async Task ExecuteSnippetAsync(
@@ -747,10 +931,19 @@ public sealed class BackendEngine
     private static List<string> BuildWarnings(JsonObject payload)
     {
         var warnings = new List<string>();
-        foreach (var feature in new[] { "events", "realtimes", "jobs", "notifications", "mails", "consoles" })
+        foreach (var feature in new[] { "events", "jobs", "consoles" })
         {
             if (payload[feature] is JsonArray { Count: > 0 })
-                warnings.Add($"ASP.NET does not yet execute the {feature} DSL sections.");
+            {
+                var message = feature switch
+                {
+                    "events" => "ASP.NET queues event listeners in-process; queued work is not durable across restarts.",
+                    "jobs" => "ASP.NET supports queued retries in-process; queue persistence and queue isolation are not implemented.",
+                    "consoles" => "ASP.NET runs console bodies only when manually requested; cron scheduling is not implemented.",
+                    _ => $"ASP.NET does not yet execute the {feature} DSL sections."
+                };
+                warnings.Add(message);
+            }
         }
         foreach (var api in (payload["apis"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
         {
@@ -767,6 +960,564 @@ public sealed class BackendEngine
             }
         }
         return warnings.Distinct(StringComparer.Ordinal).ToList();
+    }
+
+    private async Task<bool> ExecuteMessageEndpointAsync(
+        HttpContext context,
+        string slug,
+        JsonObject module,
+        JsonObject api,
+        string type,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        var body = await ReadBodyAsync(context);
+        var keyName = type == "mail_send" ? "mail" : "notification";
+        var requestedName = StringValue(body[keyName]);
+        if (string.IsNullOrWhiteSpace(requestedName))
+        {
+            await Results.BadRequest(new { message = $"A {keyName} name is required." }).ExecuteAsync(context);
+            return true;
+        }
+
+        var sectionKey = type == "mail_send" ? "mails" : "notifications";
+        var section = DslSections.FindSection(module[sectionKey], requestedName);
+        if (section is null)
+        {
+            await Results.BadRequest(new { message = $"Unknown {keyName} type: {requestedName}" }).ExecuteAsync(context);
+            return true;
+        }
+
+        try
+        {
+            JsonObject? user = null;
+            await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+            if (IsTruthy(module["auth"]))
+                user = (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User;
+
+            if (type == "notification_trigger" && user is null)
+            {
+                await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized)
+                    .ExecuteAsync(context);
+                return true;
+            }
+
+            var subject = DslSections.ReadValue(section, "subject") ?? requestedName;
+            var message = DslSections.ReadValue(section, "message") ?? "You have a new notification.";
+            object? renderedBody = null;
+            if (type == "notification_trigger")
+            {
+                var script = DecodeBody(JsonValue.Create(DslSections.ReadValue(section, "toMail_body")));
+                if (!string.IsNullOrWhiteSpace(script))
+                    renderedBody = await VariantExecutor.ExecuteValueAsync(
+                        script, context, body, connection, routeValues, user);
+            }
+
+            if (type == "mail_send")
+            {
+                var to = StringValue(body["to"]);
+                if (!IsEmail(to))
+                {
+                    await Results.Json(new { message = "A valid recipient email is required." },
+                        statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
+                    return true;
+                }
+                var data = ReadObjectValues(body["data"]);
+                var template = DecodeBody(JsonValue.Create(DslSections.ReadValue(section, "blade_body")));
+                await Mail.SendAsync(to!, subject, template, data, context.RequestAborted);
+
+                var logTable = TatemonoDatabase.Quote(FindTable(slug, StringValue(api["model"]) ?? "", module));
+                var log = new Dictionary<string, object?>
+                {
+                    ["user_id"] = user?["id"] is { } userId ? DbRouteValue(userId.ToString()) : null,
+                    ["to_email"] = to,
+                    ["subject"] = subject,
+                    ["mail_class"] = requestedName,
+                    ["status"] = "sent"
+                };
+                var now = DateTime.UtcNow;
+                if (FindDatabaseDefinition(StringValue(api["model"]) ?? "", module)?["timestamps"]?.GetValue<bool>() != false)
+                {
+                    log["created_at"] = now;
+                    log["updated_at"] = now;
+                }
+                var rows = await InsertRowAsync(connection, logTable, log, context.RequestAborted);
+                await Results.Json(rows, statusCode: StatusCodes.Status201Created).ExecuteAsync(context);
+                return true;
+            }
+
+            var channels = DslSections.ReadList(section, "channels");
+            var channelType = DslSections.ReadValue(section, "channel_type") ?? "private";
+            var dataObject = NotificationData(requestedName, message, renderedBody);
+            if (channels.Contains("database", StringComparer.OrdinalIgnoreCase))
+                await InsertNotificationAsync(connection, slug, user!, requestedName, dataObject, context.RequestAborted);
+
+            if (channels.Contains("mail", StringComparer.OrdinalIgnoreCase) && IsEmail(StringValue(user!["email"])))
+            {
+                var html = NotificationHtml(renderedBody, message);
+                await Mail.SendAsync(
+                    StringValue(user!["email"])!,
+                    JsonDataString(renderedBody, "subject") ?? subject,
+                    html,
+                    cancellationToken: context.RequestAborted);
+            }
+
+            if (channels.Contains("broadcast", StringComparer.OrdinalIgnoreCase))
+            {
+                var channel = channelType switch
+                {
+                    "public" => $"{slug}.notifications",
+                    "presence" => $"presence-{slug}.{user!["id"]}",
+                    _ => $"private-{slug}.{user!["id"]}"
+                };
+                await BroadcastHub.BroadcastToAsync(
+                    channel,
+                    $"{slug}.notification",
+                    dataObject,
+                    context.RequestAborted,
+                    context.Request.Headers["X-Socket-ID"].ToString());
+            }
+
+            await Results.Json(new { message = "Notification triggered successfully", type = requestedName },
+                statusCode: StatusCodes.Status201Created).ExecuteAsync(context);
+            return true;
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"[ASP.NET {type}:{requestedName}] {exception}");
+            await Results.Json(new { message = $"C# {type} execution failed.", error = exception.Message },
+                statusCode: StatusCodes.Status500InternalServerError).ExecuteAsync(context);
+            return true;
+        }
+    }
+
+    private async Task<bool> ExecuteNativeNotificationEndpointAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string endpointName,
+        string? endpointType,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonNode? response)
+    {
+        var operation = endpointType ?? endpointName;
+        if (operation is not ("index" or "destroy" or "readAll")) return false;
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var authenticated = await ResolveUserAsync(context, connection, slug, context.RequestAborted);
+        if (authenticated.User is null)
+        {
+            await Results.Json(new { message = "Unauthenticated." }, statusCode: StatusCodes.Status401Unauthorized)
+                .ExecuteAsync(context);
+            return true;
+        }
+
+        var table = TatemonoDatabase.Quote(TatemonoDatabase.PrefixedTable(slug, "notifications"));
+        var userId = DbRouteValue(authenticated.User["id"]?.ToString() ?? "");
+        if (operation == "index")
+        {
+            var rows = await ScriptDatabase.QueryAsync(
+                connection,
+                $"SELECT * FROM {table} WHERE notifiable_type = 'user' AND notifiable_id = @user_id ORDER BY created_at DESC",
+                new Dictionary<string, object?> { ["@user_id"] = userId },
+                context.RequestAborted);
+            foreach (var row in rows)
+                if (StringValue(row["data"]) is { } json) row["data"] = JsonNode.Parse(json);
+            await Results.Json(new { data = rows }).ExecuteAsync(context);
+            return true;
+        }
+
+        if (operation == "destroy")
+        {
+            if (!routeValues.TryGetValue("id", out var id))
+            {
+                await Results.BadRequest(new { message = "A notification id is required." }).ExecuteAsync(context);
+                return true;
+            }
+            await using var delete = connection.CreateCommand();
+            delete.CommandText = $"DELETE FROM {table} WHERE id = @id AND notifiable_type = 'user' AND notifiable_id = @user_id";
+            TatemonoDatabase.AddParameter(delete, "@id", id);
+            TatemonoDatabase.AddParameter(delete, "@user_id", userId);
+            if (await delete.ExecuteNonQueryAsync(context.RequestAborted) == 0)
+            {
+                await Results.Json(new { message = "Not Found" }, statusCode: StatusCodes.Status404NotFound)
+                    .ExecuteAsync(context);
+                return true;
+            }
+            await Results.Json(new { message = StringValue(response?["value"]) ?? "Notification deleted" })
+                .ExecuteAsync(context);
+            return true;
+        }
+
+        await using (var update = connection.CreateCommand())
+        {
+            update.CommandText = $"UPDATE {table} SET read_at = @read_at WHERE notifiable_type = 'user' AND notifiable_id = @user_id AND read_at IS NULL";
+            TatemonoDatabase.AddParameter(update, "@read_at", DateTime.UtcNow);
+            TatemonoDatabase.AddParameter(update, "@user_id", userId);
+            await update.ExecuteNonQueryAsync(context.RequestAborted);
+        }
+        await Results.Json(new { message = StringValue(response?["value"]) ?? "All notifications marked as read" })
+            .ExecuteAsync(context);
+        return true;
+    }
+
+    private static bool HasNotificationTrigger(JsonObject api) =>
+        (api["endpoints"] as JsonObject)?.Any(endpoint =>
+            StringEquals(endpoint.Value?["type"], "notification_trigger")) == true;
+
+    private static IReadOnlyList<BroadcastChannelRule> ReadBroadcastChannelRules(JsonObject module, string slug)
+    {
+        var rules = BroadcastHub.ReadChannelRules(module["realtimes"]);
+        if (!IsTruthy(module["auth"])) return rules;
+        foreach (var section in DslSections.ReadSections(module["notifications"]))
+        {
+            if (!DslSections.ReadList(section, "channels").Contains("broadcast", StringComparer.OrdinalIgnoreCase))
+                continue;
+            var type = DslSections.ReadValue(section, "channel_type") ?? "private";
+            if (type is not ("private" or "presence")) continue;
+            var channelName = $"{slug}.{{id}}";
+            if (!rules.Any(rule => rule.Channel == channelName && rule.Type == type))
+                rules.Add(new BroadcastChannelRule(channelName, type, "owner"));
+        }
+        return rules;
+    }
+
+    private async Task<JsonObject> InsertNotificationAsync(
+        DbConnection connection,
+        string slug,
+        JsonObject user,
+        string notificationType,
+        JsonObject data,
+        CancellationToken cancellationToken)
+    {
+        var table = TatemonoDatabase.Quote(TatemonoDatabase.PrefixedTable(slug, "notifications"));
+        var now = DateTime.UtcNow;
+        var id = Guid.NewGuid().ToString();
+        await ScriptDatabase.ExecuteAsync(
+            connection,
+            $"""
+            INSERT INTO {table} (id, type, notifiable_type, notifiable_id, data, read_at, created_at, updated_at)
+            VALUES (@id, @type, 'user', @user_id, @data, NULL, @created, @created)
+            """,
+            new Dictionary<string, object?>
+            {
+                ["@id"] = id,
+                ["@type"] = notificationType,
+                ["@user_id"] = DbRouteValue(user["id"]?.ToString() ?? ""),
+                ["@data"] = data.ToJsonString(),
+                ["@created"] = now
+            },
+            cancellationToken);
+        return new JsonObject
+        {
+            ["id"] = id,
+            ["type"] = notificationType,
+            ["notifiable_type"] = "user",
+            ["notifiable_id"] = user["id"]?.DeepClone(),
+            ["data"] = data.DeepClone(),
+            ["read_at"] = null,
+            ["created_at"] = System.Text.Json.JsonSerializer.SerializeToNode(now),
+            ["updated_at"] = System.Text.Json.JsonSerializer.SerializeToNode(now)
+        };
+    }
+
+    private static JsonObject NotificationData(string type, string message, object? renderedBody)
+    {
+        var data = new JsonObject { ["type"] = type, ["message"] = message };
+        if (renderedBody is not IDictionary<string, object?> values) return data;
+        foreach (var (key, value) in values)
+        {
+            if (key is "lines" or "subject" or "greeting" or "salutation" or "action") continue;
+            data[key] = System.Text.Json.JsonSerializer.SerializeToNode(value);
+        }
+        return data;
+    }
+
+    private static string NotificationHtml(object? renderedBody, string fallbackMessage)
+    {
+        if (renderedBody is not IDictionary<string, object?> values)
+            return $"<p>{System.Net.WebUtility.HtmlEncode(fallbackMessage)}</p>";
+        var html = new System.Text.StringBuilder();
+        if (values.TryGetValue("greeting", out var greeting) && greeting is not null)
+            html.Append("<p>").Append(System.Net.WebUtility.HtmlEncode(greeting.ToString())).Append("</p>");
+        if (values.TryGetValue("lines", out var lines) && lines is IEnumerable<string> messages)
+            foreach (var line in messages)
+                html.Append("<p>").Append(System.Net.WebUtility.HtmlEncode(line)).Append("</p>");
+        if (values.TryGetValue("action", out var action) &&
+            action is IDictionary<string, object?> actionValues &&
+            actionValues.TryGetValue("label", out var label) &&
+            actionValues.TryGetValue("url", out var url))
+            html.Append("<p><a href=\"").Append(System.Net.WebUtility.HtmlEncode(url?.ToString() ?? ""))
+                .Append("\">").Append(System.Net.WebUtility.HtmlEncode(label?.ToString() ?? "")).Append("</a></p>");
+        if (values.TryGetValue("salutation", out var salutation) && salutation is not null)
+            html.Append("<p>").Append(System.Net.WebUtility.HtmlEncode(salutation.ToString())).Append("</p>");
+        return html.ToString();
+    }
+
+    private static string? JsonDataString(object? data, string key) =>
+        data is IDictionary<string, object?> values && values.TryGetValue(key, out var value)
+            ? value?.ToString()
+            : null;
+
+    private static Dictionary<string, object?> ReadObjectValues(JsonNode? node) =>
+        (node as JsonObject ?? new JsonObject()).ToDictionary(
+            entry => entry.Key,
+            entry => (object?)entry.Value?.DeepClone(),
+            StringComparer.Ordinal);
+
+    private async Task<JsonObject> InsertRowAsync(
+        DbConnection connection,
+        string table,
+        IReadOnlyDictionary<string, object?> values,
+        CancellationToken cancellationToken)
+    {
+        var names = values.Keys.Select(TatemonoDatabase.Quote).ToArray();
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"INSERT INTO {table} ({string.Join(", ", names)}) VALUES ({string.Join(", ", values.Keys.Select((_, index) => $"@p{index}"))}) RETURNING *";
+        AddValues(command, values);
+        await using var reader = await command.ExecuteReaderAsync(cancellationToken);
+        if (!await reader.ReadAsync(cancellationToken))
+            throw new InvalidOperationException($"Insert into {table} returned no row.");
+        return await ReadRowAsync(reader, cancellationToken);
+    }
+
+    private async Task<bool> ExecuteDslEndpointAsync(
+        HttpContext context,
+        string slug,
+        JsonObject module,
+        JsonObject api,
+        JsonObject endpoint,
+        string type,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        var body = await ReadBodyAsync(context);
+        var valueKey = type switch
+        {
+            "job_dispatch" => "job",
+            "event_fire" => "event",
+            _ => "command"
+        };
+        var requestedName = StringValue(body[valueKey]);
+        if (string.IsNullOrWhiteSpace(requestedName))
+        {
+            await Results.BadRequest(new { message = $"A {valueKey} name is required." }).ExecuteAsync(context);
+            return true;
+        }
+
+        var sectionsKey = type switch
+        {
+            "job_dispatch" => "jobs",
+            "event_fire" => "events",
+            _ => "consoles"
+        };
+        var section = DslSections.ReadSections(module[sectionsKey]).FirstOrDefault(raw =>
+            MatchesDslName(DslSections.ReadName(raw), requestedName));
+        if (section is null)
+        {
+            await Results.BadRequest(new { message = $"Unknown {valueKey}: {requestedName}" }).ExecuteAsync(context);
+            return true;
+        }
+
+        try
+        {
+            if (type == "event_fire")
+            {
+                var listeners = DslSections.ReadList(section, "listeners");
+                var listenerBodies = DecodeListenerBodies(section);
+                var tries = int.TryParse(DslSections.ReadValue(section, "tries"), out var configuredTries)
+                    ? Math.Max(1, configuredTries)
+                    : 3;
+                foreach (var listener in listeners)
+                {
+                    if (!listenerBodies.TryGetValue(listener, out var encodedBody) ||
+                        string.IsNullOrWhiteSpace(DecodeBody(JsonValue.Create(encodedBody))))
+                    {
+                        await RespondNotImplementedAsync(context, $"Listener {listener}");
+                        return true;
+                    }
+                    var listenerBody = (JsonObject)body.DeepClone();
+                    var listenerSource = DecodeBody(JsonValue.Create(encodedBody));
+                    var moduleSnapshot = (JsonObject)module.DeepClone();
+                    var routeSnapshot = new Dictionary<string, string>(routeValues);
+                    _backgroundTasks.Enqueue(
+                        cancellationToken => RunDslBodyAsync(
+                            listenerSource, slug, moduleSnapshot, listenerBody, routeSnapshot, null, cancellationToken),
+                        tries,
+                        TimeSpan.FromSeconds(60));
+                }
+                await Results.Json(new { message = "Event fired", @event = requestedName, listeners }, statusCode: 202)
+                    .ExecuteAsync(context);
+                return true;
+            }
+
+            var source = DecodeBody(JsonValue.Create(DslSections.ReadValue(section, "body")));
+            if (string.IsNullOrWhiteSpace(source))
+                return await RespondNotImplementedAsync(context, $"{type} {requestedName}");
+
+            if (type == "job_dispatch")
+            {
+                body["job"] = requestedName;
+                var tries = int.TryParse(DslSections.ReadValue(section, "tries"), out var configuredTries)
+                    ? Math.Max(1, configuredTries)
+                    : 1;
+                var timeoutSeconds = int.TryParse(DslSections.ReadValue(section, "timeout"), out var configuredTimeout)
+                    ? Math.Max(1, configuredTimeout)
+                    : 60;
+                var moduleSnapshot = (JsonObject)module.DeepClone();
+                var bodySnapshot = (JsonObject)body.DeepClone();
+                var routeSnapshot = new Dictionary<string, string>(routeValues);
+                _backgroundTasks.Enqueue(
+                    cancellationToken => RunDslBodyAsync(
+                        source, slug, moduleSnapshot, bodySnapshot, routeSnapshot, null, cancellationToken),
+                    tries,
+                    TimeSpan.FromSeconds(timeoutSeconds),
+                    cancellationToken => RecordJobFailureAsync(
+                        slug, api, module, requestedName, "Job failed after all configured attempts.", cancellationToken));
+                await Results.Json(new { message = "Job dispatched", job = requestedName }, statusCode: StatusCodes.Status202Accepted)
+                    .ExecuteAsync(context);
+                return true;
+            }
+
+            body["command"] = requestedName;
+            var previousId = await ReadLatestIdAsync(context, slug, api, module, requestedName);
+            await RunDslBodyAsync(source, context, slug, module, body, routeValues);
+            var row = await ReadLatestCommandAsync(context, slug, api, module, requestedName, previousId);
+            await Results.Json(row ?? new JsonObject
+            {
+                ["command_name"] = requestedName,
+                ["signature"] = DslSections.ReadValue(section, "signature") ?? requestedName,
+                ["exit_code"] = 0,
+                ["triggered_by"] = StringValue(body["triggered_by"]) ?? "manual"
+            }, statusCode: StatusCodes.Status201Created).ExecuteAsync(context);
+            return true;
+        }
+        catch (OperationCanceledException) when (context.RequestAborted.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception exception)
+        {
+            Console.Error.WriteLine($"[ASP.NET {type}:{requestedName}] {exception}");
+            await Results.Json(new { message = $"C# {type} execution failed.", error = exception.Message },
+                statusCode: StatusCodes.Status500InternalServerError).ExecuteAsync(context);
+            return true;
+        }
+    }
+
+    private async Task RunDslBodyAsync(
+        string source,
+        HttpContext context,
+        string slug,
+        JsonObject module,
+        JsonObject body,
+        IReadOnlyDictionary<string, string> routeValues)
+    {
+        JsonObject? user = null;
+        if (IsTruthy(module["auth"]))
+        {
+            await using var authConnection = await _database.OpenAsync(slug, context.RequestAborted);
+            user = (await ResolveUserAsync(context, authConnection, slug, context.RequestAborted)).User;
+        }
+        await RunDslBodyAsync(source, slug, module, body, routeValues, user, context.RequestAborted);
+    }
+
+    private async Task RunDslBodyAsync(
+        string source,
+        string slug,
+        JsonObject module,
+        JsonObject body,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject? user,
+        CancellationToken cancellationToken)
+    {
+        var context = new DefaultHttpContext();
+        context.RequestAborted = cancellationToken;
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        await VariantExecutor.ExecuteValueAsync(source, context, body, connection, routeValues, user);
+    }
+
+    private async Task<long> ReadLatestIdAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string commandName)
+    {
+        var table = TatemonoDatabase.Quote(FindTable(slug, StringValue(api["model"]) ?? "", module));
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var value = await ScriptDatabase.ScalarAsync(
+            connection,
+            $"SELECT COALESCE(MAX(id), 0) FROM {table} WHERE command_name = @command",
+            new Dictionary<string, object?> { ["@command"] = commandName },
+            context.RequestAborted);
+        return value is null or DBNull ? 0 : Convert.ToInt64(value, System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private async Task<JsonObject?> ReadLatestCommandAsync(
+        HttpContext context,
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string commandName,
+        long previousId)
+    {
+        var table = TatemonoDatabase.Quote(FindTable(slug, StringValue(api["model"]) ?? "", module));
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+        var rows = await ScriptDatabase.QueryAsync(
+            connection,
+            $"SELECT * FROM {table} WHERE command_name = @command AND id > @previous ORDER BY id DESC LIMIT 1",
+            new Dictionary<string, object?> { ["@command"] = commandName, ["@previous"] = previousId },
+            context.RequestAborted);
+        return rows.FirstOrDefault();
+    }
+
+    private async Task RecordJobFailureAsync(
+        string slug,
+        JsonObject api,
+        JsonObject module,
+        string jobName,
+        string error,
+        CancellationToken cancellationToken)
+    {
+        var table = TatemonoDatabase.Quote(FindTable(slug, StringValue(api["model"]) ?? "", module));
+        var now = DateTime.UtcNow;
+        await using var connection = await _database.OpenAsync(slug, cancellationToken);
+        await ScriptDatabase.ExecuteAsync(
+            connection,
+            $"""
+            INSERT INTO {table} (job_name, status, result, processed_at, created_at, updated_at)
+            VALUES (@name, 'failed', @error, @processed, @processed, @processed)
+            """,
+            new Dictionary<string, object?>
+            {
+                ["@name"] = jobName,
+                ["@error"] = error,
+                ["@processed"] = now
+            },
+            cancellationToken);
+    }
+
+    private static Dictionary<string, string> DecodeListenerBodies(string section)
+    {
+        var encoded = DslSections.ReadValue(section, "listener_bodies");
+        if (string.IsNullOrWhiteSpace(encoded)) return new Dictionary<string, string>();
+        var json = DecodeBody(JsonValue.Create(encoded));
+        var bodies = JsonNode.Parse(json) as JsonObject;
+        return bodies?.ToDictionary(
+            entry => entry.Key,
+            entry => StringValue(entry.Value) ?? "",
+            StringComparer.OrdinalIgnoreCase) ?? new Dictionary<string, string>();
+    }
+
+    private static bool MatchesDslName(string? sectionName, string requestedName)
+    {
+        if (string.IsNullOrWhiteSpace(sectionName)) return false;
+        static string Normalize(string value) => Regex.Replace(value, @"[-_]", "").ToLowerInvariant();
+        return string.Equals(sectionName, requestedName, StringComparison.OrdinalIgnoreCase) ||
+               string.Equals(Normalize(sectionName), Normalize(requestedName), StringComparison.Ordinal);
     }
 
     private static JsonObject MakeRegistry(JsonObject payload, string slug)
@@ -849,6 +1600,12 @@ public sealed class BackendEngine
     private static int ReadPositiveInt(string? value, int fallback) =>
         int.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed) &&
         parsed > 0
+            ? parsed
+            : fallback;
+
+    private static long ReadPositiveLong(string? value, long fallback) =>
+        long.TryParse(value, System.Globalization.NumberStyles.Integer, System.Globalization.CultureInfo.InvariantCulture, out var parsed) &&
+        parsed >= 0
             ? parsed
             : fallback;
 

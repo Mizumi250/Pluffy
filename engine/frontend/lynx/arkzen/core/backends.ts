@@ -10,6 +10,8 @@
 //   fastapi / django          → py
 //   spring-boot               → java
 //   aspnet                    → cs
+//   go                        → go
+//   rust                      → rs
 //
 // Suffix names are not final (see TEMP_PLUFF_FEATURE_PLAN.md). Keep
 // them in this one file so a rename is a single edit. mizumi.js keeps
@@ -30,9 +32,9 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 
-export type BackendVariant = 'php' | 'ts' | 'py' | 'java' | 'cs'
+export type BackendVariant = 'php' | 'ts' | 'py' | 'java' | 'cs' | 'go' | 'rs'
 
-export const VARIANT_TOKENS: BackendVariant[] = ['php', 'ts', 'py', 'java', 'cs']
+export const VARIANT_TOKENS: BackendVariant[] = ['php', 'ts', 'py', 'java', 'cs', 'go', 'rs']
 
 export const BACKEND_VARIANTS: Record<string, BackendVariant> = {
   'laravel':         'php',
@@ -42,6 +44,8 @@ export const BACKEND_VARIANTS: Record<string, BackendVariant> = {
   'django':          'py',
   'spring-boot':     'java',
   'aspnet':          'cs',
+  'go':              'go',
+  'rust':            'rs',
 }
 
 /** Walks up from startPath to the root arkzen.json and returns the effective backend name. */

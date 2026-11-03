@@ -38,6 +38,13 @@ compilation/runtime errors are returned as HTTP 500 responses with a
 server-side diagnostic. Middleware bodies may return an `IResult` to stop the
 request; returning no value continues to the route.
 
+The ASP.NET engine starts a separate Pusher/Reverb-compatible WebSocket hub on
+`REVERB_PORT` (default `8080`) with the configured app key and secret. It
+supports public, HMAC-signed private, and presence channels, including presence
+member join/leave notifications. Broadcast endpoints persist their message and
+publish it to the matching channel; generated `sse-poll` routes are also
+available for clients without WebSocket support.
+
 The engine supports isolated SQLite/PostgreSQL databases, dependency-ordered
 table/column creation, indexes and foreign keys, standard CRUD routes, declared
 validation rules, token authentication, role middleware, update/delete
@@ -46,20 +53,27 @@ endpoint/handler/middleware bodies. Policies can use `user` and `item` JSON
 objects in C# snippets; without a snippet, the engine uses owner-column
 (`user_id`, `owner_id`, `created_by`, or `author_id`) or admin-role checks.
 
-Queue/scheduler workers, realtime services, and file storage are not implemented
-yet. The engine reports unsupported features rather than returning a
-success-shaped placeholder. `tatemonos/aspnet-test` and
+The `jobs` and `events` DSL execute asynchronously through an in-process queue
+with retries and timeouts, but queued work is not durable across restarts and
+queues are not isolated. Console DSL bodies can be run manually; cron
+scheduling and file storage are not implemented. Mail templates render
+Blade-style placeholders and log by default; SMTP delivery can be enabled with
+`MAIL_MAILER=smtp` and the `MAIL_*` settings documented in `Runtime/Mail.cs`.
+Notification triggers execute their C# `toMail_body` bodies and support
+database, mail, and broadcast channels, with authenticated inbox/read/delete
+routes. `tatemonos/aspnet-test` and
 `tatemonos/aspnet-ledger` exercise the C# endpoint and transaction contracts.
 `tatemonos/spring-ledger` also includes a C# transaction variant alongside its
 Java implementation. `tatemonos/queue-flow` has C# handlers for its queue
-database routes; realtime broadcasting remains unsupported.
+database routes and publishes its queue-updated events through the realtime hub.
 
-The shared-fixture C# variants are still in progress. Matching `:cs` bodies
-currently cover `body-endpoint-handler`, `crud-test`, `dtr-geofencing`,
-`inventory-management`, `jo-payroll`, `middleware-test`, and `roles-test`; the
-`queue-flow` handlers and `spring-ledger` transaction are also available, but
-the other fixtures in the Spring parity set do not yet have full C# body
-coverage.
+Shared-fixture C# variants are still in progress. Matching `:cs` bodies
+currently cover `body-endpoint-handler`, `body-mail-notification`, `crud-test`,
+`dtr-geofencing`, `events-test`, `inventory-management`, `job-test`,
+`jo-payroll`, `mail-test`, `middleware-test`, `notification-test`,
+`roles-test`, and `scheduler-test`; `queue-flow` handlers and the
+`spring-ledger` transaction are also available. Kotoba handler coverage remains
+incomplete.
 
 Install dependencies with `dotnet restore Pluff.AspNet.csproj`, then start with
 `dotnet run --project Pluff.AspNet.csproj --urls http://0.0.0.0:8000`.

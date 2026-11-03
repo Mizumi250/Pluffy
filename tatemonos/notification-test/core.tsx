@@ -287,6 +287,79 @@ return new MailMessage()
     .line("This notification was sent to all three channels simultaneously");
 /* @arkzen:notifications:java:all-channels:end */
 
+/* @arkzen:notifications:cs:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "Database Ping",
+    ["lines"] = new[] { "You have a new database notification" }
+};
+/* @arkzen:notifications:cs:database-ping:end */
+
+/* @arkzen:notifications:cs:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "Mail Ping from Arkzen",
+    ["lines"] = new[]
+    {
+        "This is a test mail notification",
+        "View: /",
+        "Thank you for using our application."
+    }
+};
+/* @arkzen:notifications:cs:mail-ping:end */
+
+/* @arkzen:notifications:cs:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "Broadcast Ping (Private)",
+    ["lines"] = new[] { "Real-time notification received on your private channel!" }
+};
+/* @arkzen:notifications:cs:broadcast-ping:end */
+
+/* @arkzen:notifications:cs:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "Broadcast Ping (Public)",
+    ["lines"] = new[] { "This broadcast went to the public notification channel!" }
+};
+/* @arkzen:notifications:cs:broadcast-ping-public:end */
+
+/* @arkzen:notifications:cs:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return new Dictionary<string, object?>
+{
+    ["subject"] = "All Channels Test",
+    ["lines"] = new[]
+    {
+        "This notification was sent to all three channels simultaneously",
+        "View: /",
+        "Thank you for using our application."
+    }
+};
+/* @arkzen:notifications:cs:all-channels:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

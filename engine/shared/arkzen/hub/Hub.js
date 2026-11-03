@@ -35,7 +35,7 @@ const styles = `
 
 const stackGroups = [
   { label: 'Frontend', key: 'activeStack', tone: '#007aff', options: [['nextjs', 'Next.js'], ['react-vite', 'React + Vite'], ['react-inertia', 'React + Inertia'], ['astro', 'Astro'], ['tanstack-start', 'TanStack Start']] },
-  { label: 'Backend', key: 'activeBackend', tone: '#30c75a', options: [['laravel', 'Laravel'], ['laravel-inertia', 'Laravel + Inertia'], ['express', 'Express'], ['fastapi', 'FastAPI'], ['django', 'Django'], ['spring-boot', 'Spring Boot'], ['aspnet', 'ASP.NET']] },
+  { label: 'Backend', key: 'activeBackend', tone: '#30c75a', options: [['laravel', 'Laravel'], ['laravel-inertia', 'Laravel + Inertia'], ['express', 'Express'], ['fastapi', 'FastAPI'], ['django', 'Django'], ['spring-boot', 'Spring Boot'], ['aspnet', 'ASP.NET'], ['go', 'Go'], ['rust', 'Rust']] },
   { label: 'Database', key: 'activeDatabase', tone: '#af52de', options: [['sqlite', 'SQLite'], ['pgsql', 'PostgreSQL']] },
 ]
 

@@ -395,6 +395,110 @@ self.info('[Arkzen:scheduler-test] ✓ Done')
 return Command.SUCCESS
 /* @arkzen:console:py:sync-data:end */
 
+/* @arkzen:console:cs:cleanup-temp
+signature: scheduler-test:cleanup-temp
+description: Deletes temporary files older than 24h
+schedule: '0 * * * *'
+*/
+var cleanupStarted = System.Diagnostics.Stopwatch.StartNew();
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "scheduler_test_command_runs"
+        (command_name, signature, exit_code, output, triggered_by, duration_ms, created_at, updated_at)
+    VALUES (@command, @signature, 0, @output, @triggered_by, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@command"] = "cleanup-temp",
+        ["@signature"] = "scheduler-test:cleanup-temp",
+        ["@output"] = "Cleanup completed successfully.",
+        ["@triggered_by"] = Body["triggered_by"]?.ToString() ?? "manual",
+        ["@duration"] = cleanupStarted.ElapsedMilliseconds,
+        ["@created"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return 0;
+/* @arkzen:console:cs:cleanup-temp:end */
+
+/* @arkzen:console:cs:generate-report
+signature: scheduler-test:generate-report
+description: Generates a daily activity report
+schedule: '0 8 * * *'
+*/
+var reportStarted = System.Diagnostics.Stopwatch.StartNew();
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "scheduler_test_command_runs"
+        (command_name, signature, exit_code, output, triggered_by, duration_ms, created_at, updated_at)
+    VALUES (@command, @signature, 0, @output, @triggered_by, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@command"] = "generate-report",
+        ["@signature"] = "scheduler-test:generate-report",
+        ["@output"] = "Daily report generated successfully.",
+        ["@triggered_by"] = Body["triggered_by"]?.ToString() ?? "manual",
+        ["@duration"] = reportStarted.ElapsedMilliseconds,
+        ["@created"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return 0;
+/* @arkzen:console:cs:generate-report:end */
+
+/* @arkzen:console:cs:ping-health
+signature: scheduler-test:ping-health
+description: Pings all services and records health status
+schedule: '0-59/5 * * * *'
+*/
+var healthStarted = System.Diagnostics.Stopwatch.StartNew();
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "scheduler_test_command_runs"
+        (command_name, signature, exit_code, output, triggered_by, duration_ms, created_at, updated_at)
+    VALUES (@command, @signature, 0, @output, @triggered_by, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@command"] = "ping-health",
+        ["@signature"] = "scheduler-test:ping-health",
+        ["@output"] = "All services healthy.",
+        ["@triggered_by"] = Body["triggered_by"]?.ToString() ?? "manual",
+        ["@duration"] = healthStarted.ElapsedMilliseconds,
+        ["@created"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return 0;
+/* @arkzen:console:cs:ping-health:end */
+
+/* @arkzen:console:cs:sync-data
+signature: scheduler-test:sync-data
+description: Syncs data from external source
+schedule: '0-59/15 * * * *'
+*/
+var syncStarted = System.Diagnostics.Stopwatch.StartNew();
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "scheduler_test_command_runs"
+        (command_name, signature, exit_code, output, triggered_by, duration_ms, created_at, updated_at)
+    VALUES (@command, @signature, 0, @output, @triggered_by, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@command"] = "sync-data",
+        ["@signature"] = "scheduler-test:sync-data",
+        ["@output"] = "Data synced successfully.",
+        ["@triggered_by"] = Body["triggered_by"]?.ToString() ?? "manual",
+        ["@duration"] = syncStarted.ElapsedMilliseconds,
+        ["@created"] = DateTime.UtcNow
+    },
+    Context.RequestAborted);
+return 0;
+/* @arkzen:console:cs:sync-data:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

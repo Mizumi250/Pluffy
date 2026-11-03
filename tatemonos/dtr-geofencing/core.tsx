@@ -2079,7 +2079,7 @@ theme:
 
 import React, { useState, useEffect, useCallback, useRef } from 'react'
 import {
-  View, Text, TouchableOpacity, ScrollView,
+  View, Text, TouchableOpacity, ScrollView, Alert, Platform,
   ActivityIndicator, Pressable, FlatList,
 } from 'react-native'
 
@@ -2258,14 +2258,28 @@ export const LocationWidget = () => {
 
   const requestLocation = useCallback(async () => {
     setLocationStatus('fetching')
-    const { status } = await Location.requestForegroundPermissionsAsync()
-    if (status !== 'granted') { setLocationStatus('denied'); return }
+    try {
+      const { status } = await Location.requestForegroundPermissionsAsync()
+      if (status !== 'granted') { setLocationStatus('denied'); return }
 
-    const loc = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High })
-    const { latitude, longitude } = loc.coords
-    setCurrentPosition({ lat: latitude, lng: longitude })
-    if (settings) setDistanceToOffice(calcDistance(latitude, longitude, settings.office_latitude, settings.office_longitude))
-    setLocationStatus('success')
+      if (Platform.OS === 'android') await Location.enableNetworkProviderAsync()
+      const loc = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+        mayShowUserSettingsDialog: true,
+      })
+      const { latitude, longitude } = loc.coords
+      setCurrentPosition({ lat: latitude, lng: longitude })
+      if (settings) setDistanceToOffice(calcDistance(latitude, longitude, settings.office_latitude, settings.office_longitude))
+      setLocationStatus('success')
+    } catch (error) {
+      setLocationStatus('idle')
+      setCurrentPosition(null)
+      setDistanceToOffice(null)
+      Alert.alert(
+        'Location unavailable',
+        `${error instanceof Error ? error.message : 'Unable to get your location.'} Turn on device location and try again.`,
+      )
+    }
   }, [settings])
 
   if (locationStatus === 'idle') return (

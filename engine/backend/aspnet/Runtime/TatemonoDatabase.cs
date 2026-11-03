@@ -199,6 +199,26 @@ public sealed class TatemonoDatabase
         }
     }
 
+    public async Task EnsureNotificationsTableAsync(DbConnection connection, string slug, CancellationToken cancellationToken)
+    {
+        var table = Quote(PrefixedTable(slug, "notifications"));
+        var timestamp = _driver == "pgsql" ? "TIMESTAMPTZ" : "TEXT";
+        await using var command = connection.CreateCommand();
+        command.CommandText = $"""
+            CREATE TABLE IF NOT EXISTS {table} (
+                "id" VARCHAR(36) PRIMARY KEY,
+                "type" VARCHAR(255) NOT NULL,
+                "notifiable_type" VARCHAR(255) NOT NULL,
+                "notifiable_id" BIGINT NOT NULL,
+                "data" TEXT NOT NULL,
+                "read_at" {timestamp} NULL,
+                "created_at" {timestamp} NULL,
+                "updated_at" {timestamp} NULL
+            )
+            """;
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
     public async Task SeedTablesAsync(DbConnection connection, string slug, JsonArray databases, CancellationToken cancellationToken)
     {
         foreach (var definition in OrderDefinitions(slug, databases.OfType<JsonObject>().ToList()))

@@ -23,7 +23,7 @@ type HubRegistry = {
 }
 
 const WEB_FRONTENDS = ['Next.js', 'React + Vite', 'React + Inertia', 'Astro', 'TanStack Start']
-const APP_FRONTENDS = ['Expo', 'React Native', 'Lynx']
+const APP_FRONTENDS = ['Expo', 'React Native']
 const DESKTOP_FRONTENDS = ['Tauri', 'Electron']
 const BACKEND_LABELS: Record<string, string> = {
   laravel: 'Laravel',
@@ -33,6 +33,8 @@ const BACKEND_LABELS: Record<string, string> = {
   django: 'FastAPI / Django',
   'spring-boot': 'Spring Boot',
   aspnet: 'ASP.NET',
+  go: 'Go',
+  rust: 'Rust',
 }
 
 const CODE_MARKERS = 'endpoint|handler|middleware|policy|listener|listeners|job|jobs|console|mail|notification|notifications'
@@ -42,6 +44,8 @@ const BACKEND_VARIANTS: Record<string, string> = {
   py: 'FastAPI / Django',
   java: 'Spring Boot',
   cs: 'ASP.NET',
+  go: 'Go',
+  rs: 'Rust',
 }
 
 function parseMeta(source: string): { name: string; version: string; auth: boolean } | null {
@@ -98,7 +102,7 @@ function sourceModules(repoRoot: string): RegistryModule[] {
 }
 
 function addBackendVariants(source: string, variants: Set<string>): void {
-  const pattern = new RegExp(`^/\\* @arkzen:(${CODE_MARKERS}):(?:(php|ts|py|java|cs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*/)?\\s*$`, 'gm')
+  const pattern = new RegExp(`^/\\* @arkzen:(${CODE_MARKERS}):(?:(php|ts|py|java|cs|go|rs):)?([a-zA-Z0-9_-]+)(?:\\s+\\*/)?\\s*$`, 'gm')
   for (const match of source.matchAll(pattern)) {
     const [, marker, variant, name] = match
     const close = variant
@@ -146,7 +150,8 @@ export function enrichHubRegistry(registry: HubRegistry, repoRoot: string): HubR
       const source = fs.readFileSync(sourcePath, 'utf8')
       const backend = moduleBackends(source, activeBackend)
       const hasWeb = /@arkzen:(?:web:|meta:web\b)/.test(source)
-      const hasApp = /@arkzen:(?:native:|meta:native\b)/.test(source)
+      const hasApp = /\/\* @arkzen:native:page:(?!lynx:)[a-zA-Z0-9_-]+/.test(source)
+      const hasLynx = /\/\* @arkzen:native:page:lynx:[a-zA-Z0-9_-]+/.test(source)
       const hasDesktop = hasWeb || /@arkzen:desktop:|desktopConfig|@arkzen:meta:desktop/.test(source)
 
       return {
@@ -154,6 +159,7 @@ export function enrichHubRegistry(registry: HubRegistry, repoRoot: string): HubR
         frontend: [
           ...(hasWeb ? WEB_FRONTENDS : []),
           ...(hasApp ? APP_FRONTENDS : []),
+          ...(hasLynx ? ['Lynx'] : []),
           ...(hasDesktop ? DESKTOP_FRONTENDS : []),
         ],
         pages: module.pages?.length ? module.pages : pageNames(source),

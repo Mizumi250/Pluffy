@@ -409,6 +409,182 @@ EventLog.create(mapOf(
 ));
 /* @arkzen:listener:java:CleanupTempFiles:end */
 
+/* @arkzen:listener:cs:SendWelcomeEmail
+*/
+var welcomeStarted = System.Diagnostics.Stopwatch.StartNew();
+var welcomeNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "UserSignedUp",
+        ["@listener"] = "SendWelcomeEmail",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = welcomeStarted.ElapsedMilliseconds,
+        ["@created"] = welcomeNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:SendWelcomeEmail:end */
+
+/* @arkzen:listener:cs:UpdateUserStats
+*/
+var statsStarted = System.Diagnostics.Stopwatch.StartNew();
+var statsNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "UserSignedUp",
+        ["@listener"] = "UpdateUserStats",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = statsStarted.ElapsedMilliseconds,
+        ["@created"] = statsNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:UpdateUserStats:end */
+
+/* @arkzen:listener:cs:NotifyAdmins
+*/
+var adminsStarted = System.Diagnostics.Stopwatch.StartNew();
+var adminsNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "UserSignedUp",
+        ["@listener"] = "NotifyAdmins",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = adminsStarted.ElapsedMilliseconds,
+        ["@created"] = adminsNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:NotifyAdmins:end */
+
+/* @arkzen:listener:cs:ProcessPayment
+*/
+var paymentStarted = System.Diagnostics.Stopwatch.StartNew();
+var paymentNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "OrderPlaced",
+        ["@listener"] = "ProcessPayment",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = paymentStarted.ElapsedMilliseconds,
+        ["@created"] = paymentNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:ProcessPayment:end */
+
+/* @arkzen:listener:cs:UpdateInventory
+*/
+var inventoryStarted = System.Diagnostics.Stopwatch.StartNew();
+var inventoryNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "OrderPlaced",
+        ["@listener"] = "UpdateInventory",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = inventoryStarted.ElapsedMilliseconds,
+        ["@created"] = inventoryNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:UpdateInventory:end */
+
+/* @arkzen:listener:cs:SendOrderConfirmation
+*/
+var confirmationStarted = System.Diagnostics.Stopwatch.StartNew();
+var confirmationNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "OrderPlaced",
+        ["@listener"] = "SendOrderConfirmation",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = confirmationStarted.ElapsedMilliseconds,
+        ["@created"] = confirmationNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:SendOrderConfirmation:end */
+
+/* @arkzen:listener:cs:LogExportActivity
+*/
+var exportStarted = System.Diagnostics.Stopwatch.StartNew();
+var exportNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "DataExported",
+        ["@listener"] = "LogExportActivity",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = exportStarted.ElapsedMilliseconds,
+        ["@created"] = exportNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:LogExportActivity:end */
+
+/* @arkzen:listener:cs:CleanupTempFiles
+*/
+var cleanupStarted = System.Diagnostics.Stopwatch.StartNew();
+var cleanupNow = DateTime.UtcNow;
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    """
+    INSERT INTO "events_test_event_log"
+        (event_name, listener_name, status, payload, duration_ms, created_at, updated_at)
+    VALUES (@event, @listener, 'completed', @payload, @duration, @created, @created)
+    """,
+    new Dictionary<string, object?>
+    {
+        ["@event"] = "DataExported",
+        ["@listener"] = "CleanupTempFiles",
+        ["@payload"] = Body["payload"]?.ToJsonString() ?? "{}",
+        ["@duration"] = cleanupStarted.ElapsedMilliseconds,
+        ["@created"] = cleanupNow
+    },
+    Context.RequestAborted);
+/* @arkzen:listener:cs:CleanupTempFiles:end */
+
 /* @arkzen:endpoint:index */
 public function index(Request $request): JsonResponse
 {
@@ -464,6 +640,44 @@ return response.json(EventLog.query().latest().paginate(
 EventLog.query().delete();
 return response.json(mapOf("message", "Log cleared"));
 /* @arkzen:endpoint:java:clearLog:end */
+
+/* @arkzen:endpoint:cs:index
+*/
+var page = int.TryParse(Context.Request.Query["page"], out var requestedPage) ? Math.Max(1, requestedPage) : 1;
+var perPage = int.TryParse(Context.Request.Query["per_page"], out var requestedPerPage)
+    ? Math.Clamp(requestedPerPage, 1, 100)
+    : 15;
+var total = Convert.ToInt64(await ScriptDatabase.ScalarAsync(
+    Database,
+    "SELECT COUNT(*) FROM \"events_test_event_log\"",
+    cancellationToken: Context.RequestAborted));
+var logs = await ScriptDatabase.QueryAsync(
+    Database,
+    "SELECT * FROM \"events_test_event_log\" ORDER BY id DESC LIMIT @limit OFFSET @offset",
+    new Dictionary<string, object?>
+    {
+        ["@limit"] = perPage,
+        ["@offset"] = (page - 1) * perPage
+    },
+    Context.RequestAborted);
+return Results.Json(new
+{
+    data = logs,
+    current_page = page,
+    per_page = perPage,
+    total,
+    last_page = Math.Max(1, (int)Math.Ceiling(total / (double)perPage))
+});
+/* @arkzen:endpoint:cs:index:end */
+
+/* @arkzen:endpoint:cs:clearLog
+*/
+await ScriptDatabase.ExecuteAsync(
+    Database,
+    "DELETE FROM \"events_test_event_log\"",
+    cancellationToken: Context.RequestAborted);
+return Results.Json(new { message = "Log cleared" });
+/* @arkzen:endpoint:cs:clearLog:end */
 
 /* @arkzen:web:components:shared */
 

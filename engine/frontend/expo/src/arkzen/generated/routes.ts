@@ -12,6 +12,8 @@ export interface ArkzenExpoRoute {
 }
 
 export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
+// ROUTE:middleware-test:index:/middleware-test:default:false
+  { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test', layout: 'default', auth: false },
 // ROUTE:animation-lab:index:/animation-lab:default:false
   { tatName: 'animation-lab', screenName: 'index', routePath: '/animation-lab', layout: 'default', auth: false },
 // ROUTE:asset-hub:index:/asset-hub:default:false
@@ -98,8 +100,6 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'mail-test', screenName: 'dashboard', routePath: '/mail-test/dashboard', layout: 'auth', auth: true },
 // ROUTE:mail-test:index:/mail-test:guest:false
   { tatName: 'mail-test', screenName: 'index', routePath: '/mail-test', layout: 'guest', auth: false },
-// ROUTE:middleware-test:index:/middleware-test:default:false
-  { tatName: 'middleware-test', screenName: 'index', routePath: '/middleware-test', layout: 'default', auth: false },
 // ROUTE:new-updates-styles:index:/new-updates-styles:default:false
   { tatName: 'new-updates-styles', screenName: 'index', routePath: '/new-updates-styles', layout: 'default', auth: false },
 // ROUTE:new-updates-styles:about:/new-updates-styles/about:default:false

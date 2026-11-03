@@ -75,6 +75,12 @@ const IS_EXPRESS = activeBackend === 'express'
 const IS_FASTAPI = activeBackend === 'fastapi'
 const IS_ASPNET = activeBackend === 'aspnet'
 const IS_SPRING = activeBackend === 'spring-boot'
+const IS_GO = activeBackend === 'go'
+const IS_RUST = activeBackend === 'rust'
+if ((IS_GO || IS_RUST) && arkzenJson.activeDatabase === 'pgsql') {
+  console.log(`\n  ✗ ${IS_GO ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before starting.\n`)
+  process.exit(1)
+}
 // Spring Boot entry points (compiled from engine/backend/spring-boot/src/main/java).
 // Change these if the Java classes live under a different package.
 const SPRING_SERVER_CLASS = 'dev.pluff.Server'
@@ -82,7 +88,7 @@ const SPRING_WORKER_CLASS = 'dev.pluff.Worker'
 const PYTHON_ENV = IS_FASTAPI
   ? { ...process.env, PYTHONUTF8: process.env.PYTHONUTF8 || '1' }
   : process.env
-const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'fastapi', 'aspnet', 'spring-boot']
+const IMPLEMENTED_BACKENDS = ['laravel', 'laravel-inertia', 'express', 'fastapi', 'aspnet', 'spring-boot', 'go', 'rust']
 if (!IMPLEMENTED_BACKENDS.includes(activeBackend)) {
   console.log(`\n  ✗ Backend "${activeBackend}" is selected but not built yet. Run: node mizumi.js backend laravel\n`)
   process.exit(1)
@@ -197,6 +203,24 @@ function checkSetup() {
       fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
       console.log('  ✓ Created engine/backend/fastapi/.env from .env.example')
     }
+  } else if (IS_GO) {
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'go.mod'))) {
+      console.log('\n  ✗ Go engine is missing. Run: node setup.js --backend go\n')
+      process.exit(1)
+    }
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'go.sum'))) {
+      console.log('\n  ✗ Go packages are missing. Run: node mizumi.js deps install go\n')
+      process.exit(1)
+    }
+  } else if (IS_RUST) {
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'Cargo.toml'))) {
+      console.log('\n  ✗ Rust engine is missing. Run: node setup.js --backend rust\n')
+      process.exit(1)
+    }
+    if (!fs.existsSync(path.join(BACKEND_DIR, 'Cargo.lock'))) {
+      console.log('\n  ✗ Rust packages are missing. Run: node mizumi.js deps install rust\n')
+      process.exit(1)
+    }
   } else {
   const artisan = path.join(BACKEND_DIR, 'artisan')
   if (!fs.existsSync(artisan)) {
@@ -234,7 +258,7 @@ function checkSetup() {
 }
 
 function startBackend() {
-  const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : IS_SPRING ? 'Spring Boot' : 'Laravel'
+  const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : IS_SPRING ? 'Spring Boot' : IS_GO ? 'Go' : IS_RUST ? 'Rust' : 'Laravel'
   log('backend', `Starting ${backendName} on http://localhost:8000`)
 
   const proc = IS_EXPRESS
@@ -255,6 +279,18 @@ function startBackend() {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
           env: { ...process.env, PORT: '8000' },
+        })
+    : IS_GO
+      ? spawn('go', ['run', './cmd/server'], {
+          cwd: BACKEND_DIR,
+          stdio: 'pipe',
+          env: { ...process.env, PORT: '8000', PLUFF_ROOT: ROOT_DIR },
+        })
+    : IS_RUST
+      ? spawn('cargo', ['run'], {
+          cwd: BACKEND_DIR,
+          stdio: 'pipe',
+          env: { ...process.env, PORT: '8000', PLUFF_ROOT: ROOT_DIR },
         })
     : spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
         cwd: BACKEND_DIR,
@@ -281,6 +317,10 @@ function startBackend() {
 function startQueueWorker() {
   if (IS_ASPNET) {
     log('queue', 'ASP.NET queue/scheduler support is not implemented yet; no worker was started')
+    return null
+  }
+  if (IS_GO || IS_RUST) {
+    log('queue', `${IS_GO ? 'Go' : 'Rust'} queue/scheduler support is not implemented yet; no worker was started`)
     return null
   }
   if (IS_SPRING && !fs.existsSync(springClassFile(SPRING_WORKER_CLASS))) {
@@ -543,7 +583,7 @@ console.log('╚═════════════════════�
 checkSetup()
 
 // Storage symlink (Laravel only; Express has its own storage handler)
-if (!IS_EXPRESS && !IS_FASTAPI && !IS_ASPNET && !IS_SPRING) {
+if (!IS_EXPRESS && !IS_FASTAPI && !IS_ASPNET && !IS_SPRING && !IS_GO && !IS_RUST) {
   try {
     execSync('php artisan storage:link --force', {
       cwd: BACKEND_DIR,
@@ -561,8 +601,9 @@ let queue = null
 let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
-reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET || IS_SPRING ? null : startReverb()
+reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET || IS_SPRING || IS_GO || IS_RUST ? null : startReverb()
 if (IS_ASPNET) log('backend', 'ASP.NET realtime services are not implemented yet')
+if (IS_GO || IS_RUST) log('backend', `${IS_GO ? 'Go' : 'Rust'} realtime services are not implemented yet`)
 
 // Start web stack
 const web = runWeb ? startWebStack() : null
