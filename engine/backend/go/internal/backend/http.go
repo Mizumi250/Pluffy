@@ -54,6 +54,7 @@ func NewHandler(config Config) (*Handler, error) {
 	router.NotFound(handler.apiOrNotFound)
 	router.Get("/arkzen/health", handler.health)
 	router.Get("/arkzen/registry", handler.registry)
+	router.Get("/arkzen/expo-registry", handler.expoRegistry)
 	router.Method(http.MethodPost, "/arkzen/build", handler.authenticate(http.HandlerFunc(handler.build)))
 	router.Method(http.MethodPost, "/arkzen/remove", handler.authenticate(http.HandlerFunc(handler.remove)))
 	handler.router = router
@@ -80,8 +81,22 @@ func (h *Handler) registry(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
 		return
 	}
-	metadata["modules"] = h.service.Registrations()
+	modules, err := enrichRegistryModules(h.rootDir, h.service.Registrations(), metadata["activeBackend"].(string))
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
+		return
+	}
+	metadata["modules"] = modules
 	writeJSON(w, http.StatusOK, metadata)
+}
+
+func (h *Handler) expoRegistry(w http.ResponseWriter, _ *http.Request) {
+	registry, err := readExpoRegistry(h.rootDir)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
+		return
+	}
+	writeJSON(w, http.StatusOK, registry)
 }
 
 func (h *Handler) authenticate(next http.Handler) http.Handler {

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — PostCard [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T16:10:11.958Z
+// Generated: 2026-11-03T17:18:58.396Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

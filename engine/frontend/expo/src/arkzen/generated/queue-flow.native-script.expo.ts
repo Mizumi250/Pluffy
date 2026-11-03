@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE SCRIPT (GLOBAL) — queue-flow [Expo]
 // Source: @arkzen:native:script:expo
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:53.646Z
+// Generated: 2026-11-03T17:05:32.972Z
 // ============================================================
 
 import React from 'react'

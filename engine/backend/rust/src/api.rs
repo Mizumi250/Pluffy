@@ -1,6 +1,6 @@
 use rusqlite::{
     types::{Value as SqlValue, ValueRef},
-    Connection,
+    Connection, OptionalExtension,
 };
 use serde_json::{json, Map, Value};
 use std::{collections::HashMap, path::Path};
@@ -64,7 +64,8 @@ pub fn match_route(module: &Value, method: &str, path: &str) -> Option<MatchedRo
                         schema: schema.clone(),
                         model: model.to_owned(),
                         middleware,
-                        supported: (is_crud_name(name) || is_supported_custom_endpoint(name, endpoint))
+                        supported: (is_crud_name(name)
+                            || is_supported_custom_endpoint(module, name, endpoint))
                             && (!is_crud_name(name) || match endpoint_object.get("type") {
                                 None => true,
                                 Some(kind) => kind.as_str().is_some_and(|kind| {
@@ -125,7 +126,7 @@ pub fn match_route(module: &Value, method: &str, path: &str) -> Option<MatchedRo
                 schema,
                 model: "ProbeResult".to_owned(),
                 middleware: middleware.clone(),
-                supported: is_supported_custom_endpoint(&name, route),
+                supported: is_supported_custom_route(module, route),
             });
         }
     }
@@ -142,7 +143,7 @@ pub fn route_count(module: &Value) -> usize {
             Some(endpoints) if !endpoints.is_empty() => endpoints
                 .iter()
                 .filter(|(name, endpoint)| {
-                    is_crud_name(name) || is_supported_custom_endpoint(name, endpoint)
+                    is_crud_name(name) || is_supported_custom_endpoint(module, name, endpoint)
                 })
                 .count(),
             _ => 5,
@@ -164,7 +165,15 @@ pub fn warnings(module: &Value) -> Vec<String> {
         if api
             .get("middleware")
             .and_then(Value::as_array)
-            .is_some_and(|middleware| !middleware.is_empty())
+            .is_some_and(|middleware| {
+                middleware.iter().any(|middleware| match middleware.as_str() {
+                    Some("requireJson") => false,
+                    Some("auth") | Some("auth:sanctum") => {
+                        module.get("auth").and_then(Value::as_bool) != Some(true)
+                    }
+                    _ => true,
+                })
+            })
         {
             warnings.push(format!(
                 "API {} declares middleware; matched routes return 501 until Rust middleware execution is implemented",
@@ -181,12 +190,12 @@ pub fn warnings(module: &Value) -> Vec<String> {
                 .get("body")
                 .is_some_and(|body| body.as_str().map_or(!body.is_null(), |body| !body.trim().is_empty()))
             {
-                if !is_supported_custom_endpoint(name, endpoint) {
+                if !is_supported_custom_endpoint(module, name, endpoint) {
                     warnings.push(format!(
                         "Endpoint {name} has a custom body; Rust does not execute DSL handler bodies"
                     ));
                 }
-            } else if !is_crud_name(name) {
+            } else if !is_crud_name(name) && !is_supported_custom_endpoint(module, name, endpoint) {
                 warnings.push(format!(
                     "Endpoint {name} is registered but unsupported requests return 501"
                 ));
@@ -204,22 +213,70 @@ pub fn warnings(module: &Value) -> Vec<String> {
                 ));
             }
         }
-        for route in module
-            .get("customRoutes")
+    }
+    for group in module
+        .get("customRoutes")
+        .and_then(Value::as_array)
+        .into_iter()
+        .flatten()
+    {
+        let has_unsupported_middleware = group
+            .get("middleware")
+            .and_then(Value::as_array)
+            .is_some_and(|middleware| {
+                middleware
+                    .iter()
+                    .any(|middleware| middleware.as_str() != Some("requireJson"))
+            });
+        if has_unsupported_middleware {
+            warnings.push(format!(
+                "Custom route group {} declares middleware that returns 501 in the Rust engine",
+                group["controller"].as_str().unwrap_or("unknown")
+            ));
+        }
+        for route in group
+            .get("routes")
             .and_then(Value::as_array)
             .into_iter()
             .flatten()
-            .flat_map(|group| group.get("routes").and_then(Value::as_array).into_iter().flatten())
         {
             let handler = route.get("handler").and_then(Value::as_str).unwrap_or_default();
-            let name = format!("handler:{handler}");
             if route.get("body").and_then(Value::as_str).is_some_and(|body| !body.trim().is_empty())
-                && !is_supported_custom_endpoint(&name, route)
+                && !is_supported_custom_route(module, route)
             {
                 warnings.push(format!(
                     "Custom route handler {handler} has a body; Rust does not execute this handler"
                 ));
             }
+        }
+    }
+    for (field, label) in [
+        ("events", "Event/listener"),
+        ("realtimes", "Realtime"),
+        ("jobs", "Job"),
+        ("notifications", "Notification"),
+        ("mails", "Mail"),
+        ("consoles", "Console"),
+    ] {
+        if module
+            .get(field)
+            .and_then(Value::as_array)
+            .is_some_and(|sections| !sections.is_empty())
+        {
+            warnings.push(format!(
+                "{label} DSL is registered but is not executed by the Rust engine"
+            ));
+        }
+    }
+    for field in ["middlewareSnippets", "policySnippets"] {
+        if module
+            .get(field)
+            .and_then(Value::as_object)
+            .is_some_and(|snippets| !snippets.is_empty())
+        {
+            warnings.push(format!(
+                "{field} are registered but are not executed by the Rust engine"
+            ));
         }
     }
     warnings.sort();
@@ -231,12 +288,68 @@ fn is_crud_name(name: &str) -> bool {
     matches!(name, "index" | "show" | "store" | "update" | "destroy")
 }
 
-fn is_supported_custom_endpoint(name: &str, endpoint: &Value) -> bool {
+fn is_supported_custom_endpoint(module: &Value, name: &str, endpoint: &Value) -> bool {
+    let method = endpoint
+        .get("method")
+        .and_then(Value::as_str)
+        .unwrap_or("GET");
+    let route = endpoint.get("route").and_then(Value::as_str).unwrap_or("/");
+    if module["name"].as_str() == Some("jo-payroll") {
+        return match name {
+            "summary" => {
+                method.eq_ignore_ascii_case("GET") && route == "/job-orders/stats/summary"
+            }
+            "byGroup" => {
+                method.eq_ignore_ascii_case("GET") && route == "/job-orders/group/{group}"
+            }
+            "appointments" => {
+                method.eq_ignore_ascii_case("GET") && route == "/job-orders/appointments/list"
+            }
+            _ => false,
+        };
+    }
     matches!(name, "echo" | "stats" | "lowStock" | "handler:ping" | "handler:recordHandler" | "handler:latest")
         && endpoint
             .get("body")
             .and_then(Value::as_str)
             .is_some_and(|body| !body.trim().is_empty())
+}
+
+fn is_supported_custom_route(module: &Value, route: &Value) -> bool {
+    let method = route
+        .get("method")
+        .and_then(Value::as_str)
+        .unwrap_or("GET");
+    let path = route.get("route").and_then(Value::as_str).unwrap_or("/");
+    let handler = route.get("handler").and_then(Value::as_str).unwrap_or_default();
+    if module["name"].as_str() == Some("queue-flow") {
+        let path = path.trim_end_matches('/');
+        return match handler {
+            "join_queue" => method.eq_ignore_ascii_case("POST") && path == "/api/queue-flow/join",
+            "call_next" => method.eq_ignore_ascii_case("POST") && path == "/api/queue-flow/call-next",
+            "queue_status" => {
+                method.eq_ignore_ascii_case("GET")
+                    && path == "/api/queue-flow/status/{queue_id}"
+            }
+            "my_ticket" => {
+                method.eq_ignore_ascii_case("GET")
+                    && path == "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}"
+            }
+            _ => false,
+        };
+    }
+    is_supported_custom_endpoint(module, &format!("handler:{handler}"), route)
+}
+
+fn valid_unique_argument(argument: &str) -> bool {
+    if argument.is_empty() {
+        return true;
+    }
+    let parts: Vec<_> = argument.split(',').collect();
+    matches!(parts.len(), 1 | 2)
+        && parts
+            .iter()
+            .all(|part| super::engine::is_identifier(part.trim()))
 }
 
 fn validation_supported(validation: Option<&Value>) -> bool {
@@ -257,12 +370,19 @@ fn validation_supported(validation: Option<&Value>) -> bool {
                                 | "numeric"
                                 | "boolean"
                                 | "email"
+                                | "in"
+                                | "unique"
                                 | "max"
                                 | "min"
                         );
                         valid_rule
                             && if matches!(name, "max" | "min") {
                                 argument.parse::<f64>().is_ok()
+                            } else if name == "in" {
+                                !argument.is_empty()
+                                    && argument.split(',').all(|option| !option.is_empty())
+                            } else if name == "unique" {
+                                valid_unique_argument(argument)
                             } else {
                                 argument.is_empty()
                             }
@@ -333,6 +453,12 @@ pub fn execute(
         Ok(connection) => connection,
         Err(error) => return internal_error(error),
     };
+    if slug == "queue-flow" && action.starts_with("handler:") {
+        return execute_queue_flow(&connection, action, path, body);
+    }
+    if slug == "jo-payroll" && matches!(action, "summary" | "byGroup" | "appointments") {
+        return execute_payroll(&connection, action, table, schema, path);
+    }
     match action {
         "index" => index(&connection, table, endpoint, schema, query_string),
         "show" => with_id(&connection, table, endpoint, schema, model, path, "show", body),
@@ -350,6 +476,422 @@ pub fn execute(
             json!({"message": format!("Endpoint {action} is not implemented by the Rust engine")}),
         ),
     }
+}
+
+fn execute_queue_flow(
+    connection: &Connection,
+    action: &str,
+    path: &str,
+    body: &Value,
+) -> (axum::http::StatusCode, Value) {
+    match action {
+        "handler:join_queue" => queue_flow_join(connection, body),
+        "handler:call_next" => queue_flow_call_next(connection, body),
+        "handler:queue_status" => queue_flow_status(connection, path),
+        "handler:my_ticket" => queue_flow_my_ticket(connection, path),
+        _ => (
+            axum::http::StatusCode::NOT_IMPLEMENTED,
+            json!({"message": format!("Queue-flow handler {action} is not implemented")}),
+        ),
+    }
+}
+
+fn queue_flow_join(
+    connection: &Connection,
+    body: &Value,
+) -> (axum::http::StatusCode, Value) {
+    let Some(input) = body.as_object() else {
+        return validation_error(vec!["Request body must be a JSON object".to_owned()]);
+    };
+    let Some(queue_id) = input.get("queue_id").and_then(positive_integer) else {
+        return validation_error(vec!["queue_id must be a positive integer".to_owned()]);
+    };
+    let queue = connection
+        .query_row(
+            "SELECT \"prefix\", \"avg_wait_minutes\" FROM \"queues\" WHERE \"id\" = ?1",
+            [queue_id],
+            |row| Ok((row.get::<_, String>(0)?, row.get::<_, i64>(1)?)),
+        )
+        .optional();
+    let (prefix, average_wait) = match queue {
+        Ok(Some(queue)) => queue,
+        Ok(None) => return (axum::http::StatusCode::NOT_FOUND, json!({"message":"Queue not found"})),
+        Err(error) => return internal_error(format!("Could not load queue {queue_id}: {error}")),
+    };
+    let position = match connection.query_row(
+        "SELECT COALESCE(MAX(\"position\"), 0) + 1 FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" IN ('waiting','serving')",
+        [queue_id],
+        |row| row.get::<_, i64>(0),
+    ) {
+        Ok(position) => position,
+        Err(error) => return internal_error(format!("Could not determine queue position: {error}")),
+    };
+    let customer_name = input
+        .get("customer_name")
+        .and_then(Value::as_str)
+        .filter(|name| !name.is_empty())
+        .unwrap_or("Guest");
+    let fields = json!({
+        "queue_id": queue_id,
+        "ticket_number": format!("{prefix}-{position:03}"),
+        "customer_name": customer_name,
+        "status": "waiting",
+        "position": position
+    });
+    let (status, ticket) = store(
+        connection,
+        "tickets",
+        &json!({}),
+        &json!({}),
+        &fields,
+    );
+    if status != axum::http::StatusCode::CREATED {
+        return (status, ticket);
+    }
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "ticket": ticket,
+            "position": position,
+            "estimated_wait": (position - 1) * average_wait
+        }),
+    )
+}
+
+fn queue_flow_call_next(
+    connection: &Connection,
+    body: &Value,
+) -> (axum::http::StatusCode, Value) {
+    let Some(queue_id) = body
+        .get("queue_id")
+        .and_then(positive_integer)
+    else {
+        return validation_error(vec!["queue_id must be a positive integer".to_owned()]);
+    };
+    if let Err(error) = connection.execute(
+        "UPDATE \"tickets\" SET \"status\" = 'done', \"served_at\" = CURRENT_TIMESTAMP WHERE \"queue_id\" = ?1 AND \"status\" = 'serving'",
+        [queue_id],
+    ) {
+        return internal_error(format!("Could not finish current ticket: {error}"));
+    }
+    let next_id = connection
+        .query_row(
+            "SELECT \"id\" FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" = 'waiting' ORDER BY \"position\" LIMIT 1",
+            [queue_id],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional();
+    let next_id = match next_id {
+        Ok(Some(id)) => id,
+        Ok(None) => {
+            return (
+                axum::http::StatusCode::OK,
+                json!({"message":"No more tickets in queue","ticket":null}),
+            )
+        }
+        Err(error) => return internal_error(format!("Could not find next ticket: {error}")),
+    };
+    if let Err(error) = connection.execute(
+        "UPDATE \"tickets\" SET \"status\" = 'serving', \"called_at\" = CURRENT_TIMESTAMP WHERE \"id\" = ?1",
+        [next_id],
+    ) {
+        return internal_error(format!("Could not call next ticket: {error}"));
+    }
+    match find_row(connection, "tickets", &next_id.to_string(), &json!({}), false) {
+        Ok(Some(ticket)) => (axum::http::StatusCode::OK, json!({"ticket":ticket})),
+        Ok(None) => internal_error("Called ticket could not be read back".to_owned()),
+        Err(error) => internal_error(format!("Could not load next ticket: {error}")),
+    }
+}
+
+fn queue_flow_status(
+    connection: &Connection,
+    path: &str,
+) -> (axum::http::StatusCode, Value) {
+    let Some(queue_id) = path
+        .trim_matches('/')
+        .split('/')
+        .last()
+        .and_then(|value| value.parse::<i64>().ok())
+        .filter(|id| *id > 0)
+    else {
+        return (axum::http::StatusCode::BAD_REQUEST, json!({"message":"Invalid queue route parameters"}));
+    };
+    let queue = match find_row(connection, "queues", &queue_id.to_string(), &json!({}), false) {
+        Ok(Some(queue)) => queue,
+        Ok(None) => return (axum::http::StatusCode::NOT_FOUND, json!({"message":"Queue not found"})),
+        Err(error) => return internal_error(format!("Could not load queue: {error}")),
+    };
+    let serving = match read_rows(
+        connection,
+        "SELECT * FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" = 'serving' ORDER BY \"position\" LIMIT 1",
+        vec![SqlValue::Integer(queue_id)],
+        &json!({}),
+    ) {
+        Ok(rows) => rows.into_iter().next().unwrap_or(Value::Null),
+        Err(error) => return internal_error(format!("Could not load serving ticket: {error}")),
+    };
+    let waiting = match read_rows(
+        connection,
+        "SELECT * FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" = 'waiting' ORDER BY \"position\"",
+        vec![SqlValue::Integer(queue_id)],
+        &json!({}),
+    ) {
+        Ok(rows) => rows,
+        Err(error) => return internal_error(format!("Could not load waiting tickets: {error}")),
+    };
+    let done_count = match connection.query_row(
+        "SELECT COUNT(*) FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" = 'done'",
+        [queue_id],
+        |row| row.get::<_, i64>(0),
+    ) {
+        Ok(count) => count,
+        Err(error) => return internal_error(format!("Could not count completed tickets: {error}")),
+    };
+    let total_waiting = waiting.len();
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "queue": queue,
+            "serving": serving,
+            "waiting": waiting,
+            "done_count": done_count,
+            "total_waiting": total_waiting
+        }),
+    )
+}
+
+fn queue_flow_my_ticket(
+    connection: &Connection,
+    path: &str,
+) -> (axum::http::StatusCode, Value) {
+    let segments: Vec<_> = path.trim_matches('/').split('/').collect();
+    let Some(queue_id) = segments.get(3).and_then(|value| value.parse::<i64>().ok()).filter(|id| *id > 0) else {
+        return (axum::http::StatusCode::BAD_REQUEST, json!({"message":"Invalid queue route parameters"}));
+    };
+    let Some(ticket_number) = segments.get(4) else {
+        return (axum::http::StatusCode::BAD_REQUEST, json!({"message":"Invalid queue route parameters"}));
+    };
+    let mut tickets = match read_rows(
+        connection,
+        "SELECT * FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"ticket_number\" = ?2 LIMIT 1",
+        vec![
+            SqlValue::Integer(queue_id),
+            SqlValue::Text((*ticket_number).to_owned()),
+        ],
+        &json!({}),
+    ) {
+        Ok(rows) => rows,
+        Err(error) => return internal_error(format!("Could not load ticket: {error}")),
+    };
+    let Some(ticket) = tickets.pop() else {
+        return (axum::http::StatusCode::NOT_FOUND, json!({"message":"Ticket not found"}));
+    };
+    let ticket_position = ticket["position"].as_i64().unwrap_or_default();
+    let ahead = match connection.query_row(
+        "SELECT COUNT(*) FROM \"tickets\" WHERE \"queue_id\" = ?1 AND \"status\" = 'waiting' AND \"position\" < ?2",
+        [SqlValue::Integer(queue_id), SqlValue::Integer(ticket_position)],
+        |row| row.get::<_, i64>(0),
+    ) {
+        Ok(ahead) => ahead,
+        Err(error) => return internal_error(format!("Could not determine ticket position: {error}")),
+    };
+    let average_wait = connection
+        .query_row(
+            "SELECT \"avg_wait_minutes\" FROM \"queues\" WHERE \"id\" = ?1",
+            [queue_id],
+            |row| row.get::<_, i64>(0),
+        )
+        .optional();
+    let average_wait = match average_wait {
+        Ok(Some(average_wait)) if average_wait > 0 => average_wait,
+        Ok(_) => 5,
+        Err(error) => return internal_error(format!("Could not load queue wait estimate: {error}")),
+    };
+    let status = ticket["status"].as_str().unwrap_or_default();
+    let position = if status == "waiting" { ahead + 1 } else { 0 };
+    let is_serving = status == "serving";
+    let is_done = status == "done";
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "ticket": ticket,
+            "position": position,
+            "estimated_wait": ahead * average_wait,
+            "is_serving": is_serving,
+            "is_done": is_done
+        }),
+    )
+}
+
+fn execute_payroll(
+    connection: &Connection,
+    action: &str,
+    table: &str,
+    schema: &Value,
+    path: &str,
+) -> (axum::http::StatusCode, Value) {
+    match action {
+        "summary" => payroll_summary(connection, table, schema),
+        "byGroup" => payroll_by_group(connection, table, schema, path),
+        "appointments" => payroll_appointments(connection, table, schema),
+        _ => (
+            axum::http::StatusCode::NOT_IMPLEMENTED,
+            json!({"message": format!("Payroll handler {action} is not implemented")}),
+        ),
+    }
+}
+
+fn payroll_summary(
+    connection: &Connection,
+    table: &str,
+    schema: &Value,
+) -> (axum::http::StatusCode, Value) {
+    let sql = format!("SELECT * FROM {} ORDER BY \"jor_number\"", quote(table));
+    let rows = match read_rows(connection, &sql, Vec::new(), schema) {
+        Ok(rows) => rows,
+        Err(error) => return internal_error(format!("Could not load payroll summary: {error}")),
+    };
+    let mut total_active = 0_i64;
+    let mut total_inactive = 0_i64;
+    let mut total_atm = 0_i64;
+    let mut total_cash = 0_i64;
+    let mut total_basic_pay = 0.0;
+    let mut total_sss = 0.0;
+    let mut total_hdmf_premium = 0.0;
+    let mut total_hdmf_mpl = 0.0;
+    let mut total_calamity_loan = 0.0;
+    let mut funding_breakdown = Map::new();
+    let mut group_breakdown = Map::new();
+    for row in rows {
+        if row["status"].as_str() != Some("active") {
+            total_inactive += 1;
+            continue;
+        }
+        total_active += 1;
+        match row["disbursement_type"].as_str() {
+            Some("ATM") => total_atm += 1,
+            Some("CASH") => total_cash += 1,
+            _ => {}
+        }
+        let basic_pay = record_number(&row["basic_pay"]);
+        total_basic_pay += basic_pay;
+        total_sss += record_number(&row["sss_amount"]);
+        total_hdmf_premium += record_number(&row["hdmf_premium"]);
+        total_hdmf_mpl += record_number(&row["hdmf_mpl"]);
+        total_calamity_loan += record_number(&row["calamity_loan"]);
+
+        let funding_name = record_label(&row["funding"]);
+        let funding = funding_breakdown
+            .entry(funding_name)
+            .or_insert_with(|| json!({"count": 0, "total_pay": 0.0}));
+        funding["count"] = json!(funding["count"].as_i64().unwrap_or_default() + 1);
+        funding["total_pay"] = json!(funding["total_pay"].as_f64().unwrap_or_default() + basic_pay);
+
+        let group_name = record_label(&row["jor_pyrl_group"]);
+        let group = group_breakdown
+            .entry(group_name)
+            .or_insert_with(|| json!(0));
+        *group = json!(group.as_i64().unwrap_or_default() + 1);
+    }
+    let total_deductions = total_sss + total_hdmf_premium + total_hdmf_mpl + total_calamity_loan;
+    (
+        axum::http::StatusCode::OK,
+        json!({
+            "total_active": total_active,
+            "total_inactive": total_inactive,
+            "total_atm": total_atm,
+            "total_cash": total_cash,
+            "total_basic_pay": total_basic_pay,
+            "total_sss": total_sss,
+            "total_hdmf_premium": total_hdmf_premium,
+            "total_hdmf_mpl": total_hdmf_mpl,
+            "total_calamity_loan": total_calamity_loan,
+            "total_deductions": total_deductions,
+            "net_pay": total_basic_pay - total_deductions,
+            "funding_breakdown": funding_breakdown,
+            "group_breakdown": group_breakdown
+        }),
+    )
+}
+
+fn payroll_by_group(
+    connection: &Connection,
+    table: &str,
+    schema: &Value,
+    path: &str,
+) -> (axum::http::StatusCode, Value) {
+    let Some(encoded_group) = path.trim_end_matches('/').rsplit('/').next() else {
+        return (axum::http::StatusCode::BAD_REQUEST, json!({"message":"Invalid payroll group"}));
+    };
+    if encoded_group.is_empty() {
+        return (axum::http::StatusCode::BAD_REQUEST, json!({"message":"Invalid payroll group"}));
+    }
+    let group = form_urlencoded::parse(
+        format!("group={}", encoded_group.replace('+', "%2B")).as_bytes(),
+    )
+    .next()
+    .map(|(_, value)| value.into_owned())
+    .unwrap_or_default();
+    let sql = format!(
+        "SELECT * FROM {} WHERE \"jor_pyrl_group\" = ?1 AND \"status\" = 'active' ORDER BY \"jor_number\"",
+        quote(table)
+    );
+    match read_rows(
+        connection,
+        &sql,
+        vec![SqlValue::Text(group)],
+        schema,
+    ) {
+        Ok(rows) => (axum::http::StatusCode::OK, json!(rows)),
+        Err(error) => internal_error(format!("Could not load payroll group: {error}")),
+    }
+}
+
+fn payroll_appointments(
+    connection: &Connection,
+    table: &str,
+    schema: &Value,
+) -> (axum::http::StatusCode, Value) {
+    let sql = format!(
+        "SELECT * FROM {} WHERE \"appointment_order\" IS NOT NULL ORDER BY \"appointment_order\"",
+        quote(table)
+    );
+    match read_rows(connection, &sql, Vec::new(), schema) {
+        Ok(rows) => (axum::http::StatusCode::OK, json!(rows)),
+        Err(error) => internal_error(format!("Could not load payroll appointments: {error}")),
+    }
+}
+
+fn record_number(value: &Value) -> f64 {
+    value
+        .as_f64()
+        .or_else(|| value.as_i64().map(|value| value as f64))
+        .unwrap_or_default()
+}
+
+fn record_label(value: &Value) -> String {
+    match value {
+        Value::Null => "<nil>".to_owned(),
+        Value::String(value) => value.clone(),
+        value => value.to_string(),
+    }
+}
+
+fn positive_integer(value: &Value) -> Option<i64> {
+    value
+        .as_i64()
+        .or_else(|| value.as_str().and_then(|value| value.parse::<i64>().ok()))
+        .or_else(|| {
+            value.as_f64().and_then(|value| {
+                (value.is_finite()
+                    && value.fract() == 0.0
+                    && value > 0.0
+                    && value <= i64::MAX as f64)
+                    .then_some(value as i64)
+            })
+        })
+        .filter(|value| *value > 0)
 }
 
 fn low_stock(connection: &Connection, table: &str, schema: &Value) -> (axum::http::StatusCode, Value) {
@@ -722,6 +1264,9 @@ fn store(
     if let Some(response) = validate_fields(endpoint, body, schema_columns.clone(), true) {
         return response;
     }
+    if let Some(response) = validate_unique_values(connection, table, endpoint, body, None) {
+        return response;
+    }
     let mut fields = writable_fields(body, schema_columns.clone());
     if definition["timestamps"].as_bool() != Some(false) {
         if schema_columns.iter().any(|field| field == "created_at") {
@@ -799,6 +1344,15 @@ fn with_id(
             if let Some(response) = validate_fields(endpoint, body, columns.clone(), false) {
                 return response;
             }
+            if let Some(response) = validate_unique_values(
+                connection,
+                table,
+                endpoint,
+                body,
+                Some(&id),
+            ) {
+                return response;
+            }
             let fields = writable_fields(body, columns.clone());
             if fields.is_empty() {
                 return validation_error(vec!["Request body must contain at least one updatable field".to_owned()]);
@@ -852,6 +1406,121 @@ fn with_id(
     }
 }
 
+fn validate_unique_values(
+    connection: &Connection,
+    table: &str,
+    endpoint: &Value,
+    body: &Map<String, Value>,
+    except_id: Option<&str>,
+) -> Option<(axum::http::StatusCode, Value)> {
+    let columns = match column_names(connection, table) {
+        Ok(columns) => columns,
+        Err(error) => {
+            return Some(internal_error(format!(
+                "Could not inspect {table} uniqueness rules: {error}"
+            )))
+        }
+    };
+    let Some(rules) = endpoint["validation"].as_object() else {
+        return None;
+    };
+    for (field, rule_set) in rules {
+        let Some(value) = body.get(field) else {
+            continue;
+        };
+        if value.is_null() {
+            continue;
+        }
+        let Some(rule_set) = rule_set.as_str() else {
+            continue;
+        };
+        for rule in rule_set.split('|').filter(|rule| {
+            rule.split_once(':')
+                .map_or(*rule == "unique", |(name, _)| name == "unique")
+        }) {
+            let Some((unique_table, unique_column)) = unique_rule_target(rule, table, field) else {
+                return Some(validation_error(vec![format!(
+                    "The unique rule for {field} has an unsupported table or column."
+                )]));
+            };
+            if !table_exists(connection, &unique_table) {
+                return Some(validation_error(vec![format!(
+                    "The unique rule for {field} references unknown table {unique_table}."
+                )]));
+            }
+            let unique_columns = match column_names(connection, &unique_table) {
+                Ok(columns) => columns,
+                Err(error) => {
+                    return Some(internal_error(format!(
+                        "Could not inspect {unique_table} uniqueness rule: {error}"
+                    )))
+                }
+            };
+            if !unique_columns.iter().any(|column| column == &unique_column) {
+                return Some(validation_error(vec![format!(
+                    "The unique rule for {field} references unknown column {unique_column}."
+                )]));
+            }
+            let excludes_current = unique_table == table
+                && unique_column == field
+                && except_id.is_some()
+                && unique_columns.iter().any(|column| column == "id");
+            let mut sql = format!(
+                "SELECT 1 FROM {} WHERE {} = ?1",
+                quote(&unique_table),
+                quote(&unique_column)
+            );
+            if excludes_current {
+                sql.push_str(" AND \"id\" != ?2");
+            }
+            sql.push_str(" LIMIT 1");
+            let mut parameters = vec![sql_value(value)];
+            if let Some(id) = except_id.filter(|_| excludes_current) {
+                parameters.push(SqlValue::Text(id.to_owned()));
+            }
+            let exists = match connection
+                .query_row(
+                    &sql,
+                    rusqlite::params_from_iter(parameters),
+                    |row| row.get::<_, i64>(0),
+                )
+                .optional()
+            {
+                Ok(Some(_)) => true,
+                Ok(None) => false,
+                Err(error) => {
+                    return Some(internal_error(format!(
+                        "Could not validate uniqueness of {unique_table}.{unique_column}: {error}"
+                    )))
+                }
+            };
+            if exists {
+                return Some(validation_error(vec![format!(
+                    "The {field} field must be unique."
+                )]));
+            }
+        }
+    }
+    None
+}
+
+fn unique_rule_target(rule: &str, table: &str, field: &str) -> Option<(String, String)> {
+    let (_, argument) = rule.split_once(':').unwrap_or((rule, ""));
+    if argument.is_empty() {
+        return Some((table.to_owned(), field.to_owned()));
+    }
+    let mut parts = argument.split(',');
+    let table = parts.next()?.trim();
+    let column = parts.next().map(str::trim).unwrap_or(field);
+    if parts.next().is_some()
+        || !super::engine::is_identifier(table)
+        || !super::engine::is_identifier(column)
+    {
+        return None;
+    }
+    Some((table.to_owned(), column.to_owned()))
+}
+
 fn validate_fields(
     endpoint: &Value,
     body: &Map<String, Value>,
@@ -897,7 +1566,14 @@ fn validate_rule(field: &str, value: Option<&Value>, rule: &str) -> Option<Strin
     if rules.contains(&"sometimes") && value.is_none() {
         return None;
     }
-    if rules.contains(&"required") && value.map_or(true, Value::is_null) {
+    if rules.contains(&"required")
+        && value.map_or(true, |value| {
+            value.is_null()
+                || value
+                    .as_str()
+                    .is_some_and(|value| value.trim().is_empty())
+        })
+    {
         return Some(format!("The {field} field is required."));
     }
     let Some(value) = value else { return None };
@@ -907,12 +1583,16 @@ fn validate_rule(field: &str, value: Option<&Value>, rule: &str) -> Option<Strin
     for rule in rules {
         let (name, argument) = rule.split_once(':').unwrap_or((rule, ""));
         let invalid = match name {
-            "required" | "sometimes" | "nullable" => false,
+            "required" | "sometimes" | "nullable" | "unique" => false,
             "string" => !value.is_string(),
             "integer" => !(value.is_i64() || value.as_str().is_some_and(|value| value.parse::<i64>().is_ok())),
             "numeric" => !(value.is_number() || value.as_str().is_some_and(|value| value.parse::<f64>().is_ok())),
             "boolean" => !(value.is_boolean() || matches!(value.as_i64(), Some(0 | 1))),
             "email" => !value.as_str().is_some_and(|email| email.contains('@') && email.contains('.')),
+            "in" => {
+                let value = value.as_str().map(str::to_owned).unwrap_or_else(|| value.to_string());
+                !argument.split(',').any(|option| option == value)
+            }
             "max" => exceeds_limit(value, argument),
             "min" => below_limit(value, argument),
             _ => return Some(format!("Validation rule \"{name}\" is not supported by the Rust engine.")),
@@ -1164,6 +1844,345 @@ mod tests {
     #[test]
     fn unknown_validation_rules_are_explicit_errors() {
         assert!(validate_rule("name", Some(&json!("x")), "required|alpha_dash").unwrap().contains("not supported"));
+    }
+
+    #[test]
+    fn in_and_unique_rules_are_enforced_for_crud() {
+        let directory = tempfile::tempdir().unwrap();
+        let payload = json!({
+            "name": "sample",
+            "databases": [{
+                "table": "users",
+                "columns": {
+                    "email": {"type": "string", "nullable": false},
+                    "role": {"type": "string", "nullable": false}
+                },
+                "seeder": {
+                    "data": [{"email": "existing@example.test", "role": "learner"}]
+                }
+            }]
+        });
+        super::super::database::apply_schema(directory.path(), "sample", &payload).unwrap();
+        let connection = open_connection(directory.path(), "sample").unwrap();
+        let endpoint = json!({
+            "validation": {
+                "email": "required|email|unique:users,email",
+                "role": "required|in:learner,teacher"
+            }
+        });
+
+        let (status, duplicate) = store(
+            &connection,
+            "users",
+            &endpoint,
+            &payload["databases"][0],
+            &json!({"email": "existing@example.test", "role": "learner"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::UNPROCESSABLE_ENTITY);
+        assert!(duplicate["errors"][0].as_str().unwrap().contains("must be unique"));
+
+        let (status, invalid_role) = store(
+            &connection,
+            "users",
+            &endpoint,
+            &payload["databases"][0],
+            &json!({"email": "new@example.test", "role": "admin"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::UNPROCESSABLE_ENTITY);
+        assert!(invalid_role["errors"][0].as_str().unwrap().contains("in validation"));
+
+        let (status, created) = store(
+            &connection,
+            "users",
+            &endpoint,
+            &payload["databases"][0],
+            &json!({"email": "new@example.test", "role": "teacher"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::CREATED);
+        let id = created["id"].as_i64().unwrap().to_string();
+        let (status, updated) = with_id(
+            &connection,
+            "users",
+            &endpoint,
+            &payload["databases"][0],
+            "User",
+            &format!("/api/sample/users/{id}"),
+            "update",
+            &json!({"email": "new@example.test", "role": "teacher"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(updated["email"], "new@example.test");
+    }
+
+    #[test]
+    fn warnings_only_report_unimplemented_middleware_and_dsl_sections() {
+        let supported_middleware = json!({
+            "apis": [{
+                "model": "Ping",
+                "middleware": ["requireJson"],
+                "endpoints": {}
+            }]
+        });
+        assert!(warnings(&supported_middleware).is_empty());
+        let supported_auth = json!({
+            "auth": true,
+            "apis": [{
+                "model": "Private",
+                "middleware": ["auth:sanctum", "requireJson"],
+                "endpoints": {}
+            }]
+        });
+        assert!(warnings(&supported_auth).is_empty());
+
+        let unsupported = json!({
+            "apis": [{
+                "model": "Private",
+                "middleware": ["auth"],
+                "endpoints": {}
+            }],
+            "jobs": ["job-test"]
+        });
+        let warnings = warnings(&unsupported);
+        assert!(warnings.iter().any(|warning| warning.contains("middleware")));
+        assert!(warnings.iter().any(|warning| warning.contains("Job DSL")));
+    }
+
+    #[test]
+    fn queue_flow_routes_seed_and_transition_ticket_state() {
+        let directory = tempfile::tempdir().unwrap();
+        let module = json!({
+            "name": "queue-flow",
+            "databases": [
+                {
+                    "table": "queues",
+                    "columns": {
+                        "name": {"type": "string"},
+                        "prefix": {"type": "string", "default": "Q"},
+                        "avg_wait_minutes": {"type": "integer", "default": 5}
+                    },
+                    "seeder": {
+                        "data": [{"name": "General", "prefix": "G", "avg_wait_minutes": 5}]
+                    }
+                },
+                {
+                    "table": "tickets",
+                    "columns": {
+                        "queue_id": {"type": "integer"},
+                        "ticket_number": {"type": "string"},
+                        "customer_name": {"type": "string"},
+                        "status": {"type": "string"},
+                        "position": {"type": "integer"},
+                        "called_at": {"type": "datetime", "nullable": true},
+                        "served_at": {"type": "datetime", "nullable": true}
+                    }
+                }
+            ],
+            "apis": [{
+                "model": "Queue",
+                "controller": "QueueController",
+                "table": "queues",
+                "prefix": "/api/queue-flow",
+                "endpoints": {
+                    "index": {"method": "GET", "route": "/queues", "response": {"type": "collection"}}
+                }
+            }],
+            "customRoutes": [{
+                "controller": "QueueController",
+                "middleware": [],
+                "routes": [
+                    {"method": "POST", "route": "/api/queue-flow/join", "handler": "join_queue"},
+                    {"method": "POST", "route": "/api/queue-flow/call-next", "handler": "call_next"},
+                    {"method": "GET", "route": "/api/queue-flow/status/{queue_id}", "handler": "queue_status"},
+                    {"method": "GET", "route": "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}", "handler": "my_ticket"}
+                ]
+            }]
+        });
+        super::super::database::apply_schema(directory.path(), "queue-flow", &module).unwrap();
+        let queues_route = match_route(&module, "GET", "/api/queue-flow/queues").unwrap();
+        let (status, queues) = execute(
+            directory.path(),
+            "queue-flow",
+            &queues_route.table,
+            &queues_route.name,
+            &queues_route.endpoint,
+            &queues_route.schema,
+            &queues_route.model,
+            "/api/queue-flow/queues",
+            &Value::Null,
+            "",
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(queues["data"][0]["name"], "General");
+
+        let call = |method: &str, path: &str, body: Value| {
+            let route = match_route(&module, method, path).unwrap();
+            assert!(route.supported);
+            execute(
+                directory.path(),
+                "queue-flow",
+                &route.table,
+                &route.name,
+                &route.endpoint,
+                &route.schema,
+                &route.model,
+                path,
+                &body,
+                "",
+            )
+        };
+
+        let (status, first) = call(
+            "POST",
+            "/api/queue-flow/join",
+            json!({"queue_id": 1, "customer_name": "Ari"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(first["ticket"]["ticket_number"], "G-001");
+        assert_eq!(first["estimated_wait"], 0);
+
+        let (status, second) = call(
+            "POST",
+            "/api/queue-flow/join",
+            json!({"queue_id": 1, "customer_name": "Kai"}),
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(second["ticket"]["ticket_number"], "G-002");
+        assert_eq!(second["estimated_wait"], 5);
+
+        let (status, next) = call(
+            "POST",
+            "/api/queue-flow/call-next",
+            json!({"queue_id": 1}),
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(next["ticket"]["ticket_number"], "G-001");
+        assert_eq!(next["ticket"]["status"], "serving");
+
+        let (status, ticket) = call(
+            "GET",
+            "/api/queue-flow/my-ticket/1/G-002",
+            Value::Null,
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(ticket["position"], 1);
+        assert_eq!(ticket["estimated_wait"], 0);
+
+        let (status, queue) = call(
+            "GET",
+            "/api/queue-flow/status/1",
+            Value::Null,
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(queue["total_waiting"], 1);
+        assert_eq!(queue["waiting"][0]["ticket_number"], "G-002");
+
+        call(
+            "POST",
+            "/api/queue-flow/call-next",
+            json!({"queue_id": 1}),
+        );
+        let (status, done) = call(
+            "POST",
+            "/api/queue-flow/call-next",
+            json!({"queue_id": 1}),
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(done["message"], "No more tickets in queue");
+        let (status, completed) = call(
+            "GET",
+            "/api/queue-flow/my-ticket/1/G-002",
+            Value::Null,
+        );
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(completed["is_done"], true);
+    }
+
+    #[test]
+    fn payroll_routes_aggregate_and_filter_job_orders() {
+        let directory = tempfile::tempdir().unwrap();
+        let module = json!({
+            "name": "jo-payroll",
+            "databases": [{
+                "table": "job_orders",
+                "columns": {
+                    "jor_number": {"type": "integer"},
+                    "name_of_jo": {"type": "string"},
+                    "job_title": {"type": "string"},
+                    "funding": {"type": "string"},
+                    "basic_pay": {"type": "decimal"},
+                    "disbursement_type": {"type": "string"},
+                    "jor_pyrl_group": {"type": "string"},
+                    "sss_amount": {"type": "decimal"},
+                    "hdmf_premium": {"type": "decimal"},
+                    "hdmf_mpl": {"type": "decimal"},
+                    "calamity_loan": {"type": "decimal"},
+                    "appointment_date": {"type": "date"},
+                    "appointment_order": {"type": "integer"},
+                    "status": {"type": "string"}
+                }
+            }],
+            "apis": [{
+                "model": "JobOrder",
+                "controller": "JobOrderController",
+                "table": "job_orders",
+                "prefix": "/api/jo-payroll",
+                "endpoints": {
+                    "summary": {"method": "GET", "route": "/job-orders/stats/summary"},
+                    "byGroup": {"method": "GET", "route": "/job-orders/group/{group}"},
+                    "appointments": {"method": "GET", "route": "/job-orders/appointments/list"}
+                }
+            }]
+        });
+        super::super::database::apply_schema(directory.path(), "jo-payroll", &module).unwrap();
+        let connection = open_connection(directory.path(), "jo-payroll").unwrap();
+        connection.execute(
+            "INSERT INTO job_orders (jor_number, name_of_jo, job_title, funding, basic_pay, disbursement_type, jor_pyrl_group, sss_amount, hdmf_premium, hdmf_mpl, calamity_loan, appointment_date, appointment_order, status) VALUES (1, 'Ada', 'Clerk', 'Admin', 1000, 'ATM', 'GROUP A', 50, 10, 5, 0, '2026-01-01', 1, 'active')",
+            [],
+        ).unwrap();
+        connection.execute(
+            "INSERT INTO job_orders (jor_number, jor_pyrl_group, status) VALUES (2, 'GROUP A', 'inactive')",
+            [],
+        ).unwrap();
+        drop(connection);
+
+        assert_eq!(route_count(&module), 3);
+        assert!(warnings(&module).is_empty());
+        let call = |method: &str, path: &str| {
+            let route = match_route(&module, method, path).unwrap();
+            assert!(route.supported);
+            execute(
+                directory.path(),
+                "jo-payroll",
+                &route.table,
+                &route.name,
+                &route.endpoint,
+                &route.schema,
+                &route.model,
+                path,
+                &Value::Null,
+                "",
+            )
+        };
+
+        let (status, summary) = call("GET", "/api/jo-payroll/job-orders/stats/summary");
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(summary["total_active"], 1);
+        assert_eq!(summary["total_inactive"], 1);
+        assert_eq!(summary["total_atm"], 1);
+        assert_eq!(summary["total_basic_pay"].as_f64(), Some(1000.0));
+        assert_eq!(summary["total_deductions"].as_f64(), Some(65.0));
+        assert_eq!(summary["net_pay"].as_f64(), Some(935.0));
+
+        let (status, group) = call("GET", "/api/jo-payroll/job-orders/group/GROUP%20A");
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(group.as_array().unwrap().len(), 1);
+        assert_eq!(group[0]["jor_number"], 1);
+
+        let (status, appointments) =
+            call("GET", "/api/jo-payroll/job-orders/appointments/list");
+        assert_eq!(status, axum::http::StatusCode::OK);
+        assert_eq!(appointments.as_array().unwrap().len(), 1);
+        assert_eq!(appointments[0]["appointment_order"], 1);
     }
 
     #[test]

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — ChannelCard [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:30.777Z
+// Generated: 2026-11-03T17:05:28.775Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SHARED CONSTANTS — broadcast-test
 // Source: @arkzen:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:51.117Z
+// Generated: 2026-11-03T17:58:59.098Z
 // ============================================================
 
 import React, { memo, useCallback, useEffect, useRef, useState } from 'react'

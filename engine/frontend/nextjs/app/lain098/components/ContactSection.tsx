@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — ContactSection
 // Source: @arkzen:components (lain098)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:58:15.441Z
+// Generated: 2026-11-03T17:59:07.003Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

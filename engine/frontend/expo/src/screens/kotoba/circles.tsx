@@ -80,9 +80,9 @@ const CirclesScreen = () => {
             <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{c.name}</Text><Text style={{ color: TH.sub }}>{c.members_count} member{c.members_count === 1 ? '' : 's'}</Text></View>
             <Chip tone="blue" label={`${c.level}`} />
           </View>
-          {c.description && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{c.description}</Text>}
+          {!!c.description && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{c.description}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            {c.joined && <Btn small kind="primary" label="Open chat" onPress={() => { pending.chat = { kind: 'circle', id: c.id }; nav.go('chat') }} style={{ flex: 1 }} />}
+            {!!c.joined && <Btn small kind="primary" label="Open chat" onPress={() => { pending.chat = { kind: 'circle', id: c.id }; nav.go('chat') }} style={{ flex: 1 }} />}
             <Btn small kind={c.joined ? 'fill' : 'tint'} label={c.joined ? 'Leave' : 'Join circle'} onPress={() => toggle(c)} style={c.joined ? undefined : { flex: 1 }} />
           </View>
         </Card>

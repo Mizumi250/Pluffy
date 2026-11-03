@@ -1130,3 +1130,15 @@ const IndexScreen = () => {
 }
 
 /* @arkzen:native:page:lynx:index:end */
+
+/* @arkzen:policy:rs:update
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:policy:rs:update:end */
+
+/* @arkzen:policy:rs:delete
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:policy:rs:delete:end */

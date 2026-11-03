@@ -37,6 +37,7 @@ const DashboardScreen = () => {
   const wsRef            = useRef<WebSocket | null>(null)
   const mountedRef       = useRef(true)
   const reconnectTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const heartbeatInterval = useRef<ReturnType<typeof setInterval> | null>(null)
 
   const addMsg = (setter: React.Dispatch<React.SetStateAction<NativeMessage[]>>, msg: NativeMessage) =>
     setter(prev => [msg, ...prev].slice(0, 50))
@@ -71,6 +72,13 @@ const DashboardScreen = () => {
       if (msg.event === 'pusher:connection_established') {
         const connData = typeof msg.data === 'string' ? JSON.parse(msg.data as string) : msg.data
         const socketId = (connData as any).socket_id as string
+
+        if (heartbeatInterval.current) clearInterval(heartbeatInterval.current)
+        heartbeatInterval.current = setInterval(() => {
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({ event: 'pusher:ping', data: {} }))
+          }
+        }, 25000)
 
         // 1. public — no auth needed
         ws.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: 'broadcast-test-public' } }))
@@ -140,6 +148,10 @@ const DashboardScreen = () => {
     ws.onerror = (e) => { console.error('[broadcast-test] ws error:', e); ws.close() }
 
     ws.onclose = () => {
+      if (heartbeatInterval.current) {
+        clearInterval(heartbeatInterval.current)
+        heartbeatInterval.current = null
+      }
       if (!mountedRef.current) return
       setPublicStatus('error'); setPrivateStatus('error'); setPresenceStatus('error')
       reconnectTimeout.current = setTimeout(() => {
@@ -165,6 +177,8 @@ const DashboardScreen = () => {
     return () => {
       mountedRef.current = false
       if (reconnectTimeout.current) clearTimeout(reconnectTimeout.current)
+      if (heartbeatInterval.current) clearInterval(heartbeatInterval.current)
+      heartbeatInterval.current = null
       wsRef.current?.close()
     }
   }, [user?.id])

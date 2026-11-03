@@ -2950,3 +2950,33 @@ export const usePageFadeIn = (delay = 0) => {
   return useAnimatedStyle(() => ({ opacity: opacity.value, transform: [{ translateY: translateY.value }] }))
 }
 /* @arkzen:native:animation:rn:end */
+
+/* @arkzen:endpoint:rs:my_records
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:my_records:end */
+
+/* @arkzen:endpoint:rs:check_in
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:check_in:end */
+
+/* @arkzen:endpoint:rs:check_out
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:check_out:end */
+
+/* @arkzen:endpoint:rs:toggle_geofencing
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:toggle_geofencing:end */
+
+/* @arkzen:endpoint:rs:update_office
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:update_office:end */

@@ -96,6 +96,19 @@ const BACKEND_DIR = activeStack === 'react-inertia'
   ? INERTIA_BACKEND_DIR
   : path.join(ENGINE_DIR, 'backend', activeBackend)
 
+function findRustCargo() {
+  const cargo = process.platform === 'win32' ? 'cargo.exe' : 'cargo'
+  const cargoHome = process.env.CARGO_HOME || path.join(os.homedir(), '.cargo')
+  const pathCandidates = (process.env.PATH ?? '')
+    .split(path.delimiter)
+    .filter(Boolean)
+    .map(directory => path.join(directory, cargo))
+  return [...pathCandidates, path.join(cargoHome, 'bin', cargo)]
+    .find(candidate => fs.existsSync(candidate)) ?? null
+}
+
+const RUST_CARGO = IS_RUST ? findRustCargo() : null
+
 const WEB_DIR = path.join(STACKS_DIR, activeStack)
 const TAURI_DIR = path.join(STACKS_DIR, 'tauri')
 const ELECTRON_DIR = path.join(STACKS_DIR, 'electron')
@@ -234,6 +247,10 @@ function checkSetup() {
       console.log('\n  ✗ Rust engine is missing. Run: node setup.js --backend rust\n')
       process.exit(1)
     }
+    if (!RUST_CARGO) {
+      console.log('\n  ✗ Cargo was not found. Install Rust with rustup or add Cargo to PATH, then retry.\n')
+      process.exit(1)
+    }
     if (!fs.existsSync(path.join(BACKEND_DIR, 'Cargo.lock'))) {
       console.log('\n  ✗ Rust packages are missing. Run: node mizumi.js deps install rust\n')
       process.exit(1)
@@ -308,10 +325,15 @@ function startBackend() {
           },
         })
     : IS_RUST
-      ? spawn('cargo', ['run'], {
+      ? spawn(RUST_CARGO, ['run'], {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
-          env: { ...process.env, PORT: '8000', PLUFF_ROOT: ROOT_DIR },
+          env: {
+            ...process.env,
+            PATH: [path.dirname(RUST_CARGO), process.env.PATH].filter(Boolean).join(path.delimiter),
+            PORT: '8000',
+            PLUFF_ROOT: ROOT_DIR,
+          },
         })
     : spawn('php', ['artisan', 'serve', '--host=0.0.0.0', '--port=8000'], {
         cwd: BACKEND_DIR,
@@ -330,6 +352,9 @@ function startBackend() {
   })
   proc.on('exit', (code) => {
     if (code !== 0) log('backend', `Exited with code ${code}`)
+  })
+  proc.on('error', (error) => {
+    log('backend', `Failed to start ${backendName}: ${error.message}`)
   })
 
   return proc

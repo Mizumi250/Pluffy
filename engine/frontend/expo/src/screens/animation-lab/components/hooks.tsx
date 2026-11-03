@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE HOOKS — animation-lab [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:21.310Z
+// Generated: 2026-11-03T17:05:27.592Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Diff [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T16:10:11.926Z
+// Generated: 2026-11-03T17:18:58.382Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

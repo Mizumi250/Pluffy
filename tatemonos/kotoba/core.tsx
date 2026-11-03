@@ -7897,9 +7897,9 @@ const CirclesScreen = () => {
             <View style={{ flex: 1 }}><Text style={{ fontWeight: '700', fontSize: 17, color: TH.text }}>{c.name}</Text><Text style={{ color: TH.sub }}>{c.members_count} member{c.members_count === 1 ? '' : 's'}</Text></View>
             <Chip tone="blue" label={`${c.level}`} />
           </View>
-          {c.description && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{c.description}</Text>}
+          {!!c.description && <Text style={{ color: TH.sub, fontSize: 15, lineHeight: 21 }}>{c.description}</Text>}
           <View style={{ flexDirection: 'row', gap: 10 }}>
-            {c.joined && <Btn small kind="primary" label="Open chat" onPress={() => { pending.chat = { kind: 'circle', id: c.id }; nav.go('chat') }} style={{ flex: 1 }} />}
+            {!!c.joined && <Btn small kind="primary" label="Open chat" onPress={() => { pending.chat = { kind: 'circle', id: c.id }; nav.go('chat') }} style={{ flex: 1 }} />}
             <Btn small kind={c.joined ? 'fill' : 'tint'} label={c.joined ? 'Leave' : 'Join circle'} onPress={() => toggle(c)} style={c.joined ? undefined : { flex: 1 }} />
           </View>
         </Card>
@@ -8009,3 +8009,201 @@ const ProfileScreen = () => {
 }
 
 /* @arkzen:native:page:profile:end */
+
+/* @arkzen:handler:rs:me
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:me:end */
+
+/* @arkzen:handler:rs:update_me
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:update_me:end */
+
+/* @arkzen:handler:rs:bump
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:bump:end */
+
+/* @arkzen:handler:rs:notify
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:notify:end */
+
+/* @arkzen:handler:rs:community_seed
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:community_seed:end */
+
+/* @arkzen:handler:rs:home
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:home:end */
+
+/* @arkzen:handler:rs:feed
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:feed:end */
+
+/* @arkzen:handler:rs:create_post
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:create_post:end */
+
+/* @arkzen:handler:rs:delete_post
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:delete_post:end */
+
+/* @arkzen:handler:rs:toggle_like
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:toggle_like:end */
+
+/* @arkzen:handler:rs:list_comments
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_comments:end */
+
+/* @arkzen:handler:rs:add_comment
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:add_comment:end */
+
+/* @arkzen:handler:rs:accept_correction
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:accept_correction:end */
+
+/* @arkzen:handler:rs:list_lessons
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_lessons:end */
+
+/* @arkzen:handler:rs:complete_lesson
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:complete_lesson:end */
+
+/* @arkzen:handler:rs:list_cards
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_cards:end */
+
+/* @arkzen:handler:rs:add_card
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:add_card:end */
+
+/* @arkzen:handler:rs:review_card
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:review_card:end */
+
+/* @arkzen:handler:rs:delete_card
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:delete_card:end */
+
+/* @arkzen:handler:rs:partners
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:partners:end */
+
+/* @arkzen:handler:rs:view_profile
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:view_profile:end */
+
+/* @arkzen:handler:rs:toggle_follow
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:toggle_follow:end */
+
+/* @arkzen:handler:rs:list_conversations
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_conversations:end */
+
+/* @arkzen:handler:rs:start_conversation
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:start_conversation:end */
+
+/* @arkzen:handler:rs:list_messages
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_messages:end */
+
+/* @arkzen:handler:rs:send_message
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:send_message:end */
+
+/* @arkzen:handler:rs:correct_message
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:correct_message:end */
+
+/* @arkzen:handler:rs:list_circles
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_circles:end */
+
+/* @arkzen:handler:rs:create_circle
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:create_circle:end */
+
+/* @arkzen:handler:rs:toggle_join
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:toggle_join:end */
+
+/* @arkzen:handler:rs:list_alerts
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:list_alerts:end */
+
+/* @arkzen:handler:rs:read_alerts
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:read_alerts:end */
+
+/* @arkzen:handler:rs:progress
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:progress:end */

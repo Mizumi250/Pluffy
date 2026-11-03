@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Segmented
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T16:10:14.153Z
+// Generated: 2026-11-03T17:59:05.732Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

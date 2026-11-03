@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Bar [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T16:10:11.907Z
+// Generated: 2026-11-03T17:18:58.363Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

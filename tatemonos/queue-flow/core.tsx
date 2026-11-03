@@ -3484,3 +3484,27 @@ console.log('⏳ QueueFlow running on React Native Bare')
 // Lynx-specific scripts
 console.log('⏳ QueueFlow running on Lynx')
 /* @arkzen:native:script:lynx:end */
+
+/* @arkzen:handler:rs:join_queue
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:join_queue:end */
+
+/* @arkzen:handler:rs:call_next
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:call_next:end */
+
+/* @arkzen:handler:rs:queue_status
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:queue_status:end */
+
+/* @arkzen:handler:rs:my_ticket
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:my_ticket:end */

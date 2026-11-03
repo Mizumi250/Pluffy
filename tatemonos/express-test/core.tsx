@@ -409,3 +409,63 @@ const IndexPage = () => {
 
 export default IndexPage
 /* @arkzen:web:page:index:end */
+
+/* @arkzen:middleware:rs:requireJson
+*/
+// Documentary Rust variant; the Rust engine handles the named requireJson middleware.
+// This body is not evaluated; the built-in middleware checks the JSON media type.
+/* @arkzen:middleware:rs:requireJson:end */
+
+/* @arkzen:policy:rs:delete
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:policy:rs:delete:end */
+
+/* @arkzen:endpoint:rs:stats
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:stats:end */
+
+/* @arkzen:handler:rs:probe
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:handler:rs:probe:end */
+
+/* @arkzen:jobs:rs:process-data
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:jobs:rs:process-data:end */
+
+/* @arkzen:jobs:rs:record-result
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:jobs:rs:record-result:end */
+
+/* @arkzen:listener:rs:LogTicket
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:LogTicket:end */
+
+/* @arkzen:listener:rs:CountTicket
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:CountTicket:end */
+
+/* @arkzen:console:rs:ping
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:console:rs:ping:end */
+
+/* @arkzen:notifications:rs:db-ping
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:notifications:rs:db-ping:end */

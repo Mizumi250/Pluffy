@@ -1504,3 +1504,63 @@ const IndexScreen = () => {
 }
 
 /* @arkzen:native:page:lynx:index:end */
+
+/* @arkzen:endpoint:rs:index
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:index:end */
+
+/* @arkzen:endpoint:rs:clearLog
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:clearLog:end */
+
+/* @arkzen:listener:rs:SendWelcomeEmail
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:SendWelcomeEmail:end */
+
+/* @arkzen:listener:rs:UpdateUserStats
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:UpdateUserStats:end */
+
+/* @arkzen:listener:rs:NotifyAdmins
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:NotifyAdmins:end */
+
+/* @arkzen:listener:rs:ProcessPayment
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:ProcessPayment:end */
+
+/* @arkzen:listener:rs:UpdateInventory
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:UpdateInventory:end */
+
+/* @arkzen:listener:rs:SendOrderConfirmation
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:SendOrderConfirmation:end */
+
+/* @arkzen:listener:rs:LogExportActivity
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:LogExportActivity:end */
+
+/* @arkzen:listener:rs:CleanupTempFiles
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:listener:rs:CleanupTempFiles:end */

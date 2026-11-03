@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — events-test [Expo]
 // Source: @arkzen:native:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:39.351Z
+// Generated: 2026-11-03T17:05:29.629Z
 // ============================================================
 
 export interface EventLogEntry {

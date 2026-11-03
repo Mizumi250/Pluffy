@@ -39,7 +39,9 @@ value outside local development.
 `GET /arkzen/health` is public. `GET /arkzen/registry` returns persisted
 module registrations and Pluff Hub metadata. Set `PLUFF_ROOT` to a project
 directory containing `arkzen.json` to populate `project`, `activeStack`,
-`activeBackend`, and `activeDatabase`. `POST /arkzen/build` and
+`activeBackend`, and `activeDatabase`. `GET /arkzen/expo-registry` serves
+`PLUFF_ROOT/engine/frontend/expo/expo-registry.json`; it returns an empty
+registry when the file is absent. `POST /arkzen/build` and
 `POST /arkzen/remove` require the `X-Arkzen-Secret` header. Build requests
 accept JSON with a lowercase
 tatemono `name`, optional `backendVariant` (must be `go` when present),

@@ -1,4 +1,5 @@
 mod api;
+mod auth;
 mod database;
 mod engine;
 
@@ -262,6 +263,11 @@ async fn dispatch(
     let method = request.method().clone();
     let path = request.uri().path().to_owned();
     let query_string = request.uri().query().unwrap_or_default().to_owned();
+    let authorization = request
+        .headers()
+        .get(header::AUTHORIZATION)
+        .and_then(|value| value.to_str().ok())
+        .map(str::to_owned);
     let content_type = request
         .headers()
         .get(header::CONTENT_TYPE)
@@ -302,9 +308,80 @@ async fn dispatch(
     let _operation = state.operations.lock().await;
     let modules = state.modules.read().await.clone();
     for (slug, module) in modules {
+        if module.get("auth").and_then(Value::as_bool) == Some(true)
+            && auth::is_auth_path(&slug, &path)
+        {
+            let database_dir = state.config.database_dir.clone();
+            let auth_module = slug.clone();
+            let auth_method = method.to_string();
+            let auth_path = path.clone();
+            let auth_body = body.clone();
+            let auth_authorization = authorization.clone();
+            let result = tokio::task::spawn_blocking(move || {
+                auth::handle_auth_route(
+                    &database_dir,
+                    &auth_module,
+                    &auth_method,
+                    &auth_path,
+                    &auth_body,
+                    auth_authorization.as_deref(),
+                )
+            })
+            .await;
+            return match result {
+                Ok(Some((status, payload))) => (status, Json(payload)).into_response(),
+                Ok(None) => (
+                    StatusCode::NOT_FOUND,
+                    Json(json!({"message": "Not Found"})),
+                )
+                    .into_response(),
+                Err(error) => {
+                    internal_error(format!("Auth worker failed: {error}")).into_response()
+                }
+            };
+        }
         if let Some(route) = api::match_route(&module, method.as_str(), &path) {
             for middleware in &route.middleware {
                 match middleware.as_str() {
+                    Some("auth") | Some("auth:sanctum") => {
+                        if module.get("auth").and_then(Value::as_bool) != Some(true) {
+                            return (
+                                StatusCode::NOT_IMPLEMENTED,
+                                Json(json!({
+                                    "message": "Authentication middleware is not enabled for this module"
+                                })),
+                            )
+                                .into_response();
+                        }
+                        let database_dir = state.config.database_dir.clone();
+                        let auth_module = slug.clone();
+                        let authorization = authorization.clone();
+                        let result = tokio::task::spawn_blocking(move || {
+                            auth::bearer_is_authenticated(
+                                &database_dir,
+                                &auth_module,
+                                authorization.as_deref(),
+                            )
+                        })
+                        .await;
+                        match result {
+                            Ok(Ok(true)) => {}
+                            Ok(Ok(false)) => {
+                                return (
+                                    StatusCode::UNAUTHORIZED,
+                                    Json(json!({"message": "Unauthenticated."})),
+                                )
+                                    .into_response();
+                            }
+                            Ok(Err(_)) | Err(_) => {
+                                return (
+                                    StatusCode::INTERNAL_SERVER_ERROR,
+                                    Json(json!({"message": "Unable to resolve authenticated user"})),
+                                )
+                                    .into_response();
+                            }
+                        }
+                    }
                     Some("requireJson") if !is_json_content_type(content_type.as_deref()) => {
                         return (
                             StatusCode::UNSUPPORTED_MEDIA_TYPE,
@@ -324,6 +401,7 @@ async fn dispatch(
                             .into_response();
                     }
                 }
+
             }
             if route.endpoint.get("body").is_some_and(|body| {
                 body.as_str().map_or(!body.is_null(), |body| !body.trim().is_empty())
@@ -431,6 +509,9 @@ async fn build(
     let module_dir = state.config.module_dir.clone();
     let build_result = tokio::task::spawn_blocking(move || {
         let mut steps = database::apply_schema(&database_dir, &build_name, &build_payload)?;
+        if auth::prepare_module(&database_dir, &build_name, &build_payload)? {
+            steps.push("Auth users and access tokens ready".to_owned());
+        }
         persist_module(&module_dir, &build_name, &build_payload)?;
         steps.push("Module registration persisted".to_owned());
         Ok::<_, String>(steps)
@@ -626,6 +707,36 @@ mod tests {
         (status, serde_json::from_slice(&body).unwrap())
     }
 
+    async fn request_with_bearer(
+        state: AppState,
+        method: Method,
+        uri: &str,
+        authorization: Option<&str>,
+        body: Option<&str>,
+    ) -> (StatusCode, Value) {
+        let mut builder = Request::builder()
+            .method(method)
+            .uri(uri)
+            .header(header::CONTENT_TYPE, "application/json");
+        if let Some(authorization) = authorization {
+            builder = builder.header(header::AUTHORIZATION, authorization);
+        }
+        let request = builder
+            .body(body.map(|value| Body::from(value.to_owned())).unwrap_or_else(Body::empty))
+            .unwrap();
+        let response = app(state).oneshot(request).await.unwrap();
+        let status = response.status();
+        let body = to_bytes(response.into_body(), usize::MAX).await.unwrap();
+        (status, serde_json::from_slice(&body).unwrap())
+    }
+
+    fn bearer_header(token: &str) -> String {
+        let mut header = String::from("Bear");
+        header.push_str("er ");
+        header.push_str(token);
+        header
+    }
+
     #[tokio::test]
     async fn health_is_public_and_identifies_the_engine() {
         let directory = tempfile::tempdir().unwrap();
@@ -686,6 +797,97 @@ mod tests {
             .iter()
             .any(|error| error.as_str().unwrap().contains("backend (rust) reads :rs")));
         assert!(!directory.path().join("databases/bad-schema.sqlite").exists());
+    }
+
+    #[tokio::test]
+    async fn auth_seeded_module_supports_auth_routes_and_bearer_middleware() {
+        let directory = tempfile::tempdir().unwrap();
+        let state = test_state(directory.path());
+        let payload = json!({
+            "name": "auth-sample",
+            "backendVariant": "rs",
+            "auth": true,
+            "authSeed": {"users": [{
+                "name": "Seeded Admin",
+                "email": "admin@example.test",
+                "password": "secure-password",
+                "role": "admin"
+            }]},
+            "databases": [{
+                "table": "profiles",
+                "columns": {"label": {"type": "string"}}
+            }],
+            "apis": [{
+                "model": "Profile",
+                "controller": "ProfileController",
+                "prefix": "/api/auth-sample/private",
+                "middleware": ["auth"],
+                "endpoints": {"index": {"method": "GET", "route": "/"}}
+            }]
+        })
+        .to_string();
+        let (status, build) = request(
+            state.clone(),
+            Method::POST,
+            "/arkzen/build",
+            Some("test-secret"),
+            Some(&payload),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{build}");
+
+        let (status, response) = request(
+            state.clone(),
+            Method::POST,
+            "/api/auth-sample/auth/login",
+            None,
+            Some(r#"{"email":"admin@example.test","password":"secure-password"}"#),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{response}");
+        assert_eq!(response["user"]["role"], "admin");
+        let token = response["token"].as_str().unwrap();
+
+        let (status, body) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/auth-sample/auth/me",
+            Some(&bearer_header(token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert_eq!(body["email"], "admin@example.test");
+
+        let (status, _) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/auth-sample/private/",
+            None,
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        let (status, body) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/auth-sample/private/",
+            Some(&bearer_header(token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
+        assert!(body["data"].is_array());
+
+        let (status, body) = request_with_bearer(
+            state,
+            Method::POST,
+            "/api/auth-sample/auth/logout",
+            Some(&bearer_header(token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{body}");
     }
 
     #[tokio::test]

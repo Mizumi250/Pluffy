@@ -75,7 +75,8 @@ const DashboardScreen = () => {
 
     const raw = await AsyncStorage.getItem('arkzen-auth-tokens')
     const map: Record<string, string> = raw ? JSON.parse(raw) : {}
-    if (!map['notification-test']) {
+    const authToken = map['notification-test']
+    if (!authToken) {
       setWsStatus('error')
       return
     }
@@ -101,6 +102,7 @@ const DashboardScreen = () => {
             `${BACKEND_URL}/api/notification-test/auth/broadcasting/auth`,
             {
               method: 'POST',
+              headers: { Authorization: `Bearer ${authToken}` },
               body: JSON.stringify({
                 socket_id:    socketId,
                 channel_name: `private-notification-test.${userId}`,
@@ -114,7 +116,12 @@ const DashboardScreen = () => {
               data:  { channel: `private-notification-test.${userId}`, auth },
             }))
           } else {
-            console.error('[notification-test] private channel auth failed:', res.status)
+            const responseBody = await res.text()
+            console.error('[notification-test] private channel auth failed:', res.status, responseBody)
+            if (res.status === 401) {
+              await logout()
+              router.replace('/notification-test/login' as any)
+            }
           }
         } catch (e) {
           console.error('[notification-test] private auth error:', e)

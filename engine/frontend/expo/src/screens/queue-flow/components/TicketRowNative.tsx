@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — TicketRowNative [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T15:57:53.642Z
+// Generated: 2026-11-03T17:05:32.969Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

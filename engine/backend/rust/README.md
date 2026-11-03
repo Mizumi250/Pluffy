@@ -92,17 +92,33 @@ Missing records receive `404`; invalid bodies/declared validation rules receive
 `422`; database failures are explicit `500` responses. Index supports configured
 column filters, `search` over name/title/description where present, page sizing,
 and soft-delete filtering. Declared required/string/numeric/boolean/email/min/max
-validation rules are supported.
+validation rules are supported, along with `sometimes`, `nullable`, `integer`,
+`in`, and `unique`.
 
 The built-in `requireJson` middleware checks JSON media types and rejects
-invalid requests with `415`; unknown middleware returns `501`. Rust provides
-purpose-built emulations for the `body-endpoint-handler` `echo`, `stats`,
+invalid requests with `415`; `auth` and `auth:sanctum` require `auth: true`
+and validate module-local bearer tokens. Unknown middleware returns `501`.
+Modules with `auth: true` receive module-local `users` and
+`personal_access_tokens` tables, bcrypt-hashed passwords, SHA-256-hashed
+random Sanctum-style tokens, and `/api/<module>/auth/register`, `login`, `me`,
+and `logout` routes. `authSeed.users` upserts seeded users. Registration
+requires name, email, password, and matching `password_confirmation`; register
+and login return `{ "user": ..., "token": "<id>|<secret>" }`. The Rust engine
+does not implement cookie or session authentication.
+
+Rust provides purpose-built emulations for the `body-endpoint-handler` `echo`, `stats`,
 `ping`, `recordHandler`, and `latest` operations and the `inventory-management`
 `lowStock` endpoint when their corresponding bodies are present. These return
 equivalent response shapes and persist/query the declared module tables;
-arbitrary custom source is never evaluated. Other custom endpoint bodies,
-arbitrary middleware, policies, authentication, and non-CRUD DSL behavior
-remain unsupported and return `501` with build warnings. API registration is
-dynamic from the persisted module definition; it does not generate or execute
-arbitrary Rust source code.
-Database seeder rows are not applied yet.
+arbitrary custom source is never evaluated. `queue-flow` has explicit
+`join_queue`, `call_next`, `queue_status`, and `my_ticket` state transitions;
+its realtime broadcasts are not implemented. `jo-payroll` implements summary,
+group, and appointment queries. Other custom endpoint bodies, arbitrary
+middleware, policies, and non-CRUD DSL behavior remain unsupported and return
+`501` with build warnings. API registration is dynamic from the persisted
+module definition; it does not generate or execute arbitrary Rust source code.
+Declared `database.seeder.data` rows are inserted when the module is built.
+Rebuilding a module with seed rows clears and reseeds that table, including
+resetting its SQLite auto-increment sequence; tables without seed rows are
+preserved. Seed columns must be declared (or be the generated `id` and
+timestamps), and seed values must be JSON scalars.

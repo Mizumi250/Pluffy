@@ -3,7 +3,7 @@
 // ARKZEN GENERATED — errors-test/error.tsx
 // Next.js segment-scoped runtime error boundary.
 // DO NOT EDIT DIRECTLY. Edit the @arkzen:error:500 block in the tatemono instead.
-// Generated: 2026-11-03T15:57:54.750Z
+// Generated: 2026-11-03T17:59:00.618Z
 // ============================================================
 
 import React from 'react'

@@ -1,13 +1,17 @@
-use rusqlite::{Connection, Transaction};
-use serde_json::Value;
+use rusqlite::{types::Value as SqlValue, Connection, Transaction};
+use serde_json::{Map, Value};
 use std::path::Path;
 
 pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec<String>, String> {
     std::fs::create_dir_all(directory)
         .map_err(|error| format!("Could not create isolated database directory: {error}"))?;
     let path = directory.join(format!("{name}.sqlite"));
-    let mut connection = Connection::open(&path)
-        .map_err(|error| format!("Could not open isolated database {}: {error}", path.display()))?;
+    let mut connection = Connection::open(&path).map_err(|error| {
+        format!(
+            "Could not open isolated database {}: {error}",
+            path.display()
+        )
+    })?;
     connection
         .pragma_update(None, "foreign_keys", "ON")
         .map_err(|error| format!("Could not enable SQLite foreign keys: {error}"))?;
@@ -23,11 +27,136 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
             .ok_or_else(|| "Validated database table name was missing".to_owned())?;
         create_table(&transaction, table, definition)?;
         steps.push(format!("Schema ready: {table}"));
+        let rows = definition["seeder"]["data"]
+            .as_array()
+            .filter(|rows| !rows.is_empty());
+        if let Some(rows) = rows {
+            seed_table(&transaction, table, definition, rows)?;
+            steps.push(format!("Seeded {} rows: {table} (reset)", rows.len()));
+        }
     }
     transaction
         .commit()
         .map_err(|error| format!("Could not commit schema changes: {error}"))?;
     Ok(steps)
+}
+
+fn seed_table(
+    transaction: &Transaction<'_>,
+    table: &str,
+    definition: &Value,
+    rows: &[Value],
+) -> Result<(), String> {
+    let table_name = quote_identifier(table)?;
+    transaction
+        .execute(&format!("DELETE FROM {table_name}"), [])
+        .map_err(|error| format!("Could not reset seeded table {table}: {error}"))?;
+
+    let sequence_exists = transaction
+        .query_row(
+            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'sqlite_sequence'",
+            [],
+            |row| row.get::<_, i64>(0),
+        )
+        .map_err(|error| format!("Could not inspect SQLite sequences: {error}"))?
+        > 0;
+    if sequence_exists {
+        transaction
+            .execute("DELETE FROM sqlite_sequence WHERE name = ?1", [table])
+            .map_err(|error| {
+                format!("Could not reset auto-increment sequence for {table}: {error}")
+            })?;
+    }
+
+    let timestamps = definition["timestamps"].as_bool() != Some(false);
+    for (row_index, row) in rows.iter().enumerate() {
+        let Some(row) = row.as_object() else {
+            return Err(format!(
+                "Seed row {} for {table} must be an object",
+                row_index + 1
+            ));
+        };
+        seed_row(transaction, table, row, timestamps)
+            .map_err(|error| format!("Could not seed {table} row {}: {error}", row_index + 1))?;
+    }
+    Ok(())
+}
+
+fn seed_row(
+    transaction: &Transaction<'_>,
+    table: &str,
+    row: &Map<String, Value>,
+    timestamps: bool,
+) -> Result<(), String> {
+    let table_name = quote_identifier(table)?;
+    let mut fields: Vec<(String, Option<Value>)> = row
+        .iter()
+        .map(|(name, value)| (name.clone(), Some(value.clone())))
+        .collect();
+    if timestamps {
+        for name in ["created_at", "updated_at"] {
+            if !row.contains_key(name) {
+                fields.push((name.to_owned(), None));
+            }
+        }
+    }
+    if fields.is_empty() {
+        transaction
+            .execute(&format!("INSERT INTO {table_name} DEFAULT VALUES"), [])
+            .map_err(|error| error.to_string())?;
+        return Ok(());
+    }
+
+    let mut parameters = Vec::with_capacity(fields.len());
+    let mut placeholders = Vec::with_capacity(fields.len());
+    let mut columns = Vec::with_capacity(fields.len());
+    for (name, value) in fields {
+        columns.push(quote_identifier(&name)?);
+        if value.is_none() && timestamps && matches!(name.as_str(), "created_at" | "updated_at") {
+            placeholders.push("CURRENT_TIMESTAMP".to_owned());
+        } else {
+            placeholders.push("?".to_owned());
+            let Some(value) = value.as_ref() else {
+                return Err(format!("Missing generated timestamp value for {name}"));
+            };
+            parameters.push(seed_sql_value(value)?);
+        }
+    }
+    let sql = format!(
+        "INSERT INTO {table_name} ({}) VALUES ({})",
+        columns.join(", "),
+        placeholders.join(", ")
+    );
+    transaction
+        .execute(&sql, rusqlite::params_from_iter(parameters))
+        .map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+fn seed_sql_value(value: &Value) -> Result<SqlValue, String> {
+    match value {
+        Value::Null => Ok(SqlValue::Null),
+        Value::Bool(value) => Ok(SqlValue::Integer(if *value { 1 } else { 0 })),
+        Value::Number(value) => {
+            if let Some(value) = value.as_i64() {
+                Ok(SqlValue::Integer(value))
+            } else if let Some(value) = value.as_u64() {
+                match i64::try_from(value) {
+                    Ok(value) => Ok(SqlValue::Integer(value)),
+                    Err(_) => value
+                        .as_f64()
+                        .map(SqlValue::Real)
+                        .ok_or_else(|| "Seed number is not supported by SQLite".to_owned()),
+                }
+            } else if let Some(value) = value.as_f64() {
+                Ok(SqlValue::Real(value))
+            } else {
+                Err("Seed number is not supported by SQLite".to_owned())
+            }
+        }
+        Value::String(value) => Ok(SqlValue::Text(value.clone())),
+        Value::Array(_) | Value::Object(_) => Err("Seed values must be JSON scalars".to_owned()),
+    }
 }
 
 pub fn table_for_model<'a>(payload: &'a Value, api: &'a Value) -> Option<&'a str> {
@@ -85,7 +214,11 @@ fn pluralize(value: &str) -> String {
     }
 }
 
-fn create_table(transaction: &Transaction<'_>, table: &str, definition: &Value) -> Result<(), String> {
+fn create_table(
+    transaction: &Transaction<'_>,
+    table: &str,
+    definition: &Value,
+) -> Result<(), String> {
     let table_name = quote_identifier(table)?;
     let columns = definition["columns"].as_object();
     let has_primary = columns
@@ -127,10 +260,7 @@ fn create_table(transaction: &Transaction<'_>, table: &str, definition: &Value) 
         )
         .is_ok();
     if !exists {
-        let sql = format!(
-            "CREATE TABLE {table_name} ({})",
-            declarations.join(", ")
-        );
+        let sql = format!("CREATE TABLE {table_name} ({})", declarations.join(", "));
         transaction
             .execute(&sql, [])
             .map_err(|error| format!("Could not create table {table}: {error}"))?;
@@ -149,7 +279,10 @@ fn create_table(transaction: &Transaction<'_>, table: &str, definition: &Value) 
             }
             let declaration = added_column_declaration(name, config)?;
             transaction
-                .execute(&format!("ALTER TABLE {table_name} ADD COLUMN {declaration}"), [])
+                .execute(
+                    &format!("ALTER TABLE {table_name} ADD COLUMN {declaration}"),
+                    [],
+                )
                 .map_err(|error| format!("Could not add column {name} to {table}: {error}"))?;
             if config["unique"].as_bool() == Some(true) {
                 let index_name = quote_identifier(&format!("{table}_{name}_unique"))?;
@@ -161,7 +294,9 @@ fn create_table(transaction: &Transaction<'_>, table: &str, definition: &Value) 
                         ),
                         [],
                     )
-                    .map_err(|error| format!("Could not add unique index for {table}.{name}: {error}"))?;
+                    .map_err(|error| {
+                        format!("Could not add unique index for {table}.{name}: {error}")
+                    })?;
             }
         }
     }
@@ -300,5 +435,72 @@ mod tests {
             .unwrap();
         assert_eq!(done, 0);
         assert!(!directory.path().join("other.sqlite").exists());
+    }
+
+    #[test]
+    fn rebuild_resets_declared_seed_rows_and_auto_increment_ids() {
+        let directory = tempfile::tempdir().unwrap();
+        let payload = json!({
+            "databases": [{
+                "table": "inventories",
+                "columns": {
+                    "name": {"type": "string", "nullable": false},
+                    "quantity": {"type": "integer", "nullable": false}
+                },
+                "seeder": {
+                    "count": 2,
+                    "data": [
+                        {"name": "Keyboard", "quantity": 5},
+                        {"name": "Desk", "quantity": 20}
+                    ]
+                }
+            }, {
+                "table": "audit_logs",
+                "columns": {
+                    "event": {"type": "string", "nullable": false}
+                }
+            }]
+        });
+        let first = apply_schema(directory.path(), "inventory", &payload).unwrap();
+        assert!(first
+            .iter()
+            .any(|step| step == "Seeded 2 rows: inventories (reset)"));
+
+        let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
+        let count: i64 = connection
+            .query_row("SELECT COUNT(*) FROM inventories", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(count, 2);
+        connection
+            .execute(
+                "INSERT INTO inventories (name, quantity) VALUES ('Temporary', 1)",
+                [],
+            )
+            .unwrap();
+        connection
+            .execute("INSERT INTO audit_logs (event) VALUES ('keep')", [])
+            .unwrap();
+        drop(connection);
+
+        apply_schema(directory.path(), "inventory", &payload).unwrap();
+        let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
+        let (count, highest_id): (i64, i64) = connection
+            .query_row("SELECT COUNT(*), MAX(id) FROM inventories", [], |row| {
+                Ok((row.get(0)?, row.get(1)?))
+            })
+            .unwrap();
+        assert_eq!((count, highest_id), (2, 2));
+        let preserved_logs: i64 = connection
+            .query_row("SELECT COUNT(*) FROM audit_logs", [], |row| row.get(0))
+            .unwrap();
+        assert_eq!(preserved_logs, 1);
+        let created_at: String = connection
+            .query_row(
+                "SELECT created_at FROM inventories WHERE name = 'Keyboard'",
+                [],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert!(!created_at.is_empty());
     }
 }

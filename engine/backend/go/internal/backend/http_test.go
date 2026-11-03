@@ -307,6 +307,143 @@ func TestRegistryUsesPluffRootMetadata(t *testing.T) {
 	}
 }
 
+func TestRegistryEnrichesModuleCompatibilityLikeHub(t *testing.T) {
+	root := testStorageDir(t)
+	if err := os.WriteFile(filepath.Join(root, "arkzen.json"), []byte(`{"activeStack":"expo","activeBackend":"go"}`), 0o600); err != nil {
+		t.Fatalf("write root registry: %v", err)
+	}
+	sourcePath := filepath.Join(root, "tatemonos", "sample", "core.tsx")
+	if err := os.MkdirAll(filepath.Dir(sourcePath), 0o700); err != nil {
+		t.Fatalf("create Tatemono source directory: %v", err)
+	}
+	source := `/* @arkzen:meta
+name: sample
+auth: true
+backend: rust
+*/
+/* @arkzen:web:page:index */
+/* @arkzen:native:page:index */
+/* @arkzen:native:page:lynx:index */
+/* @arkzen:desktop:config */
+/* @arkzen:endpoint:go:listUsers */
+return true
+/* @arkzen:endpoint:go:listUsers:end */
+/* @arkzen:endpoint:ts:listUsers */
+return true
+/* @arkzen:endpoint:ts:listUsers:end */
+`
+	if err := os.WriteFile(sourcePath, []byte(source), 0o600); err != nil {
+		t.Fatalf("write Tatemono source: %v", err)
+	}
+	staticSourcePath := filepath.Join(root, "tatemonos", "static-native", "core.tsx")
+	if err := os.MkdirAll(filepath.Dir(staticSourcePath), 0o700); err != nil {
+		t.Fatalf("create static Tatemono source directory: %v", err)
+	}
+	staticSource := `/* @arkzen:meta
+name: static-native
+*/
+/* @arkzen:native:page:index */
+`
+	if err := os.WriteFile(staticSourcePath, []byte(staticSource), 0o600); err != nil {
+		t.Fatalf("write static Tatemono source: %v", err)
+	}
+	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: filepath.Join(root, "storage"), RootDir: root})
+	if err != nil {
+		t.Fatalf("NewHandler() error = %v", err)
+	}
+	if err := handler.service.store.Register(Registration{Name: "sample", BackendVariant: "go"}); err != nil {
+		t.Fatalf("register module: %v", err)
+	}
+
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/arkzen/registry", nil))
+	if response.Code != http.StatusOK {
+		t.Fatalf("registry status = %d, body = %s", response.Code, response.Body.String())
+	}
+	var body struct {
+		Modules []struct {
+			Name     string   `json:"name"`
+			Frontend []string `json:"frontend"`
+			Backend  []string `json:"backend"`
+		} `json:"modules"`
+	}
+	if err := json.Unmarshal(response.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode registry response: %v", err)
+	}
+	if len(body.Modules) != 2 {
+		t.Fatalf("unexpected registry modules: %+v", body.Modules)
+	}
+	modulesByName := make(map[string]struct {
+		Name     string   `json:"name"`
+		Frontend []string `json:"frontend"`
+		Backend  []string `json:"backend"`
+	})
+	for _, module := range body.Modules {
+		modulesByName[module.Name] = module
+	}
+	module, exists := modulesByName["sample"]
+	if !exists {
+		t.Fatalf("registered module missing from registry: %+v", body.Modules)
+	}
+	expectedFrontend := []string{"Next.js", "React + Vite", "React + Inertia", "Astro", "TanStack Start", "Expo", "React Native", "Lynx", "Tauri", "Electron"}
+	expectedBackend := []string{"Go", "Express", "Rust"}
+	if fmt.Sprint(module.Frontend) != fmt.Sprint(expectedFrontend) {
+		t.Fatalf("frontend badges = %#v, want %#v", module.Frontend, expectedFrontend)
+	}
+	if fmt.Sprint(module.Backend) != fmt.Sprint(expectedBackend) {
+		t.Fatalf("backend badges = %#v, want %#v", module.Backend, expectedBackend)
+	}
+	staticModule, exists := modulesByName["static-native"]
+	if !exists {
+		t.Fatalf("source-only module missing from registry: %+v", body.Modules)
+	}
+	if fmt.Sprint(staticModule.Frontend) != fmt.Sprint([]string{"Expo", "React Native"}) {
+		t.Fatalf("source-only frontend badges = %#v", staticModule.Frontend)
+	}
+	if len(staticModule.Backend) != 0 {
+		t.Fatalf("source-only backend badges = %#v", staticModule.Backend)
+	}
+}
+
+func TestExpoRegistryServesNativeModulesFromPluffRoot(t *testing.T) {
+	root := testStorageDir(t)
+	if err := os.WriteFile(filepath.Join(root, "arkzen.json"), []byte(`{"activeBackend":"go"}`), 0o600); err != nil {
+		t.Fatalf("write root registry: %v", err)
+	}
+	registryPath := filepath.Join(root, "engine", "frontend", "expo", "expo-registry.json")
+	if err := os.MkdirAll(filepath.Dir(registryPath), 0o700); err != nil {
+		t.Fatalf("create Expo registry directory: %v", err)
+	}
+	registryData := `{"engine":"1.0.0","project":"expo","modules":[{"name":"crud-test","status":"active","screens":["index"]}]}`
+	if err := os.WriteFile(registryPath, []byte(registryData), 0o600); err != nil {
+		t.Fatalf("write Expo registry: %v", err)
+	}
+	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: filepath.Join(root, "storage"), RootDir: root})
+	if err != nil {
+		t.Fatalf("NewHandler() error = %v", err)
+	}
+
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, httptest.NewRequest(http.MethodGet, "/arkzen/expo-registry", nil))
+	if response.Code != http.StatusOK {
+		t.Fatalf("Expo registry status = %d, body = %s", response.Code, response.Body.String())
+	}
+	for _, field := range []string{`"project":"expo"`, `"name":"crud-test"`, `"screens":["index"]`} {
+		if !bytes.Contains(response.Body.Bytes(), []byte(field)) {
+			t.Fatalf("Expo registry response missing %s: %s", field, response.Body.String())
+		}
+	}
+
+	if err := os.Remove(registryPath); err != nil {
+		t.Fatalf("remove Expo registry fixture: %v", err)
+	}
+	missing := httptest.NewRecorder()
+	handler.ServeHTTP(missing, httptest.NewRequest(http.MethodGet, "/arkzen/expo-registry", nil))
+	if missing.Code != http.StatusOK || !bytes.Contains(missing.Body.Bytes(), []byte(`"modules":[]`)) {
+		t.Fatalf("missing Expo registry status = %d, body = %s", missing.Code, missing.Body.String())
+	}
+}
+
 func TestBuildSeedsDeclaredRowsAndResetsSeedsOnRebuild(t *testing.T) {
 	storageDir := testStorageDir(t)
 	config := Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir}

@@ -1729,3 +1729,27 @@ const DashboardLynxPage = () => {
 }
 
 /* @arkzen:native:page:lynx:dashboard:end */
+
+/* @arkzen:endpoint:rs:adminOnly
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:adminOnly:end */
+
+/* @arkzen:endpoint:rs:userOnly
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:userOnly:end */
+
+/* @arkzen:endpoint:rs:promote
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:promote:end */
+
+/* @arkzen:endpoint:rs:demote
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:demote:end */

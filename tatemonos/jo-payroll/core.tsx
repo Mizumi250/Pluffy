@@ -4243,3 +4243,21 @@ export const AppLayout: React.FC<{ children: React.ReactNode; activeScreen?: str
 /* @arkzen:import:rn:end */
 
 /* @arkzen:native:layout:app:end */
+
+/* @arkzen:endpoint:rs:summary
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:summary:end */
+
+/* @arkzen:endpoint:rs:byGroup
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:byGroup:end */
+
+/* @arkzen:endpoint:rs:appointments
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:appointments:end */

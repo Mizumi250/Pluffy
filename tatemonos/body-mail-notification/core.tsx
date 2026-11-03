@@ -2752,3 +2752,51 @@ const DashboardLynxPage = () => {
 }
 
 /* @arkzen:native:page:lynx:dashboard:end */
+
+/* @arkzen:endpoint:rs:sendMail
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:sendMail:end */
+
+/* @arkzen:endpoint:rs:notify
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:notify:end */
+
+/* @arkzen:endpoint:rs:clearLog
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:clearLog:end */
+
+/* @arkzen:notifications:rs:action-required
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:notifications:rs:action-required:end */
+
+/* @arkzen:notifications:rs:summary
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:notifications:rs:summary:end */
+
+/* @arkzen:mail:rs:welcome
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:mail:rs:welcome:end */
+
+/* @arkzen:mail:rs:receipt
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:mail:rs:receipt:end */
+
+/* @arkzen:mail:rs:alert
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:mail:rs:alert:end */

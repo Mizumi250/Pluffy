@@ -925,3 +925,27 @@ const DashboardScreen = () => {
 }
 
 /* @arkzen:native:page:lynx:dashboard:end */
+
+/* @arkzen:endpoint:rs:index
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:endpoint:rs:index:end */
+
+/* @arkzen:jobs:rs:process-data
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:jobs:rs:process-data:end */
+
+/* @arkzen:jobs:rs:heavy-computation
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:jobs:rs:heavy-computation:end */
+
+/* @arkzen:jobs:rs:always-fails
+*/
+// Documentary Rust variant; intended behavior follows the existing reference body.
+// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+/* @arkzen:jobs:rs:always-fails:end */
