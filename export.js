@@ -54,18 +54,15 @@ const isAspnet = activeBackend === 'aspnet'
 const isSpring = activeBackend === 'spring-boot'
 const isGo = activeBackend === 'go'
 const isRust = activeBackend === 'rust'
-// Spring Boot entry points (engine/backend/spring-boot/src/main/java). Adjust if the package changes.
+// Spring Boot entry point (engine/backend/spring-boot/src/main/java). Adjust if the package changes.
 const SPRING_SERVER_CLASS = 'dev.pluff.Server'
-const SPRING_WORKER_CLASS = 'dev.pluff.Worker'
 
 // Paths — backend is stack-aware
 const FRONTEND_DIR  = path.join(ENGINE_DIR, 'frontend', isDesktop ? 'react-vite' : activeStack)
 const BACKEND_DIR   = path.join(ENGINE_DIR, 'backend', activeBackend)
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
-const springWorkerReady = isSpring &&
-  fs.existsSync(path.join(BACKEND_DIR, 'src', 'main', 'java', ...SPRING_WORKER_CLASS.split('.')) + '.java')
-// Backends whose queue/scheduler process is not available (ASP.NET always, Spring Boot until its Worker exists)
-const noQueueProcess = isAspnet || isGo || isRust || (isSpring && !springWorkerReady)
+// ASP.NET and Spring Boot execute jobs in-process; Go owns its worker in the API process.
+const noQueueProcess = isAspnet || isGo || isRust || isSpring
 
 // Database — each tatemono has its own sqlite file or Postgres database
 const isPg      = arkzenJson.activeDatabase === 'pgsql'
@@ -155,7 +152,7 @@ const hasBackend  = content.includes('auth: true')
   || content.includes('@arkzen:routes')
   || content.includes('@arkzen:store:')
 const hasRealtime = content.includes('@arkzen:realtime') || content.includes('@arkzen:notifications')
-const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events')
+const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events') || content.includes('@arkzen:console:')
 const tatSnake    = tatName.replace(/-/g, '_')
 const pgDatabaseName = `${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}_${tatSnake}`.toLowerCase()
 
@@ -936,7 +933,10 @@ if (!isNative && hasBackend) {
       `PORT=${backendPort}`,
       'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
       'PLUFF_STORAGE_DIR=storage',
-    ].join('\n') + '\n'
+      hasRealtime ? 'REVERB_PORT=8080' : '',
+      hasRealtime ? 'REVERB_APP_KEY=arkzen-key' : '',
+      hasRealtime ? 'REVERB_APP_SECRET=arkzen-secret' : '',
+    ].filter(Boolean).join('\n') + '\n'
   } else if (isRust) {
     env = [
       `PORT=${backendPort}`,
@@ -1580,14 +1580,13 @@ const startLines = [
   `console.log('\\n  Starting ${tatName}...')`,
   hasBackend && !isInertia ? `console.log('  Backend:  http://localhost:8001')` : null,
   isInertia               ? `console.log('  App:      http://localhost:8000 (Laravel + Inertia + Vite)')` : null,
-  hasBackend && hasJobs   ? `console.log('  Queue:    enabled')` : null,
-  hasBackend && hasRealtime && !isAspnet && !isSpring && !isGo && !isRust ? `console.log('  ${isExpress || isFastapi ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
-  isAspnet && hasJobs ? `console.log('  WARNING: ASP.NET queue/scheduler support is not implemented yet')` : null,
-  isAspnet && hasRealtime ? `console.log('  WARNING: ASP.NET realtime support is not implemented yet')` : null,
-  isSpring && hasJobs && !springWorkerReady ? `console.log('  WARNING: Spring Boot queue/scheduler support is not implemented yet')` : null,
-  isSpring && hasRealtime ? `console.log('  WARNING: Spring Boot realtime support is not implemented yet')` : null,
-  (isGo || isRust) && hasJobs ? `console.log('  WARNING: ${isGo ? 'Go' : 'Rust'} queue/scheduler support is not implemented yet')` : null,
-  (isGo || isRust) && hasRealtime ? `console.log('  WARNING: ${isGo ? 'Go' : 'Rust'} realtime support is not implemented yet')` : null,
+  hasBackend && hasJobs && !isGo && !isAspnet && !isSpring ? `console.log('  Queue:    enabled')` : null,
+  isGo && hasJobs ? `console.log('  Queue:    SQLite-backed worker + cron scheduler (in backend)')` : null,
+  isAspnet && hasJobs ? `console.log('  Queue:    in-process jobs/events (not durable); cron scheduling unavailable')` : null,
+  isSpring && hasJobs ? `console.log('  Queue:    in-process jobs + cron scheduler (not durable)')` : null,
+  hasBackend && hasRealtime && !isRust ? `console.log('  ${isSpring || isAspnet || isExpress || isFastapi || isGo ? 'Realtime: ws://localhost:8080' : 'Reverb:   ws://localhost:8081'}')` : null,
+  isRust && hasJobs ? `console.log('  WARNING: Rust queue/scheduler support is not implemented yet')` : null,
+  isRust && hasRealtime ? `console.log('  WARNING: Rust realtime support is not implemented yet')` : null,
   isTauri ? `console.log('  Desktop:  Tauri window\\n')` : null,
   !isInertia && !isNative && !isTauri ? `console.log('  Frontend: http://localhost:3001\\n')` : null,
   isNative                ? `console.log('  ${activeStack === 'react-native' ? 'Metro:    scan QR code / press a (Android) or i (iOS)' : 'Expo:     scan QR code in terminal'}\\n')` : null,
@@ -1611,9 +1610,7 @@ const startLines = [
   // Inertia: php artisan serve from project root, Vite runs alongside
   isInertia && hasBackend  ? `const backend  = run('backend',  'php', ['artisan', 'serve', '--port=8000'], __dirname, 'backend')` : null,
   hasBackend && hasJobs && !isInertia && !noQueueProcess
-    ? (isSpring
-      ? `const queue    = run('queue',    'java', ['-cp', springCp(), '${SPRING_WORKER_CLASS}'], BACK, 'queue')`
-      : isExpress
+    ? (isExpress
       ? `const queue    = run('queue',    'npm', ['run', 'queue'], BACK, 'queue')`
       : isFastapi
         ? `const queue    = run('queue', PYTHON, ['-m', 'pluff.worker'], BACK, 'queue')`
@@ -1697,16 +1694,16 @@ const tauriNote = isTauri
   ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
   : ''
 const aspnetNote = isAspnet
-  ? `\n> **ASP.NET Core status:** Auth, CRUD validation, update/delete policies, C# endpoint/middleware variants, and Pusher-compatible realtime are supported. Queue/scheduler workers and file storage still need ASP.NET implementations.\n`
+  ? `\n> **ASP.NET Core status:** Auth, CRUD validation, update/delete policies, C# endpoint/middleware variants, and Pusher-compatible realtime are supported. Jobs/events run through an in-process queue (not durable across restarts); cron scheduling and file storage are not implemented.\n`
   : ''
 const springNote = isSpring
-  ? `\n> **Spring Boot status:** JDK 17+ and Apache Maven are required. The Spring Boot backend is work in progress: queues, realtime and file storage may not be implemented yet.\n`
+  ? `\n> **Spring Boot status:** JDK 17+ and Apache Maven are required. Jobs use in-process workers and commands use an in-process cron scheduler; queued work is not durable across restarts. Pusher-compatible realtime is supported.\n`
   : ''
 const fastapiNote = isFastapi
   ? `\n> **FastAPI backend:** Python 3 is required. The exported backend uses a local virtual environment; install Ollama separately if this Tatemono uses Ollama Studio.\n`
   : ''
 const goNote = isGo
-  ? `\n> **Go backend:** Go 1.22+ is required. Common CRUD API routes and SQLite schema setup are supported. Custom \`:go\` handlers, middleware/auth policies, PostgreSQL, queues, and realtime are not available yet.\n`
+  ? `\n> **Go backend:** Go 1.22+ is required. Common CRUD, SQLite, module auth, restricted CRUD update/delete policies, Pusher-compatible realtime, a SQLite-backed job queue with retries, and cron scheduling are supported. Job and console execution currently emulates the built-in \`job-test\` and \`scheduler-test\` variants; arbitrary custom \`:go\` handlers, custom middleware, and PostgreSQL are not available yet.\n`
   : ''
 const rustNote = isRust
   ? `\n> **Rust backend:** Install rustup with Cargo. Common CRUD API routes and SQLite schema setup are supported. Custom \`:rs\` handlers, middleware/auth policies, PostgreSQL, queues, and realtime are not available yet.\n`

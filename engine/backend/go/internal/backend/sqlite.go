@@ -13,7 +13,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func ensureSQLiteSchema(storageDir, module string, definitions []DatabaseDefinition, auth bool, authSeed *AuthSeed) error {
+func ensureSQLiteSchema(storageDir, module string, definitions []DatabaseDefinition, auth bool, authSeed *AuthSeed, notifications bool) error {
 	databaseDir := filepath.Join(storageDir, "databases")
 	if err := os.MkdirAll(databaseDir, 0o755); err != nil {
 		return fmt.Errorf("create database directory: %w", err)
@@ -57,11 +57,34 @@ func ensureSQLiteSchema(storageDir, module string, definitions []DatabaseDefinit
 			return fmt.Errorf("seed auth users: %w", err)
 		}
 	}
+	if notifications {
+		if err := ensureNotificationTable(tx); err != nil {
+			return fmt.Errorf("configure notification table: %w", err)
+		}
+	}
 	if err := tx.Commit(); err != nil {
 		return fmt.Errorf("commit SQLite schema: %w", err)
 	}
 	committed = true
 	return nil
+}
+
+func ensureNotificationTable(tx *sql.Tx) error {
+	_, err := tx.Exec(`CREATE TABLE IF NOT EXISTS "notifications" (
+		"id" TEXT PRIMARY KEY NOT NULL,
+		"type" TEXT NOT NULL,
+		"notifiable_type" TEXT NOT NULL,
+		"notifiable_id" INTEGER NOT NULL,
+		"data" TEXT NOT NULL,
+		"read_at" TEXT NULL,
+		"created_at" TEXT NULL,
+		"updated_at" TEXT NULL
+	)`)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`CREATE INDEX IF NOT EXISTS "notifications_notifiable_index" ON "notifications" ("notifiable_type", "notifiable_id")`)
+	return err
 }
 
 func ensureAuthTables(tx *sql.Tx) error {

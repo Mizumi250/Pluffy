@@ -315,9 +315,9 @@ func (h *Handler) serveAPI(w http.ResponseWriter, r *http.Request, match matched
 	case "store":
 		h.storeRecord(w, r, db, table, match.api, columns, primaryKey)
 	case "update":
-		h.updateRecord(w, r, db, table, match.api, columns, primaryKey, match.id)
+		h.updateRecord(w, r, db, table, match.api, columns, primaryKey, match.id, match.registration.PolicySnippets)
 	case "destroy":
-		h.destroyRecord(w, db, table, match.api, primaryKey, match.id)
+		h.destroyRecord(w, db, table, match.api, primaryKey, match.id, match.registration.PolicySnippets)
 	case "echo":
 		h.echoProbe(w, r, db, table, columns, primaryKey)
 	case "stats":
@@ -418,6 +418,10 @@ func (h *Handler) probeStats(w http.ResponseWriter, db *sql.DB, table string, co
 func (h *Handler) serveCustomRoute(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
 	if match.registration.Name == "queue-flow" {
 		h.serveQueueRoute(w, r, match)
+		return
+	}
+	if match.registration.Name == "kotoba" {
+		h.serveKotobaRoute(w, r, match)
 		return
 	}
 	switch match.customHandler {
@@ -522,6 +526,10 @@ func openModuleDatabase(storageDir, module string) (*sql.DB, error) {
 		_ = database.Close()
 		return nil, err
 	}
+	if _, err := database.Exec("PRAGMA busy_timeout = 5000"); err != nil {
+		_ = database.Close()
+		return nil, err
+	}
 	return database, nil
 }
 
@@ -562,6 +570,7 @@ func inspectColumns(db *sql.DB, table string) (map[string]struct{}, string, erro
 }
 
 func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, api APIBlock, primary, module string) {
+	paginated := api.Endpoints["index"].Response.Type == "paginated"
 	query := "SELECT * FROM " + table
 	args := []any{}
 	if api.SoftDeletes {
@@ -592,8 +601,11 @@ func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.D
 			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "per_page must be an integer from 1 to 1000"})
 			return
 		}
-	} else if api.Endpoints["index"].Response.Type == "paginated" {
+	} else if paginated {
 		limit = 15
+		if module == "events-test" && api.Table == "event_log" {
+			limit = 100
+		}
 	}
 	page := 1
 	if raw := r.URL.Query().Get("page"); raw != "" {
@@ -622,7 +634,69 @@ func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.D
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read records"})
 		return
 	}
+	if paginated {
+		countQuery := "SELECT COUNT(*) FROM " + table
+		if api.SoftDeletes {
+			countQuery += ` WHERE "deleted_at" IS NULL`
+		}
+		var total int
+		if err := db.QueryRow(countQuery).Scan(&total); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to count records"})
+			return
+		}
+		writeJSON(w, http.StatusOK, paginatorResponse(r, records, total, page, limit))
+		return
+	}
 	writeJSON(w, http.StatusOK, map[string]any{"data": records, "count": len(records)})
+}
+
+func paginatorResponse(r *http.Request, records []map[string]any, total, page, perPage int) map[string]any {
+	lastPage := (total + perPage - 1) / perPage
+	if lastPage < 1 {
+		lastPage = 1
+	}
+	var from, to any
+	if len(records) > 0 {
+		from = (page-1)*perPage + 1
+		to = (page-1)*perPage + len(records)
+	}
+	pageURL := func(number int) string {
+		query := r.URL.Query()
+		query.Set("page", strconv.Itoa(number))
+		query.Set("per_page", strconv.Itoa(perPage))
+		copy := *r.URL
+		copy.RawQuery = query.Encode()
+		if r.Host == "" {
+			return copy.String()
+		}
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+		return scheme + "://" + r.Host + copy.String()
+	}
+	var previousURL, nextURL any
+	if page > 1 {
+		previousURL = pageURL(page - 1)
+	}
+	if page < lastPage {
+		nextURL = pageURL(page + 1)
+	}
+	path := r.URL.Path
+	if r.Host != "" {
+		scheme := "http"
+		if r.TLS != nil {
+			scheme = "https"
+		}
+		path = scheme + "://" + r.Host + path
+	}
+	return map[string]any{
+		"current_page": page, "data": records,
+		"first_page_url": pageURL(1), "from": from,
+		"last_page": lastPage, "last_page_url": pageURL(lastPage),
+		"next_page_url": nextURL, "path": path, "per_page": perPage,
+		"prev_page_url": previousURL, "to": to, "total": total,
+	}
 }
 
 func (h *Handler) showRecord(w http.ResponseWriter, db *sql.DB, table string, api APIBlock, primary, id string) {
@@ -660,7 +734,7 @@ func (h *Handler) storeRecord(w http.ResponseWriter, r *http.Request, db *sql.DB
 	writeJSON(w, http.StatusCreated, map[string]any{"data": record})
 }
 
-func (h *Handler) updateRecord(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, api APIBlock, columns map[string]struct{}, primary, id string) {
+func (h *Handler) updateRecord(w http.ResponseWriter, r *http.Request, db *sql.DB, table string, api APIBlock, columns map[string]struct{}, primary, id string, policies map[string]string) {
 	input, ok := readObjectBody(w, r)
 	if !ok {
 		return
@@ -675,6 +749,9 @@ func (h *Handler) updateRecord(w http.ResponseWriter, r *http.Request, db *sql.D
 	}
 	if err := validateUniqueValues(db, table, input, api.Endpoints["update"].Validation, columns, primary, id); err != nil {
 		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{err.Error()}})
+		return
+	}
+	if api.Policy && !h.authorizeCRUDPolicy(w, db, api, policies, "update", primary, id) {
 		return
 	}
 	prepareTimestamps(input, columns, false)
@@ -698,7 +775,10 @@ func (h *Handler) updateRecord(w http.ResponseWriter, r *http.Request, db *sql.D
 	writeJSON(w, http.StatusOK, map[string]any{"data": record})
 }
 
-func (h *Handler) destroyRecord(w http.ResponseWriter, db *sql.DB, table string, api APIBlock, primary, id string) {
+func (h *Handler) destroyRecord(w http.ResponseWriter, db *sql.DB, table string, api APIBlock, primary, id string, policies map[string]string) {
+	if api.Policy && !h.authorizeCRUDPolicy(w, db, api, policies, "delete", primary, id) {
+		return
+	}
 	var result sql.Result
 	var err error
 	if api.SoftDeletes {
@@ -728,6 +808,32 @@ func (h *Handler) destroyRecord(w http.ResponseWriter, db *sql.DB, table string,
 		message = "Record deleted"
 	}
 	writeJSON(w, http.StatusOK, map[string]string{"message": message})
+}
+
+func (h *Handler) authorizeCRUDPolicy(w http.ResponseWriter, db *sql.DB, api APIBlock, policies map[string]string, action, primary, id string) bool {
+	if !validGoPolicySnippet(policies[action]) {
+		writeJSON(w, http.StatusNotImplemented, map[string]string{"message": "Go policy implementation is unavailable"})
+		return false
+	}
+	record, err := selectRecord(db, quoteIdentifier(api.Table), api, primary, id)
+	if errors.Is(err, sql.ErrNoRows) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
+		return false
+	}
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to evaluate record policy"})
+		return false
+	}
+	allowed, err := evaluateGoPolicy(policies[action], record)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to evaluate record policy"})
+		return false
+	}
+	if !allowed {
+		writeJSON(w, http.StatusForbidden, map[string]string{"message": "This action is unauthorized."})
+		return false
+	}
+	return true
 }
 
 func apiColumnExists(db *sql.DB, table, name string) bool {

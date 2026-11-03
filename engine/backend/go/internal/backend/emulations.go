@@ -17,11 +17,17 @@ import (
 func (h *Handler) serveBuiltinAPI(w http.ResponseWriter, r *http.Request, match matchedEndpoint) bool {
 	module := match.registration.Name
 	switch {
+	case module == "notification-test" && (match.operation == "index" || match.operation == "store" || match.operation == "destroy" || match.operation == "readAll"):
+		h.serveNotificationTestAction(w, r, match)
+		return true
+	case module == "roles-test" && (match.operation == "adminOnly" || match.operation == "userOnly" || match.operation == "promote" || match.operation == "demote"):
+		h.serveRolesTestAction(w, r, match)
+		return true
 	case module == "job-test" && match.endpoint.Type == "job_dispatch" && match.operation == "store":
 		h.dispatchJob(w, r)
 		return true
 	case module == "mail-test" && match.endpoint.Type == "mail_send" && match.operation == "store":
-		h.simulateMail(w, r, match, "mail-test")
+		h.sendMail(w, r, match)
 		return true
 	case module == "body-mail-notification" && (match.operation == "sendMail" || match.operation == "notify"):
 		h.simulateBodyMailAction(w, r, match)
@@ -33,7 +39,7 @@ func (h *Handler) serveBuiltinAPI(w http.ResponseWriter, r *http.Request, match 
 		h.clearTable(w, "command_runs", match)
 		return true
 	case module == "events-test" && match.endpoint.Type == "event_fire" && match.operation == "store":
-		h.fireEvent(w, r)
+		h.fireEvent(w, r, match.registration)
 		return true
 	case module == "events-test" && match.operation == "clearLog":
 		h.clearTable(w, "event_log", match)
@@ -82,69 +88,136 @@ func (h *Handler) serveBuiltinAPI(w http.ResponseWriter, r *http.Request, match 
 	return false
 }
 
+func (h *Handler) serveRolesTestAction(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
+	user, _, authenticated, err := h.resolveAuthUser(r, match.registration.Name)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+		return
+	}
+	if !authenticated {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "Unauthenticated."})
+		return
+	}
+
+	switch match.operation {
+	case "adminOnly", "userOnly":
+		db, columns, primary, ready := openActionTable(w, h, match.registration.Name, "role_audit_logs")
+		if !ready {
+			return
+		}
+		defer db.Close()
+
+		granted := match.operation == "userOnly" || user.Role == "admin"
+		requiredRole, action := "user", "GET /user-only"
+		if match.operation == "adminOnly" {
+			requiredRole, action = "admin", "GET /admin-only"
+		}
+		recordInput := map[string]any{
+			"user_id": user.ID, "action": action,
+			"role_required": requiredRole, "granted": granted,
+		}
+		prepareTimestamps(recordInput, columns, true)
+		if _, err := insertRecord(db, quoteIdentifier("role_audit_logs"), recordInput, columns, primary); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record role access"})
+			return
+		}
+		if match.operation == "adminOnly" && !granted {
+			writeJSON(w, http.StatusForbidden, map[string]string{"message": "✗ Access denied — admin role required"})
+			return
+		}
+		message := "✓ Access granted — open to all authenticated users"
+		if match.operation == "adminOnly" {
+			message = "✓ Access granted — you are admin"
+		}
+		writeJSON(w, http.StatusOK, map[string]string{"message": message})
+	case "promote", "demote":
+		role := "admin"
+		message := "Promoted to admin"
+		if match.operation == "demote" {
+			role = "user"
+			message = "Demoted to user"
+		}
+		db, columns, _, ready := openActionTable(w, h, match.registration.Name, "users")
+		if !ready {
+			return
+		}
+		defer db.Close()
+		if _, exists := columns["role"]; !exists {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Auth users table does not have a role column"})
+			return
+		}
+		now := time.Now().UTC().Format(time.RFC3339Nano)
+		if _, err := db.Exec(`UPDATE "users" SET "role" = ?, "updated_at" = ? WHERE "id" = ?`, role, now, user.ID); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not update authenticated user role"})
+			return
+		}
+		user.Role = role
+		user.UpdatedAt = now
+		writeJSON(w, http.StatusOK, map[string]any{"message": message, "user": user})
+	}
+}
+
 func (h *Handler) dispatchJob(w http.ResponseWriter, r *http.Request) {
 	input, ok := readObjectBody(w, r)
 	if !ok {
 		return
 	}
 	name, valid := input["job"].(string)
-	if !valid || (name != "process-data" && name != "heavy-computation" && name != "always-fails") {
+	if !valid {
 		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
 			"message": "Validation failed", "errors": []string{`Field "job" has an unsupported value`},
 		})
 		return
 	}
-	resultText := "Data processed successfully (Go synchronous emulation)"
-	status := "completed"
-	configuredTries := 3
-	if name == "heavy-computation" {
-		resultText = "Heavy computation completed (Go synchronous emulation)"
-		configuredTries = 1
+	var registration Registration
+	for _, current := range h.service.Registrations() {
+		if current.Name == "job-test" {
+			registration = current
+			break
+		}
 	}
-	if name == "always-fails" {
-		resultText = "This job always fails (Go synchronous emulation)"
-		status = "failed"
-		configuredTries = 2
-	}
-	db, columns, primary, ready := openActionTable(w, h, "job-test", "job_results")
-	if !ready {
+	if registration.Name == "" {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Job module is not registered"})
 		return
 	}
-	defer db.Close()
-	now := time.Now().UTC().Format(time.RFC3339Nano)
-	recordInput := map[string]any{
-		"job_name": name, "status": status, "result": resultText, "processed_at": now,
-	}
-	prepareTimestamps(recordInput, columns, true)
-	record, err := insertRecord(db, quoteIdentifier("job_results"), recordInput, columns, primary)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record job result"})
-		return
-	}
-	writeJSON(w, http.StatusCreated, map[string]any{
-		"data": record, "emulated": true, "configured_tries": configuredTries,
-		"queue": map[string]string{"process-data": "default", "heavy-computation": "heavy", "always-fails": "default"}[name],
-	})
+	data, _ := input["data"].(map[string]any)
+	h.dispatchQueuedJob(w, registration, name, data)
 }
 
-func (h *Handler) simulateMail(w http.ResponseWriter, r *http.Request, match matchedEndpoint, module string) {
+func (h *Handler) sendMail(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
 	input, ok := readObjectBody(w, r)
 	if !ok {
 		return
 	}
 	mail, _ := input["mail"].(string)
 	to, _ := input["to"].(string)
-	allowed := map[string]string{
-		"welcome-mail":       "Welcome to Arkzen",
-		"order-confirmation": "Your order has been confirmed",
-		"password-reset":     "Reset your password",
+	definitions, err := mailDefinitions(match.registration)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to load mail definitions"})
+		return
 	}
-	if _, exists := allowed[mail]; !exists || !validEmail(to) {
+	definition, exists := definitions[mail]
+	if !exists || !validEmail(to) {
 		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{
 			"message": "Validation failed", "errors": []string{"mail must be supported and to must be a valid email address"},
 		})
 		return
 	}
+	data, err := mailData(input)
+	if err != nil {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{err.Error()}})
+		return
+	}
+	htmlBody, err := renderMail(definition, data)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to render mail template"})
+		return
+	}
+	if err := sendRenderedMail(to, definition.subject, htmlBody); err != nil {
+		writeJSON(w, http.StatusBadGateway, map[string]string{"message": err.Error()})
+		return
+	}
+	module := match.registration.Name
 	db, columns, primary, ready := openActionTable(w, h, module, "mail_logs")
 	if !ready {
 		return
@@ -152,20 +225,21 @@ func (h *Handler) simulateMail(w http.ResponseWriter, r *http.Request, match mat
 	defer db.Close()
 	class := strings.ReplaceAll(strings.Title(strings.ReplaceAll(mail, "-", " ")), " ", "")
 	recordInput := map[string]any{
-		"to_email": to, "subject": allowed[mail], "mail_class": class, "status": "simulated",
-		"error": "External email delivery is not performed by the Go engine",
+		"to_email": to, "subject": definition.subject, "mail_class": class, "status": "sent",
 	}
-	if module == "body-mail-notification" {
-		recordInput["subject"] = mail
-		recordInput["kind"] = "mail"
+	if user, _, authenticated, authErr := h.resolveAuthUser(r, module); authErr != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+		return
+	} else if authenticated {
+		recordInput["user_id"] = user.ID
 	}
 	prepareTimestamps(recordInput, columns, true)
 	record, err := insertRecord(db, quoteIdentifier("mail_logs"), recordInput, columns, primary)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record mail simulation"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record mail delivery"})
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"data": record, "emulated": true})
+	writeJSON(w, http.StatusCreated, record)
 }
 
 func (h *Handler) simulateBodyMailAction(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
@@ -180,22 +254,59 @@ func (h *Handler) simulateBodyMailAction(w http.ResponseWriter, r *http.Request,
 			writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{"supported mail and valid to address are required"}})
 			return
 		}
+		definitions, err := mailDefinitions(match.registration)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to load mail definitions"})
+			return
+		}
+		definition, exists := definitions[mail]
+		if !exists {
+			writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{"mail must name a declared template"}})
+			return
+		}
+		mailData := map[string]map[string]any{
+			"welcome": {"name": "Test User", "app_name": "Arkzen"},
+			"receipt": {"order_id": "ORD-001", "amount": "$9.99", "item_name": "Arkzen Test Item"},
+			"alert":   {"alert_message": "This is a test alert from Arkzen.", "action_url": requestBaseURL(r)},
+		}
+		htmlBody, err := renderMail(definition, mailData[mail])
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to render mail template"})
+			return
+		}
+		user, _, authenticated, err := h.resolveAuthUser(r, "body-mail-notification")
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+			return
+		}
+		var userRef any
+		if authenticated {
+			userRef = user.ID
+		}
+		status := "sent"
+		deliveryErr := sendRenderedMail(to, definition.subject, htmlBody)
+		if deliveryErr != nil {
+			status = "failed"
+		}
 		db, columns, primary, ready := openActionTable(w, h, "body-mail-notification", "send_log")
 		if !ready {
 			return
 		}
 		defer db.Close()
 		recordInput := map[string]any{
-			"to_email": to, "subject": mail, "mail_class": mail, "kind": "mail", "status": "simulated",
-			"error": "External email delivery is not performed by the Go engine",
+			"user_id": userRef, "to_email": to, "subject": mail,
+			"mail_class": goClassName(mail) + "Mail", "kind": "mail", "status": status,
+		}
+		if deliveryErr != nil {
+			recordInput["error"] = deliveryErr.Error()
 		}
 		prepareTimestamps(recordInput, columns, true)
 		record, err := insertRecord(db, quoteIdentifier("send_log"), recordInput, columns, primary)
 		if err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record mail simulation"})
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record mail delivery"})
 			return
 		}
-		writeJSON(w, http.StatusCreated, map[string]any{"data": record, "emulated": true})
+		writeJSON(w, http.StatusCreated, map[string]any{"data": record})
 		return
 	}
 	input, ok := readObjectBody(w, r)
@@ -208,8 +319,61 @@ func (h *Handler) simulateBodyMailAction(w http.ResponseWriter, r *http.Request,
 		return
 	}
 	message, _ := input["message"].(string)
+	if len(message) > 255 {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{"message must be at most 255 characters"}})
+		return
+	}
+	user, _, authenticated, err := h.resolveAuthUser(r, "body-mail-notification")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+		return
+	}
+	if !authenticated {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "Unauthenticated"})
+		return
+	}
+	var notificationSection *realtimeSection
+	for _, section := range parseRealtimeSections(match.registration.Notifications) {
+		if section.name == notification {
+			notificationSection = &section
+			break
+		}
+	}
+	if notificationSection == nil || notificationSection.values["toMail_body"] == "" {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{"notification must have a Go implementation"}})
+		return
+	}
+	defaultMessage := notificationSection.values["message"]
 	if message == "" {
-		message = notification
+		message = defaultMessage
+	}
+	subject := "⚠ Action Required — toMail_body injection test"
+	lines := []string{message, "This toMail() body was injected via the Arkzen DSL — not a stub."}
+	actionLabel := "Review Now"
+	salutation := "NotificationBuilder v3.9 toMail_body injection confirmed ✓"
+	if notification == "summary" {
+		subject = "📊 Activity Summary — toMail_body injection test"
+		lines = []string{message, "Notifications: 2 unread | Mails: 3 sent | Status: All healthy"}
+		actionLabel = "View Dashboard"
+		salutation = "Cheers, Arkzen Engine"
+	}
+	templateData := map[string]any{
+		"Subject": subject, "Message": message, "Lines": lines,
+		"ActionLabel": actionLabel, "ActionURL": "/",
+		"Salutation": salutation,
+	}
+	htmlBody, err := renderMail(mailDefinition{
+		name: notification, subject: subject,
+		template: `<h2>{{.Subject}}</h2><p>{{index .Lines 0}}</p><p>{{index .Lines 1}}</p><a href="{{.ActionURL}}">{{.ActionLabel}}</a><p>{{.Salutation}}</p>`,
+	}, templateData)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to render notification"})
+		return
+	}
+	status := "sent"
+	deliveryErr := sendRenderedMail(user.Email, subject, htmlBody)
+	if deliveryErr != nil {
+		status = "failed"
 	}
 	db, columns, primary, ready := openActionTable(w, h, "body-mail-notification", "send_log")
 	if !ready {
@@ -217,15 +381,44 @@ func (h *Handler) simulateBodyMailAction(w http.ResponseWriter, r *http.Request,
 	}
 	defer db.Close()
 	recordInput := map[string]any{
-		"subject": notification, "mail_class": notification, "kind": "notification", "status": "simulated",
+		"user_id": user.ID, "to_email": user.Email, "subject": notification,
+		"mail_class": goClassName(notification) + "Notification", "kind": "notification", "status": status,
+	}
+	if deliveryErr != nil {
+		recordInput["error"] = deliveryErr.Error()
 	}
 	prepareTimestamps(recordInput, columns, true)
 	record, err := insertRecord(db, quoteIdentifier("send_log"), recordInput, columns, primary)
 	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record notification simulation"})
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record notification delivery"})
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"data": record, "message": message, "emulated": true})
+	writeJSON(w, http.StatusCreated, map[string]any{"data": record})
+}
+
+func goClassName(name string) string {
+	parts := strings.FieldsFunc(name, func(character rune) bool { return character == '-' || character == '_' })
+	for index, part := range parts {
+		if part != "" {
+			parts[index] = strings.ToUpper(part[:1]) + part[1:]
+		}
+	}
+	return strings.Join(parts, "")
+}
+
+func requestBaseURL(r *http.Request) string {
+	scheme := "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if forwarded := strings.TrimSpace(strings.Split(r.Header.Get("X-Forwarded-Proto"), ",")[0]); forwarded == "http" || forwarded == "https" {
+		scheme = forwarded
+	}
+	host := r.Host
+	if host == "" && r.URL != nil {
+		host = r.URL.Host
+	}
+	return scheme + "://" + host
 }
 
 func (h *Handler) runCommand(w http.ResponseWriter, r *http.Request) {
@@ -234,14 +427,9 @@ func (h *Handler) runCommand(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	name, _ := input["command"].(string)
-	outputs := map[string]string{
-		"cleanup-temp":    "Cleanup completed successfully.",
-		"generate-report": "Report generated successfully.",
-		"ping-health":     "Health check passed.",
-		"sync-data":       "Data synchronized successfully.",
-	}
-	output, exists := outputs[name]
-	if !exists {
+	if _, exists := map[string]struct{}{
+		"cleanup-temp": {}, "generate-report": {}, "ping-health": {}, "sync-data": {},
+	}[name]; !exists {
 		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{`Field "command" has an unsupported value`}})
 		return
 	}
@@ -253,17 +441,7 @@ func (h *Handler) runCommand(w http.ResponseWriter, r *http.Request) {
 		}
 		triggeredBy = value
 	}
-	db, columns, primary, ready := openActionTable(w, h, "scheduler-test", "command_runs")
-	if !ready {
-		return
-	}
-	defer db.Close()
-	recordInput := map[string]any{
-		"command_name": name, "signature": "scheduler-test:" + name, "exit_code": 0,
-		"output": output, "triggered_by": triggeredBy, "duration_ms": 0,
-	}
-	prepareTimestamps(recordInput, columns, true)
-	record, err := insertRecord(db, quoteIdentifier("command_runs"), recordInput, columns, primary)
+	record, err := recordCommandRun(h.service.storageDir, "scheduler-test", name, triggeredBy)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record command run"})
 		return
@@ -271,47 +449,110 @@ func (h *Handler) runCommand(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, map[string]any{"data": record, "emulated": true})
 }
 
-func (h *Handler) fireEvent(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) fireEvent(w http.ResponseWriter, r *http.Request, registration Registration) {
 	input, ok := readObjectBody(w, r)
 	if !ok {
 		return
 	}
-	event, _ := input["event"].(string)
-	listeners := map[string][]string{
-		"UserSignedUp": {"SendWelcomeEmail", "UpdateUserStats", "NotifyAdmins"},
-		"OrderPlaced":  {"ProcessPayment", "UpdateInventory", "SendOrderConfirmation"},
-		"DataExported": {"LogExportActivity", "CleanupTempFiles"},
+	eventName, valid := input["event"].(string)
+	if !valid || strings.TrimSpace(eventName) == "" {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{`Field "event" is required`}})
+		return
 	}
-	names, exists := listeners[event]
-	if !exists {
+	var event eventDefinition
+	found := false
+	for _, definition := range eventDefinitions(registration) {
+		if normalizeEventIdentifier(definition.name) == normalizeEventIdentifier(eventName) {
+			event = definition
+			found = true
+			break
+		}
+	}
+	if !found || len(event.listeners) == 0 {
 		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{`Field "event" has an unsupported value`}})
 		return
 	}
-	payload, err := json.Marshal(input["payload"])
-	if err != nil {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "payload must be JSON serializable"})
-		return
+	eventData := map[string]any{}
+	if rawPayload, supplied := input["payload"]; supplied {
+		var isObject bool
+		eventData, isObject = rawPayload.(map[string]any)
+		if !isObject {
+			writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{`Field "payload" must be an object`}})
+			return
+		}
 	}
-	db, columns, primary, ready := openActionTable(w, h, "events-test", "event_log")
-	if !ready {
+	jobs := make([]queuedJob, 0, len(event.listeners))
+	for _, listener := range event.listeners {
+		logEventName, logListenerName, err := goEventLogFields(listener.body)
+		if err != nil {
+			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": fmt.Sprintf("Go listener %q is not supported: %v", listener.name, err)})
+			return
+		}
+		if normalizeEventIdentifier(logListenerName) != normalizeEventIdentifier(listener.name) ||
+			normalizeEventIdentifier(logEventName) != normalizeEventIdentifier(event.name) {
+			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": fmt.Sprintf("Go listener body does not match event %q and listener %q", event.name, listener.name)})
+			return
+		}
+		jobs = append(jobs, queuedJob{
+			Kind: "event_listener", Module: "events-test", Name: listener.name,
+			EventName: logEventName, EventData: eventData, ListenerBody: listener.body,
+			Tries: 3, Timeout: 60,
+		})
+	}
+	db, err := openModuleDatabase(h.service.storageDir, "events-test")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to open module database"})
 		return
 	}
 	defer db.Close()
-	records := make([]map[string]any, 0, len(names))
-	for _, listener := range names {
-		recordInput := map[string]any{
-			"event_name": event, "listener_name": listener, "status": "completed",
-			"payload": string(payload), "duration_ms": 0,
+	if strings.EqualFold(envOr("QUEUE_CONNECTION", "database"), "sync") {
+		for _, job := range jobs {
+			if err := executeGoEventListener(r.Context(), db, job); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not execute event listener"})
+				return
+			}
 		}
-		prepareTimestamps(recordInput, columns, true)
-		record, insertErr := insertRecord(db, quoteIdentifier("event_log"), recordInput, columns, primary)
-		if insertErr != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record event listener"})
+		writeJSON(w, http.StatusAccepted, map[string]string{"message": "Event fired"})
+		return
+	}
+	if err := ensureQueueTables(db); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to initialize event listener queue"})
+		return
+	}
+	tx, err := db.BeginTx(r.Context(), nil)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to queue event listeners"})
+		return
+	}
+	defer tx.Rollback()
+	now := time.Now().Unix()
+	for _, job := range jobs {
+		encoded, err := json.Marshal(job)
+		if err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to encode event listener"})
 			return
 		}
-		records = append(records, record)
+		if _, err := tx.ExecContext(r.Context(), `INSERT INTO "jobs" ("queue", "payload", "available_at", "created_at") VALUES (?, ?, ?, ?)`,
+			"default", string(encoded), now, now); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to queue event listener"})
+			return
+		}
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"event": event, "listeners": names, "data": records, "emulated": true})
+	if err := tx.Commit(); err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to queue event listeners"})
+		return
+	}
+	writeJSON(w, http.StatusAccepted, map[string]string{"message": "Event fired"})
+}
+
+func normalizeEventIdentifier(value string) string {
+	var normalized strings.Builder
+	for _, character := range strings.ToLower(value) {
+		if character >= 'a' && character <= 'z' || character >= '0' && character <= '9' {
+			normalized.WriteRune(character)
+		}
+	}
+	return normalized.String()
 }
 
 func (h *Handler) sendBroadcastMessage(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {
@@ -346,7 +587,16 @@ func (h *Handler) sendBroadcastMessage(w http.ResponseWriter, r *http.Request, m
 		writeJSON(w, http.StatusUnauthorized, map[string]string{"message": "Unauthenticated."})
 		return
 	}
-	db, columns, primary, ready := openActionTable(w, h, "broadcast-test", match.api.Table)
+	userID := int64(0)
+	if authenticated {
+		userID = user.ID
+	}
+	realtimeChannel, eventName, configured := resolveBroadcastEvent(match.registration, channel, userID)
+	if !configured {
+		writeJSON(w, http.StatusUnprocessableEntity, map[string]string{"message": fmt.Sprintf("No %s broadcast channel is configured.", channel)})
+		return
+	}
+	db, columns, primary, ready := openActionTable(w, h, match.registration.Name, match.api.Table)
 	if !ready {
 		return
 	}
@@ -365,6 +615,7 @@ func (h *Handler) sendBroadcastMessage(w http.ResponseWriter, r *http.Request, m
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record broadcast message"})
 		return
 	}
+	h.realtime.BroadcastTo(realtimeChannel, eventName, record)
 	writeJSON(w, http.StatusCreated, map[string]any{
 		"data": record, "broadcast": map[string]any{"event": "message-sent-" + channel, "channel_type": channel, "delivered": false},
 	})
@@ -452,12 +703,17 @@ func (h *Handler) pollBroadcastMessages(w http.ResponseWriter, r *http.Request, 
 	}
 	messages := make([]map[string]any, 0, len(records))
 	lastID := afterID
+	userID := int64(0)
+	if authenticated {
+		userID = user.ID
+	}
+	_, eventName, hasEvent := resolveBroadcastEvent(registration, channel, userID)
 	for _, record := range records {
 		if id, ok := record[primary].(int64); ok && id > lastID {
 			lastID = id
 		}
 		messages = append(messages, map[string]any{
-			"event": "broadcast-test.message-sent-" + channel,
+			"event": nullableString(eventName, hasEvent),
 			"data":  record,
 		})
 	}
@@ -511,8 +767,8 @@ func (h *Handler) recordAttendance(w http.ResponseWriter, r *http.Request, match
 	}
 	defer db.Close()
 	var employeeExists int
-	if err := db.QueryRow(`SELECT 1 FROM "employees" WHERE "id" = ? AND "is_active" = 1`, int64(employeeID)).Scan(&employeeExists); err != nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Active employee not found"})
+	if err := db.QueryRow(`SELECT 1 FROM "employees" WHERE "id" = ?`, int64(employeeID)).Scan(&employeeExists); err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Employee not found"})
 		return
 	}
 	now := time.Now().UTC()
@@ -642,7 +898,7 @@ func (h *Handler) payrollSummary(w http.ResponseWriter) {
 	funding := map[string]map[string]any{}
 	groups := map[string]int{}
 	for _, row := range rows {
-		if row["status"] == "inactive" {
+		if row["status"] != "active" {
 			summary["total_inactive"] = summary["total_inactive"].(int) + 1
 			continue
 		}
@@ -768,8 +1024,8 @@ func (h *Handler) joinQueue(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 	}
 	var prefix string
 	var average int
-	if err := db.QueryRow(`SELECT "prefix", "avg_wait_minutes" FROM "queues" WHERE "id" = ? AND "is_active" = 1`, int64(queueID)).Scan(&prefix, &average); err != nil {
-		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Active queue not found"})
+	if err := db.QueryRow(`SELECT "prefix", "avg_wait_minutes" FROM "queues" WHERE "id" = ?`, int64(queueID)).Scan(&prefix, &average); err != nil {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Queue not found"})
 		return
 	}
 	var position int
@@ -796,9 +1052,13 @@ func (h *Handler) joinQueue(w http.ResponseWriter, r *http.Request, db *sql.DB) 
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not create queue ticket"})
 		return
 	}
+	h.realtime.BroadcastTo(
+		"queue-flow."+strconv.FormatInt(int64(queueID), 10),
+		"queue-flow.queue-updated",
+		map[string]any{"queue_id": int64(queueID), "action": "joined", "ticket": record},
+	)
 	writeJSON(w, http.StatusOK, map[string]any{
 		"ticket": record, "position": position, "estimated_wait": (position - 1) * average,
-		"broadcast": map[string]any{"delivered": false, "action": "joined"},
 	})
 }
 
@@ -836,7 +1096,12 @@ func (h *Handler) callNext(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not load next ticket"})
 		return
 	}
-	writeJSON(w, http.StatusOK, map[string]any{"ticket": record, "broadcast": map[string]any{"delivered": false, "action": "called"}})
+	h.realtime.BroadcastTo(
+		"queue-flow."+strconv.FormatInt(int64(queueID), 10),
+		"queue-flow.queue-updated",
+		map[string]any{"queue_id": int64(queueID), "action": "called", "ticket": record},
+	)
+	writeJSON(w, http.StatusOK, map[string]any{"ticket": record})
 }
 
 func (h *Handler) queueStatus(w http.ResponseWriter, db *sql.DB, queueID string) {

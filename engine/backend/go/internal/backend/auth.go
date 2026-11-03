@@ -86,6 +86,12 @@ func (h *Handler) serveAuthRoute(w http.ResponseWriter, r *http.Request, registr
 			return true
 		}
 		writeJSON(w, http.StatusOK, map[string]string{"message": "Logged out successfully"})
+	case "broadcasting/auth":
+		if r.Method != http.MethodPost {
+			writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"message": "Method not allowed"})
+			return true
+		}
+		h.authorizeBroadcastChannel(w, r, registration)
 	default:
 		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Not Found"})
 	}

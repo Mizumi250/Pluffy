@@ -1008,13 +1008,13 @@ export const formatPeso = (v?: number) =>
 export const formatDate = (d?: string) =>
   d ? new Date(d).toLocaleDateString('en-PH', { month: 'short', day: 'numeric', year: 'numeric' }) : '—'
 
-export const getInitials = (name: string) => {
-  const parts = name.replace(/,/g, '').trim().split(/\s+/)
+export const getInitials = (name?: string) => {
+  const parts = (name ?? '').replace(/,/g, '').trim().split(/\s+/).filter(Boolean)
   return parts.slice(0, 2).map(p => p[0]).join('').toUpperCase()
 }
 
 // Avatar color based on name hash
-export const getAvatarColor = (name: string) => {
+export const getAvatarColor = (name?: string) => {
   const colors = [
     'bg-violet-100 text-violet-700',
     'bg-blue-100 text-blue-700',
@@ -1023,7 +1023,7 @@ export const getAvatarColor = (name: string) => {
     'bg-rose-100 text-rose-700',
     'bg-cyan-100 text-cyan-700',
   ]
-  const hash = name.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  const hash = (name ?? '').split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return colors[hash % colors.length]
 }
 
@@ -1145,7 +1145,7 @@ export const JORow = ({
       </div>
       {/* Name + role */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-neutral-900 truncate">{jo.name_of_jo}</p>
+        <p className="text-sm font-semibold text-neutral-900 truncate">{jo.name_of_jo || 'Unnamed job order'}</p>
         <p className="text-xs text-neutral-400 mt-0.5">{jo.job_title} · {jo.funding}</p>
       </div>
       {/* Pay info */}
@@ -1707,8 +1707,8 @@ const JobDatabasePage = () => {
   const filtered = useMemo(() => {
     return jobOrders.filter(jo => {
       const matchSearch = search === '' ||
-        jo.name_of_jo.toLowerCase().includes(search.toLowerCase()) ||
-        jo.funding.toLowerCase().includes(search.toLowerCase()) ||
+        (jo.name_of_jo ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (jo.funding ?? '').toLowerCase().includes(search.toLowerCase()) ||
         (jo.sss_number ?? '').includes(search)
       const matchTab =
         activeTab === 'All'      ? true :
@@ -1726,13 +1726,15 @@ const JobDatabasePage = () => {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders/${editTarget.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
         })
-        const updated = await res.json()
+        const response = await res.json()
+        const updated = response.data ?? response
         updateJobOrder(editTarget.id, updated)
       } else {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
         })
-        const created = await res.json()
+        const response = await res.json()
+        const created = response.data ?? response
         addJobOrder(created)
       }
     } catch { /* silent */ }
@@ -1797,8 +1799,8 @@ const JobDatabasePage = () => {
           : filtered.length === 0
             ? <EmptyRow message="No records match your filters" />
             : <div>
-                {filtered.map(jo => (
-                  <div key={jo.id} className="jo-row">
+                {filtered.map((jo, index) => (
+                  <div key={`${jo.id ?? jo.jor_number ?? 'job-order'}-${index}`} className="jo-row">
                     <JORow
                       jo={jo}
                       onEdit={j => { setEditTarget(j); setFormOpen(true) }}

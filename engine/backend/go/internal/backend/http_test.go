@@ -207,6 +207,52 @@ func TestBuildRegistersLiveCRUDRoutesAndPersistsThem(t *testing.T) {
 	}
 }
 
+func TestPaginatedIndexMatchesFrameworkPaginatorShape(t *testing.T) {
+	storageDir := testStorageDir(t)
+	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	build := `{"name":"pagination-test","backendVariant":"go","databases":[{"table":"event_log","timestamps":false,"columns":{"event_name":{"type":"string","nullable":false}}}],"apis":[{"model":"EventLog","controller":"EventLogController","table":"event_log","prefix":"/api/events-test","endpoints":{"index":{"method":"GET","route":"/log","response":{"type":"paginated"}}}}]}`
+	if response := perform(handler, http.MethodPost, "/arkzen/build", build, "test-secret"); response.Code != http.StatusOK {
+		t.Fatalf("build status %d: %s", response.Code, response.Body.String())
+	}
+	db, err := openModuleDatabase(storageDir, "pagination-test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, event := range []string{"first", "second", "third"} {
+		if _, err := db.Exec(`INSERT INTO "event_log" ("event_name") VALUES (?)`, event); err != nil {
+			_ = db.Close()
+			t.Fatal(err)
+		}
+	}
+	_ = db.Close()
+
+	request := httptest.NewRequest(http.MethodGet, "/api/events-test/log?per_page=2&page=2", nil)
+	response := httptest.NewRecorder()
+	handler.ServeHTTP(response, request)
+	var page struct {
+		CurrentPage int              `json:"current_page"`
+		Data        []map[string]any `json:"data"`
+		PerPage     int              `json:"per_page"`
+		Total       int              `json:"total"`
+		LastPage    int              `json:"last_page"`
+		From        int              `json:"from"`
+		To          int              `json:"to"`
+		NextPageURL *string          `json:"next_page_url"`
+		PrevPageURL *string          `json:"prev_page_url"`
+	}
+	if response.Code != http.StatusOK || json.Unmarshal(response.Body.Bytes(), &page) != nil {
+		t.Fatalf("paginated index status %d: %s", response.Code, response.Body.String())
+	}
+	if page.CurrentPage != 2 || page.PerPage != 2 || page.Total != 3 || page.LastPage != 2 ||
+		page.From != 3 || page.To != 3 || len(page.Data) != 1 || page.Data[0]["event_name"] != "third" ||
+		page.NextPageURL != nil || page.PrevPageURL == nil {
+		t.Fatalf("unexpected paginator response: %#v; body = %s", page, response.Body.String())
+	}
+}
+
 func TestRequireJSONMiddlewareEnforcesContentType(t *testing.T) {
 	storageDir := testStorageDir(t)
 	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir})

@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — JORow
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T12:28:29.905Z
+// Generated: 2026-11-03T15:58:04.873Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -36,7 +36,7 @@ export const JORow = ({
       </div>
       {/* Name + role */}
       <div className="flex-1 min-w-0">
-        <p className="text-sm font-semibold text-neutral-900 truncate">{jo.name_of_jo}</p>
+        <p className="text-sm font-semibold text-neutral-900 truncate">{jo.name_of_jo || 'Unnamed job order'}</p>
         <p className="text-xs text-neutral-400 mt-0.5">{jo.job_title} · {jo.funding}</p>
       </div>
       {/* Pay info */}

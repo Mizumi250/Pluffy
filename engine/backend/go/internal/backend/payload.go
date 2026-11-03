@@ -8,8 +8,43 @@ import (
 )
 
 var (
-	moduleNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
-	sqlNamePattern    = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+	moduleNamePattern     = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
+	sqlNamePattern        = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
+	kotobaHandlersByRoute = map[string]string{
+		"GET /api/kotoba/me":                     "me",
+		"PUT /api/kotoba/me":                     "update_me",
+		"GET /api/kotoba/home":                   "home",
+		"POST /api/kotoba/activity":              "bump",
+		"POST /api/kotoba/internal/notify":       "notify",
+		"POST /api/kotoba/internal/seed":         "community_seed",
+		"GET /api/kotoba/feed":                   "feed",
+		"POST /api/kotoba/posts":                 "create_post",
+		"DELETE /api/kotoba/posts/{id}":          "delete_post",
+		"POST /api/kotoba/posts/{id}/like":       "toggle_like",
+		"GET /api/kotoba/posts/{id}/comments":    "list_comments",
+		"POST /api/kotoba/posts/{id}/comments":   "add_comment",
+		"POST /api/kotoba/comments/{id}/accept":  "accept_correction",
+		"GET /api/kotoba/lessons":                "list_lessons",
+		"POST /api/kotoba/lessons/{id}/complete": "complete_lesson",
+		"GET /api/kotoba/vocab":                  "list_cards",
+		"POST /api/kotoba/vocab":                 "add_card",
+		"POST /api/kotoba/vocab/{id}/review":     "review_card",
+		"DELETE /api/kotoba/vocab/{id}":          "delete_card",
+		"GET /api/kotoba/partners":               "partners",
+		"GET /api/kotoba/profile/{id}":           "view_profile",
+		"POST /api/kotoba/follow/{id}":           "toggle_follow",
+		"GET /api/kotoba/conversations":          "list_conversations",
+		"POST /api/kotoba/conversations":         "start_conversation",
+		"GET /api/kotoba/messages":               "list_messages",
+		"POST /api/kotoba/messages":              "send_message",
+		"POST /api/kotoba/messages/{id}/correct": "correct_message",
+		"GET /api/kotoba/circles":                "list_circles",
+		"POST /api/kotoba/circles":               "create_circle",
+		"POST /api/kotoba/circles/{id}/join":     "toggle_join",
+		"GET /api/kotoba/alerts":                 "list_alerts",
+		"POST /api/kotoba/alerts/read":           "read_alerts",
+		"GET /api/kotoba/progress":               "progress",
+	}
 )
 
 type BuildPayload struct {
@@ -21,6 +56,12 @@ type BuildPayload struct {
 	APIs           []APIBlock           `json:"apis"`
 	CustomRoutes   []CustomRoute        `json:"customRoutes"`
 	Realtimes      []string             `json:"realtimes"`
+	Events         []string             `json:"events"`
+	Jobs           []string             `json:"jobs"`
+	Notifications  []string             `json:"notifications"`
+	Consoles       []string             `json:"consoles"`
+	Mails          []string             `json:"mails"`
+	PolicySnippets map[string]string    `json:"policySnippets"`
 }
 
 type AuthSeed struct {
@@ -76,6 +117,7 @@ type APIBlock struct {
 	Table       string                    `json:"table"`
 	Prefix      string                    `json:"prefix"`
 	Middleware  []string                  `json:"middleware"`
+	Policy      bool                      `json:"policy"`
 	SoftDeletes bool                      `json:"softDeletes,omitempty"`
 	Endpoints   map[string]EndpointConfig `json:"endpoints"`
 }
@@ -174,7 +216,7 @@ func ValidateBuild(payload BuildPayload) []string {
 		if strings.TrimSpace(api.Model) == "" || strings.TrimSpace(api.Controller) == "" {
 			problems = append(problems, "api block needs model and controller")
 		}
-		table := resolveAPITable(api, payload.Databases)
+		table := resolveAPITable(api, payload.Databases, len(payload.Notifications) > 0)
 		if table == "" {
 			problems = append(problems, fmt.Sprintf("api block %q model %q does not match a declared database table", api.Name, api.Model))
 		}
@@ -212,6 +254,16 @@ func ValidateBuild(payload BuildPayload) []string {
 					problems = append(problems, fmt.Sprintf("API route %q is declared by both %q and %q", signature, previous, api.Name))
 				} else {
 					routeSignatures[signature] = api.Name
+				}
+			}
+		}
+		if api.Policy {
+			for _, method := range []string{"update", "delete"} {
+				if _, exists := endpoints[method]; !exists {
+					continue
+				}
+				if !validGoPolicySnippet(payload.PolicySnippets[method]) {
+					problems = append(problems, fmt.Sprintf("api block %q enables policy but the Go engine does not support its %q policy", api.Name, method))
 				}
 			}
 		}
@@ -302,8 +354,14 @@ func isSupportedCustomHandler(module string, route CustomRouteEntry) bool {
 		case "my_ticket":
 			return method == "GET" && path == "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}"
 		}
+	case "kotoba":
+		return isKotobaRoute(method, path, route.Handler)
 	}
 	return false
+}
+
+func isKotobaRoute(method, path, handler string) bool {
+	return kotobaHandlersByRoute[method+" "+path] == handler
 }
 
 func routeSignature(method, path string) string {
@@ -316,13 +374,16 @@ func routeSignature(method, path string) string {
 	return method + " " + strings.Join(segments, "/")
 }
 
-func resolveAPITable(api APIBlock, databases []DatabaseDefinition) string {
+func resolveAPITable(api APIBlock, databases []DatabaseDefinition, hasNotifications bool) string {
 	for _, database := range databases {
 		if api.Table != "" && database.Table == api.Table {
 			return database.Table
 		}
 	}
 	if api.Table != "" {
+		if api.Table == "notifications" && hasNotifications {
+			return "notifications"
+		}
 		return ""
 	}
 	for _, database := range databases {
@@ -336,6 +397,9 @@ func resolveAPITable(api APIBlock, databases []DatabaseDefinition) string {
 		if model != "" && (table == model || singularTableName(table) == model) {
 			return database.Table
 		}
+	}
+	if hasNotifications && model == "notification" {
+		return "notifications"
 	}
 	if len(databases) == 1 {
 		return databases[0].Table

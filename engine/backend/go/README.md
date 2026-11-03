@@ -2,10 +2,13 @@
 
 Standalone Go/net-http backend foundation using [Chi](https://github.com/go-chi/chi)
 for routing and the pure-Go `modernc.org/sqlite` driver for isolated module
-databases. The current engine provides the Arkzen health, registry, build, and
-remove contract. Builds validate module/API/table definitions, prepare
-isolated SQLite schemas, persist module and API route registrations, and
-expose CRUD routes immediately and after restart. Arbitrary `:go` endpoint, handler, and middleware bodies are not executed.
+databases. The engine provides the Arkzen health, registry, build, and remove
+contract. Builds validate module/API/table definitions, prepare isolated
+SQLite schemas, persist module registrations, and expose CRUD routes immediately
+and after restart. It also provides a SQLite-backed queue with retries and a
+minute-resolution cron scheduler. The built-in `job-test` and `scheduler-test`
+handlers are emulated. Kotoba's allowlisted named custom routes are implemented with
+explicit Go emulations; arbitrary `:go` source is never executed.
 
 ## Run
 
@@ -20,6 +23,14 @@ go run ./cmd/server
 The server listens on `:8000` by default. `PORT` sets the listening port,
 `ARKZEN_ENGINE_SECRET` sets the build/remove credential, and
 `PLUFF_STORAGE_DIR` sets the persistent storage root (default `storage`).
+`QUEUE_CONNECTION=sync` runs supported jobs during the dispatch request;
+otherwise jobs are persisted in each module's SQLite `jobs` table and processed
+by the integrated worker. `QUEUE_NAMES` selects queues to process (default
+`default,heavy`). Scheduled console sections are checked every second and
+recorded when their five-field cron expression is due.
+Mail uses the `log` transport by default, like the other backend runtimes.
+Set `MAIL_MAILER=smtp` with `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`,
+`MAIL_PASSWORD`, and `MAIL_FROM_ADDRESS` to deliver through SMTP.
 The development default secret is `arkzen-engine-secret`; configure a private
 value outside local development.
 
@@ -94,25 +105,31 @@ implements these bounded emulations:
 | --- | --- |
 | `body-endpoint-handler` | `echo` and `stats` endpoints; `ping`, `recordHandler`, and `latest` custom routes. Endpoint/handler body presence is checked, but source is not evaluated. |
 | `inventory-management` | Seeds the declared inventory rows and `lowStock` queries declared rows below 20 units. |
-| `job-test` | Records only `process-data`, `heavy-computation`, and `always-fails` synchronously in `job_results`. It does not run queue workers, retries, or source delays. |
-| `scheduler-test` | Records only `cleanup-temp`, `generate-report`, `ping-health`, and `sync-data`; no command or cron job is executed. |
-| `events-test` | Maps the three declared events to their fixed listener names and records completion rows synchronously; listener source and asynchronous execution are not run. |
-| `broadcast-test` | Persists messages and returns broadcast metadata with `delivered: false`; no WebSocket event or `/api/broadcast-test/sse-poll/{channelType}` route is provided. |
-| `queue-flow` | Implements the allowlisted `join_queue`, `call_next`, `queue_status`, and `my_ticket` route state transitions from route metadata. Broadcast metadata is simulated and not delivered. |
+| `job-test` | Dispatches the three declared jobs to a SQLite-backed queue. The integrated worker honors each job's queue, tries, and timeout metadata; retries failed jobs and records exhausted jobs in `failed_jobs`. Built-in job work is emulated; Go source bodies are not evaluated. |
+| `scheduler-test` | Runs the four declared commands manually or from their Go cron metadata. Scheduled runs are recorded with `triggered_by: schedule`; command Go source bodies are not evaluated. |
+| `events-test` | Resolves declared events/listeners and their selected `:go` listener bodies, then queues supported event-log listener operations with payload propagation and retries. `QUEUE_CONNECTION=sync` executes them during dispatch. Arbitrary Go listener code is not evaluated. |
+| `broadcast-test` | Persists messages, publishes Pusher/Reverb-compatible events to public, private, and presence WebSocket channels, authorizes private/presence subscriptions, and exposes `/api/<module>/sse-poll/{channelType}` for polling clients. |
+| `queue-flow` | Implements the allowlisted `join_queue`, `call_next`, `queue_status`, and `my_ticket` route state transitions from route metadata, including `queue-updated` broadcasts on the declared queue channels. |
 | `dtr-geofencing` | Implements check-in/out, employee record lookup, setting updates, and distance-based geofence checks using the module's documented default office settings. |
 | `jo-payroll` | Implements payroll summary, group lookup, and appointment-order queries over declared `job_orders` rows. |
-| `mail-test`, `body-mail-notification` | Logs allowlisted mail/notification requests with `status: simulated`; no SMTP delivery or notification channel is used. |
-| `crud-test` | Uses the schema-aware CRUD routes described above. |
+| `roles-test` | Implements authenticated admin/user routes, access audit logging, and per-user promote/demote actions. |
+| `kotoba` | Implements its auth/profile, community post/comment/like, lesson/vocabulary, partner/conversation/message, circle, alert, and progress route workflows against module SQLite tables. |
+| `mail-test` | Resolves the selected Go mail templates, renders the supplied data, and uses the log mailer by default (`status: sent`); optional SMTP delivery is supported with `MAIL_MAILER=smtp`. |
+| `body-mail-notification` | Renders declared mail templates and notification bodies and delivers through the configured mail transport (log by default, optional SMTP), recording sent/failed results. Notifications are delivered by email; database/push channels are not implemented. |
+| `notification-test` | Creates the Laravel-compatible notifications table from notification DSL, supports authenticated inbox, trigger, delete, and read-all routes, and delivers declared database/mail/broadcast channels. |
+| `crud-test` | Uses the schema-aware CRUD routes described above and enforces the supported restricted update/delete policy expressions. |
 | `middleware-test` | Supports its `requireJson` middleware and schema-aware ping-log CRUD. |
 
 Custom endpoint operations and custom route handlers are allowlisted by
 Tatemono name, operation/handler, and (for custom routes) the declared method
 and path. A non-empty `:go` endpoint/handler body is required only for
 `body-endpoint-handler`; its contents are ignored. Queue-flow behavior is
-selected solely from its exact route and handler metadata. Unsupported custom
-endpoint types return `501`, and unsupported/mismatched custom route handlers
-fail build validation. These constraints prevent arbitrary code evaluation
-while allowing the small set of fixed behaviors above.
+selected solely from its exact route and handler metadata. Kotoba's custom
+routes are handled by fixed Go code selected from the allowlisted handler names;
+source bodies are not evaluated. Unsupported custom endpoint types return `501`, and unsupported or
+mismatched custom route handlers fail build validation. These constraints
+prevent arbitrary code evaluation while allowing the small set of fixed
+behaviors above.
 
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears that table and restores the declared
@@ -129,26 +146,38 @@ Laravel/Express auth engines. Access tokens use the Sanctum-style `id|secret`
 format with only the SHA-256 token hash stored, and can be revoked at logout.
 No initial account is created unless `authSeed.users` is configured; register
 an account before logging in. The Go engine does not create browser sessions or
-role middleware. Mail and notification
-emulations behind `auth` middleware can be reached with a valid module bearer
-token. `notification-test`'s inbox routes still require a Laravel-managed
-notifications table that Go does not create. Kotoba's custom social, lessons,
-vocabulary, messaging, circles, and alerts handlers are not in the Go route
-allowlist; route authentication does not implement those custom handlers.
+provide generic role middleware; `roles-test` has an explicit controller-level
+role-check emulation after authentication. It supports the authenticated
+`/api/<module>/auth/broadcasting/auth` endpoint to sign private and presence
+subscriptions. A Pusher-protocol WebSocket server starts with the API on
+`REVERB_PORT` (default `8080`), using `REVERB_APP_KEY` and
+`REVERB_APP_SECRET`; the development defaults match the Go export configuration.
+Mail and notification emulations behind `auth` middleware can be reached with
+a valid module bearer token. `mail-test` logs messages by default and supports
+actual SMTP delivery when configured; `body-mail-notification` also sends
+through the configured transport and records delivery outcomes.
+`notification-test` creates its native notification table when notification
+DSL sections are present and emulates its declared database, mail, and
+broadcast channels. Kotoba behavior is limited to the allowlisted handlers
+and operates on the declared module tables; realtime broadcast delivery for
+Kotoba-specific notifications is not emitted by these handlers.
 
-The Go source-language payload contains jobs and scheduler console snippets,
-but the engine does not execute them: job queue timing, worker retries and
-failed-job transport, cron scheduling, and external sync/health checks are not
-performed. It likewise does not deliver SMTP mail, notifications, WebSocket/
-SSE broadcasts, or asynchronous event listeners. Policies, resource
-transformers, custom query filters, and other custom handlers remain
-unsupported. The built-in `requireJson` middleware checks JSON media types and
+The Go source-language payload's event, job, and console metadata configures the built-in
+`job-test` queue and `scheduler-test` cron emulation; arbitrary source bodies,
+custom Go jobs/commands, and external sync/health checks are not executed.
+`events-test` supports its declared event-log listener operation but does not
+evaluate arbitrary listener source. SMTP delivery is available for mail and
+email-notification emulations when configured. Broadcast WebSocket delivery and
+polling are implemented for declared realtime sections and notification-test
+channels. Resource transformers,
+custom query filters, and arbitrary custom handlers remain unsupported. The
+built-in `requireJson` middleware checks JSON media types and
 rejects invalid requests with `415`; unknown middleware returns `501`. Index
 routes order generically by primary key; job/event/broadcast logs and DTR time
 records use newest-first timestamp ordering. `per_page` and `page` are
 supported, including the default 15-row limit when the endpoint response type
-is `paginated`, but responses use the engine's `{data,count}` envelope rather
-than Laravel's full paginator metadata.
+is `paginated` (100 rows by default for `events-test`); paginated responses
+include Laravel-style total, page, and navigation metadata.
 
 ## Build and test
 

@@ -37,7 +37,8 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 	if len(problems) > 0 {
 		return Registration{}, fmt.Errorf("validation failed: %v", problems)
 	}
-	if err := ensureSQLiteSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed); err != nil {
+	hasNotifications := len(payload.Notifications) > 0
+	if err := ensureSQLiteSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed, hasNotifications); err != nil {
 		return Registration{}, fmt.Errorf("initialize isolated SQLite database: %w", err)
 	}
 	tables := make([]string, 0, len(payload.Databases))
@@ -46,10 +47,14 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 		tables = append(tables, database.Table)
 		databaseByTable[database.Table] = database
 	}
+	if hasNotifications {
+		tables = append(tables, "notifications")
+		databaseByTable["notifications"] = DatabaseDefinition{Table: "notifications", SoftDeletes: false}
+	}
 	sort.Strings(tables)
 	apis := make([]APIBlock, 0, len(payload.APIs))
 	for _, api := range payload.APIs {
-		api.Table = resolveAPITable(api, payload.Databases)
+		api.Table = resolveAPITable(api, payload.Databases, hasNotifications)
 		if api.Prefix == "" {
 			api.Prefix = "/api/" + payload.Name
 		}
@@ -68,6 +73,12 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 		APIs:           apis,
 		CustomRoutes:   payload.CustomRoutes,
 		Realtimes:      payload.Realtimes,
+		Events:         runtimeDSLSections(payload.Events, "listeners", "listener_bodies"),
+		Jobs:           runtimeDSLSections(payload.Jobs, "queue", "tries", "timeout"),
+		Notifications:  runtimeDSLSections(payload.Notifications, "channels", "channel_type", "message", "subject", "toMail_body"),
+		Consoles:       runtimeDSLSections(payload.Consoles, "signature", "schedule"),
+		Mails:          runtimeDSLSections(payload.Mails, "subject", "blade_body"),
+		PolicySnippets: payload.PolicySnippets,
 		RegisteredAt:   time.Now().UTC(),
 	}
 	if err := s.store.Register(registration); err != nil {

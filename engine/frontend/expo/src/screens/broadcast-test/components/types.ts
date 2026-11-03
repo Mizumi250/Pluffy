@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — broadcast-test [Expo]
 // Source: @arkzen:native:components (broadcast-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T08:18:35.176Z
+// Generated: 2026-11-03T15:57:30.774Z
 // ============================================================
 
 export type WsStatus = 'connecting' | 'connected' | 'error'

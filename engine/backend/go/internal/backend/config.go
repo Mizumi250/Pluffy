@@ -10,13 +10,13 @@ import (
 const defaultEngineSecret = "arkzen-engine-secret"
 
 type Config struct {
-	Port             int
-	RealtimePort     int
-	RealtimeAppKey   string
-	RealtimeSecret   string
-	Secret           string
-	StorageDir       string
-	RootDir          string
+	Port           int
+	RealtimePort   int
+	RealtimeAppKey string
+	RealtimeSecret string
+	Secret         string
+	StorageDir     string
+	RootDir        string
 }
 
 func LoadConfig() (Config, error) {

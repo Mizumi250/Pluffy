@@ -81,10 +81,9 @@ if ((IS_GO || IS_RUST) && arkzenJson.activeDatabase === 'pgsql') {
   console.log(`\n  ✗ ${IS_GO ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before starting.\n`)
   process.exit(1)
 }
-// Spring Boot entry points (compiled from engine/backend/spring-boot/src/main/java).
-// Change these if the Java classes live under a different package.
+// Spring Boot entry point (compiled from engine/backend/spring-boot/src/main/java).
+// Change this if the Java class lives under a different package.
 const SPRING_SERVER_CLASS = 'dev.pluff.Server'
-const SPRING_WORKER_CLASS = 'dev.pluff.Worker'
 const PYTHON_ENV = IS_FASTAPI
   ? { ...process.env, PYTHONUTF8: process.env.PYTHONUTF8 || '1' }
   : process.env
@@ -134,6 +133,19 @@ function log(src, msg) {
   else if (src === 'app')      prefix = '\x1b[32m[App]       \x1b[0m'
   else if (src === 'desktop')  prefix = '\x1b[34m[Desktop]   \x1b[0m'
   console.log(`${prefix} ${msg}`)
+}
+
+function readBackendEnv() {
+  const result = { ...process.env }
+  const envFile = path.join(BACKEND_DIR, '.env')
+  if (!fs.existsSync(envFile)) return result
+  for (const line of fs.readFileSync(envFile, 'utf-8').split(/\r?\n/)) {
+    const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*?)\s*$/)
+    if (match && result[match[1]] === undefined) {
+      result[match[1]] = match[2].replace(/^(['"])(.*)\1$/, '$2')
+    }
+  }
+  return result
 }
 
 function checkSetup() {
@@ -212,6 +224,11 @@ function checkSetup() {
       console.log('\n  ✗ Go packages are missing. Run: node mizumi.js deps install go\n')
       process.exit(1)
     }
+    const envFile = path.join(BACKEND_DIR, '.env')
+    if (!fs.existsSync(envFile) && fs.existsSync(path.join(BACKEND_DIR, '.env.example'))) {
+      fs.copyFileSync(path.join(BACKEND_DIR, '.env.example'), envFile)
+      console.log('  ✓ Created engine/backend/go/.env from .env.example')
+    }
   } else if (IS_RUST) {
     if (!fs.existsSync(path.join(BACKEND_DIR, 'Cargo.toml'))) {
       console.log('\n  ✗ Rust engine is missing. Run: node setup.js --backend rust\n')
@@ -284,7 +301,11 @@ function startBackend() {
       ? spawn('go', ['run', './cmd/server'], {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
-          env: { ...process.env, PORT: '8000', PLUFF_ROOT: ROOT_DIR },
+          env: {
+            ...readBackendEnv(),
+            PORT: '8000',
+            PLUFF_ROOT: ROOT_DIR,
+          },
         })
     : IS_RUST
       ? spawn('cargo', ['run'], {
@@ -316,20 +337,22 @@ function startBackend() {
 
 function startQueueWorker() {
   if (IS_ASPNET) {
-    log('queue', 'ASP.NET queue/scheduler support is not implemented yet; no worker was started')
+    log('queue', 'ASP.NET jobs/events use an in-process queue; durable queues and cron scheduling are not implemented')
     return null
   }
-  if (IS_GO || IS_RUST) {
-    log('queue', `${IS_GO ? 'Go' : 'Rust'} queue/scheduler support is not implemented yet; no worker was started`)
+  if (IS_GO) {
+    log('queue', 'Go database queue worker + cron scheduler run inside the backend process')
     return null
   }
-  if (IS_SPRING && !fs.existsSync(springClassFile(SPRING_WORKER_CLASS))) {
-    log('queue', `Spring Boot queue/scheduler worker (${SPRING_WORKER_CLASS}) is not implemented yet; no worker was started`)
+  if (IS_RUST) {
+    log('queue', 'Rust queue/scheduler support is not implemented yet; no worker was started')
     return null
   }
-  log('queue', IS_SPRING
-    ? `Starting queue worker + scheduler (java ${SPRING_WORKER_CLASS})`
-    : IS_EXPRESS
+  if (IS_SPRING) {
+    log('queue', 'Spring Boot jobs and scheduled commands run in-process; queue persistence is not implemented')
+    return null
+  }
+  log('queue', IS_EXPRESS
     ? 'Starting queue worker + scheduler (tsx src/worker.ts)'
     : IS_FASTAPI
       ? 'Starting queue worker + scheduler (python -m pluff.worker)'
@@ -338,9 +361,7 @@ function startQueueWorker() {
   let crashes = 0
   const spawnWorker = () => {
     const startedAt = Date.now()
-    const proc = IS_SPRING
-      ? spawn('java', ['-cp', springClasspath(), SPRING_WORKER_CLASS], { cwd: BACKEND_DIR, stdio: 'pipe', env: process.env })
-      : IS_EXPRESS
+    const proc = IS_EXPRESS
       ? spawn('npx', ['tsx', 'src/worker.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: process.env })
       : IS_FASTAPI
         ? spawn(path.join(BACKEND_DIR, '.venv', process.platform === 'win32' ? 'Scripts' : 'bin',
@@ -367,8 +388,7 @@ function startQueueWorker() {
         crashes += 1
         const instant = Date.now() - startedAt < 4000
         if (instant && crashes >= 3) {
-          log('queue', IS_SPRING ? 'Stopped restarting. Spring Boot worker is not booting — run: node mizumi.js deps install spring-boot'
-            : IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express'
+          log('queue', IS_EXPRESS ? 'Stopped restarting. Express worker is not booting — run: node mizumi.js deps install express'
             : IS_FASTAPI ? 'Stopped restarting. FastAPI worker is not booting — run: node mizumi.js deps install fastapi'
             : 'Stopped restarting. Laravel is not booting — run: node setup.js --backend')
           return
@@ -602,8 +622,7 @@ let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
 reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET || IS_SPRING || IS_GO || IS_RUST ? null : startReverb()
-if (IS_ASPNET) log('backend', 'ASP.NET realtime services are not implemented yet')
-if (IS_GO || IS_RUST) log('backend', `${IS_GO ? 'Go' : 'Rust'} realtime services are not implemented yet`)
+if (IS_RUST) log('backend', 'Rust realtime services are not implemented yet')
 
 // Start web stack
 const web = runWeb ? startWebStack() : null

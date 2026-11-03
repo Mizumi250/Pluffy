@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Sheet [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T08:19:11.451Z
+// Generated: 2026-11-03T16:10:11.882Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

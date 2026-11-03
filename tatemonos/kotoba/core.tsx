@@ -3888,9 +3888,11 @@ user := request.User()
 if user == nil {
     return response.JSON(401, map[string]any{"message": "Unauthenticated"})
 }
-if count, err := Post.Query().Count(ctx); err != nil {
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
     return response.Error(500, "Could not check community seed data")
-} else if count == 0 {
+}
+if postCount == 0 {
     if err := community_seed(ctx); err != nil {
         return response.Error(500, "Could not seed the community")
     }
@@ -3976,33 +3978,150 @@ return response.JSON(map[string]any{"data": alert})
 
 /* @arkzen:handler:go:community_seed
 */
-if count, err := Post.Query().Count(ctx); err != nil {
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
     return err
-} else if count > 0 {
+}
+if postCount > 0 {
     return nil
 }
-seeds := []map[string]any{
-    {"name": "Maya", "display_name": "Maya R.", "lang": "es", "body": "¡Hola! Hoy aprendí una frase nueva."},
-    {"name": "Luca", "display_name": "Luca P.", "lang": "it", "body": "La mia parola preferita è meraviglioso."},
-    {"name": "Ana", "display_name": "Ana C.", "lang": "fr", "body": "J'apprends un peu chaque jour."},
+type seedPerson struct {
+    email, displayName, nativeLang, learningLang, level, country, bio, interests, color string
+    xp, streak int
 }
-for i, seed := range seeds {
-    user, err := User.Create(ctx, map[string]any{"name": seed["name"], "email": fmt.Sprintf("learner-%d@kotoba.test", i+1)})
+people := []seedPerson{
+    {"aiko@kotoba.app", "Aiko Tanaka", "ja", "en", "A2", "Japan", "Osaka native. I love ramen, film cameras and teaching Japanese.", "travel,food,photography", "#7a3b34", 240, 12},
+    {"mateo@kotoba.app", "Mateo Rivera", "es", "en", "B1", "Mexico", "From Mexico City. Football, tacos and bad puns in two languages.", "football,food,music", "#3f6b4f", 180, 6},
+    {"sofia@kotoba.app", "Sofia Laurent", "en", "ja", "A2", "Canada", "English teacher learning Japanese. Coffee first, grammar second.", "books,coffee,anime", "#4a4a4a", 320, 21},
+}
+profiles := make(map[string]*Profile, len(people))
+today := time.Now().UTC().Format("2006-01-02")
+for _, seed := range people {
+    seededUser, err := User.Query().Where("email", seed.email).First(ctx)
     if err != nil {
         return err
     }
-    color := []string{"#3f6b4f", "#8a6a2f", "#7a3b34"}[i]
-    profile, err := Profile.Create(ctx, map[string]any{
-        "user_id": user.ID, "display_name": seed["display_name"],
-        "learning_lang": seed["lang"], "avatar_color": color,
+    if seededUser == nil {
+        continue
+    }
+    fields := map[string]any{
+        "display_name": seed.displayName, "native_lang": seed.nativeLang,
+        "learning_lang": seed.learningLang, "level": seed.level, "country": seed.country,
+        "bio": seed.bio, "interests": seed.interests, "avatar_color": seed.color,
+        "xp": seed.xp, "streak": seed.streak, "best_streak": seed.streak,
+        "last_active": today, "onboarded": true,
+    }
+    profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": seededUser.ID}, fields)
+    if err != nil {
+        return err
+    }
+    if err := profile.Update(ctx, fields); err != nil {
+        return err
+    }
+    profiles[seed.email] = profile
+}
+if len(profiles) == 0 {
+    return nil
+}
+    type seedPost struct {
+        email, lang, kind, body string
+        translation any
+        likes int
+    }
+    seeds := []seedPost{
+        {"aiko@kotoba.app", "en", "moment", "Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!", nil, 4},
+        {"mateo@kotoba.app", "en", "moment", "Today I learned a new word: serendipity. It means finding something good by luck.", nil, 7},
+        {"sofia@kotoba.app", "ja", "moment", "きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。", "It is raining today. I will read a book while drinking coffee.", 5},
+        {"mateo@kotoba.app", "es", "question", "Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.", "Question for you all: what is your favorite food? Mine are tacos al pastor.", 3},
+        {"aiko@kotoba.app", "ja", "moment", "こんにちは！わたしは アイコです。にほんの おおさかから きました。", "Hello! I am Aiko. I came from Osaka, Japan.", 9},
+    }
+    seededPosts := make(map[string]*Post, len(seeds))
+    for i, seed := range seeds {
+        profile := profiles[seed.email]
+        if profile == nil {
+            continue
+        }
+        post, err := Post.Create(ctx, map[string]any{
+            "user_id": profile.UserID, "author_name": profile.DisplayName,
+            "author_color": profile.AvatarColor, "author_native": profile.NativeLang,
+            "lang": seed.lang, "kind": seed.kind, "body": seed.body,
+            "translation": seed.translation, "likes_count": seed.likes,
+        })
+        if err != nil {
+            return err
+        }
+        seededPosts[fmt.Sprint(i)] = post
+    }
+    if firstPost := seededPosts["0"]; firstPost != nil {
+        if sofia := profiles["sofia@kotoba.app"]; sofia != nil {
+            if _, err := Comment.Create(ctx, map[string]any{
+                "post_id": firstPost.ID, "user_id": sofia.UserID,
+                "author_name": sofia.DisplayName, "author_color": sofia.AvatarColor,
+                "body": "Nice story! A few small fixes:", "is_correction": true,
+                "corrected": "Yesterday I went to the park with my friend. We ate ice cream and it was delicious!",
+                "explanation": "Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very.",
+            }); err != nil {
+                return err
+            }
+            if err := firstPost.Update(ctx, map[string]any{"comments_count": 1, "corrections_count": 1}); err != nil {
+                return err
+            }
+        }
+    }
+    if japanesePost := seededPosts["2"]; japanesePost != nil {
+        if aiko := profiles["aiko@kotoba.app"]; aiko != nil {
+            if _, err := Comment.Create(ctx, map[string]any{
+                "post_id": japanesePost.ID, "user_id": aiko.UserID,
+                "author_name": aiko.DisplayName, "author_color": aiko.AvatarColor,
+                "body": "すてきですね！Very cozy. Your sentence is perfect.", "is_correction": false,
+            }); err != nil {
+                return err
+            }
+            if err := japanesePost.Update(ctx, map[string]any{"comments_count": 1}); err != nil {
+                return err
+            }
+        }
+    }
+    if aiko, sofia := profiles["aiko@kotoba.app"], profiles["sofia@kotoba.app"]; aiko != nil && sofia != nil {
+        for _, ids := range [][2]int{{aiko.UserID, sofia.UserID}, {sofia.UserID, aiko.UserID}} {
+            exists, err := Follow.Query().Where("follower_id", ids[0]).Where("following_id", ids[1]).Exists(ctx)
+            if err != nil {
+                return err
+            }
+            if !exists {
+                if _, err := Follow.Create(ctx, map[string]any{"follower_id": ids[0], "following_id": ids[1]}); err != nil {
+                    return err
+                }
+            }
+        }
+    }
+type seedCircle struct {
+    name, emoji, lang, level, description, owner string
+}
+circles := []seedCircle{
+    {"English Morning Club", "sun", "en", "A2", "Short daily check-ins in English. Be kind and correct gently.", "sofia@kotoba.app"},
+    {"Japanese for Beginners", "flower", "ja", "A1", "Hiragana, greetings and first sentences. Ask anything.", "aiko@kotoba.app"},
+    {"Spanish Cafe Talk", "coffee", "es", "A2", "Relaxed conversation practice over virtual coffee.", "mateo@kotoba.app"},
+}
+for _, seed := range circles {
+    owner := profiles[seed.owner]
+    if owner == nil {
+        continue
+    }
+    circle, err := Circle.Create(ctx, map[string]any{
+        "name": seed.name, "emoji": seed.emoji, "lang": seed.lang, "level": seed.level,
+        "description": seed.description, "owner_id": owner.UserID, "members_count": 1,
     })
     if err != nil {
         return err
     }
-    if _, err := Post.Create(ctx, map[string]any{
-        "user_id": user.ID, "author_name": profile.DisplayName,
-        "author_color": color, "lang": seed["lang"], "kind": "moment",
-        "body": seed["body"], "likes_count": 0, "comments_count": 0,
+    if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circle.ID, "user_id": owner.UserID}); err != nil {
+        return err
+    }
+    welcome := "Welcome to " + seed.name + "! Introduce yourself in your target language."
+    if _, err := Message.Create(ctx, map[string]any{
+        "circle_id": circle.ID, "sender_id": owner.UserID, "sender_name": owner.DisplayName,
+        "sender_color": owner.AvatarColor, "body": welcome, "lang": seed.lang,
     }); err != nil {
         return err
     }
@@ -4015,6 +4134,15 @@ return nil
 user := request.User()
 if user == nil {
     return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not check community seed data")
+}
+if postCount == 0 {
+    if err := community_seed(ctx); err != nil {
+        return response.Error(500, "Could not seed the community")
+    }
 }
 profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
 if err != nil {

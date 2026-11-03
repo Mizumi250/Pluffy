@@ -1,7 +1,6 @@
 package backend
 
 import (
-	"context"
 	"crypto/hmac"
 	"crypto/rand"
 	"crypto/sha256"
@@ -22,10 +21,10 @@ import (
 )
 
 type RealtimeHub struct {
-	appKey  string
-	secret  string
-	mu      sync.RWMutex
-	clients map[*realtimeClient]struct{}
+	appKey   string
+	secret   string
+	mu       sync.RWMutex
+	clients  map[*realtimeClient]struct{}
 	channels map[string]map[*realtimeClient]struct{}
 }
 
@@ -46,7 +45,7 @@ type realtimeSection struct {
 func NewRealtimeHub(appKey, secret string) *RealtimeHub {
 	return &RealtimeHub{
 		appKey: appKey, secret: secret,
-		clients: make(map[*realtimeClient]struct{}),
+		clients:  make(map[*realtimeClient]struct{}),
 		channels: make(map[string]map[*realtimeClient]struct{}),
 	}
 }
@@ -387,7 +386,9 @@ func (h *Handler) authorizeBroadcastChannel(w http.ResponseWriter, r *http.Reque
 		return
 	}
 	channelName := strings.TrimPrefix(channel, channelType+"-")
-	allowed := false
+	allowed := registration.Name == "notification-test" &&
+		channelType == "private" &&
+		channelName == "notification-test."+strconv.FormatInt(user.ID, 10)
 	for _, section := range parseRealtimeSections(registration.Realtimes) {
 		if section.values["type"] != channelType || section.values["channel"] != "" {
 			continue
@@ -415,7 +416,7 @@ func (h *Handler) authorizeBroadcastChannel(w http.ResponseWriter, r *http.Reque
 	var channelData string
 	if channelType == "presence" {
 		channelDataBytes, err := json.Marshal(map[string]any{
-			"user_id": user.ID,
+			"user_id":   user.ID,
 			"user_info": map[string]any{"name": presenceName(user)},
 		})
 		if err != nil {
@@ -447,7 +448,6 @@ func presenceName(user authUser) string {
 var realtimePlaceholder = regexp.MustCompile(`\{[^}]+\}`)
 
 func matchRealtimeChannel(pattern, channel string) (bool, []string) {
-	parts := realtimePlaceholder.Split(pattern, -1)
 	placeholders := realtimePlaceholder.FindAllString(pattern, -1)
 	if len(placeholders) == 0 {
 		return pattern == channel, nil
@@ -512,4 +512,9 @@ func (h *Handler) broadcastRealtime(registration Registration, channelType strin
 	}
 }
 
-var _ = context.Background
+func nullableString(value string, ok bool) any {
+	if !ok {
+		return nil
+	}
+	return value
+}

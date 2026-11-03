@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -17,13 +18,17 @@ const maxRequestBody = 10 << 20
 var errBodyTooLarge = errors.New("request body exceeds 10 MiB")
 
 type Handler struct {
-	secret    string
-	service   *Service
-	rootDir   string
-	realtime  *RealtimeHub
+	secret           string
+	service          *Service
+	rootDir          string
+	realtime         *RealtimeHub
+	router           http.Handler
+	scheduleMu       sync.Mutex
+	scheduledMinutes map[string]string
+	backgroundWait   sync.WaitGroup
 }
 
-func NewHandler(config Config) (http.Handler, error) {
+func NewHandler(config Config) (*Handler, error) {
 	if config.Port < 1 || config.Port > 65535 {
 		return nil, errors.New("port must be an integer from 1 to 65535")
 	}
@@ -42,7 +47,8 @@ func NewHandler(config Config) (http.Handler, error) {
 	}
 	handler := &Handler{
 		secret: config.Secret, service: service, rootDir: config.RootDir,
-		realtime: NewRealtimeHub(config.RealtimeAppKey, config.RealtimeSecret),
+		realtime:         NewRealtimeHub(config.RealtimeAppKey, config.RealtimeSecret),
+		scheduledMinutes: make(map[string]string),
 	}
 	router := chi.NewRouter()
 	router.NotFound(handler.apiOrNotFound)
@@ -50,7 +56,12 @@ func NewHandler(config Config) (http.Handler, error) {
 	router.Get("/arkzen/registry", handler.registry)
 	router.Method(http.MethodPost, "/arkzen/build", handler.authenticate(http.HandlerFunc(handler.build)))
 	router.Method(http.MethodPost, "/arkzen/remove", handler.authenticate(http.HandlerFunc(handler.remove)))
-	return router, nil
+	handler.router = router
+	return handler, nil
+}
+
+func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	h.router.ServeHTTP(w, r)
 }
 
 func (h *Handler) health(w http.ResponseWriter, _ *http.Request) {

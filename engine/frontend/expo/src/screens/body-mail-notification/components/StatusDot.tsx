@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StatusDot [Expo]
 // Source: @arkzen:native:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T08:18:29.845Z
+// Generated: 2026-11-03T15:57:29.340Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

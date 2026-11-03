@@ -12,14 +12,20 @@ import (
 )
 
 type Registration struct {
-	Name           string        `json:"name"`
-	BackendVariant string        `json:"backendVariant"`
-	Auth           bool          `json:"auth,omitempty"`
-	Tables         []string      `json:"tables"`
-	APIs           []APIBlock    `json:"apis,omitempty"`
-	CustomRoutes   []CustomRoute `json:"customRoutes,omitempty"`
-	Realtimes      []string      `json:"realtimes,omitempty"`
-	RegisteredAt   time.Time     `json:"registeredAt"`
+	Name           string            `json:"name"`
+	BackendVariant string            `json:"backendVariant"`
+	Auth           bool              `json:"auth,omitempty"`
+	Tables         []string          `json:"tables"`
+	APIs           []APIBlock        `json:"apis,omitempty"`
+	CustomRoutes   []CustomRoute     `json:"customRoutes,omitempty"`
+	Realtimes      []string          `json:"realtimes,omitempty"`
+	Events         []string          `json:"events,omitempty"`
+	Jobs           []string          `json:"jobs,omitempty"`
+	Notifications  []string          `json:"notifications,omitempty"`
+	Consoles       []string          `json:"consoles,omitempty"`
+	Mails          []string          `json:"mails,omitempty"`
+	PolicySnippets map[string]string `json:"policySnippets,omitempty"`
+	RegisteredAt   time.Time         `json:"registeredAt"`
 }
 
 type registryFile struct {
