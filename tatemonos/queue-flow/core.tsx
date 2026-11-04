@@ -3487,24 +3487,20 @@ console.log('⏳ QueueFlow running on Lynx')
 
 /* @arkzen:handler:rs:join_queue
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the Rust engine's named queue-flow emulation.
 /* @arkzen:handler:rs:join_queue:end */
 
 /* @arkzen:handler:rs:call_next
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the Rust engine's named queue-flow emulation.
 /* @arkzen:handler:rs:call_next:end */
 
 /* @arkzen:handler:rs:queue_status
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the Rust engine's named queue-flow emulation.
 /* @arkzen:handler:rs:queue_status:end */
 
 /* @arkzen:handler:rs:my_ticket
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the Rust engine's named queue-flow emulation.
 /* @arkzen:handler:rs:my_ticket:end */

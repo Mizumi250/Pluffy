@@ -1157,24 +1157,24 @@ const DashboardLynxPage = () => {
 
 /* @arkzen:console:rs:cleanup-temp
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed through the Rust scheduler-test command emulation.
+// The Rust engine does not execute this body or run cron schedules automatically.
 /* @arkzen:console:rs:cleanup-temp:end */
 
 /* @arkzen:console:rs:generate-report
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed through the Rust scheduler-test command emulation.
+// The Rust engine does not execute this body or run cron schedules automatically.
 /* @arkzen:console:rs:generate-report:end */
 
 /* @arkzen:console:rs:ping-health
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed through the Rust scheduler-test command emulation.
+// The Rust engine does not execute this body or run cron schedules automatically.
 /* @arkzen:console:rs:ping-health:end */
 
 /* @arkzen:console:rs:sync-data
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed through the Rust scheduler-test command emulation.
+// The Rust engine does not execute this body or run cron schedules automatically.
 /* @arkzen:console:rs:sync-data:end */

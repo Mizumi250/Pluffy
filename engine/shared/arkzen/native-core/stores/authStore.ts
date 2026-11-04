@@ -103,7 +103,7 @@ async function safeJson<T = Record<string, unknown>>(res: Response): Promise<T> 
   } catch {
     const status = res.status
     if (status === 0 || !res.url) throw new Error('Cannot reach the server. Is the backend running?')
-    if (status >= 500)            throw new Error(`Server error (${status}). Check the Laravel logs.`)
+    if (status >= 500)            throw new Error(`Backend request failed (${status}). Confirm the selected backend is running and check its logs.`)
     if (status === 404)           throw new Error(`API route not found (${status}). Check your backend routes.`)
     throw new Error(`Unexpected server response (${status}). Expected JSON but got HTML.`)
   }

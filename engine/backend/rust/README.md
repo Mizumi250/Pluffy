@@ -17,10 +17,19 @@ Copy-Item .env.example .env
 cargo run
 ```
 
+On Windows, the MSVC Rust target requires the Visual C++ linker. If it is not
+available, `node start.js` can use the `stable-x86_64-pc-windows-gnu` Rust
+toolchain with MinGW GCC when both are installed.
+
 The server listens on `http://localhost:8000` by default. `HOST`, `PORT`,
 `ARKZEN_ENGINE_SECRET`, `ARKZEN_MODULE_DIR`, and `ARKZEN_DATABASE_DIR` can be
 set in `.env` or the process environment. The development secret in
 `.env.example` must be replaced for non-local use.
+The Pusher-protocol realtime listener starts with the backend on port `8080`
+by default; configure `REVERB_PORT`, `REVERB_APP_KEY`, and `REVERB_APP_SECRET`
+to match the mobile/web client configuration. It supports public, private, and
+presence WebSocket subscriptions, authenticated channel signing, and
+`type: broadcast` API endpoints.
 `PLUFF_ROOT` may point to a Pluff project root for registry metadata; when
 unset, the server searches its current directory and parents for `arkzen.json`.
 
@@ -93,7 +102,7 @@ Missing records receive `404`; invalid bodies/declared validation rules receive
 column filters, `search` over name/title/description where present, page sizing,
 and soft-delete filtering. Declared required/string/numeric/boolean/email/min/max
 validation rules are supported, along with `sometimes`, `nullable`, `integer`,
-`in`, and `unique`.
+`array`, `in`, and `unique`.
 
 The built-in `requireJson` middleware checks JSON media types and rejects
 invalid requests with `415`; `auth` and `auth:sanctum` require `auth: true`
@@ -113,10 +122,47 @@ equivalent response shapes and persist/query the declared module tables;
 arbitrary custom source is never evaluated. `queue-flow` has explicit
 `join_queue`, `call_next`, `queue_status`, and `my_ticket` state transitions;
 its realtime broadcasts are not implemented. `jo-payroll` implements summary,
-group, and appointment queries. Other custom endpoint bodies, arbitrary
-middleware, policies, and non-CRUD DSL behavior remain unsupported and return
-`501` with build warnings. API registration is dynamic from the persisted
-module definition; it does not generate or execute arbitrary Rust source code.
+group, and appointment queries. `roles-test` supports its authenticated
+admin/user checks, audit log, and self-promotion/demotion endpoints. Other
+custom endpoint bodies, arbitrary middleware, policies, and non-CRUD DSL
+behavior remain unsupported and return `501` with build warnings. API
+registration is dynamic from the persisted module definition; it does not
+generate or execute arbitrary Rust source code.
+The `kotoba` module has named Rust emulations for its 33 authenticated handlers,
+including learner profiles and progress, community posts and corrections,
+lessons and vocabulary review, partner follows, messaging, circles, and alerts.
+The declared route handler name selects the matching implementation; arbitrary
+handler source is not evaluated.
+Declared realtime channel rules and events are resolved from the shared DSL;
+arbitrary realtime event/listener source bodies are not evaluated.
+The `events-test` module has a named emulation for `event_fire`: it records a
+completed log row for each listener declared by the event and supports clearing
+the event log. This is a synchronous database-log simulation, not background
+queue execution; custom listener bodies are not evaluated. The `job-test`
+module has named in-process emulations for `process-data`, `heavy-computation`,
+and `always-fails`, including result and failed-job records. These jobs are
+not durable across restarts, do not use a general queue worker, and do not
+execute arbitrary job bodies.
+The `scheduler-test` module supports manual runs of its four named commands,
+records matching execution-history rows, rejects arbitrary command names, and
+supports clearing the history. Console bodies are not evaluated, and Rust does
+not automatically run cron schedules.
+The `mail-test` module resolves its declared Rust mail templates, renders
+escaped data placeholders, delivers through the default log mailer or
+configured SMTP transport, and stores the result in `mail_logs`. SMTP uses
+`MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and
+`MAIL_FROM_ADDRESS`.
+The `body-mail-notification` module has named Rust emulations for its
+`sendMail`, `notify`, and `clearLog` endpoints. Mail and notification
+deliveries use the configured mail transport and are recorded per user in
+`send_log`. Notifications declaring the `database` channel are also stored in
+the module's `notifications` table; custom endpoint and `toMail` source bodies
+are not evaluated.
+The `notification-test` module supports its login/register routes, user-scoped
+inbox, read-all and delete actions, and declared database, mail, and broadcast
+notification channels. Private and presence notification subscriptions are
+authorized only for the matching authenticated user. Arbitrary notification
+bodies are not evaluated.
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears and reseeds that table, including
 resetting its SQLite auto-increment sequence; tables without seed rows are

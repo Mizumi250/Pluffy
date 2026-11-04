@@ -76,9 +76,9 @@ export async function startTanStackWatcher(): Promise<void> {
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen TanStack] ✓ Laravel backend is running`)
+    console.log(`[Arkzen TanStack] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen TanStack] ⚠ Laravel backend not reachable — static tatemonos still work`)
+    console.warn(`[Arkzen TanStack] ⚠ Backend engine not reachable — static tatemonos still work`)
   }
 
   await rebuildAllFromRoot()

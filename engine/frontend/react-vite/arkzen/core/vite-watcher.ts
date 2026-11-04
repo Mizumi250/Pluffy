@@ -81,9 +81,9 @@ export async function startViteWatcher(): Promise<void> {
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen Vite] ✓ Laravel backend is running`)
+    console.log(`[Arkzen Vite] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen Vite] ⚠ Laravel backend not reachable`)
+    console.warn(`[Arkzen Vite] ⚠ Backend engine not reachable`)
   }
 
   await rebuildAllFromRoot()

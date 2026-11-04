@@ -1,4 +1,4 @@
-use pluff_rust_backend::{app, AppState, Config};
+use pluff_rust_backend::{app, realtime_app, AppState, Config};
 use tokio::net::TcpListener;
 use tower_http::trace::TraceLayer;
 use tracing_subscriber::EnvFilter;
@@ -7,12 +7,27 @@ use tracing_subscriber::EnvFilter;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     tracing_subscriber::fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")))
+        .with_env_filter(
+            EnvFilter::try_from_default_env().unwrap_or_else(|_| EnvFilter::new("info")),
+        )
         .init();
 
     let config = Config::from_env()?;
     let address = format!("{}:{}", config.host, config.port);
+    let realtime_port = std::env::var("REVERB_PORT")
+        .unwrap_or_else(|_| "8080".to_owned())
+        .parse::<u16>()
+        .map_err(|error| format!("REVERB_PORT must be a valid TCP port: {error}"))?;
+    let realtime_address = format!("{}:{realtime_port}", config.host);
     let state = AppState::open(config)?;
+    let realtime_listener = TcpListener::bind(&realtime_address).await?;
+    let realtime_state = state.clone();
+    tokio::spawn(async move {
+        if let Err(error) = axum::serve(realtime_listener, realtime_app(realtime_state)).await {
+            tracing::error!("Rust realtime server stopped: {error}");
+        }
+    });
+    tracing::info!("Rust realtime (Pusher protocol) listening on ws://{realtime_address}");
     let application = app(state).layer(TraceLayer::new_for_http());
     let listener = TcpListener::bind(&address).await?;
     tracing::info!("Rust backend listening on http://{address}");

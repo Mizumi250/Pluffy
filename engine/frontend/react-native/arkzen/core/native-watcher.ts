@@ -82,9 +82,9 @@ export async function startNativeWatcher(): Promise<void> {
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen Native] ✓ Laravel backend is running`)
+    console.log(`[Arkzen Native] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen Native] ⚠ Laravel backend not reachable — start it first`)
+    console.warn(`[Arkzen Native] ⚠ Backend engine not reachable — start the configured backend`)
   }
 
   await rebuildAllFromRoot()

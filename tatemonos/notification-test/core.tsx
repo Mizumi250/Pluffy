@@ -1940,31 +1940,39 @@ const DashboardLynxPage = () => {
 /* @arkzen:native:page:lynx:dashboard:end */
 
 /* @arkzen:notifications:rs:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
 /* @arkzen:notifications:rs:database-ping:end */
 
 /* @arkzen:notifications:rs:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
 /* @arkzen:notifications:rs:mail-ping:end */
 
 /* @arkzen:notifications:rs:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
 /* @arkzen:notifications:rs:broadcast-ping:end */
 
 /* @arkzen:notifications:rs:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
 /* @arkzen:notifications:rs:broadcast-ping-public:end */
 
 /* @arkzen:notifications:rs:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
 /* @arkzen:notifications:rs:all-channels:end */

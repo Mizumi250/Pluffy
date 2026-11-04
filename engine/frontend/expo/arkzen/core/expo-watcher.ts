@@ -102,9 +102,9 @@ export async function startExpoWatcher(): Promise<void> {
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen Expo] ✓ Laravel backend is running`)
+    console.log(`[Arkzen Expo] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen Expo] ⚠ Laravel backend not reachable — start it with: node start.js`)
+    console.warn(`[Arkzen Expo] ⚠ Backend engine not reachable — start the configured backend`)
   }
 
   await rebuildAllFromRoot()

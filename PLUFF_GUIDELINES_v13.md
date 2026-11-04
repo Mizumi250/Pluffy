@@ -497,7 +497,7 @@ Backend code blocks accept a variant token between marker and name (`@arkzen:end
 | `native:*:lynx:*` (Lynx blocks)              | ✅ YES — pages may import directly; referenced shared components are imported by the generator |
 | `endpoint`, `handler`, `middleware`, `policy`, `listener`, `jobs`, `console` | ❌ NO — PHP only |
 
-These are source-authoring recommendations, not all parser restrictions. For the active Next.js generator, imports found in web page and error blocks are normalized into generated files; referenced non-React imports from web component blocks may also be forwarded into generated pages. Simple `export default ComponentName` lines are removed, and generated pages receive their own `'use client'` directive. Avoid relying on those transformations for unsupported imports or other export forms.
+These are source-authoring recommendations, not all parser restrictions. The Next.js generator normalizes imports found in web page and error blocks; referenced non-React imports from web component blocks may also be forwarded into generated pages. Across the current Next.js, React/Vite, Astro, Inertia, Expo, and bare-RN generators, a simple standalone `export default ComponentName` line is stripped from page source; the generated page/screen gets its own framework-specific export or wrapper. Prefer omitting it, but if it appears, it is okay: the engine removes it. This only covers that simple standalone form, not arbitrary default-export expressions or other export forms.
 
 ## SECTION 3B — `'use client'` (WEB ONLY)
 
@@ -1223,7 +1223,7 @@ const DashboardPage = () => {
 ```
 
 - Opening tag with `*/` on the same line; layout declaration on the NEXT line
-- The Next.js generator collects and relocates page imports, strips `'use client'`, and removes a simple `export default ComponentName` line. Referenced non-React imports from `web:components` can also be forwarded. Keep page code self-contained apart from generated imports for declared shared components, hooks, constants, types, and utilities; do not rely on declarations sharing a lexical scope across blocks.
+- The Next.js generator collects and relocates page imports, strips `'use client'`, and removes a simple `export default ComponentName` line before generating its own page export. Referenced non-React imports from `web:components` can also be forwarded. Keep page code self-contained apart from generated imports for declared shared components, hooks, constants, types, and utilities; do not rely on declarations sharing a lexical scope across blocks.
 - Put page-only dependencies in the page block. Imports declared in component blocks are available to generated components and may be forwarded to a page when the page references an imported identifier.
 - Define the page as a PascalCase `const` whose name ends in `Page` (for example, `IndexPage`). The generator looks for that shape; if it does not find one, it falls back to `<PageName>Page`.
 - Page name → route `/<tatemono>/<page>`; `index` = the tatemono root
@@ -1471,7 +1471,7 @@ const IndexScreen = () => {
 ```
 
 - `*/` on the opening line; layout line directly after (omit it → `default`)
-- Use `@arkzen:import:expo` / `@arkzen:import:rn` pairs for imports that differ by native target; the parser selects the matching pair. Prefer shared code in native components. The generator wraps and exports the screen, so do not add a default export.
+- Use `@arkzen:import:expo` / `@arkzen:import:rn` pairs for imports that differ by native target; the parser selects the matching pair. Prefer shared code in native components. The generator wraps and exports the screen. A simple standalone `export default ScreenName` is okay but stripped out; preferably omit it and let the engine generate the export.
 - Component naming is a convention; the Expo and bare-RN generators select a PascalCase component from the page body and wrap it.
 - NativeWind `className` for static styles, inline `style` for dynamic
 - Navigate with `router.push('/<tatemono>/<page>' as any)`
@@ -2028,7 +2028,7 @@ Before finalizing any tatemono, verify:
 - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
 - [ ] Source `'use client'` is supported in components/layout/error:500; page directives are stripped and generated pages receive their own directive
 - [ ] Layouts export `<Name>Layout`, use `useArkzenRouter()`/`useArkzenPathname()`; `parent:` layouts use Shape B
-- [ ] Prefer a page `const` named `<Name>Page`; the generator looks for a `const` ending in `Page` and otherwise falls back to the page name. Do not add a default export.
+- [ ] Prefer a page `const` named `<Name>Page`; the generator looks for a `const` ending in `Page` and otherwise falls back to the page name. A simple standalone `export default PageName` is okay but stripped out; preferably omit it because the engine generates the export.
 - [ ] `error:404` = `NotFoundPage`, `error:500` = `ServerErrorPage({ reset })`
 - [ ] Animation function has no `export`, is `camelCase(name)Animations`; `pageVariants` exported; no pinned-ScrollTrigger opacity tweens
 - [ ] `arkzenFetch` result is a `Response` — `await res.json()`, `JSON.stringify` the body; null-safe access everywhere
@@ -2036,7 +2036,7 @@ Before finalizing any tatemono, verify:
 **NATIVE (Expo / bare RN)**
 - [ ] Target-specific imports use `@arkzen:import:expo` / `:rn` pairs; the parser extracts these from native blocks, including pages
 - [ ] Native layouts import nothing from `@/arkzen/...` (auth store, `arkzenFetch`, and so on); put that logic in a `native:components` component instead (see 19B)
-- [ ] Prefer a PascalCase screen component (for example, `<Name>Screen`); the generator selects a screen component and wraps/exports it. Do not add a default export.
+- [ ] Prefer a PascalCase screen component (for example, `<Name>Screen`); the generator selects a screen component and wraps/exports it. A simple standalone `export default ScreenName` is okay but stripped out; preferably omit it because the engine generates the export.
 - [ ] Error blocks: one per target; animation/script blocks stack-suffixed (`:expo` | `:rn`); no generic `native:script`
 - [ ] Named styles export their StyleSheet; global `@arkzen:native:style` is CSS-like
 

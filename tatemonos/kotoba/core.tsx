@@ -8012,198 +8012,165 @@ const ProfileScreen = () => {
 
 /* @arkzen:handler:rs:me
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "me", path, query, body, user)
 /* @arkzen:handler:rs:me:end */
 
 /* @arkzen:handler:rs:update_me
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "update_me", path, query, body, user)
 /* @arkzen:handler:rs:update_me:end */
 
 /* @arkzen:handler:rs:bump
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "bump", path, query, body, user)
 /* @arkzen:handler:rs:bump:end */
 
 /* @arkzen:handler:rs:notify
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "notify", path, query, body, user)
 /* @arkzen:handler:rs:notify:end */
 
 /* @arkzen:handler:rs:community_seed
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "community_seed", path, query, body, user)
 /* @arkzen:handler:rs:community_seed:end */
 
 /* @arkzen:handler:rs:home
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "home", path, query, body, user)
 /* @arkzen:handler:rs:home:end */
 
 /* @arkzen:handler:rs:feed
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "feed", path, query, body, user)
 /* @arkzen:handler:rs:feed:end */
 
 /* @arkzen:handler:rs:create_post
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "create_post", path, query, body, user)
 /* @arkzen:handler:rs:create_post:end */
 
 /* @arkzen:handler:rs:delete_post
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "delete_post", path, query, body, user)
 /* @arkzen:handler:rs:delete_post:end */
 
 /* @arkzen:handler:rs:toggle_like
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "toggle_like", path, query, body, user)
 /* @arkzen:handler:rs:toggle_like:end */
 
 /* @arkzen:handler:rs:list_comments
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_comments", path, query, body, user)
 /* @arkzen:handler:rs:list_comments:end */
 
 /* @arkzen:handler:rs:add_comment
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "add_comment", path, query, body, user)
 /* @arkzen:handler:rs:add_comment:end */
 
 /* @arkzen:handler:rs:accept_correction
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "accept_correction", path, query, body, user)
 /* @arkzen:handler:rs:accept_correction:end */
 
 /* @arkzen:handler:rs:list_lessons
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_lessons", path, query, body, user)
 /* @arkzen:handler:rs:list_lessons:end */
 
 /* @arkzen:handler:rs:complete_lesson
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "complete_lesson", path, query, body, user)
 /* @arkzen:handler:rs:complete_lesson:end */
 
 /* @arkzen:handler:rs:list_cards
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_cards", path, query, body, user)
 /* @arkzen:handler:rs:list_cards:end */
 
 /* @arkzen:handler:rs:add_card
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "add_card", path, query, body, user)
 /* @arkzen:handler:rs:add_card:end */
 
 /* @arkzen:handler:rs:review_card
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "review_card", path, query, body, user)
 /* @arkzen:handler:rs:review_card:end */
 
 /* @arkzen:handler:rs:delete_card
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "delete_card", path, query, body, user)
 /* @arkzen:handler:rs:delete_card:end */
 
 /* @arkzen:handler:rs:partners
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "partners", path, query, body, user)
 /* @arkzen:handler:rs:partners:end */
 
 /* @arkzen:handler:rs:view_profile
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "view_profile", path, query, body, user)
 /* @arkzen:handler:rs:view_profile:end */
 
 /* @arkzen:handler:rs:toggle_follow
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "toggle_follow", path, query, body, user)
 /* @arkzen:handler:rs:toggle_follow:end */
 
 /* @arkzen:handler:rs:list_conversations
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_conversations", path, query, body, user)
 /* @arkzen:handler:rs:list_conversations:end */
 
 /* @arkzen:handler:rs:start_conversation
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "start_conversation", path, query, body, user)
 /* @arkzen:handler:rs:start_conversation:end */
 
 /* @arkzen:handler:rs:list_messages
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_messages", path, query, body, user)
 /* @arkzen:handler:rs:list_messages:end */
 
 /* @arkzen:handler:rs:send_message
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "send_message", path, query, body, user)
 /* @arkzen:handler:rs:send_message:end */
 
 /* @arkzen:handler:rs:correct_message
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "correct_message", path, query, body, user)
 /* @arkzen:handler:rs:correct_message:end */
 
 /* @arkzen:handler:rs:list_circles
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_circles", path, query, body, user)
 /* @arkzen:handler:rs:list_circles:end */
 
 /* @arkzen:handler:rs:create_circle
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "create_circle", path, query, body, user)
 /* @arkzen:handler:rs:create_circle:end */
 
 /* @arkzen:handler:rs:toggle_join
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "toggle_join", path, query, body, user)
 /* @arkzen:handler:rs:toggle_join:end */
 
 /* @arkzen:handler:rs:list_alerts
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "list_alerts", path, query, body, user)
 /* @arkzen:handler:rs:list_alerts:end */
 
 /* @arkzen:handler:rs:read_alerts
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "read_alerts", path, query, body, user)
 /* @arkzen:handler:rs:read_alerts:end */
 
 /* @arkzen:handler:rs:progress
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+crate::kotoba::execute(database_dir, "progress", path, query, body, user)
 /* @arkzen:handler:rs:progress:end */

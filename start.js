@@ -107,7 +107,60 @@ function findRustCargo() {
     .find(candidate => fs.existsSync(candidate)) ?? null
 }
 
+function findRustMsvcLinker() {
+  if (process.platform !== 'win32') return null
+  const pathCandidates = (process.env.PATH ?? '')
+    .split(path.delimiter)
+    .filter(Boolean)
+    .map(directory => path.join(directory, 'link.exe'))
+  const configuredTools = process.env.VCToolsInstallDir
+    ? [path.join(process.env.VCToolsInstallDir, 'bin', 'Hostx64', 'x64', 'link.exe')]
+    : []
+  return [...configuredTools, ...pathCandidates]
+    .find(candidate => fs.existsSync(candidate) && (
+      configuredTools.includes(candidate) || /[\\/]VC[\\/]Tools[\\/]MSVC[\\/]/i.test(candidate)
+    )) ?? null
+}
+
+function findRustGnuGcc() {
+  const gcc = process.platform === 'win32' ? 'gcc.exe' : 'gcc'
+  const pathCandidates = (process.env.PATH ?? '')
+    .split(path.delimiter)
+    .filter(Boolean)
+    .map(directory => path.join(directory, gcc))
+  const candidates = [...pathCandidates]
+  if (process.platform === 'win32') {
+    const packagesDir = path.join(
+      process.env.LOCALAPPDATA || path.join(os.homedir(), 'AppData', 'Local'),
+      'Microsoft',
+      'WinGet',
+      'Packages',
+    )
+    if (fs.existsSync(packagesDir)) {
+      for (const packageName of fs.readdirSync(packagesDir)) {
+        if (packageName.startsWith('BrechtSanders.WinLibs.POSIX.MSVCRT_')) {
+          candidates.push(path.join(packagesDir, packageName, 'mingw64', 'bin', gcc))
+        }
+      }
+    }
+  }
+  return candidates.find(candidate => fs.existsSync(candidate)) ?? null
+}
+
 const RUST_CARGO = IS_RUST ? findRustCargo() : null
+const RUST_GNU_TOOLCHAIN = 'stable-x86_64-pc-windows-gnu'
+const RUST_MINGW_GCC = IS_RUST ? findRustGnuGcc() : null
+const RUST_GNU_TOOLCHAIN_DIR = path.join(
+  process.env.RUSTUP_HOME || path.join(os.homedir(), '.rustup'),
+  'toolchains',
+  RUST_GNU_TOOLCHAIN,
+)
+const RUST_USE_GNU = IS_RUST
+  && process.platform === 'win32'
+  && !!RUST_MINGW_GCC
+  && fs.existsSync(RUST_GNU_TOOLCHAIN_DIR)
+  && !findRustMsvcLinker()
+  && !process.env.RUSTUP_TOOLCHAIN
 
 const WEB_DIR = path.join(STACKS_DIR, activeStack)
 const TAURI_DIR = path.join(STACKS_DIR, 'tauri')
@@ -294,6 +347,7 @@ function checkSetup() {
 function startBackend() {
   const backendName = IS_EXPRESS ? 'Express' : IS_FASTAPI ? 'FastAPI' : IS_ASPNET ? 'ASP.NET Core' : IS_SPRING ? 'Spring Boot' : IS_GO ? 'Go' : IS_RUST ? 'Rust' : 'Laravel'
   log('backend', `Starting ${backendName} on http://localhost:8000`)
+  if (RUST_USE_GNU) log('backend', 'Using the Rust GNU toolchain with MinGW GCC')
 
   const proc = IS_EXPRESS
     ? spawn('npx', ['tsx', 'src/server.ts'], { cwd: BACKEND_DIR, stdio: 'pipe', shell: process.platform === 'win32', env: { ...process.env, PORT: '8000' } })
@@ -325,12 +379,19 @@ function startBackend() {
           },
         })
     : IS_RUST
-      ? spawn(RUST_CARGO, ['run'], {
+      ? spawn(RUST_CARGO, [...(RUST_USE_GNU ? [`+${RUST_GNU_TOOLCHAIN}`] : []), 'run'], {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
           env: {
             ...process.env,
-            PATH: [path.dirname(RUST_CARGO), process.env.PATH].filter(Boolean).join(path.delimiter),
+            PATH: [
+              path.dirname(RUST_CARGO),
+              ...(RUST_USE_GNU ? [path.dirname(RUST_MINGW_GCC)] : []),
+              process.env.PATH,
+            ].filter(Boolean).join(path.delimiter),
+            ...(RUST_USE_GNU && !process.env.CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER
+              ? { CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER: RUST_MINGW_GCC }
+              : {}),
             PORT: '8000',
             PLUFF_ROOT: ROOT_DIR,
           },
@@ -647,7 +708,6 @@ let reverb = null
 backend = startBackend()
 queue   = startQueueWorker()
 reverb  = IS_EXPRESS || IS_FASTAPI || IS_ASPNET || IS_SPRING || IS_GO || IS_RUST ? null : startReverb()
-if (IS_RUST) log('backend', 'Rust realtime services are not implemented yet')
 
 // Start web stack
 const web = runWeb ? startWebStack() : null

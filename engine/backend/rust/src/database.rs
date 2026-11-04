@@ -1,5 +1,6 @@
 use rusqlite::{types::Value as SqlValue, Connection, Transaction};
 use serde_json::{Map, Value};
+use std::collections::HashSet;
 use std::path::Path;
 
 pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec<String>, String> {
@@ -17,6 +18,11 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
         .map_err(|error| format!("Could not enable SQLite foreign keys: {error}"))?;
 
     let databases = payload["databases"].as_array().cloned().unwrap_or_default();
+    let tables: HashSet<&str> = databases
+        .iter()
+        .filter_map(|definition| definition["table"].as_str())
+        .collect();
+    let module_prefix = format!("{}_", name.replace('-', "_"));
     let transaction = connection
         .transaction()
         .map_err(|error| format!("Could not start schema transaction: {error}"))?;
@@ -25,8 +31,14 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
         let table = definition["table"]
             .as_str()
             .ok_or_else(|| "Validated database table name was missing".to_owned())?;
-        create_table(&transaction, table, definition)?;
+        create_table(&transaction, table, definition, &module_prefix, &tables)?;
         steps.push(format!("Schema ready: {table}"));
+    }
+
+    for definition in &databases {
+        let table = definition["table"]
+            .as_str()
+            .ok_or_else(|| "Validated database table name was missing".to_owned())?;
         let rows = definition["seeder"]["data"]
             .as_array()
             .filter(|rows| !rows.is_empty());
@@ -35,10 +47,38 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
             steps.push(format!("Seeded {} rows: {table} (reset)", rows.len()));
         }
     }
+    if payload["notifications"]
+        .as_array()
+        .is_some_and(|notifications| !notifications.is_empty())
+    {
+        ensure_notification_table(&transaction)?;
+        steps.push("Notification table ready: notifications".to_owned());
+    }
     transaction
         .commit()
         .map_err(|error| format!("Could not commit schema changes: {error}"))?;
     Ok(steps)
+}
+
+fn ensure_notification_table(transaction: &Transaction<'_>) -> Result<(), String> {
+    transaction
+        .execute_batch(
+            r#"
+            CREATE TABLE IF NOT EXISTS "notifications" (
+                "id" TEXT PRIMARY KEY NOT NULL,
+                "type" TEXT NOT NULL,
+                "notifiable_type" TEXT NOT NULL,
+                "notifiable_id" INTEGER NOT NULL,
+                "data" TEXT NOT NULL,
+                "read_at" TEXT NULL,
+                "created_at" TEXT NULL,
+                "updated_at" TEXT NULL
+            );
+            CREATE INDEX IF NOT EXISTS "notifications_notifiable_index"
+                ON "notifications" ("notifiable_type", "notifiable_id");
+            "#,
+        )
+        .map_err(|error| format!("Could not configure notification table: {error}"))
 }
 
 fn seed_table(
@@ -143,10 +183,7 @@ fn seed_sql_value(value: &Value) -> Result<SqlValue, String> {
             } else if let Some(value) = value.as_u64() {
                 match i64::try_from(value) {
                     Ok(value) => Ok(SqlValue::Integer(value)),
-                    Err(_) => value
-                        .as_f64()
-                        .map(SqlValue::Real)
-                        .ok_or_else(|| "Seed number is not supported by SQLite".to_owned()),
+                    Err(_) => Ok(SqlValue::Real(value as f64)),
                 }
             } else if let Some(value) = value.as_f64() {
                 Ok(SqlValue::Real(value))
@@ -160,8 +197,15 @@ fn seed_sql_value(value: &Value) -> Result<SqlValue, String> {
 }
 
 pub fn table_for_model<'a>(payload: &'a Value, api: &'a Value) -> Option<&'a str> {
-    let databases = payload.get("databases")?.as_array()?;
     let requested = api.get("table").and_then(Value::as_str);
+    let has_notifications = payload["notifications"]
+        .as_array()
+        .is_some_and(|notifications| !notifications.is_empty());
+    if has_notifications && (requested == Some("notifications") || api["model"] == "Notification") {
+        return Some("notifications");
+    }
+
+    let databases = payload.get("databases")?.as_array()?;
     if let Some(table) = requested {
         return databases
             .iter()
@@ -218,39 +262,12 @@ fn create_table(
     transaction: &Transaction<'_>,
     table: &str,
     definition: &Value,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
 ) -> Result<(), String> {
     let table_name = quote_identifier(table)?;
     let columns = definition["columns"].as_object();
-    let has_primary = columns
-        .map(|columns| {
-            columns
-                .values()
-                .any(|column| column["primary"].as_bool() == Some(true))
-        })
-        .unwrap_or(false);
-    let mut declarations = Vec::new();
-
-    if !has_primary {
-        declarations.push("\"id\" INTEGER PRIMARY KEY AUTOINCREMENT".to_owned());
-    }
-    if let Some(columns) = columns {
-        for (name, config) in columns {
-            declarations.push(column_declaration(name, config)?);
-        }
-    }
-    if definition["timestamps"].as_bool() != Some(false) {
-        if !columns.is_some_and(|columns| columns.contains_key("created_at")) {
-            declarations.push("\"created_at\" TEXT".to_owned());
-        }
-        if !columns.is_some_and(|columns| columns.contains_key("updated_at")) {
-            declarations.push("\"updated_at\" TEXT".to_owned());
-        }
-    }
-    if definition["softDeletes"].as_bool() == Some(true)
-        && !columns.is_some_and(|columns| columns.contains_key("deleted_at"))
-    {
-        declarations.push("\"deleted_at\" TEXT".to_owned());
-    }
+    let declarations = table_declarations(definition, module_prefix, tables)?;
 
     let exists = transaction
         .query_row(
@@ -265,6 +282,9 @@ fn create_table(
             .execute(&sql, [])
             .map_err(|error| format!("Could not create table {table}: {error}"))?;
     } else {
+        if has_mismatched_foreign_key(transaction, table, definition, module_prefix, tables)? {
+            migrate_table_foreign_keys(transaction, table, &declarations)?;
+        }
         let mut statement = transaction
             .prepare(&format!("PRAGMA table_info({table_name})"))
             .map_err(|error| format!("Could not inspect table {table}: {error}"))?;
@@ -303,6 +323,194 @@ fn create_table(
     Ok(())
 }
 
+fn table_declarations(
+    definition: &Value,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
+) -> Result<Vec<String>, String> {
+    let columns = definition["columns"].as_object();
+    let has_primary = columns
+        .map(|columns| {
+            columns
+                .values()
+                .any(|column| column["primary"].as_bool() == Some(true))
+        })
+        .unwrap_or(false);
+    let mut declarations = Vec::new();
+
+    if !has_primary {
+        declarations.push("\"id\" INTEGER PRIMARY KEY AUTOINCREMENT".to_owned());
+    }
+    if let Some(columns) = columns {
+        for (name, config) in columns {
+            declarations.push(column_declaration(name, config, module_prefix, tables)?);
+        }
+    }
+    if definition["timestamps"].as_bool() != Some(false) {
+        if !columns.is_some_and(|columns| columns.contains_key("created_at")) {
+            declarations.push("\"created_at\" TEXT".to_owned());
+        }
+        if !columns.is_some_and(|columns| columns.contains_key("updated_at")) {
+            declarations.push("\"updated_at\" TEXT".to_owned());
+        }
+    }
+    if definition["softDeletes"].as_bool() == Some(true)
+        && !columns.is_some_and(|columns| columns.contains_key("deleted_at"))
+    {
+        declarations.push("\"deleted_at\" TEXT".to_owned());
+    }
+    Ok(declarations)
+}
+
+fn resolved_foreign_reference<'a>(
+    reference: &'a str,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
+) -> Result<(String, &'a str), String> {
+    let mut parts = reference.split('.');
+    let table = parts.next().unwrap_or_default();
+    let column = parts.next().unwrap_or("id");
+    if table.is_empty() || parts.next().is_some() {
+        return Err(format!("Invalid foreign key reference \"{reference}\""));
+    }
+    let physical_table = table
+        .strip_prefix(module_prefix)
+        .filter(|candidate| tables.contains(candidate))
+        .unwrap_or(table);
+    Ok((physical_table.to_owned(), column))
+}
+
+fn has_mismatched_foreign_key(
+    transaction: &Transaction<'_>,
+    table: &str,
+    definition: &Value,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
+) -> Result<bool, String> {
+    let table_name = quote_identifier(table)?;
+    let mut statement = transaction
+        .prepare(&format!("PRAGMA foreign_key_list({table_name})"))
+        .map_err(|error| format!("Could not inspect foreign keys for {table}: {error}"))?;
+    let foreign_keys = statement
+        .query_map([], |row| {
+            Ok((
+                row.get::<_, String>(2)?,
+                row.get::<_, String>(3)?,
+                row.get::<_, String>(4)?,
+            ))
+        })
+        .map_err(|error| format!("Could not inspect foreign keys for {table}: {error}"))?
+        .collect::<Result<Vec<_>, _>>()
+        .map_err(|error| format!("Could not inspect foreign keys for {table}: {error}"))?;
+
+    for (column, config) in definition["columns"].as_object().into_iter().flatten() {
+        let Some(reference) = config["foreign"].as_str() else {
+            continue;
+        };
+        let (expected_table, expected_column) =
+            resolved_foreign_reference(reference, module_prefix, tables)?;
+        if foreign_keys.iter().any(|(target, from, to)| {
+            from == column && (target != &expected_table || to != expected_column)
+        }) {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn migrate_table_foreign_keys(
+    transaction: &Transaction<'_>,
+    table: &str,
+    declarations: &[String],
+) -> Result<(), String> {
+    let table_name = quote_identifier(table)?;
+    let temporary_table = format!("{table}__arkzen_migration");
+    let temporary_name = quote_identifier(&temporary_table)?;
+    let existing_columns = table_columns(transaction, &table_name, table)?;
+    let index_and_trigger_sql = {
+        let mut statement = transaction
+            .prepare(
+                "SELECT sql FROM sqlite_master \
+                 WHERE tbl_name = ?1 AND type IN ('index', 'trigger') AND sql IS NOT NULL",
+            )
+            .map_err(|error| format!("Could not inspect indexes for {table}: {error}"))?;
+        let rows = statement
+            .query_map([table], |row| row.get::<_, String>(0))
+            .map_err(|error| format!("Could not inspect indexes for {table}: {error}"))?;
+        rows.collect::<Result<Vec<_>, _>>()
+            .map_err(|error| format!("Could not inspect indexes for {table}: {error}"))?
+    };
+
+    transaction
+        .execute(
+            &format!(
+                "CREATE TABLE {temporary_name} ({})",
+                declarations.join(", ")
+            ),
+            [],
+        )
+        .map_err(|error| format!("Could not prepare foreign-key migration for {table}: {error}"))?;
+    let new_columns = table_columns(transaction, &temporary_name, &temporary_table)?;
+    if existing_columns
+        .iter()
+        .any(|column| !new_columns.contains(column))
+    {
+        return Err(format!(
+            "Cannot migrate foreign keys for {table}: existing columns differ from the declared schema"
+        ));
+    }
+    let columns = existing_columns
+        .iter()
+        .map(|column| quote_identifier(column))
+        .collect::<Result<Vec<_>, _>>()?;
+    transaction
+        .execute(
+            &format!(
+                "INSERT INTO {temporary_name} ({}) SELECT {} FROM {table_name}",
+                columns.join(", "),
+                columns.join(", ")
+            ),
+            [],
+        )
+        .map_err(|error| {
+            format!("Could not preserve {table} rows during foreign-key migration: {error}")
+        })?;
+    transaction
+        .execute(&format!("DROP TABLE {table_name}"), [])
+        .map_err(|error| {
+            format!("Could not replace {table} during foreign-key migration: {error}")
+        })?;
+    transaction
+        .execute(
+            &format!("ALTER TABLE {temporary_name} RENAME TO {table_name}"),
+            [],
+        )
+        .map_err(|error| format!("Could not finish foreign-key migration for {table}: {error}"))?;
+    for sql in index_and_trigger_sql {
+        transaction.execute(&sql, []).map_err(|error| {
+            format!("Could not restore an index or trigger for {table}: {error}")
+        })?;
+    }
+    Ok(())
+}
+
+fn table_columns(
+    transaction: &Transaction<'_>,
+    quoted_table: &str,
+    table: &str,
+) -> Result<Vec<String>, String> {
+    let mut statement = transaction
+        .prepare(&format!("PRAGMA table_info({quoted_table})"))
+        .map_err(|error| format!("Could not inspect columns for {table}: {error}"))?;
+    let rows = statement
+        .query_map([], |row| row.get(1))
+        .map_err(|error| format!("Could not inspect columns for {table}: {error}"))?;
+    let columns = rows
+        .collect::<Result<_, _>>()
+        .map_err(|error| format!("Could not inspect columns for {table}: {error}"))?;
+    Ok(columns)
+}
+
 fn added_column_declaration(name: &str, config: &Value) -> Result<String, String> {
     let kind = config["type"].as_str().unwrap_or("string");
     let sql_type = match kind {
@@ -318,7 +526,12 @@ fn added_column_declaration(name: &str, config: &Value) -> Result<String, String
     Ok(declaration)
 }
 
-fn column_declaration(name: &str, config: &Value) -> Result<String, String> {
+fn column_declaration(
+    name: &str,
+    config: &Value,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
+) -> Result<String, String> {
     let name = quote_identifier(name)?;
     let kind = config["type"].as_str().unwrap_or("string");
     let primary = config["primary"].as_bool() == Some(true);
@@ -342,15 +555,10 @@ fn column_declaration(name: &str, config: &Value) -> Result<String, String> {
         declaration.push_str(" UNIQUE");
     }
     if let Some(reference) = config["foreign"].as_str() {
-        let mut parts = reference.split('.');
-        let table = parts.next().unwrap_or_default();
-        let column = parts.next().unwrap_or("id");
-        if parts.next().is_some() {
-            return Err(format!("Invalid foreign key reference \"{reference}\""));
-        }
+        let (table, column) = resolved_foreign_reference(reference, module_prefix, tables)?;
         declaration.push_str(&format!(
             " REFERENCES {}({})",
-            quote_identifier(table)?,
+            quote_identifier(&table)?,
             quote_identifier(column)?
         ));
         let on_delete = config["onDelete"].as_str().unwrap_or("cascade");
@@ -502,5 +710,75 @@ mod tests {
             )
             .unwrap();
         assert!(!created_at.is_empty());
+    }
+
+    #[test]
+    fn resolves_module_prefixed_foreign_keys_and_migrates_existing_tables() {
+        let directory = tempfile::tempdir().unwrap();
+        let path = directory.path().join("queue-flow.sqlite");
+        let connection = Connection::open(&path).unwrap();
+        connection
+            .execute_batch(
+                r#"
+                PRAGMA foreign_keys = OFF;
+                CREATE TABLE queues (id INTEGER PRIMARY KEY, name TEXT NOT NULL);
+                INSERT INTO queues (id, name) VALUES (1, 'General');
+                CREATE TABLE tickets (
+                    id INTEGER PRIMARY KEY,
+                    queue_id INTEGER NOT NULL REFERENCES queue_flow_queues(id) ON DELETE CASCADE,
+                    ticket_number TEXT NOT NULL,
+                    created_at TEXT,
+                    updated_at TEXT
+                );
+                INSERT INTO tickets (id, queue_id, ticket_number) VALUES (7, 1, 'G-007');
+                "#,
+            )
+            .unwrap();
+        drop(connection);
+
+        let payload = json!({
+            "databases": [{
+                "table": "queues",
+                "columns": {"name": {"type": "string", "nullable": false}}
+            }, {
+                "table": "tickets",
+                "columns": {
+                    "queue_id": {
+                        "type": "foreignId",
+                        "foreign": "queue_flow_queues.id",
+                        "nullable": false
+                    },
+                    "ticket_number": {"type": "string", "nullable": false}
+                }
+            }]
+        });
+        apply_schema(directory.path(), "queue-flow", &payload).unwrap();
+
+        let connection = Connection::open(path).unwrap();
+        connection
+            .pragma_update(None, "foreign_keys", "ON")
+            .unwrap();
+        let foreign_key: (String, String) = connection
+            .query_row(
+                "SELECT \"table\", \"from\" FROM pragma_foreign_key_list('tickets')",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(foreign_key, ("queues".to_owned(), "queue_id".to_owned()));
+        let ticket: (i64, String) = connection
+            .query_row(
+                "SELECT queue_id, ticket_number FROM tickets WHERE id = 7",
+                [],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
+            .unwrap();
+        assert_eq!(ticket, (1, "G-007".to_owned()));
+        connection
+            .execute(
+                "INSERT INTO tickets (queue_id, ticket_number) VALUES (1, 'G-008')",
+                [],
+            )
+            .unwrap();
     }
 }

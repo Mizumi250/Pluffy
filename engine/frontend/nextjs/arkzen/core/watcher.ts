@@ -92,13 +92,13 @@ async function startup(): Promise<void> {
   fs.mkdirSync(MODULES_DIR, { recursive: true })
   syncSharedCoreToCurrentStack('Arkzen')
 
-  console.log(`\n[Arkzen] Checking Laravel backend...`)
+  console.log(`\n[Arkzen] Checking backend engine...`)
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen] ✓ Laravel backend is running`)
+    console.log(`[Arkzen] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen] ⚠ Laravel backend not reachable. Backend builds will fail.`)
-    console.warn(`[Arkzen]   Make sure Laravel is running: php artisan serve`)
+    console.warn(`[Arkzen] ⚠ Backend engine not reachable. Backend builds will fail.`)
+    console.warn(`[Arkzen]   Start the backend engine selected in the project configuration.`)
   }
 
   await rebuildAllFromRoot()

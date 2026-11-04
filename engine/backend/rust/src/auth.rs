@@ -17,7 +17,7 @@ pub struct User {
 }
 
 impl User {
-    fn json(&self) -> Value {
+    pub fn json(&self) -> Value {
         json!({
             "id": self.id,
             "name": self.name,
@@ -105,6 +105,38 @@ pub fn bearer_is_authenticated(
     };
     let connection = open_database(database_dir, module)?;
     Ok(resolve_user(&connection, &token).map(|_| true)?)
+}
+
+pub fn authenticated_user(
+    database_dir: &Path,
+    module: &str,
+    authorization: Option<&str>,
+) -> Result<Option<User>, String> {
+    let Some(token) = parse_bearer(authorization) else {
+        return Ok(None);
+    };
+    let connection = open_database(database_dir, module)?;
+    Ok(resolve_user(&connection, &token)?.map(|(user, _)| user))
+}
+
+pub fn update_user_role(
+    database_dir: &Path,
+    module: &str,
+    user_id: i64,
+    role: &str,
+) -> Result<Option<User>, String> {
+    if !matches!(role, "admin" | "user") {
+        return Err(format!("Unsupported role \"{role}\""));
+    }
+    let connection = open_database(database_dir, module)?;
+    let updated_at = timestamp(&connection)?;
+    connection
+        .execute(
+            r#"UPDATE "users" SET "role"=?1,"updated_at"=?2 WHERE "id"=?3"#,
+            params![role, updated_at, user_id],
+        )
+        .map_err(|error| format!("Unable to update auth user role: {error}"))?;
+    get_user(&connection, user_id)
 }
 
 fn open_database(database_dir: &Path, module: &str) -> Result<Connection, String> {
@@ -311,7 +343,7 @@ fn register(
 
     let password_hash =
         hash_password(password).map_err(|error| format!("Unable to hash password: {error}"))?;
-    let mut connection = open_database(database_dir, module)?;
+    let connection = open_database(database_dir, module)?;
     let now = timestamp(&connection)?;
     let inserted = connection.execute(
         r#"INSERT INTO "users" ("name","email","password","role","created_at","updated_at")
@@ -349,7 +381,7 @@ fn login(database_dir: &Path, module: &str, body: &Value) -> Result<(StatusCode,
             "The provided credentials are incorrect.",
         ));
     }
-    let mut connection = open_database(database_dir, module)?;
+    let connection = open_database(database_dir, module)?;
     let credentials = connection
         .query_row(
             r#"SELECT "id","name","email","role","email_verified_at","created_at","updated_at","password"

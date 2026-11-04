@@ -928,24 +928,20 @@ const DashboardScreen = () => {
 
 /* @arkzen:endpoint:rs:index
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust engine uses the shared paginated index implementation for job_results.
 /* @arkzen:endpoint:rs:index:end */
 
 /* @arkzen:jobs:rs:process-data
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Rust emulates the named job with a two-second delay and records its result.
 /* @arkzen:jobs:rs:process-data:end */
 
 /* @arkzen:jobs:rs:heavy-computation
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Rust emulates the named job with a five-second delay and records its result.
 /* @arkzen:jobs:rs:heavy-computation:end */
 
 /* @arkzen:jobs:rs:always-fails
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Rust emulates the failed job handler and records the failure in failed_jobs.
 /* @arkzen:jobs:rs:always-fails:end */

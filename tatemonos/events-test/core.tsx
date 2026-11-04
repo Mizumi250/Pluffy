@@ -1507,60 +1507,50 @@ const IndexScreen = () => {
 
 /* @arkzen:endpoint:rs:index
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust engine uses the shared paginated index implementation for event_log.
 /* @arkzen:endpoint:rs:index:end */
 
 /* @arkzen:endpoint:rs:clearLog
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust engine's events-test emulation clears the declared event_log table.
 /* @arkzen:endpoint:rs:clearLog:end */
 
 /* @arkzen:listener:rs:SendWelcomeEmail
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:SendWelcomeEmail:end */
 
 /* @arkzen:listener:rs:UpdateUserStats
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:UpdateUserStats:end */
 
 /* @arkzen:listener:rs:NotifyAdmins
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:NotifyAdmins:end */
 
 /* @arkzen:listener:rs:ProcessPayment
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:ProcessPayment:end */
 
 /* @arkzen:listener:rs:UpdateInventory
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:UpdateInventory:end */
 
 /* @arkzen:listener:rs:SendOrderConfirmation
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:SendOrderConfirmation:end */
 
 /* @arkzen:listener:rs:LogExportActivity
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:LogExportActivity:end */
 
 /* @arkzen:listener:rs:CleanupTempFiles
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
 /* @arkzen:listener:rs:CleanupTempFiles:end */

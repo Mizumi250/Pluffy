@@ -97,9 +97,9 @@ export async function startLynxWatcher(): Promise<void> {
 
   const backendHealthy = await checkBackendHealth()
   if (backendHealthy) {
-    console.log(`[Arkzen Lynx] ✓ Laravel backend is running`)
+    console.log(`[Arkzen Lynx] ✓ Backend engine is running`)
   } else {
-    console.warn(`[Arkzen Lynx] ⚠ Laravel backend not reachable — start it with: node start.js`)
+    console.warn(`[Arkzen Lynx] ⚠ Backend engine not reachable — start the configured backend`)
   }
 
   await rebuildAllFromRoot()

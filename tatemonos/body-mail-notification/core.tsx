@@ -2755,48 +2755,67 @@ const DashboardLynxPage = () => {
 
 /* @arkzen:endpoint:rs:sendMail
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the body-mail-notification named Rust emulation.
 /* @arkzen:endpoint:rs:sendMail:end */
 
 /* @arkzen:endpoint:rs:notify
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the body-mail-notification named Rust emulation.
 /* @arkzen:endpoint:rs:notify:end */
 
 /* @arkzen:endpoint:rs:clearLog
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// Executed by the body-mail-notification named Rust emulation.
 /* @arkzen:endpoint:rs:clearLog:end */
 
 /* @arkzen:notifications:rs:action-required
+channels: [mail, database]
+channel_type: private
+message: "You have a pending action that requires your attention."
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust named emulation provides the toMail template for this notification.
 /* @arkzen:notifications:rs:action-required:end */
 
 /* @arkzen:notifications:rs:summary
+channels: [mail, database]
+channel_type: private
+message: "Here is your activity summary."
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+// The Rust named emulation provides the toMail template for this notification.
 /* @arkzen:notifications:rs:summary:end */
 
 /* @arkzen:mail:rs:welcome
+subject: "Welcome to Arkzen — blade_body injection test"
+data:
+  name: string
+  app_name: string
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+<h1>Welcome, {{ $name }}!</h1>
+<p>You are now part of <strong>{{ $app_name }}</strong>. This email was generated from a <code>blade_body</code> block injected via the Arkzen DSL — no manually created template required.</p>
+<span>blade_body injection works</span>
 /* @arkzen:mail:rs:welcome:end */
 
 /* @arkzen:mail:rs:receipt
+subject: "Your receipt — blade_body injection test"
+data:
+  order_id: string
+  amount: string
+  item_name: string
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+<h1>Receipt #{{ $order_id }}</h1>
+<p>Item: {{ $item_name }}</p>
+<p>Amount: {{ $amount }}</p>
+<p>Status: Paid</p>
+<p>blade_body injected receipt — no stub used.</p>
 /* @arkzen:mail:rs:receipt:end */
 
 /* @arkzen:mail:rs:alert
+subject: "Action Required — blade_body injection test"
+data:
+  alert_message: string
+  action_url: string
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+<h1>Action Required</h1>
+<p>{{ $alert_message }}</p>
+<a href="{{ $action_url }}">Review Now</a>
 /* @arkzen:mail:rs:alert:end */

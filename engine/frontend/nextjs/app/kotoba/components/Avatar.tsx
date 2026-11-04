@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Avatar
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:59:05.728Z
+// Generated: 2026-11-04T13:19:17.902Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
