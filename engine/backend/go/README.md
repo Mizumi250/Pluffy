@@ -1,11 +1,11 @@
 # Pluff Go backend
 
 Standalone Go/net-http backend foundation using [Chi](https://github.com/go-chi/chi)
-for routing and the pure-Go `modernc.org/sqlite` driver for isolated module
-databases. The engine provides the Arkzen health, registry, build, and remove
+for routing, with isolated per-tatemono databases using SQLite by default or
+PostgreSQL when configured. The engine provides the Arkzen health, registry, build, and remove
 contract. Builds validate module/API/table definitions, prepare isolated
-SQLite schemas, persist module registrations, and expose CRUD routes immediately
-and after restart. It also provides a SQLite-backed queue with retries and a
+database schemas, persist module registrations, and expose CRUD routes immediately
+and after restart. It also provides a database-backed queue with retries and a
 minute-resolution cron scheduler. The built-in `job-test` and `scheduler-test`
 handlers are emulated. Kotoba's allowlisted named custom routes are implemented with
 explicit Go emulations; arbitrary `:go` source is never executed.
@@ -23,8 +23,16 @@ go run ./cmd/server
 The server listens on `:8000` by default. `PORT` sets the listening port,
 `ARKZEN_ENGINE_SECRET` sets the build/remove credential, and
 `PLUFF_STORAGE_DIR` sets the persistent storage root (default `storage`).
+`ARKZEN_DB_DRIVER` selects `sqlite` (default) or `pgsql`/`postgres`/
+`postgresql`. SQLite module files remain at
+`storage/databases/<tatemono>.sqlite`. PostgreSQL uses a separate database
+named `<ARKZEN_DB_PREFIX><tatemono>` for each tatemono; it connects with
+`DB_HOST`, `DB_PORT`, `DB_USERNAME`, and `DB_PASSWORD` (defaults are
+`127.0.0.1`, `5432`, and empty credentials), creates missing databases, and
+drops them when a tatemono is removed. The configured PostgreSQL user therefore
+needs permission to create/drop databases and to create/alter tables.
 `QUEUE_CONNECTION=sync` runs supported jobs during the dispatch request;
-otherwise jobs are persisted in each module's SQLite `jobs` table and processed
+otherwise jobs are persisted in each module's `jobs` table and processed
 by the integrated worker. `QUEUE_NAMES` selects queues to process (default
 `default,heavy`). Scheduled console sections are checked every second and
 recorded when their five-field cron expression is due.
@@ -86,8 +94,9 @@ Declared response message values are honored for destroy. For example:
 }
 ```
 
-Each registered tatemono has its own `storage/databases/<name>.sqlite`
-database. Tables are created or extended idempotently; omitted `id` columns
+Each registered tatemono has its own isolated database (a
+`storage/databases/<name>.sqlite` file with SQLite, or the configured named
+database with PostgreSQL). Tables are created or extended idempotently; omitted `id` columns
 receive an integer primary key when no primary key was declared. Tables
 include nullable `created_at`/`updated_at` columns by default; set
 `"timestamps": false` to disable them, or `"softDeletes": true` to add a
@@ -107,7 +116,7 @@ implements these bounded emulations:
 | --- | --- |
 | `body-endpoint-handler` | `echo` and `stats` endpoints; `ping`, `recordHandler`, and `latest` custom routes. Endpoint/handler body presence is checked, but source is not evaluated. |
 | `inventory-management` | Seeds the declared inventory rows and `lowStock` queries declared rows below 20 units. |
-| `job-test` | Dispatches the three declared jobs to a SQLite-backed queue. The integrated worker honors each job's queue, tries, and timeout metadata; retries failed jobs and records exhausted jobs in `failed_jobs`. Built-in job work is emulated; Go source bodies are not evaluated. |
+| `job-test` | Dispatches the three declared jobs to a database-backed queue. The integrated worker honors each job's queue, tries, and timeout metadata; retries failed jobs and records exhausted jobs in `failed_jobs`. Built-in job work is emulated; Go source bodies are not evaluated. |
 | `scheduler-test` | Runs the four declared commands manually or from their Go cron metadata. Scheduled runs are recorded with `triggered_by: schedule`; command Go source bodies are not evaluated. |
 | `events-test` | Resolves declared events/listeners and their selected `:go` listener bodies, then queues supported event-log listener operations with payload propagation and retries. `QUEUE_CONNECTION=sync` executes them during dispatch. Arbitrary Go listener code is not evaluated. |
 | `broadcast-test` | Persists messages, publishes Pusher/Reverb-compatible events to public, private, and presence WebSocket channels, authorizes private/presence subscriptions, and exposes `/api/<module>/sse-poll/{channelType}` for polling clients. |
@@ -115,7 +124,7 @@ implements these bounded emulations:
 | `dtr-geofencing` | Implements check-in/out, employee record lookup, setting updates, and distance-based geofence checks using the module's documented default office settings. |
 | `jo-payroll` | Implements payroll summary, group lookup, and appointment-order queries over declared `job_orders` rows. |
 | `roles-test` | Implements authenticated admin/user routes, access audit logging, and per-user promote/demote actions. |
-| `kotoba` | Implements its auth/profile, community post/comment/like, lesson/vocabulary, partner/conversation/message, circle, alert, and progress route workflows against module SQLite tables. |
+| `kotoba` | Implements its auth/profile, community post/comment/like, lesson/vocabulary, partner/conversation/message, circle, alert, and progress route workflows against module database tables. |
 | `mail-test` | Resolves the selected Go mail templates, renders the supplied data, and uses the log mailer by default (`status: sent`); optional SMTP delivery is supported with `MAIL_MAILER=smtp`. |
 | `body-mail-notification` | Renders declared mail templates and notification bodies and delivers through the configured mail transport (log by default, optional SMTP), recording sent/failed results. Notifications are delivered by email; database/push channels are not implemented. |
 | `notification-test` | Creates the Laravel-compatible notifications table from notification DSL, supports authenticated inbox, trigger, delete, and read-all routes, and delivers declared database/mail/broadcast channels. |

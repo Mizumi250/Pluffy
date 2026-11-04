@@ -517,23 +517,72 @@ func (h *Handler) serveCustomRoute(w http.ResponseWriter, r *http.Request, match
 }
 
 func openModuleDatabase(storageDir, module string) (*sql.DB, error) {
-	database, err := sql.Open("sqlite", moduleDatabasePath(storageDir, module))
+	driver, dataSource := "sqlite", moduleDatabasePath(storageDir, module)
+	if configuredDialect() == postgresDialect {
+		driver, dataSource = "arkzen-postgres", postgresConnectionString(moduleDatabaseName(module))
+	}
+	database, err := sql.Open(driver, dataSource)
 	if err != nil {
 		return nil, err
 	}
-	database.SetMaxOpenConns(1)
+	if configuredDialect() == sqliteDialect {
+		database.SetMaxOpenConns(1)
+	}
 	if err := database.Ping(); err != nil {
 		_ = database.Close()
 		return nil, err
 	}
-	if _, err := database.Exec("PRAGMA busy_timeout = 5000"); err != nil {
-		_ = database.Close()
-		return nil, err
+	if configuredDialect() == sqliteDialect {
+		if _, err := database.Exec("PRAGMA busy_timeout = 5000"); err != nil {
+			_ = database.Close()
+			return nil, err
+		}
 	}
 	return database, nil
 }
 
 func inspectColumns(db *sql.DB, table string) (map[string]struct{}, string, error) {
+	if configuredDialect() == postgresDialect {
+		rows, err := db.Query(`SELECT c.column_name, EXISTS (
+			SELECT 1 FROM information_schema.key_column_usage k
+			JOIN information_schema.table_constraints t ON t.constraint_name = k.constraint_name
+				AND t.table_schema = k.table_schema AND t.table_name = k.table_name
+			WHERE t.constraint_type = 'PRIMARY KEY' AND k.table_schema = c.table_schema
+				AND k.table_name = c.table_name AND k.column_name = c.column_name
+		) FROM information_schema.columns c
+		WHERE c.table_schema = current_schema() AND c.table_name = ? ORDER BY c.ordinal_position`, table)
+		if err != nil {
+			return nil, "", err
+		}
+		defer rows.Close()
+		columns := make(map[string]struct{})
+		primary := ""
+		for rows.Next() {
+			var name string
+			var isPrimary bool
+			if err := rows.Scan(&name, &isPrimary); err != nil {
+				return nil, "", err
+			}
+			columns[name] = struct{}{}
+			if isPrimary {
+				primary = name
+			}
+		}
+		if err := rows.Err(); err != nil {
+			return nil, "", err
+		}
+		if len(columns) == 0 {
+			return nil, "", fmt.Errorf("table %q does not exist", table)
+		}
+		if primary == "" {
+			if _, exists := columns["id"]; exists {
+				primary = "id"
+			} else {
+				return nil, "", fmt.Errorf("table %q has no primary key", table)
+			}
+		}
+		return columns, primary, nil
+	}
 	rows, err := db.Query("PRAGMA table_info(" + quoteIdentifier(table) + ")")
 	if err != nil {
 		return nil, "", err
@@ -620,7 +669,11 @@ func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.D
 		query += " LIMIT ? OFFSET ?"
 		args = append(args, limit, (page-1)*limit)
 	} else if page > 1 {
-		query += " LIMIT -1 OFFSET ?"
+		if configuredDialect() == postgresDialect {
+			query += " LIMIT ALL OFFSET ?"
+		} else {
+			query += " LIMIT -1 OFFSET ?"
+		}
 		args = append(args, (page-1)*15)
 	}
 	rows, err := db.Query(query, args...)
@@ -930,15 +983,22 @@ func insertRecord(db *sql.DB, table string, input map[string]any, columns map[st
 		}
 		query = "INSERT INTO " + table + " (" + strings.Join(quoted, ",") + ") VALUES (" + strings.Join(placeholders, ",") + ")"
 	}
-	result, err := db.Exec(query, args...)
-	if err != nil {
-		return nil, err
+	var lookup any
+	if configuredDialect() == postgresDialect {
+		if err := db.QueryRow(query+" RETURNING "+quoteIdentifier(primary), args...).Scan(&lookup); err != nil {
+			return nil, err
+		}
+	} else {
+		result, err := db.Exec(query, args...)
+		if err != nil {
+			return nil, err
+		}
+		id, err := result.LastInsertId()
+		if err != nil {
+			return nil, err
+		}
+		lookup = id
 	}
-	id, err := result.LastInsertId()
-	if err != nil {
-		return nil, err
-	}
-	lookup := any(id)
 	if value, supplied := input[primary]; supplied {
 		lookup = value
 	}

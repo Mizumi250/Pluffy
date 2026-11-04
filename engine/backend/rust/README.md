@@ -8,6 +8,17 @@ registrations and live API definitions across restarts, and serves the common
 CRUD endpoints described below. It does not modify or depend on root Pluff
 integrations.
 
+## Database driver status
+
+SQLite is currently the only integrated Rust database driver. The
+`ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
+and `DB_PASSWORD` settings are documented in `.env.example`, and the Rust
+database module contains tested PostgreSQL driver/name and schema-dialect
+helpers. However, the Rust schema builder, authentication, CRUD, notification,
+custom-emulation, and Kotoba query paths still use rusqlite; setting
+`ARKZEN_DB_DRIVER=pgsql` does **not** switch those paths to PostgreSQL yet.
+Use `ARKZEN_DB_DRIVER=sqlite` until the remaining database paths are migrated.
+
 ## Run
 
 Install the Rust toolchain with rustup, then from this directory:

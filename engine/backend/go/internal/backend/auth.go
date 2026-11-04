@@ -142,19 +142,24 @@ func (h *Handler) registerAuthUser(w http.ResponseWriter, r *http.Request, modul
 	}
 	defer db.Close()
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	result, err := db.Exec(`INSERT INTO "users" ("name","email","password","role","created_at","updated_at") VALUES (?,?,?,'user',?,?)`,
-		strings.TrimSpace(name), strings.TrimSpace(email), passwordHash, now, now)
+	insert := `INSERT INTO "users" ("name","email","password","role","created_at","updated_at") VALUES (?,?,?,'user',?,?)`
+	var userID int64
+	if configuredDialect() == postgresDialect {
+		err = db.QueryRow(insert+` RETURNING "id"`,
+			strings.TrimSpace(name), strings.TrimSpace(email), passwordHash, now, now).Scan(&userID)
+	} else {
+		var result sql.Result
+		result, err = db.Exec(insert, strings.TrimSpace(name), strings.TrimSpace(email), passwordHash, now, now)
+		if err == nil {
+			userID, err = result.LastInsertId()
+		}
+	}
 	if err != nil {
 		if strings.Contains(strings.ToLower(err.Error()), "unique") || strings.Contains(strings.ToLower(err.Error()), "constraint") {
 			writeAuthValidationError(w, map[string][]string{"email": {"The email has already been taken."}})
 			return
 		}
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to create user"})
-		return
-	}
-	userID, err := result.LastInsertId()
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to retrieve created user"})
 		return
 	}
 	user := authUser{ID: userID, Name: strings.TrimSpace(name), Email: strings.TrimSpace(email), Role: "user", CreatedAt: now, UpdatedAt: now}
@@ -211,15 +216,19 @@ func (h *Handler) writeAuthToken(w http.ResponseWriter, db *sql.DB, user authUse
 		return
 	}
 	now := time.Now().UTC().Format(time.RFC3339Nano)
-	result, err := db.Exec(`INSERT INTO "personal_access_tokens" ("tokenable_type","tokenable_id","name","token","abilities","created_at","updated_at") VALUES ('user',?,'arkzen-token',?,'["*"]',?,?)`,
-		user.ID, hashToken(token), now, now)
+	insert := `INSERT INTO "personal_access_tokens" ("tokenable_type","tokenable_id","name","token","abilities","created_at","updated_at") VALUES ('user',?,'arkzen-token',?,'["*"]',?,?)`
+	var tokenID int64
+	if configuredDialect() == postgresDialect {
+		err = db.QueryRow(insert+` RETURNING "id"`, user.ID, hashToken(token), now, now).Scan(&tokenID)
+	} else {
+		var result sql.Result
+		result, err = db.Exec(insert, user.ID, hashToken(token), now, now)
+		if err == nil {
+			tokenID, err = result.LastInsertId()
+		}
+	}
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to persist access token"})
-		return
-	}
-	tokenID, err := result.LastInsertId()
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to retrieve access token"})
 		return
 	}
 	writeJSON(w, status, map[string]any{"user": user, "token": fmt.Sprintf("%d|%s", tokenID, token)})

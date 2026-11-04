@@ -7,5 +7,5 @@ python-multipart>=0.0.9
 bcrypt>=4.1
 croniter>=2.0
 websockets>=13.0
-# PostgreSQL (optional, only when ARKZEN_DB_DRIVER=pgsql):
-# psycopg[binary]>=3.1
+# PostgreSQL driver used when ARKZEN_DB_DRIVER=pgsql.
+psycopg[binary]>=3.1

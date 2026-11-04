@@ -865,7 +865,7 @@ async function cmdSwitchDatabase(dbArg) {
   if (db === 'pgsql') {
     const backend = resolveBackend(config)
     const cur     = readEnvFile(path.join(backendPath(backend), '.env'))
-    const wasPg   = cur.DB_CONNECTION === 'pgsql'
+    const wasPg   = cur.DB_CONNECTION === 'pgsql' || cur.ARKZEN_DB_DRIVER === 'pgsql'
     info('PostgreSQL connection — press Enter to keep the value in brackets')
     env.PLUFF_DB_HOST     = await prompt('Host', (wasPg && cur.DB_HOST) || '127.0.0.1')
     env.PLUFF_DB_PORT     = await prompt('Port', (wasPg && cur.DB_PORT) || '5432')

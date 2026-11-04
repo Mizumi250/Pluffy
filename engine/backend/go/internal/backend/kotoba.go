@@ -124,6 +124,14 @@ func (h *Handler) runKotobaHandler(w http.ResponseWriter, r *http.Request, db *s
 
 func kotobaTable(name string) string { return quoteIdentifier(name) }
 
+func kotobaDateColumn(name string) string {
+	column := quoteIdentifier(name)
+	if configuredDialect() == postgresDialect {
+		return "CAST(CAST(" + column + " AS TIMESTAMP) AS DATE)"
+	}
+	return "date(" + column + ")"
+}
+
 func kotobaRows(db *sql.DB, query string, args ...any) ([]map[string]any, error) {
 	rows, err := db.Query(query, args...)
 	if err != nil {
@@ -600,16 +608,16 @@ func (h *Handler) kotobaHome(w http.ResponseWriter, db *sql.DB, user kotobaUser)
 	var due, unread, posts, messages, lessons, circles int
 	_ = db.QueryRow(`SELECT COUNT(*) FROM "vocab_cards" WHERE "user_id" = ? AND ("due_date" IS NULL OR "due_date" <= ?)`, user.ID, today).Scan(&due)
 	_ = db.QueryRow(`SELECT COUNT(*) FROM "alerts" WHERE "user_id" = ? AND "is_read" = 0`, user.ID).Scan(&unread)
-	_ = db.QueryRow(`SELECT COUNT(*) FROM "posts" WHERE "user_id" = ? AND date("created_at") = ?`, user.ID, today).Scan(&posts)
-	_ = db.QueryRow(`SELECT COUNT(*) FROM "messages" WHERE "sender_id" = ? AND date("created_at") = ?`, user.ID, today).Scan(&messages)
-	_ = db.QueryRow(`SELECT COUNT(*) FROM "lesson_results" WHERE "user_id" = ? AND date("updated_at") = ?`, user.ID, today).Scan(&lessons)
+	_ = db.QueryRow(`SELECT COUNT(*) FROM "posts" WHERE "user_id" = ? AND `+kotobaDateColumn("created_at")+` = ?`, user.ID, today).Scan(&posts)
+	_ = db.QueryRow(`SELECT COUNT(*) FROM "messages" WHERE "sender_id" = ? AND `+kotobaDateColumn("created_at")+` = ?`, user.ID, today).Scan(&messages)
+	_ = db.QueryRow(`SELECT COUNT(*) FROM "lesson_results" WHERE "user_id" = ? AND `+kotobaDateColumn("updated_at")+` = ?`, user.ID, today).Scan(&lessons)
 	_ = db.QueryRow(`SELECT COUNT(*) FROM "circle_members" WHERE "user_id" = ?`, user.ID).Scan(&circles)
 	helpNeeded := 0
 	_ = db.QueryRow(`SELECT COUNT(*) FROM "posts" WHERE "corrections_count"=0 AND "user_id"<>? AND "lang"=?`, user.ID, profile["native_lang"]).Scan(&helpNeeded)
 	missionDone := false
 	if selected, ok := mission.(map[string]any); ok {
 		var count int
-		_ = db.QueryRow(`SELECT COUNT(*) FROM "posts" WHERE "user_id"=? AND "mission_id"=? AND date("created_at")=?`, user.ID, selected["id"], today).Scan(&count)
+		_ = db.QueryRow(`SELECT COUNT(*) FROM "posts" WHERE "user_id"=? AND "mission_id"=? AND `+kotobaDateColumn("created_at")+`=?`, user.ID, selected["id"], today).Scan(&count)
 		missionDone = count > 0
 	}
 	writeJSON(w, 200, map[string]any{"profile": profile, "mission": mission, "mission_done": missionDone, "due": due, "next_lesson": nextLesson, "unread": unread, "today_activity": posts + messages + lessons, "help_needed": helpNeeded, "circles": circles})
@@ -732,7 +740,11 @@ func (h *Handler) kotobaToggleLike(w http.ResponseWriter, db *sql.DB, user kotob
 	}
 	if like != nil {
 		_, _ = db.Exec(`DELETE FROM "likes" WHERE "id" = ?`, like["id"])
-		_, _ = db.Exec(`UPDATE "posts" SET "likes_count" = MAX(0, "likes_count" - 1) WHERE "id" = ?`, id)
+		minimum := `MAX(0, "likes_count" - 1)`
+		if configuredDialect() == postgresDialect {
+			minimum = `GREATEST(0, "likes_count" - 1)`
+		}
+		_, _ = db.Exec(`UPDATE "posts" SET "likes_count" = `+minimum+` WHERE "id" = ?`, id)
 	} else {
 		_, err = kotobaInsert(db, "likes", map[string]any{"post_id": id, "user_id": user.ID})
 		if err != nil {

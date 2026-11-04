@@ -37,6 +37,9 @@ pub struct Config {
 
 impl Config {
     pub fn from_env() -> Result<Self, String> {
+        ensure_database_driver_supported(database::DatabaseDriver::from_setting(
+            env::var("ARKZEN_DB_DRIVER").ok().as_deref(),
+        ))?;
         let port = env::var("PORT")
             .unwrap_or_else(|_| "8000".to_owned())
             .parse::<u16>()
@@ -81,6 +84,16 @@ impl Config {
         self.module_dir = module_dir.into();
         self.database_dir = database_dir.into();
         self
+    }
+}
+
+fn ensure_database_driver_supported(driver: database::DatabaseDriver) -> Result<(), String> {
+    match driver {
+        database::DatabaseDriver::Sqlite => Ok(()),
+        database::DatabaseDriver::Postgres => Err(
+            "The Rust backend does not yet support PostgreSQL at runtime; select SQLite instead"
+                .to_owned(),
+        ),
     }
 }
 
@@ -1105,6 +1118,18 @@ mod tests {
     use base64::Engine as _;
     use serde_json::json;
     use tower::ServiceExt;
+
+    #[test]
+    fn postgres_driver_remains_fail_fast_until_runtime_paths_are_migrated() {
+        assert!(ensure_database_driver_supported(database::DatabaseDriver::Sqlite).is_ok());
+        assert_eq!(
+            ensure_database_driver_supported(database::DatabaseDriver::Postgres),
+            Err(
+                "The Rust backend does not yet support PostgreSQL at runtime; select SQLite instead"
+                    .to_owned()
+            )
+        );
+    }
 
     fn test_state(root: &Path) -> AppState {
         AppState::open(Config {

@@ -124,9 +124,9 @@ Every tatemono gets its own isolated database. The driver is a **project setting
 - `sqlite` (default): file `database/arkzen/<slug>.sqlite`
 - `pgsql`: Postgres database `<ARKZEN_DB_PREFIX>_<slug_with_underscores>` (prefix default `pluff`)
 
-Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both.
+Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`. Laravel, Express, FastAPI, ASP.NET, Spring Boot, and Go use the same project-level driver choice and isolated-per-tatemono database model. Rust currently supports SQLite only and rejects PostgreSQL at startup. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both supported drivers.
 
-Backends are a separate project-level choice (Section 1E). Laravel, Express, and FastAPI are implemented; do not assume other variant names are runnable backends.
+Backends are a separate project-level choice (Section 1E). PostgreSQL is supported by Laravel, Express, FastAPI, ASP.NET, Spring Boot, and Go; Rust remains SQLite-only. Confirm the selected backend's PostgreSQL driver/dependencies are installed before switching.
 
 * * *
 

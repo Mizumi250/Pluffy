@@ -38,8 +38,8 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 		return Registration{}, fmt.Errorf("validation failed: %v", problems)
 	}
 	hasNotifications := len(payload.Notifications) > 0
-	if err := ensureSQLiteSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed, hasNotifications); err != nil {
-		return Registration{}, fmt.Errorf("initialize isolated SQLite database: %w", err)
+	if err := ensureModuleSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed, hasNotifications); err != nil {
+		return Registration{}, fmt.Errorf("initialize isolated %s database: %w", configuredDialect(), err)
 	}
 	tables := make([]string, 0, len(payload.Databases))
 	databaseByTable := make(map[string]DatabaseDefinition, len(payload.Databases))
@@ -106,7 +106,11 @@ func (s *Service) Remove(name string) error {
 	if err := s.store.Unregister(name); err != nil {
 		return fmt.Errorf("remove module registration: %w", err)
 	}
-	if err := removeSQLiteDatabase(filepath.Join(s.storageDir, "databases", name+".sqlite")); err != nil {
+	if configuredDialect() == postgresDialect {
+		if err := removePostgresDatabase(name); err != nil {
+			return fmt.Errorf("remove isolated PostgreSQL database: %w", err)
+		}
+	} else if err := removeSQLiteDatabase(filepath.Join(s.storageDir, "databases", name+".sqlite")); err != nil {
 		return fmt.Errorf("remove isolated SQLite database: %w", err)
 	}
 	return nil

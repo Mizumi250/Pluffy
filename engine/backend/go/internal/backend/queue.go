@@ -145,14 +145,20 @@ func eventDefinitions(registration Registration) []eventDefinition {
 }
 
 func ensureQueueTables(db *sql.DB) error {
+	idType := `INTEGER PRIMARY KEY AUTOINCREMENT`
+	timeType := "INTEGER"
+	if configuredDialect() == postgresDialect {
+		idType = `BIGSERIAL PRIMARY KEY`
+		timeType = "BIGINT"
+	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "jobs" (
-		"id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		"id" ` + idType + `,
 		"queue" TEXT NOT NULL,
 		"payload" TEXT NOT NULL,
 		"attempts" INTEGER NOT NULL DEFAULT 0,
-		"reserved_at" INTEGER NULL,
-		"available_at" INTEGER NOT NULL,
-		"created_at" INTEGER NOT NULL
+		"reserved_at" ` + timeType + ` NULL,
+		"available_at" ` + timeType + ` NOT NULL,
+		"created_at" ` + timeType + ` NOT NULL
 	)`); err != nil {
 		return fmt.Errorf("create jobs table: %w", err)
 	}
@@ -160,7 +166,7 @@ func ensureQueueTables(db *sql.DB) error {
 		return fmt.Errorf("index jobs queue: %w", err)
 	}
 	if _, err := db.Exec(`CREATE TABLE IF NOT EXISTS "failed_jobs" (
-		"id" INTEGER PRIMARY KEY AUTOINCREMENT,
+		"id" ` + idType + `,
 		"queue" TEXT NOT NULL,
 		"payload" TEXT NOT NULL,
 		"exception" TEXT NOT NULL,
@@ -296,7 +302,11 @@ func (h *Handler) workQueueOnce(ctx context.Context, registration Registration, 
 	}
 	defer db.Close()
 	var tableExists int
-	if err := db.QueryRow(`SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'jobs'`).Scan(&tableExists); err != nil {
+	tableQuery := `SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'jobs'`
+	if configuredDialect() == postgresDialect {
+		tableQuery = `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = current_schema() AND table_name = 'jobs'`
+	}
+	if err := db.QueryRow(tableQuery).Scan(&tableExists); err != nil {
 		log.Printf("check %s queue table: %v", registration.Name, err)
 		return false
 	}
@@ -314,9 +324,13 @@ func (h *Handler) workQueueOnce(ctx context.Context, registration Registration, 
 	var id int64
 	var rawPayload string
 	var attempts int
-	err = tx.QueryRowContext(ctx, `SELECT "id", "payload", "attempts" FROM "jobs"
+	selectJob := `SELECT "id", "payload", "attempts" FROM "jobs"
 		WHERE "queue" = ? AND ("reserved_at" IS NULL OR "reserved_at" < ?) AND "available_at" <= ?
-		ORDER BY "id" LIMIT 1`, queue, staleReservation, now).Scan(&id, &rawPayload, &attempts)
+		ORDER BY "id" LIMIT 1`
+	if configuredDialect() == postgresDialect {
+		selectJob += " FOR UPDATE SKIP LOCKED"
+	}
+	err = tx.QueryRowContext(ctx, selectJob, queue, staleReservation, now).Scan(&id, &rawPayload, &attempts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return false
 	}

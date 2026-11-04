@@ -156,11 +156,6 @@ const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkze
 const tatSnake    = tatName.replace(/-/g, '_')
 const pgDatabaseName = `${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}_${tatSnake}`.toLowerCase()
 
-if (!isNative && hasBackend && isPg && (isGo || isRust)) {
-  console.log(`\n  ✗ ${isGo ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before exporting.\n`)
-  process.exit(1)
-}
-
 divider()
 console.log(`\n  ARKZEN — Exporting tatemono: ${tatName}\n`)
 divider()
@@ -933,9 +928,18 @@ if (!isNative && hasBackend) {
       `PORT=${backendPort}`,
       'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
       'PLUFF_STORAGE_DIR=storage',
+      `ARKZEN_DB_DRIVER=${isPg ? 'pgsql' : 'sqlite'}`,
+      `ARKZEN_DB_PREFIX=${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}`,
       hasRealtime ? 'REVERB_PORT=8080' : '',
       hasRealtime ? 'REVERB_APP_KEY=arkzen-key' : '',
       hasRealtime ? 'REVERB_APP_SECRET=arkzen-secret' : '',
+      ...(isPg ? [
+        `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`,
+        `DB_PORT=${engineEnvValue('DB_PORT', '5432')}`,
+        `DB_DATABASE=${pgDatabaseName}`,
+        `DB_USERNAME=${engineEnvValue('DB_USERNAME', 'postgres')}`,
+        `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`,
+      ] : []),
     ].filter(Boolean).join('\n') + '\n'
   } else if (isRust) {
     env = [
@@ -943,6 +947,15 @@ if (!isNative && hasBackend) {
       'ARKZEN_ENGINE_SECRET=arkzen-engine-secret',
       'ARKZEN_MODULE_DIR=storage/arkzen-modules',
       'ARKZEN_DATABASE_DIR=database/arkzen',
+      `ARKZEN_DB_DRIVER=${isPg ? 'pgsql' : 'sqlite'}`,
+      `ARKZEN_DB_PREFIX=${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}`,
+      ...(isPg ? [
+        `DB_HOST=${engineEnvValue('DB_HOST', '127.0.0.1')}`,
+        `DB_PORT=${engineEnvValue('DB_PORT', '5432')}`,
+        `DB_DATABASE=${pgDatabaseName}`,
+        `DB_USERNAME=${engineEnvValue('DB_USERNAME', 'postgres')}`,
+        `DB_PASSWORD=${engineEnvValue('DB_PASSWORD', '')}`,
+      ] : []),
     ].join('\n') + '\n'
   } else env = env
     .replace(/APP_NAME=.*/,             `APP_NAME=${tatName}`)

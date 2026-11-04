@@ -3,6 +3,86 @@ use serde_json::{Map, Value};
 use std::collections::HashSet;
 use std::path::Path;
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DatabaseDriver {
+    Sqlite,
+    Postgres,
+}
+
+impl DatabaseDriver {
+    pub fn from_setting(value: Option<&str>) -> Self {
+        if value == Some("pgsql") {
+            Self::Postgres
+        } else {
+            Self::Sqlite
+        }
+    }
+
+    pub fn as_str(self) -> &'static str {
+        match self {
+            Self::Sqlite => "sqlite",
+            Self::Postgres => "pgsql",
+        }
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct DatabaseConfig {
+    pub driver: DatabaseDriver,
+    pub prefix: String,
+    pub host: String,
+    pub port: u16,
+    pub username: String,
+    pub password: String,
+}
+
+impl DatabaseConfig {
+    pub fn from_env() -> Result<Self, String> {
+        let port = std::env::var("DB_PORT")
+            .unwrap_or_else(|_| "5432".to_owned())
+            .parse::<u16>()
+            .map_err(|error| format!("DB_PORT must be a valid TCP port: {error}"))?;
+        let config = Self {
+            driver: DatabaseDriver::from_setting(std::env::var("ARKZEN_DB_DRIVER").ok().as_deref()),
+            prefix: std::env::var("ARKZEN_DB_PREFIX").unwrap_or_else(|_| "pluff".to_owned()),
+            host: std::env::var("DB_HOST").unwrap_or_else(|_| "127.0.0.1".to_owned()),
+            port,
+            username: std::env::var("DB_USERNAME").unwrap_or_default(),
+            password: std::env::var("DB_PASSWORD").unwrap_or_default(),
+        };
+        validate_pg_identifier(&config.prefix)?;
+        Ok(config)
+    }
+
+    pub fn postgres_database_name(&self, slug: &str) -> Result<String, String> {
+        validate_pg_identifier(slug)?;
+        Ok(format!(
+            "{}_{}",
+            self.prefix.to_ascii_lowercase(),
+            slug.replace('-', "_").to_ascii_lowercase()
+        ))
+    }
+}
+
+fn validate_pg_identifier(value: &str) -> Result<(), String> {
+    if value.is_empty()
+        || !value
+            .bytes()
+            .all(|byte| byte.is_ascii_alphanumeric() || byte == b'_' || byte == b'-')
+    {
+        return Err(format!(
+            "Invalid PostgreSQL identifier component \"{value}\""
+        ));
+    }
+    Ok(())
+}
+
+fn postgres_column_type(sqlite_type: &str) -> String {
+    sqlite_type
+        .replace("INTEGER PRIMARY KEY AUTOINCREMENT", "BIGSERIAL PRIMARY KEY")
+        .replace("INTEGER PRIMARY KEY", "BIGINT PRIMARY KEY")
+}
+
 pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec<String>, String> {
     std::fs::create_dir_all(directory)
         .map_err(|error| format!("Could not create isolated database directory: {error}"))?;
@@ -600,6 +680,54 @@ fn sql_literal(value: &Value) -> Result<String, String> {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn database_driver_defaults_to_sqlite_and_only_selects_pgsql_explicitly() {
+        assert_eq!(DatabaseDriver::from_setting(None), DatabaseDriver::Sqlite);
+        assert_eq!(
+            DatabaseDriver::from_setting(Some("sqlite")),
+            DatabaseDriver::Sqlite
+        );
+        assert_eq!(
+            DatabaseDriver::from_setting(Some("pgsql")),
+            DatabaseDriver::Postgres
+        );
+        assert_eq!(
+            DatabaseDriver::from_setting(Some("postgres")),
+            DatabaseDriver::Sqlite
+        );
+    }
+
+    #[test]
+    fn postgres_database_names_match_laravel_isolation_convention() {
+        let config = DatabaseConfig {
+            driver: DatabaseDriver::Postgres,
+            prefix: "Pluff".to_owned(),
+            host: "db.example".to_owned(),
+            port: 5433,
+            username: "pluff".to_owned(),
+            password: "secret".to_owned(),
+        };
+        assert_eq!(
+            config.postgres_database_name("todo-app").unwrap(),
+            "pluff_todo_app"
+        );
+        assert!(config.postgres_database_name("bad/name").is_err());
+        assert!(validate_pg_identifier("bad prefix").is_err());
+    }
+
+    #[test]
+    fn postgres_schema_dialect_uses_serial_primary_keys() {
+        assert_eq!(
+            postgres_column_type("INTEGER PRIMARY KEY AUTOINCREMENT"),
+            "BIGSERIAL PRIMARY KEY"
+        );
+        assert_eq!(
+            postgres_column_type("INTEGER PRIMARY KEY"),
+            "BIGINT PRIMARY KEY"
+        );
+        assert_eq!(postgres_column_type("TEXT NOT NULL"), "TEXT NOT NULL");
+    }
 
     #[test]
     fn creates_isolated_schema_and_applies_timestamps_and_defaults() {

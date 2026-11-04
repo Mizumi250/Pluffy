@@ -400,6 +400,8 @@ function installGoBackend() {
     error('go mod download failed for the Go backend')
     return false
   }
+  ensureBackendEnv('go')
+  configureGoDatabase()
   success('Go backend dependencies downloaded')
   return true
 }
@@ -419,6 +421,8 @@ function installRustBackend() {
     error('cargo fetch failed for the Rust backend')
     return false
   }
+  ensureBackendEnv('rust')
+  configureRustDatabase()
   success('Rust backend dependencies downloaded')
   return true
 }
@@ -474,6 +478,50 @@ function installSpringBootBackend({ force = false } = {}) {
   return true
 }
 
+function ensureBackendEnv(name) {
+  const dir = BACKEND_STACKS[name].dir
+  const envPath = path.join(dir, '.env')
+  if (!fs.existsSync(envPath)) {
+    fs.copyFileSync(path.join(dir, '.env.example'), envPath)
+    success(`Created engine/backend/${name}/.env`)
+  }
+  return envPath
+}
+
+function configureGoDatabase() {
+  const envPath = ensureBackendEnv('go')
+  let env = fs.readFileSync(envPath, 'utf-8')
+  const pg = activeDatabase === 'pgsql' ? pgSettings(env) : null
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
+  env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
+  if (pg) {
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+  }
+  fs.writeFileSync(envPath, env)
+  success(`Go .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
+}
+
+function configureRustDatabase() {
+  const envPath = ensureBackendEnv('rust')
+  let env = fs.readFileSync(envPath, 'utf-8')
+  const pg = activeDatabase === 'pgsql' ? pgSettings(env) : null
+  env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
+  env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
+  if (pg) {
+    env = setEnvValue(env, 'DB_HOST', pg.host)
+    env = setEnvValue(env, 'DB_PORT', pg.port)
+    env = setEnvValue(env, 'DB_DATABASE', pg.database)
+    env = setEnvValue(env, 'DB_USERNAME', pg.username)
+    env = setEnvValue(env, 'DB_PASSWORD', pg.password)
+  }
+  fs.writeFileSync(envPath, env)
+  success(`Rust .env configured for ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'}`)
+}
+
 // Express reads ARKZEN_DB_DRIVER / DB_* from its own .env (same keys Laravel uses).
 function configureExpressDatabase() {
   const envPath = path.join(BACKEND_STACKS.express.dir, '.env')
@@ -500,10 +548,10 @@ function configureFastapiDatabase() {
   const envPath = path.join(BACKEND_STACKS.fastapi.dir, '.env')
   if (!fs.existsSync(envPath)) return
   let env = fs.readFileSync(envPath, 'utf-8')
+  const pg = activeDatabase === 'pgsql' ? pgSettings(env) : null
   env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
   env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
-  if (activeDatabase === 'pgsql') {
-    const pg = pgSettings(env)
+  if (pg) {
     env = setEnvValue(env, 'DB_HOST', pg.host)
     env = setEnvValue(env, 'DB_PORT', pg.port)
     env = setEnvValue(env, 'DB_DATABASE', pg.database)
@@ -518,10 +566,10 @@ function configureAspnetDatabase() {
   const envPath = path.join(BACKEND_STACKS.aspnet.dir, '.env')
   if (!fs.existsSync(envPath)) return
   let env = fs.readFileSync(envPath, 'utf-8')
+  const pg = activeDatabase === 'pgsql' ? pgSettings(env) : null
   env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
   env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
-  if (activeDatabase === 'pgsql') {
-    const pg = pgSettings(env)
+  if (pg) {
     env = setEnvValue(env, 'DB_HOST', pg.host)
     env = setEnvValue(env, 'DB_PORT', pg.port)
     env = setEnvValue(env, 'DB_DATABASE', pg.database)
@@ -536,10 +584,10 @@ function configureSpringBootDatabase() {
   const envPath = path.join(BACKEND_STACKS['spring-boot'].dir, '.env')
   if (!fs.existsSync(envPath)) return
   let env = fs.readFileSync(envPath, 'utf-8')
+  const pg = activeDatabase === 'pgsql' ? pgSettings(env) : null
   env = setEnvValue(env, 'ARKZEN_DB_DRIVER', activeDatabase)
   env = setEnvValue(env, 'ARKZEN_DB_PREFIX', getEnvValue(env, 'ARKZEN_DB_PREFIX') || 'pluff')
-  if (activeDatabase === 'pgsql') {
-    const pg = pgSettings(env)
+  if (pg) {
     env = setEnvValue(env, 'DB_HOST', pg.host)
     env = setEnvValue(env, 'DB_PORT', pg.port)
     env = setEnvValue(env, 'DB_DATABASE', pg.database)
@@ -551,10 +599,6 @@ function configureSpringBootDatabase() {
 }
 
 function installBackend(name, { force = false } = {}) {
-  if ((name === 'go' || name === 'rust') && activeDatabase === 'pgsql') {
-    error(`${name === 'go' ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before setup`)
-    return false
-  }
   if (name === 'express') return installExpressBackend({ force })
   if (name === 'fastapi') return installFastapiBackend({ force })
   if (name === 'aspnet') return installAspnetBackend({ force })
@@ -929,6 +973,7 @@ function phpHasExtension(name) {
 
 function pgSettings(envContent) {
   const wasPg = getEnvValue(envContent, 'DB_CONNECTION') === 'pgsql'
+    || getEnvValue(envContent, 'ARKZEN_DB_DRIVER') === 'pgsql'
   const cur   = key => (wasPg ? getEnvValue(envContent, key) : null)
   return {
     host:     process.env.PLUFF_DB_HOST     || cur('DB_HOST')     || '127.0.0.1',
@@ -1286,7 +1331,7 @@ if (cli.backendOnly) {
 if (cli.databaseOnly) {
   divider()
   log(`Database: ${activeDatabase === 'pgsql' ? 'PostgreSQL' : 'SQLite'} (one isolated database per tatemono)`)
-  const installed = Object.keys(BACKEND_STACKS).filter(name => !['express', 'fastapi', 'aspnet', 'spring-boot'].includes(name) &&
+  const installed = Object.keys(BACKEND_STACKS).filter(name => !['express', 'fastapi', 'aspnet', 'spring-boot', 'go', 'rust'].includes(name) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, 'vendor', 'autoload.php')) &&
     fs.existsSync(path.join(BACKEND_STACKS[name].dir, '.env')))
   const expressReady = expressInstalled()
@@ -1311,8 +1356,18 @@ if (cli.databaseOnly) {
     configureFastapiDatabase()
     log('FastAPI creates isolated databases when Tatemono schemas are built.')
   }
+  if (goInstalled()) {
+    log('Applying to go...')
+    configureGoDatabase()
+    log('Go creates isolated databases when Tatemono schemas are built.')
+  }
+  if (rustInstalled()) {
+    log('Applying to rust...')
+    configureRustDatabase()
+    log('Rust creates isolated databases when Tatemono schemas are built.')
+  }
   if (!installed.length) {
-    if (expressReady || fastapiReady || aspnetInstalled() || springBootInstalled()) process.exit(0)
+    if (expressReady || fastapiReady || aspnetInstalled() || springBootInstalled() || goInstalled() || rustInstalled()) process.exit(0)
     warn(`No backend installed yet. The database is applied when you run: node mizumi.js deps install ${ACTIVE_BACKEND}`)
     process.exit(0)
   }

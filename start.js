@@ -77,10 +77,6 @@ const IS_ASPNET = activeBackend === 'aspnet'
 const IS_SPRING = activeBackend === 'spring-boot'
 const IS_GO = activeBackend === 'go'
 const IS_RUST = activeBackend === 'rust'
-if ((IS_GO || IS_RUST) && arkzenJson.activeDatabase === 'pgsql') {
-  console.log(`\n  ✗ ${IS_GO ? 'Go' : 'Rust'} backend currently supports SQLite only; switch activeDatabase to sqlite before starting.\n`)
-  process.exit(1)
-}
 // Spring Boot entry point (compiled from engine/backend/spring-boot/src/main/java).
 // Change this if the Java class lives under a different package.
 const SPRING_SERVER_CLASS = 'dev.pluff.Server'
