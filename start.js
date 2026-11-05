@@ -372,6 +372,7 @@ function startBackend() {
             ...readBackendEnv(),
             PORT: '8000',
             PLUFF_ROOT: ROOT_DIR,
+            ARKZEN_GO_AUTORESTART: '1',
           },
         })
     : IS_RUST
@@ -408,6 +409,11 @@ function startBackend() {
     })
   })
   proc.on('exit', (code) => {
+    if (IS_GO && code === 75) {
+      log('backend', 'Go engine recompiled generated modules — restarting to load them...')
+      setTimeout(() => { backend = startBackend() }, 400)
+      return
+    }
     if (code !== 0) log('backend', `Exited with code ${code}`)
   })
   proc.on('error', (error) => {

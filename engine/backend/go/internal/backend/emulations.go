@@ -1284,3 +1284,26 @@ func queryOne(db *sql.DB, query string, args ...any) (map[string]any, error) {
 	}
 	return records[0], nil
 }
+
+func isSupportedNamedEndpoint(module, operation string) bool {
+	switch module {
+	case "events-test":
+		return operation == "clearLog"
+	case "dtr-geofencing":
+		switch operation {
+		case "my_records", "check_in", "check_out", "toggle_geofencing", "update_office":
+			return true
+		}
+	case "jo-payroll":
+		return operation == "summary" || operation == "byGroup" || operation == "appointments"
+	case "roles-test":
+		return operation == "adminOnly" || operation == "userOnly" || operation == "promote" || operation == "demote"
+	case "notification-test":
+		return operation == "readAll"
+	case "body-mail-notification":
+		return operation == "sendMail" || operation == "notify" || operation == "clearLog"
+	case "kotoba":
+		return operation == "status"
+	}
+	return false
+}

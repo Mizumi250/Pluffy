@@ -15,9 +15,11 @@ public sealed record EngineResult(int Status, JsonObject Body);
 public sealed class BackendEngine
 {
     private static readonly ConcurrentDictionary<string, JsonObject> Modules = new(StringComparer.OrdinalIgnoreCase);
+    private static readonly ConcurrentDictionary<string, GeneratedModule> GeneratedModules = new(StringComparer.OrdinalIgnoreCase);
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly string _backendDirectory = Directory.GetCurrentDirectory();
     private readonly string _modulesDirectory;
+    private readonly string _generatedDirectory;
     private readonly TatemonoDatabase _database;
     private readonly BackgroundTaskQueue _backgroundTasks;
 
@@ -25,6 +27,7 @@ public sealed class BackendEngine
     {
         _backgroundTasks = backgroundTasks;
         _modulesDirectory = Path.Combine(_backendDirectory, "storage", "arkzen-modules");
+        _generatedDirectory = Path.Combine(_backendDirectory, "generated");
         _database = new TatemonoDatabase(_backendDirectory);
         LoadModules();
     }
@@ -76,10 +79,16 @@ public sealed class BackendEngine
                 steps.Add("Database notifications table ready");
             }
 
+            var registeredModule = (JsonObject)payload.DeepClone();
+            var generated = ModuleSourceGenerator.Generate(registeredModule);
+            WriteGeneratedSources(slug, generated);
+            steps.Add($"Generated and compiled {generated.Files.Count} ASP.NET files");
+
             Directory.CreateDirectory(_modulesDirectory);
             var moduleFile = Path.Combine(_modulesDirectory, $"{slug}.json");
-            await File.WriteAllTextAsync(moduleFile, payload.ToJsonString(), cancellationToken);
-            Modules[slug] = (JsonObject)payload.DeepClone();
+            await File.WriteAllTextAsync(moduleFile, registeredModule.ToJsonString(), cancellationToken);
+            Modules[slug] = registeredModule;
+            RegisterGeneratedModule(slug, generated);
             steps.Add("C# variant registered");
 
             return new EngineResult(200, new JsonObject
@@ -116,15 +125,17 @@ public sealed class BackendEngine
             return new EngineResult(422, new JsonObject { ["success"] = false, ["message"] = "Invalid tatemono name." });
 
         Modules.TryRemove(slug!, out _);
+        if (GeneratedModules.TryRemove(slug!, out var generated)) generated.LoadContext.Unload();
         var moduleFile = Path.Combine(_modulesDirectory, $"{slug}.json");
         if (File.Exists(moduleFile)) File.Delete(moduleFile);
+        RemoveGeneratedSources(slug!);
         await _database.RemoveAsync(slug!, cancellationToken);
 
         return new EngineResult(200, new JsonObject
         {
             ["success"] = true,
             ["message"] = $"Removed {slug}",
-            ["steps"] = new JsonArray("Routes + module definition removed", "Isolated database removed"),
+            ["steps"] = new JsonArray("Generated ASP.NET files + module definition removed", "Isolated database removed"),
             ["errors"] = new JsonArray()
         });
     }
@@ -311,22 +322,34 @@ public sealed class BackendEngine
     private async Task<bool> TryApiRoutesAsync(HttpContext context, JsonObject module, string method, string path, string slug)
     {
         if (module["apis"] is not JsonArray apis) return false;
+        if (!GeneratedModules.TryGetValue(slug, out var generated))
+        {
+            generated = ModuleSourceGenerator.Generate(module);
+            RegisterGeneratedModule(slug, generated);
+        }
         foreach (var api in apis.OfType<JsonObject>())
         {
+            var apiRoutes = generated.Routes
+                .Where(route => ReferenceEquals(route.Api, api))
+                .ToArray();
             var prefix = StringValue(api["prefix"]);
             if (method == "GET" &&
-                api["endpoints"] is JsonObject broadcastEndpoints &&
-                broadcastEndpoints.Any(endpoint => StringEquals(endpoint.Value?["type"], "broadcast")) &&
+                apiRoutes.Any(route => StringEquals(route.Endpoint?["type"], "broadcast")) &&
                 TryMatch($"/api/{slug}/sse-poll/{{channelType}}", path, out var pollValues))
                 return await PollBroadcastMessagesAsync(context, module, api, slug, pollValues);
-            if (api["endpoints"] is JsonObject endpoints && endpoints.Count > 0)
+            if (apiRoutes.Any(route => route.Endpoint is not null))
             {
-                foreach (var (name, value) in endpoints)
+                var matchingRoutes = apiRoutes
+                    .Where(route => route.Endpoint is not null &&
+                        method == route.Method && TryMatch(route.Pattern, path, out _))
+                    .OrderBy(route => RouteParameterCount(route.Pattern))
+                    .ThenByDescending(route => route.Pattern.Length);
+                foreach (var generatedRoute in matchingRoutes)
                 {
-                    if (value is not JsonObject endpoint) continue;
-                    var routeMethod = (StringValue(endpoint["method"]) ?? "GET").ToUpperInvariant();
-                    var route = JoinPath(prefix, StringValue(endpoint["route"]) ?? "/");
-                    if (method != routeMethod || !TryMatch(route, path, out var values)) continue;
+                    var endpoint = generatedRoute.Endpoint!;
+                    var name = generatedRoute.Name;
+                    var routeMethod = generatedRoute.Method;
+                    if (!TryMatch(generatedRoute.Pattern, path, out var values)) continue;
                     if (await RunMiddlewareAsync(context, module, api["middleware"] as JsonArray, slug, values)) return true;
                     var type = StringValue(endpoint["type"]) ?? (name.ToLowerInvariant() switch
                     {
@@ -371,21 +394,12 @@ public sealed class BackendEngine
 
             var model = StringValue(api["model"]);
             if (string.IsNullOrWhiteSpace(model)) continue;
-            var resourcePath = string.IsNullOrWhiteSpace(prefix)
-                ? $"/api/{slug}/{Pluralize(SnakeCase(model))}"
-                : prefix!;
-            var idRoute = JoinPath(resourcePath, "{id}");
-            var crudType = method switch
-            {
-                "GET" when TryMatch(resourcePath, path, out _) => "index",
-                "GET" when TryMatch(idRoute, path, out _) => "show",
-                "POST" when TryMatch(resourcePath, path, out _) => "store",
-                "PUT" or "PATCH" when TryMatch(idRoute, path, out _) => "update",
-                "DELETE" when TryMatch(idRoute, path, out _) => "destroy",
-                _ => null
-            };
-            if (crudType is null) continue;
-            TryMatch(crudType is "show" or "update" or "destroy" ? idRoute : resourcePath, path, out var routeValues);
+            var matchedRoute = apiRoutes.FirstOrDefault(route =>
+                (route.Method == method || route.Name == "update" && method == "PATCH") &&
+                TryMatch(route.Pattern, path, out _));
+            if (matchedRoute is null) continue;
+            var crudType = matchedRoute.Name;
+            TryMatch(matchedRoute.Pattern, path, out var routeValues);
             if (await RunMiddlewareAsync(context, module, api["middleware"] as JsonArray, slug, routeValues)) return true;
             if (IsPolicyProtectedAction(crudType) &&
                 await RunPolicyAsync(context, slug, api, module, crudType, routeValues)) return true;
@@ -394,6 +408,9 @@ public sealed class BackendEngine
         }
         return false;
     }
+
+    private static int RouteParameterCount(string pattern) =>
+        Regex.Matches(pattern, @"\{[A-Za-z0-9_]+\??\}|:[A-Za-z0-9_]+").Count;
 
     private async Task<bool> RunPolicyAsync(
         HttpContext context,
@@ -1538,6 +1555,38 @@ public sealed class BackendEngine
         return new JsonObject { ["models"] = models, ["controllers"] = controllers, ["tables"] = tables };
     }
 
+    private void WriteGeneratedSources(string slug, GeneratedModule generated)
+    {
+        var moduleDirectory = Path.GetFullPath(Path.Combine(_generatedDirectory, slug));
+        if (Directory.Exists(moduleDirectory)) Directory.Delete(moduleDirectory, recursive: true);
+        Directory.CreateDirectory(moduleDirectory);
+        foreach (var (relativePath, source) in generated.Files)
+        {
+            var destination = Path.GetFullPath(Path.Combine(moduleDirectory, relativePath));
+            if (!destination.StartsWith(moduleDirectory + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("Generated ASP.NET source path escaped its module directory.");
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            File.WriteAllText(destination, source, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+    }
+
+    private void RemoveGeneratedSources(string slug)
+    {
+        var moduleDirectory = Path.GetFullPath(Path.Combine(_generatedDirectory, slug));
+        if (Directory.Exists(moduleDirectory)) Directory.Delete(moduleDirectory, recursive: true);
+    }
+
+    private static void RegisterGeneratedModule(string slug, GeneratedModule generated)
+    {
+        if (GeneratedModules.TryGetValue(slug, out var previous))
+        {
+            GeneratedModules[slug] = generated;
+            previous.LoadContext.Unload();
+            return;
+        }
+        GeneratedModules.TryAdd(slug, generated);
+    }
+
     private void LoadModules()
     {
         if (!Directory.Exists(_modulesDirectory)) return;
@@ -1548,9 +1597,15 @@ public sealed class BackendEngine
                 if (JsonNode.Parse(File.ReadAllText(file)) is JsonObject module &&
                     IsSlug(StringValue(module["name"])) &&
                     StringValue(module["backendVariant"]) == "cs")
-                    Modules[StringValue(module["name"])!] = module;
+                {
+                    var slug = StringValue(module["name"])!;
+                    var generated = ModuleSourceGenerator.Generate(module);
+                    WriteGeneratedSources(slug, generated);
+                    Modules[slug] = module;
+                    RegisterGeneratedModule(slug, generated);
+                }
             }
-            catch (JsonException exception)
+            catch (Exception exception)
             {
                 Console.Error.WriteLine($"[ASP.NET registry] Could not load {file}: {exception.Message}");
             }

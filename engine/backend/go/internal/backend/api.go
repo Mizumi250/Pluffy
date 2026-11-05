@@ -78,86 +78,58 @@ func (h *Handler) apiOrNotFound(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		if r.Method == http.MethodGet {
-			for _, api := range registration.APIs {
-				hasBroadcast := false
-				for _, endpoint := range api.Endpoints {
-					if endpoint.Type == "broadcast" {
-						hasBroadcast = true
-						break
-					}
+			for _, route := range registration.GeneratedRoutes {
+				if route.Kind != "api" || route.APIIndex < 0 || route.APIIndex >= len(registration.APIs) || route.Operation == "" {
+					continue
 				}
-				if hasBroadcast {
-					_, matched := matchRoute("/api/"+registration.Name+"/sse-poll/{channelType}", path)
-					if matched {
-						h.pollBroadcastMessages(w, r, registration, api, path)
-						return
-					}
+				endpoint, exists := registration.APIs[route.APIIndex].Endpoints[route.Operation]
+				if !exists || endpoint.Type != "broadcast" {
+					continue
+				}
+				_, matched := matchRoute("/api/"+registration.Name+"/sse-poll/{channelType}", path)
+				if matched {
+					h.pollBroadcastMessages(w, r, registration, registration.APIs[route.APIIndex], path)
+					return
 				}
 			}
 		}
 	}
 	var pathMatch *matchedEndpoint
+	var pathSpecificity routeSpecificity
 	var methodMatch *matchedEndpoint
+	var methodSpecificity routeSpecificity
 	methodMatches := 0
 	var allowed []string
 	for _, registration := range registrations {
-		for _, api := range registration.APIs {
-			operations := make([]string, 0, len(api.Endpoints))
-			for operation := range api.Endpoints {
-				operations = append(operations, operation)
+		for _, route := range registration.GeneratedRoutes {
+			id, matched := matchRoute(route.Pattern, path)
+			if !matched {
+				continue
 			}
-			sort.Strings(operations)
-			for _, operation := range operations {
-				endpoint := api.Endpoints[operation]
-				route := endpointRoute(operation, endpoint)
-				fullPath := joinRoute(api.Prefix, route)
-				id, matched := matchRoute(fullPath, path)
-				if !matched {
-					continue
-				}
-				if pathMatch == nil {
-					candidate := matchedEndpoint{
-						registration: registration, api: api,
-						operation: operation, endpoint: endpoint, id: id,
-					}
-					pathMatch = &candidate
-				}
-				method := endpointMethod(operation, endpoint)
-				if method == r.Method {
-					candidate := matchedEndpoint{
-						registration: registration, api: api,
-						operation: operation, endpoint: endpoint, id: id,
-					}
-					methodMatch = &candidate
-					methodMatches++
-				}
-				allowed = append(allowed, method)
+			candidate, ok := generatedRouteCandidate(registration, route, id)
+			if !ok {
+				continue
 			}
-		}
-		for _, customRoute := range registration.CustomRoutes {
-			for _, route := range customRoute.Routes {
-				id, matched := matchRoute(route.Route, path)
-				if !matched {
-					continue
-				}
-				candidate := matchedEndpoint{
-					registration:  registration,
-					api:           APIBlock{Table: "probe_results", Middleware: customRoute.Middleware},
-					endpoint:      EndpointConfig{Method: route.Method, Route: route.Route, Body: route.Body},
-					customHandler: route.Handler,
-					id:            id,
-				}
-				if pathMatch == nil {
-					pathCandidate := candidate
+			specificity := routePatternSpecificity(route.Pattern)
+			if pathMatch == nil || specificity.moreSpecificThan(pathSpecificity) {
+				pathCandidate := candidate
+				if route.Kind == "custom" {
 					pathCandidate.operation = route.Method
-					pathMatch = &pathCandidate
 				}
-				if strings.EqualFold(route.Method, r.Method) {
-					methodCandidate := candidate
-					methodMatch = &methodCandidate
+				pathMatch = &pathCandidate
+				pathSpecificity = specificity
+				allowed = []string{strings.ToUpper(route.Method)}
+			} else if specificity.equal(pathSpecificity) {
+				allowed = append(allowed, strings.ToUpper(route.Method))
+			}
+			if strings.EqualFold(route.Method, r.Method) {
+				if methodMatch == nil || specificity.moreSpecificThan(methodSpecificity) {
+					methodMatch = &candidate
+					methodSpecificity = specificity
+					methodMatches = 1
+				} else if specificity.equal(methodSpecificity) {
 					methodMatches++
 				}
-				allowed = append(allowed, strings.ToUpper(route.Method))
 			}
 		}
 	}
@@ -179,6 +151,75 @@ func (h *Handler) apiOrNotFound(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	writeJSON(w, http.StatusNotFound, map[string]string{"message": "Not Found"})
+}
+
+func generatedRouteCandidate(registration Registration, route GeneratedRoute, id string) (matchedEndpoint, bool) {
+	candidate := matchedEndpoint{registration: registration, id: id}
+	switch route.Kind {
+	case "api":
+		if route.APIIndex < 0 || route.APIIndex >= len(registration.APIs) {
+			return matchedEndpoint{}, false
+		}
+		api := registration.APIs[route.APIIndex]
+		endpoint, exists := api.Endpoints[route.Operation]
+		if !exists {
+			return matchedEndpoint{}, false
+		}
+		candidate.api = api
+		candidate.operation = route.Operation
+		candidate.endpoint = endpoint
+	case "custom":
+		if route.CustomGroupIndex < 0 || route.CustomGroupIndex >= len(registration.CustomRoutes) {
+			return matchedEndpoint{}, false
+		}
+		group := registration.CustomRoutes[route.CustomGroupIndex]
+		if route.CustomRouteIndex < 0 || route.CustomRouteIndex >= len(group.Routes) {
+			return matchedEndpoint{}, false
+		}
+		custom := group.Routes[route.CustomRouteIndex]
+		candidate.api = APIBlock{Table: "probe_results", Middleware: group.Middleware}
+		candidate.endpoint = EndpointConfig{Method: custom.Method, Route: custom.Route, Body: custom.Body}
+		candidate.customHandler = custom.Handler
+	default:
+		return matchedEndpoint{}, false
+	}
+	return candidate, true
+}
+
+type routeSpecificity struct {
+	staticSegments    int
+	parameterSegments int
+	segmentCount      int
+}
+
+func routePatternSpecificity(pattern string) routeSpecificity {
+	specificity := routeSpecificity{}
+	for _, segment := range strings.Split(strings.Trim(pattern, "/"), "/") {
+		if segment == "" {
+			continue
+		}
+		specificity.segmentCount++
+		if strings.HasPrefix(segment, "{") && strings.HasSuffix(segment, "}") {
+			specificity.parameterSegments++
+		} else {
+			specificity.staticSegments++
+		}
+	}
+	return specificity
+}
+
+func (specificity routeSpecificity) moreSpecificThan(other routeSpecificity) bool {
+	if specificity.staticSegments != other.staticSegments {
+		return specificity.staticSegments > other.staticSegments
+	}
+	if specificity.parameterSegments != other.parameterSegments {
+		return specificity.parameterSegments < other.parameterSegments
+	}
+	return specificity.segmentCount > other.segmentCount
+}
+
+func (specificity routeSpecificity) equal(other routeSpecificity) bool {
+	return specificity == other
 }
 
 func (h *Handler) runMiddleware(w http.ResponseWriter, r *http.Request, match matchedEndpoint) bool {
@@ -627,16 +668,6 @@ func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.D
 	}
 	orderColumn := primary
 	descending := false
-	switch {
-	case module == "job-test" && api.Table == "job_results":
-		orderColumn, descending = "created_at", true
-	case module == "events-test" && api.Table == "event_log":
-		orderColumn, descending = "created_at", true
-	case module == "broadcast-test" && api.Table == "messages":
-		orderColumn, descending = "created_at", true
-	case module == "dtr-geofencing" && api.Table == "time_records":
-		orderColumn, descending = "timestamp", true
-	}
 	order := " ORDER BY " + quoteIdentifier(orderColumn)
 	if descending {
 		order += " DESC, " + quoteIdentifier(primary) + " DESC"
@@ -652,9 +683,6 @@ func (h *Handler) indexRecords(w http.ResponseWriter, r *http.Request, db *sql.D
 		}
 	} else if paginated {
 		limit = 15
-		if module == "events-test" && api.Table == "event_log" {
-			limit = 100
-		}
 	}
 	page := 1
 	if raw := r.URL.Query().Get("page"); raw != "" {

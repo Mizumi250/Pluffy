@@ -267,6 +267,7 @@ public sealed class TatemonoDatabase
         }
 
         var file = Path.Combine(_backendDirectory, "database", "arkzen", $"{slug}.sqlite");
+        SqliteConnection.ClearAllPools();
         if (File.Exists(file)) File.Delete(file);
     }
 

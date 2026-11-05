@@ -5,6 +5,12 @@ The engine targets .NET 8 and implements the Arkzen backend contract at
 Build and remove requests use the same `X-Arkzen-Secret` header as the Laravel
 and Express engines.
 
+Each build generates per-module C# models, controller action metadata, and a
+route table under `generated/<tatemono>`. The engine compiles and loads that
+route table with Roslyn, uses it for dispatch, and unloads it on rebuild or
+remove. CRUD, middleware, and DSL body execution remain in the shared ASP.NET
+runtime.
+
 Set `activeBackend` to `aspnet` in `arkzen.json`. The shared parser maps that
 backend to the `cs` variant. Keep YAML/configuration blocks unsuffixed; add
 `:cs` to executable endpoint, handler, and middleware block markers. Legacy

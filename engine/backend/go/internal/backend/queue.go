@@ -185,12 +185,6 @@ func (h *Handler) dispatchQueuedJob(w http.ResponseWriter, registration Registra
 		})
 		return false
 	}
-	if registration.Name != "job-test" || (name != "process-data" && name != "heavy-computation" && name != "always-fails") {
-		writeJSON(w, http.StatusNotImplemented, map[string]string{
-			"message": fmt.Sprintf("Go job handler emulation is not implemented for %s:%s", registration.Name, name),
-		})
-		return false
-	}
 	payload := queuedJob{
 		Kind: "job", Module: registration.Name, Name: name, Data: data,
 		Tries: definition.tries, Timeout: int(definition.timeout.Seconds()),

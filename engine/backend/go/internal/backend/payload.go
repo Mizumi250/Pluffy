@@ -8,43 +8,8 @@ import (
 )
 
 var (
-	moduleNamePattern     = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
-	sqlNamePattern        = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
-	kotobaHandlersByRoute = map[string]string{
-		"GET /api/kotoba/me":                     "me",
-		"PUT /api/kotoba/me":                     "update_me",
-		"GET /api/kotoba/home":                   "home",
-		"POST /api/kotoba/activity":              "bump",
-		"POST /api/kotoba/internal/notify":       "notify",
-		"POST /api/kotoba/internal/seed":         "community_seed",
-		"GET /api/kotoba/feed":                   "feed",
-		"POST /api/kotoba/posts":                 "create_post",
-		"DELETE /api/kotoba/posts/{id}":          "delete_post",
-		"POST /api/kotoba/posts/{id}/like":       "toggle_like",
-		"GET /api/kotoba/posts/{id}/comments":    "list_comments",
-		"POST /api/kotoba/posts/{id}/comments":   "add_comment",
-		"POST /api/kotoba/comments/{id}/accept":  "accept_correction",
-		"GET /api/kotoba/lessons":                "list_lessons",
-		"POST /api/kotoba/lessons/{id}/complete": "complete_lesson",
-		"GET /api/kotoba/vocab":                  "list_cards",
-		"POST /api/kotoba/vocab":                 "add_card",
-		"POST /api/kotoba/vocab/{id}/review":     "review_card",
-		"DELETE /api/kotoba/vocab/{id}":          "delete_card",
-		"GET /api/kotoba/partners":               "partners",
-		"GET /api/kotoba/profile/{id}":           "view_profile",
-		"POST /api/kotoba/follow/{id}":           "toggle_follow",
-		"GET /api/kotoba/conversations":          "list_conversations",
-		"POST /api/kotoba/conversations":         "start_conversation",
-		"GET /api/kotoba/messages":               "list_messages",
-		"POST /api/kotoba/messages":              "send_message",
-		"POST /api/kotoba/messages/{id}/correct": "correct_message",
-		"GET /api/kotoba/circles":                "list_circles",
-		"POST /api/kotoba/circles":               "create_circle",
-		"POST /api/kotoba/circles/{id}/join":     "toggle_join",
-		"GET /api/kotoba/alerts":                 "list_alerts",
-		"POST /api/kotoba/alerts/read":           "read_alerts",
-		"GET /api/kotoba/progress":               "progress",
-	}
+	moduleNamePattern = regexp.MustCompile(`^[a-z0-9][a-z0-9-]*$`)
+	sqlNamePattern    = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_]*$`)
 )
 
 type BuildPayload struct {
@@ -232,24 +197,18 @@ func ValidateBuild(payload BuildPayload) []string {
 			endpoints = defaultEndpoints()
 		}
 		for operation, endpoint := range endpoints {
-			if !isCRUDOperation(operation) &&
-				!isSupportedCustomEndpoint(payload.Name, operation, endpoint) &&
-				!isSupportedNamedEndpoint(payload.Name, operation) {
-				problems = append(problems, fmt.Sprintf("api block %q endpoint %q is not a supported CRUD operation", api.Name, operation))
-				continue
-			}
 			if endpoint.Method != "" && !validHTTPMethod(endpoint.Method) {
 				problems = append(problems, fmt.Sprintf("api block %q endpoint %q has unsupported method %q", api.Name, operation, endpoint.Method))
 			}
 			if endpoint.Route != "" && !validRoutePath(endpoint.Route) {
 				problems = append(problems, fmt.Sprintf("api block %q endpoint %q has an invalid route %q", api.Name, operation, endpoint.Route))
 			}
-			if (isCRUDOperation(operation) ||
-				isSupportedCustomEndpoint(payload.Name, operation, endpoint) ||
-				isSupportedNamedEndpoint(payload.Name, operation)) &&
-				(endpoint.Route == "" || validRoutePath(endpoint.Route)) &&
-				(endpoint.Method == "" || validHTTPMethod(endpoint.Method)) {
-				signature := routeSignature(endpointMethod(operation, endpoint), joinRoute(prefix, endpointRoute(operation, endpoint)))
+			if endpointMethod(operation, endpoint) == "" {
+				problems = append(problems, fmt.Sprintf("api block %q endpoint %q needs an explicit :method because it is not a CRUD operation", api.Name, operation))
+			}
+			if method := endpointMethod(operation, endpoint); method != "" &&
+				(endpoint.Route == "" || validRoutePath(endpoint.Route)) {
+				signature := routeSignature(method, joinRoute(prefix, endpointRoute(operation, endpoint)))
 				if previous, exists := routeSignatures[signature]; exists {
 					problems = append(problems, fmt.Sprintf("API route %q is declared by both %q and %q", signature, previous, api.Name))
 				} else {
@@ -276,12 +235,8 @@ func ValidateBuild(payload BuildPayload) []string {
 	}
 	for _, customRoute := range payload.CustomRoutes {
 		for _, route := range customRoute.Routes {
-			if !isSupportedCustomHandler(payload.Name, route) {
-				problems = append(problems, fmt.Sprintf("custom route handler %q is not supported by the Go engine", route.Handler))
-				continue
-			}
-			if payload.Name == "body-endpoint-handler" && strings.TrimSpace(route.Body) == "" {
-				problems = append(problems, fmt.Sprintf("custom route handler %q requires a :go body", route.Handler))
+			if strings.TrimSpace(route.Body) == "" {
+				problems = append(problems, fmt.Sprintf("custom route handler %q requires a :go handler body", route.Handler))
 			}
 			if !validHTTPMethod(route.Method) {
 				problems = append(problems, fmt.Sprintf("custom route handler %q has unsupported method %q", route.Handler, route.Method))
@@ -294,74 +249,16 @@ func ValidateBuild(payload BuildPayload) []string {
 	return problems
 }
 
-func isSupportedCustomEndpoint(module, operation string, endpoint EndpointConfig) bool {
-	if strings.TrimSpace(endpoint.Body) == "" {
+// isCapabilityEndpoint reports the engine-served DSL endpoint types that a
+// route of any operation can declare (job dispatch, mail send, scheduler
+// command, event fire, broadcast message, database notification).
+func isCapabilityEndpoint(endpointType string) bool {
+	switch endpointType {
+	case "job_dispatch", "mail_send", "command_run", "event_fire", "broadcast", "notification_trigger":
+		return true
+	default:
 		return false
 	}
-	switch module {
-	case "body-endpoint-handler":
-		return operation == "echo" || operation == "stats"
-	case "inventory-management":
-		return operation == "lowStock"
-	}
-	return false
-}
-
-func isSupportedNamedEndpoint(module, operation string) bool {
-	switch module {
-	case "events-test":
-		return operation == "clearLog"
-	case "dtr-geofencing":
-		switch operation {
-		case "my_records", "check_in", "check_out", "toggle_geofencing", "update_office":
-			return true
-		}
-	case "jo-payroll":
-		return operation == "summary" || operation == "byGroup" || operation == "appointments"
-	case "roles-test":
-		return operation == "adminOnly" || operation == "userOnly" || operation == "promote" || operation == "demote"
-	case "notification-test":
-		return operation == "readAll"
-	case "body-mail-notification":
-		return operation == "sendMail" || operation == "notify" || operation == "clearLog"
-	case "kotoba":
-		return operation == "status"
-	}
-	return false
-}
-
-func isSupportedCustomHandler(module string, route CustomRouteEntry) bool {
-	path := normalizeRoutePath(route.Route)
-	method := strings.ToUpper(route.Method)
-	switch module {
-	case "body-endpoint-handler":
-		switch route.Handler {
-		case "ping":
-			return method == "GET" && path == "/api/body-endpoint-handler/ping"
-		case "recordHandler":
-			return method == "POST" && path == "/api/body-endpoint-handler/record-handler"
-		case "latest":
-			return method == "GET" && path == "/api/body-endpoint-handler/latest"
-		}
-	case "queue-flow":
-		switch route.Handler {
-		case "join_queue":
-			return method == "POST" && path == "/api/queue-flow/join"
-		case "call_next":
-			return method == "POST" && path == "/api/queue-flow/call-next"
-		case "queue_status":
-			return method == "GET" && path == "/api/queue-flow/status/{queue_id}"
-		case "my_ticket":
-			return method == "GET" && path == "/api/queue-flow/my-ticket/{queue_id}/{ticket_number}"
-		}
-	case "kotoba":
-		return isKotobaRoute(method, path, route.Handler)
-	}
-	return false
-}
-
-func isKotobaRoute(method, path, handler string) bool {
-	return kotobaHandlersByRoute[method+" "+path] == handler
 }
 
 func routeSignature(method, path string) string {

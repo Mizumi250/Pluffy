@@ -1,0 +1,1751 @@
+===== body-endpoint-handler | api: op:echo =====
+input, err := request.JSON()
+if err != nil {
+    return response.JSON(400, map[string]string{"message": "Request body must be a JSON object"})
+}
+payload, _ := json.Marshal(input)
+record, err := database.Insert("probe_results", map[string]any{
+    "source": "endpoint-body",
+    "probe": "echo",
+    "payload": string(payload),
+    "result": fmt.Sprintf("Echoed %d field(s) — Go endpoint emulation", len(input)),
+    "ok": true,
+})
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not record echo probe"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true,
+    "builder": "Go endpoint emulation",
+    "method": "echo",
+    "field_count": len(input),
+    "echo": input,
+    "probe_id": record["id"],
+})
+
+===== body-endpoint-handler | api: op:stats =====
+var total, passed, failed int
+if err := database.QueryRow(`SELECT COUNT(*), SUM(CASE WHEN ok THEN 1 ELSE 0 END), SUM(CASE WHEN NOT ok THEN 1 ELSE 0 END) FROM probe_results`).Scan(&total, &passed, &failed); err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load probe statistics"})
+}
+sources, err := database.Query(`SELECT DISTINCT source FROM probe_results ORDER BY source`)
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load probe sources"})
+}
+defer sources.Close()
+var sourceNames []string
+for sources.Next() {
+    var source string
+    if err := sources.Scan(&source); err != nil {
+        return response.JSON(500, map[string]string{"message": "Could not read probe sources"})
+    }
+    sourceNames = append(sourceNames, source)
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "Go endpoint emulation", "method": "stats",
+    "total": total, "passed": passed, "failed": failed, "sources": sourceNames,
+})
+
+===== body-endpoint-handler | route:ping GET /api/body-endpoint-handler/ping =====
+return response.JSON(200, map[string]any{
+    "injected": true,
+    "builder": "CustomRouteBuilder Go emulation",
+    "handler": "ping",
+    "status": "ok",
+    "timestamp": time.Now().UTC().Format(time.RFC3339),
+    "message": "CustomRouteBuilder handler body injection confirmed",
+})
+
+===== body-endpoint-handler | route:recordHandler POST /api/body-endpoint-handler/record-handler =====
+input, err := request.JSON()
+if err != nil {
+    return response.JSON(400, map[string]string{"message": "Request body must be a JSON object"})
+}
+probe, ok := input["probe"].(string)
+if !ok || strings.TrimSpace(probe) == "" || len([]rune(probe)) > 100 {
+    return response.JSON(422, map[string]any{"message": "Validation failed", "errors": []string{"probe is required, string, and at most 100 characters"}})
+}
+okValue := true
+if value, exists := input["ok"]; exists {
+    parsed, valid := value.(bool)
+    if !valid {
+        return response.JSON(422, map[string]any{"message": "Validation failed", "errors": []string{"ok must be a boolean"}})
+    }
+    okValue = parsed
+}
+result, err := database.Insert("probe_results", map[string]any{
+    "source": "handler-body", "probe": probe, "payload": input["payload"],
+    "result": "Recorded via CustomRouteBuilder handler body injection", "ok": okValue,
+})
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not record probe"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "CustomRouteBuilder Go emulation",
+    "handler": "recordHandler", "probe_id": result["id"], "probe": probe,
+})
+
+===== body-endpoint-handler | route:latest GET /api/body-endpoint-handler/latest =====
+records, err := database.Query(`SELECT * FROM probe_results ORDER BY id DESC LIMIT 5`)
+if err != nil {
+    return response.JSON(500, map[string]string{"message": "Could not load latest probes"})
+}
+return response.JSON(200, map[string]any{
+    "injected": true, "builder": "CustomRouteBuilder Go emulation",
+    "handler": "latest", "count": len(records), "results": records,
+})
+
+===== body-mail-notification | api: op:clearLog =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if _, err := SendLog.Query().Where("user_id", user.ID).Delete(ctx); err != nil {
+    return response.Error(500, "Could not clear delivery log")
+}
+return response.JSON(map[string]any{"message": "Log cleared"})
+
+===== body-mail-notification | api: op:notify =====
+notificationKey := request.Input("notification")
+message := request.Input("message")
+if !IsOneOf(notificationKey, "action-required", "summary") || len(message) > 255 {
+    return response.JSON(422, map[string]any{"message": "A supported notification type and a message of at most 255 characters are required"})
+}
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+deliveryErr := NotificationService.Send(ctx, user, notificationKey, message)
+status := "sent"
+values := map[string]any{
+    "user_id": user.ID, "to_email": user.Email, "subject": notificationKey,
+    "mail_class": NotificationService.ClassName(notificationKey),
+    "kind": "notification", "status": status,
+}
+if deliveryErr != nil {
+    status = "failed"
+    values["status"] = status
+    values["error"] = deliveryErr.Error()
+}
+log, err := SendLog.Create(ctx, values)
+if err != nil {
+    return response.Error(500, "Could not save notification delivery log")
+}
+return response.JSON(201, log)
+
+===== body-mail-notification | api: op:sendMail =====
+mailKey := request.Input("mail")
+to := request.Input("to")
+if !IsOneOf(mailKey, "welcome", "receipt", "alert") || !IsEmail(to) {
+    return response.JSON(422, map[string]any{"message": "A supported mail type and valid recipient are required"})
+}
+user := request.User()
+var userID any
+if user != nil {
+    userID = user.ID
+}
+mailData := map[string]map[string]any{
+    "welcome": {"name": "Test User", "app_name": "Arkzen"},
+    "receipt": {"order_id": "ORD-001", "amount": "$9.99", "item_name": "Arkzen Test Item"},
+    "alert": {"alert_message": "This is a test alert from Arkzen.", "action_url": request.BaseURL()},
+}
+mailClass := Mailer.ClassName(mailKey)
+_, deliveryErr := Mailer.RenderAndSend(ctx, mailKey, to, mailData[mailKey])
+status := "sent"
+values := map[string]any{
+    "user_id": userID, "to_email": to, "subject": mailKey,
+    "mail_class": mailClass, "kind": "mail", "status": status,
+}
+if deliveryErr != nil {
+    status = "failed"
+    values["status"] = status
+    values["error"] = deliveryErr.Error()
+}
+log, saveErr := SendLog.Create(ctx, values)
+if saveErr != nil {
+    return response.Error(500, "Could not save mail delivery log")
+}
+return response.JSON(201, log)
+
+===== dtr-geofencing | api: op:check_in =====
+employeeID := request.Input("employee_id")
+latitude, hasLatitude := request.Float("latitude")
+longitude, hasLongitude := request.Float("longitude")
+notes := request.Input("notes")
+enabled := DtrSetting.Value(ctx, "geofencing_enabled") == "true"
+withinGeofence := true
+if enabled && hasLatitude && hasLongitude {
+    officeLat := DtrSetting.FloatValue(ctx, "office_latitude")
+    officeLng := DtrSetting.FloatValue(ctx, "office_longitude")
+    radius := DtrSetting.FloatValue(ctx, "geofence_radius_meters")
+    const earthRadius = 6371000.0
+    lat1, lat2 := latitude*math.Pi/180, officeLat*math.Pi/180
+    dLat := (latitude - officeLat) * math.Pi / 180
+    dLng := (longitude - officeLng) * math.Pi / 180
+    a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLng/2)*math.Sin(dLng/2)
+    distance := earthRadius * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+    withinGeofence = distance <= radius
+    if !withinGeofence {
+        return response.JSON(403, map[string]any{
+            "error": "Geofence violation",
+            "message": fmt.Sprintf("You must be within %.0f meters of the office to check in.", radius),
+            "distance": math.Round(distance*10) / 10,
+        })
+    }
+}
+record, err := TimeRecord.Create(ctx, map[string]any{
+    "employee_id": employeeID, "type": "in", "timestamp": time.Now(),
+    "latitude": latitude, "longitude": longitude, "within_geofence": withinGeofence, "notes": notes,
+})
+if err != nil {
+    return response.Error(500, "Could not create check-in record")
+}
+record, err = record.With("employee").Load(ctx)
+if err != nil {
+    return response.Error(500, "Could not load employee details")
+}
+return response.JSON(map[string]any{"success": true, "record": record, "within_geofence": withinGeofence, "geofencing_enabled": enabled})
+
+===== dtr-geofencing | api: op:check_out =====
+employeeID := request.Input("employee_id")
+latitude, hasLatitude := request.Float("latitude")
+longitude, hasLongitude := request.Float("longitude")
+notes := request.Input("notes")
+enabled := DtrSetting.Value(ctx, "geofencing_enabled") == "true"
+withinGeofence := true
+if enabled && hasLatitude && hasLongitude {
+    officeLat := DtrSetting.FloatValue(ctx, "office_latitude")
+    officeLng := DtrSetting.FloatValue(ctx, "office_longitude")
+    radius := DtrSetting.FloatValue(ctx, "geofence_radius_meters")
+    const earthRadius = 6371000.0
+    lat1, lat2 := latitude*math.Pi/180, officeLat*math.Pi/180
+    dLat := (latitude - officeLat) * math.Pi / 180
+    dLng := (longitude - officeLng) * math.Pi / 180
+    a := math.Sin(dLat/2)*math.Sin(dLat/2) + math.Cos(lat1)*math.Cos(lat2)*math.Sin(dLng/2)*math.Sin(dLng/2)
+    distance := earthRadius * 2 * math.Atan2(math.Sqrt(a), math.Sqrt(1-a))
+    withinGeofence = distance <= radius
+    if !withinGeofence {
+        return response.JSON(403, map[string]any{
+            "error": "Geofence violation",
+            "message": fmt.Sprintf("You must be within %.0f meters of the office to check out.", radius),
+            "distance": math.Round(distance*10) / 10,
+        })
+    }
+}
+record, err := TimeRecord.Create(ctx, map[string]any{
+    "employee_id": employeeID, "type": "out", "timestamp": time.Now(),
+    "latitude": latitude, "longitude": longitude, "within_geofence": withinGeofence, "notes": notes,
+})
+if err != nil {
+    return response.Error(500, "Could not create check-out record")
+}
+record, err = record.With("employee").Load(ctx)
+if err != nil {
+    return response.Error(500, "Could not load employee details")
+}
+return response.JSON(map[string]any{"success": true, "record": record, "within_geofence": withinGeofence, "geofencing_enabled": enabled})
+
+===== dtr-geofencing | api: op:my_records =====
+employeeID := request.Route("employee_id")
+records, err := TimeRecord.Query().
+    Where("employee_id", employeeID).
+    With("employee").
+    OrderBy("timestamp", "desc").
+    Limit(50).
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load time records")
+}
+return response.JSON(records)
+
+===== dtr-geofencing | api: op:toggle_geofencing =====
+enabled := request.Bool("enabled")
+if err := DtrSetting.UpdateOrCreate(ctx, "geofencing_enabled", strconv.FormatBool(enabled)); err != nil {
+    return response.Error(500, "Could not update geofencing setting")
+}
+return response.JSON(map[string]any{"success": true, "geofencing_enabled": enabled})
+
+===== dtr-geofencing | api: op:update_office =====
+latitude := request.Input("lat")
+longitude := request.Input("lng")
+radius := request.Input("radius")
+for key, value := range map[string]string{
+    "office_latitude": latitude,
+    "office_longitude": longitude,
+    "geofence_radius_meters": radius,
+} {
+    if err := DtrSetting.UpdateOrCreate(ctx, key, value); err != nil {
+        return response.Error(500, "Could not update office settings")
+    }
+}
+return response.JSON(map[string]any{"success": true})
+
+===== events-test | api: op:clearLog =====
+if _, err := EventLog.Query().Delete(ctx); err != nil {
+    return response.Error(500, "Could not clear event log")
+}
+return response.JSON(map[string]any{"message": "Log cleared"})
+
+===== events-test | api: op:index =====
+results, err := EventLog.Query().
+    OrderBy("created_at", "desc").
+    Paginate(ctx, request.QueryInt("per_page", 100), request.QueryInt("page", 1), request.URL())
+if err != nil {
+    return response.Error(500, "Could not load event log")
+}
+return response.JSON(results)
+
+===== inventory-management | api: op:lowStock =====
+items, err := Inventory.Query().
+    Where("quantity", "<", 20).
+    OrderBy("quantity", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load low-stock inventory")
+}
+return response.JSON(map[string]any{"data": items, "count": len(items)})
+
+===== jo-payroll | api: op:appointments =====
+orders, err := JobOrder.Query().
+    WhereNotNull("appointment_order").
+    OrderBy("appointment_order", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load appointment job orders")
+}
+return response.JSON(orders)
+
+===== jo-payroll | api: op:byGroup =====
+group := request.Route("group")
+orders, err := JobOrder.Query().
+    Where("jor_pyrl_group", group).
+    Where("status", "active").
+    OrderBy("jor_number", "asc").
+    Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load job orders for group")
+}
+return response.JSON(orders)
+
+===== jo-payroll | api: op:summary =====
+activeOrders, err := JobOrder.Query().Where("status", "active").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load active job orders")
+}
+inactiveCount, err := JobOrder.Query().Where("status", "inactive").Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count inactive job orders")
+}
+counts := map[string]int{"ATM": 0, "CASH": 0}
+fundingBreakdown := map[string]map[string]any{}
+groupBreakdown := map[string]int{}
+var basicPay, sss, hdmfPremium, hdmfMpl, calamityLoan float64
+for _, order := range activeOrders {
+    counts[order.DisbursementType]++
+    basicPay += order.BasicPay
+    sss += order.SSSAmount
+    hdmfPremium += order.HDMFPremium
+    hdmfMpl += order.HDMFMpl
+    calamityLoan += order.CalamityLoan
+    funding := order.Funding
+    if _, ok := fundingBreakdown[funding]; !ok {
+        fundingBreakdown[funding] = map[string]any{"count": 0, "total_pay": float64(0)}
+    }
+    fundingBreakdown[funding]["count"] = fundingBreakdown[funding]["count"].(int) + 1
+    fundingBreakdown[funding]["total_pay"] = fundingBreakdown[funding]["total_pay"].(float64) + order.BasicPay
+    groupBreakdown[order.JorPyrlGroup]++
+}
+totalDeductions := sss + hdmfPremium + hdmfMpl + calamityLoan
+return response.JSON(map[string]any{
+    "total_active": len(activeOrders), "total_inactive": inactiveCount,
+    "total_atm": counts["ATM"], "total_cash": counts["CASH"],
+    "total_basic_pay": basicPay, "total_sss": sss,
+    "total_hdmf_premium": hdmfPremium, "total_hdmf_mpl": hdmfMpl,
+    "total_calamity_loan": calamityLoan, "total_deductions": totalDeductions,
+    "net_pay": basicPay - totalDeductions, "funding_breakdown": fundingBreakdown,
+    "group_breakdown": groupBreakdown,
+})
+
+===== job-test | api: op:index =====
+results, err := JobResult.Query().
+    OrderBy("created_at", "desc").
+    Paginate(ctx, request.QueryInt("per_page", 15))
+if err != nil {
+    return response.Error(500, "Could not load job results")
+}
+return response.JSON(results)
+
+===== kotoba | route:me GET /api/kotoba/me =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not check community seed data")
+}
+if postCount == 0 {
+    if err := community_seed(ctx); err != nil {
+        return response.Error(500, "Could not seed the community")
+    }
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name, "avatar_color": "#121212"},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+return response.JSON(map[string]any{
+    "data": profile,
+    "user": map[string]any{"id": user.ID, "name": user.Name, "email": user.Email},
+})
+
+===== kotoba | route:update_me PUT /api/kotoba/me =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+updates := request.Only("display_name", "bio", "native_lang", "learning_lang", "level", "country", "interests", "daily_goal", "onboarded")
+if len(updates) == 0 {
+    return response.JSON(422, map[string]any{"message": "Provide at least one profile field to update"})
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name, "avatar_color": "#121212"},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+if err := profile.Update(ctx, updates); err != nil {
+    return response.Error(422, "Could not update learner profile")
+}
+return response.JSON(map[string]any{"data": profile})
+
+===== kotoba | route:home GET /api/kotoba/home =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not check community seed data")
+}
+if postCount == 0 {
+    if err := community_seed(ctx); err != nil {
+        return response.Error(500, "Could not seed the community")
+    }
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+if profile == nil {
+    profile, err = Profile.Create(ctx, map[string]any{"user_id": user.ID, "display_name": user.Name})
+}
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+missions, _ := Mission.Query().WhereIn("lang", []string{profile.LearningLang, "any"}).OrderBy("position", "asc").Get(ctx)
+var mission any
+if len(missions) > 0 {
+    mission = missions[time.Now().YearDay()%len(missions)]
+}
+today := time.Now().UTC().Format("2006-01-02")
+dueCards, _ := VocabCard.Query().Where("user_id", user.ID).WhereAny(map[string]any{"due_date": nil, "due_date<=": today}).Count(ctx)
+doneLessonIDs, _ := LessonResult.Query().Where("user_id", user.ID).Pluck(ctx, "lesson_id")
+nextLesson, _ := Lesson.Query().Where("lang", profile.LearningLang).WhereNotIn("id", doneLessonIDs).OrderBy("position", "asc").First(ctx)
+unreadAlerts, _ := Alert.Query().Where("user_id", user.ID).Where("is_read", false).Count(ctx)
+postsToday, _ := Post.Query().Where("user_id", user.ID).WhereDate("created_at", today).Count(ctx)
+messagesToday, _ := Message.Query().Where("sender_id", user.ID).WhereDate("created_at", today).Count(ctx)
+lessonsToday, _ := LessonResult.Query().Where("user_id", user.ID).WhereDate("updated_at", today).Count(ctx)
+helpNeeded, _ := Post.Query().Where("corrections_count", 0).Where("user_id", "!=", user.ID).Where("lang", profile.NativeLang).Count(ctx)
+missionDone := false
+if selected, ok := mission.(MissionRecord); ok {
+    missionDone, _ = Post.Query().Where("user_id", user.ID).Where("mission_id", selected.ID).WhereDate("created_at", today).Exists(ctx)
+}
+circles, _ := CircleMember.Query().Where("user_id", user.ID).Count(ctx)
+return response.JSON(map[string]any{
+    "profile": profile, "mission": mission, "mission_done": missionDone,
+    "due": dueCards, "next_lesson": nextLesson, "unread": unreadAlerts,
+    "today_activity": postsToday + messagesToday + lessonsToday,
+    "help_needed": helpNeeded, "circles": circles,
+})
+
+===== kotoba | route:bump POST /api/kotoba/activity =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+amount := params.Int(0)
+if amount < 0 {
+    return response.JSON(422, map[string]any{"message": "XP amount cannot be negative"})
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+if err := profile.Increment(ctx, "xp", amount); err != nil {
+    return response.Error(500, "Could not add XP")
+}
+profile, err = profile.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload learner profile")
+}
+return response.JSON(map[string]any{"data": profile, "xp_awarded": amount})
+
+===== kotoba | route:notify POST /api/kotoba/internal/notify =====
+recipientID := params.Int(0)
+kind := params.String(1)
+text := params.String(2)
+referenceID := params.NullableInt(3)
+if kind == "" || text == "" || len(text) > 500 {
+    return response.JSON(422, map[string]any{"message": "Alert kind and text are required"})
+}
+alert, err := Alert.Create(ctx, map[string]any{
+    "user_id": recipientID, "kind": kind, "text": text,
+    "ref": referenceID, "is_read": false,
+})
+if err != nil {
+    return response.Error(500, "Could not create alert")
+}
+return response.JSON(map[string]any{"data": alert})
+
+===== kotoba | route:community_seed POST /api/kotoba/internal/seed =====
+postCount, err := Post.Query().Count(ctx)
+if err != nil {
+    return err
+}
+if postCount > 0 {
+    return nil
+}
+type seedPerson struct {
+    email, displayName, nativeLang, learningLang, level, country, bio, interests, color string
+    xp, streak int
+}
+people := []seedPerson{
+    {"aiko@kotoba.app", "Aiko Tanaka", "ja", "en", "A2", "Japan", "Osaka native. I love ramen, film cameras and teaching Japanese.", "travel,food,photography", "#7a3b34", 240, 12},
+    {"mateo@kotoba.app", "Mateo Rivera", "es", "en", "B1", "Mexico", "From Mexico City. Football, tacos and bad puns in two languages.", "football,food,music", "#3f6b4f", 180, 6},
+    {"sofia@kotoba.app", "Sofia Laurent", "en", "ja", "A2", "Canada", "English teacher learning Japanese. Coffee first, grammar second.", "books,coffee,anime", "#4a4a4a", 320, 21},
+}
+profiles := make(map[string]*Profile, len(people))
+today := time.Now().UTC().Format("2006-01-02")
+for _, seed := range people {
+    seededUser, err := User.Query().Where("email", seed.email).First(ctx)
+    if err != nil {
+        return err
+    }
+    if seededUser == nil {
+        continue
+    }
+    fields := map[string]any{
+        "display_name": seed.displayName, "native_lang": seed.nativeLang,
+        "learning_lang": seed.learningLang, "level": seed.level, "country": seed.country,
+        "bio": seed.bio, "interests": seed.interests, "avatar_color": seed.color,
+        "xp": seed.xp, "streak": seed.streak, "best_streak": seed.streak,
+        "last_active": today, "onboarded": true,
+    }
+    profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": seededUser.ID}, fields)
+    if err != nil {
+        return err
+    }
+    if err := profile.Update(ctx, fields); err != nil {
+        return err
+    }
+    profiles[seed.email] = profile
+}
+if len(profiles) == 0 {
+    return nil
+}
+    type seedPost struct {
+        email, lang, kind, body string
+        translation any
+        likes int
+    }
+    seeds := []seedPost{
+        {"aiko@kotoba.app", "en", "moment", "Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!", nil, 4},
+        {"mateo@kotoba.app", "en", "moment", "Today I learned a new word: serendipity. It means finding something good by luck.", nil, 7},
+        {"sofia@kotoba.app", "ja", "moment", "きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。", "It is raining today. I will read a book while drinking coffee.", 5},
+        {"mateo@kotoba.app", "es", "question", "Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.", "Question for you all: what is your favorite food? Mine are tacos al pastor.", 3},
+        {"aiko@kotoba.app", "ja", "moment", "こんにちは！わたしは アイコです。にほんの おおさかから きました。", "Hello! I am Aiko. I came from Osaka, Japan.", 9},
+    }
+    seededPosts := make(map[string]*Post, len(seeds))
+    for i, seed := range seeds {
+        profile := profiles[seed.email]
+        if profile == nil {
+            continue
+        }
+        post, err := Post.Create(ctx, map[string]any{
+            "user_id": profile.UserID, "author_name": profile.DisplayName,
+            "author_color": profile.AvatarColor, "author_native": profile.NativeLang,
+            "lang": seed.lang, "kind": seed.kind, "body": seed.body,
+            "translation": seed.translation, "likes_count": seed.likes,
+        })
+        if err != nil {
+            return err
+        }
+        seededPosts[fmt.Sprint(i)] = post
+    }
+    if firstPost := seededPosts["0"]; firstPost != nil {
+        if sofia := profiles["sofia@kotoba.app"]; sofia != nil {
+            if _, err := Comment.Create(ctx, map[string]any{
+                "post_id": firstPost.ID, "user_id": sofia.UserID,
+                "author_name": sofia.DisplayName, "author_color": sofia.AvatarColor,
+                "body": "Nice story! A few small fixes:", "is_correction": true,
+                "corrected": "Yesterday I went to the park with my friend. We ate ice cream and it was delicious!",
+                "explanation": "Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very.",
+            }); err != nil {
+                return err
+            }
+            if err := firstPost.Update(ctx, map[string]any{"comments_count": 1, "corrections_count": 1}); err != nil {
+                return err
+            }
+        }
+    }
+    if japanesePost := seededPosts["2"]; japanesePost != nil {
+        if aiko := profiles["aiko@kotoba.app"]; aiko != nil {
+            if _, err := Comment.Create(ctx, map[string]any{
+                "post_id": japanesePost.ID, "user_id": aiko.UserID,
+                "author_name": aiko.DisplayName, "author_color": aiko.AvatarColor,
+                "body": "すてきですね！Very cozy. Your sentence is perfect.", "is_correction": false,
+            }); err != nil {
+                return err
+            }
+            if err := japanesePost.Update(ctx, map[string]any{"comments_count": 1}); err != nil {
+                return err
+            }
+        }
+    }
+    if aiko, sofia := profiles["aiko@kotoba.app"], profiles["sofia@kotoba.app"]; aiko != nil && sofia != nil {
+        for _, ids := range [][2]int{{aiko.UserID, sofia.UserID}, {sofia.UserID, aiko.UserID}} {
+            exists, err := Follow.Query().Where("follower_id", ids[0]).Where("following_id", ids[1]).Exists(ctx)
+            if err != nil {
+                return err
+            }
+            if !exists {
+                if _, err := Follow.Create(ctx, map[string]any{"follower_id": ids[0], "following_id": ids[1]}); err != nil {
+                    return err
+                }
+            }
+        }
+    }
+type seedCircle struct {
+    name, emoji, lang, level, description, owner string
+}
+circles := []seedCircle{
+    {"English Morning Club", "sun", "en", "A2", "Short daily check-ins in English. Be kind and correct gently.", "sofia@kotoba.app"},
+    {"Japanese for Beginners", "flower", "ja", "A1", "Hiragana, greetings and first sentences. Ask anything.", "aiko@kotoba.app"},
+    {"Spanish Cafe Talk", "coffee", "es", "A2", "Relaxed conversation practice over virtual coffee.", "mateo@kotoba.app"},
+}
+for _, seed := range circles {
+    owner := profiles[seed.owner]
+    if owner == nil {
+        continue
+    }
+    circle, err := Circle.Create(ctx, map[string]any{
+        "name": seed.name, "emoji": seed.emoji, "lang": seed.lang, "level": seed.level,
+        "description": seed.description, "owner_id": owner.UserID, "members_count": 1,
+    })
+    if err != nil {
+        return err
+    }
+    if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circle.ID, "user_id": owner.UserID}); err != nil {
+        return err
+    }
+    welcome := "Welcome to " + seed.name + "! Introduce yourself in your target language."
+    if _, err := Message.Create(ctx, map[string]any{
+        "circle_id": circle.ID, "sender_id": owner.UserID, "sender_name": owner.DisplayName,
+        "sender_color": owner.AvatarColor, "body": welcome, "lang": seed.lang,
+    }); err != nil {
+        return err
+    }
+}
+return nil
+
+===== kotoba | route:feed GET /api/kotoba/feed =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+query := Post.Query().OrderBy("id", "desc")
+if lang := request.Input("lang"); lang != "" {
+    query = query.Where("lang", lang)
+}
+switch request.InputOr("scope", "all") {
+case "following":
+    followedIDs, err := Follow.Query().Where("follower_id", user.ID).Pluck(ctx, "following_id")
+    if err != nil {
+        return response.Error(500, "Could not load followed learners")
+    }
+    query = query.WhereIn("user_id", append(followedIDs, user.ID))
+case "mine":
+    query = query.Where("user_id", user.ID)
+case "help":
+    query = query.Where("lang", profile.NativeLang).Where("user_id", "!=", user.ID).Where("corrections_count", 0)
+}
+if missionID := request.Int("mission_id"); missionID > 0 {
+    query = query.Where("mission_id", missionID)
+}
+posts, err := query.Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load community feed")
+}
+postIDs := make([]int, 0, len(posts))
+for _, post := range posts {
+    postIDs = append(postIDs, post.ID)
+}
+likedIDs, _ := Like.Query().Where("user_id", user.ID).WhereIn("post_id", postIDs).PluckInt(ctx, "post_id")
+for _, post := range posts {
+    post.Liked = false
+    for _, likedID := range likedIDs {
+        if likedID == post.ID {
+            post.Liked = true
+            break
+        }
+    }
+}
+return response.JSON(map[string]any{"data": posts})
+
+===== kotoba | route:create_post POST /api/kotoba/posts =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+body := strings.TrimSpace(request.String("body"))
+lang := request.Input("lang")
+kind := request.InputOr("kind", "moment")
+translation := request.Input("translation")
+if body == "" || len(body) > 1500 || lang == "" || len(lang) > 8 ||
+    !IsOneOf(kind, "moment", "question", "mission") || len(translation) > 1500 {
+    return response.JSON(422, map[string]any{"message": "Post fields are invalid"})
+}
+profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": user.ID}, map[string]any{"display_name": user.Name})
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+post, err := Post.Create(ctx, map[string]any{
+    "user_id": user.ID, "author_name": profile.DisplayName,
+    "author_color": profile.AvatarColor, "author_native": profile.NativeLang,
+    "lang": lang, "kind": kind, "mission_id": request.NullableInt("mission_id"),
+    "body": body, "translation": translation, "likes_count": 0,
+    "comments_count": 0, "corrections_count": 0,
+})
+if err != nil {
+    return response.Error(500, "Could not publish post")
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+xp := 10
+if kind == "mission" {
+    xp = 20
+}
+profile.XP += xp
+words := len(strings.Fields(body))
+if words < 1 {
+    words = 1
+}
+profile.WordsWritten += words
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(201, map[string]any{"data": post.With("liked", false)})
+
+===== kotoba | route:delete_post DELETE /api/kotoba/posts/{id} =====
+user := request.User()
+postID := params.Int(0)
+post, err := Post.Query().Where("id", postID).Where("user_id", user.ID).First(ctx)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+if _, err := post.Delete(ctx); err != nil {
+    return response.Error(500, "Could not delete post")
+}
+return response.JSON(map[string]any{"message": "Post deleted"})
+
+===== kotoba | route:toggle_like POST /api/kotoba/posts/{id}/like =====
+user := request.User()
+postID := params.Int(0)
+post, err := Post.Find(ctx, postID)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+existing, err := Like.Query().Where("post_id", postID).Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check like status")
+}
+liked := existing == nil
+if liked {
+    if _, err := Like.Create(ctx, map[string]any{"post_id": postID, "user_id": user.ID}); err != nil {
+        return response.Error(500, "Could not like post")
+    }
+    _ = post.Increment(ctx, "likes_count", 1)
+    if post.UserID != user.ID {
+        profile, err := Profile.FirstOrCreate(ctx,
+            map[string]any{"user_id": user.ID},
+            map[string]any{"display_name": user.Name},
+        )
+        if err != nil {
+            return response.Error(500, "Could not load learner profile")
+        }
+        name := user.Name
+        if profile != nil {
+            name = profile.DisplayName
+        }
+        _, _ = Alert.Create(ctx, map[string]any{
+            "user_id": post.UserID, "kind": "like", "text": name + " liked your post",
+            "ref": postID, "is_read": false,
+        })
+    }
+} else {
+    if _, err := existing.Delete(ctx); err != nil {
+        return response.Error(500, "Could not remove like")
+    }
+    _ = post.Decrement(ctx, "likes_count", 1)
+}
+post, _ = post.Refresh(ctx)
+return response.JSON(map[string]any{"liked": liked, "likes_count": post.LikesCount})
+
+===== kotoba | route:list_comments GET /api/kotoba/posts/{id}/comments =====
+postID := params.Int(0)
+comments, err := Comment.Query().Where("post_id", postID).OrderBy("id", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load comments")
+}
+return response.JSON(map[string]any{"data": comments})
+
+===== kotoba | route:add_comment POST /api/kotoba/posts/{id}/comments =====
+user := request.User()
+postID := params.Int(0)
+body := strings.TrimSpace(request.String("body"))
+corrected := request.Input("corrected")
+explanation := request.Input("explanation")
+isCorrection := request.Bool("is_correction") && corrected != ""
+if body == "" || len(body) > 1000 || len(corrected) > 1500 || len(explanation) > 1000 {
+    return response.JSON(422, map[string]any{"message": "Comment fields are invalid"})
+}
+profile, err := Profile.FirstOrCreate(ctx, map[string]any{"user_id": user.ID}, map[string]any{"display_name": user.Name})
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+post, err := Post.Find(ctx, postID)
+if err != nil || post == nil {
+    return response.Error(404, "Post not found")
+}
+comment, err := Comment.Create(ctx, map[string]any{
+    "post_id": postID, "user_id": user.ID, "author_name": profile.DisplayName,
+    "author_color": profile.AvatarColor, "body": body, "is_correction": isCorrection,
+    "corrected": corrected, "explanation": explanation,
+})
+if err != nil {
+    return response.Error(500, "Could not add comment")
+}
+_ = post.Increment(ctx, "comments_count", 1)
+if isCorrection {
+    _ = post.Increment(ctx, "corrections_count", 1)
+}
+kind, xp := "comment", 5
+notice := profile.DisplayName + " commented on your post"
+if isCorrection {
+    kind, xp = "correction", 15
+    notice = profile.DisplayName + " corrected your post"
+}
+_, _ = Alert.Create(ctx, map[string]any{
+    "user_id": post.UserID, "kind": kind, "text": notice, "ref": postID, "is_read": false,
+})
+today := time.Now().UTC()
+if profile.LastActiveDate() != today.Format("2006-01-02") {
+    if profile.LastActiveDate() == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = today.Format("2006-01-02")
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += xp
+_ = profile.Save(ctx)
+return response.JSON(201, map[string]any{"data": comment})
+
+===== kotoba | route:accept_correction POST /api/kotoba/comments/{id}/accept =====
+user := request.User()
+commentID := params.Int(0)
+comment, err := Comment.Find(ctx, commentID)
+if err != nil || comment == nil {
+    return response.Error(404, "Correction not found")
+}
+post, err := Post.Find(ctx, comment.PostID)
+if err != nil || post == nil || post.UserID != user.ID {
+    return response.Error(403, "Only the post author can accept a correction")
+}
+if !comment.IsCorrection || strings.TrimSpace(comment.Corrected) == "" {
+    return response.JSON(422, map[string]any{"message": "This comment has no proposed correction"})
+}
+if err := comment.Update(ctx, map[string]any{"accepted": true}); err != nil {
+    return response.Error(500, "Could not accept correction")
+}
+_ = post.Update(ctx, map[string]any{"body": comment.Corrected})
+_ = post.Increment(ctx, "corrections_count", 1)
+return response.JSON(map[string]any{"message": "Correction accepted", "post": post})
+
+===== kotoba | route:list_lessons GET /api/kotoba/lessons =====
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+lessons, err := Lesson.Query().Where("lang", profile.LearningLang).
+    Where("level", profile.Level).OrderBy("position", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load lessons")
+}
+for _, lesson := range lessons {
+    lesson.Result, _ = LessonResult.Query().Where("user_id", user.ID).Where("lesson_id", lesson.ID).First(ctx)
+}
+return response.JSON(map[string]any{"data": lessons})
+
+===== kotoba | route:complete_lesson POST /api/kotoba/lessons/{id}/complete =====
+user := request.User()
+lessonID := params.Int(0)
+score := request.Int("score")
+if score < 0 || score > 100 {
+    return response.JSON(422, map[string]any{"message": "Score must be between 0 and 100"})
+}
+lesson, err := Lesson.Find(ctx, lessonID)
+if err != nil || lesson == nil {
+    return response.Error(404, "Lesson not found")
+}
+result, first, err := LessonResult.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID, "lesson_id": lessonID},
+    map[string]any{"score": score, "best": score},
+)
+if err != nil {
+    return response.Error(500, "Could not save lesson result")
+}
+best := result.Best
+if score > best {
+    best = score
+}
+if err := result.Update(ctx, map[string]any{"score": score, "best": best}); err != nil {
+    return response.Error(500, "Could not update lesson result")
+}
+xp := 5
+if first {
+    xp = int(math.Round(float64(lesson.XP) * math.Max(0.4, float64(score)/100)))
+}
+cardsAdded := 0
+pairs, err := lesson.VocabularyPairs("v")
+if err != nil {
+    return response.Error(500, "Could not read lesson vocabulary")
+}
+for _, pair := range pairs {
+    _, created, err := VocabCard.FirstOrCreate(ctx,
+        map[string]any{"user_id": user.ID, "lang": lesson.Lang, "term": pair.Term},
+        map[string]any{"meaning": pair.Meaning, "source": "lesson", "due_date": time.Now().Format("2006-01-02")},
+    )
+    if err != nil {
+        return response.Error(500, "Could not add lesson vocabulary")
+    }
+    if created {
+        cardsAdded++
+    }
+}
+if err := Profile.Query().Where("user_id", user.ID).Increment(ctx, "xp", xp); err != nil {
+    return response.Error(500, "Could not award lesson XP")
+}
+return response.JSON(map[string]any{"xp": xp, "cards_added": cardsAdded, "first": first})
+
+===== kotoba | route:list_cards GET /api/kotoba/vocab =====
+user := request.User()
+base := VocabCard.Query().Where("user_id", user.ID)
+if lang := request.Input("lang"); lang != "" {
+    base = base.Where("lang", lang)
+}
+total, err := base.Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count vocabulary cards")
+}
+today := time.Now().Format("2006-01-02")
+dueQuery := base.WhereAny(map[string]any{"due_date": nil, "due_date<=": today})
+dueCount, err := dueQuery.Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count due vocabulary cards")
+}
+if request.Input("due") == "1" {
+    base = base.WhereAny(map[string]any{"due_date": nil, "due_date<=": today})
+}
+if search := request.Input("q"); search != "" {
+    base = base.WhereAny(map[string]any{"term like": "%" + search + "%", "meaning like": "%" + search + "%"})
+}
+cards, err := base.OrderBy("due_date", "asc").OrderBy("id", "asc").Limit(200).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load vocabulary cards")
+}
+return response.JSON(map[string]any{"data": cards, "total": total, "due_count": dueCount})
+
+===== kotoba | route:add_card POST /api/kotoba/vocab =====
+user := request.User()
+term := strings.TrimSpace(request.String("term"))
+meaning := strings.TrimSpace(request.String("meaning"))
+if term == "" || meaning == "" {
+    return response.JSON(422, map[string]any{"message": "Term and meaning are required"})
+}
+lang := request.Input("lang")
+if lang == "" || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "A valid language code is required"})
+}
+card, created, err := VocabCard.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID, "lang": lang, "term": term},
+    map[string]any{
+        "meaning": meaning, "example": request.Input("example"),
+        "source": request.InputOr("source", "manual"),
+        "due_date": time.Now().Format("2006-01-02"),
+    },
+)
+if err != nil {
+    return response.Error(500, "Could not save vocabulary card")
+}
+status := 200
+if created {
+    status = 201
+}
+return response.JSON(status, map[string]any{"data": card, "created": created})
+
+===== kotoba | route:review_card POST /api/kotoba/vocab/{id}/review =====
+user := request.User()
+cardID := params.Int(0)
+grade := request.IntOr("grade", 2)
+if grade < 0 {
+    grade = 0
+} else if grade > 3 {
+    grade = 3
+}
+card, err := VocabCard.Query().Where("id", cardID).Where("user_id", user.ID).First(ctx)
+if err != nil || card == nil {
+    return response.Error(404, "Vocabulary card not found")
+}
+ease := card.Ease
+interval := card.IntervalDays
+reps := card.Reps
+lapses := card.Lapses
+due := time.Now()
+if grade == 0 {
+    reps = 0
+    lapses++
+    ease = math.Max(1.3, ease-0.2)
+    interval = 0
+} else {
+    reps++
+    if reps == 1 {
+        interval = 1
+        if grade == 3 {
+            interval = 3
+        }
+    } else if reps == 2 {
+        interval = 4
+        if grade == 1 {
+            interval = 2
+        } else if grade == 3 {
+            interval = 7
+        }
+    } else if reps > 2 {
+        multiplier := ease
+        if grade == 1 {
+            multiplier = 1.2
+        } else if grade == 3 {
+            multiplier = ease * 1.3
+        }
+        interval = int(math.Round(float64(interval) * multiplier))
+        if interval < 1 {
+            interval = 1
+        }
+    }
+    if grade == 1 {
+        ease = math.Max(1.3, ease-0.15)
+    } else if grade == 3 {
+        ease += 0.15
+    }
+    due = due.AddDate(0, 0, interval)
+}
+if err := card.Update(ctx, map[string]any{
+    "ease": ease, "interval_days": interval, "reps": reps,
+    "lapses": lapses, "due_date": due.Format("2006-01-02"),
+}); err != nil {
+    return response.Error(500, "Could not save card review")
+}
+_ = Profile.Query().Where("user_id", user.ID).Increment(ctx, "xp", 2)
+return response.JSON(map[string]any{"data": card})
+
+===== kotoba | route:delete_card DELETE /api/kotoba/vocab/{id} =====
+user := request.User()
+cardID := params.Int(0)
+deleted, err := VocabCard.Query().Where("id", cardID).Where("user_id", user.ID).Delete(ctx)
+if err != nil {
+    return response.Error(500, "Could not delete vocabulary card")
+}
+if deleted == 0 {
+    return response.Error(404, "Vocabulary card not found")
+}
+return response.JSON(map[string]any{"message": "Card deleted"})
+
+===== kotoba | route:partners GET /api/kotoba/partners =====
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+partners, err := Profile.Query().WhereNot("user_id", user.ID).
+    Where("learning_lang", profile.NativeLang).OrderBy("xp", "desc").Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load language partners")
+}
+for _, partner := range partners {
+    partner.Following, _ = Follow.Query().Where("follower_id", user.ID).
+        Where("following_id", partner.UserID).Exists(ctx)
+}
+return response.JSON(map[string]any{"data": partners})
+
+===== kotoba | route:view_profile GET /api/kotoba/profile/{id} =====
+user := request.User()
+targetID := params.Int(0)
+profile, err := Profile.Query().Where("user_id", targetID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+posts, _ := Post.Query().Where("user_id", targetID).OrderBy("created_at", "desc").Limit(30).Get(ctx)
+following, _ := Follow.Query().Where("follower_id", user.ID).Where("following_id", targetID).Exists(ctx)
+followers, _ := Follow.Query().Where("following_id", targetID).Count(ctx)
+return response.JSON(map[string]any{
+    "profile": profile, "posts": posts, "is_following": following, "followers_count": followers,
+})
+
+===== kotoba | route:toggle_follow POST /api/kotoba/follow/{id} =====
+user := request.User()
+targetID := params.Int(0)
+if targetID == user.ID {
+    return response.JSON(422, map[string]any{"message": "You cannot follow yourself"})
+}
+if _, err := Profile.Query().Where("user_id", targetID).First(ctx); err != nil {
+    return response.Error(404, "Learner profile not found")
+}
+follow, err := Follow.Query().Where("follower_id", user.ID).Where("following_id", targetID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check follow status")
+}
+following := follow == nil
+if following {
+    if _, err := Follow.Create(ctx, map[string]any{"follower_id": user.ID, "following_id": targetID}); err != nil {
+        return response.Error(500, "Could not follow learner")
+    }
+    _, _ = Alert.Create(ctx, map[string]any{
+        "user_id": targetID, "kind": "follow", "text": user.Name + " started following you.",
+        "ref": user.ID, "is_read": false,
+    })
+} else if _, err := follow.Delete(ctx); err != nil {
+    return response.Error(500, "Could not unfollow learner")
+}
+return response.JSON(map[string]any{"following": following})
+
+===== kotoba | route:list_conversations GET /api/kotoba/conversations =====
+user := request.User()
+conversations, err := Conversation.Query().
+    WhereAny(map[string]any{"user_a": user.ID, "user_b": user.ID}).
+    OrderBy("last_at", "desc").OrderBy("id", "desc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load conversations")
+}
+return response.JSON(map[string]any{"data": conversations})
+
+===== kotoba | route:start_conversation POST /api/kotoba/conversations =====
+user := request.User()
+otherID := request.Int("user_id")
+if otherID <= 0 || otherID == user.ID {
+    return response.JSON(422, map[string]any{"message": "Choose another learner to start a conversation"})
+}
+lowID, highID := user.ID, otherID
+if lowID > highID {
+    lowID, highID = highID, lowID
+}
+conversation, err := Conversation.Query().Where("user_a", lowID).Where("user_b", highID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not find conversation")
+}
+if conversation == nil {
+    conversation, err = Conversation.Create(ctx, map[string]any{"user_a": lowID, "user_b": highID})
+    if err != nil {
+        return response.Error(500, "Could not start conversation")
+    }
+}
+return response.JSON(201, map[string]any{"data": conversation})
+
+===== kotoba | route:list_messages GET /api/kotoba/messages =====
+user := request.User()
+query := Message.Query()
+if conversationID := request.Int("conversation_id"); conversationID > 0 {
+    conversation, err := Conversation.Find(ctx, conversationID)
+    if err != nil || conversation == nil {
+        return response.Error(404, "Conversation not found")
+    }
+    if conversation.UserA != user.ID && conversation.UserB != user.ID {
+        return response.JSON(403, map[string]any{"message": "Not your conversation"})
+    }
+    query = query.Where("conversation_id", conversationID)
+} else if circleID := request.Int("circle_id"); circleID > 0 {
+    member, err := CircleMember.Query().Where("circle_id", circleID).Where("user_id", user.ID).Exists(ctx)
+    if err != nil {
+        return response.Error(500, "Could not check circle membership")
+    }
+    if !member {
+        return response.JSON(403, map[string]any{"message": "Join this circle first"})
+    }
+    query = query.Where("circle_id", circleID)
+} else {
+    return response.JSON(422, map[string]any{"message": "conversation_id or circle_id required"})
+}
+if afterID := request.Int("after_id"); afterID > 0 {
+    query = query.Where("id", ">", afterID)
+}
+messages, err := query.OrderBy("id", "desc").Limit(100).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load messages")
+}
+messages.Reverse()
+return response.JSON(map[string]any{"data": messages})
+
+===== kotoba | route:send_message POST /api/kotoba/messages =====
+user := request.User()
+conversationID := request.Int("conversation_id")
+body := strings.TrimSpace(request.String("body"))
+lang := request.Input("lang")
+circleID := request.NullableInt("circle_id")
+if body == "" || len(body) > 2000 || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "Message must be 1–2000 characters and language at most 8 characters"})
+}
+var conversation *ConversationRecord
+var conversationRef any
+recipientIDs := []int{}
+if conversationID > 0 {
+    conversation, err = Conversation.Find(ctx, conversationID)
+    if err != nil || conversation == nil {
+        return response.Error(404, "Conversation not found")
+    }
+    if conversation.UserA != user.ID && conversation.UserB != user.ID {
+        return response.JSON(403, map[string]any{"message": "Not your conversation"})
+    }
+    conversationRef = conversationID
+    recipientIDs = []int{conversation.UserA, conversation.UserB}
+    circleID = nil
+} else if circleID != nil {
+    members, err := CircleMember.Query().Where("circle_id", *circleID).Get(ctx)
+    if err != nil {
+        return response.Error(500, "Could not load circle members")
+    }
+    joined := false
+    for _, member := range members {
+        recipientIDs = append(recipientIDs, member.UserID)
+        joined = joined || member.UserID == user.ID
+    }
+    if !joined {
+        return response.JSON(403, map[string]any{"message": "Join this circle first"})
+    }
+} else {
+    return response.JSON(422, map[string]any{"message": "conversation_id or circle_id required"})
+}
+profile, err := Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name},
+)
+if err != nil {
+    return response.Error(500, "Could not load learner profile")
+}
+message, err := Message.Create(ctx, map[string]any{
+    "conversation_id": conversationRef, "circle_id": circleID,
+    "sender_id": user.ID, "sender_name": profile.DisplayName,
+    "sender_color": profile.AvatarColor, "body": body, "lang": lang,
+})
+if err != nil {
+    return response.Error(500, "Could not send message")
+}
+if conversation != nil {
+    preview := body
+    if len(preview) > 200 {
+        preview = preview[:200]
+    }
+    if err := conversation.Update(ctx, map[string]any{"last_message": preview, "last_at": time.Now()}); err != nil {
+        return response.Error(500, "Could not update conversation")
+    }
+}
+payload := message.ToMap()
+scope := "dm"
+if circleID != nil {
+    scope = "circle"
+}
+payload["scope"] = scope
+for _, recipientID := range recipientIDs {
+    if recipientID != user.ID {
+        _ = MessageEvents.Broadcast(ctx, recipientID, payload)
+    }
+}
+wordCount := len(strings.Fields(body))
+if wordCount < 1 {
+    wordCount = 1
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += 3
+profile.WordsWritten += wordCount
+profile.MessagesSent++
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(201, map[string]any{"data": payload})
+
+===== kotoba | route:correct_message POST /api/kotoba/messages/{id}/correct =====
+user := request.User()
+messageID := params.Int(0)
+corrected := strings.TrimSpace(request.String("corrected"))
+note := request.Input("note")
+if corrected == "" || len(corrected) > 2000 || len(note) > 500 {
+    return response.JSON(422, map[string]any{"message": "Correction is required and note must be at most 500 characters"})
+}
+message, err := Message.Find(ctx, messageID)
+if err != nil || message == nil {
+    return response.Error(404, "Message not found")
+}
+if message.SenderID == user.ID {
+    return response.JSON(422, map[string]any{"message": "You cannot correct your own message"})
+}
+recipients := []int{}
+if message.ConversationID != nil {
+    conversation, err := Conversation.Find(ctx, *message.ConversationID)
+    if err == nil && conversation != nil {
+        recipients = []int{conversation.UserA, conversation.UserB}
+    }
+} else if message.CircleID != nil {
+    recipients, _ = CircleMember.Query().Where("circle_id", *message.CircleID).PluckInt(ctx, "user_id")
+}
+isMember := false
+for _, recipientID := range recipients {
+    if recipientID == user.ID {
+        isMember = true
+        break
+    }
+}
+if !isMember {
+    return response.JSON(403, map[string]any{"message": "Not allowed"})
+}
+if err := message.Update(ctx, map[string]any{
+    "corrected": corrected, "note": note, "corrected_by": user.ID,
+}); err != nil {
+    return response.Error(500, "Could not save message correction")
+}
+payload := message.ToMap()
+payload["scope"] = "dm"
+if message.CircleID != nil {
+    payload["scope"] = "circle"
+}
+payload["updated"] = true
+for _, recipientID := range recipients {
+    if recipientID != user.ID {
+        _ = MessageEvents.Broadcast(ctx, recipientID, payload)
+    }
+}
+profile, _ := Profile.Query().Where("user_id", user.ID).First(ctx)
+name := user.Name
+if profile != nil {
+    name = profile.DisplayName
+}
+_, _ = Alert.Create(ctx, map[string]any{
+    "user_id": message.SenderID, "kind": "correction",
+    "text": name + " suggested a correction in chat", "ref": message.ID, "is_read": false,
+})
+profile, err = Profile.FirstOrCreate(ctx,
+    map[string]any{"user_id": user.ID},
+    map[string]any{"display_name": user.Name},
+)
+if err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+today := time.Now().UTC()
+todayKey := today.Format("2006-01-02")
+lastActive := profile.LastActiveDate()
+if lastActive != todayKey {
+    if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
+        profile.Streak++
+    } else {
+        profile.Streak = 1
+    }
+    profile.LastActive = todayKey
+}
+if profile.Streak > profile.BestStreak {
+    profile.BestStreak = profile.Streak
+}
+profile.XP += 10
+if err := profile.Save(ctx); err != nil {
+    return response.Error(500, "Could not update learner progress")
+}
+return response.JSON(map[string]any{"data": payload})
+
+===== kotoba | route:list_circles GET /api/kotoba/circles =====
+user := request.User()
+lang := request.Input("lang")
+circleIDs, err := CircleMember.Query().Where("user_id", user.ID).Pluck(ctx, "circle_id")
+if err != nil {
+    return response.Error(500, "Could not load circle memberships")
+}
+query := Circle.Query().OrderBy("members_count", "desc").OrderBy("id", "desc")
+if lang != "" {
+    query = query.Where("lang", lang)
+}
+circles, err := query.Limit(60).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load circles")
+}
+for _, circle := range circles {
+    circle.Joined = false
+    for _, circleID := range circleIDs {
+        if circleID == circle.ID {
+            circle.Joined = true
+            break
+        }
+    }
+}
+return response.JSON(map[string]any{"data": circles})
+
+===== kotoba | route:create_circle POST /api/kotoba/circles =====
+user := request.User()
+name := strings.TrimSpace(request.String("name"))
+if name == "" || len(name) > 80 {
+    return response.JSON(422, map[string]any{"message": "Circle name must be between 1 and 80 characters"})
+}
+lang := request.Input("lang")
+if lang == "" || len(lang) > 8 {
+    return response.JSON(422, map[string]any{"message": "A valid language code is required"})
+}
+level := request.InputOr("level", "A1")
+if !IsOneOf(level, "A1", "A2", "B1", "B2", "C1", "C2") {
+    return response.JSON(422, map[string]any{"message": "Invalid language level"})
+}
+circle, err := Circle.Create(ctx, map[string]any{
+    "name": name, "emoji": request.InputOr("emoji", "message-circle"),
+    "lang": lang, "level": level, "description": request.Input("description"),
+    "owner_id": user.ID, "members_count": 1,
+})
+if err != nil {
+    return response.Error(500, "Could not create circle")
+}
+if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circle.ID, "user_id": user.ID}); err != nil {
+    return response.Error(500, "Could not add circle owner")
+}
+return response.JSON(201, map[string]any{"data": circle, "joined": true})
+
+===== kotoba | route:toggle_join POST /api/kotoba/circles/{id}/join =====
+user := request.User()
+circleID := params.Int(0)
+circle, err := Circle.Find(ctx, circleID)
+if err != nil || circle == nil {
+    return response.Error(404, "Circle not found")
+}
+membership, err := CircleMember.Query().Where("circle_id", circleID).Where("user_id", user.ID).First(ctx)
+if err != nil {
+    return response.Error(500, "Could not check circle membership")
+}
+joined := membership == nil
+if joined {
+    if _, err := CircleMember.Create(ctx, map[string]any{"circle_id": circleID, "user_id": user.ID}); err != nil {
+        return response.Error(500, "Could not join circle")
+    }
+    _ = circle.Increment(ctx, "members_count", 1)
+} else {
+    if circle.OwnerID == user.ID {
+        return response.JSON(422, map[string]any{"message": "Owners cannot leave their own circle"})
+    }
+    if _, err := membership.Delete(ctx); err != nil {
+        return response.Error(500, "Could not leave circle")
+    }
+    if circle.MembersCount > 1 {
+        _ = circle.Decrement(ctx, "members_count", 1)
+    }
+}
+circle, _ = circle.Refresh(ctx)
+return response.JSON(map[string]any{"joined": joined, "members_count": circle.MembersCount})
+
+===== kotoba | route:list_alerts GET /api/kotoba/alerts =====
+user := request.User()
+alerts, err := Alert.Query().Where("user_id", user.ID).OrderBy("id", "desc").Limit(40).Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load alerts")
+}
+return response.JSON(map[string]any{"data": alerts})
+
+===== kotoba | route:read_alerts POST /api/kotoba/alerts/read =====
+user := request.User()
+updated, err := Alert.Query().Where("user_id", user.ID).Where("is_read", false).
+    Update(ctx, map[string]any{"is_read": true})
+if err != nil {
+    return response.Error(500, "Could not mark alerts as read")
+}
+return response.JSON(map[string]any{"message": "Alerts marked as read", "updated": updated})
+
+===== kotoba | route:progress GET /api/kotoba/progress =====
+user := request.User()
+profile, err := Profile.Query().Where("user_id", user.ID).First(ctx)
+if err != nil || profile == nil {
+    return response.Error(404, "Learner profile not found")
+}
+start := time.Now().UTC().Truncate(24 * time.Hour).AddDate(0, 0, -13)
+days := map[string]int{}
+for i := 0; i < 14; i++ {
+    days[start.AddDate(0, 0, i).Format("2006-01-02")] = 0
+}
+posts, _ := Post.Query().Where("user_id", user.ID).Where("created_at", ">=", start).Get(ctx)
+messages, _ := Message.Query().Where("sender_id", user.ID).Where("created_at", ">=", start).Get(ctx)
+results, _ := LessonResult.Query().Where("user_id", user.ID).Where("updated_at", ">=", start).Get(ctx)
+for _, post := range posts {
+    day := post.CreatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+for _, message := range messages {
+    day := message.CreatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+for _, result := range results {
+    day := result.UpdatedAt.UTC().Format("2006-01-02")
+    days[day]++
+}
+series := make([]map[string]any, 0, 14)
+for i := 0; i < 14; i++ {
+    day := start.AddDate(0, 0, i).Format("2006-01-02")
+    series = append(series, map[string]any{"date": day, "count": days[day]})
+}
+postIDs, _ := Post.Query().Where("user_id", user.ID).Pluck(ctx, "id")
+cards, _ := VocabCard.Query().Where("user_id", user.ID).Count(ctx)
+mastered, _ := VocabCard.Query().Where("user_id", user.ID).Where("reps", ">=", 4).Count(ctx)
+lessonCount, _ := LessonResult.Query().Where("user_id", user.ID).Count(ctx)
+correctionsGiven, _ := Comment.Query().Where("user_id", user.ID).Where("is_correction", true).Count(ctx)
+correctionsReceived, _ := Comment.Query().Where("is_correction", true).WhereIn("post_id", postIDs).Count(ctx)
+correctionsAccepted, _ := Comment.Query().Where("is_correction", true).Where("accepted", true).WhereIn("post_id", postIDs).Count(ctx)
+level := profile.XP/100 + 1
+return response.JSON(map[string]any{
+    "profile": profile, "series": series,
+    "stats": map[string]any{
+        "cards": cards, "mastered": mastered, "lessons": lessonCount,
+        "posts": len(postIDs), "corrections_given": correctionsGiven,
+        "corrections_received": correctionsReceived, "corrections_accepted": correctionsAccepted,
+        "words_written": profile.WordsWritten, "messages_sent": profile.MessagesSent,
+    },
+    "level": level, "level_progress": profile.XP % 100,
+})
+
+===== queue-flow | route:join_queue POST /api/queue-flow/join =====
+queueID := request.Input("queue_id")
+customerName := request.InputOr("customer_name", "Guest")
+queue, err := Queue.FindOrFail(ctx, queueID)
+if err != nil {
+    return response.Error(404, "Queue not found")
+}
+lastPosition, err := Ticket.Query().
+    Where("queue_id", queueID).
+    WhereIn("status", []string{"waiting", "serving"}).
+    Max(ctx, "position")
+if err != nil {
+    return response.Error(500, "Could not determine queue position")
+}
+ticket, err := Ticket.Create(ctx, map[string]any{
+    "queue_id": queueID,
+    "ticket_number": fmt.Sprintf("%s-%03d", queue.Prefix, lastPosition+1),
+    "customer_name": customerName,
+    "status": "waiting",
+    "position": lastPosition + 1,
+})
+if err != nil {
+    return response.Error(500, "Could not create ticket")
+}
+waiting, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    Where("position", "<", ticket.Position).
+    Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not calculate wait time")
+}
+if err := QueueEvents.Broadcast(ctx, "queue-updated", map[string]any{
+    "queue_id": queueID, "action": "joined", "ticket": ticket,
+}); err != nil {
+    Log.Warn("Queue update broadcast failed", map[string]any{"error": err.Error()})
+}
+return response.JSON(map[string]any{
+    "ticket": ticket,
+    "position": waiting + 1,
+    "estimated_wait": waiting * queue.AvgWaitMinutes,
+})
+
+===== queue-flow | route:call_next POST /api/queue-flow/call-next =====
+queueID := request.Input("queue_id")
+if _, err := Ticket.Query().Where("queue_id", queueID).Where("status", "serving").
+    Update(ctx, map[string]any{"status": "done", "served_at": time.Now()}); err != nil {
+    return response.Error(500, "Could not finish the serving ticket")
+}
+next, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    OrderBy("position", "asc").
+    First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load the next ticket")
+}
+if next == nil {
+    return response.JSON(map[string]any{"message": "No more tickets in queue", "ticket": nil})
+}
+if err := next.Update(ctx, map[string]any{"status": "serving", "called_at": time.Now()}); err != nil {
+    return response.Error(500, "Could not call the next ticket")
+}
+if err := QueueEvents.Broadcast(ctx, "queue-updated", map[string]any{
+    "queue_id": queueID, "action": "called", "ticket": next,
+}); err != nil {
+    Log.Warn("Queue update broadcast failed", map[string]any{"error": err.Error()})
+}
+return response.JSON(map[string]any{"ticket": next})
+
+===== queue-flow | route:queue_status GET /api/queue-flow/status/{queue_id} =====
+queueID := params[0]
+queue, err := Queue.FindOrFail(ctx, queueID)
+if err != nil {
+    return response.Error(404, "Queue not found")
+}
+serving, err := Ticket.Query().Where("queue_id", queueID).Where("status", "serving").First(ctx)
+if err != nil {
+    return response.Error(500, "Could not load serving ticket")
+}
+waiting, err := Ticket.Query().Where("queue_id", queueID).Where("status", "waiting").OrderBy("position", "asc").Get(ctx)
+if err != nil {
+    return response.Error(500, "Could not load waiting tickets")
+}
+doneCount, err := Ticket.Query().Where("queue_id", queueID).Where("status", "done").Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not count completed tickets")
+}
+return response.JSON(map[string]any{
+    "queue": queue, "serving": serving, "waiting": waiting,
+    "done_count": doneCount, "total_waiting": len(waiting),
+})
+
+===== queue-flow | route:my_ticket GET /api/queue-flow/my-ticket/{queue_id}/{ticket_number} =====
+queueID, ticketNumber := params[0], params[1]
+ticket, err := Ticket.Query().
+    Where("ticket_number", ticketNumber).
+    Where("queue_id", queueID).
+    First(ctx)
+if err != nil || ticket == nil {
+    return response.Error(404, "Ticket not found")
+}
+ahead, err := Ticket.Query().
+    Where("queue_id", queueID).
+    Where("status", "waiting").
+    Where("position", "<", ticket.Position).
+    Count(ctx)
+if err != nil {
+    return response.Error(500, "Could not calculate ticket position")
+}
+queue, _ := Queue.Find(ctx, queueID)
+waitMinutes := 5
+if queue != nil {
+    waitMinutes = queue.AvgWaitMinutes
+}
+position := 0
+if ticket.Status == "waiting" {
+    position = ahead + 1
+}
+return response.JSON(map[string]any{
+    "ticket": ticket, "position": position, "estimated_wait": ahead * waitMinutes,
+    "is_serving": ticket.Status == "serving", "is_done": ticket.Status == "done",
+})
+
+===== roles-test | api: op:adminOnly =====
+user := request.User()
+granted := user != nil && user.Role == "admin"
+var userID any
+if user != nil {
+    userID = user.ID
+}
+_, err := RoleAuditLog.Create(ctx, map[string]any{
+    "user_id": userID, "action": "GET /admin-only",
+    "role_required": "admin", "granted": granted,
+})
+if err != nil {
+    return response.Error(500, "Could not record role audit")
+}
+if !granted {
+    return response.JSON(403, map[string]any{"message": "✗ Access denied — admin role required"})
+}
+return response.JSON(map[string]any{"message": "✓ Access granted — you are admin"})
+
+===== roles-test | api: op:demote =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if err := user.Update(ctx, map[string]any{"role": "user"}); err != nil {
+    return response.Error(500, "Could not demote user")
+}
+updated, err := user.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload user")
+}
+return response.JSON(map[string]any{"message": "Demoted to user", "user": updated})
+
+===== roles-test | api: op:promote =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if err := user.Update(ctx, map[string]any{"role": "admin"}); err != nil {
+    return response.Error(500, "Could not promote user")
+}
+updated, err := user.Refresh(ctx)
+if err != nil {
+    return response.Error(500, "Could not reload user")
+}
+return response.JSON(map[string]any{"message": "Promoted to admin", "user": updated})
+
+===== roles-test | api: op:userOnly =====
+user := request.User()
+if user == nil {
+    return response.JSON(401, map[string]any{"message": "Unauthenticated"})
+}
+if _, err := RoleAuditLog.Create(ctx, map[string]any{
+    "user_id": user.ID, "action": "GET /user-only",
+    "role_required": "user", "granted": true,
+}); err != nil {
+    return response.Error(500, "Could not record role audit")
+}
+return response.JSON(map[string]any{"message": "✓ Access granted — open to all authenticated users"})

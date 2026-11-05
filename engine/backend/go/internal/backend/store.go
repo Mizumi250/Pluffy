@@ -12,20 +12,35 @@ import (
 )
 
 type Registration struct {
-	Name           string            `json:"name"`
-	BackendVariant string            `json:"backendVariant"`
-	Auth           bool              `json:"auth,omitempty"`
-	Tables         []string          `json:"tables"`
-	APIs           []APIBlock        `json:"apis,omitempty"`
-	CustomRoutes   []CustomRoute     `json:"customRoutes,omitempty"`
-	Realtimes      []string          `json:"realtimes,omitempty"`
-	Events         []string          `json:"events,omitempty"`
-	Jobs           []string          `json:"jobs,omitempty"`
-	Notifications  []string          `json:"notifications,omitempty"`
-	Consoles       []string          `json:"consoles,omitempty"`
-	Mails          []string          `json:"mails,omitempty"`
-	PolicySnippets map[string]string `json:"policySnippets,omitempty"`
-	RegisteredAt   time.Time         `json:"registeredAt"`
+	Name            string               `json:"name"`
+	BackendVariant  string               `json:"backendVariant"`
+	Auth            bool                 `json:"auth,omitempty"`
+	Tables          []string             `json:"tables"`
+	Databases       []DatabaseDefinition `json:"databases,omitempty"`
+	APIs            []APIBlock           `json:"apis,omitempty"`
+	GeneratedRoutes []GeneratedRoute     `json:"generatedRoutes,omitempty"`
+	GeneratedFiles  []string             `json:"generatedFiles,omitempty"`
+	CustomRoutes    []CustomRoute        `json:"customRoutes,omitempty"`
+	Realtimes       []string             `json:"realtimes,omitempty"`
+	Events          []string             `json:"events,omitempty"`
+	Jobs            []string             `json:"jobs,omitempty"`
+	Notifications   []string             `json:"notifications,omitempty"`
+	Consoles        []string             `json:"consoles,omitempty"`
+	Mails           []string             `json:"mails,omitempty"`
+	PolicySnippets  map[string]string    `json:"policySnippets,omitempty"`
+	RegisteredAt    time.Time            `json:"registeredAt"`
+}
+
+type GeneratedRoute struct {
+	Kind             string `json:"kind"`
+	APIIndex         int    `json:"apiIndex,omitempty"`
+	CustomGroupIndex int    `json:"customGroupIndex,omitempty"`
+	CustomRouteIndex int    `json:"customRouteIndex,omitempty"`
+	Operation        string `json:"operation,omitempty"`
+	Method           string `json:"method"`
+	Pattern          string `json:"pattern"`
+	Controller       string `json:"controller,omitempty"`
+	Handler          string `json:"handler,omitempty"`
 }
 
 type registryFile struct {
@@ -70,6 +85,13 @@ func (s *Store) List() []Registration {
 	s.mu.RLock()
 	defer s.mu.RUnlock()
 	return sortedRegistrations(s.modules)
+}
+
+func (s *Store) Registration(name string) (Registration, bool) {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	registration, exists := s.modules[name]
+	return registration, exists
 }
 
 func (s *Store) Register(registration Registration) error {

@@ -10,6 +10,13 @@ minute-resolution cron scheduler. The built-in `job-test` and `scheduler-test`
 handlers are emulated. Kotoba's allowlisted named custom routes are implemented with
 explicit Go emulations; arbitrary `:go` source is never executed.
 
+Each build generates `models.go`, `controllers.go`, `routes.go`, and `module.go`
+under `storage/generated/<tatemono>`. Generated Go is formatted and type-checked
+before registration; the persisted generated route manifest drives request
+dispatch. Startup regenerates artifacts for persisted modules, and removing a
+module removes its generated directory. This source generation does not enable
+arbitrary `:go` body execution; feature operations remain allowlisted.
+
 ## Run
 
 Install Go 1.22 or newer, then from this directory:
@@ -62,7 +69,17 @@ standard CRUD paths. Configured `index`, `show`, `store`, `update`, and
 `destroy` routes use each endpoint's method and path; `store` and `update`
 apply common `required`, `sometimes`, `nullable`, `string`, `integer`,
 `numeric`, `boolean`, `min`, `max`, `in`, and `unique` validation rules.
-Declared response message values are honored for destroy. For example:
+Declared response message values are honored for destroy.
+
+Each build generates `models.go`, `controllers.go`, `routes.go`, and `module.go`
+under `storage/generated/<tatemono>`. Generated Go is formatted and type-checked
+before it is registered; the persisted generated route manifest drives runtime
+dispatch. Startup regenerates artifacts for persisted modules, and remove deletes
+the module's generated directory. Go DSL bodies are still never executed as
+arbitrary source; feature-specific operations remain behind the documented
+allowlist.
+
+For example:
 
 ```json
 {

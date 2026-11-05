@@ -16,7 +16,17 @@ type Config struct {
 	RealtimeSecret string
 	Secret         string
 	StorageDir     string
+	GeneratedDir   string
 	RootDir        string
+}
+
+// generatedDirFor keeps the compiled module tree next to the module root
+// (engine/backend/go/generated) regardless of where storage lives.
+func generatedDirFor(storageDir string) string {
+	if absolute, err := filepath.Abs(storageDir); err == nil {
+		return filepath.Join(filepath.Dir(absolute), "generated")
+	}
+	return filepath.Join(filepath.Dir(storageDir), "generated")
 }
 
 func LoadConfig() (Config, error) {
@@ -67,6 +77,12 @@ func LoadConfig() (Config, error) {
 		Port: port, RealtimePort: realtimePort, RealtimeAppKey: realtimeAppKey,
 		RealtimeSecret: realtimeSecret, Secret: secret, StorageDir: storageDir, RootDir: rootDir,
 	}, nil
+}
+
+func (c *Config) applyGeneratedDir() {
+	if c.GeneratedDir == "" {
+		c.GeneratedDir = generatedDirFor(c.StorageDir)
+	}
 }
 
 func (c Config) Address() string {

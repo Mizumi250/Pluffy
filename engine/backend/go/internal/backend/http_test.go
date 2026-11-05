@@ -58,6 +58,16 @@ func TestEngineContractAndPersistentRegistration(t *testing.T) {
 	if buildResponse["success"] != true {
 		t.Fatalf("build response is not successful: %s", built.Body.String())
 	}
+	generatedDirectory := filepath.Join(storageDir, "generated", "go-contract")
+	for _, name := range []string{"models.go", "controllers.go", "routes.go", "module.go"} {
+		if _, err := os.Stat(filepath.Join(generatedDirectory, name)); err != nil {
+			t.Fatalf("generated source %q is missing: %v", name, err)
+		}
+	}
+	registrations := handler.service.Registrations()
+	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 0 || len(registrations[0].GeneratedFiles) != 4 {
+		t.Fatalf("generated registration metadata = %#v", registrations)
+	}
 
 	databasePath := filepath.Join(storageDir, "databases", "go-contract.sqlite")
 	db, err := sql.Open("sqlite", databasePath)
@@ -82,9 +92,15 @@ func TestEngineContractAndPersistentRegistration(t *testing.T) {
 		t.Fatalf("close generated database: %v", err)
 	}
 
+	if err := os.RemoveAll(generatedDirectory); err != nil {
+		t.Fatalf("remove generated sources before restart: %v", err)
+	}
 	restarted, err := NewHandler(config)
 	if err != nil {
 		t.Fatalf("restart handler: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(generatedDirectory, "routes.go")); err != nil {
+		t.Fatalf("generated routes were not restored on startup: %v", err)
 	}
 	registry := httptest.NewRecorder()
 	restarted.ServeHTTP(registry, httptest.NewRequest(http.MethodGet, "/arkzen/registry", nil))
@@ -95,6 +111,9 @@ func TestEngineContractAndPersistentRegistration(t *testing.T) {
 	removed := perform(restarted, http.MethodPost, "/arkzen/remove", `{"name":"go-contract"}`, config.Secret)
 	if removed.Code != http.StatusOK {
 		t.Fatalf("remove status = %d, response = %s", removed.Code, removed.Body.String())
+	}
+	if _, err := os.Stat(generatedDirectory); !os.IsNotExist(err) {
+		t.Fatalf("generated module sources still exist after remove (stat error = %v)", err)
 	}
 	if _, err := os.Stat(databasePath); !os.IsNotExist(err) {
 		t.Fatalf("database still exists after remove (stat error = %v)", err)
@@ -145,6 +164,16 @@ func TestBuildRegistersLiveCRUDRoutesAndPersistsThem(t *testing.T) {
 	built := perform(handler, http.MethodPost, "/arkzen/build", build, config.Secret)
 	if built.Code != http.StatusOK {
 		t.Fatalf("build status = %d, response = %s", built.Code, built.Body.String())
+	}
+	generatedDirectory := filepath.Join(storageDir, "generated", "crud-module")
+	for _, name := range []string{"models.go", "controllers.go", "routes.go", "module.go"} {
+		if _, err := os.Stat(filepath.Join(generatedDirectory, name)); err != nil {
+			t.Fatalf("generated source %q is missing: %v", name, err)
+		}
+	}
+	registrations := handler.service.Registrations()
+	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 5 || len(registrations[0].GeneratedFiles) != 4 {
+		t.Fatalf("generated registration metadata = %#v", registrations)
 	}
 
 	created := perform(handler, http.MethodPost, "/api/inventory/items", `{"title":"Keyboard","quantity":4}`, "")
@@ -600,6 +629,7 @@ func TestLowStockEndpointEmulation(t *testing.T) {
 			"quantity":{"type":"integer","default":0}
 		}}],
 		"apis":[{"name":"inventories","model":"Inventory","controller":"InventoryController","table":"inventories","prefix":"/api/inventories","endpoints":{
+			"show":{"method":"GET","route":"/{id}"},
 			"store":{"method":"POST","route":"/","validation":{"name":"required|string","quantity":"required|integer|min:0"}},
 			"lowStock":{"method":"GET","route":"/low-stock","body":"bG93IHN0b2NrIGVtdWxhdGlvbg=="}
 		}}]
@@ -628,6 +658,11 @@ func TestLowStockEndpointEmulation(t *testing.T) {
 	}
 	if bytes.Index(response.Body.Bytes(), []byte(`"name":"zero"`)) > bytes.Index(response.Body.Bytes(), []byte(`"name":"low"`)) {
 		t.Fatalf("low-stock records are not quantity-ordered: %s", response.Body.String())
+	}
+	item := httptest.NewRecorder()
+	handler.ServeHTTP(item, httptest.NewRequest(http.MethodGet, "/api/inventories/1", nil))
+	if item.Code != http.StatusOK || !bytes.Contains(item.Body.Bytes(), []byte(`"name":"zero"`)) {
+		t.Fatalf("parameter route stopped matching after static route: status = %d, body = %s", item.Code, item.Body.String())
 	}
 }
 
