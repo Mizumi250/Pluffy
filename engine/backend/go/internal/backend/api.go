@@ -798,14 +798,16 @@ func (h *Handler) storeRecord(w http.ResponseWriter, r *http.Request, db *sql.DB
 	if !ok {
 		return
 	}
-	if problems := validateInput(input, api.Endpoints["store"].Validation, columns, true); len(problems) > 0 {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": problems})
+	validated, problems, err := validateCRUDInput(db, table, input, api.Endpoints["store"].Validation, columns, primary, "")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to validate request"})
 		return
 	}
-	if err := validateUniqueValues(db, table, input, api.Endpoints["store"].Validation, columns, "", ""); err != nil {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{err.Error()}})
+	if problems.any() {
+		writeValidationErrors(w, problems)
 		return
 	}
+	input = validated
 	prepareTimestamps(input, columns, true)
 	record, err := insertRecord(db, table, input, columns, primary)
 	if err != nil {
@@ -820,23 +822,26 @@ func (h *Handler) updateRecord(w http.ResponseWriter, r *http.Request, db *sql.D
 	if !ok {
 		return
 	}
-	if len(input) == 0 {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{"At least one field is required"}})
+	validated, problems, err := validateCRUDInput(db, table, input, api.Endpoints["update"].Validation, columns, primary, id)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to validate request"})
 		return
 	}
-	if problems := validateInput(input, api.Endpoints["update"].Validation, columns, false); len(problems) > 0 {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": problems})
+	if problems.any() {
+		writeValidationErrors(w, problems)
 		return
 	}
-	if err := validateUniqueValues(db, table, input, api.Endpoints["update"].Validation, columns, primary, id); err != nil {
-		writeJSON(w, http.StatusUnprocessableEntity, map[string]any{"message": "Validation failed", "errors": []string{err.Error()}})
-		return
-	}
+	input = validated
 	if api.Policy && !h.authorizeCRUDPolicy(w, db, api, policies, "update", primary, id) {
 		return
 	}
 	prepareTimestamps(input, columns, false)
-	if err := updateRecordFields(db, table, input, columns, primary, id, api.SoftDeletes); err != nil {
+	if len(input) == 0 {
+		if _, err := selectRecord(db, table, api, primary, id); errors.Is(err, sql.ErrNoRows) {
+			writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
+			return
+		}
+	} else if err := updateRecordFields(db, table, input, columns, primary, id, api.SoftDeletes); err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
 			return
@@ -1104,116 +1109,6 @@ func prepareTimestamps(input map[string]any, columns map[string]struct{}, creati
 	}
 }
 
-func validateInput(input map[string]any, rules map[string]string, columns map[string]struct{}, creating bool) []string {
-	var problems []string
-	for name := range input {
-		if _, exists := columns[name]; !exists || name == "id" || name == "created_at" || name == "updated_at" || name == "deleted_at" {
-			problems = append(problems, fmt.Sprintf("Field %q is not writable", name))
-			continue
-		}
-	}
-	for name, ruleSet := range rules {
-		value, provided := input[name]
-		rules := strings.Split(ruleSet, "|")
-		required := false
-		nullable := false
-		for _, rule := range rules {
-			switch rule {
-			case "required":
-				required = true
-			case "nullable":
-				nullable = true
-			}
-		}
-		if !provided {
-			if required && creating {
-				problems = append(problems, fmt.Sprintf("Field %q is required", name))
-			}
-			continue
-		}
-		if value == nil && nullable {
-			if required {
-				problems = append(problems, fmt.Sprintf("Field %q is required", name))
-				continue
-			}
-			continue
-		}
-		if required {
-			if text, ok := value.(string); ok && strings.TrimSpace(text) == "" {
-				problems = append(problems, fmt.Sprintf("Field %q is required", name))
-				continue
-			}
-		}
-		for _, rule := range rules {
-			if err := validateRule(value, rule); err != nil {
-				problems = append(problems, fmt.Sprintf("Field %q %s", name, err))
-			}
-		}
-	}
-	return problems
-}
-
-func validateRule(value any, rule string) error {
-	if value == nil {
-		return nil
-	}
-	switch {
-	case rule == "required" || rule == "sometimes" || rule == "nullable" || rule == "":
-		return nil
-	case rule == "string":
-		if _, ok := value.(string); !ok {
-			return errors.New("must be a string")
-		}
-	case rule == "integer":
-		if _, ok := numericValue(value); !ok {
-			return errors.New("must be an integer")
-		} else if _, err := strconv.ParseInt(fmt.Sprint(value), 10, 64); err != nil {
-			return errors.New("must be an integer")
-		}
-	case rule == "numeric":
-		if _, ok := numericValue(value); !ok {
-			return errors.New("must be numeric")
-		}
-	case rule == "boolean":
-		switch value.(type) {
-		case bool:
-		default:
-			return errors.New("must be a boolean")
-		}
-	case strings.HasPrefix(rule, "max:"):
-		limit, err := strconv.ParseFloat(strings.TrimPrefix(rule, "max:"), 64)
-		if err != nil {
-			return nil
-		}
-		if text, ok := value.(string); ok && float64(len([]rune(text))) > limit {
-			return fmt.Errorf("must have at most %s characters", strings.TrimPrefix(rule, "max:"))
-		}
-		if number, ok := numericValue(value); ok && number > limit {
-			return fmt.Errorf("must be at most %s", strings.TrimPrefix(rule, "max:"))
-		}
-	case strings.HasPrefix(rule, "min:"):
-		limit, err := strconv.ParseFloat(strings.TrimPrefix(rule, "min:"), 64)
-		if err != nil {
-			return nil
-		}
-		if text, ok := value.(string); ok && float64(len([]rune(text))) < limit {
-			return fmt.Errorf("must have at least %s characters", strings.TrimPrefix(rule, "min:"))
-		}
-		if number, ok := numericValue(value); ok && number < limit {
-			return fmt.Errorf("must be at least %s", strings.TrimPrefix(rule, "min:"))
-		}
-	case strings.HasPrefix(rule, "in:"):
-		text := fmt.Sprint(value)
-		for _, option := range strings.Split(strings.TrimPrefix(rule, "in:"), ",") {
-			if text == option {
-				return nil
-			}
-		}
-		return errors.New("has an unsupported value")
-	}
-	return nil
-}
-
 func numericValue(value any) (float64, bool) {
 	switch typed := value.(type) {
 	case float64:
@@ -1225,34 +1120,4 @@ func numericValue(value any) (float64, bool) {
 	default:
 		return 0, false
 	}
-}
-
-func validateUniqueValues(db *sql.DB, table string, input map[string]any, rules map[string]string, columns map[string]struct{}, primary, exceptID string) error {
-	for name, ruleSet := range rules {
-		if !strings.Contains("|"+ruleSet+"|", "|unique:") {
-			continue
-		}
-		value, supplied := input[name]
-		if !supplied || value == nil {
-			continue
-		}
-		if _, exists := columns[name]; !exists {
-			continue
-		}
-		query := "SELECT 1 FROM " + table + " WHERE " + quoteIdentifier(name) + " = ?"
-		args := []any{value}
-		if exceptID != "" {
-			query += " AND " + quoteIdentifier(primary) + " != ?"
-			args = append(args, exceptID)
-		}
-		var found int
-		err := db.QueryRow(query, args...).Scan(&found)
-		if err == nil {
-			return fmt.Errorf("Field %q must be unique", name)
-		}
-		if !errors.Is(err, sql.ErrNoRows) {
-			return err
-		}
-	}
-	return nil
 }

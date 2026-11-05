@@ -360,6 +360,64 @@ return new Dictionary<string, object?>
 };
 /* @arkzen:notifications:cs:all-channels:end */
 
+/* @arkzen:notifications:go:database-ping
+channels: [database]
+message: "You have a new database notification"
+subject: "Database Ping"
+*/
+return NotificationMessage{
+    Subject: "Database Ping",
+    Lines: []string{"You have a new database notification"},
+}
+/* @arkzen:notifications:go:database-ping:end */
+
+/* @arkzen:notifications:go:mail-ping
+channels: [mail]
+message: "This is a test mail notification"
+subject: "Mail Ping from Arkzen"
+*/
+return NotificationMessage{
+    Subject: "Mail Ping from Arkzen",
+    Lines: []string{"This is a test mail notification"},
+}
+/* @arkzen:notifications:go:mail-ping:end */
+
+/* @arkzen:notifications:go:broadcast-ping
+channels: [broadcast, database]
+channel_type: private
+message: "Real-time notification received on your private channel!"
+subject: "Broadcast Ping (Private)"
+*/
+return NotificationMessage{
+    Subject: "Broadcast Ping (Private)",
+    Lines: []string{"Real-time notification received on your private channel!"},
+}
+/* @arkzen:notifications:go:broadcast-ping:end */
+
+/* @arkzen:notifications:go:broadcast-ping-public
+channels: [broadcast, database]
+channel_type: public
+message: "This broadcast went to the public notification channel!"
+subject: "Broadcast Ping (Public)"
+*/
+return NotificationMessage{
+    Subject: "Broadcast Ping (Public)",
+    Lines: []string{"This broadcast went to the public notification channel!"},
+}
+/* @arkzen:notifications:go:broadcast-ping-public:end */
+
+/* @arkzen:notifications:go:all-channels
+channels: [database, mail, broadcast]
+channel_type: private
+message: "This notification was sent to all three channels simultaneously"
+subject: "All Channels Test"
+*/
+return NotificationMessage{
+    Subject: "All Channels Test",
+    Lines: []string{"This notification was sent to all three channels simultaneously"},
+}
+/* @arkzen:notifications:go:all-channels:end */
+
 /* @arkzen:web:components:shared */
 
 'use client'

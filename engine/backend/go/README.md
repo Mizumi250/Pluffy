@@ -67,8 +67,12 @@ names are resolved explicitly or from the model name (for example `Item` to
 defaults to `/api/<tatemono-name>`, and an omitted endpoints map registers the
 standard CRUD paths. Configured `index`, `show`, `store`, `update`, and
 `destroy` routes use each endpoint's method and path; `store` and `update`
-apply common `required`, `sometimes`, `nullable`, `string`, `integer`,
-`numeric`, `boolean`, `min`, `max`, `in`, and `unique` validation rules.
+validate with Laravel rule strings (`required`, `sometimes`, `nullable`, `string`,
+`integer`, `numeric`, `boolean`, `email`, `url`, `date`, `uuid`, `array`, `min`,
+`max`, `between`, `size`, `in`, `regex`, `confirmed`, `unique`, `exists`, the
+`required_*` family, and wildcard keys). Failures return Laravel's 422 shape
+(`message` plus `errors` keyed by field). Only keys that have rules are saved;
+unknown and protected keys are ignored.
 Declared response message values are honored for destroy.
 
 Each build generates `models.go`, `controllers.go`, `routes.go`, and `module.go`
