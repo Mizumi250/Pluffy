@@ -505,13 +505,6 @@ func resolveBroadcastEvent(registration Registration, channelType string, userID
 	return "", "", false
 }
 
-func (h *Handler) broadcastRealtime(registration Registration, channelType string, userID int64, data any) {
-	channel, event, found := resolveBroadcastEvent(registration, channelType, userID)
-	if found {
-		h.realtime.BroadcastTo(channel, event, data)
-	}
-}
-
 func nullableString(value string, ok bool) any {
 	if !ok {
 		return nil

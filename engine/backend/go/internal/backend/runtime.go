@@ -6,10 +6,12 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"path"
 	"reflect"
 	"regexp"
+	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -99,6 +101,13 @@ func (s *Service) moduleRuntimeFor(name string) (*moduleRuntime, error) {
 func (s *Service) invalidateModuleRuntime(name string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	s.dropModuleRuntimeLocked(name)
+}
+
+// dropModuleRuntimeLocked forgets a module's interpreter. The caller must
+// already hold s.mu (Build and Remove do); taking it again here would
+// deadlock, because sync.Mutex is not reentrant.
+func (s *Service) dropModuleRuntimeLocked(name string) {
 	delete(s.runtimes, name)
 }
 
@@ -1195,7 +1204,17 @@ type interpretedRun struct {
 
 // Execute compiles (and caches) the operation's universe, runs it against a
 // fresh session, and returns the encoded response.
-func (m *moduleRuntime) Execute(w http.ResponseWriter, r *http.Request, spec modulespec.EndpointSpec, module Registration) interpretedRun {
+func (m *moduleRuntime) Execute(w http.ResponseWriter, r *http.Request, spec modulespec.EndpointSpec, module Registration) (run interpretedRun) {
+	// Interpreted bodies can panic (nil dereference, bad type assertion). Left
+	// unrecovered, net/http drops the connection and the client sees a bare
+	// "socket hang up"; answer a JSON 500 and log the stack instead.
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("[error] %s: interpreted handler %q panicked: %v\n%s", module.Name, spec.Operation, recovered, debug.Stack())
+			payload, _ := json.Marshal(map[string]string{"message": fmt.Sprintf("Handler %q panicked: %v", spec.Operation, recovered)})
+			run = interpretedRun{Status: http.StatusInternalServerError, Bytes: payload}
+		}
+	}()
 	anyValue, runErr, problem := m.run(w, r, spec, module)
 	if problem != "" {
 		return interpretedRun{Problem: problem}
@@ -1461,44 +1480,44 @@ func isGoIdentifier(name string) bool {
 // rtYaegiExports registers the arkzen/rt host package symbols with yaegi.
 func rtYaegiExports() interp.Exports {
 	return interp.Exports{"arkzen/rt/rt": map[string]reflect.Value{
-		"Session":         reflect.ValueOf((*rt.Session)(nil)),
-		"Services":        reflect.ValueOf((*rt.Services)(nil)),
-		"Request":         reflect.ValueOf((*rt.Request)(nil)),
-		"Response":        reflect.ValueOf((*rt.Response)(nil)),
-		"Result":          reflect.ValueOf((*rt.Result)(nil)),
-		"User":            reflect.ValueOf((*rt.User)(nil)),
-		"Params":          reflect.ValueOf(rt.Params(nil)),
-		"Database":        reflect.ValueOf((*rt.Database)(nil)),
-		"Where":           reflect.ValueOf(rt.Where{}),
-		"Filter":          reflect.ValueOf(rt.Filter{}),
-		"Order":           reflect.ValueOf(rt.Order{}),
-		"Get":             reflect.ValueOf(rt.Get),
-		"PutSession":      reflect.ValueOf(rt.PutSession),
-		"ReleaseSession":  reflect.ValueOf(rt.ReleaseSession),
-		"NewSessionID":    reflect.ValueOf(rt.NewSessionID),
-		"NewDatabase":     reflect.ValueOf(rt.NewDatabase),
-		"NewRequest":      reflect.ValueOf(rt.NewRequest),
-		"NewResponse":     reflect.ValueOf(rt.NewResponse),
-		"NewUser":         reflect.ValueOf(rt.NewUser),
-		"SimpleFilter":    reflect.ValueOf(rt.SimpleFilter),
-		"NewWhere":        reflect.ValueOf(rt.NewWhere),
-		"MakeWhere":       reflect.ValueOf(rt.MakeWhere),
-		"MakeFilter":      reflect.ValueOf(rt.MakeFilter),
-		"ParseWhereKV":    reflect.ValueOf(rt.ParseWhereKV),
-		"NewOrder":        reflect.ValueOf(rt.NewOrder),
-		"FlattenValues":   reflect.ValueOf(rt.FlattenValues),
-		"Hydrate":         reflect.ValueOf(rt.Hydrate),
-		"StructToMap":     reflect.ValueOf(rt.StructToMap),
-		"EncodeResult":    reflect.ValueOf(rt.EncodeResult),
-		"ToGeneric":       reflect.ValueOf(rt.ToGeneric),
-		"ParseTimeValue":  reflect.ValueOf(rt.ParseTimeValue),
-		"AsString":        reflect.ValueOf(rt.AsString),
-		"AsInt64":         reflect.ValueOf(rt.AsInt64),
-		"AsFloat64":       reflect.ValueOf(rt.AsFloat64),
-		"AsBool":          reflect.ValueOf(rt.AsBool),
-		"AsMap":           reflect.ValueOf(rt.AsMap),
-		"IsEmail":         reflect.ValueOf(rt.IsEmail),
-		"IsOneOf":         reflect.ValueOf(rt.IsOneOf),
+		"Session":        reflect.ValueOf((*rt.Session)(nil)),
+		"Services":       reflect.ValueOf((*rt.Services)(nil)),
+		"Request":        reflect.ValueOf((*rt.Request)(nil)),
+		"Response":       reflect.ValueOf((*rt.Response)(nil)),
+		"Result":         reflect.ValueOf((*rt.Result)(nil)),
+		"User":           reflect.ValueOf((*rt.User)(nil)),
+		"Params":         reflect.ValueOf(rt.Params(nil)),
+		"Database":       reflect.ValueOf((*rt.Database)(nil)),
+		"Where":          reflect.ValueOf(rt.Where{}),
+		"Filter":         reflect.ValueOf(rt.Filter{}),
+		"Order":          reflect.ValueOf(rt.Order{}),
+		"Get":            reflect.ValueOf(rt.Get),
+		"PutSession":     reflect.ValueOf(rt.PutSession),
+		"ReleaseSession": reflect.ValueOf(rt.ReleaseSession),
+		"NewSessionID":   reflect.ValueOf(rt.NewSessionID),
+		"NewDatabase":    reflect.ValueOf(rt.NewDatabase),
+		"NewRequest":     reflect.ValueOf(rt.NewRequest),
+		"NewResponse":    reflect.ValueOf(rt.NewResponse),
+		"NewUser":        reflect.ValueOf(rt.NewUser),
+		"SimpleFilter":   reflect.ValueOf(rt.SimpleFilter),
+		"NewWhere":       reflect.ValueOf(rt.NewWhere),
+		"MakeWhere":      reflect.ValueOf(rt.MakeWhere),
+		"MakeFilter":     reflect.ValueOf(rt.MakeFilter),
+		"ParseWhereKV":   reflect.ValueOf(rt.ParseWhereKV),
+		"NewOrder":       reflect.ValueOf(rt.NewOrder),
+		"FlattenValues":  reflect.ValueOf(rt.FlattenValues),
+		"Hydrate":        reflect.ValueOf(rt.Hydrate),
+		"StructToMap":    reflect.ValueOf(rt.StructToMap),
+		"EncodeResult":   reflect.ValueOf(rt.EncodeResult),
+		"ToGeneric":      reflect.ValueOf(rt.ToGeneric),
+		"ParseTimeValue": reflect.ValueOf(rt.ParseTimeValue),
+		"AsString":       reflect.ValueOf(rt.AsString),
+		"AsInt64":        reflect.ValueOf(rt.AsInt64),
+		"AsFloat64":      reflect.ValueOf(rt.AsFloat64),
+		"AsBool":         reflect.ValueOf(rt.AsBool),
+		"AsMap":          reflect.ValueOf(rt.AsMap),
+		"IsEmail":        reflect.ValueOf(rt.IsEmail),
+		"IsOneOf":        reflect.ValueOf(rt.IsOneOf),
 	}}
 }
 
@@ -1518,7 +1537,7 @@ func chiRouteParams(r *http.Request) map[string]string {
 			if index < len(routeContext.URLParams.Values) {
 				result[key] = routeContext.URLParams.Values[index]
 			}
-			}
+		}
 	}
 	if len(result) == 0 && r.URL != nil {
 		// Endpoint patterns use {name} segments; fall back to splitting the
@@ -1657,10 +1676,10 @@ func (s *Service) runtimeServices(registration Registration, database *sql.DB) r
 		Broadcast: func(section string, target any, payload map[string]any) error {
 			return broadcast(name, section, target, payload)
 		},
-		Log: func(level, message string, meta map[string]any) { logger(level, name, message, meta) },
-		MailSend:  mailSend,
-		MailClass: mailClass,
-		NotifySend: func(user *rt.User, key, message string) error { return notifySend(user, key, message) },
+		Log:         func(level, message string, meta map[string]any) { logger(level, name, message, meta) },
+		MailSend:    mailSend,
+		MailClass:   mailClass,
+		NotifySend:  func(user *rt.User, key, message string) error { return notifySend(user, key, message) },
 		NotifyClass: notificationClass,
 		ResolvedName: func(key string) string {
 			if value, exists := resolvedNames[key]; exists {

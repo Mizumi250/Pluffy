@@ -48,10 +48,6 @@ func (v *validationErrors) add(key, message string) {
 	v.messages[key] = append(v.messages[key], message)
 }
 
-func (v *validationErrors) has(key string) bool {
-	return len(v.messages[key]) > 0
-}
-
 func (v *validationErrors) any() bool {
 	return v != nil && len(v.messages) > 0
 }
@@ -81,13 +77,6 @@ func writeValidationErrors(w http.ResponseWriter, errs *validationErrors) {
 		"message": errs.summary(),
 		"errors":  errs.messages,
 	})
-}
-
-// writeValidationMessage answers 422 for a single field message.
-func writeValidationMessage(w http.ResponseWriter, field, message string) {
-	errs := newValidationErrors()
-	errs.add(field, message)
-	writeValidationErrors(w, errs)
 }
 
 // validationLookup answers unique/exists questions against the module
@@ -994,4 +983,15 @@ func validateCRUDInput(db *sql.DB, table string, input map[string]any, rules map
 		return nil, errs, nil
 	}
 	return validatedInput(input, rules, columns, primary), nil, nil
+}
+
+func (v *validationErrors) has(key string) bool {
+	return len(v.messages[key]) > 0
+}
+
+// writeValidationMessage answers 422 for a single field message.
+func writeValidationMessage(w http.ResponseWriter, field, message string) {
+	errs := newValidationErrors()
+	errs.add(field, message)
+	writeValidationErrors(w, errs)
 }

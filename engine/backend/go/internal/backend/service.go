@@ -216,7 +216,7 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 	if err := s.regenerateRegistry(); err != nil {
 		return Registration{}, fmt.Errorf("refresh generated registry: %w", err)
 	}
-	s.invalidateModuleRuntime(payload.Name)
+	s.dropModuleRuntimeLocked(payload.Name)
 	return registration, nil
 }
 
@@ -252,7 +252,7 @@ func (s *Service) Remove(name string) error {
 	if err := s.regenerateRegistry(); err != nil {
 		return fmt.Errorf("refresh generated registry: %w", err)
 	}
-	s.invalidateModuleRuntime(name)
+	s.dropModuleRuntimeLocked(name)
 	sharedModuleDatabases.Delete(name)
 	return nil
 }

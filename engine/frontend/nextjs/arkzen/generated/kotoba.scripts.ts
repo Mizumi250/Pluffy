@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — kotoba
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T08:42:35.752Z
+// Generated: 2026-11-05T12:32:37.134Z
 // ============================================================
 
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'

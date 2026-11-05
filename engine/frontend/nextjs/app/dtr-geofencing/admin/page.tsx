@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — dtr-geofencing/admin
 // Layout: app | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T08:42:01.520Z
+// Generated: 2026-11-05T12:32:28.102Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

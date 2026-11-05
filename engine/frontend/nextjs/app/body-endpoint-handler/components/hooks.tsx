@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — body-endpoint-handler
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T11:23:34.435Z
+// Generated: 2026-11-05T12:32:23.726Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
