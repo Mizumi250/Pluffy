@@ -3,7 +3,7 @@
 // ARKZEN GENERATED HOOKS — visual-lab
 // Source: @arkzen:components (visual-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:50.499Z
+// Generated: 2026-11-05T14:51:54.235Z
 // ============================================================
 
 import React, { Suspense, useCallback, useEffect, useRef, useState } from 'react'

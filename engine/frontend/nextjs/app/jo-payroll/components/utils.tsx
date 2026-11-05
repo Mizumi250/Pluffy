@@ -2,7 +2,7 @@
 // ARKZEN GENERATED UTILITIES — jo-payroll
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:35.157Z
+// Generated: 2026-11-05T14:51:43.382Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

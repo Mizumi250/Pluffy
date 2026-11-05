@@ -442,7 +442,7 @@ func (h *Handler) installRuntimeHooks() {
 		case float64:
 			userID = int64(value)
 		}
-		channel, event, configured := resolveSectionBroadcastEvent(registration, section, userID)
+		channel, event, configured := resolveSectionBroadcastEvent(registration, section, userID, payload)
 		if !configured {
 			return fmt.Errorf("broadcast section %q is not configured for module %q", section, moduleName)
 		}
@@ -487,7 +487,7 @@ func sharedModuleDatabase(storageDir, module string) (*sql.DB, error) {
 
 // resolveSectionBroadcastEvent mirrors resolveBroadcastEvent but selects the
 // realtime section by DSL section name instead of channel type.
-func resolveSectionBroadcastEvent(registration Registration, section string, userID int64) (string, string, bool) {
+func resolveSectionBroadcastEvent(registration Registration, section string, userID int64, payload map[string]any) (string, string, bool) {
 	for _, candidate := range parseRealtimeSections(registration.Realtimes) {
 		if section != "" && candidate.name != section {
 			continue
@@ -497,10 +497,17 @@ func resolveSectionBroadcastEvent(registration Registration, section string, use
 			continue
 		}
 		resolved := realtimePlaceholder.ReplaceAllStringFunc(channel, func(placeholder string) string {
-			switch strings.Trim(placeholder, "{}") {
+			name := strings.Trim(placeholder, "{}")
+			switch name {
 			case "id", "user_id":
 				if userID > 0 {
 					return strconv.FormatInt(userID, 10)
+				}
+			}
+			normalizedName := strings.ToLower(strings.NewReplacer("_", "", "-", "").Replace(name))
+			for key, value := range payload {
+				if strings.ToLower(strings.NewReplacer("_", "", "-", "").Replace(key)) == normalizedName && value != nil {
+					return fmt.Sprint(value)
 				}
 			}
 			return ""

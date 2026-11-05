@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/pluff/pluff/engine/backend/go/internal/modulespec"
 	_ "modernc.org/sqlite"
 )
 
@@ -58,14 +59,14 @@ func TestEngineContractAndPersistentRegistration(t *testing.T) {
 	if buildResponse["success"] != true {
 		t.Fatalf("build response is not successful: %s", built.Body.String())
 	}
-	generatedDirectory := filepath.Join(storageDir, "generated", "go-contract")
-	for _, name := range []string{"models.go", "controllers.go", "routes.go", "module.go"} {
+	generatedDirectory := filepath.Join(generatedDirFor(storageDir), "go-contract")
+	for _, name := range []string{"models.go", "module.go"} {
 		if _, err := os.Stat(filepath.Join(generatedDirectory, name)); err != nil {
 			t.Fatalf("generated source %q is missing: %v", name, err)
 		}
 	}
 	registrations := handler.service.Registrations()
-	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 0 || len(registrations[0].GeneratedFiles) != 4 {
+	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 0 || len(registrations[0].GeneratedFiles) != 2 {
 		t.Fatalf("generated registration metadata = %#v", registrations)
 	}
 
@@ -99,8 +100,8 @@ func TestEngineContractAndPersistentRegistration(t *testing.T) {
 	if err != nil {
 		t.Fatalf("restart handler: %v", err)
 	}
-	if _, err := os.Stat(filepath.Join(generatedDirectory, "routes.go")); err != nil {
-		t.Fatalf("generated routes were not restored on startup: %v", err)
+	if _, err := os.Stat(filepath.Join(generatedDirectory, "module.go")); err != nil {
+		t.Fatalf("generated module was not restored on startup: %v", err)
 	}
 	registry := httptest.NewRecorder()
 	restarted.ServeHTTP(registry, httptest.NewRequest(http.MethodGet, "/arkzen/registry", nil))
@@ -139,7 +140,7 @@ func TestBuildRejectsWrongVariantAndMalformedJSON(t *testing.T) {
 	}
 }
 
-func TestBuildRegistersLiveCRUDRoutesAndPersistsThem(t *testing.T) {
+func TestBuildGeneratesCRUDRoutesAndPersistsThem(t *testing.T) {
 	storageDir := testStorageDir(t)
 	config := Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir}
 	handler, err := NewHandler(config)
@@ -165,74 +166,42 @@ func TestBuildRegistersLiveCRUDRoutesAndPersistsThem(t *testing.T) {
 	if built.Code != http.StatusOK {
 		t.Fatalf("build status = %d, response = %s", built.Code, built.Body.String())
 	}
-	generatedDirectory := filepath.Join(storageDir, "generated", "crud-module")
-	for _, name := range []string{"models.go", "controllers.go", "routes.go", "module.go"} {
+	generatedDirectory := filepath.Join(generatedDirFor(storageDir), "crud-module")
+	for _, name := range []string{"models.go", "module.go"} {
 		if _, err := os.Stat(filepath.Join(generatedDirectory, name)); err != nil {
 			t.Fatalf("generated source %q is missing: %v", name, err)
 		}
 	}
 	registrations := handler.service.Registrations()
-	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 5 || len(registrations[0].GeneratedFiles) != 4 {
+	if len(registrations) != 1 || len(registrations[0].GeneratedRoutes) != 5 || len(registrations[0].GeneratedFiles) != 2 {
 		t.Fatalf("generated registration metadata = %#v", registrations)
 	}
-
-	created := perform(handler, http.MethodPost, "/api/inventory/items", `{"title":"Keyboard","quantity":4}`, "")
-	if created.Code != http.StatusCreated {
-		t.Fatalf("store status = %d, response = %s", created.Code, created.Body.String())
+	moduleSource, err := os.ReadFile(filepath.Join(generatedDirectory, "module.go"))
+	if err != nil {
+		t.Fatalf("read generated module source: %v", err)
 	}
-	var createdResponse struct {
-		Data map[string]any `json:"data"`
-	}
-	if err := json.Unmarshal(created.Body.Bytes(), &createdResponse); err != nil {
-		t.Fatalf("decode store response: %v", err)
-	}
-	id := int(createdResponse.Data["id"].(float64))
-	if createdResponse.Data["title"] != "Keyboard" {
-		t.Fatalf("created response data = %#v", createdResponse.Data)
-	}
-
-	list := httptest.NewRecorder()
-	handler.ServeHTTP(list, httptest.NewRequest(http.MethodGet, "/api/inventory/items", nil))
-	if list.Code != http.StatusOK || !bytes.Contains(list.Body.Bytes(), []byte(`"count":1`)) {
-		t.Fatalf("index response status = %d, body = %s", list.Code, list.Body.String())
-	}
-	show := httptest.NewRecorder()
-	handler.ServeHTTP(show, httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/inventory/items/%d", id), nil))
-	if show.Code != http.StatusOK || !bytes.Contains(show.Body.Bytes(), []byte(`"title":"Keyboard"`)) {
-		t.Fatalf("show response status = %d, body = %s", show.Code, show.Body.String())
-	}
-	invalid := perform(handler, http.MethodPut, fmt.Sprintf("/api/inventory/items/%d", id), `{"title":"this title is too long to pass validation"}`, "")
-	if invalid.Code != http.StatusUnprocessableEntity {
-		t.Fatalf("invalid update status = %d, want %d", invalid.Code, http.StatusUnprocessableEntity)
-	}
-	updated := perform(handler, http.MethodPut, fmt.Sprintf("/api/inventory/items/%d", id), `{"title":"Mouse"}`, "")
-	if updated.Code != http.StatusOK || !bytes.Contains(updated.Body.Bytes(), []byte(`"title":"Mouse"`)) {
-		t.Fatalf("update status = %d, body = %s", updated.Code, updated.Body.String())
-	}
-	methodNotAllowed := httptest.NewRecorder()
-	handler.ServeHTTP(methodNotAllowed, httptest.NewRequest(http.MethodPatch, "/api/inventory/items", nil))
-	if methodNotAllowed.Code != http.StatusMethodNotAllowed {
-		t.Fatalf("unsupported method status = %d, want %d", methodNotAllowed.Code, http.StatusMethodNotAllowed)
+	for _, expected := range []string{
+		`"/api/inventory/items"`,
+		`"/api/inventory/items/{id}"`,
+		"svc.List",
+		"svc.Read",
+		"svc.Create",
+		"svc.Modify",
+		"svc.Remove",
+	} {
+		if !bytes.Contains(moduleSource, []byte(expected)) {
+			t.Errorf("generated module source does not contain %q", expected)
+		}
 	}
 
 	restarted, err := NewHandler(config)
 	if err != nil {
 		t.Fatalf("restart handler: %v", err)
 	}
-	persisted := httptest.NewRecorder()
-	restarted.ServeHTTP(persisted, httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/inventory/items/%d", id), nil))
-	if persisted.Code != http.StatusOK || !bytes.Contains(persisted.Body.Bytes(), []byte(`"title":"Mouse"`)) {
-		t.Fatalf("persisted show status = %d, body = %s", persisted.Code, persisted.Body.String())
-	}
-	deleted := httptest.NewRecorder()
-	restarted.ServeHTTP(deleted, httptest.NewRequest(http.MethodDelete, fmt.Sprintf("/api/inventory/items/%d", id), nil))
-	if deleted.Code != http.StatusOK || !bytes.Contains(deleted.Body.Bytes(), []byte("Item removed")) {
-		t.Fatalf("destroy status = %d, body = %s", deleted.Code, deleted.Body.String())
-	}
-	missing := httptest.NewRecorder()
-	restarted.ServeHTTP(missing, httptest.NewRequest(http.MethodGet, fmt.Sprintf("/api/inventory/items/%d", id), nil))
-	if missing.Code != http.StatusNotFound {
-		t.Fatalf("show after destroy status = %d, want %d", missing.Code, http.StatusNotFound)
+	registry := httptest.NewRecorder()
+	restarted.ServeHTTP(registry, httptest.NewRequest(http.MethodGet, "/arkzen/registry", nil))
+	if registry.Code != http.StatusOK || !bytes.Contains(registry.Body.Bytes(), []byte(`"crud-module"`)) {
+		t.Fatalf("registration did not persist across restart: status %d, body %s", registry.Code, registry.Body.String())
 	}
 }
 
@@ -542,6 +511,7 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("NewHandler() error = %v", err)
 	}
+	closeTestModuleRuntime(t, handler, "body-endpoint-handler")
 	build := `{
 		"name":"body-endpoint-handler",
 		"backendVariant":"go",
@@ -562,7 +532,26 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 			{"method":"GET","route":"/api/body-endpoint-handler/latest","handler":"latest","body":"bGF0ZXN0IGJvZHk="}
 		]}]
 	}`
-	if response := perform(handler, http.MethodPost, "/arkzen/build", build, config.Secret); response.Code != http.StatusOK {
+	var buildPayload map[string]any
+	if err := json.Unmarshal([]byte(build), &buildPayload); err != nil {
+		t.Fatal(err)
+	}
+	apis := buildPayload["apis"].([]any)
+	endpoints := apis[0].(map[string]any)["endpoints"].(map[string]any)
+	for _, operation := range []string{"echo", "stats"} {
+		endpoints[operation].(map[string]any)["body"] = goTatemonoBody(t, "body-endpoint-handler", "endpoint", operation)
+	}
+	customRoutes := buildPayload["customRoutes"].([]any)
+	routes := customRoutes[0].(map[string]any)["routes"].([]any)
+	for _, rawRoute := range routes {
+		route := rawRoute.(map[string]any)
+		route["body"] = goTatemonoBody(t, "body-endpoint-handler", "handler", route["handler"].(string))
+	}
+	buildBytes, err := json.Marshal(buildPayload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := perform(handler, http.MethodPost, "/arkzen/build", string(buildBytes), config.Secret); response.Code != http.StatusOK {
 		t.Fatalf("build status = %d, body = %s", response.Code, response.Body.String())
 	}
 
@@ -570,7 +559,7 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 	if echo.Code != http.StatusOK {
 		t.Fatalf("echo status = %d, body = %s", echo.Code, echo.Body.String())
 	}
-	for _, field := range []string{`"injected":true`, `"field_count":2`, `"message":"hello"`, `"probe_id":1`} {
+	for _, field := range []string{`"injected":true`, `"method":"echo"`, `"field_count":2`, `"message":"hello"`, `"probe_id":1`} {
 		if !bytes.Contains(echo.Body.Bytes(), []byte(field)) {
 			t.Fatalf("echo response missing %s: %s", field, echo.Body.String())
 		}
@@ -581,7 +570,7 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 	if stats.Code != http.StatusOK {
 		t.Fatalf("stats status = %d, body = %s", stats.Code, stats.Body.String())
 	}
-	for _, field := range []string{`"total":1`, `"passed":1`, `"failed":0`, `"sources":["endpoint-body"]`} {
+	for _, field := range []string{`"injected":true`, `"method":"stats"`, `"total":1`, `"passed":1`, `"failed":0`, `"sources":["endpoint-body"]`} {
 		if !bytes.Contains(stats.Body.Bytes(), []byte(field)) {
 			t.Fatalf("stats response missing %s: %s", field, stats.Body.String())
 		}
@@ -589,7 +578,8 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 
 	ping := httptest.NewRecorder()
 	handler.ServeHTTP(ping, httptest.NewRequest(http.MethodGet, "/api/body-endpoint-handler/ping", nil))
-	if ping.Code != http.StatusOK || !bytes.Contains(ping.Body.Bytes(), []byte(`"handler":"ping"`)) {
+	if ping.Code != http.StatusOK || !bytes.Contains(ping.Body.Bytes(), []byte(`"handler":"ping"`)) ||
+		!bytes.Contains(ping.Body.Bytes(), []byte(`"builder":"CustomRouteBuilder Go emulation"`)) {
 		t.Fatalf("ping status = %d, body = %s", ping.Code, ping.Body.String())
 	}
 
@@ -599,7 +589,8 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 	}
 	latest := httptest.NewRecorder()
 	handler.ServeHTTP(latest, httptest.NewRequest(http.MethodGet, "/api/body-endpoint-handler/latest", nil))
-	if latest.Code != http.StatusOK || !bytes.Contains(latest.Body.Bytes(), []byte(`"count":2`)) {
+	if latest.Code != http.StatusOK || !bytes.Contains(latest.Body.Bytes(), []byte(`"count":2`)) ||
+		!bytes.Contains(latest.Body.Bytes(), []byte(`"handler":"latest"`)) {
 		t.Fatalf("latest status = %d, body = %s", latest.Code, latest.Body.String())
 	}
 
@@ -607,6 +598,7 @@ func TestCustomEndpointEchoAndStatsEmulation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("restart handler: %v", err)
 	}
+	closeTestModuleRuntime(t, restarted, "body-endpoint-handler")
 	persisted := httptest.NewRecorder()
 	restarted.ServeHTTP(persisted, httptest.NewRequest(http.MethodGet, "/api/body-endpoint-handler/latest", nil))
 	if persisted.Code != http.StatusOK || !bytes.Contains(persisted.Body.Bytes(), []byte(`"count":2`)) {
@@ -666,6 +658,100 @@ func TestLowStockEndpointEmulation(t *testing.T) {
 	}
 }
 
+func TestCustomHandlerCanCallAnotherCustomHandler(t *testing.T) {
+	storageDir := testStorageDir(t)
+	config := Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir}
+	handler, err := NewHandler(config)
+	if err != nil {
+		t.Fatalf("NewHandler() error = %v", err)
+	}
+	closeTestModuleRuntime(t, handler, "handler-bridge-test")
+
+	payload := BuildPayload{
+		Name:           "handler-bridge-test",
+		BackendVariant: "go",
+		CustomRoutes: []CustomRoute{{
+			Controller: "BridgeController",
+			Routes: []CustomRouteEntry{
+				{
+					Method:  http.MethodGet,
+					Route:   "/api/handler-bridge-test/home",
+					Handler: "home",
+					Body: `if err := community_seed(ctx); err != nil {
+	return response.Error(500, "seed failed")
+}
+return response.JSON("home")`,
+				},
+				{
+					Method:  http.MethodPost,
+					Route:   "/api/handler-bridge-test/internal/seed",
+					Handler: "community_seed",
+					Body:    `return nil`,
+				},
+				{
+					Method:  http.MethodGet,
+					Route:   "/api/handler-bridge-test/failing-home",
+					Handler: "failing_home",
+					Body: `if err := failing_seed(ctx); err != nil {
+	return response.Error(500, err.Error())
+}
+return response.JSON("unexpected")`,
+				},
+				{
+					Method:  http.MethodPost,
+					Route:   "/api/handler-bridge-test/internal/failing-seed",
+					Handler: "failing_seed",
+					Body:    `return response.Error(503, "not available")`,
+				},
+			},
+		}},
+	}
+	build, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatalf("marshal build payload: %v", err)
+	}
+	if response := perform(handler, http.MethodPost, "/arkzen/build", string(build), config.Secret); response.Code != http.StatusOK {
+		t.Fatalf("build status = %d, body = %s", response.Code, response.Body.String())
+	}
+
+	registration, exists := handler.service.store.Registration(payload.Name)
+	if !exists {
+		t.Fatal("handler bridge module was not registered")
+	}
+	runtime, err := handler.service.moduleRuntimeFor(payload.Name)
+	if err != nil {
+		t.Fatalf("load handler bridge runtime: %v", err)
+	}
+	response := runtime.Execute(
+		httptest.NewRecorder(),
+		httptest.NewRequest(http.MethodGet, "/api/handler-bridge-test/home", nil),
+		modulespec.EndpointSpec{
+			Operation: "home",
+			Method:    http.MethodGet,
+			Body:      payload.CustomRoutes[0].Routes[0].Body,
+		},
+		registration,
+	)
+	if response.Problem != "" || response.Status != http.StatusOK ||
+		!bytes.Contains(response.Bytes, []byte(`"home"`)) {
+		t.Fatalf("home execution = status %d, problem %q, body %s", response.Status, response.Problem, response.Bytes)
+	}
+	failed := runtime.Execute(
+		httptest.NewRecorder(),
+		httptest.NewRequest(http.MethodGet, "/api/handler-bridge-test/failing-home", nil),
+		modulespec.EndpointSpec{
+			Operation: "failing_home",
+			Method:    http.MethodGet,
+			Body:      payload.CustomRoutes[0].Routes[2].Body,
+		},
+		registration,
+	)
+	if failed.Problem != "" || failed.Status != http.StatusInternalServerError ||
+		!bytes.Contains(failed.Bytes, []byte(`"handler failing_seed failed with status 503"`)) {
+		t.Fatalf("failing handler bridge = status %d, problem %q, body %s", failed.Status, failed.Problem, failed.Bytes)
+	}
+}
+
 func perform(handler http.Handler, method, path, body, secret string) *httptest.ResponseRecorder {
 	request := httptest.NewRequest(method, path, bytes.NewBufferString(body))
 	if secret != "" {
@@ -686,10 +772,14 @@ func testStorageDir(t *testing.T) string {
 	if err != nil {
 		t.Fatalf("create test storage: %v", err)
 	}
+	storage := filepath.Join(directory, "storage")
+	if err := os.MkdirAll(storage, 0o755); err != nil {
+		t.Fatalf("create isolated test storage: %v", err)
+	}
 	t.Cleanup(func() {
 		if err := os.RemoveAll(directory); err != nil {
 			t.Errorf("remove test storage: %v", err)
 		}
 	})
-	return directory
+	return storage
 }

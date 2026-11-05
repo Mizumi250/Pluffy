@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard
 // Layout: auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:25.541Z
+// Generated: 2026-11-05T14:51:37.999Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

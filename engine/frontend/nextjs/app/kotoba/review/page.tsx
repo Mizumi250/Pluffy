@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — kotoba/review
 // Layout: +auth:shell | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:38.613Z
+// Generated: 2026-11-05T14:51:45.536Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -95,7 +95,7 @@ const ReviewPage = () => {
       {tab === 'review' && (loading ? <Skeletons n={1} h={280} /> : card ? (
         <div className="kt-stack" style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
           <div className="kt-bar"><div style={{ width: `${(reviewed / Math.max(1, reviewed + queue.length)) * 100}%` }} /></div>
-          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
+          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit' }}>
             <div>
               <span className="kt-chip">{langName(card.lang)}</span>
               <div style={{ fontSize: 44, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em', fontFamily: ['ja', 'zh', 'ko'].includes(card.lang) ? 'var(--kt-serif)' : undefined }}>{card.term}</div>

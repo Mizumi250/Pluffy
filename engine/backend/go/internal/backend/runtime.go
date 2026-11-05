@@ -477,6 +477,9 @@ func interpretedField(column, kind string, isPrimary, isNullable bool) runtimeFi
 		field.GoType = "string"
 	case "integer", "biginteger", "foreignid":
 		field.GoType = "int"
+		if isNullable && !isPrimary {
+			field.GoType, field.Nullable = "*int", true
+		}
 	case "float", "decimal", "double":
 		field.GoType = "float64"
 	case "boolean":
@@ -518,14 +521,17 @@ func runtimeFieldName(column string) string {
 	return name
 }
 
-var assignedFieldPattern = regexp.MustCompile(`\.([A-Z][A-Za-z0-9]*)\s*=[^=]`)
+var assignedFieldPattern = regexp.MustCompile(`\.([A-Z][A-Za-z0-9]*)\s*(,[^=\n]*)?=`)
 
 func assignedFieldsFrom(bodies []string) []string {
 	result := map[string]bool{}
 	ignored := map[string]bool{"Extras": true, "DB": true}
 	for _, body := range bodies {
-		for _, match := range assignedFieldPattern.FindAllStringSubmatch(body, -1) {
-			name := match[1]
+		for _, match := range assignedFieldPattern.FindAllStringSubmatchIndex(body, -1) {
+			if match[1] < len(body) && body[match[1]] == '=' {
+				continue
+			}
+			name := body[match[2]:match[3]]
 			if name == "" || ignored[name] || strings.HasSuffix(name, "Record") || strings.HasSuffix(name, "FacadeT") {
 				continue
 			}
@@ -728,6 +734,8 @@ func generateInterpPrelude(models []runtimeModel, stem string, operations map[st
 	// finally currentUserRecord (which references the UserRecord scaffolding).
 	statements := []string{
 		`var __sid int64`,
+		`func IsEmail(value string) bool { return rt.IsEmail(value) }`,
+		`func IsOneOf(value string, candidates ...string) bool { return rt.IsOneOf(value, candidates...) }`,
 		`func runtimeSession() *rt.Session { return rt.Get(__sid) }`,
 		`func database() *rt.Database { return runtimeSession().Database }`,
 		`func params() rt.Params { return runtimeSession().Params }`,
@@ -819,10 +827,6 @@ func generateModelPrelude(model runtimeModel) []string {
 		default:
 			encodeLines = append(encodeLines, fmt.Sprintf("\tout[%q] = r.%s", field.Column, field.Name))
 		}
-	}
-	if !model.SoftDelete {
-		fieldLines = append(fieldLines, "\tDeletedAt *time.Time `json:\"deleted_at,omitempty\" db:\"deleted_at\"`")
-		encodeLines = append(encodeLines, "\tif r.DeletedAt != nil {\n\t\tout[\"deleted_at\"] = r.DeletedAt.UTC().Format(time.RFC3339Nano)\n\t}")
 	}
 	fieldLines = append(fieldLines, "\tExtras map[string]interface{} `json:\"-\"`")
 
@@ -1429,19 +1433,15 @@ func (m *moduleRuntime) wrapperSource(operation string, module Registration, rew
 	builder.WriteString("\tdatabase := func() *rt.Database { return __s.Database }()\n")
 	builder.WriteString("\tparams := func() rt.Params { return __s.Params }()\n")
 	builder.WriteString("\tctx := func() context.Context { return __s.Context }()\n")
-	for op := range m.operations {
-		name := op
-		if strings.HasPrefix(name, "op:") {
-			name = strings.TrimPrefix(name, "op:")
-		} else {
-			continue
-		}
-		if name == operation || !isGoIdentifier(name) {
+	helpers := map[string]bool{}
+	for key := range m.operations {
+		_, name, found := strings.Cut(key, ":")
+		if !found || name == operation || !isGoIdentifier(name) {
 			continue
 		}
 		referenced := false
-		for key, other := range m.operations {
-			if key == "op:"+name {
+		for otherKey, other := range m.operations {
+			if otherKey == "op:"+name || otherKey == "route:"+name {
 				continue
 			}
 			if regexp.MustCompile(`\b` + regexp.QuoteMeta(name) + `\(`).MatchString(other) {
@@ -1449,13 +1449,21 @@ func (m *moduleRuntime) wrapperSource(operation string, module Registration, rew
 				break
 			}
 		}
-		if !referenced {
-			continue
+		if referenced {
+			helpers[name] = true
 		}
+	}
+	helperNames := make([]string, 0, len(helpers))
+	for name := range helpers {
+		helperNames = append(helperNames, name)
+	}
+	sort.Strings(helperNames)
+	for _, name := range helperNames {
 		builder.WriteString(fmt.Sprintf("\t%s := func(c context.Context) error {\n", name))
 		builder.WriteString("\t\tv := __s.Bridge(\"" + name + "\")\n")
+		builder.WriteString("\t\tif v == nil {\n\t\t\treturn nil\n\t\t}\n")
 		builder.WriteString("\t\tif e, ok := v.(error); ok && e != nil {\n\t\t\treturn e\n\t\t}\n")
-		builder.WriteString("\t\tif res, ok := v.(*rt.Result); ok && res != nil && res.Status >= 400 {\n\t\t\treturn fmt.Errorf(\"handler %s failed with status %%d\", res.Status)\n\t\t}\n")
+		builder.WriteString("\t\tif res, ok := v.(*rt.Result); ok && res != nil && res.Status >= 400 {\n\t\t\treturn fmt.Errorf(\"handler " + name + " failed with status %d\", res.Status)\n\t\t}\n")
 		builder.WriteString("\t\treturn nil\n\t}\n")
 	}
 	builder.WriteString("\treturn func() any {\n")
@@ -1522,12 +1530,22 @@ func rtYaegiExports() interp.Exports {
 }
 
 func interpretParams(r *http.Request, spec modulespec.EndpointSpec) rt.Params {
-	relative := strings.TrimPrefix(path.Clean(r.URL.Path), path.Clean(spec.Path))
-	relative = strings.Trim(relative, "/")
-	if relative == "" {
+	if routeContext := chi.RouteContext(r.Context()); routeContext != nil && len(routeContext.URLParams.Values) > 0 {
+		return rt.Params(append([]string(nil), routeContext.URLParams.Values...))
+	}
+
+	requestPath := strings.Split(strings.Trim(path.Clean(r.URL.Path), "/"), "/")
+	routePath := strings.Split(strings.Trim(path.Clean(spec.Path), "/"), "/")
+	if len(requestPath) != len(routePath) {
 		return rt.Params{}
 	}
-	return rt.Params(strings.Split(relative, "/"))
+	params := make(rt.Params, 0)
+	for index, segment := range routePath {
+		if strings.HasPrefix(segment, "{") && strings.HasSuffix(segment, "}") {
+			params = append(params, requestPath[index])
+		}
+	}
+	return params
 }
 
 func chiRouteParams(r *http.Request) map[string]string {
@@ -1570,12 +1588,12 @@ func (s *Service) runtimeServices(registration Registration, database *sql.DB) r
 	if logger == nil {
 		logger = func(level, module, message string, meta map[string]any) {}
 	}
-	mailClass := func(key string) string { return classNamesFromKey(key) }
+	mailClass := func(key string) string { return classNameWithSuffix(key, "Mail") }
 	mailSend := func(key, to string, data map[string]any) (map[string]any, error) {
 		return map[string]any{"status": "sent", "to": to, "mail": key}, nil
 	}
 	if definitions, err := mailDefinitions(registration); err == nil && len(definitions) > 0 {
-		mailClass = func(key string) string { return classNamesFromKey(key) }
+		mailClass = func(key string) string { return classNameWithSuffix(key, "Mail") }
 		mailSend = func(key, to string, data map[string]any) (map[string]any, error) {
 			definition, exists := definitions[key]
 			if !exists {
@@ -1588,10 +1606,10 @@ func (s *Service) runtimeServices(registration Registration, database *sql.DB) r
 			if err := sendRenderedMail(to, definition.subject, htmlBody); err != nil {
 				return nil, err
 			}
-			return map[string]any{"status": "sent", "to": to, "subject": definition.subject, "mail_class": classNamesFromKey(key)}, nil
+			return map[string]any{"status": "sent", "to": to, "subject": definition.subject, "mail_class": classNameWithSuffix(key, "Mail")}, nil
 		}
 	}
-	notificationClass := func(key string) string { return classNamesFromKey(key) }
+	notificationClass := func(key string) string { return classNameWithSuffix(key, "Notification") }
 	notifySend := func(user *rt.User, key, message string) error {
 		var definition *realtimeSection
 		for _, section := range parseRealtimeSections(registration.Notifications) {
@@ -1690,16 +1708,10 @@ func (s *Service) runtimeServices(registration Registration, database *sql.DB) r
 	}
 }
 
-func classNamesFromKey(key string) string {
-	parts := strings.Split(strings.ReplaceAll(key, "_", "-"), "-")
-	var builder strings.Builder
-	for _, part := range parts {
-		if part == "" {
-			continue
-		}
-		runes := []rune(part)
-		builder.WriteRune(unicode.ToUpper(runes[0]))
-		builder.WriteString(string(runes[1:]))
+func classNameWithSuffix(key, suffix string) string {
+	name := goClassName(key)
+	if strings.HasSuffix(name, suffix) {
+		return name
 	}
-	return builder.String()
+	return name + suffix
 }

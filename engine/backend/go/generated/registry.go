@@ -21,12 +21,16 @@ import (
 	mod_kotoba "github.com/pluff/pluff/engine/backend/go/generated/kotoba"
 	mod_mail_test "github.com/pluff/pluff/engine/backend/go/generated/mail-test"
 	mod_middleware_test "github.com/pluff/pluff/engine/backend/go/generated/middleware-test"
+	mod_mobile_sdui "github.com/pluff/pluff/engine/backend/go/generated/mobile-sdui"
 	mod_notification_test "github.com/pluff/pluff/engine/backend/go/generated/notification-test"
 	mod_queue_flow "github.com/pluff/pluff/engine/backend/go/generated/queue-flow"
 	mod_roles_test "github.com/pluff/pluff/engine/backend/go/generated/roles-test"
 	mod_rust_backend_test "github.com/pluff/pluff/engine/backend/go/generated/rust-backend-test"
 	mod_scheduler_test "github.com/pluff/pluff/engine/backend/go/generated/scheduler-test"
+	mod_shikaku "github.com/pluff/pluff/engine/backend/go/generated/shikaku"
+	mod_spring_ledger "github.com/pluff/pluff/engine/backend/go/generated/spring-ledger"
 	mod_spring_test "github.com/pluff/pluff/engine/backend/go/generated/spring-test"
+	mod_upload_test "github.com/pluff/pluff/engine/backend/go/generated/upload-test"
 
 )
 
@@ -49,10 +53,14 @@ func InstallAll(r chi.Router, svc modulespec.Services) {
 	mod_kotoba.Install(r, svc)
 	mod_mail_test.Install(r, svc)
 	mod_middleware_test.Install(r, svc)
+	mod_mobile_sdui.Install(r, svc)
 	mod_notification_test.Install(r, svc)
 	mod_queue_flow.Install(r, svc)
 	mod_roles_test.Install(r, svc)
 	mod_rust_backend_test.Install(r, svc)
 	mod_scheduler_test.Install(r, svc)
+	mod_shikaku.Install(r, svc)
+	mod_spring_ledger.Install(r, svc)
 	mod_spring_test.Install(r, svc)
+	mod_upload_test.Install(r, svc)
 }

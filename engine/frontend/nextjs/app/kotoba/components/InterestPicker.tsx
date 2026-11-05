@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — InterestPicker
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:37.438Z
+// Generated: 2026-11-05T14:51:44.978Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

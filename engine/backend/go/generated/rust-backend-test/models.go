@@ -2,4 +2,11 @@ package rust_backend_test
 
 const ModuleName = "rust-backend-test"
 
-var GeneratedModelNames = []string{}
+type Note struct {
+	Body      *string `json:"body" db:"body"`
+	Title     string  `json:"title" db:"title"`
+	CreatedAt string  `json:"created_at" db:"created_at"`
+	UpdatedAt string  `json:"updated_at" db:"updated_at"`
+}
+
+var GeneratedModelNames = []string{"Note"}

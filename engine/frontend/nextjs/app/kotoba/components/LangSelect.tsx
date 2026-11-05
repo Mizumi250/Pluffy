@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LangSelect
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T12:32:37.416Z
+// Generated: 2026-11-05T14:51:44.952Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

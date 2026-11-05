@@ -398,18 +398,22 @@ function startBackend() {
         stdio: 'pipe',
       })
 
-  proc.stdout.on('data', (data) => {
-    String(data).trim().split('\n').forEach(line => {
+  let goRestartRequested = false
+  let goRestartOutput = ''
+  const logBackendOutput = (data) => {
+    const output = String(data)
+    if (IS_GO && !goRestartRequested) {
+      goRestartOutput = `${goRestartOutput}${output}`.slice(-256)
+      goRestartRequested = goRestartOutput.includes('restarting Go engine to load recompiled tatemono modules')
+    }
+    output.trim().split('\n').forEach(line => {
       if (line.trim()) log('backend', line.trim())
     })
-  })
-  proc.stderr.on('data', (data) => {
-    String(data).trim().split('\n').forEach(line => {
-      if (line.trim()) log('backend', line.trim())
-    })
-  })
-  proc.on('exit', (code) => {
-    if (IS_GO && code === 75) {
+  }
+  proc.stdout.on('data', logBackendOutput)
+  proc.stderr.on('data', logBackendOutput)
+  proc.on('close', (code) => {
+    if (IS_GO && (code === 75 || (goRestartRequested && code !== 0 && code !== null))) {
       log('backend', 'Go engine recompiled generated modules — restarting to load them...')
       setTimeout(() => { backend = startBackend() }, 400)
       return

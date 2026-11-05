@@ -4261,7 +4261,7 @@ if err != nil {
 }
 today := time.Now().UTC()
 todayKey := today.Format("2006-01-02")
-lastActive := profile.LastActiveDate()
+lastActive := profile.LastActive
 if lastActive != todayKey {
     if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
         profile.Streak++
@@ -4399,8 +4399,8 @@ _, _ = Alert.Create(ctx, map[string]any{
     "user_id": post.UserID, "kind": kind, "text": notice, "ref": postID, "is_read": false,
 })
 today := time.Now().UTC()
-if profile.LastActiveDate() != today.Format("2006-01-02") {
-    if profile.LastActiveDate() == today.AddDate(0, 0, -1).Format("2006-01-02") {
+if profile.LastActive != today.Format("2006-01-02") {
+    if profile.LastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
         profile.Streak++
     } else {
         profile.Streak = 1
@@ -4487,14 +4487,20 @@ if first {
     xp = int(math.Round(float64(lesson.XP) * math.Max(0.4, float64(score)/100)))
 }
 cardsAdded := 0
-pairs, err := lesson.VocabularyPairs("v")
-if err != nil {
+var lessonContent struct {
+    Vocabulary []json.RawMessage `json:"v"`
+}
+if err := json.Unmarshal([]byte(lesson.Content), &lessonContent); err != nil {
     return response.Error(500, "Could not read lesson vocabulary")
 }
-for _, pair := range pairs {
+for _, rawPair := range lessonContent.Vocabulary {
+    var pair []string
+    if err := json.Unmarshal(rawPair, &pair); err != nil || len(pair) < 2 {
+        continue
+    }
     _, created, err := VocabCard.FirstOrCreate(ctx,
-        map[string]any{"user_id": user.ID, "lang": lesson.Lang, "term": pair.Term},
-        map[string]any{"meaning": pair.Meaning, "source": "lesson", "due_date": time.Now().Format("2006-01-02")},
+        map[string]any{"user_id": user.ID, "lang": lesson.Lang, "term": pair[0]},
+        map[string]any{"meaning": pair[1], "source": "lesson", "due_date": time.Now().Format("2006-01-02")},
     )
     if err != nil {
         return response.Error(500, "Could not add lesson vocabulary")
@@ -4754,7 +4760,7 @@ return response.JSON(201, map[string]any{"data": conversation})
 */
 user := request.User()
 query := Message.Query()
-if conversationID := request.Int("conversation_id"); conversationID > 0 {
+if conversationID := request.QueryInt("conversation_id"); conversationID > 0 {
     conversation, err := Conversation.Find(ctx, conversationID)
     if err != nil || conversation == nil {
         return response.Error(404, "Conversation not found")
@@ -4763,7 +4769,7 @@ if conversationID := request.Int("conversation_id"); conversationID > 0 {
         return response.JSON(403, map[string]any{"message": "Not your conversation"})
     }
     query = query.Where("conversation_id", conversationID)
-} else if circleID := request.Int("circle_id"); circleID > 0 {
+} else if circleID := request.QueryInt("circle_id"); circleID > 0 {
     member, err := CircleMember.Query().Where("circle_id", circleID).Where("user_id", user.ID).Exists(ctx)
     if err != nil {
         return response.Error(500, "Could not check circle membership")
@@ -4775,7 +4781,7 @@ if conversationID := request.Int("conversation_id"); conversationID > 0 {
 } else {
     return response.JSON(422, map[string]any{"message": "conversation_id or circle_id required"})
 }
-if afterID := request.Int("after_id"); afterID > 0 {
+if afterID := request.QueryInt("after_id"); afterID > 0 {
     query = query.Where("id", ">", afterID)
 }
 messages, err := query.OrderBy("id", "desc").Limit(100).Get(ctx)
@@ -4798,6 +4804,7 @@ if body == "" || len(body) > 2000 || len(lang) > 8 {
 }
 var conversation *ConversationRecord
 var conversationRef any
+var err error
 recipientIDs := []int{}
 if conversationID > 0 {
     conversation, err = Conversation.Find(ctx, conversationID)
@@ -4867,7 +4874,7 @@ if wordCount < 1 {
 }
 today := time.Now().UTC()
 todayKey := today.Format("2006-01-02")
-lastActive := profile.LastActiveDate()
+lastActive := profile.LastActive
 if lastActive != todayKey {
     if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
         profile.Streak++
@@ -4957,7 +4964,7 @@ if err != nil {
 }
 today := time.Now().UTC()
 todayKey := today.Format("2006-01-02")
-lastActive := profile.LastActiveDate()
+lastActive := profile.LastActive
 if lastActive != todayKey {
     if lastActive == today.AddDate(0, 0, -1).Format("2006-01-02") {
         profile.Streak++
@@ -4995,7 +5002,7 @@ if err != nil {
 for _, circle := range circles {
     circle.Joined = false
     for _, circleID := range circleIDs {
-        if circleID == circle.ID {
+        if rt.AsInt64(circleID) == int64(circle.ID) {
             circle.Joined = true
             break
         }
@@ -6205,7 +6212,7 @@ const ReviewPage = () => {
       {tab === 'review' && (loading ? <Skeletons n={1} h={280} /> : card ? (
         <div className="kt-stack" style={{ maxWidth: 560, margin: '0 auto', width: '100%' }}>
           <div className="kt-bar"><div style={{ width: `${(reviewed / Math.max(1, reviewed + queue.length)) * 100}%` }} /></div>
-          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit', color: 'inherit' }}>
+          <button className="kt-card dark kt-card-flip" onClick={() => setFlipped(f => !f)} aria-label="Flip card" style={{ fontFamily: 'inherit' }}>
             <div>
               <span className="kt-chip">{langName(card.lang)}</span>
               <div style={{ fontSize: 44, fontWeight: 700, margin: '18px 0 6px', letterSpacing: '-0.02em', fontFamily: ['ja', 'zh', 'ko'].includes(card.lang) ? 'var(--kt-serif)' : undefined }}>{card.term}</div>

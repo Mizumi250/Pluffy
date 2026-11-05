@@ -493,44 +493,48 @@ func writeGeneratedModule(root, name string, files map[string][]byte) error {
 	if err := os.MkdirAll(root, 0o755); err != nil {
 		return fmt.Errorf("create generated source directory: %w", err)
 	}
-	staging, err := os.MkdirTemp(root, "."+name+"-stage-")
-	if err != nil {
-		return fmt.Errorf("create generated source staging directory: %w", err)
+	target := filepath.Join(root, name)
+	if err := os.MkdirAll(target, 0o755); err != nil {
+		return fmt.Errorf("create generated module directory: %w", err)
 	}
-	defer os.RemoveAll(staging)
+
+	written := make(map[string]struct{}, len(files))
 	for relativePath, contents := range files {
 		cleanPath := filepath.Clean(filepath.FromSlash(relativePath))
-		destination := filepath.Join(staging, cleanPath)
-		relative, err := filepath.Rel(staging, destination)
+		destination := filepath.Join(target, cleanPath)
+		relative, err := filepath.Rel(target, destination)
 		if err != nil || relative == ".." || strings.HasPrefix(relative, ".."+string(filepath.Separator)) {
 			return fmt.Errorf("generated source path %q escapes module directory", relativePath)
 		}
-		if err := os.MkdirAll(filepath.Dir(destination), 0o644); err != nil {
+		if err := os.MkdirAll(filepath.Dir(destination), 0o755); err != nil {
 			return fmt.Errorf("create generated source subdirectory: %w", err)
 		}
 		if err := os.WriteFile(destination, contents, 0o644); err != nil {
 			return fmt.Errorf("write generated source %q: %w", relativePath, err)
 		}
+		written[filepath.Clean(relative)] = struct{}{}
 	}
 
-	target := filepath.Join(root, name)
-	backup := filepath.Join(root, "."+name+"-backup")
-	if err := os.RemoveAll(backup); err != nil {
-		return fmt.Errorf("remove old generated source backup: %w", err)
-	}
-	if _, err := os.Stat(target); err == nil {
-		if err := os.Rename(target, backup); err != nil {
-			return fmt.Errorf("stage previous generated sources: %w", err)
+	if err := filepath.WalkDir(target, func(path string, entry os.DirEntry, walkErr error) error {
+		if walkErr != nil {
+			return walkErr
 		}
-	} else if !errors.Is(err, os.ErrNotExist) {
-		return fmt.Errorf("inspect previous generated sources: %w", err)
-	}
-	if err := os.Rename(staging, target); err != nil {
-		_ = os.Rename(backup, target)
-		return fmt.Errorf("install generated sources: %w", err)
-	}
-	if err := os.RemoveAll(backup); err != nil {
-		return fmt.Errorf("remove generated source backup: %w", err)
+		if entry.IsDir() {
+			return nil
+		}
+		relative, err := filepath.Rel(target, path)
+		if err != nil {
+			return err
+		}
+		if _, exists := written[filepath.Clean(relative)]; exists {
+			return nil
+		}
+		if err := os.Remove(path); err != nil && !errors.Is(err, os.ErrNotExist) {
+			return err
+		}
+		return nil
+	}); err != nil {
+		return fmt.Errorf("remove stale generated sources: %w", err)
 	}
 	return nil
 }

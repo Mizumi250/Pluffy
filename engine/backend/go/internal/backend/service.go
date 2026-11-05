@@ -109,19 +109,7 @@ func (s *Service) regenerateRegistry() error {
 		return nil
 	}
 	s.registryChanged = true
-	temporary, err := os.CreateTemp(s.generatedDir, "registry-*.go")
-	if err != nil {
-		return fmt.Errorf("stage generated registry: %w", err)
-	}
-	defer os.Remove(temporary.Name())
-	if _, err := temporary.WriteString(source); err != nil {
-		_ = temporary.Close()
-		return fmt.Errorf("write generated registry: %w", err)
-	}
-	if err := temporary.Close(); err != nil {
-		return fmt.Errorf("write generated registry: %w", err)
-	}
-	if err := os.Rename(temporary.Name(), target); err != nil {
+	if err := os.WriteFile(target, []byte(source), 0o644); err != nil {
 		return fmt.Errorf("install generated registry: %w", err)
 	}
 	return nil

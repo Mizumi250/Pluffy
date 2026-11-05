@@ -11,6 +11,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -427,12 +428,13 @@ func waitForJobResult(t *testing.T, handler *Handler, name, status string, timeo
 	t.Fatalf("timed out waiting for %s job status %s", name, status)
 }
 
-func TestDTRGeofencingEmulation(t *testing.T) {
+func TestDTRGeofencingGoHandlers(t *testing.T) {
 	storage := testStorageDir(t)
 	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: storage})
 	if err != nil {
 		t.Fatal(err)
 	}
+	closeTestModuleRuntime(t, handler, "dtr-geofencing")
 	build := `{
 		"name":"dtr-geofencing","backendVariant":"go",
 		"databases":[
@@ -453,7 +455,28 @@ func TestDTRGeofencingEmulation(t *testing.T) {
 			}}
 		]
 	}`
-	if response := perform(handler, http.MethodPost, "/arkzen/build", build, "test-secret"); response.Code != http.StatusOK {
+	var buildPayload map[string]any
+	if err := json.Unmarshal([]byte(build), &buildPayload); err != nil {
+		t.Fatal(err)
+	}
+	endpointBodies := map[string]string{}
+	for _, operation := range []string{"my_records", "check_in", "check_out", "toggle_geofencing", "update_office"} {
+		endpointBodies[operation] = goTatemonoBody(t, "dtr-geofencing", "endpoint", operation)
+	}
+	for _, rawAPI := range buildPayload["apis"].([]any) {
+		api := rawAPI.(map[string]any)
+		endpoints := api["endpoints"].(map[string]any)
+		for operation, body := range endpointBodies {
+			if endpoint, exists := endpoints[operation]; exists {
+				endpoint.(map[string]any)["body"] = body
+			}
+		}
+	}
+	buildBytes, err := json.Marshal(buildPayload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := perform(handler, http.MethodPost, "/arkzen/build", string(buildBytes), "test-secret"); response.Code != http.StatusOK {
 		t.Fatalf("build status %d: %s", response.Code, response.Body.String())
 	}
 	db, err := openModuleDatabase(storage, "dtr-geofencing")
@@ -462,6 +485,17 @@ func TestDTRGeofencingEmulation(t *testing.T) {
 	}
 	if _, err := db.Exec(`INSERT INTO "employees" ("id","name","email","is_active") VALUES (1,'Ada','ada@example.com',1)`); err != nil {
 		t.Fatal(err)
+	}
+	for _, setting := range [][2]string{
+		{"geofencing_enabled", "true"},
+		{"office_latitude", "14.599512"},
+		{"office_longitude", "120.984219"},
+		{"geofence_radius_meters", "100"},
+	} {
+		if _, err := db.Exec(`INSERT INTO "dtr_settings" ("key","value") VALUES (?,?)`, setting[0], setting[1]); err != nil {
+			_ = db.Close()
+			t.Fatal(err)
+		}
 	}
 	_ = db.Close()
 
@@ -503,12 +537,62 @@ func TestDTRGeofencingEmulation(t *testing.T) {
 	}
 }
 
+func goTatemonoBody(t *testing.T, module, section, operation string) string {
+	t.Helper()
+	_, testFile, _, ok := runtime.Caller(0)
+	if !ok {
+		t.Fatal("could not locate Go backend test source")
+	}
+	repositoryRoot := filepath.Join(filepath.Dir(testFile), "..", "..", "..", "..", "..")
+	sourcePath := filepath.Join(repositoryRoot, "tatemonos", module, "core.tsx")
+	source, err := os.ReadFile(sourcePath)
+	if err != nil {
+		t.Fatalf("read %s Tatemono source: %v", module, err)
+	}
+	opening := "/* @arkzen:" + section + ":go:" + operation
+	closing := opening + ":end */"
+	start := strings.Index(string(source), opening)
+	if start < 0 {
+		t.Fatalf("Go %s %q not found in %s", section, operation, sourcePath)
+	}
+	bodyStart := strings.Index(string(source[start:]), "*/")
+	if bodyStart < 0 {
+		t.Fatalf("Go %s %q has no opening delimiter", section, operation)
+	}
+	bodyStart += start + len("*/")
+	bodyEnd := strings.Index(string(source[bodyStart:]), closing)
+	if bodyEnd < 0 {
+		t.Fatalf("Go %s %q has no closing delimiter", section, operation)
+	}
+	body := strings.TrimSpace(string(source[bodyStart : bodyStart+bodyEnd]))
+	return base64.StdEncoding.EncodeToString([]byte(body))
+}
+
+func closeTestModuleRuntime(t *testing.T, handler *Handler, module string) {
+	t.Helper()
+	t.Cleanup(func() {
+		handler.service.mu.Lock()
+		if runtime := handler.service.runtimes[module]; runtime != nil && runtime.database != nil {
+			if err := runtime.database.Close(); err != nil {
+				t.Errorf("close %s module runtime: %v", module, err)
+			}
+		}
+		handler.service.mu.Unlock()
+		if database, exists := sharedModuleDatabases.LoadAndDelete(module); exists {
+			if err := database.(*sql.DB).Close(); err != nil {
+				t.Errorf("close %s shared module database: %v", module, err)
+			}
+		}
+	})
+}
+
 func TestQueueFlowHandlerAllowlistAndStateTransitions(t *testing.T) {
 	storage := testStorageDir(t)
 	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: storage})
 	if err != nil {
 		t.Fatal(err)
 	}
+	closeTestModuleRuntime(t, handler, "queue-flow")
 	build := `{
 		"name":"queue-flow","backendVariant":"go",
 		"databases":[
@@ -530,7 +614,28 @@ func TestQueueFlowHandlerAllowlistAndStateTransitions(t *testing.T) {
 			{"method":"GET","route":"/api/queue-flow/my-ticket/{queue_id}/{ticket_number}","handler":"my_ticket"}
 		]}]
 	}`
-	if response := perform(handler, http.MethodPost, "/arkzen/build", build, "test-secret"); response.Code != http.StatusOK {
+	var buildPayload map[string]any
+	if err := json.Unmarshal([]byte(build), &buildPayload); err != nil {
+		t.Fatal(err)
+	}
+	handlerBodies := map[string]string{}
+	for _, operation := range []string{"join_queue", "call_next", "queue_status", "my_ticket"} {
+		handlerBodies[operation] = goTatemonoBody(t, "queue-flow", "handler", operation)
+	}
+	for _, rawGroup := range buildPayload["customRoutes"].([]any) {
+		group := rawGroup.(map[string]any)
+		for _, rawRoute := range group["routes"].([]any) {
+			route := rawRoute.(map[string]any)
+			if body, exists := handlerBodies[route["handler"].(string)]; exists {
+				route["body"] = body
+			}
+		}
+	}
+	buildBytes, err := json.Marshal(buildPayload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := perform(handler, http.MethodPost, "/arkzen/build", string(buildBytes), "test-secret"); response.Code != http.StatusOK {
 		t.Fatalf("build status %d: %s", response.Code, response.Body.String())
 	}
 	queues := perform(handler, http.MethodGet, "/api/queue-flow/queues", "", "")
@@ -701,6 +806,7 @@ func TestBodyMailAndNotificationSimulationEmulations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	closeTestModuleRuntime(t, handler, "body-mail-notification")
 	notificationSections, err := json.Marshal([]string{
 		"summary:\n  channels: [mail, database]\n  message: \"Here is your activity summary.\"\n  toMail_body: 'summary notification body'",
 	})
@@ -716,7 +822,18 @@ func TestBodyMailAndNotificationSimulationEmulations(t *testing.T) {
 		t.Fatal(err)
 	}
 	build := fmt.Sprintf(`{"name":"body-mail-notification","backendVariant":"go","auth":true,"authSeed":{"users":[{"name":"Mail Test","email":"mail-test@example.com","password":"password"}]},"mails":%s,"notifications":%s,"databases":[{"table":"send_log","columns":{"user_id":{"type":"integer"},"to_email":{"type":"string"},"subject":{"type":"string"},"mail_class":{"type":"string"},"kind":{"type":"string"},"status":{"type":"string"},"error":{"type":"text"}}}],"apis":[{"model":"SendLog","controller":"SendLogController","prefix":"/api/body-mail-notification","middleware":["auth"],"endpoints":{"sendMail":{"method":"POST","route":"/send-mail"},"notify":{"method":"POST","route":"/notify"}}}]}`, mailSections, notificationSections)
-	if response := perform(handler, http.MethodPost, "/arkzen/build", build, "test-secret"); response.Code != http.StatusOK {
+	var buildPayload map[string]any
+	if err := json.Unmarshal([]byte(build), &buildPayload); err != nil {
+		t.Fatal(err)
+	}
+	endpoints := buildPayload["apis"].([]any)[0].(map[string]any)["endpoints"].(map[string]any)
+	endpoints["sendMail"].(map[string]any)["body"] = goTatemonoBody(t, "body-mail-notification", "endpoint", "sendMail")
+	endpoints["notify"].(map[string]any)["body"] = goTatemonoBody(t, "body-mail-notification", "endpoint", "notify")
+	buildBytes, err := json.Marshal(buildPayload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if response := perform(handler, http.MethodPost, "/arkzen/build", string(buildBytes), "test-secret"); response.Code != http.StatusOK {
 		t.Fatalf("build status %d: %s", response.Code, response.Body.String())
 	}
 	login := perform(handler, http.MethodPost, "/api/body-mail-notification/auth/login",
@@ -938,6 +1055,7 @@ func TestKotobaBuildSeedsUsersAndEnablesLogin(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	closeTestModuleRuntime(t, handler, "kotoba")
 	routes := []CustomRouteEntry{
 		{Method: "GET", Route: "/api/kotoba/me", Handler: "me"},
 		{Method: "PUT", Route: "/api/kotoba/me", Handler: "update_me"},
@@ -973,17 +1091,174 @@ func TestKotobaBuildSeedsUsersAndEnablesLogin(t *testing.T) {
 		{Method: "POST", Route: "/api/kotoba/alerts/read", Handler: "read_alerts"},
 		{Method: "GET", Route: "/api/kotoba/progress", Handler: "progress"},
 	}
+	for index := range routes {
+		routes[index].Body = goTatemonoBody(t, "kotoba", "handler", routes[index].Handler)
+	}
+	nullableInt := true
 	payload := BuildPayload{
 		Name:           "kotoba",
 		BackendVariant: "go",
 		Auth:           true,
-		AuthSeed: &AuthSeed{Users: []AuthSeedUser{{
-			Name: "Demo Learner", Email: "demo@kotoba.app", Password: "password123",
-		}}},
-		Databases: []DatabaseDefinition{{
-			Table:   "profiles",
-			Columns: map[string]ColumnDefinition{"user_id": {Type: "integer"}},
+		AuthSeed: &AuthSeed{Users: []AuthSeedUser{
+			{Name: "Aiko Tanaka", Email: "aiko@kotoba.app", Password: "password123"},
+			{Name: "Mateo Rivera", Email: "mateo@kotoba.app", Password: "password123"},
+			{Name: "Sofia Laurent", Email: "sofia@kotoba.app", Password: "password123"},
+			{Name: "Demo Learner", Email: "demo@kotoba.app", Password: "password123"},
 		}},
+		Databases: []DatabaseDefinition{
+			{
+				Table: "profiles",
+				Columns: map[string]ColumnDefinition{
+					"id":            {Type: "integer", Primary: true},
+					"user_id":       {Type: "integer"},
+					"display_name":  {Type: "string"},
+					"avatar_color":  {Type: "string"},
+					"native_lang":   {Type: "string"},
+					"learning_lang": {Type: "string"},
+					"level":         {Type: "string"},
+					"country":       {Type: "string"},
+					"bio":           {Type: "text"},
+					"interests":     {Type: "string"},
+					"xp":            {Type: "integer"},
+					"streak":        {Type: "integer"},
+					"best_streak":   {Type: "integer"},
+					"last_active":   {Type: "date"},
+					"daily_goal":    {Type: "integer"},
+					"words_written": {Type: "integer"},
+					"messages_sent": {Type: "integer"},
+					"onboarded":     {Type: "boolean"},
+				},
+			},
+			{
+				Table: "posts",
+				Columns: map[string]ColumnDefinition{
+					"id":                {Type: "integer", Primary: true},
+					"user_id":           {Type: "integer"},
+					"author_name":       {Type: "string"},
+					"author_color":      {Type: "string"},
+					"author_native":     {Type: "string"},
+					"body":              {Type: "text"},
+					"lang":              {Type: "string"},
+					"kind":              {Type: "string"},
+					"mission_id":        {Type: "integer"},
+					"translation":       {Type: "text"},
+					"likes_count":       {Type: "integer"},
+					"corrections_count": {Type: "integer"},
+					"comments_count":    {Type: "integer"},
+				},
+			},
+			{
+				Table: "likes",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "post_id": {Type: "integer"}, "user_id": {Type: "integer"},
+				},
+			},
+			{
+				Table: "comments",
+				Columns: map[string]ColumnDefinition{
+					"id":            {Type: "integer", Primary: true},
+					"post_id":       {Type: "integer"},
+					"user_id":       {Type: "integer"},
+					"author_name":   {Type: "string"},
+					"author_color":  {Type: "string"},
+					"body":          {Type: "text"},
+					"is_correction": {Type: "boolean"},
+					"corrected":     {Type: "text"},
+					"explanation":   {Type: "text"},
+					"accepted":      {Type: "boolean"},
+				},
+			},
+			{
+				Table: "follows",
+				Columns: map[string]ColumnDefinition{
+					"id":           {Type: "integer", Primary: true},
+					"follower_id":  {Type: "integer"},
+					"following_id": {Type: "integer"},
+				},
+			},
+			{
+				Table: "circles",
+				Columns: map[string]ColumnDefinition{
+					"id":            {Type: "integer", Primary: true},
+					"name":          {Type: "string"},
+					"emoji":         {Type: "string"},
+					"lang":          {Type: "string"},
+					"level":         {Type: "string"},
+					"description":   {Type: "text"},
+					"owner_id":      {Type: "integer"},
+					"members_count": {Type: "integer"},
+				},
+			},
+			{
+				Table: "missions",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "lang": {Type: "string"}, "position": {Type: "integer"},
+				},
+			},
+			{
+				Table: "vocab_cards",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "user_id": {Type: "integer"},
+					"lang": {Type: "string"}, "term": {Type: "string"}, "meaning": {Type: "string"},
+					"example": {Type: "text"}, "source": {Type: "string"}, "due_date": {Type: "date"},
+					"ease": {Type: "float"}, "interval_days": {Type: "integer"},
+					"reps": {Type: "integer"}, "lapses": {Type: "integer"},
+				},
+			},
+			{
+				Table: "lesson_results",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "user_id": {Type: "integer"},
+					"lesson_id": {Type: "integer"}, "score": {Type: "integer"}, "best": {Type: "integer"},
+				},
+			},
+			{
+				Table: "lessons",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "lang": {Type: "string"},
+					"unit": {Type: "string"}, "title": {Type: "string"}, "emoji": {Type: "string"},
+					"level": {Type: "string"}, "position": {Type: "integer"},
+					"xp": {Type: "integer"}, "content": {Type: "text"},
+				},
+			},
+			{
+				Table: "alerts",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "user_id": {Type: "integer"},
+					"kind": {Type: "string"}, "text": {Type: "text"}, "ref": {Type: "integer"},
+					"is_read": {Type: "boolean"},
+				},
+			},
+			{
+				Table: "conversations",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "user_a": {Type: "integer"},
+					"user_b": {Type: "integer"}, "last_message": {Type: "text"}, "last_at": {Type: "datetime"},
+				},
+			},
+			{
+				Table: "messages",
+				Columns: map[string]ColumnDefinition{
+					"id":              {Type: "integer", Primary: true},
+					"conversation_id": {Type: "integer", Nullable: &nullableInt},
+					"circle_id":       {Type: "integer", Nullable: &nullableInt},
+					"sender_id":       {Type: "integer"},
+					"sender_name":     {Type: "string"},
+					"sender_color":    {Type: "string"},
+					"body":            {Type: "text"},
+					"lang":            {Type: "string"},
+					"corrected":       {Type: "text"},
+					"note":            {Type: "text"},
+					"corrected_by":    {Type: "integer"},
+				},
+			},
+			{
+				Table: "circle_members",
+				Columns: map[string]ColumnDefinition{
+					"id": {Type: "integer", Primary: true}, "circle_id": {Type: "integer"}, "user_id": {Type: "integer"},
+				},
+			},
+		},
 		APIs: []APIBlock{{
 			Model: "Profile", Controller: "ProfileController", Prefix: "/api/kotoba/x/profiles",
 			Middleware: []string{"auth:sanctum"},
@@ -1023,6 +1298,165 @@ func TestKotobaBuildSeedsUsersAndEnablesLogin(t *testing.T) {
 	handler.ServeHTTP(protected, protectedRequest)
 	if protected.Code != http.StatusOK {
 		t.Fatalf("Kotoba me handler status %d: %s", protected.Code, protected.Body.String())
+	}
+	runtime, err := handler.service.moduleRuntimeFor("kotoba")
+	if err != nil {
+		t.Fatalf("load Kotoba runtime: %v", err)
+	}
+	for table, want := range map[string]int{
+		"posts": 5, "comments": 2, "follows": 2,
+		"circles": 3, "circle_members": 3, "messages": 3,
+	} {
+		var got int
+		if err := runtime.database.QueryRow(`SELECT COUNT(*) FROM "` + table + `"`).Scan(&got); err != nil || got != want {
+			t.Errorf("Kotoba community seed %s count = %d, want %d (error: %v)", table, got, want, err)
+		}
+	}
+	var circleID int
+	var ownerID int
+	if err := runtime.database.QueryRow(`SELECT "id", "owner_id" FROM "circles" ORDER BY "id" LIMIT 1`).Scan(&circleID, &ownerID); err != nil {
+		t.Fatalf("load Kotoba circle for join test: %v", err)
+	}
+	homeRequest := httptest.NewRequest(http.MethodGet, "/api/kotoba/home", nil)
+	homeRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	home := httptest.NewRecorder()
+	handler.ServeHTTP(home, homeRequest)
+	if home.Code != http.StatusOK || !bytes.Contains(home.Body.Bytes(), []byte(`"profile"`)) {
+		t.Fatalf("Kotoba home handler status %d: %s", home.Code, home.Body.String())
+	}
+	joinRequest := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/kotoba/circles/%d/join", circleID), bytes.NewBufferString(`{}`))
+	joinRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	joinRequest.Header.Set("Content-Type", "application/json")
+	joined := httptest.NewRecorder()
+	handler.ServeHTTP(joined, joinRequest)
+	if joined.Code != http.StatusOK || !bytes.Contains(joined.Body.Bytes(), []byte(`"joined":true`)) {
+		t.Fatalf("Kotoba join circle status %d: %s", joined.Code, joined.Body.String())
+	}
+	sendMessageRequest := httptest.NewRequest(
+		http.MethodPost,
+		"/api/kotoba/messages",
+		bytes.NewBufferString(fmt.Sprintf(`{"circle_id":%d,"body":"Hello circle","lang":"en"}`, circleID)),
+	)
+	sendMessageRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	sendMessageRequest.Header.Set("Content-Type", "application/json")
+	sentMessage := httptest.NewRecorder()
+	handler.ServeHTTP(sentMessage, sendMessageRequest)
+	if sentMessage.Code != http.StatusCreated {
+		t.Fatalf("Kotoba circle send message status %d: %s", sentMessage.Code, sentMessage.Body.String())
+	}
+	messagesRequest := httptest.NewRequest(
+		http.MethodGet,
+		fmt.Sprintf("/api/kotoba/messages?circle_id=%d", circleID),
+		nil,
+	)
+	messagesRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	messages := httptest.NewRecorder()
+	handler.ServeHTTP(messages, messagesRequest)
+	if messages.Code != http.StatusOK || !bytes.Contains(messages.Body.Bytes(), []byte(`"data":[`)) {
+		t.Fatalf("Kotoba circle chat messages status %d: %s", messages.Code, messages.Body.String())
+	}
+	circlesRequest := httptest.NewRequest(http.MethodGet, "/api/kotoba/circles", nil)
+	circlesRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	circles := httptest.NewRecorder()
+	handler.ServeHTTP(circles, circlesRequest)
+	var circleList struct {
+		Data []struct {
+			ID           int  `json:"id"`
+			Joined       bool `json:"joined"`
+			MembersCount int  `json:"members_count"`
+		} `json:"data"`
+	}
+	if err := json.Unmarshal(circles.Body.Bytes(), &circleList); err != nil {
+		t.Fatalf("decode Kotoba circle list: %v", err)
+	}
+	foundJoined := false
+	for _, circle := range circleList.Data {
+		if circle.ID == circleID {
+			foundJoined = circle.Joined && circle.MembersCount == 2
+			break
+		}
+	}
+	if circles.Code != http.StatusOK || !foundJoined {
+		t.Fatalf("Kotoba joined circle missing from list: status %d, body %s", circles.Code, circles.Body.String())
+	}
+	leaveRequest := httptest.NewRequest(http.MethodPost, fmt.Sprintf("/api/kotoba/circles/%d/join", circleID), bytes.NewBufferString(`{}`))
+	leaveRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	leaveRequest.Header.Set("Content-Type", "application/json")
+	left := httptest.NewRecorder()
+	handler.ServeHTTP(left, leaveRequest)
+	if left.Code != http.StatusOK || !bytes.Contains(left.Body.Bytes(), []byte(`"joined":false`)) {
+		t.Fatalf("Kotoba leave circle status %d: %s", left.Code, left.Body.String())
+	}
+	circlesRequest = httptest.NewRequest(http.MethodGet, "/api/kotoba/circles", nil)
+	circlesRequest.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+	circles = httptest.NewRecorder()
+	handler.ServeHTTP(circles, circlesRequest)
+	if err := json.Unmarshal(circles.Body.Bytes(), &circleList); err != nil {
+		t.Fatalf("decode Kotoba circle list after leave: %v", err)
+	}
+	foundLeft := false
+	for _, circle := range circleList.Data {
+		if circle.ID == circleID {
+			foundLeft = !circle.Joined && circle.MembersCount == 1
+			break
+		}
+	}
+	if circles.Code != http.StatusOK || !foundLeft {
+		t.Fatalf("Kotoba left circle still appears joined: status %d, body %s", circles.Code, circles.Body.String())
+	}
+	for _, route := range routes {
+		if route.Handler == "me" || route.Handler == "home" || route.Handler == "community_seed" {
+			continue
+		}
+		path := strings.ReplaceAll(route.Route, "{id}", "1")
+		body := ""
+		if route.Method != http.MethodGet && route.Method != http.MethodDelete {
+			body = `{}`
+		}
+		switch route.Handler {
+		case "complete_lesson":
+			body = `{"score":101}`
+		case "create_post":
+			body = `{"body":"","lang":""}`
+		case "add_comment":
+			body = `{"body":""}`
+		case "send_message":
+			body = `{"body":"","lang":""}`
+		case "correct_message":
+			body = `{"corrected":""}`
+		}
+		request := httptest.NewRequest(route.Method, path, bytes.NewBufferString(body))
+		request.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+		if body != "" {
+			request.Header.Set("Content-Type", "application/json")
+		}
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code == http.StatusNotImplemented ||
+			response.Code == http.StatusMethodNotAllowed ||
+			(response.Code == http.StatusNotFound && strings.Contains(response.Body.String(), `"message":"Not Found"`)) {
+			t.Errorf("Kotoba Go handler %q was not executed: status %d, body %s",
+				route.Handler, response.Code, response.Body.String())
+		}
+	}
+	for _, testCase := range []struct {
+		method, path, body string
+	}{
+		{http.MethodPost, "/api/kotoba/posts", `{"body":"","lang":""}`},
+		{http.MethodPost, "/api/kotoba/posts/1/comments", `{"body":""}`},
+		{http.MethodPost, "/api/kotoba/lessons/999/complete", `{"score":101}`},
+		{http.MethodPost, "/api/kotoba/messages", `{"body":"","lang":""}`},
+		{http.MethodPost, "/api/kotoba/messages/1/correct", `{"corrected":""}`},
+	} {
+		request := httptest.NewRequest(testCase.method, testCase.path, bytes.NewBufferString(testCase.body))
+		request.Header.Set("Authorization", "Bearer "+loginResponse.Token)
+		request.Header.Set("Content-Type", "application/json")
+		response := httptest.NewRecorder()
+		handler.ServeHTTP(response, request)
+		if response.Code != http.StatusUnprocessableEntity {
+			t.Errorf("Kotoba handler %s status = %d, want %d: %s",
+				testCase.path, response.Code, http.StatusUnprocessableEntity, response.Body.String())
+		}
 	}
 }
 

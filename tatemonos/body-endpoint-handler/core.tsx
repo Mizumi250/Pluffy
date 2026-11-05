@@ -386,11 +386,10 @@ sources, err := database.Query(`SELECT DISTINCT source FROM probe_results ORDER 
 if err != nil {
     return response.JSON(500, map[string]string{"message": "Could not load probe sources"})
 }
-defer sources.Close()
 var sourceNames []string
-for sources.Next() {
-    var source string
-    if err := sources.Scan(&source); err != nil {
+for _, row := range sources {
+    source, ok := row["source"].(string)
+    if !ok {
         return response.JSON(500, map[string]string{"message": "Could not read probe sources"})
     }
     sourceNames = append(sourceNames, source)
