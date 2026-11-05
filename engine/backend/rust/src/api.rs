@@ -3,7 +3,7 @@ use lettre::{
     message::header::ContentType, transport::smtp::authentication::Credentials, Message,
     SmtpTransport, Transport,
 };
-use rusqlite::{
+use crate::db::{
     types::{Value as SqlValue, ValueRef},
     Connection, OptionalExtension,
 };
@@ -704,7 +704,7 @@ pub fn clear_scheduler_runs(database_dir: &Path, table: &str) -> (axum::http::St
         return internal_error(format!("Configured table \"{table}\" does not exist"));
     }
     let query = format!("DELETE FROM {}", quote(table));
-    match connection.execute(&query, []) {
+    match connection.execute(&query, crate::db::params![]) {
         Ok(_) => (
             axum::http::StatusCode::OK,
             json!({"message": "Runs cleared"}),
@@ -936,7 +936,7 @@ pub fn fire_event(
             .into_iter()
             .map(|(_, value)| value)
             .collect::<Vec<_>>();
-        if let Err(error) = transaction.execute(&sql, rusqlite::params_from_iter(values)) {
+        if let Err(error) = transaction.execute(&sql, crate::db::params_from_iter(values)) {
             return internal_error(format!(
                 "Could not record event listener execution: {error}"
             ));
@@ -1312,7 +1312,7 @@ pub fn body_mail_notification_action(
         };
         if let Err(error) = connection.execute(
             "INSERT INTO \"notifications\" (\"id\", \"type\", \"notifiable_type\", \"notifiable_id\", \"data\", \"read_at\", \"created_at\", \"updated_at\") VALUES (lower(hex(randomblob(16))), ?1, 'user', ?2, ?3, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-            rusqlite::params![notification_type, user_id, data],
+            crate::db::params![notification_type, user_id, data],
         ) {
             return internal_error(format!("Could not store database notification: {error}"));
         }
@@ -1459,7 +1459,7 @@ pub fn notification_test_action(
                         };
                         if let Err(error) = connection.execute(
                             "INSERT INTO \"notifications\" (\"id\", \"type\", \"notifiable_type\", \"notifiable_id\", \"data\", \"read_at\", \"created_at\", \"updated_at\") VALUES (lower(hex(randomblob(16))), ?1, 'user', ?2, ?3, NULL, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)",
-                            rusqlite::params![notification_type, user_id, encoded],
+                            crate::db::params![notification_type, user_id, encoded],
                         ) {
                             return (
                                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -1538,7 +1538,7 @@ pub fn notification_test_action(
             };
             match connection.execute(
                 "DELETE FROM \"notifications\" WHERE \"id\" = ?1 AND \"notifiable_type\" = 'user' AND \"notifiable_id\" = ?2",
-                rusqlite::params![id, user_id],
+                crate::db::params![id, user_id],
             ) {
                 Ok(0) => (
                     StatusCode::NOT_FOUND,
@@ -1954,7 +1954,7 @@ fn record_failed_job(
     connection
         .execute(
             "INSERT INTO failed_jobs (queue, payload, exception, failed_at) VALUES (?1, ?2, ?3, CURRENT_TIMESTAMP)",
-            rusqlite::params![
+            crate::db::params![
                 queue,
                 payload.to_string(),
                 format!("This job always fails after {tries} attempt(s) (timeout {timeout}s)")
@@ -2014,7 +2014,7 @@ fn record_job_result(
         placeholders.join(", ")
     );
     connection
-        .execute(&sql, rusqlite::params_from_iter(values.drain(..)))
+        .execute(&sql, crate::db::params_from_iter(values.drain(..)))
         .map_err(|error| format!("Could not record job result: {error}"))?;
     Ok(())
 }
@@ -2025,7 +2025,7 @@ fn clear_event_log(connection: &Connection, table: &str) -> (axum::http::StatusC
             "Configured event log table \"{table}\" does not exist"
         ));
     }
-    match connection.execute(&format!("DELETE FROM {}", quote(table)), []) {
+    match connection.execute(&format!("DELETE FROM {}", quote(table)), crate::db::params![]) {
         Ok(_) => (
             axum::http::StatusCode::OK,
             json!({"message": "Log cleared"}),
@@ -2742,11 +2742,11 @@ fn probe_stats(connection: &Connection, table: &str) -> (axum::http::StatusCode,
         );
     }
     let query = format!(
-        "SELECT COUNT(*), COALESCE(SUM(CASE WHEN \"ok\" THEN 1 ELSE 0 END), 0), \
-         COALESCE(SUM(CASE WHEN NOT \"ok\" THEN 1 ELSE 0 END), 0) FROM {}",
+        "SELECT COUNT(*), COALESCE(SUM(CASE WHEN CAST(\"ok\" AS INTEGER) <> 0 THEN 1 ELSE 0 END), 0), \
+         COALESCE(SUM(CASE WHEN CAST(\"ok\" AS INTEGER) = 0 THEN 1 ELSE 0 END), 0) FROM {}",
         quote(table)
     );
-    let (total, passed, failed) = match connection.query_row(&query, [], |row| {
+    let (total, passed, failed) = match connection.query_row(&query, crate::db::params![], |row| {
         Ok((
             row.get::<_, i64>(0)?,
             row.get::<_, i64>(1)?,
@@ -2764,7 +2764,7 @@ fn probe_stats(connection: &Connection, table: &str) -> (axum::http::StatusCode,
         Ok(statement) => statement,
         Err(error) => return internal_error(format!("Could not load probe sources: {error}")),
     };
-    let sources = match statement.query_map([], |row| row.get::<_, String>(0)) {
+    let sources = match statement.query_map(crate::db::params![], |row| row.get::<_, String>(0)) {
         Ok(rows) => match rows.collect::<Result<Vec<_>, _>>() {
             Ok(sources) => sources,
             Err(error) => return internal_error(format!("Could not read probe sources: {error}")),
@@ -2814,15 +2814,7 @@ fn utc_timestamp() -> String {
 }
 
 fn open_connection(database_dir: &Path, slug: &str) -> Result<Connection, String> {
-    let path = database_dir.join(format!("{slug}.sqlite"));
-    let connection = Connection::open(path).map_err(|error| error.to_string())?;
-    connection
-        .busy_timeout(std::time::Duration::from_secs(5))
-        .map_err(|error| error.to_string())?;
-    connection
-        .pragma_update(None, "foreign_keys", "ON")
-        .map_err(|error| error.to_string())?;
-    Ok(connection)
+    crate::db::open_module(database_dir, slug)
 }
 
 fn index(
@@ -2893,7 +2885,7 @@ fn index(
     let total_sql = format!("SELECT COUNT(*) FROM {table_sql}{where_clause}");
     let total = match connection.query_row(
         &total_sql,
-        rusqlite::params_from_iter(values.clone()),
+        crate::db::params_from_iter(values.clone()),
         |row| row.get::<_, i64>(0),
     ) {
         Ok(total) => total,
@@ -3009,7 +3001,7 @@ fn store(
         })
         .map(|(_, value)| sql_value(value))
         .collect();
-    let row_id = match connection.execute(&sql, rusqlite::params_from_iter(params)) {
+    let row_id = match connection.execute(&sql, crate::db::params_from_iter(params)) {
         Ok(_) => connection.last_insert_rowid(),
         Err(error) if is_constraint_error(&error) => {
             return validation_error(vec![format!(
@@ -3100,7 +3092,7 @@ fn with_id(
                     ""
                 }
             );
-            match connection.execute(&sql, rusqlite::params_from_iter(values)) {
+            match connection.execute(&sql, crate::db::params_from_iter(values)) {
                 Ok(0) => (
                     axum::http::StatusCode::NOT_FOUND,
                     json!({"message": "Not Found"}),
@@ -3214,7 +3206,7 @@ fn validate_unique_values(
                 parameters.push(SqlValue::Text(id.to_owned()));
             }
             let exists = match connection
-                .query_row(&sql, rusqlite::params_from_iter(parameters), |row| {
+                .query_row(&sql, crate::db::params_from_iter(parameters), |row| {
                     row.get::<_, i64>(0)
                 })
                 .optional()
@@ -3405,7 +3397,7 @@ fn find_row(
     id: &str,
     definition: &Value,
     exclude_deleted: bool,
-) -> rusqlite::Result<Option<Value>> {
+) -> crate::db::Result<Option<Value>> {
     let sql = format!(
         "SELECT * FROM {} WHERE \"id\" = ?{}",
         quote(table),
@@ -3427,15 +3419,15 @@ fn read_rows(
     sql: &str,
     values: Vec<SqlValue>,
     definition: &Value,
-) -> rusqlite::Result<Vec<Value>> {
+) -> crate::db::Result<Vec<Value>> {
     let mut statement = connection.prepare(sql)?;
-    let rows = statement.query_map(rusqlite::params_from_iter(values), |row| {
+    let rows = statement.query_map(crate::db::params_from_iter(values), |row| {
         row_to_json(row, definition)
     })?;
     rows.collect()
 }
 
-fn row_to_json(row: &rusqlite::Row<'_>, definition: &Value) -> rusqlite::Result<Value> {
+fn row_to_json(row: &crate::db::Row, definition: &Value) -> crate::db::Result<Value> {
     let mut object = Map::new();
     let columns = row.as_ref().column_names().to_vec();
     for (index, name) in columns.iter().enumerate() {
@@ -3460,19 +3452,11 @@ fn row_to_json(row: &rusqlite::Row<'_>, definition: &Value) -> rusqlite::Result<
 }
 
 fn table_exists(connection: &Connection, table: &str) -> bool {
-    connection
-        .query_row(
-            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1",
-            [table],
-            |_| Ok(()),
-        )
-        .is_ok()
+    connection.table_exists(table)
 }
 
-fn column_names(connection: &Connection, table: &str) -> rusqlite::Result<Vec<String>> {
-    let mut statement = connection.prepare(&format!("PRAGMA table_info({})", quote(table)))?;
-    let columns = statement.query_map([], |row| row.get(1))?;
-    columns.collect()
+fn column_names(connection: &Connection, table: &str) -> crate::db::Result<Vec<String>> {
+    connection.table_columns(table)
 }
 
 fn route_id(path: &str) -> Option<String> {
@@ -3516,12 +3500,8 @@ fn internal_error(message: String) -> (axum::http::StatusCode, Value) {
     )
 }
 
-fn is_constraint_error(error: &rusqlite::Error) -> bool {
-    matches!(
-        error,
-        rusqlite::Error::SqliteFailure(code, _)
-            if code.code == rusqlite::ErrorCode::ConstraintViolation
-    )
+fn is_constraint_error(error: &crate::db::Error) -> bool {
+    error.is_constraint_violation()
 }
 
 fn snake(name: &str) -> String {
@@ -3654,7 +3634,7 @@ mod tests {
             .prepare("SELECT event_name, listener_name, payload FROM event_log ORDER BY id")
             .unwrap();
         let rows = statement
-            .query_map([], |row| {
+            .query_map(crate::db::params![], |row| {
                 Ok((
                     row.get::<_, String>(0)?,
                     row.get::<_, String>(1)?,
@@ -3692,7 +3672,7 @@ mod tests {
         );
         assert_eq!(status, axum::http::StatusCode::OK, "{response}");
         let remaining: i64 = connection
-            .query_row("SELECT COUNT(*) FROM event_log", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM event_log", crate::db::params![], |row| row.get(0))
             .unwrap();
         assert_eq!(remaining, 0);
 
@@ -4086,11 +4066,11 @@ mod tests {
         let connection = open_connection(directory.path(), "jo-payroll").unwrap();
         connection.execute(
             "INSERT INTO job_orders (jor_number, name_of_jo, job_title, funding, basic_pay, disbursement_type, jor_pyrl_group, sss_amount, hdmf_premium, hdmf_mpl, calamity_loan, appointment_date, appointment_order, status) VALUES (1, 'Ada', 'Clerk', 'Admin', 1000, 'ATM', 'GROUP A', 50, 10, 5, 0, '2026-01-01', 1, 'active')",
-            [],
+            crate::db::params![],
         ).unwrap();
         connection.execute(
             "INSERT INTO job_orders (jor_number, jor_pyrl_group, status) VALUES (2, 'GROUP A', 'inactive')",
-            [],
+            crate::db::params![],
         ).unwrap();
         drop(connection);
 

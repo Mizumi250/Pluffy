@@ -1,5 +1,5 @@
 use crate::auth::User;
-use rusqlite::{
+use crate::db::{
     params_from_iter,
     types::{Value as SqlValue, ValueRef},
     Connection,
@@ -166,15 +166,8 @@ fn err(
 }
 
 fn open_connection(database_dir: &Path) -> Result<Connection, String> {
-    let connection = Connection::open(database_dir.join("kotoba.sqlite"))
-        .map_err(|error| format!("Could not open Kotoba database: {error}"))?;
-    connection
-        .busy_timeout(std::time::Duration::from_secs(5))
-        .map_err(|error| format!("Could not configure Kotoba database: {error}"))?;
-    connection
-        .pragma_update(None, "foreign_keys", "ON")
-        .map_err(|error| format!("Could not enable Kotoba foreign keys: {error}"))?;
-    Ok(connection)
+    crate::db::open_module(database_dir, "kotoba")
+        .map_err(|error| format!("Could not open Kotoba database: {error}"))
 }
 
 fn sql_value(value: &Value) -> SqlValue {
@@ -250,15 +243,7 @@ fn columns(connection: &Connection, table: &str) -> Result<Vec<String>, String> 
     ) {
         return Err(format!("Unknown Kotoba table {table}"));
     }
-    let mut statement = connection
-        .prepare(&format!("PRAGMA table_info(\"{table}\")"))
-        .map_err(|error| error.to_string())?;
-    let columns = statement
-        .query_map([], |row| row.get::<_, String>(1))
-        .map_err(|error| error.to_string())?
-        .collect::<Result<Vec<_>, _>>()
-        .map_err(|error| error.to_string())?;
-    Ok(columns)
+    connection.table_columns(table).map_err(|error| error.to_string())
 }
 
 fn insert(connection: &Connection, table: &str, values: Value) -> Result<Value, String> {
@@ -280,7 +265,7 @@ fn insert(connection: &Connection, table: &str, values: Value) -> Result<Value, 
     let names = fields.keys().cloned().collect::<Vec<_>>();
     if names.is_empty() {
         connection
-            .execute(&format!("INSERT INTO \"{table}\" DEFAULT VALUES"), [])
+            .execute(&format!("INSERT INTO \"{table}\" DEFAULT VALUES"), crate::db::params![])
             .map_err(|error| error.to_string())?;
     } else {
         let quoted = names
@@ -593,7 +578,7 @@ fn seed_community(connection: &Connection) -> HandlerResult {
 
 fn seed_data(connection: &Connection) -> Result<bool, String> {
     let count: i64 = connection
-        .query_row("SELECT COUNT(*) FROM posts", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM posts", crate::db::params![], |row| row.get(0))
         .map_err(|error| error.to_string())?;
     if count > 0 {
         return Ok(false);
@@ -698,7 +683,7 @@ fn seed_data(connection: &Connection) -> Result<bool, String> {
         }
     }
     let circle_count: i64 = connection
-        .query_row("SELECT COUNT(*) FROM circles", [], |row| row.get(0))
+        .query_row("SELECT COUNT(*) FROM circles", crate::db::params![], |row| row.get(0))
         .map_err(|error| error.to_string())?;
     if circle_count == 0 {
         for (name, emoji, lang, level, description, email) in [
@@ -939,7 +924,7 @@ fn toggle_like(connection: &Connection, user: &User, id: i64) -> HandlerResult {
             .map_err(|e| err(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
         connection
             .execute(
-                "UPDATE posts SET likes_count=MAX(0,likes_count-1) WHERE id=?1",
+                "UPDATE posts SET likes_count=CASE WHEN likes_count>1 THEN likes_count-1 ELSE 0 END WHERE id=?1",
                 [id],
             )
             .map_err(|e| err(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
@@ -1015,7 +1000,7 @@ fn add_comment(
     let correction = truthy(body.get("is_correction")) && !corrected.trim().is_empty();
     let comment=insert(connection,"comments",json!({"post_id":id,"user_id":user.id,"author_name":p["display_name"],"author_color":p["avatar_color"],"body":content,"is_correction":correction,"corrected":corrected,"explanation":explanation,"accepted":false}))
         .map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,format!("Could not create comment: {e}")))?;
-    connection.execute("UPDATE posts SET comments_count=comments_count+1,corrections_count=corrections_count+?1 WHERE id=?2",rusqlite::params![if correction { 1 } else { 0 },id]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
+    connection.execute("UPDATE posts SET comments_count=comments_count+1,corrections_count=corrections_count+?1 WHERE id=?2",crate::db::params![if correction { 1 } else { 0 },id]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
     let (kind, xp, notice) = if correction {
         (
             "correction",
@@ -1422,7 +1407,7 @@ fn delete_card(connection: &Connection, user: &User, id: i64) -> HandlerResult {
     let changed = connection
         .execute(
             "DELETE FROM vocab_cards WHERE id=?1 AND user_id=?2",
-            rusqlite::params![id, user.id],
+            crate::db::params![id, user.id],
         )
         .map_err(|e| err(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
     if changed == 0 {
@@ -1681,7 +1666,7 @@ fn send_message(connection: &Connection, user: &User, body: &Map<String, Value>)
     let message=insert(connection,"messages",json!({"conversation_id":conversation_id,"circle_id":circle_id,"sender_id":user.id,"sender_name":p["display_name"],"sender_color":p["avatar_color"],"body":content,"lang":lang})).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,format!("Could not send message: {e}")))?;
     if conversation > 0 {
         let preview = content.chars().take(200).collect::<String>();
-        connection.execute("UPDATE conversations SET last_message=?1,last_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=?2",rusqlite::params![preview,conversation]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
+        connection.execute("UPDATE conversations SET last_message=?1,last_at=CURRENT_TIMESTAMP,updated_at=CURRENT_TIMESTAMP WHERE id=?2",crate::db::params![preview,conversation]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
     }
     let words = content.split_whitespace().count() as i64;
     let _ = update(
@@ -1864,7 +1849,7 @@ fn toggle_join(connection: &Connection, user: &User, id: i64) -> HandlerResult {
                 [int(member.get("id"))],
             )
             .map_err(|e| err(axum::http::StatusCode::INTERNAL_SERVER_ERROR, e.to_string()))?;
-        connection.execute("UPDATE circles SET members_count=MAX(1,members_count-1),updated_at=CURRENT_TIMESTAMP WHERE id=?1",[id]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
+        connection.execute("UPDATE circles SET members_count=CASE WHEN members_count>2 THEN members_count-1 ELSE 1 END,updated_at=CURRENT_TIMESTAMP WHERE id=?1",[id]).map_err(|e|err(axum::http::StatusCode::INTERNAL_SERVER_ERROR,e.to_string()))?;
     } else {
         insert(
             connection,

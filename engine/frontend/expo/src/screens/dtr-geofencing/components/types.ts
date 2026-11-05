@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE TYPES — dtr-geofencing [Expo]
 // Source: @arkzen:native:components (dtr-geofencing)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:05:29.200Z
+// Generated: 2026-11-04T15:49:04.111Z
 // ============================================================
 
 // ── Types ────────────────────────────────────────────────────

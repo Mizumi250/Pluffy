@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — animation-lab [Expo]
 // Source: @arkzen:native:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:05:27.594Z
+// Generated: 2026-11-04T15:48:50.896Z
 // ============================================================
 
 import React, { useCallback, useRef, useState } from 'react'

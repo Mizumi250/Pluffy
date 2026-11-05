@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Btn [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:18:58.302Z
+// Generated: 2026-11-04T15:49:11.669Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

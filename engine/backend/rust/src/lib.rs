@@ -174,6 +174,7 @@ pub fn app(state: AppState) -> Router {
     Router::new()
         .route("/arkzen/health", get(health))
         .route("/arkzen/registry", get(registry))
+        .route("/arkzen/expo-registry", get(expo_registry))
         .route("/arkzen/build", post(build))
         .route("/arkzen/remove", post(remove))
         .route("/app/:app_key", get(realtime::websocket))
@@ -207,6 +208,39 @@ fn is_json_content_type(content_type: Option<&str>) -> bool {
         .unwrap_or_default()
         .to_ascii_lowercase();
     media_type == "application/json" || media_type.ends_with("+json")
+}
+
+async fn expo_registry(axum::extract::State(state): axum::extract::State<AppState>) -> Response {
+    let empty = json!({ "engine": "1.0.0", "project": "expo", "modules": [] });
+    let Some(root) = &state.config.repository_root else {
+        return Json(empty).into_response();
+    };
+    let path = root
+        .join("engine")
+        .join("frontend")
+        .join("expo")
+        .join("expo-registry.json");
+    let contents = match std::fs::read_to_string(&path) {
+        Ok(contents) => contents,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+            return Json(empty).into_response()
+        }
+        Err(error) => {
+            return internal_error(format!("Could not read {}: {error}", path.display()))
+                .into_response()
+        }
+    };
+    match serde_json::from_str::<Value>(&contents) {
+        Ok(Value::Object(mut object)) => {
+            object.entry("modules").or_insert_with(|| json!([]));
+            Json(Value::Object(object)).into_response()
+        }
+        Ok(_) => internal_error("Expo registry must contain a JSON object".to_owned())
+            .into_response(),
+        Err(error) => {
+            internal_error(format!("Could not parse {}: {error}", path.display())).into_response()
+        }
+    }
 }
 
 async fn registry(axum::extract::State(state): axum::extract::State<AppState>) -> Response {
@@ -2609,4 +2643,4 @@ mod tests {
             .unwrap()
             .contains("application/json"));
     }
-}
+}   

@@ -1,4 +1,4 @@
-use rusqlite::{types::Value as SqlValue, Connection, Transaction};
+use crate::db::{types::Value as SqlValue, Connection, Transaction};
 use serde_json::{Map, Value};
 use std::collections::HashSet;
 use std::path::Path;
@@ -11,7 +11,11 @@ pub enum DatabaseDriver {
 
 impl DatabaseDriver {
     pub fn from_setting(value: Option<&str>) -> Self {
-        if value == Some("pgsql") {
+        let normalized = value.map(|value| value.trim().to_ascii_lowercase());
+        if matches!(
+            normalized.as_deref(),
+            Some("pgsql" | "postgres" | "postgresql")
+        ) {
             Self::Postgres
         } else {
             Self::Sqlite
@@ -84,18 +88,8 @@ fn postgres_column_type(sqlite_type: &str) -> String {
 }
 
 pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec<String>, String> {
-    std::fs::create_dir_all(directory)
-        .map_err(|error| format!("Could not create isolated database directory: {error}"))?;
-    let path = directory.join(format!("{name}.sqlite"));
-    let mut connection = Connection::open(&path).map_err(|error| {
-        format!(
-            "Could not open isolated database {}: {error}",
-            path.display()
-        )
-    })?;
-    connection
-        .pragma_update(None, "foreign_keys", "ON")
-        .map_err(|error| format!("Could not enable SQLite foreign keys: {error}"))?;
+    let (connection, location) = crate::db::ensure_module_database(directory, name)?;
+    let postgres = connection.is_postgres();
 
     let databases = payload["databases"].as_array().cloned().unwrap_or_default();
     let tables: HashSet<&str> = databases
@@ -106,13 +100,23 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
     let transaction = connection
         .transaction()
         .map_err(|error| format!("Could not start schema transaction: {error}"))?;
-    let mut steps = vec![format!("Isolated database ready: {}", path.display())];
+    let mut steps = vec![format!("Isolated database ready: {location}")];
     for definition in &databases {
         let table = definition["table"]
             .as_str()
             .ok_or_else(|| "Validated database table name was missing".to_owned())?;
         create_table(&transaction, table, definition, &module_prefix, &tables)?;
         steps.push(format!("Schema ready: {table}"));
+    }
+    if postgres {
+        // PostgreSQL requires referenced tables to exist, so constraints are added once
+        // every table of the module has been created.
+        for definition in &databases {
+            let table = definition["table"]
+                .as_str()
+                .ok_or_else(|| "Validated database table name was missing".to_owned())?;
+            ensure_postgres_foreign_keys(&transaction, table, definition, &module_prefix, &tables)?;
+        }
     }
 
     for definition in &databases {
@@ -138,6 +142,76 @@ pub fn apply_schema(directory: &Path, name: &str, payload: &Value) -> Result<Vec
         .commit()
         .map_err(|error| format!("Could not commit schema changes: {error}"))?;
     Ok(steps)
+}
+
+fn ensure_postgres_foreign_keys(
+    transaction: &Transaction<'_>,
+    table: &str,
+    definition: &Value,
+    module_prefix: &str,
+    tables: &HashSet<&str>,
+) -> Result<(), String> {
+    let table_name = quote_identifier(table)?;
+    let existing = transaction
+        .postgres_foreign_keys(table)
+        .map_err(|error| format!("Could not inspect foreign keys for {table}: {error}"))?;
+    for (column, config) in definition["columns"].as_object().into_iter().flatten() {
+        let Some(reference) = config["foreign"].as_str() else {
+            continue;
+        };
+        let (target_table, target_column) =
+            resolved_foreign_reference(reference, module_prefix, tables)?;
+        let matching = existing.iter().filter(|key| &key.column == column);
+        let mut satisfied = false;
+        for key in matching {
+            if key.target_table == target_table && key.target_column == target_column {
+                satisfied = true;
+            } else {
+                transaction
+                    .execute(
+                        &format!(
+                            "ALTER TABLE {table_name} DROP CONSTRAINT {}",
+                            quote_identifier(&key.constraint)?
+                        ),
+                        crate::db::params![],
+                    )
+                    .map_err(|error| {
+                        format!("Could not replace foreign key {}: {error}", key.constraint)
+                    })?;
+            }
+        }
+        if satisfied {
+            continue;
+        }
+        let constraint = quote_identifier(&format!("{table}_{column}_foreign"))?;
+        let action = foreign_key_action(config)?;
+        transaction
+            .execute(
+                &format!(
+                    "ALTER TABLE {table_name} ADD CONSTRAINT {constraint} FOREIGN KEY ({}) \
+                     REFERENCES {}({}) ON DELETE {action}",
+                    quote_identifier(column)?,
+                    quote_identifier(&target_table)?,
+                    quote_identifier(target_column)?
+                ),
+                crate::db::params![],
+            )
+            .map_err(|error| {
+                format!("Could not add foreign key {table}.{column} -> {target_table}.{target_column}: {error}")
+            })?;
+    }
+    Ok(())
+}
+
+fn foreign_key_action(config: &Value) -> Result<&'static str, String> {
+    let on_delete = config["onDelete"].as_str().unwrap_or("cascade");
+    match on_delete.to_ascii_lowercase().as_str() {
+        "cascade" => Ok("CASCADE"),
+        "restrict" => Ok("RESTRICT"),
+        "set null" => Ok("SET NULL"),
+        "no action" => Ok("NO ACTION"),
+        _ => Err(format!("Unsupported foreign key action \"{on_delete}\"")),
+    }
 }
 
 fn ensure_notification_table(transaction: &Transaction<'_>) -> Result<(), String> {
@@ -169,23 +243,27 @@ fn seed_table(
 ) -> Result<(), String> {
     let table_name = quote_identifier(table)?;
     transaction
-        .execute(&format!("DELETE FROM {table_name}"), [])
+        .execute(&format!("DELETE FROM {table_name}"), crate::db::params![])
         .map_err(|error| format!("Could not reset seeded table {table}: {error}"))?;
 
-    let sequence_exists = transaction
-        .query_row(
-            "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'sqlite_sequence'",
-            [],
-            |row| row.get::<_, i64>(0),
-        )
-        .map_err(|error| format!("Could not inspect SQLite sequences: {error}"))?
-        > 0;
-    if sequence_exists {
-        transaction
-            .execute("DELETE FROM sqlite_sequence WHERE name = ?1", [table])
-            .map_err(|error| {
-                format!("Could not reset auto-increment sequence for {table}: {error}")
-            })?;
+    if transaction.is_postgres() {
+        reset_postgres_sequence(transaction, table, true)?;
+    } else {
+        let sequence_exists = transaction
+            .query_row(
+                "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'sqlite_sequence'",
+                crate::db::params![],
+                |row| row.get::<_, i64>(0),
+            )
+            .map_err(|error| format!("Could not inspect SQLite sequences: {error}"))?
+            > 0;
+        if sequence_exists {
+            transaction
+                .execute("DELETE FROM sqlite_sequence WHERE name = ?1", [table])
+                .map_err(|error| {
+                    format!("Could not reset auto-increment sequence for {table}: {error}")
+                })?;
+        }
     }
 
     let timestamps = definition["timestamps"].as_bool() != Some(false);
@@ -199,7 +277,38 @@ fn seed_table(
         seed_row(transaction, table, row, timestamps)
             .map_err(|error| format!("Could not seed {table} row {}: {error}", row_index + 1))?;
     }
+    if transaction.is_postgres() {
+        // Explicit ids in seed rows do not advance the serial sequence.
+        reset_postgres_sequence(transaction, table, false)?;
+    }
     Ok(())
+}
+
+/// Restarts (`restart = true`) or realigns a table's serial sequence with `MAX(id)`.
+fn reset_postgres_sequence(
+    transaction: &Transaction<'_>,
+    table: &str,
+    restart: bool,
+) -> Result<(), String> {
+    let table_name = quote_identifier(table)?;
+    let sequence: Option<String> = transaction
+        .query_row(
+            "SELECT pg_get_serial_sequence(?1, 'id')",
+            [table_name.as_str()],
+            |row| row.get(0),
+        )
+        .map_err(|error| format!("Could not inspect sequence for {table}: {error}"))?;
+    let Some(sequence) = sequence else {
+        return Ok(());
+    };
+    let statement = if restart {
+        "SELECT setval(?1, 1, false)".to_owned()
+    } else {
+        format!("SELECT setval(?1, COALESCE((SELECT MAX(\"id\") FROM {table_name}), 0) + 1, false)")
+    };
+    transaction
+        .query_row(&statement, [sequence.as_str()], |_| Ok(()))
+        .map_err(|error| format!("Could not reset sequence for {table}: {error}"))
 }
 
 fn seed_row(
@@ -222,7 +331,7 @@ fn seed_row(
     }
     if fields.is_empty() {
         transaction
-            .execute(&format!("INSERT INTO {table_name} DEFAULT VALUES"), [])
+            .execute(&format!("INSERT INTO {table_name} DEFAULT VALUES"), crate::db::params![])
             .map_err(|error| error.to_string())?;
         return Ok(());
     }
@@ -248,7 +357,7 @@ fn seed_row(
         placeholders.join(", ")
     );
     transaction
-        .execute(&sql, rusqlite::params_from_iter(parameters))
+        .execute(&sql, crate::db::params_from_iter(parameters))
         .map_err(|error| error.to_string())?;
     Ok(())
 }
@@ -345,43 +454,35 @@ fn create_table(
     module_prefix: &str,
     tables: &HashSet<&str>,
 ) -> Result<(), String> {
+    let postgres = transaction.is_postgres();
     let table_name = quote_identifier(table)?;
     let columns = definition["columns"].as_object();
-    let declarations = table_declarations(definition, module_prefix, tables)?;
+    let declarations = table_declarations(definition, module_prefix, tables, postgres)?;
 
-    let exists = transaction
-        .query_row(
-            "SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = ?1",
-            [table],
-            |_| Ok(()),
-        )
-        .is_ok();
+    let exists = transaction.table_exists(table);
     if !exists {
         let sql = format!("CREATE TABLE {table_name} ({})", declarations.join(", "));
         transaction
-            .execute(&sql, [])
+            .execute(&sql, crate::db::params![])
             .map_err(|error| format!("Could not create table {table}: {error}"))?;
     } else {
-        if has_mismatched_foreign_key(transaction, table, definition, module_prefix, tables)? {
+        if !postgres
+            && has_mismatched_foreign_key(transaction, table, definition, module_prefix, tables)?
+        {
             migrate_table_foreign_keys(transaction, table, &declarations)?;
         }
-        let mut statement = transaction
-            .prepare(&format!("PRAGMA table_info({table_name})"))
-            .map_err(|error| format!("Could not inspect table {table}: {error}"))?;
-        let existing: Vec<String> = statement
-            .query_map([], |row| row.get(1))
-            .map_err(|error| format!("Could not inspect table {table}: {error}"))?
-            .collect::<Result<_, _>>()
+        let existing = transaction
+            .table_columns(table)
             .map_err(|error| format!("Could not inspect table {table}: {error}"))?;
         for (name, config) in columns.into_iter().flat_map(|columns| columns.iter()) {
             if existing.iter().any(|column| column == name) {
                 continue;
             }
-            let declaration = added_column_declaration(name, config)?;
+            let declaration = added_column_declaration(name, config, postgres)?;
             transaction
                 .execute(
                     &format!("ALTER TABLE {table_name} ADD COLUMN {declaration}"),
-                    [],
+                    crate::db::params![],
                 )
                 .map_err(|error| format!("Could not add column {name} to {table}: {error}"))?;
             if config["unique"].as_bool() == Some(true) {
@@ -392,7 +493,7 @@ fn create_table(
                             "CREATE UNIQUE INDEX IF NOT EXISTS {index_name} ON {table_name} ({})",
                             quote_identifier(name)?
                         ),
-                        [],
+                        crate::db::params![],
                     )
                     .map_err(|error| {
                         format!("Could not add unique index for {table}.{name}: {error}")
@@ -407,6 +508,7 @@ fn table_declarations(
     definition: &Value,
     module_prefix: &str,
     tables: &HashSet<&str>,
+    postgres: bool,
 ) -> Result<Vec<String>, String> {
     let columns = definition["columns"].as_object();
     let has_primary = columns
@@ -423,7 +525,13 @@ fn table_declarations(
     }
     if let Some(columns) = columns {
         for (name, config) in columns {
-            declarations.push(column_declaration(name, config, module_prefix, tables)?);
+            declarations.push(column_declaration(
+                name,
+                config,
+                module_prefix,
+                tables,
+                postgres,
+            )?);
         }
     }
     if definition["timestamps"].as_bool() != Some(false) {
@@ -472,7 +580,7 @@ fn has_mismatched_foreign_key(
         .prepare(&format!("PRAGMA foreign_key_list({table_name})"))
         .map_err(|error| format!("Could not inspect foreign keys for {table}: {error}"))?;
     let foreign_keys = statement
-        .query_map([], |row| {
+        .query_map(crate::db::params![], |row| {
             Ok((
                 row.get::<_, String>(2)?,
                 row.get::<_, String>(3)?,
@@ -527,7 +635,7 @@ fn migrate_table_foreign_keys(
                 "CREATE TABLE {temporary_name} ({})",
                 declarations.join(", ")
             ),
-            [],
+            crate::db::params![],
         )
         .map_err(|error| format!("Could not prepare foreign-key migration for {table}: {error}"))?;
     let new_columns = table_columns(transaction, &temporary_name, &temporary_table)?;
@@ -550,24 +658,24 @@ fn migrate_table_foreign_keys(
                 columns.join(", "),
                 columns.join(", ")
             ),
-            [],
+            crate::db::params![],
         )
         .map_err(|error| {
             format!("Could not preserve {table} rows during foreign-key migration: {error}")
         })?;
     transaction
-        .execute(&format!("DROP TABLE {table_name}"), [])
+        .execute(&format!("DROP TABLE {table_name}"), crate::db::params![])
         .map_err(|error| {
             format!("Could not replace {table} during foreign-key migration: {error}")
         })?;
     transaction
         .execute(
             &format!("ALTER TABLE {temporary_name} RENAME TO {table_name}"),
-            [],
+            crate::db::params![],
         )
         .map_err(|error| format!("Could not finish foreign-key migration for {table}: {error}"))?;
     for sql in index_and_trigger_sql {
-        transaction.execute(&sql, []).map_err(|error| {
+        transaction.execute(&sql, crate::db::params![]).map_err(|error| {
             format!("Could not restore an index or trigger for {table}: {error}")
         })?;
     }
@@ -583,7 +691,7 @@ fn table_columns(
         .prepare(&format!("PRAGMA table_info({quoted_table})"))
         .map_err(|error| format!("Could not inspect columns for {table}: {error}"))?;
     let rows = statement
-        .query_map([], |row| row.get(1))
+        .query_map(crate::db::params![], |row| row.get(1))
         .map_err(|error| format!("Could not inspect columns for {table}: {error}"))?;
     let columns = rows
         .collect::<Result<_, _>>()
@@ -591,17 +699,24 @@ fn table_columns(
     Ok(columns)
 }
 
-fn added_column_declaration(name: &str, config: &Value) -> Result<String, String> {
-    let kind = config["type"].as_str().unwrap_or("string");
-    let sql_type = match kind {
+/// Logical column type. SQLite keeps its historical affinities (booleans are stored in
+/// TEXT columns); PostgreSQL uses integer columns for booleans so `flag = 0` works.
+fn column_sql_type(kind: &str, postgres: bool) -> &'static str {
+    match kind {
         "integer" | "bigInteger" | "foreignId" => "INTEGER",
         "decimal" | "float" => "REAL",
+        "boolean" if postgres => "INTEGER",
         _ => "TEXT",
-    };
+    }
+}
+
+fn added_column_declaration(name: &str, config: &Value, postgres: bool) -> Result<String, String> {
+    let kind = config["type"].as_str().unwrap_or("string");
+    let sql_type = column_sql_type(kind, postgres);
     let mut declaration = format!("{} {sql_type}", quote_identifier(name)?);
     if let Some(default) = config.get("default") {
         declaration.push_str(" DEFAULT ");
-        declaration.push_str(&sql_literal(default)?);
+        declaration.push_str(&sql_literal(default, sql_type, postgres)?);
     }
     Ok(declaration)
 }
@@ -611,16 +726,13 @@ fn column_declaration(
     config: &Value,
     module_prefix: &str,
     tables: &HashSet<&str>,
+    postgres: bool,
 ) -> Result<String, String> {
     let name = quote_identifier(name)?;
     let kind = config["type"].as_str().unwrap_or("string");
     let primary = config["primary"].as_bool() == Some(true);
     let auto_increment = config["autoIncrement"].as_bool() != Some(false);
-    let sql_type = match kind {
-        "integer" | "bigInteger" | "foreignId" => "INTEGER",
-        "decimal" | "float" => "REAL",
-        _ => "TEXT",
-    };
+    let sql_type = column_sql_type(kind, postgres);
     let mut declaration = if primary && auto_increment && sql_type == "INTEGER" {
         format!("{name} INTEGER PRIMARY KEY AUTOINCREMENT")
     } else if primary {
@@ -636,25 +748,20 @@ fn column_declaration(
     }
     if let Some(reference) = config["foreign"].as_str() {
         let (table, column) = resolved_foreign_reference(reference, module_prefix, tables)?;
-        declaration.push_str(&format!(
-            " REFERENCES {}({})",
-            quote_identifier(&table)?,
-            quote_identifier(column)?
-        ));
-        let on_delete = config["onDelete"].as_str().unwrap_or("cascade");
-        let action = match on_delete.to_ascii_lowercase().as_str() {
-            "cascade" => "CASCADE",
-            "restrict" => "RESTRICT",
-            "set null" => "SET NULL",
-            "no action" => "NO ACTION",
-            _ => return Err(format!("Unsupported foreign key action \"{on_delete}\"")),
-        };
-        declaration.push_str(" ON DELETE ");
-        declaration.push_str(action);
+        let action = foreign_key_action(config)?;
+        if !postgres {
+            declaration.push_str(&format!(
+                " REFERENCES {}({})",
+                quote_identifier(&table)?,
+                quote_identifier(column)?
+            ));
+            declaration.push_str(" ON DELETE ");
+            declaration.push_str(action);
+        }
     }
     if let Some(default) = config.get("default") {
         declaration.push_str(" DEFAULT ");
-        declaration.push_str(&sql_literal(default)?);
+        declaration.push_str(&sql_literal(default, sql_type, postgres)?);
     }
     Ok(declaration)
 }
@@ -666,23 +773,28 @@ fn quote_identifier(identifier: &str) -> Result<String, String> {
     Ok(format!("\"{identifier}\""))
 }
 
-fn sql_literal(value: &Value) -> Result<String, String> {
+fn sql_literal(value: &Value, sql_type: &str, postgres: bool) -> Result<String, String> {
+    let quote_text = |text: String| format!("'{}'", text.replace('\'', "''"));
     match value {
-        Value::String(value) => Ok(format!("'{}'", value.replace('\'', "''"))),
+        Value::String(value) => Ok(quote_text(value.clone())),
+        // PostgreSQL refuses numeric defaults on TEXT columns; SQLite coerces them.
+        Value::Number(value) if postgres && sql_type == "TEXT" => Ok(quote_text(value.to_string())),
         Value::Number(value) => Ok(value.to_string()),
+        Value::Bool(value) if postgres && sql_type == "TEXT" => {
+            Ok(quote_text(if *value { "1" } else { "0" }.to_owned()))
+        }
         Value::Bool(value) => Ok(if *value { "1" } else { "0" }.to_owned()),
         Value::Null => Ok("NULL".to_owned()),
-        _ => Err("SQLite default must be a scalar value".to_owned()),
+        _ => Err("Database default must be a scalar value".to_owned()),
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use serde_json::json;
 
     #[test]
-    fn database_driver_defaults_to_sqlite_and_only_selects_pgsql_explicitly() {
+    fn database_driver_defaults_to_sqlite_and_accepts_postgres_aliases() {
         assert_eq!(DatabaseDriver::from_setting(None), DatabaseDriver::Sqlite);
         assert_eq!(
             DatabaseDriver::from_setting(Some("sqlite")),
@@ -692,8 +804,14 @@ mod tests {
             DatabaseDriver::from_setting(Some("pgsql")),
             DatabaseDriver::Postgres
         );
+        for alias in ["postgres", "postgresql", "PgSQL", " pgsql "] {
+            assert_eq!(
+                DatabaseDriver::from_setting(Some(alias)),
+                DatabaseDriver::Postgres
+            );
+        }
         assert_eq!(
-            DatabaseDriver::from_setting(Some("postgres")),
+            DatabaseDriver::from_setting(Some("mysql")),
             DatabaseDriver::Sqlite
         );
     }
@@ -748,7 +866,7 @@ mod tests {
         let columns: Vec<String> = connection
             .prepare("PRAGMA table_info(\"tasks\")")
             .unwrap()
-            .query_map([], |row| row.get(1))
+            .query_map(crate::db::params![], |row| row.get(1))
             .unwrap()
             .collect::<Result<_, _>>()
             .unwrap();
@@ -764,10 +882,10 @@ mod tests {
             ]
         );
         connection
-            .execute("INSERT INTO tasks (title) VALUES ('first')", [])
+            .execute("INSERT INTO tasks (title) VALUES ('first')", crate::db::params![])
             .unwrap();
         let done: i64 = connection
-            .query_row("SELECT done FROM tasks", [], |row| row.get(0))
+            .query_row("SELECT done FROM tasks", crate::db::params![], |row| row.get(0))
             .unwrap();
         assert_eq!(done, 0);
         assert!(!directory.path().join("other.sqlite").exists());
@@ -804,36 +922,36 @@ mod tests {
 
         let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
         let count: i64 = connection
-            .query_row("SELECT COUNT(*) FROM inventories", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM inventories", crate::db::params![], |row| row.get(0))
             .unwrap();
         assert_eq!(count, 2);
         connection
             .execute(
                 "INSERT INTO inventories (name, quantity) VALUES ('Temporary', 1)",
-                [],
+                crate::db::params![],
             )
             .unwrap();
         connection
-            .execute("INSERT INTO audit_logs (event) VALUES ('keep')", [])
+            .execute("INSERT INTO audit_logs (event) VALUES ('keep')", crate::db::params![])
             .unwrap();
         drop(connection);
 
         apply_schema(directory.path(), "inventory", &payload).unwrap();
         let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
         let (count, highest_id): (i64, i64) = connection
-            .query_row("SELECT COUNT(*), MAX(id) FROM inventories", [], |row| {
+            .query_row("SELECT COUNT(*), MAX(id) FROM inventories", crate::db::params![], |row| {
                 Ok((row.get(0)?, row.get(1)?))
             })
             .unwrap();
         assert_eq!((count, highest_id), (2, 2));
         let preserved_logs: i64 = connection
-            .query_row("SELECT COUNT(*) FROM audit_logs", [], |row| row.get(0))
+            .query_row("SELECT COUNT(*) FROM audit_logs", crate::db::params![], |row| row.get(0))
             .unwrap();
         assert_eq!(preserved_logs, 1);
         let created_at: String = connection
             .query_row(
                 "SELECT created_at FROM inventories WHERE name = 'Keyboard'",
-                [],
+                crate::db::params![],
                 |row| row.get(0),
             )
             .unwrap();
@@ -884,12 +1002,12 @@ mod tests {
 
         let connection = Connection::open(path).unwrap();
         connection
-            .pragma_update(None, "foreign_keys", "ON")
+            .enable_foreign_keys(true)
             .unwrap();
         let foreign_key: (String, String) = connection
             .query_row(
                 "SELECT \"table\", \"from\" FROM pragma_foreign_key_list('tickets')",
-                [],
+                crate::db::params![],
                 |row| Ok((row.get(0)?, row.get(1)?)),
             )
             .unwrap();
@@ -897,7 +1015,7 @@ mod tests {
         let ticket: (i64, String) = connection
             .query_row(
                 "SELECT queue_id, ticket_number FROM tickets WHERE id = 7",
-                [],
+                crate::db::params![],
                 |row| Ok((row.get(0)?, row.get(1)?)),
             )
             .unwrap();
@@ -905,7 +1023,7 @@ mod tests {
         connection
             .execute(
                 "INSERT INTO tickets (queue_id, ticket_number) VALUES (1, 'G-008')",
-                [],
+                crate::db::params![],
             )
             .unwrap();
     }

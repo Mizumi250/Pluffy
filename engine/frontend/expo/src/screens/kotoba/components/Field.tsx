@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Field [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:18:58.320Z
+// Generated: 2026-11-04T15:49:11.679Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — GhostButton [Expo]
 // Source: @arkzen:native:components (hello-native)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:05:30.061Z
+// Generated: 2026-11-04T15:49:08.438Z
 // ============================================================
 
 import React, { useState } from 'react'

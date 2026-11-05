@@ -1,6 +1,6 @@
 use axum::http::StatusCode;
 use bcrypt::{hash, verify, DEFAULT_COST};
-use rusqlite::{params, Connection, OptionalExtension, Transaction};
+use crate::db::{params, Connection, OptionalExtension, Transaction};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::path::Path;
@@ -140,9 +140,7 @@ pub fn update_user_role(
 }
 
 fn open_database(database_dir: &Path, module: &str) -> Result<Connection, String> {
-    let path = database_dir.join(format!("{module}.sqlite"));
-    Connection::open(&path)
-        .map_err(|error| format!("Could not open auth database {}: {error}", path.display()))
+    crate::db::open_module(database_dir, module)
 }
 
 fn ensure_auth_tables(transaction: &Transaction<'_>) -> Result<(), String> {
@@ -187,17 +185,13 @@ fn ensure_auth_tables(transaction: &Transaction<'_>) -> Result<(), String> {
         ("updated_at", r#""updated_at" TEXT NULL"#),
     ] {
         let exists = transaction
-            .query_row(
-                "SELECT EXISTS(SELECT 1 FROM pragma_table_info('users') WHERE name = ?1)",
-                [column],
-                |row| row.get::<_, bool>(0),
-            )
+            .has_column("users", column)
             .map_err(|error| format!("Could not inspect auth user column {column}: {error}"))?;
         if !exists {
             transaction
                 .execute(
                     &format!("ALTER TABLE \"users\" ADD COLUMN {definition}"),
-                    [],
+                    crate::db::params![],
                 )
                 .map_err(|error| format!("Could not add auth user column {column}: {error}"))?;
         }
@@ -205,7 +199,7 @@ fn ensure_auth_tables(transaction: &Transaction<'_>) -> Result<(), String> {
     transaction
         .execute(
             r#"CREATE UNIQUE INDEX IF NOT EXISTS "users_email_unique" ON "users" ("email")"#,
-            [],
+            crate::db::params![],
         )
         .map_err(|error| format!("Could not ensure unique auth email addresses: {error}"))?;
     Ok(())
@@ -477,7 +471,7 @@ fn resolve_user(connection: &Connection, token: &str) -> Result<Option<(User, i6
                JOIN "users" u ON u."id"=t."tokenable_id"
                WHERE t."token"=?1 AND t."tokenable_type"='user'
                  AND (t."expires_at" IS NULL OR t."expires_at">?2)
-                 AND (?3 IS NULL OR t."id"=?3)"#,
+                 AND (CAST(?3 AS INTEGER) IS NULL OR t."id"=?3)"#,
             params![token_hash, timestamp(connection)?, token_id],
             |row| {
                 Ok((
@@ -546,9 +540,7 @@ fn get_user(connection: &Connection, id: i64) -> Result<Option<User>, String> {
 
 fn timestamp(connection: &Connection) -> Result<String, String> {
     connection
-        .query_row("SELECT strftime('%Y-%m-%dT%H:%M:%fZ','now')", [], |row| {
-            row.get(0)
-        })
+        .now_iso()
         .map_err(|error| format!("Unable to read current time: {error}"))
 }
 
@@ -627,12 +619,8 @@ pub(crate) fn valid_email(value: &str) -> bool {
     local_valid && domain_valid && parts.next().is_none()
 }
 
-fn is_constraint_error(error: &rusqlite::Error) -> bool {
-    matches!(
-        error,
-        rusqlite::Error::SqliteFailure(code, _)
-            if code.code == rusqlite::ErrorCode::ConstraintViolation
-    )
+fn is_constraint_error(error: &crate::db::Error) -> bool {
+    error.is_constraint_violation()
 }
 
 fn push_error(errors: &mut Map<String, Value>, field: &str, message: &str) {

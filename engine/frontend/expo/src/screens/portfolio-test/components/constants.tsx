@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — portfolio-test [Expo]
 // Source: @arkzen:native:components (portfolio-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-03T17:05:32.723Z
+// Generated: 2026-11-04T15:49:15.254Z
 // ============================================================
 
 import React, { useState } from 'react'
