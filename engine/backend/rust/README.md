@@ -8,16 +8,18 @@ registrations and live API definitions across restarts, and serves the common
 CRUD endpoints described below. It does not modify or depend on root Pluff
 integrations.
 
-## Database driver status
+## Database driver
 
-SQLite is currently the only integrated Rust database driver. The
-`ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
-and `DB_PASSWORD` settings are documented in `.env.example`, and the Rust
-database module contains tested PostgreSQL driver/name and schema-dialect
-helpers. However, the Rust schema builder, authentication, and CRUD paths still
-use rusqlite; setting
-`ARKZEN_DB_DRIVER=pgsql` does **not** switch those paths to PostgreSQL yet.
-Use `ARKZEN_DB_DRIVER=sqlite` until the remaining database paths are migrated.
+`ARKZEN_DB_DRIVER` selects `sqlite` (default) or `pgsql` (`postgres` / `postgresql`
+also accepted). Each tatemono gets its own isolated database either way:
+
+- `sqlite`: `database/arkzen/<name>.sqlite`
+- `pgsql`: a PostgreSQL database named `<ARKZEN_DB_PREFIX>_<name>`
+
+For PostgreSQL set `DB_HOST`, `DB_PORT`, `DB_USERNAME`, `DB_PASSWORD` (and optionally
+`DB_SSLMODE`). The configured user must be allowed to `CREATE DATABASE` and
+`DROP DATABASE`, because the engine creates a database on build and drops it on remove.
+Switch with `node mizumi.js db postgresql` (or `sqlite`).
 
 ## Run
 

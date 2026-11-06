@@ -1716,10 +1716,10 @@ const fastapiNote = isFastapi
   ? `\n> **FastAPI backend:** Python 3 is required. The exported backend uses a local virtual environment; install Ollama separately if this Tatemono uses Ollama Studio.\n`
   : ''
 const goNote = isGo
-  ? `\n> **Go backend:** Go 1.22+ is required. Common CRUD, SQLite, module auth, restricted CRUD update/delete policies, Pusher-compatible realtime, a SQLite-backed job queue with retries, and cron scheduling are supported. Job and console execution currently emulates the built-in \`job-test\` and \`scheduler-test\` variants; arbitrary custom \`:go\` handlers, custom middleware, and PostgreSQL are not available yet.\n`
+  ? `\n> **Go backend:** Go 1.22+ is required. Common CRUD, SQLite, module auth, restricted CRUD update/delete policies, Pusher-compatible realtime, a database-backed job queue with retries, and cron scheduling are supported. SQLite and PostgreSQL are both supported (set \`ARKZEN_DB_DRIVER=sqlite\` or \`pgsql\` in \`backend/.env\`). Job and console execution currently emulates the built-in \`job-test\` and \`scheduler-test\` variants; arbitrary custom \`:go\` handlers and custom middleware are not available yet.\n`
   : ''
 const rustNote = isRust
-  ? `\n> **Rust backend:** Install rustup with Cargo. Common CRUD API routes and SQLite schema setup are supported. Custom \`:rs\` handlers, middleware/auth policies, PostgreSQL, queues, and realtime are not available yet.\n`
+  ? `\n> **Rust backend:** Install rustup with Cargo. Common CRUD API routes, module auth, and schema setup are supported on both SQLite and PostgreSQL (set \`ARKZEN_DB_DRIVER=sqlite\` or \`pgsql\` plus the \`DB_*\` values in \`backend/.env\`; PostgreSQL needs a user allowed to create databases). Custom \`:rs\` handlers, middleware/auth policies, queues, and realtime are not available yet.\n`
   : ''
 
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
@@ -1763,6 +1763,6 @@ divider()
 console.log(`\n  ✓ EXPORTED: ${tatName}`)
 console.log(`  Version:  v10`)
 console.log(`  Stack:    ${activeStack}`)
-if (hasBackend) console.log(`  DB:       ${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`)
+if (hasBackend) console.log(`  DB:       ${isPg ? `PostgreSQL database ${pgDatabaseName}` : `${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`}`)
 console.log(`  Run:      cd projects/${tatName} && node start.js`)
 divider()
