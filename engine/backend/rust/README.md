@@ -154,11 +154,16 @@ Comment-only placeholder bodies are not generated and remain unsupported
 generated `@arkzen:listener:rs` bodies and return `202` after they complete.
 The `job-test` module has the same named job emulations as the Go backend;
 these run in-process and record results plus terminal failures. Durable queues,
-general Rust job DSL execution, notification and console DSL execution,
-middleware snippets, and policies are not implemented. Generic CRUD, auth, and
-mail-send behavior are implemented by the engine. Module-specific custom
-behavior must be authored in that Tatemono's `:rs` body or module source block;
-the engine does not provide named per-Tatemono substitutes.
+general Rust job DSL execution, middleware snippets, and policies are not
+implemented. The `roles-test`, `notification-test`, and `scheduler-test`
+endpoints have named emulations matching Go: role changes and audit records,
+per-user database/mail/broadcast notifications, and manually run console
+commands recorded in `command_runs`. These named emulations do not execute
+arbitrary endpoint or console source bodies, and Rust does not yet run scheduled
+console commands from cron metadata. Generic CRUD, auth, and mail-send behavior
+are implemented by the engine. Other module-specific custom behavior must be
+authored in that Tatemono's `:rs` body or module source block; the engine does
+not provide named per-Tatemono substitutes.
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears and reseeds that table, including
 resetting its SQLite auto-increment sequence; tables without seed rows are

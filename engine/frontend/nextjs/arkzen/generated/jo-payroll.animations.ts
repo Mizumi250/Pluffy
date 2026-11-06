@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — jo-payroll
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:06:19.665Z
+// Generated: 2026-11-06T05:43:01.445Z
 // ============================================================
 
 import { gsap } from 'gsap'

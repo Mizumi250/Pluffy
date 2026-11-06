@@ -2,6 +2,7 @@ mod api;
 mod auth;
 mod database;
 mod db;
+mod emulations;
 mod engine;
 mod events;
 mod generated_runtime;
@@ -545,6 +546,7 @@ async fn dispatch(
                     }
                 }
             }
+            let mut authenticated_user = None;
             for middleware in &route.middleware {
                 match middleware.as_str() {
                     Some("auth") | Some("auth:sanctum") => {
@@ -561,7 +563,7 @@ async fn dispatch(
                         let auth_module = slug.clone();
                         let authorization = authorization.clone();
                         let result = tokio::task::spawn_blocking(move || {
-                            auth::bearer_is_authenticated(
+                            auth::authenticated_user(
                                 &database_dir,
                                 &auth_module,
                                 authorization.as_deref(),
@@ -569,23 +571,67 @@ async fn dispatch(
                         })
                         .await;
                         match result {
-                            Ok(Ok(true)) => {}
-                            Ok(Ok(false)) => {
+                            Ok(Ok(Some(user))) => authenticated_user = Some(user),
+                            Ok(Ok(None)) => {
                                 return (
                                     StatusCode::UNAUTHORIZED,
                                     Json(json!({"message": "Unauthenticated."})),
                                 )
                                     .into_response();
                             }
-                            Ok(Err(_)) | Err(_) => {
-                                return (
-                                    StatusCode::INTERNAL_SERVER_ERROR,
-                                    Json(
-                                        json!({"message": "Unable to resolve authenticated user"}),
-                                    ),
-                                )
-                                    .into_response();
+                            Ok(Err(error)) => {
+                                return internal_error(format!(
+                                    "Unable to load authenticated user: {error}"
+                                ))
+                                .into_response()
                             }
+                            Err(error) => {
+                                return internal_error(format!(
+                                    "Authenticated user worker failed: {error}"
+                                ))
+                                .into_response()
+                            }
+                        }
+                    }
+                    Some(required_role) if required_role.starts_with("role:") => {
+                        if authenticated_user.is_none() {
+                            let database_dir = state.config.database_dir.clone();
+                            let auth_module = slug.clone();
+                            let authorization = authorization.clone();
+                            let result = tokio::task::spawn_blocking(move || {
+                                auth::authenticated_user(
+                                    &database_dir,
+                                    &auth_module,
+                                    authorization.as_deref(),
+                                )
+                            })
+                            .await;
+                            match result {
+                                Ok(Ok(user)) => authenticated_user = user,
+                                Ok(Err(error)) => {
+                                    return internal_error(format!(
+                                        "Unable to load authenticated user: {error}"
+                                    ))
+                                    .into_response()
+                                }
+                                Err(error) => {
+                                    return internal_error(format!(
+                                        "Authenticated user worker failed: {error}"
+                                    ))
+                                    .into_response()
+                                }
+                            }
+                        }
+                        let required_role = required_role.trim_start_matches("role:");
+                        if !authenticated_user
+                            .as_ref()
+                            .is_some_and(|user| user.role == required_role)
+                        {
+                            return (
+                                StatusCode::FORBIDDEN,
+                                Json(json!({"message": format!("Role {required_role} required")})),
+                            )
+                                .into_response();
                         }
                     }
                     Some("requireJson") if !is_json_content_type(content_type.as_deref()) => {
@@ -607,6 +653,40 @@ async fn dispatch(
                             .into_response();
                     }
                 }
+            }
+            if emulations::supports(&route) {
+                let database_dir = state.config.database_dir.clone();
+                let emulation_module = module.clone();
+                let emulation_slug = slug.clone();
+                let emulation_route = route;
+                let emulation_path = path.clone();
+                let emulation_body = body.clone();
+                let user = authenticated_user;
+                let realtime_hub = state.realtime.clone();
+                let result = tokio::task::spawn_blocking(move || {
+                    emulations::execute(
+                        &emulation_module,
+                        &emulation_slug,
+                        &database_dir,
+                        &emulation_route,
+                        &emulation_path,
+                        &emulation_body,
+                        user.as_ref(),
+                        &realtime_hub,
+                    )
+                })
+                .await;
+                return match result {
+                    Ok(Some((status, payload))) => (status, Json(payload)).into_response(),
+                    Ok(None) => (
+                        StatusCode::NOT_IMPLEMENTED,
+                        Json(json!({"message": "Rust emulation route was not handled"})),
+                    )
+                        .into_response(),
+                    Err(error) => {
+                        internal_error(format!("Emulation worker failed: {error}")).into_response()
+                    }
+                };
             }
             if route.endpoint["type"] == "event_fire" && route.name == "store" {
                 let database_dir = state.config.database_dir.clone();
@@ -1379,6 +1459,271 @@ mod tests {
         )
         .await;
         assert_eq!(status, StatusCode::OK, "{body}");
+    }
+
+    #[tokio::test]
+    async fn role_notification_and_scheduler_test_emulations_match_go_behavior() {
+        let directory = tempfile::tempdir().unwrap();
+        let state = test_state(directory.path());
+        let payload = json!({
+            "name": "roles-test",
+            "backendVariant": "rs",
+            "auth": true,
+            "authSeed": {"users": [
+                {"name": "Admin User", "email": "admin@roles-test.test", "password": "password123", "role": "admin"},
+                {"name": "Regular User", "email": "user@roles-test.test", "password": "password123", "role": "user"}
+            ]},
+            "notifications": [
+                "database-ping:\n  channels: [database]\n  message: \"You have a new database notification\"\n  subject: \"Database Ping\""
+            ],
+            "consoles": [
+                "cleanup-temp:\n  schedule: '0 * * * *'",
+                "generate-report:",
+                "ping-health:",
+                "sync-data:"
+            ],
+            "databases": [
+                {
+                    "table": "role_audit_logs",
+                    "columns": {
+                        "user_id": {"type": "integer", "nullable": true},
+                        "action": {"type": "string"},
+                        "role_required": {"type": "string"},
+                        "granted": {"type": "boolean"}
+                    },
+                    "timestamps": true
+                },
+                {
+                    "table": "command_runs",
+                    "columns": {
+                        "command_name": {"type": "string", "nullable": false},
+                        "signature": {"type": "string", "nullable": false},
+                        "exit_code": {"type": "integer", "default": 0},
+                        "output": {"type": "text"},
+                        "triggered_by": {"type": "string", "default": "manual"},
+                        "duration_ms": {"type": "integer"}
+                    }
+                }
+            ],
+            "apis": [
+                {
+                    "model": "RoleAuditLog",
+                    "controller": "RoleAuditLogController",
+                    "prefix": "/api/roles-test",
+                    "middleware": ["auth"],
+                    "table": "role_audit_logs",
+                    "endpoints": {
+                        "index": {"method": "GET", "route": "/logs", "response": {"type": "collection"}},
+                        "adminOnly": {"method": "GET", "route": "/admin-only", "type": "role_admin_only"},
+                        "userOnly": {"method": "GET", "route": "/user-only", "type": "role_user_only"},
+                        "promote": {"method": "POST", "route": "/promote", "type": "role_promote"},
+                        "demote": {"method": "POST", "route": "/demote", "type": "role_demote"}
+                    }
+                },
+                {
+                    "model": "Notification",
+                    "controller": "NotificationController",
+                    "prefix": "/api/notification-test",
+                    "middleware": ["auth"],
+                    "endpoints": {
+                        "index": {"method": "GET", "route": "/inbox", "response": {"type": "collection"}},
+                        "store": {"method": "POST", "route": "/trigger", "type": "notification_trigger", "validation": {"notification": "required|string"}},
+                        "destroy": {"method": "DELETE", "route": "/inbox/{id}", "response": {"type": "message", "value": "Notification deleted"}},
+                        "readAll": {"method": "POST", "route": "/inbox/read-all", "response": {"type": "message", "value": "All notifications marked as read"}}
+                    }
+                },
+                {
+                    "model": "CommandRun",
+                    "controller": "CommandRunController",
+                    "prefix": "/api/scheduler-test",
+                    "endpoints": {
+                        "index": {"method": "GET", "route": "/runs", "response": {"type": "paginated"}},
+                        "store": {"method": "POST", "route": "/run", "type": "command_run", "validation": {"command": "required|string", "triggered_by": "sometimes|string"}},
+                        "destroy": {"method": "DELETE", "route": "/runs", "response": {"type": "message", "value": "Runs cleared"}}
+                    }
+                }
+            ]
+        });
+        let (status, build) = request(
+            state.clone(),
+            Method::POST,
+            "/arkzen/build",
+            Some("test-secret"),
+            Some(&payload.to_string()),
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{build}");
+
+        async fn login(state: AppState, email: &str) -> String {
+            let (status, response) = request(
+                state,
+                Method::POST,
+                "/api/roles-test/auth/login",
+                None,
+                Some(&format!(
+                    r#"{{"email":"{email}","password":"password123"}}"#
+                )),
+            )
+            .await;
+            assert_eq!(status, StatusCode::OK, "{response}");
+            response["token"].as_str().unwrap().to_owned()
+        }
+        let admin_token = login(state.clone(), "admin@roles-test.test").await;
+        let user_token = login(state.clone(), "user@roles-test.test").await;
+
+        let (status, _) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/roles-test/admin-only",
+            None,
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNAUTHORIZED);
+        let (status, response) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/roles-test/admin-only",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::FORBIDDEN, "{response}");
+        assert!(response["message"]
+            .as_str()
+            .unwrap()
+            .contains("admin role required"));
+        let (status, response) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/roles-test/admin-only",
+            Some(&bearer_header(&admin_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{response}");
+
+        let (status, promoted) = request_with_bearer(
+            state.clone(),
+            Method::POST,
+            "/api/roles-test/promote",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{promoted}");
+        assert_eq!(promoted["user"]["role"], "admin");
+        let (status, _) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/roles-test/admin-only",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        let (status, demoted) = request_with_bearer(
+            state.clone(),
+            Method::POST,
+            "/api/roles-test/demote",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{demoted}");
+        assert_eq!(demoted["user"]["role"], "user");
+        let (status, _) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/roles-test/admin-only",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::FORBIDDEN);
+
+        let (status, notification) = request_with_bearer(
+            state.clone(),
+            Method::POST,
+            "/api/notification-test/trigger",
+            Some(&bearer_header(&user_token)),
+            Some(r#"{"notification":"database-ping"}"#),
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED, "{notification}");
+        let (status, inbox) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/notification-test/inbox",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{inbox}");
+        assert_eq!(inbox["data"].as_array().unwrap().len(), 1);
+        assert!(inbox["data"][0]["data"]
+            .as_str()
+            .unwrap()
+            .contains("You have a new database notification"));
+        let notification_id = inbox["data"][0]["id"].as_str().unwrap().to_owned();
+        let (status, _) = request_with_bearer(
+            state.clone(),
+            Method::POST,
+            "/api/notification-test/inbox/read-all",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        let (status, read_inbox) = request_with_bearer(
+            state.clone(),
+            Method::GET,
+            "/api/notification-test/inbox",
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK);
+        assert!(read_inbox["data"][0]["read_at"].is_string());
+        let (status, deleted) = request_with_bearer(
+            state.clone(),
+            Method::DELETE,
+            &format!("/api/notification-test/inbox/{notification_id}"),
+            Some(&bearer_header(&user_token)),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{deleted}");
+
+        let (status, command) = request(
+            state.clone(),
+            Method::POST,
+            "/api/scheduler-test/run",
+            Some("test-secret"),
+            Some(r#"{"command":"generate-report","triggered_by":"schedule"}"#),
+        )
+        .await;
+        assert_eq!(status, StatusCode::CREATED, "{command}");
+        assert_eq!(command["data"]["signature"], "roles-test:generate-report");
+        let (status, invalid) = request(
+            state.clone(),
+            Method::POST,
+            "/api/scheduler-test/run",
+            Some("test-secret"),
+            Some(r#"{"command":"arbitrary shell"}"#),
+        )
+        .await;
+        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{invalid}");
+        let (status, cleared) = request(
+            state,
+            Method::DELETE,
+            "/api/scheduler-test/runs",
+            Some("test-secret"),
+            None,
+        )
+        .await;
+        assert_eq!(status, StatusCode::OK, "{cleared}");
+        assert_eq!(cleared["message"], "Runs cleared");
     }
 
     #[tokio::test]

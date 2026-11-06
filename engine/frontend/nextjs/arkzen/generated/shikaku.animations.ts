@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:06:46.167Z
+// Generated: 2026-11-06T05:43:34.851Z
 // ============================================================
 
 import { gsap } from 'gsap'

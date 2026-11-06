@@ -67,30 +67,27 @@ pub fn match_route(module: &Value, method: &str, path: &str) -> Option<MatchedRo
                     .unwrap_or(default_path);
                 let route = join_path(&prefix, endpoint_path);
                 if route_method.eq_ignore_ascii_case(method) && match_path(&route, path) {
+                    let mut route_middleware = middleware.clone();
+                    route_middleware.extend(
+                        endpoint_object
+                            .get("middleware")
+                            .and_then(Value::as_array)
+                            .into_iter()
+                            .flatten()
+                            .cloned(),
+                    );
                     return Some(MatchedRoute {
                         name: name.clone(),
                         endpoint: endpoint.clone(),
                         table: table.to_owned(),
                         schema: schema.clone(),
                         model: model.to_owned(),
-                        middleware,
-                        supported: is_crud_name(name)
-                            && !endpoint_object
-                                .get("body")
-                                .and_then(Value::as_str)
-                                .is_some_and(|body| !crate::generator::is_comment_only_body(body))
-                            && endpoint_object
-                                .get("type")
-                                .and_then(Value::as_str)
-                                .is_none_or(|kind| {
-                                    matches!(
-                                        kind,
-                                        "index" | "show" | "store" | "update" | "destroy"
-                                    ) || (kind == "broadcast" && name == "store")
-                                        || (kind == "event_fire" && name == "store")
-                                        || (kind == "mail_send" && name == "store")
-                                        || (kind == "job_dispatch" && name == "store")
-                                })
+                        middleware: route_middleware,
+                        supported: supported_endpoint(name, endpoint, model)
+                            && (is_emulated_endpoint(name, endpoint, model)
+                                || !endpoint.get("body").and_then(Value::as_str).is_some_and(
+                                    |body| !crate::generator::is_comment_only_body(body),
+                                ))
                             && validation_supported(endpoint_object.get("validation")),
                     });
                 }
@@ -203,6 +200,9 @@ pub fn warnings(module: &Value) -> Vec<String> {
                         Some("auth") | Some("auth:sanctum") => {
                             module.get("auth").and_then(Value::as_bool) != Some(true)
                         }
+                        Some(value) if value.starts_with("role:") => {
+                            module.get("auth").and_then(Value::as_bool) != Some(true)
+                        }
                         _ => true,
                     })
             })
@@ -224,7 +224,8 @@ pub fn warnings(module: &Value) -> Vec<String> {
                 .is_some_and(super::generator::has_executable_body)
             {
                 warnings.push(format!("Endpoint {name} uses a generated Rust :rs handler"));
-            } else if !is_crud_name(name) {
+            } else if !supported_endpoint(name, endpoint, api["model"].as_str().unwrap_or_default())
+            {
                 warnings.push(format!(
                     "Endpoint {name} has no supported generic CRUD implementation"
                 ));
@@ -236,6 +237,16 @@ pub fn warnings(module: &Value) -> Vec<String> {
                         && !(kind == "event_fire" && name == "store")
                         && !(kind == "mail_send" && name == "store")
                         && !(kind == "job_dispatch" && name == "store")
+                        && !(kind.starts_with("role_")
+                            && matches!(
+                                kind,
+                                "role_admin_only"
+                                    | "role_user_only"
+                                    | "role_promote"
+                                    | "role_demote"
+                            ))
+                        && !(kind == "notification_trigger" && name == "store")
+                        && !(kind == "command_run" && name == "store")
                 })
             {
                 warnings.push(format!(
@@ -337,6 +348,48 @@ pub fn warnings(module: &Value) -> Vec<String> {
 
 fn is_crud_name(name: &str) -> bool {
     matches!(name, "index" | "show" | "store" | "update" | "destroy")
+}
+
+fn supported_endpoint(name: &str, endpoint: &Value, model: &str) -> bool {
+    let kind = endpoint.get("type").and_then(Value::as_str);
+    is_emulated_endpoint(name, endpoint, model)
+        || (is_crud_name(name)
+            && kind.is_none_or(|kind| {
+                matches!(
+                    kind,
+                    "index" | "show" | "store" | "update" | "destroy" | "broadcast"
+                ) && (kind != "broadcast" || name == "store")
+                    || (kind == "event_fire" && name == "store")
+                    || (kind == "mail_send" && name == "store")
+                    || (kind == "job_dispatch" && name == "store")
+            }))
+}
+
+fn is_emulated_endpoint(name: &str, endpoint: &Value, model: &str) -> bool {
+    let kind = endpoint.get("type").and_then(Value::as_str);
+    if matches!(
+        kind,
+        Some(
+            "role_admin_only"
+                | "role_user_only"
+                | "role_promote"
+                | "role_demote"
+                | "notification_trigger"
+                | "command_run"
+        )
+    ) {
+        return true;
+    }
+    if model == "Notification" && matches!(name, "index" | "store" | "destroy" | "readAll") {
+        return true;
+    }
+    if name == "destroy"
+        && endpoint["route"] == "/runs"
+        && endpoint["response"]["value"] == "Runs cleared"
+    {
+        return true;
+    }
+    false
 }
 
 fn valid_unique_argument(argument: &str) -> bool {

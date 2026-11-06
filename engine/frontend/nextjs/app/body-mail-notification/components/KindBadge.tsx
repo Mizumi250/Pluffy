@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — KindBadge
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:05:54.160Z
+// Generated: 2026-11-06T05:42:41.318Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

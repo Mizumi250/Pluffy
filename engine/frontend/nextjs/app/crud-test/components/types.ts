@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — crud-test
 // Source: @arkzen:components (crud-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:05:57.702Z
+// Generated: 2026-11-06T05:42:44.567Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

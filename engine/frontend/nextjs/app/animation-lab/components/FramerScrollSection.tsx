@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — FramerScrollSection
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:05:45.021Z
+// Generated: 2026-11-06T05:42:30.564Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

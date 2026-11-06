@@ -242,7 +242,7 @@ fn escape_html(value: &str) -> String {
     escaped
 }
 
-fn deliver(mailer: &str, to: &str, subject: &str, html: &str) -> Result<(), String> {
+pub(crate) fn deliver(mailer: &str, to: &str, subject: &str, html: &str) -> Result<(), String> {
     if subject.contains('\r') || subject.contains('\n') {
         return Err("Mail subject contains invalid header characters".to_owned());
     }
