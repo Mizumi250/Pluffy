@@ -2953,30 +2953,192 @@ export const usePageFadeIn = (delay = 0) => {
 
 /* @arkzen:endpoint:rs:my_records
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let employee_id = request.path().rsplit('/').next().and_then(|value| value.parse::<i64>().ok())
+    .ok_or_else(|| ValidationError::required("employee_id"))?;
+let mut records = database.query_params(
+    "SELECT * FROM time_records WHERE employee_id = ? ORDER BY timestamp DESC LIMIT 50",
+    vec![json!(employee_id)],
+)?;
+for record in &mut records {
+    let id = record.get("employee_id").and_then(Value::as_i64)
+        .ok_or_else(|| HandlerError("Time record has no valid employee id".to_owned()))?;
+    let employee = database.query_params("SELECT * FROM employees WHERE id = ?", vec![json!(id)])?
+        .into_iter().next().unwrap_or(Value::Null);
+    if let Some(fields) = record.as_object_mut() {
+        fields.insert("employee".to_owned(), employee);
+    }
+}
+response.json(StatusCode::OK, json!(records))
 /* @arkzen:endpoint:rs:my_records:end */
 
 /* @arkzen:endpoint:rs:check_in
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let input = request.json_object()?;
+let employee_id = input.get("employee_id").and_then(Value::as_i64)
+    .or_else(|| input.get("employee_id").and_then(Value::as_str).and_then(|value| value.parse().ok()))
+    .ok_or_else(|| ValidationError::required("employee_id"))?;
+let Some(employee) = database.query_params("SELECT * FROM employees WHERE id = ?", vec![json!(employee_id)])?.into_iter().next() else {
+    return response.validation_error("employee_id does not exist");
+};
+let number = |name: &str| input.get(name).and_then(Value::as_f64)
+    .or_else(|| input.get(name).and_then(Value::as_str).and_then(|value| value.parse::<f64>().ok()));
+let latitude = number("latitude");
+let longitude = number("longitude");
+let setting = |key: &str| -> Result<Option<String>, HandlerError> {
+    Ok(database.query_params("SELECT value FROM dtr_settings WHERE \"key\" = ?", vec![json!(key)])?
+        .first().and_then(|row| row.get("value")).and_then(Value::as_str).map(str::to_owned))
+};
+let enabled = setting("geofencing_enabled")?.as_deref() == Some("true");
+let mut within_geofence = true;
+if enabled {
+    if let (Some(latitude), Some(longitude)) = (latitude, longitude) {
+        let office_lat = setting("office_latitude")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(0.0);
+        let office_lng = setting("office_longitude")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(0.0);
+        let radius = setting("geofence_radius_meters")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(100.0);
+        let to_radians = std::f64::consts::PI / 180.0;
+        let d_lat = (latitude - office_lat) * to_radians;
+        let d_lng = (longitude - office_lng) * to_radians;
+        let a = (d_lat / 2.0).sin().powi(2)
+            + (office_lat * to_radians).cos() * (latitude * to_radians).cos() * (d_lng / 2.0).sin().powi(2);
+        let distance = 6_371_000.0 * 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+        within_geofence = distance <= radius;
+        if !within_geofence {
+            return response.json(StatusCode::FORBIDDEN, json!({
+                "error": "Geofence violation",
+                "message": format!("You must be within {:.0} meters of the office to check in.", radius),
+                "distance": (distance * 10.0).round() / 10.0
+            }));
+        }
+    }
+}
+let now = utc_now_rfc3339();
+let record = database.insert("time_records", json!({
+    "employee_id": employee_id,
+    "type": "in",
+    "timestamp": now,
+    "latitude": latitude,
+    "longitude": longitude,
+    "within_geofence": within_geofence,
+    "notes": input.get("notes").and_then(Value::as_str),
+    "created_at": now,
+    "updated_at": now
+}))?;
+let mut record_with_employee = record.as_object().cloned()
+    .ok_or_else(|| HandlerError("Inserted record is not an object".to_owned()))?;
+record_with_employee.insert("employee".to_owned(), employee);
+response.json(StatusCode::OK, json!({
+    "success": true,
+    "record": record_with_employee,
+    "within_geofence": within_geofence,
+    "geofencing_enabled": enabled
+}))
 /* @arkzen:endpoint:rs:check_in:end */
 
 /* @arkzen:endpoint:rs:check_out
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let input = request.json_object()?;
+let employee_id = input.get("employee_id").and_then(Value::as_i64)
+    .or_else(|| input.get("employee_id").and_then(Value::as_str).and_then(|value| value.parse().ok()))
+    .ok_or_else(|| ValidationError::required("employee_id"))?;
+let Some(employee) = database.query_params("SELECT * FROM employees WHERE id = ?", vec![json!(employee_id)])?.into_iter().next() else {
+    return response.validation_error("employee_id does not exist");
+};
+let number = |name: &str| input.get(name).and_then(Value::as_f64)
+    .or_else(|| input.get(name).and_then(Value::as_str).and_then(|value| value.parse::<f64>().ok()));
+let latitude = number("latitude");
+let longitude = number("longitude");
+let setting = |key: &str| -> Result<Option<String>, HandlerError> {
+    Ok(database.query_params("SELECT value FROM dtr_settings WHERE \"key\" = ?", vec![json!(key)])?
+        .first().and_then(|row| row.get("value")).and_then(Value::as_str).map(str::to_owned))
+};
+let enabled = setting("geofencing_enabled")?.as_deref() == Some("true");
+let mut within_geofence = true;
+if enabled {
+    if let (Some(latitude), Some(longitude)) = (latitude, longitude) {
+        let office_lat = setting("office_latitude")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(0.0);
+        let office_lng = setting("office_longitude")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(0.0);
+        let radius = setting("geofence_radius_meters")?.and_then(|value| value.parse::<f64>().ok()).unwrap_or(100.0);
+        let to_radians = std::f64::consts::PI / 180.0;
+        let d_lat = (latitude - office_lat) * to_radians;
+        let d_lng = (longitude - office_lng) * to_radians;
+        let a = (d_lat / 2.0).sin().powi(2)
+            + (office_lat * to_radians).cos() * (latitude * to_radians).cos() * (d_lng / 2.0).sin().powi(2);
+        let distance = 6_371_000.0 * 2.0 * a.sqrt().atan2((1.0 - a).sqrt());
+        within_geofence = distance <= radius;
+        if !within_geofence {
+            return response.json(StatusCode::FORBIDDEN, json!({
+                "error": "Geofence violation",
+                "message": format!("You must be within {:.0} meters of the office to check out.", radius),
+                "distance": (distance * 10.0).round() / 10.0
+            }));
+        }
+    }
+}
+let now = utc_now_rfc3339();
+let record = database.insert("time_records", json!({
+    "employee_id": employee_id,
+    "type": "out",
+    "timestamp": now,
+    "latitude": latitude,
+    "longitude": longitude,
+    "within_geofence": within_geofence,
+    "notes": input.get("notes").and_then(Value::as_str),
+    "created_at": now,
+    "updated_at": now
+}))?;
+let mut record_with_employee = record.as_object().cloned()
+    .ok_or_else(|| HandlerError("Inserted record is not an object".to_owned()))?;
+record_with_employee.insert("employee".to_owned(), employee);
+response.json(StatusCode::OK, json!({
+    "success": true,
+    "record": record_with_employee,
+    "within_geofence": within_geofence,
+    "geofencing_enabled": enabled
+}))
 /* @arkzen:endpoint:rs:check_out:end */
 
 /* @arkzen:endpoint:rs:toggle_geofencing
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let input = request.json_object()?;
+let enabled = input.get("enabled").and_then(Value::as_bool).unwrap_or(false);
+let now = utc_now_rfc3339();
+let existing = database.query_params("SELECT id FROM dtr_settings WHERE \"key\" = ?", vec![json!("geofencing_enabled")])?
+    .into_iter().next();
+if let Some(row) = existing {
+    let id = row.get("id").and_then(Value::as_i64).ok_or_else(|| HandlerError("Geofencing setting has no valid id".to_owned()))?;
+    database.execute("UPDATE dtr_settings SET value = ?, updated_at = ? WHERE id = ?", vec![json!(enabled.to_string()), json!(now), json!(id)])?;
+} else {
+    database.insert("dtr_settings", json!({
+        "key": "geofencing_enabled", "value": enabled.to_string(),
+        "created_at": now, "updated_at": now
+    }))?;
+}
+response.json(StatusCode::OK, json!({"success": true, "geofencing_enabled": enabled}))
 /* @arkzen:endpoint:rs:toggle_geofencing:end */
 
 /* @arkzen:endpoint:rs:update_office
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let input = request.json_object()?;
+let now = utc_now_rfc3339();
+for (key, field) in [
+    ("office_latitude", "lat"),
+    ("office_longitude", "lng"),
+    ("geofence_radius_meters", "radius"),
+] {
+    let value = input.get(field).map(|value| {
+        value.as_str().map(str::to_owned).unwrap_or_else(|| value.to_string())
+    }).unwrap_or_default();
+    let existing = database.query_params("SELECT id FROM dtr_settings WHERE \"key\" = ?", vec![json!(key)])?
+        .into_iter().next();
+    if let Some(row) = existing {
+        let id = row.get("id").and_then(Value::as_i64).ok_or_else(|| HandlerError("Office setting has no valid id".to_owned()))?;
+        database.execute("UPDATE dtr_settings SET value = ?, updated_at = ? WHERE id = ?", vec![json!(value), json!(now), json!(id)])?;
+    } else {
+        database.insert("dtr_settings", json!({
+            "key": key, "value": value,
+            "created_at": now, "updated_at": now
+        }))?;
+    }
+}
+response.json(StatusCode::OK, json!({"success": true}))
 /* @arkzen:endpoint:rs:update_office:end */

@@ -1,9 +1,18 @@
 mod api;
 mod auth;
 mod database;
+mod db;
 mod engine;
-mod kotoba;
+mod events;
+mod generated_runtime;
+mod generator;
+mod jobs;
+mod mail;
 mod realtime;
+
+mod generated_registry {
+    include!(concat!(env!("OUT_DIR"), "/generated_registry.rs"));
+}
 
 use axum::{
     body::Body,
@@ -235,8 +244,9 @@ async fn expo_registry(axum::extract::State(state): axum::extract::State<AppStat
             object.entry("modules").or_insert_with(|| json!([]));
             Json(Value::Object(object)).into_response()
         }
-        Ok(_) => internal_error("Expo registry must contain a JSON object".to_owned())
-            .into_response(),
+        Ok(_) => {
+            internal_error("Expo registry must contain a JSON object".to_owned()).into_response()
+        }
         Err(error) => {
             internal_error(format!("Could not parse {}: {error}", path.display())).into_response()
         }
@@ -598,169 +608,18 @@ async fn dispatch(
                     }
                 }
             }
-            if route.endpoint.get("body").is_some_and(|body| {
-                body.as_str()
-                    .map_or(!body.is_null(), |body| !body.trim().is_empty())
-            }) && !route.supported
-            {
-                return (
-                    StatusCode::NOT_IMPLEMENTED,
-                    Json(json!({"message": "Custom endpoint body execution is not implemented by the Rust engine"})),
-                )
-                    .into_response();
-            }
-            if !route.supported {
-                return (
-                    StatusCode::NOT_IMPLEMENTED,
-                    Json(json!({"message": format!("Endpoint {} is not implemented by the Rust engine", route.name)})),
-                )
-                    .into_response();
-            }
-            if slug == "kotoba" && route.name.starts_with("handler:") {
+            if route.endpoint["type"] == "event_fire" && route.name == "store" {
                 let database_dir = state.config.database_dir.clone();
-                let auth_header = authorization.clone();
-                let action = route.name.trim_start_matches("handler:").to_owned();
-                let kotoba_path = path.clone();
-                let kotoba_query = query_string.clone();
-                let kotoba_body = body.clone();
+                let slug_for_event = slug.clone();
+                let module_for_event = module.clone();
+                let body_for_event = body.clone();
                 let result = tokio::task::spawn_blocking(move || {
-                    let user =
-                        auth::authenticated_user(&database_dir, "kotoba", auth_header.as_deref())?;
-                    let Some(user) = user else {
-                        return Ok::<_, String>((
-                            StatusCode::UNAUTHORIZED,
-                            json!({"message": "Unauthenticated."}),
-                        ));
-                    };
-                    Ok(kotoba::execute(
+                    events::fire_event(
+                        &module_for_event,
+                        &slug_for_event,
                         &database_dir,
-                        &action,
-                        &kotoba_path,
-                        &kotoba_query,
-                        &kotoba_body,
-                        &user,
-                    ))
-                })
-                .await;
-                return match result {
-                    Ok(Ok((status, payload))) => (status, Json(payload)).into_response(),
-                    Ok(Err(error)) => {
-                        internal_error(format!("Unable to resolve Kotoba user: {error}"))
-                            .into_response()
-                    }
-                    Err(error) => internal_error(format!("Kotoba handler worker failed: {error}"))
-                        .into_response(),
-                };
-            }
-            if slug == "notification-test"
-                && matches!(
-                    route.name.as_str(),
-                    "index" | "store" | "destroy" | "readAll"
-                )
-            {
-                let database_dir = state.config.database_dir.clone();
-                let action = route.name.clone();
-                let notification_path = path.clone();
-                let notifications = module["notifications"]
-                    .as_array()
-                    .cloned()
-                    .unwrap_or_default();
-                let action_body = body.clone();
-                let auth_header = authorization.clone();
-                let result = tokio::task::spawn_blocking(move || {
-                    let user = auth::authenticated_user(
-                        &database_dir,
-                        "notification-test",
-                        auth_header.as_deref(),
-                    )?;
-                    let Some(user) = user else {
-                        return Ok::<_, String>((
-                            StatusCode::UNAUTHORIZED,
-                            json!({"message": "Unauthenticated."}),
-                            None,
-                        ));
-                    };
-                    Ok(api::notification_test_action(
-                        &database_dir,
-                        &action,
-                        &notification_path,
-                        &action_body,
-                        &notifications,
-                        user.id,
-                        &user.email,
-                    ))
-                })
-                .await;
-                return match result {
-                    Ok(Ok((status, payload, broadcast))) => {
-                        if let Some((channel, data)) = broadcast {
-                            state.realtime.broadcast_to(
-                                &channel,
-                                "notification-test.notification",
-                                &data,
-                            );
-                        }
-                        (status, Json(payload)).into_response()
-                    }
-                    Ok(Err(error)) => {
-                        internal_error(format!("Unable to resolve notification user: {error}"))
-                            .into_response()
-                    }
-                    Err(error) => internal_error(format!("Notification worker failed: {error}"))
-                        .into_response(),
-                };
-            }
-            if slug == "roles-test"
-                && matches!(
-                    route.name.as_str(),
-                    "adminOnly" | "userOnly" | "promote" | "demote"
-                )
-            {
-                let database_dir = state.config.database_dir.clone();
-                let action = route.name.clone();
-                let table = route.table.clone();
-                let schema = route.schema.clone();
-                let auth_header = authorization.clone();
-                let result = tokio::task::spawn_blocking(move || {
-                    let user = auth::authenticated_user(
-                        &database_dir,
-                        "roles-test",
-                        auth_header.as_deref(),
-                    )?;
-                    let Some(user) = user else {
-                        return Ok::<_, String>((
-                            StatusCode::UNAUTHORIZED,
-                            json!({"message": "Unauthenticated."}),
-                        ));
-                    };
-                    Ok(api::roles_test_action(
-                        &database_dir,
-                        &table,
-                        &schema,
-                        &action,
-                        &user,
-                    ))
-                })
-                .await;
-                return match result {
-                    Ok(Ok((status, payload))) => (status, Json(payload)).into_response(),
-                    Ok(Err(error)) => {
-                        internal_error(format!("Unable to resolve role-test user: {error}"))
-                            .into_response()
-                    }
-                    Err(error) => {
-                        internal_error(format!("Role-test worker failed: {error}")).into_response()
-                    }
-                };
-            }
-            if route.endpoint["type"].as_str() == Some("event_fire") {
-                let database_dir = state.config.database_dir.clone();
-                let event_slug = slug.clone();
-                let table = route.table.clone();
-                let events = module["events"].as_array().cloned().unwrap_or_default();
-                let event_body = body.clone();
-                let result = tokio::task::spawn_blocking(move || {
-                    api::fire_event(&database_dir, &event_slug, &table, &events, &event_body)
+                        &body_for_event,
+                    )
                 })
                 .await;
                 return match result {
@@ -769,125 +628,124 @@ async fn dispatch(
                         .into_response(),
                 };
             }
-            if route.endpoint["type"].as_str() == Some("job_dispatch") {
-                let jobs = module["jobs"].as_array().cloned().unwrap_or_default();
-                let (status, payload) = api::dispatch_job(
-                    &state.config.database_dir,
-                    &slug,
-                    &route.table,
-                    &jobs,
-                    &body,
-                );
-                return (status, Json(payload)).into_response();
-            }
-            if slug == "scheduler-test"
-                && route.name == "store"
-                && route.endpoint["type"].as_str() == Some("command_run")
-            {
-                let (status, payload) = api::run_scheduler_command(
-                    &state.config.database_dir,
-                    &route.table,
-                    &route.schema,
-                    &body,
-                );
-                return (status, Json(payload)).into_response();
-            }
-            if slug == "scheduler-test"
-                && route.name == "destroy"
-                && path == "/api/scheduler-test/runs"
-            {
-                let (status, payload) =
-                    api::clear_scheduler_runs(&state.config.database_dir, &route.table);
-                return (status, Json(payload)).into_response();
-            }
-            if route.endpoint["type"].as_str() == Some("mail_send") {
+            if route.endpoint["type"] == "mail_send" && route.name == "store" {
                 let database_dir = state.config.database_dir.clone();
-                let mail_slug = slug.clone();
+                let slug_for_mail = slug.clone();
+                let module_for_mail = module.clone();
                 let table = route.table.clone();
                 let schema = route.schema.clone();
-                let mails = module["mails"].as_array().cloned().unwrap_or_default();
-                let mail_body = body.clone();
-                let auth_header = authorization.clone();
-                let auth_enabled = module["auth"].as_bool() == Some(true);
+                let body_for_mail = body.clone();
+                let authorization_for_mail = authorization.clone();
+                let mailer = env::var("MAIL_MAILER").unwrap_or_else(|_| "log".to_owned());
                 let result = tokio::task::spawn_blocking(move || {
-                    let user_id = if auth_enabled {
-                        auth::authenticated_user(&database_dir, &mail_slug, auth_header.as_deref())?
-                            .map(|user| user.id)
+                    mail::send_mail(
+                        &module_for_mail,
+                        &slug_for_mail,
+                        &table,
+                        &schema,
+                        &database_dir,
+                        &body_for_mail,
+                        authorization_for_mail.as_deref(),
+                        &mailer,
+                    )
+                })
+                .await;
+                return match result {
+                    Ok((status, payload)) => (status, Json(payload)).into_response(),
+                    Err(error) => internal_error(format!("Mail delivery worker failed: {error}"))
+                        .into_response(),
+                };
+            }
+            if route.endpoint["type"] == "job_dispatch" && route.name == "store" {
+                let (status, payload) =
+                    jobs::dispatch(&module, &slug, &state.config.database_dir, &body);
+                return (status, Json(payload)).into_response();
+            }
+            if !route.supported {
+                if route.endpoint.get("body").and_then(Value::as_str).is_some()
+                    || route.name.starts_with("handler:")
+                {
+                    let handler = if route.name.starts_with("handler:") {
+                        route.name.clone()
+                    } else {
+                        format!("endpoint:{}", route.name)
+                    };
+                    let database_dir = state.config.database_dir.clone();
+                    let user = if module.get("auth").and_then(Value::as_bool) == Some(true) {
+                        let auth_module = slug.clone();
+                        let authorization = authorization.clone();
+                        let auth_database_dir = database_dir.clone();
+                        match tokio::task::spawn_blocking(move || {
+                            auth::authenticated_user(
+                                &auth_database_dir,
+                                &auth_module,
+                                authorization.as_deref(),
+                            )
+                        })
+                        .await
+                        {
+                            Ok(Ok(user)) => user,
+                            Ok(Err(error)) => {
+                                return internal_error(format!(
+                                    "Unable to resolve generated-handler user: {error}"
+                                ))
+                                .into_response()
+                            }
+                            Err(error) => {
+                                return internal_error(format!(
+                                    "Generated-handler user worker failed: {error}"
+                                ))
+                                .into_response()
+                            }
+                        }
                     } else {
                         None
                     };
-                    Ok::<_, String>(api::send_mail(
-                        &database_dir,
-                        &mail_slug,
-                        &table,
-                        &mails,
-                        &mail_body,
-                        user_id,
-                        &schema,
-                    ))
-                })
-                .await;
-                return match result {
-                    Ok(Ok((status, payload))) => (status, Json(payload)).into_response(),
-                    Ok(Err(error)) => {
-                        internal_error(format!("Unable to resolve mail user: {error}"))
-                            .into_response()
+                    let generated = generated_registry::dispatch(
+                        &slug,
+                        &handler,
+                        generated_runtime::RequestContext::new(
+                            body.clone(),
+                            path.clone(),
+                            query_string.clone(),
+                            user,
+                            database_dir.clone(),
+                        ),
+                        match generated_runtime::Database::open(&database_dir, &slug) {
+                            Ok(database) => database,
+                            Err(error) => {
+                                return internal_error(format!(
+                                    "Could not open database for generated handler: {error}"
+                                ))
+                                .into_response()
+                            }
+                        },
+                        generated_runtime::ResponseContext,
+                    );
+                    if let Some(result) = generated {
+                        return match result {
+                            Ok(response) => {
+                                (response.status, Json(response.payload)).into_response()
+                            }
+                            Err(error) => internal_error(format!(
+                                "Generated handler {handler} failed: {error}"
+                            ))
+                            .into_response(),
+                        };
                     }
-                    Err(error) => {
-                        internal_error(format!("Mail send worker failed: {error}")).into_response()
-                    }
-                };
-            }
-            if slug == "body-mail-notification"
-                && matches!(route.name.as_str(), "sendMail" | "notify" | "clearLog")
-            {
-                let database_dir = state.config.database_dir.clone();
-                let action = route.name.clone();
-                let table = route.table.clone();
-                let schema = route.schema.clone();
-                let mails = module["mails"].as_array().cloned().unwrap_or_default();
-                let notifications = module["notifications"]
-                    .as_array()
-                    .cloned()
-                    .unwrap_or_default();
-                let action_body = body.clone();
-                let auth_header = authorization.clone();
-                let result = tokio::task::spawn_blocking(move || {
-                    let user = auth::authenticated_user(
-                        &database_dir,
-                        "body-mail-notification",
-                        auth_header.as_deref(),
-                    )?;
-                    let Some(user) = user else {
-                        return Ok::<_, String>((
-                            StatusCode::UNAUTHORIZED,
-                            json!({"message": "Unauthenticated."}),
-                        ));
-                    };
-                    Ok(api::body_mail_notification_action(
-                        &database_dir,
-                        &table,
-                        &schema,
-                        &action,
-                        &mails,
-                        &notifications,
-                        &action_body,
-                        user.id,
-                        &user.email,
-                    ))
-                })
-                .await;
-                return match result {
-                    Ok(Ok((status, payload))) => (status, Json(payload)).into_response(),
-                    Ok(Err(error)) => {
-                        internal_error(format!("Unable to resolve notification user: {error}"))
-                            .into_response()
-                    }
-                    Err(error) => {
-                        internal_error(format!("Mail notification worker failed: {error}"))
-                            .into_response()
-                    }
-                };
+                    return (
+                        StatusCode::NOT_IMPLEMENTED,
+                        Json(json!({
+                            "message": format!("No compiled Rust handler is registered for {handler}")
+                        })),
+                    )
+                        .into_response();
+                }
+                return (
+                    StatusCode::NOT_IMPLEMENTED,
+                    Json(json!({"message": format!("Endpoint {} is not implemented by the Rust engine", route.name)})),
+                )
+                    .into_response();
             }
             let database_dir = state.config.database_dir.clone();
             let action = route.name.clone();
@@ -975,6 +833,17 @@ async fn build(
             })),
         );
     }
+    if let Err(error) = generator::validate_payload_sources(&payload) {
+        return (
+            StatusCode::UNPROCESSABLE_ENTITY,
+            Json(json!({
+                "success": false,
+                "message": "Invalid Rust handler source",
+                "errors": [error],
+                "steps": []
+            })),
+        );
+    }
 
     let _operation = state.operations.lock().await;
     let name = payload["name"].as_str().expect("validated module name");
@@ -982,18 +851,48 @@ async fn build(
     let build_payload = payload.clone();
     let database_dir = state.config.database_dir.clone();
     let module_dir = state.config.module_dir.clone();
+    let restart_module_dir = module_dir.clone();
     let build_result = tokio::task::spawn_blocking(move || {
-        let mut steps = database::apply_schema(&database_dir, &build_name, &build_payload)?;
-        if auth::prepare_module(&database_dir, &build_name, &build_payload)? {
-            steps.push("Auth users and access tokens ready".to_owned());
+        let generated_path = module_dir
+            .join("generated")
+            .join(format!("{build_name}.rs"));
+        let registration_path = module_dir.join(format!("{build_name}.json"));
+        let previous_generated = read_optional_file(&generated_path)?;
+        let previous_registration = read_optional_file(&registration_path)?;
+        let result = (|| {
+            let mut steps = database::apply_schema(&database_dir, &build_name, &build_payload)?;
+            if auth::prepare_module(&database_dir, &build_name, &build_payload)? {
+                steps.push("Auth users and access tokens ready".to_owned());
+            }
+            let generated = generator::write_module(&module_dir, &build_payload)?;
+            if generated {
+                steps.push("Rust handler sources updated from Tatemono :rs bodies".to_owned());
+            }
+            persist_module(&module_dir, &build_name, &build_payload)?;
+            steps.push("Module registration persisted".to_owned());
+            if generated && env::var("ARKZEN_RUST_AUTORESTART").as_deref() == Ok("1") {
+                steps.push("Rust handler compilation scheduled after module builds settle".to_owned());
+            }
+            Ok::<_, String>((steps, generated))
+        })();
+        if let Err(error) = result {
+            let restore_generated = restore_optional_file(&generated_path, previous_generated);
+            let restore_registration =
+                restore_optional_file(&registration_path, previous_registration);
+            return match (restore_generated, restore_registration) {
+                (Ok(()), Ok(())) => Err(error),
+                (generated, registration) => Err(format!(
+                    "{error}; restoring previous generated build failed: generated source: {}; registration: {}",
+                    generated.err().unwrap_or_else(|| "ok".to_owned()),
+                    registration.err().unwrap_or_else(|| "ok".to_owned())
+                )),
+            };
         }
-        persist_module(&module_dir, &build_name, &build_payload)?;
-        steps.push("Module registration persisted".to_owned());
-        Ok::<_, String>(steps)
+        result
     })
     .await;
-    let mut schema_steps = match build_result {
-        Ok(Ok(steps)) => steps,
+    let (mut schema_steps, generated_sources_changed) = match build_result {
+        Ok(Ok(result)) => result,
         Ok(Err(error)) => {
             return (
                 StatusCode::INTERNAL_SERVER_ERROR,
@@ -1015,6 +914,9 @@ async fn build(
     let route_count = api::route_count(&payload);
     if route_count > 0 {
         schema_steps.push(format!("Registered {route_count} API routes"));
+    }
+    if generated_sources_changed && env::var("ARKZEN_RUST_AUTORESTART").as_deref() == Ok("1") {
+        schedule_rust_restart(restart_module_dir);
     }
 
     let table_names: Vec<&str> = payload["databases"]
@@ -1064,11 +966,21 @@ async fn remove(
     let _operation = state.operations.lock().await;
     let module_path = state.config.module_dir.join(format!("{name}.json"));
     let database_path = state.config.database_dir.join(format!("{name}.sqlite"));
+    let generated_path = state
+        .config
+        .module_dir
+        .join("generated")
+        .join(format!("{name}.rs"));
+    let restart = env::var("ARKZEN_RUST_AUTORESTART").as_deref() == Ok("1");
+    let generated_source_exists = generated_path.exists();
     let removal = tokio::task::spawn_blocking(move || {
         remove_file_if_exists(&module_path)
             .map_err(|error| format!("Could not remove module registration: {error}"))?;
         remove_file_if_exists(&database_path)
-            .map_err(|error| format!("Could not remove isolated database: {error}"))
+            .map_err(|error| format!("Could not remove isolated database: {error}"))?;
+        remove_file_if_exists(&generated_path)
+            .map_err(|error| format!("Could not remove generated Rust source: {error}"))?;
+        Ok(())
     })
     .await;
     match removal {
@@ -1077,6 +989,9 @@ async fn remove(
         Err(error) => return internal_error(format!("Removal worker failed: {error}")),
     }
     state.modules.write().await.remove(name);
+    if restart && generated_source_exists {
+        schedule_rust_restart(state.config.module_dir.clone());
+    }
 
     (
         StatusCode::OK,
@@ -1134,12 +1049,86 @@ fn persist_module(directory: &Path, name: &str, payload: &Value) -> Result<(), S
         .map_err(|error| format!("Could not persist module registration: {error}"))
 }
 
+fn read_optional_file(path: &Path) -> Result<Option<Vec<u8>>, String> {
+    match std::fs::read(path) {
+        Ok(contents) => Ok(Some(contents)),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(None),
+        Err(error) => Err(format!("Could not read {}: {error}", path.display())),
+    }
+}
+
+fn restore_optional_file(path: &Path, previous: Option<Vec<u8>>) -> Result<(), String> {
+    match previous {
+        Some(contents) => std::fs::write(path, contents)
+            .map_err(|error| format!("Could not restore {}: {error}", path.display())),
+        None => remove_file_if_exists(path)
+            .map_err(|error| format!("Could not remove {}: {error}", path.display())),
+    }
+}
+
 fn remove_file_if_exists(path: &Path) -> std::io::Result<()> {
     match std::fs::remove_file(path) {
         Ok(()) => Ok(()),
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(()),
         Err(error) => Err(error),
     }
+}
+
+fn compile_generated_rust(module_dir: &Path) -> Result<(), String> {
+    let manifest = Path::new(env!("CARGO_MANIFEST_DIR")).join("Cargo.toml");
+    let cargo = env::var_os("CARGO").unwrap_or_else(|| "cargo".into());
+    let output = std::process::Command::new(cargo)
+        .current_dir(env!("CARGO_MANIFEST_DIR"))
+        .arg("check")
+        .arg("--lib")
+        .arg("--manifest-path")
+        .arg(&manifest)
+        .env("ARKZEN_MODULE_DIR", module_dir)
+        .env(
+            "CARGO_TARGET_DIR",
+            Path::new(env!("CARGO_MANIFEST_DIR"))
+                .join("target")
+                .join("generated-check"),
+        )
+        .output()
+        .map_err(|error| format!("Could not start Rust generated-handler build: {error}"))?;
+    if !output.status.success() {
+        let details = String::from_utf8_lossy(&output.stderr);
+        let details = details.trim();
+        let details = details
+            .chars()
+            .rev()
+            .take(8_000)
+            .collect::<String>()
+            .chars()
+            .rev()
+            .collect::<String>();
+        return Err(format!(
+            "Generated Rust handlers did not pass cargo check: {details}"
+        ));
+    }
+    Ok(())
+}
+
+fn schedule_rust_restart(module_dir: PathBuf) {
+    static RESTART_GENERATION: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let generation = RESTART_GENERATION.fetch_add(1, std::sync::atomic::Ordering::SeqCst) + 1;
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_secs(3));
+        if RESTART_GENERATION.load(std::sync::atomic::Ordering::SeqCst) != generation {
+            return;
+        }
+        match compile_generated_rust(&module_dir) {
+            Ok(())
+                if RESTART_GENERATION.load(std::sync::atomic::Ordering::SeqCst) == generation =>
+            {
+                tracing::info!("Generated Rust handlers compiled; restarting to load them");
+                std::process::exit(75);
+            }
+            Ok(()) => {}
+            Err(error) => tracing::error!("{error}"),
+        }
+    });
 }
 
 #[cfg(test)]
@@ -1149,7 +1138,6 @@ mod tests {
         body::{to_bytes, Body},
         http::Request,
     };
-    use base64::Engine as _;
     use serde_json::json;
     use tower::ServiceExt;
 
@@ -1394,1016 +1382,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn roles_test_executes_typed_endpoints_with_scoped_auth_and_audit() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let payload = json!({
-            "name": "roles-test",
-            "backendVariant": "rs",
-            "auth": true,
-            "authSeed": {"users": [
-                {
-                    "name": "Admin User",
-                    "email": "admin@roles-test.test",
-                    "password": "secure-password",
-                    "role": "admin"
-                },
-                {
-                    "name": "Regular User",
-                    "email": "user@roles-test.test",
-                    "password": "secure-password",
-                    "role": "user"
-                }
-            ]},
-            "databases": [{
-                "table": "role_audit_logs",
-                "columns": {
-                    "user_id": {"type": "integer", "nullable": true},
-                    "action": {"type": "string"},
-                    "role_required": {"type": "string"},
-                    "granted": {"type": "boolean"}
-                }
-            }],
-            "apis": [{
-                "model": "RoleAuditLog",
-                "controller": "RoleAuditLogController",
-                "table": "role_audit_logs",
-                "prefix": "/api/roles-test",
-                "middleware": ["auth"],
-                "endpoints": {
-                    "index": {"method": "GET", "route": "/logs"},
-                    "adminOnly": {
-                        "method": "GET",
-                        "route": "/admin-only",
-                        "type": "role_admin_only",
-                        "body": "return response.json({ message: 'admin' })"
-                    },
-                    "userOnly": {
-                        "method": "GET",
-                        "route": "/user-only",
-                        "type": "role_user_only",
-                        "body": "return response.json({ message: 'user' })"
-                    },
-                    "promote": {
-                        "method": "POST",
-                        "route": "/promote",
-                        "type": "role_promote",
-                        "body": "return response.json({ message: 'promoted' })"
-                    },
-                    "demote": {
-                        "method": "POST",
-                        "route": "/demote",
-                        "type": "role_demote",
-                        "body": "return response.json({ message: 'demoted' })"
-                    }
-                }
-            }]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        async fn login(state: AppState, email: &str) -> String {
-            let body = json!({"email": email, "password": "secure-password"}).to_string();
-            let (status, response) = request(
-                state,
-                Method::POST,
-                "/api/roles-test/auth/login",
-                None,
-                Some(&body),
-            )
-            .await;
-            assert_eq!(status, StatusCode::OK, "{response}");
-            response["token"].as_str().unwrap().to_owned()
-        }
-
-        let admin_token = login(state.clone(), "admin@roles-test.test").await;
-        let user_token = login(state.clone(), "user@roles-test.test").await;
-        let (status, _) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/admin-only",
-            None,
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNAUTHORIZED);
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/admin-only",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
-        assert_eq!(body["message"], "✗ Access denied — admin role required");
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/user-only",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert_eq!(
-            body["message"],
-            "✓ Access granted — open to all authenticated users"
-        );
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/admin-only",
-            Some(&bearer_header(&admin_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert_eq!(body["message"], "✓ Access granted — you are admin");
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/roles-test/promote",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert_eq!(body["user"]["role"], "admin");
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/admin-only",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/roles-test/demote",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{body}");
-        assert_eq!(body["user"]["role"], "user");
-
-        let (status, body) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/roles-test/admin-only",
-            Some(&bearer_header(&user_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::FORBIDDEN, "{body}");
-
-        let (status, logs) = request_with_bearer(
-            state,
-            Method::GET,
-            "/api/roles-test/logs",
-            Some(&bearer_header(&admin_token)),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{logs}");
-        let logs = logs["data"].as_array().unwrap();
-        assert_eq!(logs.len(), 5);
-        assert!(logs
-            .iter()
-            .any(|entry| { entry["action"] == "GET /admin-only" && entry["granted"] == false }));
-    }
-
-    #[tokio::test]
-    async fn scheduler_test_runs_allowlisted_commands_and_clears_history() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let payload = json!({
-            "name": "scheduler-test",
-            "backendVariant": "rs",
-            "consoles": [
-                "cleanup-temp:\n  signature: scheduler-test:cleanup-temp\n  schedule: '0 * * * *'",
-                "generate-report:\n  signature: scheduler-test:generate-report\n  schedule: '0 8 * * *'",
-                "ping-health:\n  signature: scheduler-test:ping-health\n  schedule: '0-59/5 * * * *'",
-                "sync-data:\n  signature: scheduler-test:sync-data\n  schedule: '0-59/15 * * * *'"
-            ],
-            "databases": [{
-                "table": "command_runs",
-                "columns": {
-                    "command_name": {"type": "string", "nullable": false},
-                    "signature": {"type": "string", "nullable": false},
-                    "exit_code": {"type": "integer", "nullable": false, "default": 0},
-                    "output": {"type": "text", "nullable": true},
-                    "triggered_by": {"type": "string", "nullable": false, "default": "manual"},
-                    "duration_ms": {"type": "integer", "nullable": true}
-                }
-            }],
-            "apis": [{
-                "model": "CommandRun",
-                "controller": "CommandRunController",
-                "table": "command_runs",
-                "prefix": "/api/scheduler-test",
-                "middleware": [],
-                "endpoints": {
-                    "index": {
-                        "method": "GET",
-                        "route": "/runs",
-                        "response": {"type": "paginated"}
-                    },
-                    "store": {
-                        "method": "POST",
-                        "route": "/run",
-                        "type": "command_run",
-                        "validation": {
-                            "command": "required|string",
-                            "triggered_by": "sometimes|string"
-                        },
-                        "response": {"type": "single"}
-                    },
-                    "destroy": {
-                        "method": "DELETE",
-                        "route": "/runs",
-                        "response": {"type": "message", "value": "Runs cleared"}
-                    }
-                }
-            }]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/scheduler-test/run",
-            None,
-            Some(r#"{"command":"generate-report","triggered_by":"schedule"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{response}");
-        assert_eq!(
-            response["data"]["signature"],
-            "scheduler-test:generate-report"
-        );
-        assert_eq!(
-            response["data"]["output"],
-            "Daily report generated successfully."
-        );
-        assert_eq!(response["data"]["triggered_by"], "schedule");
-        assert_eq!(response["emulated"], true);
-
-        for (command, output) in [
-            ("cleanup-temp", "Cleanup completed successfully."),
-            ("ping-health", "All services healthy."),
-            ("sync-data", "Data synced successfully."),
-        ] {
-            let body = json!({"command": command}).to_string();
-            let (status, response) = request(
-                state.clone(),
-                Method::POST,
-                "/api/scheduler-test/run",
-                None,
-                Some(&body),
-            )
-            .await;
-            assert_eq!(status, StatusCode::CREATED, "{response}");
-            assert_eq!(response["data"]["output"], output);
-        }
-
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/scheduler-test/run",
-            None,
-            Some(r#"{"command":"arbitrary shell"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{response}");
-
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/scheduler-test/run",
-            None,
-            Some(r#"{"command":"ping-health","triggered_by":"shell"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{response}");
-
-        let (status, response) = request(
-            state.clone(),
-            Method::GET,
-            "/api/scheduler-test/runs",
-            None,
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{response}");
-        assert_eq!(response["data"].as_array().unwrap().len(), 4);
-
-        let (status, response) = request(
-            state.clone(),
-            Method::DELETE,
-            "/api/scheduler-test/runs",
-            None,
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{response}");
-        assert_eq!(response["message"], "Runs cleared");
-
-        let (status, response) =
-            request(state, Method::GET, "/api/scheduler-test/runs", None, None).await;
-        assert_eq!(status, StatusCode::OK, "{response}");
-        assert!(response["data"].as_array().unwrap().is_empty());
-    }
-
-    #[tokio::test]
-    async fn events_test_fires_all_declared_listeners_and_clears_the_log() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let payload = json!({
-            "name": "events-test",
-            "backendVariant": "rs",
-            "databases": [{
-                "table": "event_log",
-                "columns": {
-                    "event_name": {"type": "string", "length": 255},
-                    "listener_name": {"type": "string", "length": 255},
-                    "status": {"type": "string", "length": 50, "default": "completed"},
-                    "payload": {"type": "text", "nullable": true},
-                    "duration_ms": {"type": "integer", "nullable": true}
-                }
-            }],
-            "apis": [{
-                "model": "EventLog",
-                "controller": "EventLogController",
-                "prefix": "/api/events-test",
-                "middleware": [],
-                "endpoints": {
-                    "index": {"method": "GET", "route": "/log", "response": {"type": "paginated"}},
-                    "store": {
-                        "method": "POST",
-                        "route": "/fire",
-                        "type": "event_fire",
-                        "validation": {"event": "required|string", "payload": "nullable|array"}
-                    },
-                    "clearLog": {
-                        "method": "POST",
-                        "route": "/log/clear",
-                        "response": {"type": "message", "value": "Log cleared"}
-                    }
-                }
-            }],
-            "events": [
-                "user-signed-up:\n  listeners: [SendWelcomeEmail, UpdateUserStats, NotifyAdmins]\n  body: ''",
-                "order-placed:\n  listeners: [ProcessPayment, UpdateInventory, SendOrderConfirmation]\n  body: ''",
-                "data-exported:\n  listeners: [LogExportActivity, CleanupTempFiles]\n  body: ''"
-            ]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        for (event, expected_count, expected_name) in [
-            ("user-signed-up", 3, "UserSignedUp"),
-            ("OrderPlaced", 3, "OrderPlaced"),
-            ("data_exported", 2, "DataExported"),
-        ] {
-            let (status, response) = request(
-                state.clone(),
-                Method::POST,
-                "/api/events-test/fire",
-                None,
-                Some(
-                    &json!({
-                        "event": event,
-                        "payload": {"source": "rust-events-test"}
-                    })
-                    .to_string(),
-                ),
-            )
-            .await;
-            assert_eq!(status, StatusCode::ACCEPTED, "{response}");
-            assert_eq!(response["message"], "Event fired");
-            let (status, log) = request(
-                state.clone(),
-                Method::GET,
-                "/api/events-test/log?per_page=100",
-                None,
-                None,
-            )
-            .await;
-            assert_eq!(status, StatusCode::OK, "{log}");
-            assert_eq!(
-                log["data"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .filter(|row| row["event_name"] == expected_name)
-                    .count(),
-                expected_count
-            );
-        }
-
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/events-test/fire",
-            None,
-            Some(r#"{"event":"not-configured"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{response}");
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/events-test/log/clear",
-            None,
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{response}");
-        assert_eq!(response["message"], "Log cleared");
-
-        let (status, log) = request(state, Method::GET, "/api/events-test/log", None, None).await;
-        assert_eq!(status, StatusCode::OK, "{log}");
-        assert_eq!(log["data"].as_array().unwrap().len(), 0);
-    }
-
-    #[tokio::test]
-    async fn mail_test_sends_registered_template_and_persists_log() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let encoded_template =
-            base64::engine::general_purpose::STANDARD.encode("<p>Welcome, {{ $username }}!</p>");
-        let payload = json!({
-            "name": "mail-test",
-            "backendVariant": "rs",
-            "auth": true,
-            "authSeed": {
-                "users": [{
-                    "name": "Mail Test User",
-                    "email": "test@example.test",
-                    "password": "secure-password"
-                }]
-            },
-            "databases": [{
-                "table": "mail_logs",
-                "timestamps": true,
-                "columns": {
-                    "user_id": {"type": "integer", "nullable": true},
-                    "to_email": {"type": "string"},
-                    "subject": {"type": "string"},
-                    "mail_class": {"type": "string"},
-                    "status": {"type": "string", "default": "sent"},
-                    "error": {"type": "text", "nullable": true}
-                }
-            }],
-            "apis": [{
-                "model": "MailLog",
-                "controller": "MailLogController",
-                "prefix": "/api/mail-test",
-                "middleware": ["auth"],
-                "endpoints": {
-                    "index": {"method": "GET", "route": "/logs", "response": {"type": "array"}},
-                    "store": {
-                        "method": "POST",
-                        "route": "/send",
-                        "type": "mail_send",
-                        "validation": {
-                            "mail": "required|string",
-                            "to": "required|email",
-                            "data": "array"
-                        }
-                    }
-                }
-            }],
-            "mails": [
-                format!(
-                    "welcome-mail:\n  subject: \"Welcome to Arkzen\"\n  blade_body: '{encoded_template}'"
-                )
-            ]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        let (status, login) = request(
-            state.clone(),
-            Method::POST,
-            "/api/mail-test/auth/login",
-            None,
-            Some(r#"{"email":"test@example.test","password":"secure-password"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{login}");
-        let token = login["token"].as_str().unwrap();
-        let auth_header = bearer_header(token);
-        let (status, response) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/mail-test/send",
-            Some(&auth_header),
-            Some(
-                &json!({
-                    "mail": "welcome-mail",
-                    "to": "recipient@example.test",
-                    "data": {"username": "<Ada>"}
-                })
-                .to_string(),
-            ),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{response}");
-        assert_eq!(response["subject"], "Welcome to Arkzen");
-        assert_eq!(response["to_email"], "recipient@example.test");
-        assert_eq!(response["mail_class"], "WelcomeMailMail");
-        assert_eq!(response["status"], "sent");
-        assert_eq!(response["user_id"], login["user"]["id"]);
-
-        let (status, logs) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/mail-test/logs",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{logs}");
-        assert_eq!(logs.as_array().unwrap().len(), 1);
-
-        let (status, response) = request_with_bearer(
-            state,
-            Method::POST,
-            "/api/mail-test/send",
-            Some(&auth_header),
-            Some(r#"{"mail":"not-configured","to":"recipient@example.test"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{response}");
-    }
-
-    #[tokio::test]
-    async fn notification_test_registers_auth_and_runs_declared_channels() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let payload = json!({
-            "name": "notification-test",
-            "backendVariant": "rs",
-            "auth": true,
-            "apis": [{
-                "model": "Notification",
-                "controller": "NotificationController",
-                "prefix": "/api/notification-test",
-                "middleware": ["auth"],
-                "endpoints": {
-                    "index": {"method": "GET", "route": "/inbox", "response": {"type": "collection"}},
-                    "store": {
-                        "method": "POST",
-                        "route": "/trigger",
-                        "type": "notification_trigger",
-                        "validation": {"notification": "required|string"}
-                    },
-                    "destroy": {"method": "DELETE", "route": "/inbox/{id}"},
-                    "readAll": {"method": "POST", "route": "/inbox/read-all"}
-                }
-            }],
-            "notifications": [
-                "database-ping:\n  channels: [database]\n  message: \"A database notification\"\n  subject: \"Database Ping\"",
-                "mail-ping:\n  channels: [mail]\n  message: \"A mail notification\"\n  subject: \"Mail Ping\"",
-                "broadcast-ping:\n  channels: [broadcast, database]\n  channel_type: private\n  message: \"A private broadcast\"\n  subject: \"Broadcast Ping\""
-            ]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        let (status, registration) = request(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/auth/register",
-            None,
-            Some(r#"{"name":"Notification User","email":"notify@example.test","password":"secure-password","password_confirmation":"secure-password"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{registration}");
-
-        let (status, login) = request(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/auth/login",
-            None,
-            Some(r#"{"email":"notify@example.test","password":"secure-password"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{login}");
-        let auth_header = bearer_header(login["token"].as_str().unwrap());
-        let channel = format!("private-notification-test.{}", login["user"]["id"]);
-        let (status, channel_auth) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/auth/broadcasting/auth",
-            Some(&auth_header),
-            Some(&json!({"socket_id": "123.456", "channel_name": channel}).to_string()),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{channel_auth}");
-        assert!(channel_auth["auth"]
-            .as_str()
-            .is_some_and(|signature| signature.starts_with("arkzen-key:")));
-        let (status, denied_auth) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/auth/broadcasting/auth",
-            Some(&auth_header),
-            Some(r#"{"socket_id":"123.456","channel_name":"private-notification-test.999"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::FORBIDDEN, "{denied_auth}");
-
-        let (status, triggered) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/trigger",
-            Some(&auth_header),
-            Some(r#"{"notification":"database-ping"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{triggered}");
-        assert_eq!(triggered["type"], "database-ping");
-
-        let (status, broadcast) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/trigger",
-            Some(&auth_header),
-            Some(r#"{"notification":"broadcast-ping"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{broadcast}");
-
-        let (status, inbox) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/notification-test/inbox",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{inbox}");
-        assert_eq!(inbox["data"].as_array().unwrap().len(), 2);
-        let notification_data = inbox["data"]
-            .as_array()
-            .unwrap()
-            .iter()
-            .filter_map(|row| row["data"].as_str())
-            .collect::<Vec<_>>()
-            .join("\n");
-        assert!(notification_data.contains("A database notification"));
-        assert!(notification_data.contains("A private broadcast"));
-
-        let notification_id = inbox["data"][0]["id"].as_str().unwrap();
-        let (status, read) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/notification-test/inbox/read-all",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{read}");
-        assert_eq!(read["message"], "All notifications marked as read");
-
-        let (status, deleted) = request_with_bearer(
-            state,
-            Method::DELETE,
-            &format!("/api/notification-test/inbox/{notification_id}"),
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{deleted}");
-        assert_eq!(deleted["message"], "Notification deleted");
-    }
-
-    #[tokio::test]
-    async fn body_mail_notification_emulates_mail_notifications_and_scoped_clear() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let welcome_template = base64::engine::general_purpose::STANDARD
-            .encode("<h1>Welcome, {{ $name }}!</h1><p>{{ $app_name }}</p>");
-        let receipt_template = base64::engine::general_purpose::STANDARD
-            .encode("<p>{{ $order_id }} {{ $item_name }} {{ $amount }}</p>");
-        let alert_template = base64::engine::general_purpose::STANDARD
-            .encode("<p>{{ $alert_message }} <a href=\"{{ $action_url }}\">Review</a></p>");
-        let payload = json!({
-            "name": "body-mail-notification",
-            "backendVariant": "rs",
-            "auth": true,
-            "authSeed": {
-                "users": [{
-                    "name": "Test User",
-                    "email": "test@example.test",
-                    "password": "secure-password"
-                }]
-            },
-            "databases": [{
-                "table": "send_log",
-                "timestamps": true,
-                "columns": {
-                    "user_id": {"type": "integer", "nullable": true},
-                    "to_email": {"type": "string", "nullable": true},
-                    "subject": {"type": "string", "nullable": true},
-                    "mail_class": {"type": "string", "nullable": true},
-                    "kind": {"type": "string", "default": "mail"},
-                    "status": {"type": "string", "default": "sent"},
-                    "error": {"type": "text", "nullable": true}
-                }
-            }],
-            "apis": [{
-                "model": "SendLog",
-                "controller": "SendLogController",
-                "prefix": "/api/body-mail-notification",
-                "middleware": ["auth"],
-                "endpoints": {
-                    "index": {
-                        "method": "GET",
-                        "route": "/log",
-                        "response": {"type": "collection"}
-                    },
-                    "sendMail": {"method": "POST", "route": "/send-mail"},
-                    "notify": {"method": "POST", "route": "/notify"},
-                    "clearLog": {
-                        "method": "DELETE",
-                        "route": "/log/clear",
-                        "response": {"type": "message", "value": "Log cleared"}
-                    }
-                }
-            }],
-            "mails": [
-                format!("welcome:\n  subject: \"Welcome\"\n  blade_body: '{welcome_template}'"),
-                format!("receipt:\n  subject: \"Receipt\"\n  blade_body: '{receipt_template}'"),
-                format!("alert:\n  subject: \"Alert\"\n  blade_body: '{alert_template}'")
-            ],
-            "notifications": [
-                "action-required:\n  channels: [mail, database]\n  message: \"You have a pending action that requires your attention.\"",
-                "summary:\n  channels: [mail, database]\n  message: \"Here is your activity summary.\""
-            ]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        let (status, login) = request(
-            state.clone(),
-            Method::POST,
-            "/api/body-mail-notification/auth/login",
-            None,
-            Some(r#"{"email":"test@example.test","password":"secure-password"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{login}");
-        let auth_header = bearer_header(login["token"].as_str().unwrap());
-        let (status, mail) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/body-mail-notification/send-mail",
-            Some(&auth_header),
-            Some(r#"{"mail":"receipt","to":"buyer@example.test"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{mail}");
-        assert_eq!(mail["data"]["kind"], "mail");
-        assert_eq!(mail["data"]["status"], "sent");
-        assert_eq!(mail["data"]["mail_class"], "ReceiptMail");
-
-        let (status, notification) = request_with_bearer(
-            state.clone(),
-            Method::POST,
-            "/api/body-mail-notification/notify",
-            Some(&auth_header),
-            Some(r#"{"notification":"summary","message":"Daily summary"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::CREATED, "{notification}");
-        assert_eq!(notification["data"]["kind"], "notification");
-        assert_eq!(notification["data"]["status"], "sent");
-        assert_eq!(notification["data"]["mail_class"], "SummaryNotification");
-
-        let database = rusqlite::Connection::open(
-            directory
-                .path()
-                .join("databases")
-                .join("body-mail-notification.sqlite"),
-        )
-        .unwrap();
-        let (notification_type, notification_data): (String, String) = database
-            .query_row(
-                "SELECT \"type\", \"data\" FROM \"notifications\"",
-                [],
-                |row| Ok((row.get(0)?, row.get(1)?)),
-            )
-            .unwrap();
-        assert_eq!(notification_type, "summary");
-        assert_eq!(
-            serde_json::from_str::<Value>(&notification_data).unwrap()["message"],
-            "Daily summary"
-        );
-
-        let (status, logs) = request_with_bearer(
-            state.clone(),
-            Method::GET,
-            "/api/body-mail-notification/log",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{logs}");
-        assert_eq!(logs["data"].as_array().unwrap().len(), 2);
-
-        let (status, cleared) = request_with_bearer(
-            state.clone(),
-            Method::DELETE,
-            "/api/body-mail-notification/log/clear",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{cleared}");
-        let (status, logs) = request_with_bearer(
-            state,
-            Method::GET,
-            "/api/body-mail-notification/log",
-            Some(&auth_header),
-            None,
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{logs}");
-        assert!(logs["data"].as_array().unwrap().is_empty());
-    }
-
-    #[tokio::test]
-    async fn job_test_dispatches_supported_jobs_and_records_failures() {
-        let directory = tempfile::tempdir().unwrap();
-        let state = test_state(directory.path());
-        let payload = json!({
-            "name": "job-test",
-            "backendVariant": "rs",
-            "databases": [{
-                "table": "job_results",
-                "columns": {
-                    "job_name": {"type": "string", "length": 100},
-                    "status": {"type": "string", "length": 50},
-                    "result": {"type": "text", "nullable": true},
-                    "processed_at": {"type": "datetime", "nullable": true}
-                }
-            }],
-            "apis": [{
-                "model": "JobResult",
-                "controller": "JobResultController",
-                "prefix": "/api/job-test",
-                "middleware": [],
-                "endpoints": {
-                    "index": {"method": "GET", "route": "/results", "response": {"type": "paginated"}},
-                    "store": {
-                        "method": "POST",
-                        "route": "/dispatch",
-                        "type": "job_dispatch",
-                        "validation": {"job": "required|string"}
-                    }
-                }
-            }],
-            "jobs": [
-                "process-data:\n  queue: default\n  tries: 3\n  timeout: 30",
-                "heavy-computation:\n  queue: heavy\n  tries: 1\n  timeout: 120",
-                "always-fails:\n  queue: default\n  tries: 2\n  timeout: 10"
-            ]
-        })
-        .to_string();
-        let (status, build) = request(
-            state.clone(),
-            Method::POST,
-            "/arkzen/build",
-            Some("test-secret"),
-            Some(&payload),
-        )
-        .await;
-        assert_eq!(status, StatusCode::OK, "{build}");
-
-        for (job_name, expected_status) in [
-            ("process-data", "completed"),
-            ("heavy-computation", "completed"),
-            ("always-fails", "failed"),
-        ] {
-            let (status, response) = request(
-                state.clone(),
-                Method::POST,
-                "/api/job-test/dispatch",
-                None,
-                Some(&json!({"job": job_name}).to_string()),
-            )
-            .await;
-            assert_eq!(status, StatusCode::ACCEPTED, "{response}");
-            assert_eq!(response["message"], "Job dispatched");
-
-            let deadline = tokio::time::Instant::now() + std::time::Duration::from_secs(8);
-            let result = loop {
-                let (status, response) = request(
-                    state.clone(),
-                    Method::GET,
-                    "/api/job-test/results?per_page=100",
-                    None,
-                    None,
-                )
-                .await;
-                assert_eq!(status, StatusCode::OK, "{response}");
-                if let Some(result) = response["data"]
-                    .as_array()
-                    .and_then(|rows| rows.iter().find(|row| row["job_name"] == job_name))
-                {
-                    if result["status"] == expected_status {
-                        break result.clone();
-                    }
-                }
-                assert!(
-                    tokio::time::Instant::now() < deadline,
-                    "Timed out waiting for {job_name} to reach {expected_status}"
-                );
-                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
-            };
-            assert_eq!(result["status"], expected_status);
-        }
-
-        let (status, response) = request(
-            state.clone(),
-            Method::POST,
-            "/api/job-test/dispatch",
-            None,
-            Some(r#"{"job":"not-configured"}"#),
-        )
-        .await;
-        assert_eq!(status, StatusCode::UNPROCESSABLE_ENTITY, "{response}");
-        let connection =
-            rusqlite::Connection::open(directory.path().join("databases/job-test.sqlite")).unwrap();
-        let failed_jobs: i64 = connection
-            .query_row("SELECT COUNT(*) FROM failed_jobs", [], |row| row.get(0))
-            .unwrap();
-        assert_eq!(failed_jobs, 1);
-    }
-
-    #[tokio::test]
     async fn build_persists_registration_and_isolated_database_then_remove_cleans_up() {
         let directory = tempfile::tempdir().unwrap();
         let state = test_state(directory.path());
@@ -2605,7 +1583,7 @@ mod tests {
         assert!(body["message"]
             .as_str()
             .unwrap()
-            .contains("Custom endpoint body"));
+            .contains("No compiled Rust handler"));
     }
 
     #[tokio::test]
@@ -2643,4 +1621,4 @@ mod tests {
             .unwrap()
             .contains("application/json"));
     }
-}   
+}

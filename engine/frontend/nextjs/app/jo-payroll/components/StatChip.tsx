@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — StatChip
 // Source: @arkzen:components (jo-payroll)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T14:51:43.398Z
+// Generated: 2026-11-06T05:06:20.076Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

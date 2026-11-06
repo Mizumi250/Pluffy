@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — events-test
 // Source: @arkzen:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T14:51:40.736Z
+// Generated: 2026-11-06T05:06:06.931Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -17,5 +17,5 @@ export interface EventLogEntry {
   status:        string
   payload:       string | null
   duration_ms:   number | null
-  created_at:    string
+  created_at:    string | null
 }

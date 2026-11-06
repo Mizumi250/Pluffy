@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — SpaceCard
 // Source: @arkzen:components (atelier)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T14:51:36.405Z
+// Generated: 2026-11-06T05:05:50.000Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

@@ -15,7 +15,7 @@
 
 use crate::database::{DatabaseConfig, DatabaseDriver};
 use bytes::{BufMut, BytesMut};
-use postgres::types::{FromSql as PgFromSql, Format, IsNull, ToSql as PgToSql, Type};
+use postgres::types::{Format, FromSql as PgFromSql, IsNull, ToSql as PgToSql, Type};
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::fmt;
@@ -299,7 +299,9 @@ pub trait FromSql: Sized {
 }
 
 fn type_error(expected: &str, value: ValueRef<'_>) -> Error {
-    Error::other(format!("Invalid column type {value:?}, expected {expected}"))
+    Error::other(format!(
+        "Invalid column type {value:?}, expected {expected}"
+    ))
 }
 
 impl FromSql for i64 {
@@ -473,11 +475,7 @@ impl Statement<'_> {
         F: FnMut(&Row) -> Result<T>,
     {
         let rows = self.connection.fetch(&self.sql, &params.into_values())?;
-        Ok(rows
-            .iter()
-            .map(&mut mapper)
-            .collect::<Vec<_>>()
-            .into_iter())
+        Ok(rows.iter().map(&mut mapper).collect::<Vec<_>>().into_iter())
     }
 
     pub fn execute<P: Params>(&mut self, params: P) -> Result<usize> {
@@ -624,10 +622,11 @@ impl Connection {
     /// SQLite enforces foreign keys per connection; PostgreSQL always does.
     pub fn enable_foreign_keys(&self, enabled: bool) -> Result<()> {
         match &self.inner {
-            Inner::Sqlite(connection) => {
-                Ok(connection
-                    .pragma_update(None, "foreign_keys", if enabled { "ON" } else { "OFF" })?)
-            }
+            Inner::Sqlite(connection) => Ok(connection.pragma_update(
+                None,
+                "foreign_keys",
+                if enabled { "ON" } else { "OFF" },
+            )?),
             Inner::Postgres(_) => Ok(()),
         }
     }
@@ -650,8 +649,10 @@ impl Connection {
     pub fn table_columns(&self, table: &str) -> Result<Vec<String>> {
         match self.driver() {
             DatabaseDriver::Sqlite => {
-                let mut statement =
-                    self.prepare(&format!("PRAGMA table_info(\"{}\")", table.replace('"', "\"\"")))?;
+                let mut statement = self.prepare(&format!(
+                    "PRAGMA table_info(\"{}\")",
+                    table.replace('"', "\"\"")
+                ))?;
                 statement
                     .query_map(params![], |row| row.get::<_, String>(1))?
                     .collect()
@@ -822,7 +823,9 @@ impl Connection {
                 |_| Ok(()),
             )
             .is_ok();
-        self.serial_tables.borrow_mut().insert(table.clone(), has_id);
+        self.serial_tables
+            .borrow_mut()
+            .insert(table.clone(), has_id);
         has_id.then_some(table)
     }
 }
@@ -883,8 +886,12 @@ pub fn open_module(database_dir: &Path, slug: &str) -> std::result::Result<Conne
     match config.driver {
         DatabaseDriver::Sqlite => {
             let path = sqlite_path(database_dir, slug);
-            Connection::open(&path)
-                .map_err(|error| format!("Could not open isolated database {}: {error}", path.display()))
+            Connection::open(&path).map_err(|error| {
+                format!(
+                    "Could not open isolated database {}: {error}",
+                    path.display()
+                )
+            })
         }
         DatabaseDriver::Postgres => {
             let name = config.postgres_database_name(slug)?;
@@ -903,8 +910,9 @@ pub fn ensure_module_database(
     let config = DatabaseConfig::from_env()?;
     match config.driver {
         DatabaseDriver::Sqlite => {
-            std::fs::create_dir_all(database_dir)
-                .map_err(|error| format!("Could not create isolated database directory: {error}"))?;
+            std::fs::create_dir_all(database_dir).map_err(|error| {
+                format!("Could not create isolated database directory: {error}")
+            })?;
             let path = sqlite_path(database_dir, slug);
             let connection = open_module(database_dir, slug)?;
             Ok((connection, path.display().to_string()))
@@ -927,7 +935,10 @@ pub fn ensure_module_database(
             }
             drop(admin);
             let connection = open_module(database_dir, slug)?;
-            Ok((connection, format!("postgresql://{}:{}/{name}", config.host, config.port)))
+            Ok((
+                connection,
+                format!("postgresql://{}:{}/{name}", config.host, config.port),
+            ))
         }
     }
 }
@@ -969,7 +980,10 @@ fn pg_quote(name: &str) -> String {
     format!("\"{}\"", name.replace('"', "\"\""))
 }
 
-fn pg_client(config: &DatabaseConfig, database: &str) -> std::result::Result<postgres::Client, Error> {
+fn pg_client(
+    config: &DatabaseConfig,
+    database: &str,
+) -> std::result::Result<postgres::Client, Error> {
     let mut builder = postgres::Config::new();
     builder
         .host(&config.host)
@@ -984,7 +998,9 @@ fn pg_client(config: &DatabaseConfig, database: &str) -> std::result::Result<pos
     if !config.password.is_empty() {
         builder.password(&config.password);
     }
-    let mode = std::env::var("DB_SSLMODE").unwrap_or_default().to_ascii_lowercase();
+    let mode = std::env::var("DB_SSLMODE")
+        .unwrap_or_default()
+        .to_ascii_lowercase();
     builder.ssl_mode(match mode.as_str() {
         "disable" => postgres::config::SslMode::Disable,
         "require" | "verify-ca" | "verify-full" => postgres::config::SslMode::Require,
@@ -1097,9 +1113,14 @@ fn pg_value(row: &postgres::Row, index: usize) -> Result<Value> {
             let micros = i64::from_be_bytes(array(8)?.try_into().unwrap());
             Value::Text(format_timestamp(micros, ty == Type::TIMESTAMPTZ))
         }
-        Type::JSONB => Value::Text(String::from_utf8_lossy(raw.get(1..).unwrap_or_default()).into_owned()),
+        Type::JSONB => {
+            Value::Text(String::from_utf8_lossy(raw.get(1..).unwrap_or_default()).into_owned())
+        }
         Type::UUID => {
-            let hex: String = array(16)?.iter().map(|byte| format!("{byte:02x}")).collect();
+            let hex: String = array(16)?
+                .iter()
+                .map(|byte| format!("{byte:02x}"))
+                .collect();
             Value::Text(format!(
                 "{}-{}-{}-{}-{}",
                 &hex[0..8],
@@ -1260,7 +1281,8 @@ pub fn translate_postgres(sql: &str) -> String {
             b'/' if bytes.get(index + 1) == Some(&b'*') => {
                 let start = index;
                 index += 2;
-                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/') {
+                while index + 1 < bytes.len() && !(bytes[index] == b'*' && bytes[index + 1] == b'/')
+                {
                     index += 1;
                 }
                 index = (index + 2).min(bytes.len());
@@ -1286,7 +1308,9 @@ pub fn translate_postgres(sql: &str) -> String {
             }
             b if b.is_ascii_alphabetic() || b == b'_' => {
                 let start = index;
-                while index < bytes.len() && (bytes[index].is_ascii_alphanumeric() || bytes[index] == b'_') {
+                while index < bytes.len()
+                    && (bytes[index].is_ascii_alphanumeric() || bytes[index] == b'_')
+                {
                     index += 1;
                 }
                 let word = &sql[start..index];
@@ -1350,14 +1374,12 @@ fn serial_suffix(rest: &str) -> Option<usize> {
 
 fn contains_keyword(sql: &str, keyword: &str) -> bool {
     let upper = sql.to_ascii_uppercase();
-    upper
-        .match_indices(keyword)
-        .any(|(at, _)| {
-            let before = upper[..at].chars().next_back();
-            let after = upper[at + keyword.len()..].chars().next();
-            !before.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
-                && !after.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
-        })
+    upper.match_indices(keyword).any(|(at, _)| {
+        let before = upper[..at].chars().next_back();
+        let after = upper[at + keyword.len()..].chars().next();
+        !before.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+            && !after.is_some_and(|c| c.is_ascii_alphanumeric() || c == '_')
+    })
 }
 
 /// Extracts the (unquoted) table name of `INSERT [OR ...] INTO <table> ...`.
@@ -1394,7 +1416,9 @@ mod tests {
             "SELECT '?' , \"a?b\" FROM t WHERE x ILIKE $1 LIMIT $2 OFFSET $3"
         );
         assert_eq!(
-            translate_postgres("CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT, n INTEGER, r REAL)"),
+            translate_postgres(
+                "CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT, n INTEGER, r REAL)"
+            ),
             "CREATE TABLE t (id BIGSERIAL PRIMARY KEY, n BIGINT, r DOUBLE PRECISION)"
         );
         assert_eq!(
@@ -1406,13 +1430,22 @@ mod tests {
             "SELECT $1 FROM t WHERE a = $2 AND b = $3"
         );
         assert!(translate_postgres("UPDATE t SET at = CURRENT_TIMESTAMP").contains("to_char(now()"));
-        assert_eq!(translate_postgres("-- LIKE ?\nSELECT 1"), "-- LIKE ?\nSELECT 1");
+        assert_eq!(
+            translate_postgres("-- LIKE ?\nSELECT 1"),
+            "-- LIKE ?\nSELECT 1"
+        );
     }
 
     #[test]
     fn finds_insert_tables() {
-        assert_eq!(insert_table("INSERT INTO \"users\" (a) VALUES ($1)").as_deref(), Some("users"));
-        assert_eq!(insert_table("insert into jobs(a) values (1)").as_deref(), Some("jobs"));
+        assert_eq!(
+            insert_table("INSERT INTO \"users\" (a) VALUES ($1)").as_deref(),
+            Some("users")
+        );
+        assert_eq!(
+            insert_table("insert into jobs(a) values (1)").as_deref(),
+            Some("jobs")
+        );
         assert_eq!(insert_table("SELECT 1"), None);
     }
 
@@ -1427,7 +1460,9 @@ mod tests {
         let directory = tempfile::tempdir().unwrap();
         let connection = Connection::open(directory.path().join("t.sqlite")).unwrap();
         connection
-            .execute_batch("CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, n REAL)")
+            .execute_batch(
+                "CREATE TABLE t (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT, n REAL)",
+            )
             .unwrap();
         connection
             .execute("INSERT INTO t (name, n) VALUES (?1, ?2)", params!["a", 1.5])
@@ -1438,7 +1473,10 @@ mod tests {
             .unwrap();
         assert_eq!(name, "a");
         assert!(connection
-            .query_row("SELECT name FROM t WHERE id = 9", params![], |row| row.get::<_, String>(0))
+            .query_row("SELECT name FROM t WHERE id = 9", params![], |row| row
+                .get::<_, String>(
+                0
+            ))
             .optional()
             .unwrap()
             .is_none());

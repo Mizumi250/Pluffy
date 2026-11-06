@@ -2755,17 +2755,66 @@ const DashboardLynxPage = () => {
 
 /* @arkzen:endpoint:rs:sendMail
 */
-// Executed by the body-mail-notification named Rust emulation.
+let input = request.json_object()?;
+let mail = input.get("mail").and_then(Value::as_str).unwrap_or_default();
+let to = input.get("to").and_then(Value::as_str).unwrap_or_default();
+if !matches!(mail, "welcome" | "receipt" | "alert")
+    || !to.contains('@')
+    || !to.rsplit_once('.').is_some_and(|(domain, suffix)| domain.contains('@') && !suffix.is_empty())
+{
+    return response.validation_error("A supported mail type and valid recipient are required");
+}
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let now = utc_now_rfc3339();
+let log = database.insert("send_log", json!({
+    "user_id": user.id,
+    "to_email": to,
+    "subject": mail,
+    "mail_class": format!("{}Mail", mail.split('-').map(|part| {
+        let mut chars = part.chars();
+        chars.next().map(|first| first.to_uppercase().collect::<String>() + chars.as_str()).unwrap_or_default()
+    }).collect::<String>()),
+    "kind": "mail",
+    "status": "failed",
+    "error": "Mail delivery is unavailable in the Rust backend",
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, log)
 /* @arkzen:endpoint:rs:sendMail:end */
 
 /* @arkzen:endpoint:rs:notify
 */
-// Executed by the body-mail-notification named Rust emulation.
+let input = request.json_object()?;
+let notification = input.get("notification").and_then(Value::as_str).unwrap_or_default();
+let message = input.get("message").and_then(Value::as_str).unwrap_or_default();
+if !matches!(notification, "action-required" | "summary") || message.chars().count() > 255 {
+    return response.validation_error("A supported notification type and a message of at most 255 characters are required");
+}
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let now = utc_now_rfc3339();
+let log = database.insert("send_log", json!({
+    "user_id": user.id,
+    "to_email": user.email,
+    "subject": notification,
+    "mail_class": format!("{}Notification", notification.split('-').map(|part| {
+        let mut chars = part.chars();
+        chars.next().map(|first| first.to_uppercase().collect::<String>() + chars.as_str()).unwrap_or_default()
+    }).collect::<String>()),
+    "kind": "notification",
+    "status": "failed",
+    "error": "Mail delivery is unavailable in the Rust backend",
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, log)
 /* @arkzen:endpoint:rs:notify:end */
 
 /* @arkzen:endpoint:rs:clearLog
 */
-// Executed by the body-mail-notification named Rust emulation.
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+database.execute("DELETE FROM send_log WHERE user_id = ?", vec![json!(user.id)])?;
+response.json(StatusCode::OK, json!({"message": "Log cleared"}))
 /* @arkzen:endpoint:rs:clearLog:end */
 
 /* @arkzen:notifications:rs:action-required

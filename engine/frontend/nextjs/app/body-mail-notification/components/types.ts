@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-mail-notification
 // Source: @arkzen:components (body-mail-notification)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-05T14:51:37.433Z
+// Generated: 2026-11-06T05:05:54.148Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

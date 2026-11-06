@@ -380,7 +380,7 @@ function startBackend() {
           cwd: BACKEND_DIR,
           stdio: 'pipe',
           env: {
-            ...process.env,
+            ...readBackendEnv(),
             PATH: [
               path.dirname(RUST_CARGO),
               ...(RUST_USE_GNU ? [path.dirname(RUST_MINGW_GCC)] : []),
@@ -389,6 +389,9 @@ function startBackend() {
             ...(RUST_USE_GNU && !process.env.CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER
               ? { CARGO_TARGET_X86_64_PC_WINDOWS_GNU_LINKER: RUST_MINGW_GCC }
               : {}),
+            CARGO: RUST_CARGO,
+            ARKZEN_RUST_AUTORESTART: '1',
+            ...(RUST_USE_GNU ? { RUSTUP_TOOLCHAIN: RUST_GNU_TOOLCHAIN } : {}),
             PORT: '8000',
             PLUFF_ROOT: ROOT_DIR,
           },
@@ -413,6 +416,11 @@ function startBackend() {
   proc.stdout.on('data', logBackendOutput)
   proc.stderr.on('data', logBackendOutput)
   proc.on('close', (code) => {
+    if (IS_RUST && code === 75) {
+      log('backend', 'Rust engine compiled generated Tatemono handlers — restarting...')
+      setTimeout(() => { backend = startBackend() }, 400)
+      return
+    }
     if (IS_GO && (code === 75 || (goRestartRequested && code !== 0 && code !== null))) {
       log('backend', 'Go engine recompiled generated modules — restarting to load them...')
       setTimeout(() => { backend = startBackend() }, 400)
@@ -437,7 +445,7 @@ function startQueueWorker() {
     return null
   }
   if (IS_RUST) {
-    log('queue', 'Rust queue/scheduler support is not implemented yet; no worker was started')
+    log('queue', 'Rust job-test emulations run in-process; durable queues and cron scheduling are not implemented')
     return null
   }
   if (IS_SPRING) {

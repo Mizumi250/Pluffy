@@ -424,14 +424,23 @@ export default IndexPage
 
 /* @arkzen:endpoint:rs:stats
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let total = database.query("SELECT COUNT(*) AS count FROM tickets")?
+    .first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+let open = database.query("SELECT COUNT(*) AS count FROM tickets WHERE status = 'open'")?
+    .first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+response.json(StatusCode::OK, json!({
+    "total": total,
+    "open": open,
+    "closed": total - open,
+    "by": user.email
+}))
 /* @arkzen:endpoint:rs:stats:end */
 
 /* @arkzen:handler:rs:probe
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let name = request.path().rsplit('/').next().unwrap_or_default();
+response.json(StatusCode::OK, json!({"probe": name, "params": [name], "at": "express"}))
 /* @arkzen:handler:rs:probe:end */
 
 /* @arkzen:jobs:rs:process-data

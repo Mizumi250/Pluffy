@@ -4246,18 +4246,72 @@ export const AppLayout: React.FC<{ children: React.ReactNode; activeScreen?: str
 
 /* @arkzen:endpoint:rs:summary
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let active = database.query("SELECT * FROM job_orders WHERE status = 'active'")?;
+let inactive = database.query("SELECT COUNT(*) AS count FROM job_orders WHERE status = 'inactive'")?
+    .first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+let mut total_cash = 0_i64;
+let mut total_atm = 0_i64;
+let mut basic_pay = 0.0_f64;
+let mut sss = 0.0_f64;
+let mut hdmf_premium = 0.0_f64;
+let mut hdmf_mpl = 0.0_f64;
+let mut calamity_loan = 0.0_f64;
+let mut funding = std::collections::BTreeMap::<String, (i64, f64)>::new();
+let mut groups = std::collections::BTreeMap::<String, i64>::new();
+for order in &active {
+    let amount = |key: &str| order.get(key).and_then(Value::as_f64).unwrap_or(0.0);
+    let method = order.get("disbursement_type").and_then(Value::as_str).unwrap_or_default();
+    if method == "CASH" { total_cash += 1; }
+    if method == "ATM" { total_atm += 1; }
+    basic_pay += amount("basic_pay");
+    sss += amount("sss_amount");
+    hdmf_premium += amount("hdmf_premium");
+    hdmf_mpl += amount("hdmf_mpl");
+    calamity_loan += amount("calamity_loan");
+    let funding_name = order.get("funding").and_then(Value::as_str).unwrap_or_default().to_owned();
+    let entry = funding.entry(funding_name).or_default();
+    entry.0 += 1;
+    entry.1 += amount("basic_pay");
+    let group = order.get("jor_pyrl_group").and_then(Value::as_str).unwrap_or_default().to_owned();
+    *groups.entry(group).or_default() += 1;
+}
+let deductions = sss + hdmf_premium + hdmf_mpl + calamity_loan;
+let funding_breakdown = funding.into_iter().map(|(name, (count, total_pay))| {
+    (name, json!({"count": count, "total_pay": total_pay}))
+}).collect::<serde_json::Map<String, Value>>();
+let group_breakdown = groups.into_iter().map(|(name, count)| (name, json!(count)))
+    .collect::<serde_json::Map<String, Value>>();
+response.json(StatusCode::OK, json!({
+    "total_active": active.len(),
+    "total_inactive": inactive,
+    "total_atm": total_atm,
+    "total_cash": total_cash,
+    "total_basic_pay": basic_pay,
+    "total_sss": sss,
+    "total_hdmf_premium": hdmf_premium,
+    "total_hdmf_mpl": hdmf_mpl,
+    "total_calamity_loan": calamity_loan,
+    "total_deductions": deductions,
+    "net_pay": basic_pay - deductions,
+    "funding_breakdown": funding_breakdown,
+    "group_breakdown": group_breakdown
+}))
 /* @arkzen:endpoint:rs:summary:end */
 
 /* @arkzen:endpoint:rs:byGroup
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let group = request.path().rsplit('/').next().unwrap_or_default();
+let orders = database.query_params(
+    "SELECT * FROM job_orders WHERE jor_pyrl_group = ? AND status = 'active' ORDER BY jor_number ASC",
+    vec![json!(group)],
+)?;
+response.json(StatusCode::OK, json!(orders))
 /* @arkzen:endpoint:rs:byGroup:end */
 
 /* @arkzen:endpoint:rs:appointments
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let orders = database.query(
+    "SELECT * FROM job_orders WHERE appointment_order IS NOT NULL ORDER BY appointment_order ASC"
+)?;
+response.json(StatusCode::OK, json!(orders))
 /* @arkzen:endpoint:rs:appointments:end */

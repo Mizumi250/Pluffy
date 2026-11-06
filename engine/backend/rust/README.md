@@ -14,8 +14,8 @@ SQLite is currently the only integrated Rust database driver. The
 `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_USERNAME`,
 and `DB_PASSWORD` settings are documented in `.env.example`, and the Rust
 database module contains tested PostgreSQL driver/name and schema-dialect
-helpers. However, the Rust schema builder, authentication, CRUD, notification,
-custom-emulation, and Kotoba query paths still use rusqlite; setting
+helpers. However, the Rust schema builder, authentication, and CRUD paths still
+use rusqlite; setting
 `ARKZEN_DB_DRIVER=pgsql` does **not** switch those paths to PostgreSQL yet.
 Use `ARKZEN_DB_DRIVER=sqlite` until the remaining database paths are migrated.
 
@@ -125,55 +125,40 @@ and `logout` routes. `authSeed.users` upserts seeded users. Registration
 requires name, email, password, and matching `password_confirmation`; register
 and login return `{ "user": ..., "token": "<id>|<secret>" }`. The Rust engine
 does not implement cookie or session authentication.
+Mail-send endpoints resolve the mail declared in the Tatemono, render its
+`@arkzen:mail:rs` template with HTML-escaped data, and write a mail-log record.
+`MAIL_MAILER=log` (the default) logs delivery without contacting an SMTP server;
+set `MAIL_MAILER=smtp` with `MAIL_HOST`, `MAIL_PORT`, optional
+`MAIL_USERNAME`/`MAIL_PASSWORD`, and `MAIL_FROM_ADDRESS` to send via SMTP.
 
-Rust provides purpose-built emulations for the `body-endpoint-handler` `echo`, `stats`,
-`ping`, `recordHandler`, and `latest` operations and the `inventory-management`
-`lowStock` endpoint when their corresponding bodies are present. These return
-equivalent response shapes and persist/query the declared module tables;
-arbitrary custom source is never evaluated. `queue-flow` has explicit
-`join_queue`, `call_next`, `queue_status`, and `my_ticket` state transitions;
-its realtime broadcasts are not implemented. `jo-payroll` implements summary,
-group, and appointment queries. `roles-test` supports its authenticated
-admin/user checks, audit log, and self-promotion/demotion endpoints. Other
-custom endpoint bodies, arbitrary middleware, policies, and non-CRUD DSL
-behavior remain unsupported and return `501` with build warnings. API
-registration is dynamic from the persisted module definition; it does not
-generate or execute arbitrary Rust source code.
-The `kotoba` module has named Rust emulations for its 33 authenticated handlers,
-including learner profiles and progress, community posts and corrections,
-lessons and vocabulary review, partner follows, messaging, circles, and alerts.
-The declared route handler name selects the matching implementation; arbitrary
-handler source is not evaluated.
-Declared realtime channel rules and events are resolved from the shared DSL;
-arbitrary realtime event/listener source bodies are not evaluated.
-The `events-test` module has a named emulation for `event_fire`: it records a
-completed log row for each listener declared by the event and supports clearing
-the event log. This is a synchronous database-log simulation, not background
-queue execution; custom listener bodies are not evaluated. The `job-test`
-module has named in-process emulations for `process-data`, `heavy-computation`,
-and `always-fails`, including result and failed-job records. These jobs are
-not durable across restarts, do not use a general queue worker, and do not
-execute arbitrary job bodies.
-The `scheduler-test` module supports manual runs of its four named commands,
-records matching execution-history rows, rejects arbitrary command names, and
-supports clearing the history. Console bodies are not evaluated, and Rust does
-not automatically run cron schedules.
-The `mail-test` module resolves its declared Rust mail templates, renders
-escaped data placeholders, delivers through the default log mailer or
-configured SMTP transport, and stores the result in `mail_logs`. SMTP uses
-`MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, and
-`MAIL_FROM_ADDRESS`.
-The `body-mail-notification` module has named Rust emulations for its
-`sendMail`, `notify`, and `clearLog` endpoints. Mail and notification
-deliveries use the configured mail transport and are recorded per user in
-`send_log`. Notifications declaring the `database` channel are also stored in
-the module's `notifications` table; custom endpoint and `toMail` source bodies
-are not evaluated.
-The `notification-test` module supports its login/register routes, user-scoped
-inbox, read-all and delete actions, and declared database, mail, and broadcast
-notification channels. Private and presence notification subscriptions are
-authorized only for the matching authenticated user. Arbitrary notification
-bodies are not evaluated.
+Custom endpoint and custom-route `:rs` bodies are base64-decoded from the
+parsed build payload into `storage/arkzen-modules/generated/<name>.rs`. When
+launched with `node start.js`, Rust debounces generated-source compilation until
+module builds settle, then restarts once to load the updated handlers. A Rust
+compiler error is logged and the running process stays available. Run the
+backend through `node start.js` for generated handlers to be compiled and loaded.
+
+Generated handlers receive `request`, `database`, and `response` helpers and
+can use `serde_json::{json, Map, Value}` and `StatusCode`. `request.user()` is
+available when the module uses auth, and `database.query_params` and
+`database.execute` support parameterized SQL.
+
+A Tatemono may provide one module-level Rust source block using
+`/* @arkzen:module:rs` followed by `*/`, then Rust source, and the closing
+`/* @arkzen:module:rs:end */` marker. The block is compiled into that module
+alongside its endpoint and custom-route bodies. This supports shared helpers
+while keeping all module-specific code in the Tatemono source of truth.
+
+Comment-only placeholder bodies are not generated and remain unsupported
+(`501`). Event-fire endpoints dispatch their declared listeners in order using
+generated `@arkzen:listener:rs` bodies and return `202` after they complete.
+The `job-test` module has the same named job emulations as the Go backend;
+these run in-process and record results plus terminal failures. Durable queues,
+general Rust job DSL execution, notification and console DSL execution,
+middleware snippets, and policies are not implemented. Generic CRUD, auth, and
+mail-send behavior are implemented by the engine. Module-specific custom
+behavior must be authored in that Tatemono's `:rs` body or module source block;
+the engine does not provide named per-Tatemono substitutes.
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears and reseeds that table, including
 resetting its SQLite auto-increment sequence; tables without seed rows are

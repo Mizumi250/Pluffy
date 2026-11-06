@@ -1,6 +1,6 @@
+use crate::db::{params, Connection, OptionalExtension, Transaction};
 use axum::http::StatusCode;
 use bcrypt::{hash, verify, DEFAULT_COST};
-use crate::db::{params, Connection, OptionalExtension, Transaction};
 use serde_json::{json, Map, Value};
 use sha2::{Digest, Sha256};
 use std::path::Path;

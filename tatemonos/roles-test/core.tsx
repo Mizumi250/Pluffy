@@ -1732,24 +1732,62 @@ const DashboardLynxPage = () => {
 
 /* @arkzen:endpoint:rs:adminOnly
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let granted = user.role == "admin";
+let now = utc_now_rfc3339();
+database.insert("role_audit_logs", json!({
+    "user_id": user.id,
+    "action": "GET /admin-only",
+    "role_required": "admin",
+    "granted": granted,
+    "created_at": now,
+    "updated_at": now,
+}))?;
+if !granted {
+    return response.json(StatusCode::FORBIDDEN, json!({"message": "Access denied — admin role required"}));
+}
+response.json(StatusCode::OK, json!({"message": "Access granted — you are admin"}))
 /* @arkzen:endpoint:rs:adminOnly:end */
 
 /* @arkzen:endpoint:rs:userOnly
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let now = utc_now_rfc3339();
+database.insert("role_audit_logs", json!({
+    "user_id": user.id,
+    "action": "GET /user-only",
+    "role_required": "user",
+    "granted": true,
+    "created_at": now,
+    "updated_at": now,
+}))?;
+response.json(StatusCode::OK, json!({"message": "Access granted — open to all authenticated users"}))
 /* @arkzen:endpoint:rs:userOnly:end */
 
 /* @arkzen:endpoint:rs:promote
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let now = utc_now_rfc3339();
+database.execute("UPDATE users SET role = ?, updated_at = ? WHERE id = ?", vec![
+    json!("admin"), json!(now), json!(user.id),
+])?;
+let updated = database.query_params(
+    "SELECT id, name, email, email_verified_at, role, created_at, updated_at FROM users WHERE id = ?",
+    vec![json!(user.id)],
+)?.into_iter().next().ok_or_else(|| HandlerError("Could not reload user".to_owned()))?;
+response.json(StatusCode::OK, json!({"message": "Promoted to admin", "user": updated}))
 /* @arkzen:endpoint:rs:promote:end */
 
 /* @arkzen:endpoint:rs:demote
 */
-// Documentary Rust variant; intended behavior follows the existing reference body.
-// The Rust engine does not evaluate arbitrary snippets and has no named emulation for this operation (501).
+let user = request.user().ok_or_else(|| HandlerError("Unauthenticated".to_owned()))?;
+let now = utc_now_rfc3339();
+database.execute("UPDATE users SET role = ?, updated_at = ? WHERE id = ?", vec![
+    json!("user"), json!(now), json!(user.id),
+])?;
+let updated = database.query_params(
+    "SELECT id, name, email, email_verified_at, role, created_at, updated_at FROM users WHERE id = ?",
+    vec![json!(user.id)],
+)?.into_iter().next().ok_or_else(|| HandlerError("Could not reload user".to_owned()))?;
+response.json(StatusCode::OK, json!({"message": "Demoted to user", "user": updated}))
 /* @arkzen:endpoint:rs:demote:end */

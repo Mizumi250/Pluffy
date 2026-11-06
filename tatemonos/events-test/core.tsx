@@ -1,7 +1,7 @@
 /* @arkzen:meta
 name: events-test
 version: 1.0.0
-description: Tests Laravel Events + Listeners pipeline. Fire events manually, see listeners execute asynchronously, inspect the event chain.
+description: Tests event and listener dispatch. Fire events manually, inspect each listener execution.
 auth: false
 */
 
@@ -809,7 +809,7 @@ interface EventLogEntry {
   status:        string
   payload:       string | null
   duration_ms:   number | null
-  created_at:    string
+  created_at:    string | null
 }
 
 /* @arkzen:web:components:shared:end */
@@ -852,6 +852,10 @@ const IndexPage = () => {
   const loadLog = useCallback(async () => {
     try {
       const res = await arkzenFetch('/api/events-test/log?per_page=100')
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Log request failed (${res.status}): ${detail || res.statusText}`)
+      }
       const d   = await res.json()
       setLog(d.data ?? [])
     } catch (e) {
@@ -874,10 +878,14 @@ const IndexPage = () => {
   const fire = async (eventKey: string, payload: object) => {
     setFiring(eventKey)
     try {
-      await arkzenFetch('/api/events-test/fire', {
+      const res = await arkzenFetch('/api/events-test/fire', {
         method: 'POST',
         body:   JSON.stringify({ event: eventKey, payload }),
       })
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Event request failed (${res.status}): ${detail || res.statusText}`)
+      }
 
       // Clear any existing poll then start aggressive polling immediately
       if (pollingRef.current) clearInterval(pollingRef.current)
@@ -902,9 +910,15 @@ const IndexPage = () => {
   const clearLog = async () => {
     setClearing(true)
     try {
-      await arkzenFetch('/api/events-test/log/clear', { method: 'POST' })
+      const res = await arkzenFetch('/api/events-test/log/clear', { method: 'POST' })
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Clear-log request failed (${res.status}): ${detail || res.statusText}`)
+      }
       setLog([])
-    } catch {} finally { setClearing(false) }
+    } catch (e) {
+      console.error('Failed to clear log:', e)
+    } finally { setClearing(false) }
   }
 
   const statusColor = (s: string) => ({
@@ -913,7 +927,7 @@ const IndexPage = () => {
     failed:    'bg-red-100 text-red-700',
   }[s] ?? 'bg-neutral-100 text-neutral-600')
 
-  // Group by event + second bucket — latest() order means newest groups appear first
+  // Match the shared Events test view used by the Laravel backend.
   const grouped = log.reduce((acc: Record<string, EventLogEntry[]>, entry) => {
     const key = `${entry.event_name}:${entry.created_at?.slice(0, 19)}`
     if (!acc[key]) acc[key] = []
@@ -926,7 +940,7 @@ const IndexPage = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Zap size={20} /> Events Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">Each event fires its listeners as queued jobs.</p>
+          <p className="text-sm text-neutral-500 mt-1">Each event fire runs its declared listeners and records one entry per listener.</p>
         </div>
 
         {/* Event fire buttons */}
@@ -978,7 +992,7 @@ const IndexPage = () => {
               {Object.entries(grouped).map(([groupKey, entries]) => (
                 <div key={groupKey} className="px-5 py-3">
                   <div className="text-xs font-medium text-neutral-500 mb-2 flex items-center gap-1">
-                    <Flame size={13} className="text-amber-500" /> {entries[0].event_name} — {entries[0].created_at?.slice(11, 19)}
+                    <Flame size={13} className="text-amber-500" /> {entries[0].event_name} — {entries[0].created_at?.slice(11, 19) ?? 'time unavailable'}
                   </div>
                   <div className="space-y-1.5 pl-3 border-l-2 border-neutral-100">
                     {entries.map((e, i) => (
@@ -998,7 +1012,7 @@ const IndexPage = () => {
         </div>
 
         <div className="text-xs text-neutral-400 bg-neutral-50 rounded-xl p-4">
-          <strong>How it works:</strong> The backend fires the Arkzen-generated Event class → Laravel event dispatcher → each listener is a queued job (ShouldQueue). Run <code>php artisan queue:work</code> to process them.
+          <strong>How it works:</strong> The backend dispatches the listeners declared in this Tatemono. Queue-capable backends may run them asynchronously; Rust currently runs them synchronously because its queue worker is not implemented.
         </div>
       </div>
     </div>
@@ -1041,7 +1055,7 @@ interface EventLogEntry {
   status:        string
   payload:       string | null
   duration_ms:   number | null
-  created_at:    string
+  created_at:    string | null
 }
 
 const statusStyle = (s: string) => ({
@@ -1129,7 +1143,7 @@ const IndexScreen = () => {
     finally { setClearing(false) }
   }
 
-  // Group by event + second bucket — same logic as web
+  // Match the shared Events test view used by the Laravel backend.
   const grouped = log.reduce((acc: Record<string, EventLogEntry[]>, entry) => {
     const key = `${entry.event_name}:${entry.created_at?.slice(0, 19)}`
     if (!acc[key]) acc[key] = []
@@ -1147,7 +1161,7 @@ const IndexScreen = () => {
           <Text className="text-lg font-bold text-neutral-900">Events Test</Text>
         </View>
         <Text className="text-xs text-neutral-500 mt-0.5">
-          Each event fires its listeners as queued jobs.
+          Each event fire runs its declared listeners; execution may be queued or synchronous, depending on the backend.
         </Text>
       </View>
 
@@ -1254,7 +1268,7 @@ const IndexScreen = () => {
         <View className="bg-neutral-100 rounded-2xl px-4 py-3">
           <Text className="text-xs text-neutral-500 font-mono leading-5">
             backend: /api/events-test{'\n'}
-            queue: php artisan queue:work
+            listener execution: backend-dependent
           </Text>
         </View>
 
@@ -1279,7 +1293,7 @@ interface EventLogEntry {
   status:        string
   payload:       string | null
   duration_ms:   number | null
-  created_at:    string
+  created_at:    string | null
 }
 
 async function apiFetch(path: string, options?: RequestInit) {
@@ -1394,7 +1408,7 @@ const IndexScreen = () => {
           <text className="text-base font-semibold text-neutral-900">Events Test</text>
         </view>
         <text className="text-xs text-neutral-500 mt-0.5">
-          Each event fires its listeners as queued jobs.
+          Each event fire runs its declared listeners; execution may be queued or synchronous, depending on the backend.
         </text>
       </view>
 
@@ -1494,7 +1508,7 @@ const IndexScreen = () => {
         {/* Footer info */}
         <view className="bg-neutral-100 rounded-2xl px-4 py-3">
           <text className="text-xs text-neutral-500 font-mono leading-5">
-            {`endpoint: /api/events-test\nqueue: php artisan queue:work`}
+            {`endpoint: /api/events-test\nlistener execution: backend-dependent`}
           </text>
         </view>
 
@@ -1507,50 +1521,159 @@ const IndexScreen = () => {
 
 /* @arkzen:endpoint:rs:index
 */
-// The Rust engine uses the shared paginated index implementation for event_log.
+let page = request.query().split('&').find_map(|part| {
+    let (key, value) = part.split_once('=')?;
+    (key == "page").then(|| value.parse::<i64>().ok()).flatten()
+}).unwrap_or(1).max(1);
+let per_page = request.query().split('&').find_map(|part| {
+    let (key, value) = part.split_once('=')?;
+    (key == "per_page").then(|| value.parse::<i64>().ok()).flatten()
+}).unwrap_or(15).clamp(1, 100);
+let total = database.query("SELECT COUNT(*) AS count FROM event_log")?
+    .first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+let data = database.query_params(
+    "SELECT * FROM event_log ORDER BY created_at DESC, id DESC LIMIT ? OFFSET ?",
+    vec![json!(per_page), json!((page - 1) * per_page)],
+)?;
+response.json(StatusCode::OK, json!({
+    "data": data,
+    "current_page": page,
+    "per_page": per_page,
+    "total": total,
+    "last_page": ((total + per_page - 1) / per_page).max(1)
+}))
 /* @arkzen:endpoint:rs:index:end */
 
 /* @arkzen:endpoint:rs:clearLog
 */
-// The Rust engine's events-test emulation clears the declared event_log table.
+database.execute("DELETE FROM event_log", Vec::new())?;
+response.json(StatusCode::OK, json!({"message": "Log cleared"}))
 /* @arkzen:endpoint:rs:clearLog:end */
 
 /* @arkzen:listener:rs:SendWelcomeEmail
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "UserSignedUp",
+    "listener_name": "SendWelcomeEmail",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:SendWelcomeEmail:end */
 
 /* @arkzen:listener:rs:UpdateUserStats
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "UserSignedUp",
+    "listener_name": "UpdateUserStats",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:UpdateUserStats:end */
 
 /* @arkzen:listener:rs:NotifyAdmins
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "UserSignedUp",
+    "listener_name": "NotifyAdmins",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:NotifyAdmins:end */
 
 /* @arkzen:listener:rs:ProcessPayment
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "OrderPlaced",
+    "listener_name": "ProcessPayment",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:ProcessPayment:end */
 
 /* @arkzen:listener:rs:UpdateInventory
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "OrderPlaced",
+    "listener_name": "UpdateInventory",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:UpdateInventory:end */
 
 /* @arkzen:listener:rs:SendOrderConfirmation
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "OrderPlaced",
+    "listener_name": "SendOrderConfirmation",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:SendOrderConfirmation:end */
 
 /* @arkzen:listener:rs:LogExportActivity
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "DataExported",
+    "listener_name": "LogExportActivity",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:LogExportActivity:end */
 
 /* @arkzen:listener:rs:CleanupTempFiles
 */
-// The Rust events-test emulation records this declared listener; it does not execute arbitrary listener code.
+let started = std::time::Instant::now();
+let payload = request.body().get("payload").cloned().unwrap_or_else(|| json!({}));
+database.insert("event_log", json!({
+    "event_name": "DataExported",
+    "listener_name": "CleanupTempFiles",
+    "status": "completed",
+    "payload": payload.to_string(),
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": utc_now_rfc3339(),
+    "updated_at": utc_now_rfc3339()
+}))?;
+response.json(StatusCode::OK, json!({"message": "Listener completed"}))
 /* @arkzen:listener:rs:CleanupTempFiles:end */

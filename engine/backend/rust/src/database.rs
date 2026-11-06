@@ -331,7 +331,10 @@ fn seed_row(
     }
     if fields.is_empty() {
         transaction
-            .execute(&format!("INSERT INTO {table_name} DEFAULT VALUES"), crate::db::params![])
+            .execute(
+                &format!("INSERT INTO {table_name} DEFAULT VALUES"),
+                crate::db::params![],
+            )
             .map_err(|error| error.to_string())?;
         return Ok(());
     }
@@ -675,9 +678,11 @@ fn migrate_table_foreign_keys(
         )
         .map_err(|error| format!("Could not finish foreign-key migration for {table}: {error}"))?;
     for sql in index_and_trigger_sql {
-        transaction.execute(&sql, crate::db::params![]).map_err(|error| {
-            format!("Could not restore an index or trigger for {table}: {error}")
-        })?;
+        transaction
+            .execute(&sql, crate::db::params![])
+            .map_err(|error| {
+                format!("Could not restore an index or trigger for {table}: {error}")
+            })?;
     }
     Ok(())
 }
@@ -882,10 +887,15 @@ mod tests {
             ]
         );
         connection
-            .execute("INSERT INTO tasks (title) VALUES ('first')", crate::db::params![])
+            .execute(
+                "INSERT INTO tasks (title) VALUES ('first')",
+                crate::db::params![],
+            )
             .unwrap();
         let done: i64 = connection
-            .query_row("SELECT done FROM tasks", crate::db::params![], |row| row.get(0))
+            .query_row("SELECT done FROM tasks", crate::db::params![], |row| {
+                row.get(0)
+            })
             .unwrap();
         assert_eq!(done, 0);
         assert!(!directory.path().join("other.sqlite").exists());
@@ -922,7 +932,11 @@ mod tests {
 
         let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
         let count: i64 = connection
-            .query_row("SELECT COUNT(*) FROM inventories", crate::db::params![], |row| row.get(0))
+            .query_row(
+                "SELECT COUNT(*) FROM inventories",
+                crate::db::params![],
+                |row| row.get(0),
+            )
             .unwrap();
         assert_eq!(count, 2);
         connection
@@ -932,20 +946,29 @@ mod tests {
             )
             .unwrap();
         connection
-            .execute("INSERT INTO audit_logs (event) VALUES ('keep')", crate::db::params![])
+            .execute(
+                "INSERT INTO audit_logs (event) VALUES ('keep')",
+                crate::db::params![],
+            )
             .unwrap();
         drop(connection);
 
         apply_schema(directory.path(), "inventory", &payload).unwrap();
         let connection = Connection::open(directory.path().join("inventory.sqlite")).unwrap();
         let (count, highest_id): (i64, i64) = connection
-            .query_row("SELECT COUNT(*), MAX(id) FROM inventories", crate::db::params![], |row| {
-                Ok((row.get(0)?, row.get(1)?))
-            })
+            .query_row(
+                "SELECT COUNT(*), MAX(id) FROM inventories",
+                crate::db::params![],
+                |row| Ok((row.get(0)?, row.get(1)?)),
+            )
             .unwrap();
         assert_eq!((count, highest_id), (2, 2));
         let preserved_logs: i64 = connection
-            .query_row("SELECT COUNT(*) FROM audit_logs", crate::db::params![], |row| row.get(0))
+            .query_row(
+                "SELECT COUNT(*) FROM audit_logs",
+                crate::db::params![],
+                |row| row.get(0),
+            )
             .unwrap();
         assert_eq!(preserved_logs, 1);
         let created_at: String = connection
@@ -1001,9 +1024,7 @@ mod tests {
         apply_schema(directory.path(), "queue-flow", &payload).unwrap();
 
         let connection = Connection::open(path).unwrap();
-        connection
-            .enable_foreign_keys(true)
-            .unwrap();
+        connection.enable_foreign_keys(true).unwrap();
         let foreign_key: (String, String) = connection
             .query_row(
                 "SELECT \"table\", \"from\" FROM pragma_foreign_key_list('tickets')",

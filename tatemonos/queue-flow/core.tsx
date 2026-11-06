@@ -3487,20 +3487,223 @@ console.log('⏳ QueueFlow running on Lynx')
 
 /* @arkzen:handler:rs:join_queue
 */
-// Executed by the Rust engine's named queue-flow emulation.
+let input = request.json_object()?;
+let queue_id = input.get("queue_id").and_then(Value::as_i64)
+    .or_else(|| input.get("queue_id").and_then(Value::as_str).and_then(|value| value.parse().ok()))
+    .ok_or_else(|| ValidationError::required("queue_id"))?;
+let customer_name = input.get("customer_name").and_then(Value::as_str).unwrap_or("Guest");
+let Some(queue) = database.query_params("SELECT * FROM queues WHERE id = ?", vec![json!(queue_id)])?.into_iter().next() else {
+    return response.json(StatusCode::NOT_FOUND, json!({"message": "Queue not found"}));
+};
+let prefix = queue.get("prefix").and_then(Value::as_str).unwrap_or("Q");
+let last_position = database.query_params(
+    "SELECT COALESCE(MAX(position), 0) AS position FROM tickets WHERE queue_id = ? AND status IN ('waiting', 'serving')",
+    vec![json!(queue_id)],
+)?.first().and_then(|row| row.get("position")).and_then(Value::as_i64).unwrap_or(0);
+let position = last_position + 1;
+let now = utc_now_rfc3339();
+let ticket = database.insert("tickets", json!({
+    "queue_id": queue_id,
+    "ticket_number": format!("{prefix}-{position:03}"),
+    "customer_name": customer_name,
+    "status": "waiting",
+    "position": position,
+    "created_at": now,
+    "updated_at": now,
+}))?;
+let waiting = database.query_params(
+    "SELECT COUNT(*) AS count FROM tickets WHERE queue_id = ? AND status = 'waiting' AND position < ?",
+    vec![json!(queue_id), json!(position)],
+)?.first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+let average = queue.get("avg_wait_minutes").and_then(Value::as_i64).unwrap_or(5);
+response.json(StatusCode::OK, json!({
+    "ticket": ticket,
+    "position": waiting + 1,
+    "estimated_wait": waiting * average
+}))
 /* @arkzen:handler:rs:join_queue:end */
 
 /* @arkzen:handler:rs:call_next
 */
-// Executed by the Rust engine's named queue-flow emulation.
+let input = request.json_object()?;
+let queue_id = input.get("queue_id").and_then(Value::as_i64)
+    .or_else(|| input.get("queue_id").and_then(Value::as_str).and_then(|value| value.parse().ok()))
+    .ok_or_else(|| ValidationError::required("queue_id"))?;
+let now = utc_now_rfc3339();
+database.execute(
+    "UPDATE tickets SET status = 'done', served_at = ?, updated_at = ? WHERE queue_id = ? AND status = 'serving'",
+    vec![json!(now), json!(now), json!(queue_id)],
+)?;
+let next = database.query_params(
+    "SELECT * FROM tickets WHERE queue_id = ? AND status = 'waiting' ORDER BY position ASC LIMIT 1",
+    vec![json!(queue_id)],
+)?.into_iter().next();
+let Some(next) = next else {
+    return response.json(StatusCode::OK, json!({"message": "No more tickets in queue", "ticket": Value::Null}));
+};
+let ticket_id = next.get("id").and_then(Value::as_i64)
+    .ok_or_else(|| HandlerError("Next ticket has no valid id".to_owned()))?;
+database.execute(
+    "UPDATE tickets SET status = 'serving', called_at = ?, updated_at = ? WHERE id = ?",
+    vec![json!(now), json!(now), json!(ticket_id)],
+)?;
+let ticket = database.query_params("SELECT * FROM tickets WHERE id = ?", vec![json!(ticket_id)])?
+    .into_iter().next().ok_or_else(|| HandlerError("Could not reload the next ticket".to_owned()))?;
+response.json(StatusCode::OK, json!({"ticket": ticket}))
 /* @arkzen:handler:rs:call_next:end */
 
 /* @arkzen:handler:rs:queue_status
 */
-// Executed by the Rust engine's named queue-flow emulation.
+let parts = request.path().split('/').collect::<Vec<_>>();
+let queue_id = parts.last().and_then(|value| value.parse::<i64>().ok())
+    .ok_or_else(|| ValidationError::required("queue_id"))?;
+let Some(queue) = database.query_params("SELECT * FROM queues WHERE id = ?", vec![json!(queue_id)])?.into_iter().next() else {
+    return response.json(StatusCode::NOT_FOUND, json!({"message": "Queue not found"}));
+};
+let serving = database.query_params(
+    "SELECT * FROM tickets WHERE queue_id = ? AND status = 'serving' LIMIT 1",
+    vec![json!(queue_id)],
+)?.into_iter().next().unwrap_or(Value::Null);
+let waiting = database.query_params(
+    "SELECT * FROM tickets WHERE queue_id = ? AND status = 'waiting' ORDER BY position ASC",
+    vec![json!(queue_id)],
+)?;
+let done_count = database.query_params(
+    "SELECT COUNT(*) AS count FROM tickets WHERE queue_id = ? AND status = 'done'",
+    vec![json!(queue_id)],
+)?.first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+response.json(StatusCode::OK, json!({
+    "queue": queue,
+    "serving": serving,
+    "waiting": waiting,
+    "done_count": done_count,
+    "total_waiting": waiting.len()
+}))
 /* @arkzen:handler:rs:queue_status:end */
 
 /* @arkzen:handler:rs:my_ticket
 */
-// Executed by the Rust engine's named queue-flow emulation.
+let parts = request.path().split('/').collect::<Vec<_>>();
+let ticket_number = parts.last().copied().unwrap_or_default();
+let queue_id = parts.get(parts.len().saturating_sub(2))
+    .and_then(|value| value.parse::<i64>().ok())
+    .ok_or_else(|| ValidationError::required("queue_id"))?;
+let Some(ticket) = database.query_params(
+    "SELECT * FROM tickets WHERE queue_id = ? AND ticket_number = ? LIMIT 1",
+    vec![json!(queue_id), json!(ticket_number)],
+)?.into_iter().next() else {
+    return response.json(StatusCode::NOT_FOUND, json!({"message": "Ticket not found"}));
+};
+let position = ticket.get("position").and_then(Value::as_i64).unwrap_or(0);
+let ahead = database.query_params(
+    "SELECT COUNT(*) AS count FROM tickets WHERE queue_id = ? AND status = 'waiting' AND position < ?",
+    vec![json!(queue_id), json!(position)],
+)?.first().and_then(|row| row.get("count")).and_then(Value::as_i64).unwrap_or(0);
+let queue = database.query_params("SELECT * FROM queues WHERE id = ?", vec![json!(queue_id)])?
+    .into_iter().next();
+let average = queue.as_ref().and_then(|row| row.get("avg_wait_minutes"))
+    .and_then(Value::as_i64).unwrap_or(5);
+let status = ticket.get("status").and_then(Value::as_str).unwrap_or_default();
+let waiting_position = if status == "waiting" { ahead + 1 } else { 0 };
+response.json(StatusCode::OK, json!({
+    "ticket": ticket,
+    "position": waiting_position,
+    "estimated_wait": ahead * average,
+    "is_serving": status == "serving",
+    "is_done": status == "done"
+}))
 /* @arkzen:handler:rs:my_ticket:end */
+
+/* @arkzen:module:rs
+*/
+#[cfg(test)]
+mod tests {
+    use crate::generated_runtime::{Database, RequestContext, ResponseContext};
+    use serde_json::json;
+
+    fn call(directory: &std::path::Path, handler: &str, path: &str, body: serde_json::Value) -> crate::generated_runtime::HandlerResponse {
+        super::dispatch(
+            handler,
+            RequestContext::new(
+                body,
+                path.to_owned(),
+                String::new(),
+                None,
+                directory.to_path_buf(),
+            ),
+            Database::open(directory, "queue-flow").expect("open queue-flow database"),
+            ResponseContext,
+        )
+        .expect("generated queue handler succeeds")
+    }
+
+    #[test]
+    fn queue_handlers_create_and_advance_a_ticket() {
+        let directory = tempfile::tempdir().expect("create temporary database directory");
+        let connection = crate::db::open_module(directory.path(), "queue-flow")
+            .expect("create queue-flow database");
+        connection
+            .execute_batch(
+                "CREATE TABLE queues (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    name TEXT NOT NULL,
+                    prefix TEXT NOT NULL,
+                    is_active INTEGER NOT NULL DEFAULT 1,
+                    avg_wait_minutes INTEGER NOT NULL DEFAULT 5,
+                    created_at TEXT,
+                    updated_at TEXT
+                );
+                CREATE TABLE tickets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    queue_id INTEGER NOT NULL,
+                    ticket_number TEXT NOT NULL,
+                    customer_name TEXT,
+                    status TEXT NOT NULL,
+                    position INTEGER NOT NULL,
+                    called_at TEXT,
+                    served_at TEXT,
+                    created_at TEXT,
+                    updated_at TEXT
+                );
+                INSERT INTO queues (id, name, prefix, avg_wait_minutes)
+                VALUES (1, 'General', 'G', 5);",
+            )
+            .expect("create queue schema");
+        drop(connection);
+
+        let joined = call(
+            directory.path(),
+            "handler:join_queue",
+            "/api/queue-flow/join",
+            json!({"queue_id": 1, "customer_name": "Test Guest"}),
+        );
+        assert_eq!(joined.status, axum::http::StatusCode::OK);
+        assert_eq!(joined.payload["ticket"]["ticket_number"], "G-001");
+        assert_eq!(joined.payload["estimated_wait"], 0);
+
+        let queue_status = call(
+            directory.path(),
+            "handler:queue_status",
+            "/api/queue-flow/status/1",
+            json!({}),
+        );
+        assert_eq!(queue_status.payload["total_waiting"], 1);
+
+        let my_ticket = call(
+            directory.path(),
+            "handler:my_ticket",
+            "/api/queue-flow/my-ticket/1/G-001",
+            json!({}),
+        );
+        assert_eq!(my_ticket.payload["position"], 1);
+
+        let called = call(
+            directory.path(),
+            "handler:call_next",
+            "/api/queue-flow/call-next",
+            json!({"queue_id": 1}),
+        );
+        assert_eq!(called.payload["ticket"]["status"], "serving");
+    }
+}
+/* @arkzen:module:rs:end */

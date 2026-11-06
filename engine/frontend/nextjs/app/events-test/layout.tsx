@@ -6,11 +6,11 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'events-test',
-  description: 'Tests Laravel Events + Listeners pipeline. Fire events manually, see listeners execute asynchronously, inspect the event chain.',
+  description: 'Tests event and listener dispatch. Fire events manually, inspect each listener execution.',
   openGraph: {
     type: 'website',
     title: 'events-test',
-    description: 'Tests Laravel Events + Listeners pipeline. Fire events manually, see listeners execute asynchronously, inspect the event chain.',
+    description: 'Tests event and listener dispatch. Fire events manually, inspect each listener execution.',
   },
 }
 
