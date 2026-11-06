@@ -25,6 +25,7 @@ Every tatemono is its own small world. It gets its own database, its own users, 
 - **Web:** Next.js, React + Vite, TanStack Start, Astro, or React with Inertia
 - **Mobile:** Expo, bare React Native, or Lynx
 - **Desktop:** Tauri or Electron
+- **Games:** Godot 4 projects generated from a dedicated game DSL
 - **Backend:** Laravel (PHP), Express (TypeScript), FastAPI (Python), Spring Boot (Java), ASP.NET Core (C#), Go, or Rust
 - **Database:** SQLite (a file per tatemono) or PostgreSQL (a database per tatemono)
 
@@ -37,6 +38,7 @@ Login, real-time updates, notifications, email, background jobs, scheduling, upl
 **A way out when you're done.**
 
 When a tatemono is ready, export it as a standalone project and take it anywhere.
+You can also export a dedicated Godot 4 game Tatemono as an isolated game project.
 
 ---
 

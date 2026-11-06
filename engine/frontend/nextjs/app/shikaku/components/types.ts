@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — shikaku
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:43:35.193Z
+// Generated: 2026-11-06T15:36:29.534Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

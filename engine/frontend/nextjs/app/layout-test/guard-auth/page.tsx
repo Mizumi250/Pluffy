@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — layout-test/guard-auth
 // Layout: +auth | Auth guard: true | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:43:16.715Z
+// Generated: 2026-11-06T15:36:24.837Z
 // ============================================================
 
 import React, { useEffect, useRef } from 'react'

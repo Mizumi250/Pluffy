@@ -9,7 +9,7 @@
 //
 // Stack is determined by activeStack in arkzen.json.
 // Switch stacks before exporting:
-//   node arkzen.js switch astro
+//   node mizumi.js web astro
 //   node export.js tatemono-name
 //
 // Stack → backend mapping:
@@ -41,6 +41,10 @@ const stackFlag   = process.argv.find(a => a.startsWith('--stack='))
 const activeStack = stackFlag
   ? stackFlag.slice('--stack='.length)
   : (arkzenJson.activeStack ?? 'nextjs')
+const backendFlag = process.argv.find(a => a.startsWith('--backend='))
+const selectedBackend = backendFlag
+  ? backendFlag.slice('--backend='.length)
+  : undefined
 const isTauri    = activeStack === 'tauri'
 const isElectron = activeStack === 'electron'
 const isDesktop  = isTauri || isElectron
@@ -56,7 +60,13 @@ if (wantsDocker && !supportsDocker(activeStack)) {
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
-const activeBackend = isInertia ? 'laravel-inertia' : (arkzenJson.activeBackend ?? 'laravel')
+const activeBackend = isInertia
+  ? 'laravel-inertia'
+  : (selectedBackend ?? arkzenJson.activeBackend ?? 'laravel')
+if (!isInertia && selectedBackend && !fs.existsSync(path.join(ENGINE_DIR, 'backend', selectedBackend))) {
+  console.error(`\n  ✗ Unknown export backend: ${selectedBackend}\n`)
+  process.exit(1)
+}
 const isExpress = activeBackend === 'express'
 const isFastapi = activeBackend === 'fastapi'
 const isAspnet = activeBackend === 'aspnet'
@@ -119,7 +129,8 @@ function findSystemPython() {
 
 const tatName = process.argv.slice(2).find(a => !a.startsWith('--'))
 if (!tatName) {
-  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--docker]')
+  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name>] [--docker]')
+  console.log('         node export.js <godot-tatemono> --stack=godot')
   console.log('  Example: node export.js inventory-management\n')
   console.log('  Available tatemonos:')
   if (fs.existsSync(TATEMONOS_DIR)) {
@@ -136,6 +147,33 @@ const tatPath = path.join(TATEMONOS_DIR, tatName, 'core.tsx')
 if (!fs.existsSync(tatPath)) {
   console.log(`\n  ✗ Tatemono not found: tatemonos/${tatName}/core.tsx\n`)
   process.exit(1)
+}
+
+if (activeStack === 'godot') {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(tatName)) {
+    console.error('\n  ✗ Godot Tatemono names may contain only lowercase letters, digits, and hyphens.\n')
+    process.exit(1)
+  }
+  try {
+    const { generateGodotProject } = await import('./engine/game/godot/generator.js')
+    const result = generateGodotProject({
+      tatemonoPath: tatPath,
+      outputDir: path.join(PROJECTS_DIR, 'godot', tatName),
+    })
+    divider()
+    success(`Godot project generated: ${path.relative(ROOT_DIR, result.outputDir)}`)
+    log(`Scenes: ${result.scenes.join(', ')}`)
+    log(`Assets copied and arranged: ${result.copiedAssetCount}`)
+    if (result.missingOptionalAssets.length) {
+      warn(`Optional assets not found: ${result.missingOptionalAssets.join(', ')}`)
+    }
+    log('Open project.godot in Godot 4. The web/backend stack and active Pluff configuration were not used.')
+    divider()
+  } catch (error) {
+    console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exit(1)
+  }
+  process.exit(0)
 }
 
 const PROJECT_DIR = path.join(PROJECTS_DIR, tatName)

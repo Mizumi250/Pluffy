@@ -1,0 +1,101 @@
+{
+  "generatedAt": "2026-11-06T15:55:43.905Z",
+  "backendReady": true,
+  "webReady": true,
+  "selectedModule": "kotoba",
+  "settleMs": 8000,
+  "webStack": "nextjs",
+  "appStack": "expo",
+  "desktopStack": "electron",
+  "results": {
+    "web": {
+      "success": true,
+      "captures": [
+        {
+          "module": "kotoba",
+          "page": "index",
+          "path": "Shots\\web\\nextjs\\kotoba\\index.png",
+          "url": "http://localhost:3000/kotoba",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "chat",
+          "path": "Shots\\web\\nextjs\\kotoba\\chat.png",
+          "url": "http://localhost:3000/kotoba/chat",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "circles",
+          "path": "Shots\\web\\nextjs\\kotoba\\circles.png",
+          "url": "http://localhost:3000/kotoba/circles",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "dashboard",
+          "path": "Shots\\web\\nextjs\\kotoba\\dashboard.png",
+          "url": "http://localhost:3000/kotoba/dashboard",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "feed",
+          "path": "Shots\\web\\nextjs\\kotoba\\feed.png",
+          "url": "http://localhost:3000/kotoba/feed",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "learn",
+          "path": "Shots\\web\\nextjs\\kotoba\\learn.png",
+          "url": "http://localhost:3000/kotoba/learn",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "login",
+          "path": "Shots\\web\\nextjs\\kotoba\\login.png",
+          "url": "http://localhost:3000/kotoba/dashboard",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "partners",
+          "path": "Shots\\web\\nextjs\\kotoba\\partners.png",
+          "url": "http://localhost:3000/kotoba/partners",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "profile",
+          "path": "Shots\\web\\nextjs\\kotoba\\profile.png",
+          "url": "http://localhost:3000/kotoba/profile",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "progress",
+          "path": "Shots\\web\\nextjs\\kotoba\\progress.png",
+          "url": "http://localhost:3000/kotoba/progress",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "register",
+          "path": "Shots\\web\\nextjs\\kotoba\\register.png",
+          "url": "http://localhost:3000/kotoba/dashboard",
+          "settleMs": 8000
+        },
+        {
+          "module": "kotoba",
+          "page": "review",
+          "path": "Shots\\web\\nextjs\\kotoba\\review.png",
+          "url": "http://localhost:3000/kotoba/review",
+          "settleMs": 8000
+        }
+      ]
+    }
+  }
+}

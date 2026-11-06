@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — LayerPanel
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:43:35.201Z
+// Generated: 2026-11-06T15:36:29.542Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'

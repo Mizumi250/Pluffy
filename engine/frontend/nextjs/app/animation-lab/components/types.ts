@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — animation-lab
 // Source: @arkzen:components (animation-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:42:30.453Z
+// Generated: 2026-11-06T15:36:11.936Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

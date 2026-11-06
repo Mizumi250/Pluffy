@@ -32,6 +32,7 @@ import { supportsDocker, dockerRejectionMessage } from './export-docker.js'
 
 const ROOT_DIR  = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH = path.join(ROOT_DIR, 'arkzen.json')
+const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 // ─── KAOMOJI POOL ─────────────────────────────────────────────
 const KAOMOJI_BANNER  = ['(ﾉ◕ヮ◕)ﾉ*:･ﾟ✧','(｡◕‿◕｡)','(*＾▽＾)／','(ﾉ´ヮ`)ﾉ*: ･ﾟ','٩(◕‿◕｡)۶','(づ｡◕‿‿◕｡)づ','✧ヽ(◕ヮ◕ヽ)','(ง •̀_•́)ง']
@@ -66,6 +67,46 @@ function writeConfig(config) {
   fs.writeFileSync(JSON_PATH, JSON.stringify(config, null, 2), 'utf-8')
 }
 
+function discoverTatemonos(config) {
+  if (!fs.existsSync(TATEMONOS_DIR)) return []
+  const registry = new Map((config.modules ?? []).map(module => [module.name, module]))
+  return fs.readdirSync(TATEMONOS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .map(entry => {
+      const sourcePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
+      if (!fs.existsSync(sourcePath)) return null
+      const registered = registry.get(entry.name)
+      const source = fs.readFileSync(sourcePath, 'utf8')
+      const declaredPages = [...source.matchAll(/@arkzen:web:page:([a-zA-Z0-9_-]+)/g)]
+        .map(match => match[1])
+        .filter(page => !['layout', 'end'].includes(page))
+      let generatedPages = []
+      if (config.activeStack === 'nextjs') {
+        const routeRoot = path.join(ROOT_DIR, 'engine', 'frontend', 'nextjs', 'app', entry.name)
+        if (fs.existsSync(path.join(routeRoot, 'page.tsx')) || fs.existsSync(path.join(routeRoot, 'page.js'))) generatedPages.push('index')
+        if (fs.existsSync(routeRoot)) {
+          generatedPages.push(...fs.readdirSync(routeRoot, { withFileTypes: true })
+            .filter(route => route.isDirectory())
+            .filter(route => fs.existsSync(path.join(routeRoot, route.name, 'page.tsx')) || fs.existsSync(path.join(routeRoot, route.name, 'page.js')))
+            .map(route => route.name))
+        }
+      }
+      const pages = declaredPages.length > 0
+        ? [...new Set(declaredPages)]
+        : registered?.pages ?? (generatedPages.length > 0 ? [...new Set(generatedPages)] : ['index'])
+      return {
+        ...registered,
+        name: entry.name,
+        status: 'active',
+        filePath: `tatemonos/${entry.name}/core.tsx`,
+        pages,
+        auth: registered?.auth ?? false,
+      }
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.name.localeCompare(b.name))
+}
+
 // ─── STACKS ───────────────────────────────────────────────────
 const WEB_STACKS = {
   'nextjs':         'engine/frontend/nextjs',
@@ -98,6 +139,16 @@ const APP_LABELS = {
 const DESKTOP_LABELS = {
   'tauri':    'Tauri desktop (wraps the running web stack)',
   'electron': 'Electron desktop (wraps the running web stack)',
+}
+function listGodotTatemonoNames() {
+  if (!fs.existsSync(TATEMONOS_DIR)) return []
+  return fs.readdirSync(TATEMONOS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .filter(entry => {
+      const corePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
+      return fs.existsSync(corePath) && fs.readFileSync(corePath, 'utf8').includes('/* @arkzen:godot:project')
+    })
+    .map(entry => entry.name)
 }
 // Backends that setup.js / deps know how to install today.
 const BACKEND_STACKS = {
@@ -455,7 +506,7 @@ function cmdSetup() {
   })
 }
 
-async function cmdExport(tatName, stackArg, dockerFlag = false) {
+async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
   const config = readConfig()
 
   // --docker is for web stacks only. Reject early when the stack is already known.
@@ -466,50 +517,82 @@ async function cmdExport(tatName, stackArg, dockerFlag = false) {
 
   // Step 1 — pick tatemono
   if (!tatName) {
-    const modules = (config.modules ?? []).map(m => m.name)
+    const modules = [...new Set([...(config.modules ?? []).map(m => m.name), ...listGodotTatemonoNames()])]
     if (modules.length === 0) { warn('タテモノなし — No tatemonos registered yet.'); return }
     divider()
     const chosen = await picker('どのタテモノ？ Which tatemono to export?', modules.map(m => ({ label: m, value: m })))
     tatName = chosen.value
   }
 
-  // Step 2 — pick platform (web, app, or desktop), Step 3 — pick stack for that platform
+  // Step 2 — pick platform (web, app, desktop, or Godot), Step 3 — pick stack for that platform
   // This is purely for export.js's --stack=<name> override — it does NOT
   // touch arkzen.json, so the live activeStack/activeAppStack/activeDesktopStack used by
   // `node start.js` / `node mizumi.js start` is left untouched.
   let stack = stackArg
   if (!stack) {
     divider()
-    const platform = await picker('どのプラットフォーム？ Export for which platform?', [
+    const platforms = [
       { label: 'Web',     sub: `current: ${config.activeStack ?? 'nextjs'}`,         value: 'web' },
       { label: 'App',     sub: `current: ${config.activeAppStack ?? 'expo'}`,        value: 'app' },
       { label: 'Desktop', sub: `current: ${config.activeDesktopStack ?? 'none'}`,    value: 'desktop' },
-    ])
-
-    const STACKS = platform.value === 'web' ? WEB_STACKS : (platform.value === 'app' ? APP_STACKS : DESKTOP_STACKS)
-    const LABELS = platform.value === 'web' ? WEB_LABELS : (platform.value === 'app' ? APP_LABELS : DESKTOP_LABELS)
-    const current = platform.value === 'web' ? (config.activeStack ?? 'nextjs') : (platform.value === 'app' ? (config.activeAppStack ?? 'expo') : (config.activeDesktopStack ?? 'none'))
-
-    divider()
-    const chosenStack = await picker(
-      `${platform.value === 'web' ? 'Web' : platform.value === 'app' ? 'App' : 'Desktop'} スタック — Export with which stack?`,
-      Object.entries(STACKS).map(([key]) => ({
-        label: `${key === current ? '→ ' : '  '}${LABELS[key] ?? key}`,
-        sub:   key === current ? '(active)' : key,
-        value: key,
-      }))
-    )
-    stack = chosenStack.value
-
-    // Docker is only offered for stacks that can use it (web). Mobile/desktop never see this question.
-    if (!dockerFlag && supportsDocker(stack)) {
-      divider()
-      const withDocker = await picker('Docker？ Also generate Docker files (Dockerfile + docker-compose)?', [
-        { label: 'No',  sub: 'DEPLOY.md only',                         value: false },
-        { label: 'Yes', sub: 'Dockerfiles, docker-compose.yml + DEPLOY.md', value: true },
-      ])
-      dockerFlag = withDocker.value
+    ]
+    if (listGodotTatemonoNames().includes(tatName)) {
+      platforms.push({ label: 'Godot 4 game', sub: 'generate an isolated Godot game project', value: 'godot' })
     }
+    const platform = await picker('どのプラットフォーム？ Export for which platform?', platforms)
+
+    if (platform.value === 'godot') {
+      stack = 'godot'
+    } else {
+      const STACKS = platform.value === 'web' ? WEB_STACKS : (platform.value === 'app' ? APP_STACKS : DESKTOP_STACKS)
+      const LABELS = platform.value === 'web' ? WEB_LABELS : (platform.value === 'app' ? APP_LABELS : DESKTOP_LABELS)
+      const current = platform.value === 'web' ? (config.activeStack ?? 'nextjs') : (platform.value === 'app' ? (config.activeAppStack ?? 'expo') : (config.activeDesktopStack ?? 'none'))
+
+      divider()
+      const chosenStack = await picker(
+        `${platform.value === 'web' ? 'Web' : platform.value === 'app' ? 'App' : 'Desktop'} スタック — Export with which stack?`,
+        Object.entries(STACKS).map(([key]) => ({
+          label: `${key === current ? '→ ' : '  '}${LABELS[key] ?? key}`,
+          sub:   key === current ? '(active)' : key,
+          value: key,
+        }))
+      )
+      stack = chosenStack.value
+
+      // Docker is only offered for stacks that can use it (web). Mobile/desktop never see this question.
+      if (!dockerFlag && supportsDocker(stack)) {
+        divider()
+        const withDocker = await picker('Docker？ Also generate Docker files (Dockerfile + docker-compose)?', [
+          { label: 'No',  sub: 'DEPLOY.md only',                         value: false },
+          { label: 'Yes', sub: 'Dockerfiles, docker-compose.yml + DEPLOY.md', value: true },
+        ])
+        dockerFlag = withDocker.value
+      }
+    }
+  }
+
+  let backend = backendArg
+  const backendEligible = stack && stack !== 'godot' && !APP_STACKS[stack] && stack !== 'expo' && stack !== 'react-native' && stack !== 'lynx' && stack !== 'native'
+  if (backendEligible && stack !== 'react-inertia') {
+    if (!backend) {
+      divider()
+      const currentBackend = config.activeBackend && BACKEND_TARGETS[config.activeBackend]
+        ? config.activeBackend
+        : 'laravel'
+      const chosenBackend = await picker('バックエンド？ Export with which backend?', [
+        ...Object.entries(BACKEND_TARGETS).map(([key, target]) => ({
+          label: `${key === currentBackend ? '→ ' : '  '}${target.label}`,
+          sub: key === currentBackend ? '(active)' : key,
+          value: key,
+        })),
+      ])
+      backend = chosenBackend.value
+    } else if (!BACKEND_TARGETS[backend]) {
+      error(`Unknown export backend: ${backend}`)
+      return
+    }
+  } else if (stack === 'react-inertia') {
+    backend = 'laravel-inertia'
   }
 
   if (dockerFlag && !supportsDocker(stack)) {
@@ -520,12 +603,23 @@ async function cmdExport(tatName, stackArg, dockerFlag = false) {
   console.log()
   log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack}${dockerFlag ? ' + docker' : ''})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const exportArgs = ['export.js', tatName, `--stack=${stack}`, ...(dockerFlag ? ['--docker'] : [])]
+  const exportArgs = [
+    'export.js',
+    tatName,
+    `--stack=${stack}`,
+    ...(backend && stack !== 'godot' ? [`--backend=${backend}`] : []),
+    ...(dockerFlag ? ['--docker'] : []),
+  ]
   const child = spawn(process.execPath, exportArgs, { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', async code => {
     if (code === 0) {
-      success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
-      info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
+      if (stack === 'godot') {
+        success(`Generated → projects/godot/${tatName}/  ${paint(c.gray, '(Godot 4)')}`)
+        info(`Open projects/godot/${tatName}/project.godot in Godot 4`)
+      } else {
+        success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
+        info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
+      }
     }
     else error(`Export failed with code ${code}`)
   })
@@ -839,7 +933,7 @@ async function cmdDeps(actionArg, stackArg) {
 
 function cmdModules() {
   const config  = readConfig()
-  const modules = config.modules ?? []
+  const modules = discoverTatemonos(config)
   divider()
   console.log(`  ${paint(c.white + c.bold, 'タテモノ一覧 / Registered tatemonos:')}`)
   console.log()
@@ -855,6 +949,42 @@ function cmdModules() {
     })
   }
   divider()
+}
+
+async function cmdScreenshot(moduleArg, waitArg) {
+  const config = readConfig()
+  const modules = discoverTatemonos(config)
+  if (modules.length === 0) {
+    warn('No active Tatemono available for screenshots.')
+    return
+  }
+
+  let selected = moduleArg
+  if (!selected) {
+    divider()
+    const picked = await picker('スクリーンショットするタテモノ？ Which Tatemono should be captured?', [
+      ...modules.map(module => ({
+        label: module.name,
+        sub: `${module.pages?.length ?? 0} web page${module.pages?.length === 1 ? '' : 's'} — ${config.activeStack ?? 'nextjs'}`,
+        value: module.name,
+      })),
+    ])
+    selected = picked.value
+  }
+
+  if (!modules.some(module => module.name === selected)) {
+    error(`Unknown or inactive Tatemono: "${selected}"`)
+    return
+  }
+
+  divider()
+  info(`Capturing web pages for Tatemono: ${selected}`)
+  info(`Web stack: ${config.activeStack ?? 'nextjs'}`)
+  info('Wait: 8 seconds, plus page-ready and loading-indicator checks.')
+  info('Desktop and mobile screenshot capture is disabled for now.')
+  const screenshotArgs = ['--web', `--module=${selected}`]
+  if (waitArg) screenshotArgs.push(waitArg)
+  process.exitCode = await runNode('screenshots.js', screenshotArgs)
 }
 
 // ─── INTERACTIVE MENU ─────────────────────────────────────────
@@ -1044,9 +1174,10 @@ async function interactiveMenu() {
 
   const MENU = [
     { label: 'エンジン起動     Start engine',           sub: 'pick which platforms: web / app / desktop',  value: 'start'      },
+    { label: 'スクリーンショット Screenshot web page',  sub: 'select one active Tatemono', value: 'screenshots' },
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
-    { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop → stack',value: 'export'     },
+    { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop/Godot → stack',value: 'export'     },
     { label: 'GitHub公開       Publish to GitHub',         sub: 'publish an existing projects/ folder', value: 'publish'    },
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
@@ -1067,6 +1198,7 @@ async function interactiveMenu() {
 
   switch (chosen.value) {
     case 'start':     await cmdStartPicker();  break
+    case 'screenshots': await cmdScreenshot(); break
     
     case 'setup':     cmdSetup();              break
     case 'export':    await cmdExport();       break
@@ -1102,9 +1234,11 @@ function printHelp() {
 
 
     ['mizumi setup',             '→ Run setup'],
-    ['mizumi export',            '→ Export wizard (tatemono → web/app → stack)'],
+    ['mizumi export',            '→ Export wizard (tatemono → web/app/desktop/Godot → stack)'],
     ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
+    ['mizumi export <name> <stack> --backend=<name>', '→ Choose the backend for the export'],
+    ['mizumi export <godot-tatemono> godot', '→ Generate isolated Godot 4 project'],
     ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
     ['mizumi publish',           '→ Publish an existing projects/ export to GitHub'],
     ['mizumi publish <name>',    '→ Publish projects/<name> to GitHub'],
@@ -1149,9 +1283,11 @@ switch (command) {
   case 'start':   cmdStart(args.slice(1)); break
   case 'setup':   cmdSetup();                  break
   case 'export': {
-    // Flags (--docker) are not positional: `mizumi export <name> <stack> --docker`
+    // Flags (--docker, --backend=...) are not positional.
     const positional = args.slice(1).filter(a => !a.startsWith('--'))
-    cmdExport(positional[0], positional[1], args.includes('--docker'))
+    const backendFlag = args.find(a => a.startsWith('--backend='))
+    const backendArg = backendFlag ? backendFlag.slice('--backend='.length) : undefined
+    cmdExport(positional[0], positional[1], args.includes('--docker'), backendArg)
     break
   }
   case 'publish': cmdPublish(arg);             break
@@ -1164,6 +1300,12 @@ switch (command) {
   case 'deps':    cmdDeps(arg, args[2]);       break
   case 'stack':   cmdStack();                  break
   case 'stacks':  cmdStacks();                 break
+  case 'screenshots':
+  case 'screenshot': {
+    const waitArg = args.find(value => value.startsWith('--wait=') || value.startsWith('--wait-ms='))
+    cmdScreenshot(arg, waitArg)
+    break
+  }
   case 'modules': cmdModules();                break
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break

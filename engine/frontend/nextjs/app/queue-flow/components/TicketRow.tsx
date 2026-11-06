@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — TicketRow
 // Source: @arkzen:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T05:43:24.099Z
+// Generated: 2026-11-06T15:36:27.542Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

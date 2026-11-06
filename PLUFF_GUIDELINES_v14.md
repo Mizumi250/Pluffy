@@ -3,7 +3,7 @@
 ## For AI — Generating & Editing Tatemono Files
 
 **VERSION:** 14.0
-**VERIFIED AGAINST:** shared engine parser and validator (including `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, and the Express, FastAPI, Spring Boot, ASP.NET Core, Go and Rust engine implementations under `engine/backend/`; also `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and tatemonos under `tatemonos/`.
+**VERIFIED AGAINST:** shared engine parser and validator (including `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, and the Express, FastAPI, Spring Boot, ASP.NET Core, Go and Rust engine implementations under `engine/backend/`; also `mizumi.js`, `start.js`, `setup.js`, `export.js`, and tatemonos under `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
 
@@ -125,8 +125,6 @@ node mizumi.js deps [prune | install <stack> | uninstall <stack>]
 node mizumi.js export                 # wizard
 node mizumi.js export <name> [stack]  # export one tatemono as standalone project
 node export.js <name>                 # export one tatemono directly
-node arkzen.js switch <web|app|desktop> <stack>   # equivalent stack switcher
-node arkzen.js stack | stacks
 ```
 
 * * *
@@ -559,7 +557,7 @@ Accessibility (contrast, readability) always wins.
 5. Lynx uses separate :lynx blocks. Imports may be declared in a Lynx page or component; the Lynx generator also adds imports for referenced shared components.
 6. Source-block import placement and generated-file imports are not the same: generators may collect, strip, or inject imports while producing platform files. Use the block-specific guidance below.
 7. Web, Expo/RN and Lynx sections can all coexist in one core.tsx (a "dual/triple" tatemono)
-8. A tatemono needs at least ONE page: web page, native page, or Lynx page (native-only and web-only are both valid)
+8. A web/app Tatemono needs at least ONE page: web page, native page, or Lynx page. A Godot-only game Tatemono instead needs `@arkzen:godot:project`, a main scene, and generated behavior blocks; it uses the separate `godot` export target.
 9. Tatemono asset files go in tatemonos/<name>/assets/ (auto-copied to public)
 ```
 
@@ -609,6 +607,14 @@ Order is mostly free; the engine finds blocks by tag. In the list below `:php` s
 @arkzen:native:error:404:lynx / :500:lynx
 @arkzen:native:animation:lynx
 @arkzen:native:script:lynx [:name]
+--- Godot 4 game (separate export target; not a web/native stack) ---
+@arkzen:godot:project             (once)
+@arkzen:godot:input               (optional, once)
+@arkzen:godot:assets              (optional, once)
+@arkzen:godot:scene:<name>        (REPEAT; one scene path per block)
+@arkzen:godot:behavior:player     (required for the generated character controller)
+@arkzen:godot:behavior:camera     (required for the generated follow camera)
+@arkzen:godot:export              (required; declares Godot export presets)
 ```
 
 * * *
@@ -682,6 +688,45 @@ return response()->json($result);
 Used by: `endpoint`, `handler`, `middleware`, `policy`, `listener`, and the Rust-only `module:rs` block. The current validator checks the next-line separator for the first four; the listener parser also expects this shape, but the tag validator does not currently check it.
 
 The tag validator's suffix handling is not complete for every platform-specific code tag (for example, `native:animation:expo`). Do not rely on the validator to detect every missing opener or separator.
+
+### SHAPE E — Godot game blocks
+
+Godot blocks use a YAML body with a bare `*/` line and a matching `:end */`
+line. They are read by the separate Godot game generator; they are not web or
+native UI blocks and do not satisfy the standard web/native page requirement.
+
+```tsx
+/* @arkzen:godot:project
+godot_version: "4.x"
+name: My Game
+main_scene: res://scenes/main.tscn
+renderer: gl_compatibility
+*/
+/* @arkzen:godot:project:end */
+
+/* @arkzen:godot:scene:main
+path: res://scenes/main.tscn
+root:
+  name: Main
+  type: Node3D
+nodes: []
+*/
+/* @arkzen:godot:scene:main:end */
+```
+
+Supported blocks are `project`, `input`, `assets`, repeatable `scene:<name>`,
+`behavior:player`, `behavior:camera`, and `export`. Scene nodes and components
+are declarative; supported node, mesh, and collision-shape types are validated
+by the generator. Player and camera behavior blocks generate GDScript from
+their YAML settings; arbitrary GDScript bodies are not injected.
+
+Put source assets under `tatemonos/<name>/assets/` and reference them with
+relative paths such as `assets/tiles/grass.png`. Assets are required by default;
+set `optional: true` to permit a missing asset. Godot exports are isolated at
+`projects/godot/<name>/` and can be generated with
+`node mizumi.js export <name> godot`. This does not change active web/app/backend
+settings or run a frontend/backend builder. Godot itself and export templates
+must be installed separately to run or package the generated game.
 
 ### Inline declarations (no `:end`)
 
@@ -2514,6 +2559,216 @@ Before finalizing any tatemono, verify:
 
 **SCRIPTS**
 - [ ] `@arkzen:web:script[:name]` (never bare `@arkzen:script`); pure TS, `export`ed, no JSX
+
+* * *
+
+## APPENDIX — GODOT 4 GAME DSL
+
+Godot support is a separate export target, not a web, mobile, desktop, or backend stack. A Godot Tatemono is still a source file under `tatemonos/<name>/core.tsx`, but it uses the Godot marker set below. Export it through:
+
+```bash
+node mizumi.js export <name> godot
+# or
+node mizumi.js export
+```
+
+The generator writes to `projects/godot/<name>/` and does not read or use the active web stack or backend. Open the generated `project.godot` in Godot 4.
+
+### Required blocks
+
+Every Godot Tatemono must include these blocks:
+
+- `/* @arkzen:meta */` — standard Pluff metadata. `name` must exactly match the folder name and contain only lowercase letters, digits, and hyphens.
+- `@arkzen:godot:project` — Godot project settings.
+- `@arkzen:godot:scene:<name>` — one or more scene declarations. The project `main_scene` must match a declared scene `path`.
+- `@arkzen:godot:behavior:player` — player GDScript behavior. It must extend `CharacterBody3D` and target a scene different from the main scene.
+- `@arkzen:godot:behavior:camera` — generated camera-follow behavior.
+- `@arkzen:godot:export` — at least one runnable export preset.
+
+`@arkzen:godot:scene:<name>` and other Godot blocks use a plain comment opening and a matching `:end` comment:
+
+```tsx
+/* @arkzen:godot:project
+godot_version: "4.x"
+name: My Godot Game
+main_scene: res://scenes/main.tscn
+renderer: gl_compatibility
+window:
+  width: 1280
+  height: 720
+  resizable: true
+display:
+  viewport_width: 640
+  viewport_height: 360
+  stretch_mode: canvas_items
+  pixel_art: true
+*/
+/* @arkzen:godot:project:end */
+```
+
+### Project rules
+
+- `godot_version` must be `4.x` or a Godot 4 minor form such as `4.7`.
+- Supported renderers are `gl_compatibility`, `mobile`, and `forward_plus`.
+- `main_scene` and every scene/instance/script path must be safe `res://...` paths. Scene paths end in `.tscn`; behavior scripts end in `.gd`; `..` and backslashes are invalid.
+- Positive integer `window.width` and `window.height` are supported.
+- `display.stretch_mode` is currently generated when documented by the engine; use `canvas_items` for pixel-style 2D overlays.
+
+### Optional and repeated blocks
+
+- `@arkzen:godot:world` — procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, and `dialogues`.
+- `@arkzen:godot:input` — mapping of action names to keys. Action names use lowercase letters, digits, and underscores. Use plural key arrays such as `keys: [A, LEFT]`.
+- `@arkzen:godot:assets` — texture assets grouped under `textures`, with `source`, optional `filter`, and optional `alpha`.
+- Additional `@arkzen:godot:scene:<name>` blocks may be declared when representing separate scenes or instances.
+
+```tsx
+/* @arkzen:godot:input
+actions:
+  move_left:
+    keys: [A, LEFT]
+  move_right:
+    keys: [D, RIGHT]
+  move_up:
+    keys: [W, UP]
+  move_down:
+    keys: [S, DOWN]
+  interact:
+    keys: [E, ENTER]
+  run:
+    keys: [SHIFT]
+*/
+/* @arkzen:godot:input:end */
+```
+
+```tsx
+/* @arkzen:godot:assets
+textures:
+  player_sheet:
+    source: assets/images/character1.png
+    filter: nearest
+    alpha: true
+  ground:
+    source: assets/images/tile-grass.png
+    filter: nearest
+*/
+/* @arkzen:godot:assets:end */
+```
+
+Relative asset sources are resolved from the Tatemono directory. Supported asset categories include images, audio, fonts, models, videos, and JSON/XML/YAML/TOML/CSV data by file extension. Copy only declared assets; missing optional assets produce generator warnings, while missing required assets can fail export.
+
+### Scene declarations
+
+Supported root and child node types include `Node`, `Node2D`, `Node3D`, `WorldEnvironment`, `DirectionalLight3D`, `MeshInstance3D`, `StaticBody3D`, `CharacterBody3D`, `CollisionShape3D`, `Camera3D`, `Sprite3D`, and `AnimatedSprite3D`.
+
+Supported mesh and shape types are limited to `PlaneMesh`, `BoxMesh`, `CapsuleMesh`, `SphereMesh`, `CylinderMesh`, `BoxShape3D`, and `CapsuleShape3D`.
+
+```tsx
+/* @arkzen:godot:scene:player
+path: res://scenes/player.tscn
+root:
+  name: Player
+  type: CharacterBody3D
+  properties:
+    position: [0, 0.5, 0]
+components:
+  - type: CollisionShape3D
+    name: PlayerCollision
+    shape:
+      type: CapsuleShape3D
+      radius: 0.25
+      height: 0.9
+  - type: AnimatedSprite3D
+    name: Sprite
+    texture: player_sheet
+    pixel_size: 0.025
+    billboard: enabled
+    animation:
+      columns: 6
+      rows: 8
+      directions: [down, left, right, up]
+      idle_row_offset: 0
+      walk_row_offset: 4
+      frames_per_second: 8
+*/
+/* @arkzen:godot:scene:player:end */
+```
+
+For `AnimatedSprite3D`, `columns` and `rows` must be positive integers. `directions` must be a non-empty list. `idle_row_offset` and `walk_row_offset` must stay within the sprite-sheet rows. Scene instances must reference a declared scene path.
+
+### Behavior declarations
+
+The player behavior uses this shape:
+
+```tsx
+/* @arkzen:godot:behavior:player
+script: res://scripts/player.gd
+scene: res://scenes/player.tscn
+language: gdscript
+extends: CharacterBody3D
+movement:
+  input: [move_left, move_right, move_up, move_down]
+  speed: 4.0
+  run_action: run
+  run_multiplier: 1.65
+  normalize_diagonal: true
+  gravity: project_default
+animation:
+  moving: walk_{direction}
+  idle: idle_{direction}
+  facing_priority: dominant_axis
+*/
+/* @arkzen:godot:behavior:player:end */
+```
+
+`language` must be `gdscript`; `extends` must be `CharacterBody3D`; movement input names should match declared `@arkzen:godot:input` actions. The camera behavior uses `script`, `node`, `target`, `projection`, `follow.offset`, `follow.smoothing`, and optional `look_at.target_offset`.
+
+Do not invent arbitrary GDScript methods or DSL markers. The current validator supports generated player and camera behaviors only; custom behavior names are rejected.
+
+### Export presets
+
+```tsx
+/* @arkzen:godot:export
+presets:
+  windows:
+    runnable: true
+  linux:
+    runnable: true
+  macos:
+    runnable: true
+  web:
+    runnable: true
+*/
+/* @arkzen:godot:export:end */
+```
+
+Supported preset keys are `windows`, `linux`, `macos`, and `web`. Each preset must set boolean `runnable: true|false`. The generator writes platform keys under `[preset.*.options]`, so include the runnable presets rather than manually creating export preset files.
+
+### AI generation rules
+
+- Copy the exact marker opening and matching `:end` comment format.
+- Keep all YAML block bodies valid YAML mappings.
+- Do not treat Godot DSL blocks as ordinary web/frontend or backend blocks; the Godot exporter ignores backend variants and active web/backend state.
+- Do not add unsupported nodes, behavior names, renderer values, preset names, or arbitrary scene properties.
+- Declared assets must exist under the Tatemono folder before export; use paths relative to `tatemonos/<name>/`.
+- Every instance and behavior scene reference should point to a declared `res://scenes/*.tscn` path.
+- If changing the generator itself, add regression coverage under `engine/game/godot/generator.test.js` and regenerate the godot-game fixture before committing.
+- Generate in Godot 4 syntax: prefer explicit typed variables in generated GDScript, and never shadow the `_physics_process(delta: float)` parameter with another local named `delta`.
+- Use `node mizumi.js export <name> godot` for a direct isolated export. Do not use this for mobile or desktop screenshot automation; Godot is an export-only game category for now.
+
+Reference implementation: `tatemonos/godot-game/core.tsx` and `engine/game/godot/generator.js`.
+
+**GODOT CHECKLIST**
+- [ ] Standard `@arkzen:meta` name matches the Tatemono folder.
+- [ ] A required `godot:project` block is present and valid.
+- [ ] At least one `godot:scene:<name>` block declares a path equal to `main_scene`.
+- [ ] Required `godot:behavior:player` and `godot:behavior:camera` blocks use `gdscript`.
+- [ ] Player extends `CharacterBody3D` and references a scene distinct from the main scene.
+- [ ] Scene node types, mesh types, shape types, and `res://` paths pass the validator.
+- [ ] Animated sprite dimensions, rows, offsets, and directions are valid.
+- [ ] Input action names and movement animation references are consistent.
+- [ ] Asset paths exist and use supported extensions.
+- [ ] Export presets contain only supported platform keys and boolean `runnable` values.
+- [ ] Every opening marker closes with the exact matching `/* @arkzen:<marker>:end */`.
 
 * * *
 
