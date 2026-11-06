@@ -1,0 +1,602 @@
+{
+  "scopeName": "source.tatemono",
+  "name": "Pluff Tatemono",
+  "patterns": [
+    { "include": "#web-layout-b" },
+    { "include": "#native-layout-lynx-b" },
+    { "include": "#native-layout-b" },
+    { "include": "#yaml-end-block" },
+    { "include": "#backend-php-c" },
+    { "include": "#backend-ts-c" },
+    { "include": "#backend-py-c" },
+    { "include": "#backend-java-c" },
+    { "include": "#backend-cs-c" },
+    { "include": "#backend-go-c" },
+    { "include": "#backend-rs-c" },
+    { "include": "#backend-php-d" },
+    { "include": "#backend-ts-d" },
+    { "include": "#backend-py-d" },
+    { "include": "#backend-java-d" },
+    { "include": "#backend-cs-d" },
+    { "include": "#backend-go-d" },
+    { "include": "#backend-rs-d" },
+    { "include": "#backend-php-b" },
+    { "include": "#backend-ts-b" },
+    { "include": "#backend-py-b" },
+    { "include": "#backend-java-b" },
+    { "include": "#backend-cs-b" },
+    { "include": "#backend-go-b" },
+    { "include": "#backend-rs-b" },
+    { "include": "#mail-b" },
+    { "include": "#module-rs" },
+    { "include": "#yaml-block" },
+    { "include": "#web-css-block" },
+    { "include": "#native-css-block" },
+    { "include": "#tsx-block" },
+    { "include": "#typescript-block" },
+    { "include": "#lynx-tsx-block" },
+    { "include": "#dsl-tags" },
+    { "include": "source.tsx" }
+  ],
+  "repository": {
+    "web-layout-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:layout:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "patterns": [
+        { "include": "#yaml-content" },
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:web:layout:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.tsx",
+          "patterns": [{ "include": "#dsl-tags" }, { "include": "source.tsx" }]
+        }
+      ]
+    },
+    "native-layout-lynx-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:layout:lynx:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "patterns": [
+        { "include": "#yaml-content" },
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:native:layout:lynx:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.tsx",
+          "patterns": [{ "include": "#dsl-tags" }, { "include": "source.tsx" }]
+        }
+      ]
+    },
+    "native-layout-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:layout:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "patterns": [
+        { "include": "#yaml-content" },
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:native:layout:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.tsx",
+          "patterns": [{ "include": "#dsl-tags" }, { "include": "source.tsx" }]
+        }
+      ]
+    },
+    "yaml-end-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:realtime:[A-Za-z0-9_.{}-]+|events:[A-Za-z0-9_-]+))[ \\t]*$",
+      "beginCaptures": {
+        "0": { "name": "comment.block.tatemono" },
+        "1": { "name": "entity.name.tag.tatemono.shared" }
+      },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.shared" } },
+      "patterns": [{ "include": "#yaml-content" }]
+    },
+    "backend-php-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):(?:(?:php):)?[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "backend-ts-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.typescript",
+      "patterns": [{ "include": "source.ts" }]
+    },
+    "backend-py-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.python",
+      "patterns": [{ "include": "source.python" }]
+    },
+    "backend-java-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.java",
+      "patterns": [{ "include": "source.java" }]
+    },
+    "backend-cs-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.csharp",
+      "patterns": [{ "include": "source.cs" }]
+    },
+    "backend-go-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.go",
+      "patterns": [{ "include": "source.go" }]
+    },
+    "backend-rs-c": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "contentName": "meta.embedded.block.rust",
+      "patterns": [{ "include": "source.rust" }]
+    },
+    "backend-php-d": {
+      "name": "Tatemono PHP backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):(?:(?:php):)?[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": {
+        "0": { "name": "comment.block.tatemono" },
+        "1": { "name": "entity.name.tag.tatemono.backend" }
+      },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": {
+        "0": { "name": "comment.block.tatemono" },
+        "1": { "name": "entity.name.tag.tatemono.backend" }
+      },
+      "patterns": [
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):(?:(?:php):)?[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.php",
+          "patterns": [{ "include": "source.php" }]
+        }
+      ]
+    },
+    "backend-ts-d": {
+      "name": "Tatemono TypeScript backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.typescript", "patterns": [{ "include": "source.ts" }] }]
+    },
+    "backend-py-d": {
+      "name": "Tatemono Python backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.python", "patterns": [{ "include": "source.python" }] }]
+    },
+    "backend-java-d": {
+      "name": "Tatemono Java backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.java", "patterns": [{ "include": "source.java" }] }]
+    },
+    "backend-cs-d": {
+      "name": "Tatemono C sharp backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.csharp", "patterns": [{ "include": "source.cs" }] }]
+    },
+    "backend-go-d": {
+      "name": "Tatemono Go backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.go", "patterns": [{ "include": "source.go" }] }]
+    },
+    "backend-rs-d": {
+      "name": "Tatemono Rust backend body",
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.rust", "patterns": [{ "include": "source.rust" }] }]
+    },
+    "backend-php-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):(?:(?:php):)?[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-php" }]
+    },
+    "backend-ts-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):ts:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-ts" }]
+    },
+    "backend-py-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):py:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-py" }]
+    },
+    "backend-java-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):java:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-java" }]
+    },
+    "backend-cs-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):cs:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-cs" }]
+    },
+    "backend-go-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):go:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-go" }]
+    },
+    "backend-rs-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):rs:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [{ "include": "#yaml-header-rs" }]
+    },
+    "yaml-header-php": {
+      "patterns": [
+        { "include": "#yaml-header-to-php" }
+      ]
+    },
+    "yaml-header-ts": {
+      "patterns": [{ "include": "#yaml-header-to-ts" }]
+    },
+    "yaml-header-py": {
+      "patterns": [{ "include": "#yaml-header-to-py" }]
+    },
+    "yaml-header-java": {
+      "patterns": [{ "include": "#yaml-header-to-java" }]
+    },
+    "yaml-header-cs": {
+      "patterns": [{ "include": "#yaml-header-to-cs" }]
+    },
+    "yaml-header-go": {
+      "patterns": [{ "include": "#yaml-header-to-go" }]
+    },
+    "yaml-header-rs": {
+      "patterns": [{ "include": "#yaml-header-to-rs" }]
+    },
+    "yaml-header-to-php": {
+      "patterns": [{ "include": "#yaml-and-body-php" }]
+    },
+    "yaml-header-to-ts": {
+      "patterns": [{ "include": "#yaml-and-body-ts" }]
+    },
+    "yaml-header-to-py": {
+      "patterns": [{ "include": "#yaml-and-body-py" }]
+    },
+    "yaml-header-to-java": {
+      "patterns": [{ "include": "#yaml-and-body-java" }]
+    },
+    "yaml-header-to-cs": {
+      "patterns": [{ "include": "#yaml-and-body-cs" }]
+    },
+    "yaml-header-to-go": {
+      "patterns": [{ "include": "#yaml-and-body-go" }]
+    },
+    "yaml-header-to-rs": {
+      "patterns": [{ "include": "#yaml-and-body-rs" }]
+    },
+    "yaml-and-body-php": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#php-b-body" }
+      ]
+    },
+    "yaml-and-body-ts": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#ts-b-body" }
+      ]
+    },
+    "yaml-and-body-py": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#py-b-body" }
+      ]
+    },
+    "yaml-and-body-java": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#java-b-body" }
+      ]
+    },
+    "yaml-and-body-cs": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#cs-b-body" }
+      ]
+    },
+    "yaml-and-body-go": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#go-b-body" }
+      ]
+    },
+    "yaml-and-body-rs": {
+      "patterns": [
+        { "include": "#yaml-content" },
+        { "include": "#rs-b-body" }
+      ]
+    },
+    "yaml-content": {
+      "begin": "(?=^[ \\t]*[A-Za-z_][A-Za-z0-9_-]*[ \\t]*:)",
+      "end": "(?=^[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.yaml",
+      "patterns": [{ "include": "source.yaml" }]
+    },
+    "php-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):(?:(?:php):)?[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.php",
+      "patterns": [{ "include": "source.php" }]
+    },
+    "ts-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):ts:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.typescript",
+      "patterns": [{ "include": "source.ts" }]
+    },
+    "py-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):py:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.python",
+      "patterns": [{ "include": "source.python" }]
+    },
+    "java-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):java:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.java",
+      "patterns": [{ "include": "source.java" }]
+    },
+    "cs-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):cs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.csharp",
+      "patterns": [{ "include": "source.cs" }]
+    },
+    "go-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):go:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.go",
+      "patterns": [{ "include": "source.go" }]
+    },
+    "rs-b-body": {
+      "begin": "^[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:jobs|console|notifications):rs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+      "contentName": "meta.embedded.block.rust",
+      "patterns": [{ "include": "source.rust" }]
+    },
+    "mail-b": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:mail(?::(?:php|ts|py|java|cs|go|rs))?:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [
+        {
+          "begin": "(?=^[ \\t]*[A-Za-z_][A-Za-z0-9_-]*[ \\t]*:)",
+          "end": "(?=^[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.yaml",
+          "patterns": [{ "include": "source.yaml" }]
+        },
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:mail(?::(?:php|ts|py|java|cs|go|rs))?:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.html",
+          "patterns": [{ "include": "text.html.basic" }]
+        }
+      ]
+    },
+    "module-rs": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:module:rs)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
+      "patterns": [
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:module:rs:end[ \\t]*\\*/[ \\t]*$)",
+          "contentName": "meta.embedded.block.rust",
+          "patterns": [{ "include": "source.rust" }]
+        }
+      ]
+    },
+    "yaml-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:meta(?::(?:web|native))?|web:config|native:config|desktop:config|database(?::[A-Za-z0-9_-]+)?|api(?::[A-Za-z0-9_-]+)?|routes))[ \\t]*$",
+      "beginCaptures": {
+        "0": { "name": "comment.block.tatemono" },
+        "1": { "name": "entity.name.tag.tatemono.shared" }
+      },
+      "end": "^[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "contentName": "meta.embedded.block.yaml",
+      "patterns": [{ "include": "source.yaml" }]
+    },
+    "web-css-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:style(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "contentName": "meta.embedded.block.css",
+      "patterns": [{ "include": "source.css" }]
+    },
+    "native-css-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:style(?::[A-Za-z0-9_-]+)?|@arkzen:native:style:lynx(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "contentName": "meta.embedded.block.css",
+      "patterns": [{ "include": "source.css" }]
+    },
+    "tsx-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:(?:components|layout|page):[A-Za-z0-9_-]+|@arkzen:web:error:(?:404|500)|@arkzen:native:(?:components|page|error):[A-Za-z0-9_-]+|@arkzen:native:(?:layout):[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "contentName": "meta.embedded.block.tsx",
+      "patterns": [
+        { "include": "#dsl-tags" },
+        { "include": "source.tsx" }
+      ]
+    },
+    "typescript-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:(?:animation|script)(?::[A-Za-z0-9_-]+)?|@arkzen:native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
+      "contentName": "meta.embedded.block.typescript",
+      "patterns": [{ "include": "source.ts" }]
+    },
+    "lynx-tsx-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:(?:components|layout|page):lynx:[A-Za-z0-9_-]+|@arkzen:native:error:(?:404|500):lynx)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "contentName": "meta.embedded.block.tsx",
+      "patterns": [
+        { "include": "#dsl-tags" },
+        { "include": "source.tsx" }
+      ]
+    },
+    "dsl-tags": {
+      "patterns": [
+        {
+          "match": "(@arkzen:)(web):(page):(layout):([+A-Za-z0-9_-]+)(?::([A-Za-z0-9_-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.web" },
+            "3": { "name": "entity.name.tag.tatemono.web" },
+            "4": { "name": "storage.type.tatemono.web" },
+            "5": { "name": "entity.name.section.tatemono" },
+            "6": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(native):(page):(lynx):(layout):([+A-Za-z0-9_-]+)(?::([A-Za-z0-9_-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.native" },
+            "3": { "name": "entity.name.tag.tatemono.native" },
+            "4": { "name": "storage.type.variant.tatemono" },
+            "5": { "name": "storage.type.tatemono.native" },
+            "6": { "name": "entity.name.section.tatemono" },
+            "7": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(native):(page):(layout):([+A-Za-z0-9_-]+)(?::([A-Za-z0-9_-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.native" },
+            "3": { "name": "entity.name.tag.tatemono.native" },
+            "4": { "name": "storage.type.tatemono.native" },
+            "5": { "name": "entity.name.section.tatemono" },
+            "6": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(meta|database|api|routes|realtime|events)(?::([A-Za-z0-9_.{}-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "entity.name.tag.tatemono.shared" },
+            "3": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(web):([A-Za-z-]+)(?::([A-Za-z0-9_-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.web" },
+            "3": { "name": "entity.name.tag.tatemono.web" },
+            "4": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(native):([A-Za-z-]+)(?::(expo|rn|lynx))?(?::([A-Za-z0-9_-]+))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.native" },
+            "3": { "name": "entity.name.tag.tatemono.native" },
+            "4": { "name": "storage.type.variant.tatemono" },
+            "5": { "name": "entity.name.section.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(desktop):([A-Za-z-]+)",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.desktop" },
+            "3": { "name": "entity.name.tag.tatemono.desktop" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail|module):(?:(php|ts|py|java|cs|go|rs):)?([A-Za-z0-9_-]+)?(?::(end))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "entity.name.tag.tatemono.backend" },
+            "3": { "name": "storage.type.variant.tatemono" },
+            "4": { "name": "entity.name.section.tatemono" },
+            "5": { "name": "punctuation.definition.tag.tatemono" }
+          }
+        },
+        {
+          "match": "(@arkzen:)(import):(?:(expo|rn))(?::(end))?",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "entity.name.tag.tatemono.native" },
+            "3": { "name": "storage.type.variant.tatemono" },
+            "4": { "name": "punctuation.definition.tag.tatemono" }
+          }
+        }
+      ]
+    }
+  }
+}

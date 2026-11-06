@@ -1,0 +1,117 @@
+{
+  "name": "pluff-tatemono",
+  "displayName": "Pluff Tatemono",
+  "description": "Tatemono syntax highlighting and completions across Pluff web, mobile, desktop, and backend stacks.",
+  "version": "0.1.0",
+  "publisher": "mizumi250",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:tatemono"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "tatemono",
+        "aliases": [
+          "Tatemono",
+          "Pluff Tatemono"
+        ],
+        "extensions": [
+          ".tatemono"
+        ],
+        "filenamePatterns": [
+          "**/tatemonos/*/core.tsx"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "tatemono",
+        "scopeName": "source.tatemono",
+        "path": "./syntaxes/tatemono.tmLanguage.json",
+        "embeddedLanguages": {
+          "meta.embedded.block.yaml": "yaml",
+          "meta.embedded.block.tsx": "typescriptreact",
+          "meta.embedded.block.typescript": "typescript",
+          "meta.embedded.block.php": "php",
+          "meta.embedded.block.python": "python",
+          "meta.embedded.block.java": "java",
+          "meta.embedded.block.csharp": "csharp",
+          "meta.embedded.block.go": "go",
+          "meta.embedded.block.rust": "rust",
+          "meta.embedded.block.css": "css",
+          "meta.embedded.block.html": "html"
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "editor.tokenColorCustomizations": {
+        "textMateRules": [
+          {
+            "scope": "entity.name.tag.tatemono.shared",
+            "settings": {
+              "foreground": "#e5c07b",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.tag.tatemono.web",
+            "settings": {
+              "foreground": "#61afef",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.tag.tatemono.native",
+            "settings": {
+              "foreground": "#c678dd",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.tag.tatemono.desktop",
+            "settings": {
+              "foreground": "#56b6c2",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.tag.tatemono.backend",
+            "settings": {
+              "foreground": "#e06c75",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "storage.type.variant.tatemono",
+            "settings": {
+              "foreground": "#d19a66",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.section.tatemono",
+            "settings": {
+              "foreground": "#98c379"
+            }
+          },
+          {
+            "scope": "punctuation.definition.tag.tatemono",
+            "settings": {
+              "foreground": "#7f848e"
+            }
+          }
+        ]
+      }
+    }
+  }
+}
