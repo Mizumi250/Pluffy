@@ -3,7 +3,7 @@
 ## For AI — Generating & Editing Tatemono Files
 
 **VERSION:** 14.0
-**VERIFIED AGAINST:** shared engine parser and validator (incl. `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, the Express backend (`engine/backend/express`), the FastAPI, Spring Boot, ASP.NET Core, Go and Rust backends (`engine/backend/<name>` and each backend README), `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and the tatemonos in `tatemonos/`.
+**VERIFIED AGAINST:** shared engine parser and validator (including `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, and the Express, FastAPI, Spring Boot, ASP.NET Core, Go and Rust engine implementations under `engine/backend/`; also `mizumi.js`, `start.js`, `setup.js`, `export.js`, `arkzen.js`, and tatemonos under `tatemonos/`.
 **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
 **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
 
@@ -13,7 +13,7 @@
 - **New Section 1F: body reference for `:java`, `:cs`, `:go` and `:rs`.** Names in scope, return conventions and helper APIs for the four new variants, one endpoint written in all seven variants, the Rust-only `@arkzen:module:rs` block, and mail placeholder syntax per backend.
 - **New Section 1G: execution model, capability matrix and targeting rules.** Which backends actually run a custom body, what each backend implements, how raw SQL names tables, and what to generate when the backend is known or unknown.
 - **Corrections.** Rust supports PostgreSQL (all seven backends support SQLite and PostgreSQL). The FastAPI example list now matches the tatemonos that carry `:py` bodies. Section 27 lists all 46 tatemonos with the backend variants each one carries.
-- **Where the sources disagree, the engine wins.** The backend READMEs under `engine/backend/<name>/README.md` describe each runtime in more detail than this document; check them before relying on a feature that is marked partial.
+- **Backend README files may be outdated.** Verify backend behavior against the engine/framework implementation and working Tatemono fixtures; do not treat a backend README as evidence of current support.
 
 **WHAT'S NEW IN v13.0 (vs v12.0):**
 
@@ -21,7 +21,7 @@
 - **Backend variant suffixes.** Backend code blocks (`endpoint`, `handler`, `policy`, `middleware`, `listener`, `jobs`, `console`, and `notifications` / `mail` that carry a body) take a suffix between marker and name: `:php` (Laravel) or `:ts` (Express). The active backend reads the matching variant. An unsuffixed code body is only a fallback read as `:php` until the tatemono is converted; unsuffixed YAML-only blocks are shared by every backend.
 - **A tatemono with no usable variant for the active backend is inactive on it** (validator error, not a crash). A tatemono may carry variants for one backend or all of them.
 - **`:ts` body conventions** (Express) documented next to each backend block (Sections 8-18), including custom runtime equivalents for uploads, resources, factories, queues, commands, events, notifications, realtime, and streaming SSE.
-- **Sections 27 / 28B / 29** updated: 37 tatemonos (including `express-test` and `express-test-2`), Express runtime/export behavior, multi-backend quirks, and the backend checklist.
+- **Sections 27 / 28B / 29** updated: at the v13.0 release, the list had 37 tatemonos (including `express-test` and `express-test-2`), Express runtime/export behavior, multi-backend quirks, and the backend checklist.
 - **The old Laravel code blocks are now the `:php` variant.** Sections 9B-18 are rewritten with `:php` (Laravel) and `:ts` (Express) side by side. A plain unsuffixed code body is only a fallback the engine still reads as `:php` for tatemonos not converted yet.
 
 **WHAT'S NEW IN v13.1 (vs v13.0):**
@@ -79,11 +79,11 @@ Stacks are chosen **per project**, in three independent categories.
 | Category  | Stack            | Description                                              |
 |-----------|------------------|----------------------------------------------------------|
 | `web`     | `nextjs` (default)| Next.js 16 + TS + Tailwind + Zustand (decoupled)         |
-| `web`     | `react-vite`     | React 18 + Vite + TS + Tailwind + Zustand (decoupled)    |
+| `web`     | `react-vite`     | React 19 + Vite + TS + Tailwind + Zustand (decoupled)    |
 | `web`     | `tanstack-start` | TanStack Start + Vite + TS + Tailwind + Zustand          |
 | `web`     | `astro`          | Astro + React islands + TS + Tailwind                    |
-| `web`     | `react-inertia`  | React 18 + Inertia.js (Laravel monolith; uses `laravel-inertia` backend) |
-| `app`     | `expo`           | Expo (SDK 53, Expo Go) + Expo Router + NativeWind       |
+| `web`     | `react-inertia`  | React 19 + Inertia.js (Laravel monolith; uses `laravel-inertia` backend) |
+| `app`     | `expo`           | Expo (SDK 58, Expo Go) + Expo Router + NativeWind       |
 | `app`     | `react-native`   | Bare React Native                                        |
 | `app`     | `lynx`           | Lynx (Rspeedy / ReactLynx)                               |
 | `desktop` | `tauri`          | Tauri shell that **wraps the running web stack**         |
@@ -167,9 +167,9 @@ The Electron and Tauri shells wrap the whole web app, so this setting is shared 
 
 ## SECTION 1E — BACKENDS & BACKEND VARIANTS
 
-**The backend is not part of a tatemono.** It is a project setting (`arkzen.json` → `activeBackend`; `react-inertia` forces `laravel-inertia`). The same tatemono file builds on any backend that can read it. Laravel is the **reference backend**: every other backend imitates Laravel's behaviour, so the DSL has one vocabulary (rule strings like `required|string|max:255`, `role:admin`, `policy: true`, queue/mail/notification semantics) on every backend, and each backend implements it behind the scenes.
+**The backend is not part of a tatemono.** It is a project setting (`arkzen.json` → `activeBackend`; `react-inertia` forces `laravel-inertia`). The same tatemono file can build on any backend that can read it, but available behavior depends on that engine's implementation. Laravel is the **reference backend**: the shared DSL uses Laravel-style vocabulary (rule strings like `required|string|max:255`, `role:admin`, `policy: true`, and queue/mail/notification blocks), while each backend implements its supported behavior behind the scenes. See Section 1G for the distinction between fixture parity and general feature support.
 
-**Spring Boot parity scope:** add `:java` variants only to Tatemono that already have Laravel (`:php`), Express (`:ts`), and FastAPI (`:py`) implementations. Features that exist only in Tatemono without those three backend variants are outside this parity scope, not missing Spring parity. For example, `upload-test` has upload DSL but no Laravel, Express, or FastAPI variants. Keep the current planned fixture list and coverage details in the Spring Boot backend README.
+**Spring Boot fixture coverage is not the same as engine capability.** The original planned `:java` parity set focused on Tatemono that already had Laravel (`:php`), Express (`:ts`), and FastAPI (`:py`) variants. Shared DSL operations can still be implemented directly by the Spring engine outside that fixture set; for example, it now handles the upload endpoint types used by `upload-test`, even though that Tatemono has no `:java` body variant.
 
 ### Shared blocks vs variant blocks
 
@@ -404,20 +404,9 @@ Jobs and events run through an in-process queue with retries and timeouts (not d
 
 ### :go bodies (Go, Chi)
 
-**`:go` bodies run on the Go engine.** Endpoint, handler, middleware, policy, listener, jobs and console bodies are written in Go against the engine's host runtime, the same way the other variants work. The engine generates `models.go`, `controllers.go`, `routes.go` and `module.go`, and type-checks them. Standard CRUD, validation, auth, mail templates and realtime channels also work for any tatemono without a body.
+The Go backend reads and builds the same Tatemono DSL and supports the shipped Tatemono suite. Backend parity is about the behavior a Tatemono exposes, not whether each engine implements it with the same mechanism. Go generates and type-checks model/module scaffolding and route registrations. General custom endpoint and route-handler bodies can be interpreted at runtime; built-in capability endpoints and named Tatemono workflows can instead be implemented by Go engine logic. Middleware and policies have supported engine-defined behavior, while jobs, listeners and console scheduling use the Go engine's queue/event/scheduler support. These implementation differences do not by themselves mean a tested Tatemono behaves differently; they do mean arbitrary body code is not available for every block kind.
 
-Write `:go` bodies in the same shape the fixtures use: `request` (`Input(k)`, `InputOr(k, default)`, `String`, `Int`, `IntOr`, `Float`, `Bool`, `NullableInt`, `QueryInt`, `Only`, `JSON()`, `Route(name)`, `User()`), `response.JSON(status, value)` and `response.Error(status, message)`, `ctx`, generated models with typed fields (`Ticket.Create(ctx, map[string]any{...})`, `Queue.FindOrFail(ctx, id)`, `Ticket.Query().Where(...).Count(ctx)`, `queue.Prefix`), and `database.Insert(table, map)` / `database.Query(...)`. Middleware ends with `return next()`. Policies use the typed item: `return item == nil || item.Status != "archived"`. Every body returns a response value.
-
-```
-/* @arkzen:middleware:go:requireJson
-*/
-mediaType, _, err := mime.ParseMediaType(request.Header.Get("Content-Type"))
-if err != nil || (mediaType != "application/json" && !strings.HasSuffix(mediaType, "+json")) {
-    return response.JSON(415, map[string]string{"message": "Content-Type: application/json is required."})
-}
-return next()
-/* @arkzen:middleware:go:requireJson:end */
-```
+For interpreted endpoint and route-handler bodies, use the runtime helpers available to the fixtures: `request` (`Input(k)`, `InputOr(k, default)`, `String`, `Int`, `IntOr`, `Float`, `Bool`, `NullableInt`, `QueryInt`, `Only`, `JSON()`, `Route(name)`, `User()`), `response.JSON(status, value)` and `response.Error(status, message)`, `ctx`, generated models with typed fields (`Ticket.Create(ctx, map[string]any{...})`, `Queue.FindOrFail(ctx, id)`, `Ticket.Query().Where(...).Count(ctx)`, `queue.Prefix`), and `database.Insert(table, map)` / `database.Query(...)`. Return a response value from each interpreted handler.
 
 Reference tatemonos: `go-backend-test`, `go-concurrency-lab`, `body-endpoint-handler`, `queue-flow`.
 
@@ -441,7 +430,7 @@ response.json(StatusCode::OK, json!({ "total": total, "passed": passed, "failed"
 /* @arkzen:endpoint:rs:stats:end */
 ```
 
-`listener:rs`, `policy:rs`, `middleware:rs`, `jobs:rs` and `console:rs` bodies run like the other variants: listeners when an `event_fire` endpoint dispatches their declared event, policies and middleware on the routes that use them, jobs and console commands when dispatched or scheduled. The built-in `requireJson`, `auth` and `auth:sanctum` middleware are also available.
+Rust compiles `endpoint:rs` and `handler:rs` source bodies into generated module code; declared `listener:rs` bodies are also generated and run when their event is fired. `module:rs` source is compiled alongside those bodies. This does not mean every body-bearing DSL block executes arbitrary Rust: middleware snippets and policy snippets are not implemented as general Rust bodies, jobs and console behavior have named engine support rather than arbitrary `jobs:rs` / `console:rs` execution, and cron-based console scheduling is unavailable. The engine's supported middleware and named workflows can still provide the behavior used by tested Tatemono fixtures.
 
 **The Rust-only module block.** A tatemono may carry at most one `@arkzen:module:rs` block (Shape D: `*/` alone on the next line, closed by `/* @arkzen:module:rs:end */`). Its Rust source is compiled into the tatemono's module next to the endpoint and handler bodies, for shared helper functions or tests. A second block, or a missing end marker, stops the build with an error. It is read only when the active backend is `rust`.
 
@@ -471,7 +460,7 @@ Reference tatemonos: `rust-backend-test`, `body-endpoint-handler`, `queue-flow` 
 
 ## SECTION 1G - EXECUTION MODEL, CAPABILITY MATRIX & TARGETING RULES
 
-### Which backends actually run a custom body
+### How backends implement body-bearing blocks
 
 | Backend | Variant | What happens to a custom body |
 |---|---|---|
@@ -480,31 +469,38 @@ Reference tatemonos: `rust-backend-test`, `body-endpoint-handler`, `queue-flow` 
 | `fastapi` | `:py` | Generated into the Python backend and run. |
 | `spring-boot` | `:java` | Compiled to Java by the engine and hot-loaded. Runs every body kind (endpoint, handler, middleware, policy, jobs, listener, console, notifications). |
 | `aspnet` | `:cs` | Roslyn script, compiled on first call. Errors become HTTP 500. |
-| `go` | `:go` | Endpoint and custom-route bodies are interpreted at runtime. |
-| `rust` | `:rs` | Endpoint, handler, listener, policy, middleware, jobs, console and `module:rs` bodies are compiled and run. |
+| `go` | `:go` | General endpoint and custom-route handler bodies are interpreted; built-in operations and named workflows can use engine implementations. Middleware, policies, jobs, listeners and console behavior follow the Go engine's supported feature implementations, not arbitrary source execution for every block. |
+| `rust` | `:rs` | Endpoint and custom-route handler bodies are compiled from the Tatemono into generated Rust; declared listener bodies and `module:rs` are also compiled. Middleware, policies, jobs and console use limited engine support rather than arbitrary Rust bodies. |
 
 ### Capability matrix
 
-Summarized from each backend's README. If a cell matters for your tatemono, check `engine/backend/<name>/README.md` first; "partial" means named emulations or built-ins only.
+This matrix describes the runtime mechanisms and generality of support, not whether a shipped Tatemono fixture passes. Behavioral parity means the Tatemono has the same expected behavior; engines may implement it with generated code, interpretation, built-ins or named workflows. The maintainer reports that all shipped Tatemono fixtures have been run on Go and Rust with the same behavior as the other backends. That test coverage does not guarantee arbitrary, untested combinations of DSL features. For a specific feature, check `engine/backend/<name>/README.md`; "named" means engine support for declared workflows, not general execution of arbitrary source bodies.
 
 | Feature | laravel | express | fastapi | spring-boot | aspnet | go | rust |
 |---|---|---|---|---|---|---|---|
-| Custom bodies run | yes | yes | yes | yes | yes | yes | yes |
+| Endpoint / custom-route bodies | generated | bundled | generated | compiled | interpreted | interpreted, with built-in operation overrides | generated and compiled |
+| Listener bodies | generated | bundled | generated | compiled | interpreted | supported event operations; arbitrary source is not evaluated | generated and compiled |
+| Middleware / policy bodies | yes | yes | yes | yes | yes | supported middleware and restricted policy expressions | no general body execution; limited engine support |
 | SQLite and PostgreSQL | yes | yes | yes | yes (PostgreSQL untested) | yes | yes | yes |
 | Token auth (`auth: true`) | yes | yes | yes | yes | yes | yes | yes |
-| `role:` middleware | yes | yes | yes | yes | yes | yes | yes |
-| Jobs and queue | worker | worker | worker | in memory, not durable | in process, not durable | database queue, named jobs | named emulation |
-| Cron scheduler | yes | yes (`npm run queue`) | yes | in process, per minute | not implemented | per minute, listed commands | not implemented |
+| `roles-test` role workflows | yes | yes | yes | yes | yes | yes (engine-supported workflow) | yes (engine-supported workflow) |
+| Generic `role:` middleware | yes | yes | yes | yes | yes | no (role behavior is not generic middleware) | no (role behavior is not generic middleware) |
+| Jobs and queue | worker | worker | worker | in memory, not durable | in process, not durable | database queue and supported job operations | named in-process emulation; no general job-body execution |
+| Cron scheduler | yes | yes (`npm run queue`) | yes | in process, per minute | not implemented | supported console schedules, per minute | not implemented |
 | Realtime | Reverb | Pusher protocol | Pusher protocol | Pusher compatible | Pusher compatible hub | Pusher protocol | Pusher protocol |
-| Uploads | yes | yes (Multer) | yes (multipart) | not documented | not implemented | not documented | not documented |
+| Uploads | yes | yes (Multer) | yes (multipart) | yes (multipart) | yes (multipart) | yes (multipart) | yes (multipart) |
 | Mail | yes | yes | yes | yes (log or SMTP) | yes (log or SMTP) | yes (log or SMTP) | yes (log or SMTP) |
-| Notifications | all channels | database, mail, broadcast | database, mail, broadcast | database, mail, broadcast | database, mail, broadcast, inbox routes | emulated | named emulation |
+| Notifications | database, mail, broadcast; notification-test inbox | database, mail, broadcast; notification-test inbox | database, mail, broadcast; notification-test inbox | database, mail, broadcast; notification-test inbox | database, mail, broadcast; notification-test inbox | named notification-test workflow (database/mail/broadcast + inbox); body-mail-notification is email-only | named notification-test workflow (database/mail/broadcast + inbox) |
 
 Mail uses the `log` mailer by default on every non-Laravel backend; set `MAIL_MAILER=smtp` with the `MAIL_*` variables to deliver. Go and Rust realtime listens on `REVERB_PORT` (default 8080).
 
+Notification delivery supports the database, mail, and broadcast channels shown above; "all channels" would overstate the engine's built-in support. Inbox operations are provided by the notification-test workflow/API, not automatically added to every Tatemono. Go and Rust implement that fixture as named engine workflows rather than general notification-body execution; Go's separate `body-mail-notification` workflow sends email only.
+
+All seven backends implement the shared `upload`, `upload_index`, `upload_destroy`, and `upload_url` endpoint types. Physical storage roots are backend-specific and are not portable between engines. Use `upload_url` for downloads and the returned image URL, when present, for previews.
+
 ### Table names in raw SQL
 
-Every table is created as `{slug_with_underscores}_{table}` (Section 7D). `:cs` raw SQL must use that prefixed name (`body_endpoint_handler_probe_results`). The shipped `:go` and `:rs` fixtures call helpers with the bare table name (`database.Insert("probe_results", ...)`, `database.insert("probe_results", ...)`). `:php`, `:ts`, `:py` and `:java` bodies normally go through generated models and never name a table. `foreign:` in YAML keeps using the prefixed name on every backend.
+Physical table naming depends on the backend. Go and Rust isolate each tatemono in its own database and use the declared table name directly; their helpers and fixtures therefore use bare names such as `probe_results`. Other engines may prefix physical table names; for example, `:cs` raw SQL uses `body_endpoint_handler_probe_results`. Generated models often hide this difference. The migration builder uses the `foreign:` value literally as the target table name, so set it to the physical name required by the active backend. Do not assume one table prefix applies to every backend.
 
 ### What to generate
 
@@ -695,6 +691,10 @@ The tag validator's suffix handling is not complete for every platform-specific 
 /* @arkzen:native:page:lynx:layout:app */      ← same for Lynx pages
 ```
 
+### Parsed markers that are not supported DSL
+
+`@arkzen:store:<name>` is detected by `hasSections()` and parsed into an internal `stores` field, but no builder consumes or emits it. It is not a usable store declaration; do not generate it. For web Zustand state, export the store from `@arkzen:web:components` (Section 3C). Native state belongs in native component code.
+
 ### Backend variant suffix (`:php` `:ts` `:py` `:java` `:cs` `:go` `:rs`)
 
 Backend code blocks accept a variant token between marker and name (`@arkzen:endpoint:ts:stats`). The opening tag, YAML placement and `*/` rules follow the block's normal shape; the closing tag repeats the suffix (`/* @arkzen:endpoint:ts:stats:end */`). Same-named blocks with different suffixes may coexist in one file. See Section 1E.
@@ -725,7 +725,7 @@ Backend code blocks accept a variant token between marker and name (`@arkzen:end
 | `native:*:lynx:*` (Lynx blocks)              | ✅ YES — pages may import directly; referenced shared components are imported by the generator |
 | `endpoint`, `handler`, `middleware`, `policy`, `listener`, `jobs`, `console` | ❌ NO (bodies are written in the backend's own language) |
 
-These are source-authoring recommendations, not all parser restrictions. The Next.js generator normalizes imports found in web page and error blocks; referenced non-React imports from web component blocks may also be forwarded into generated pages. Across the current Next.js, React/Vite, Astro, Inertia, Expo, and bare-RN generators, a simple standalone `export default ComponentName` line is stripped from page source; the generated page/screen gets its own framework-specific export or wrapper. Prefer omitting it, but if it appears, it is okay: the engine removes it. This only covers that simple standalone form, not arbitrary default-export expressions or other export forms.
+These are source-authoring recommendations, not all parser restrictions. The Next.js generator normalizes imports found in web page and error blocks; referenced non-React imports from web component blocks may also be forwarded into generated pages. Across the current Next.js, React/Vite, TanStack Start, Astro, Inertia, Expo, and bare-RN generators, a simple standalone `export default ComponentName` line is stripped from page source; the generated page/screen gets its own framework-specific export or wrapper. Prefer omitting it, but if it appears, it is okay: the engine removes it. This only covers that simple standalone form, not arbitrary default-export expressions or other export forms.
 
 ## SECTION 3B — `'use client'` (WEB ONLY)
 
@@ -972,18 +972,18 @@ Engine auto-generates `belongsTo` / `hasMany` from `foreign:` columns. Never wri
 
 Seed parents only when children can reference known ids. Do not seed a child table whose `foreignId` points at rows that may not exist yet. Tables created at runtime (tickets, orders, logs) normally need **no seeder**.
 
-## ⚠️ SECTION 7D — TABLE PREFIX & `foreign:` (CRITICAL)
+## ⚠️ SECTION 7D — PHYSICAL TABLE NAMES & `foreign:` (BACKEND-SPECIFIC)
 
-Every table is created with the tatemono slug as prefix: `{slug_with_underscores}_{table}` (`queue-flow` + `tickets` → `queue_flow_tickets`). Models stay unprefixed (`Ticket`). The migration builder uses the `foreign:` value **literally** as the real table name:
+Physical table naming depends on the active backend. Go and Rust use an isolated database per tatemono and create tables with the declared name (for example, `tickets`); they do not require a tatemono slug prefix. Some other engines prefix physical table names (for example, `queue-flow` + `tickets` → `queue_flow_tickets`). Models stay unprefixed (`Ticket`). The migration builder uses the `foreign:` value **literally** as the real table name, so use the physical target table name for the active backend:
 
 ```yaml
-# ✅ queue-flow (works) — use the PREFIXED table name
+# ✅ On a backend that prefixes tables, use the physical prefixed table name
 queue_id:
   type: foreignId
   foreign: queue_flow_queues.id
 ```
 
-See "Known engine quirks" about `dtr-geofencing` (unprefixed `employees.id`) and automatic relationship methods.
+For Go/Rust, use the declared physical table name. See "Known engine quirks" about `dtr-geofencing` and automatic relationship methods.
 
 * * *
 
@@ -1606,7 +1606,7 @@ Always available in native component scope: `React` hooks, RN primitives (`View,
 
 The same sorting applies in native:components: ALL_CAPS goes to constants.tsx, use* to hooks.tsx, camelCase to utils.tsx, types to types.ts, and PascalCase to one file per component. Any package a hook or constant needs, such as zustand, must be listed in an import pair.
 
-> `validate.js` (advisory CLI) still demands an import DSL on every native page and rejects pages that work fine. Trust the parser's DSL errors over that script for native.
+> Native import pairs are not required on every native page. Markerless native pages are accepted by the current validator and remain supported for legacy/shared code; use `@arkzen:import:expo` and `@arkzen:import:rn` when imports or code differ between targets. The current `engine/frontend/nextjs/validate.js` CLI resolves tatemonos under `engine/tatemonos`, so it may report a missing tatemono when run from this repository layout; this is a path issue, not a native-import validation rule.
 
 * * *
 
@@ -1635,12 +1635,11 @@ export const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children })
 /* @arkzen:native:layout:app:end */
 ```
 
-**Layout imports (Expo): never import from `@/arkzen/...` inside a native layout.** A layout file is generated into `arkzen/core/layouts/custom/`, not next to the pages, but the engine rewrites the `@/arkzen/` alias with the folder depth used for pages. The result is a path that does not exist, and Metro fails with `Unable to resolve module ../../../arkzen/core/stores/authStore` on every screen that uses the layout.
+**Layout imports (Expo): avoid `@/arkzen/...` inside a native layout.** The generator rewrites that alias to the fixed `../../../arkzen/...` path used for page imports, but custom layouts are emitted under `arkzen/core/layouts/custom/`. Relative to that directory, the rewritten path does not point to the project-level `arkzen` directory and can fail Metro resolution. For example, an import of `@/arkzen/core/stores/authStore` should use the layout-relative path `../../stores/authStore` in a custom layout. The alias normalization is visible in the generator's `normaliseNativeImports` and `generateCustomLayouts` paths; it is not adjusted for the layout's directory depth.
 
-- Keep a layout to React, `react-native`, `react-native-safe-area-context`, `expo-router` (or React Navigation) and icon imports.
-- If a shell needs the auth store, `arkzenFetch`, realtime or toasts, put that code in a `native:components` component (for example `ShellFx`) and mount it from `Screen` or from the pages. Components and pages get the correct path.
-- Do not work around it by writing a relative path in the layout. Native imports from every block are merged into the generated component files, so the same module spelled two ways becomes a duplicate declaration.
-- This limit goes away if the engine's layout rewrite is changed to use the layout folder's depth.
+- Keep imports in the custom layout relative to its generated location; verify the generated file path when adding other `arkzen` imports.
+- Imports in a custom layout are resolved for that generated layout file, separately from page imports. The same import in a separate page file is not by itself a duplicate declaration.
+- If a shell needs shared auth, realtime or toast behavior, it can also use a `native:components` component (for example `ShellFx`) mounted from `Screen` or pages; this is an alternative, not a requirement.
 
 Export `<PascalName>Layout`. Nesting works like web: `parent:` in the opening comment (Shape B):
 
@@ -1814,14 +1813,32 @@ Lynx pages use `<view>` / `<text>` elements with Tailwind-preset `className`s (s
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 import { create } from 'zustand'
 import { arkzenFetch, useAuthStore } from '@/arkzen/core/stores/authStore'
-import { useToast } from '@/arkzen/core/components/Toast'
-import { Modal } from '@/arkzen/core/components/Modal'
+import { Modal, Drawer, Dialog, Tooltip, Breadcrumb, Table, Form, Field,
+  Pagination, Loading, PageTransition, Badge, Avatar, EmptyState,
+  Toast, useToast, motion, AnimatePresence } from '@/arkzen/core/components'
 import { useArkzenRouter, useArkzenPathname } from '@/arkzen/core/adapters/router'
 ```
 
-**Optional (installed):** `gsap` (+`gsap/ScrollTrigger`), `framer-motion` (`motion`, `AnimatePresence`), `three`, `matter-js`, `leaflet` (`L`), `@tiptap/react` (`useEditor`, `EditorContent`), `lucide-react`.
+The shared web component barrel exports the items shown above. Additional component files (`Chart`, `FileUpload`, `Map`, `RichTextEditor`, and `SortableList`) are not re-exported by that barrel; import those from their individual files and check that the active stack has their dependencies installed.
 
-**Routing recommendation:** prefer `useArkzenRouter()` / `useArkzenPathname()` in web code so navigation follows Pluff's Tatemono routing conventions. The Next.js generator can resolve ordinary imports such as `next/navigation`; it does not rewrite their routing behavior. Native Expo uses `useRouter()` from `expo-router` directly.
+Shared data hooks live in separate files (there is no hooks barrel):
+
+```ts
+import { useQuery } from '@/arkzen/core/hooks/useQuery'
+import { useMutation } from '@/arkzen/core/hooks/useMutation'
+import { useCRDT } from '@/arkzen/core/hooks/useCRDT'
+import { useWebSocket } from '@/arkzen/core/hooks/useWebSocket'
+```
+
+These are shared engine modules; use their documented options and verify the feature is supported by the active runtime/backend (for example, `useWebSocket` needs a compatible realtime service).
+
+**Third-party packages are stack-specific, not universally available.** Examples installed in some web stack manifests include `framer-motion`, `gsap`, `animejs`, `three` / `@react-three/fiber`, `pixi.js`, `phaser`, `leaflet`, `@tiptap/react`, and `lucide-react`. This is not a guarantee that every listed package is installed in every web stack: check the active stack's dependency manifest before importing it. React-Inertia's runtime dependencies are declared in `engine/backend/laravel-inertia/package.json`, not `engine/frontend/react-inertia/package.json`. Tauri and Electron wrap the selected web stack, so check that web stack's dependencies.
+
+For mobile, Expo and bare React Native have `nativewind` and `lucide-react-native`; Expo additionally provides Expo APIs such as `expo-router` and `expo-image`, while bare React Native uses `@react-navigation/native`. Lynx has a separate runtime and packages, including `@lynx-js/react` and `@lucide/icons`; do not assume React Native or Expo packages work there. Check the active mobile stack's package manifest.
+
+**Web routing:** prefer `useArkzenRouter()` / `useArkzenPathname()` so navigation follows Pluff's Tatemono routing conventions. The adapter is stack-specific: TanStack uses TanStack Router; React/Vite uses React Router; Inertia uses Inertia's `router.visit()` and page URL. Use the stack's `Link` adapter for links in shared code.
+
+The Next.js generator can resolve ordinary imports such as `next/navigation`, but does not rewrite their routing behavior. TanStack Start additionally normalizes common Next.js page patterns (`useRouter()`, `usePathname()`, `<Link href>` and `process.env.NEXT_PUBLIC_*`) into its own router adapter and Vite environment form; this is a targeted compatibility conversion, not support for every Next.js API. Native Expo uses `useRouter()` from `expo-router`; bare React Native uses React Navigation.
 
 * * *
 
@@ -1846,7 +1863,143 @@ const task = await created.json()
 
 * * *
 
-## SECTION 28 — COMPLETE EXAMPLES
+## SECTION 28 — EXAMPLES & FIXTURE REFERENCES
+
+The compact Examples A–D below illustrate syntax; they are not substitutes for complete, tested Tatemono files. For copyable, fixture-backed patterns, use the actual sources listed here; the excerpts that follow are copied from those files.
+
+| What you need | Working Tatemono source |
+|---|---|
+| Database, CRUD API, validation, policy bodies, and all seven backend variants | [`tatemonos/crud-test/core.tsx`](./tatemonos/crud-test/core.tsx) |
+| One custom endpoint and custom route handler across all seven backend variants | [`tatemonos/body-endpoint-handler/core.tsx`](./tatemonos/body-endpoint-handler/core.tsx) |
+| Shared and backend-specific mail/notification bodies across all seven variants | [`tatemonos/body-mail-notification/core.tsx`](./tatemonos/body-mail-notification/core.tsx) |
+| Native Expo, bare RN, and Lynx components/pages in one Tatemono | [`tatemonos/hello-native/core.tsx`](./tatemonos/hello-native/core.tsx) |
+| Multi-page web components and CSS blocks | [`tatemonos/new-updates-styles/core.tsx`](./tatemonos/new-updates-styles/core.tsx) |
+| Guarded layouts, parent chains, and platform-specific layout declarations | [`tatemonos/layout-test/core.tsx`](./tatemonos/layout-test/core.tsx) |
+| Realtime and custom routes | [`tatemonos/queue-flow/core.tsx`](./tatemonos/queue-flow/core.tsx) |
+| Upload endpoint types | [`tatemonos/upload-test/core.tsx`](./tatemonos/upload-test/core.tsx) |
+| Web and native animation, scripts, and error screens | [`tatemonos/animation-lab/core.tsx`](./tatemonos/animation-lab/core.tsx) |
+
+These are real fixture excerpts, not standalone files; use the linked `core.tsx` for each complete working sample:
+
+**CRUD database and API** — from `crud-test`:
+
+```
+/* @arkzen:database:items
+table: items
+timestamps: true
+columns:
+  name:
+    type: string
+    length: 255
+    nullable: false
+  status:
+    type: string
+    length: 50
+    default: active
+*/
+
+/* @arkzen:api:items
+model: Item
+controller: ItemController
+prefix: /api/crud-test
+middleware: []
+resource: true
+policy: true
+endpoints:
+  store:
+    method: POST
+    route: /items
+    description: Create item
+    validation:
+      name: required|string|max:255
+    response:
+      type: single
+*/
+```
+
+**Real backend variant bodies** — `body-endpoint-handler` has `echo` and `stats` endpoint bodies in all seven variants, plus handler variants. This PHP/Express pair is copied from its `echo` endpoint:
+
+```
+/* @arkzen:endpoint:php:echo
+*/
+$input   = $request->all();
+$count   = count($input);
+$record  = \App\Models\Arkzen\BodyEndpointHandler\ProbeResult::create([
+    'source'  => 'endpoint-body',
+    'probe'   => 'echo',
+    'payload' => json_encode($input),
+    'result'  => "Echoed {$count} field(s) — ControllerBuilder v7.0 body injection ✓",
+    'ok'      => true,
+]);
+return response()->json([
+    'injected'    => true,
+    'builder'     => 'ControllerBuilder v7.0',
+    'method'      => 'echo',
+    'field_count' => $count,
+    'echo'        => $input,
+    'probe_id'    => $record->id,
+]);
+/* @arkzen:endpoint:php:echo:end */
+
+/* @arkzen:endpoint:ts:echo
+*/
+const input = request.all()
+const record = await ProbeResult.create({
+  source: 'endpoint-body',
+  probe: 'echo',
+  payload: JSON.stringify(input),
+  result: `Echoed ${Object.keys(input).length} field(s) — ControllerBuilder v7.0 body injection ✓`,
+  ok: true,
+})
+return response.json({
+  injected: true,
+  builder: 'ControllerBuilder v7.0',
+  method: 'echo',
+  field_count: Object.keys(input).length,
+  echo: input,
+  probe_id: record.id,
+})
+/* @arkzen:endpoint:ts:echo:end */
+```
+
+**Real Expo/RN import pairs** — from `hello-native`:
+
+```
+/* @arkzen:native:components:shared */
+
+/* @arkzen:import:expo */
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+} from 'react-native'
+import { useRouter } from 'expo-router'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React, { useState } from 'react'
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  Pressable,
+} from 'react-native'
+/* @arkzen:import:rn:end */
+
+export const Badge = ({ label }: { label: string }) => (
+  <View className="px-3 py-1 bg-indigo-100 rounded-full self-start">
+    <Text className="text-xs font-semibold text-indigo-600 tracking-wide">
+      {label}
+    </Text>
+  </View>
+)
+
+/* @arkzen:native:components:shared:end */
+```
+
+`hello-native` also contains the separate `native:components:lynx:*` and `native:page:lynx:*` forms. Do not copy React Native elements or imports into those Lynx blocks.
 
 ### Example A — Minimal web + backend tatemono
 
@@ -1980,7 +2133,9 @@ const IndexPage = () => {
 /* @arkzen:web:page:index:end */
 ```
 
-### Example B — Native-only tatemono (Expo + bare RN, `hello-native` shape)
+### Example B — Native-only tatemono (Expo + bare React Native)
+
+The shared native DSL and UI can target both stacks, but navigation APIs differ. Keep shared components stack-neutral and use paired `@arkzen:import:expo` / `@arkzen:import:rn` blocks for imports and code that differs by stack. This follows the shipped `hello-native` fixture.
 
 ```
 /* @arkzen:meta
@@ -2011,7 +2166,6 @@ theme:
 /* @arkzen:import:expo */
 import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
-import { useRouter } from 'expo-router'
 /* @arkzen:import:expo:end */
 
 /* @arkzen:import:rn */
@@ -2030,17 +2184,80 @@ export const PrimaryButton = ({ label, onPress }: { label: string; onPress: () =
 /* @arkzen:native:page:index */
 /* @arkzen:native:page:layout:default */
 
+/* @arkzen:import:expo */
+import React from 'react'
+import { View, Text } from 'react-native'
+import { useRouter } from 'expo-router'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React from 'react'
+import { View, Text } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+/* @arkzen:import:rn:end */
+
 const IndexScreen = () => {
+  /* @arkzen:import:expo */
   const router = useRouter()
+  /* @arkzen:import:expo:end */
+  /* @arkzen:import:rn */
+  const navigation = useNavigation<any>()
+  /* @arkzen:import:rn:end */
   return (
     <View className="flex-1 bg-neutral-50 px-6 pt-14">
       <Text className="text-4xl font-bold">Hello, Native 👋</Text>
-      <PrimaryButton label="Go to About" onPress={() => router.push('/hello-native/about' as any)} />
+      <PrimaryButton label="Go to About" onPress={() => {
+        /* @arkzen:import:expo */
+        router.push('/hello-native/about' as any)
+        /* @arkzen:import:expo:end */
+        /* @arkzen:import:rn */
+        navigation.navigate('hello-native/about' as never)
+        /* @arkzen:import:rn:end */
+      }} />
     </View>
   )
 }
 
 /* @arkzen:native:page:index:end */
+
+/* @arkzen:native:page:about */
+/* @arkzen:native:page:layout:default */
+
+/* @arkzen:import:expo */
+import React from 'react'
+import { View, Text } from 'react-native'
+import { useRouter } from 'expo-router'
+/* @arkzen:import:expo:end */
+
+/* @arkzen:import:rn */
+import React from 'react'
+import { View, Text } from 'react-native'
+import { useNavigation } from '@react-navigation/native'
+/* @arkzen:import:rn:end */
+
+const AboutScreen = () => {
+  /* @arkzen:import:expo */
+  const router = useRouter()
+  /* @arkzen:import:expo:end */
+  /* @arkzen:import:rn */
+  const navigation = useNavigation<any>()
+  /* @arkzen:import:rn:end */
+  return (
+    <View className="flex-1 bg-neutral-50 px-6 pt-14">
+      <Text className="text-2xl font-bold">About</Text>
+      <PrimaryButton label="Back" onPress={() => {
+        /* @arkzen:import:expo */
+        router.back()
+        /* @arkzen:import:expo:end */
+        /* @arkzen:import:rn */
+        navigation.goBack()
+        /* @arkzen:import:rn:end */
+      }} />
+    </View>
+  )
+}
+
+/* @arkzen:native:page:about:end */
 ```
 
 (For a Lynx build of the same app add `native:components:lynx:shared` and `native:page:lynx:index` blocks — see `hello-native` for the full triple-target file.)
@@ -2138,7 +2355,7 @@ With `activeBackend: express` only the `:ts` block is read; with `laravel` only 
 
 These come from reading the engine source. They are not hypothetical — but test them in your build before relying on them, and fix the engine or the doc when resolved.
 
-1. **`foreign:` prefix vs auto relations.** The migration builder uses `foreign:` literally as the table name, so a real FK constraint needs the **prefixed** name (`queue_flow_queues.id`, as `queue-flow` does). The model builder, however, matches `foreign:` against the *raw* table name when generating `belongsTo`/`hasMany`. With prefixed references the auto-generated relation methods may be missing or oddly named. `dtr-geofencing` uses unprefixed `employees.id` instead. Check generated models/migrations after the first build.
+1. **Backend-specific `foreign:` names vs auto relations.** The migration builder uses `foreign:` literally as the table name. Use the physical name required by the active backend: prefixing engines may require `queue_flow_queues.id`, while Go/Rust use the declared table name in each tatemono's isolated database. The model builder may match `foreign:` against the raw table name when generating `belongsTo`/`hasMany`, so generated relation methods can differ. Check generated models/migrations for the active backend.
 2. **`type: enum` is unsupported.** The migration builder turns unknown types into `string` and ignores `values:`; use `type: string` with validation rules for allowed values. The shared parser accepts `foreignId`, slug-prefixed foreign keys, markerless legacy native blocks, and guarded layout chains. The separate Expo frontend validator currently requires explicit Expo/RN import pairs on native blocks, although the Expo generator retains markerless legacy support; use explicit pairs for new native code.
 3. **`command_run`, `job_dispatch`, `event_fire` endpoint types are hardcoded** to the test tatemonos' command/job/event names. Use custom endpoint bodies for real apps.
 4. **Plural `@arkzen:listeners:` blocks (legacy)** in `events-test` are not read; bodies come from singular `@arkzen:listener:`.
@@ -2146,7 +2363,6 @@ These come from reading the engine source. They are not hypothetical — but tes
 6. **Mail/notification/job class names append a suffix** to the studly identifier (`welcome-mail` → `WelcomeMailMail`). Prefer short identifiers (`welcome`).
 7. **`type: enum`** appears in `queue-flow` but is silently a `string` column; `values:` is ignored.
 8. **Update migrations add new columns only** — they never alter or drop existing columns.
-9. **README is outdated** (still says v9.0, 26 tatemonos, 6 stacks). This guideline and the parser are the references.
 10. **Table/model warnings are heuristics.** The validator appends a literal `s` when suggesting a table name, so `Inventory` is reported as expecting `inventorys` even when the declared table is `inventories`; the Laravel model builder writes its table explicitly. Singular `send_log` and `event_log` also warn because plural snake_case is preferred. These are warnings, not parse errors; keep table declarations and raw SQL references aligned if renaming.
 11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
@@ -2157,7 +2373,7 @@ These come from reading the engine source. They are not hypothetical — but tes
 16. **Realtime channel authorization:** Express authorizes private/presence subscriptions using each declared channel pattern and its `auth` value (`authenticated`, `owner`, or `admin`). `owner` requires a matching placeholder, such as `{id}`. Public channels are subscribed to without channel authorization.
 17. **Two copies of the engine core.** `backends.ts` / `parser.ts` / `validator.ts` exist under `engine/shared/arkzen/engine-core/` and again in each frontend's `arkzen/core/` folder, and `mizumi.js` keeps its own copy of the backend → variant map for display. A suffix rename or new backend must be changed in all of them.
 18. **Rust handlers load through `node start.js`.** Generated `:rs` bodies are compiled and the backend restarts once to load them, so run the backend through `node start.js`.
-19. **ASP.NET Core compiles bodies lazily.** A C# syntax error appears as an HTTP 500 on first call, not as a build failure. Cron scheduling and file storage are not implemented; jobs and events are in-process and not durable.
+19. **ASP.NET Core compiles bodies lazily.** A C# syntax error appears as an HTTP 500 on first call, not as a build failure. Built-in upload endpoint types use local storage; jobs and events are in-process and not durable, and cron scheduling is not implemented.
 20. **Spring Boot jobs, events and schedules are in memory.** Queued work is lost on restart, scheduled commands use an in-process minute cron, and the PostgreSQL path is untested.
 21. **Raw SQL table names differ by variant.** `:cs` uses the prefixed name, `:go` and `:rs` helpers use bare names in the shipped fixtures (Section 1G).
 22. **`django` maps to `:py` in `backends.ts` but there is no Django engine.** Do not select it.
@@ -2244,7 +2460,7 @@ Before finalizing any tatemono, verify:
 **DATABASE**
 - [ ] One `table:` per block (dict format only); plural snake_case; `columns` present
 - [ ] Types only from the valid list; **no `enum`**; `foreignId` always with `foreign:`
-- [ ] `foreign:` uses the slug-prefixed table name; no seeder for children of unseeded parents
+- [ ] `foreign:` uses the active backend's physical table name (some engines prefix; Go/Rust use declared names); no seeder for children of unseeded parents
 
 **API**
 - [ ] `model` PascalCase, `controller` ends with `Controller`, `prefix` starts with `/api/`
@@ -2267,7 +2483,7 @@ Before finalizing any tatemono, verify:
 - [ ] Each backend you target has a variant for **every** body-carrying block; otherwise the tatemono is inactive there
 - [ ] Unknown backend: only shared constructs, so the tatemono is active on all seven (Section 1G)
 - [ ] `:java` bodies end with `return` and use `mapOf(...)`; `:cs` bodies return an `IResult` and middleware returns `null` to continue; `:go` bodies return `response.JSON(...)` or `response.Error(...)`; `:rs` bodies end with the response as a tail expression (Section 1F)
-- [ ] `:go` bodies are parity documentation only; real Go behavior comes from CRUD, auth and the engine allowlist
+- [ ] Go interprets general endpoint and route-handler bodies; middleware, policies, jobs, listeners and console behavior have narrower engine-supported implementations (Section 1F)
 - [ ] At most one `@arkzen:module:rs` block per file, closed with its own `:end`
 - [ ] Raw SQL: `:cs` uses prefixed table names; `:go` and `:rs` fixtures use bare names (Section 1G)
 - [ ] Mail bodies use the backend's placeholder syntax (Section 1F table), or stay YAML-only

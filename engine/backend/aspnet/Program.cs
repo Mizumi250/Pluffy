@@ -1,5 +1,7 @@
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.AspNetCore.StaticFiles;
 using Pluff.AspNet.Engine;
 using Pluff.AspNet.Runtime;
 
@@ -14,6 +16,19 @@ builder.Services.AddSingleton<BackendEngine>();
 
 var app = builder.Build();
 app.UseCors();
+
+var storageRoot = Path.Combine(Directory.GetCurrentDirectory(), "storage");
+Directory.CreateDirectory(storageRoot);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(storageRoot),
+    RequestPath = "/storage",
+    OnPrepareResponse = context =>
+    {
+        var name = Path.GetFileName(context.File.PhysicalPath ?? "file").Replace("\"", "_");
+        context.Context.Response.Headers.ContentDisposition = $"inline; filename=\"{name}\"";
+    }
+});
 
 static string? HubMetaField(string meta, string field)
 {

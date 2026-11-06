@@ -51,6 +51,9 @@ public final class Request {
     Map<String, Object> out = new LinkedHashMap<>(query);
     out.putAll(body);
     out.putAll(params);
+    for (Map.Entry<String, List<Map<String, Object>>> entry : files.entrySet()) {
+      out.put(entry.getKey(), entry.getValue());
+    }
     return out;
   }
 

@@ -9,6 +9,7 @@ import dev.pluff.runtime.Request;
 import dev.pluff.runtime.Response;
 import dev.pluff.runtime.Router;
 import dev.pluff.runtime.Support;
+import dev.pluff.runtime.UploadSupport;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -22,6 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CrossOrigin;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.Part;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -57,17 +59,18 @@ public class Server implements CommandLineRunner {
         RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.PATCH,
         RequestMethod.DELETE, RequestMethod.OPTIONS
     })
-    public ResponseEntity<?> dispatch(HttpServletRequest raw,
-                                      @RequestBody(required = false) String rawBody) {
+    public ResponseEntity<?> dispatch(HttpServletRequest raw) {
       try {
         String path = raw.getRequestURI();
         String method = raw.getMethod().toUpperCase();
         if (!METHODS.contains(method)) return json(Map.of("message", "Method Not Allowed"), 405);
-        Map<String, Object> body = parseBody(raw, rawBody);
+        if (path.startsWith("/storage/")) return serveStorage(path);
+        Map<String, Object> body = parseBody(raw);
+        Map<String, List<Map<String, Object>>> files = parseFiles(raw);
 
         if (path.startsWith("/arkzen/")) return engine(raw, path, method, body);
         for (Router router : Build.routers().values()) {
-          Request request = new Request(raw, router.slug(), body, Map.of(), Map.of());
+          Request request = new Request(raw, router.slug(), body, Map.of(), files);
           Router.Dispatch result = router.dispatch(request, new Response());
           if (result.matched) return respond(result.result);
         }
@@ -241,9 +244,14 @@ public class Server implements CommandLineRunner {
       return new ArrayList<>(variants);
     }
 
-    private static Map<String, Object> parseBody(HttpServletRequest request, String rawBody) {
-      if (rawBody == null || rawBody.isBlank()) return new LinkedHashMap<>();
+    private static Map<String, Object> parseBody(HttpServletRequest request) throws IOException {
       String contentType = request.getContentType();
+      if (contentType != null && contentType.toLowerCase().contains("multipart/")) return new LinkedHashMap<>();
+      String rawBody;
+      try (var reader = request.getReader()) {
+        rawBody = reader.lines().reduce("", (left, right) -> left.isEmpty() ? right : left + "\n" + right);
+      }
+      if (rawBody == null || rawBody.isBlank()) return new LinkedHashMap<>();
       if (contentType != null && contentType.toLowerCase().contains("json"))
         return Json.parseObject(rawBody);
       if (contentType != null && contentType.toLowerCase().contains("application/x-www-form-urlencoded")) {
@@ -259,12 +267,54 @@ public class Server implements CommandLineRunner {
       return new LinkedHashMap<>();
     }
 
+    private static Map<String, List<Map<String, Object>>> parseFiles(HttpServletRequest request) throws Exception {
+      Map<String, List<Map<String, Object>>> out = new LinkedHashMap<>();
+      String contentType = request.getContentType();
+      if (contentType == null || !contentType.toLowerCase().contains("multipart/")) return out;
+      for (Part part : request.getParts()) {
+        if (part.getSubmittedFileName() == null) continue;
+        Map<String, Object> file = new LinkedHashMap<>();
+        file.put("filename", part.getSubmittedFileName());
+        file.put("contentType", part.getContentType() == null ? "application/octet-stream" : part.getContentType());
+        file.put("size", part.getSize());
+        try (var input = part.getInputStream()) { file.put("bytes", input.readAllBytes()); }
+        String fieldName = "files".equals(part.getName()) || "files[]".equals(part.getName()) ? "files" : part.getName();
+        out.computeIfAbsent(fieldName, ignored -> new ArrayList<>()).add(file);
+      }
+      return out;
+    }
+
+    private static ResponseEntity<?> serveStorage(String path) {
+      Path root = Support.BACKEND_DIR.resolve("storage").toAbsolutePath().normalize();
+      Path file;
+      try {
+        String relative = java.net.URLDecoder.decode(path.substring("/storage/".length()), java.nio.charset.StandardCharsets.UTF_8);
+        file = root.resolve(relative.replace('\\', '/')).normalize();
+        if (!file.startsWith(root) || !Files.isRegularFile(file)) return json(Map.of("message", "Not Found"), 404);
+      } catch (Exception error) {
+        return json(Map.of("message", "Not Found"), 404);
+      }
+      try {
+        HttpHeaders headers = new HttpHeaders();
+        String type = Files.probeContentType(file);
+        headers.setContentType(org.springframework.http.MediaType.parseMediaType(
+            type == null ? "application/octet-stream" : type));
+        String safeName = UploadSupport.sanitizeName(file.getFileName().toString());
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + safeName.replace("\"", "_") + "\"");
+        return new ResponseEntity<>(Files.readAllBytes(file), headers, HttpStatus.OK);
+      } catch (Exception error) {
+        return json(Map.of("message", "Server Error"), 500);
+      }
+    }
+
     private static ResponseEntity<?> respond(Object result) {
       if (result == null) return ResponseEntity.noContent().build();
       if (result instanceof Response.Result) {
         Response.Result response = (Response.Result) result;
         HttpHeaders headers = new HttpHeaders();
         response.headers.forEach(headers::set);
+        if (response.body instanceof byte[] bytes)
+          return new ResponseEntity<>(bytes, headers, HttpStatus.valueOf(response.status));
         Object body = response.body == null ? null : Json.parse(Json.stringify(response.body));
         return new ResponseEntity<>(body, headers, HttpStatus.valueOf(response.status));
       }

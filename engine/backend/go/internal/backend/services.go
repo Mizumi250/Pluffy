@@ -134,6 +134,10 @@ func (s engineServices) List(w http.ResponseWriter, r *http.Request, module modu
 		return
 	}
 	defer db.Close()
+	if spec.Type == "upload_index" {
+		s.handler.uploadIndex(w, r, db, module.Table)
+		return
+	}
 	s.handler.indexRecords(w, r, db, quoteIdentifier(module.Table), api, primaryKey, module.Name)
 }
 
@@ -152,6 +156,10 @@ func (s engineServices) Create(w http.ResponseWriter, r *http.Request, module mo
 		return
 	}
 	defer db.Close()
+	if spec.Type == "upload" {
+		s.handler.uploadStore(w, r, db, module, spec, primaryKey)
+		return
+	}
 	columns, _, err := inspectColumns(db, module.Table)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to inspect module table"})
@@ -180,6 +188,10 @@ func (s engineServices) Remove(w http.ResponseWriter, r *http.Request, module mo
 		return
 	}
 	defer db.Close()
+	if spec.Type == "upload_destroy" {
+		s.handler.uploadDestroy(w, db, module.Table, routeID(r, spec))
+		return
+	}
 	s.handler.destroyRecord(w, db, quoteIdentifier(module.Table), api, primaryKey, routeID(r, spec), module.Policies)
 }
 
@@ -200,6 +212,15 @@ func routeID(r *http.Request, spec modulespec.EndpointSpec) string {
 // --------------------------------------------------------------- custom
 
 func (s engineServices) Custom(w http.ResponseWriter, r *http.Request, module modulespec.APIModule, spec modulespec.EndpointSpec) {
+	if spec.Type == "upload_url" {
+		db, _, _, ok := s.tableContext(w, r, module, spec)
+		if !ok {
+			return
+		}
+		defer db.Close()
+		s.handler.uploadURL(w, r, db, module.Table, routeID(r, spec))
+		return
+	}
 	registration, known := s.registration(module.Name)
 	if !known {
 		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Module is not registered"})

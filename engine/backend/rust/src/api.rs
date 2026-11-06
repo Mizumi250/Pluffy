@@ -3,7 +3,11 @@ use crate::db::{
     Connection, OptionalExtension,
 };
 use serde_json::{json, Map, Value};
-use std::{collections::HashMap, path::Path};
+use std::{
+    collections::HashMap,
+    fs,
+    path::{Path, PathBuf},
+};
 
 pub struct MatchedRoute {
     pub name: String,
@@ -353,6 +357,10 @@ fn is_crud_name(name: &str) -> bool {
 fn supported_endpoint(name: &str, endpoint: &Value, model: &str) -> bool {
     let kind = endpoint.get("type").and_then(Value::as_str);
     is_emulated_endpoint(name, endpoint, model)
+        || matches!(
+            kind,
+            Some("upload" | "upload_index" | "upload_destroy" | "upload_url")
+        )
         || (is_crud_name(name)
             && kind.is_none_or(|kind| {
                 matches!(
@@ -416,6 +424,10 @@ fn validation_supported(validation: Option<&Value>) -> bool {
                             "required"
                                 | "sometimes"
                                 | "nullable"
+                                | "file"
+                                | "image"
+                                | "mimes"
+                                | "mimetypes"
                                 | "string"
                                 | "integer"
                                 | "numeric"
@@ -543,6 +555,454 @@ pub fn execute(
             json!({"message": format!("Endpoint {action} is not implemented by the Rust engine")}),
         ),
     }
+}
+
+struct MultipartUpload {
+    filename: String,
+    content_type: String,
+    data: Vec<u8>,
+}
+
+fn parse_multipart(boundary: Option<&str>, bytes: &[u8]) -> Result<Vec<MultipartUpload>, String> {
+    let boundary = boundary.ok_or_else(|| "Missing multipart boundary".to_owned())?;
+    let marker = format!("--{boundary}");
+    let mut parts = Vec::new();
+    for part in bytes.split(marker.as_bytes()) {
+        if part.len() < 4 {
+            continue;
+        }
+        let mut body = &part[..];
+        if let Some(rest) = body.strip_prefix(b"\r\n") {
+            body = rest;
+        } else if let Some(rest) = body.strip_prefix(b"\n") {
+            body = rest;
+        }
+        let Some((headers, content)) = body.split_once(b"\r\n\r\n") else {
+            continue;
+        };
+        let headers_text = String::from_utf8_lossy(headers);
+        let disposition = headers_text
+            .lines()
+            .find(|line| {
+                line.to_ascii_lowercase()
+                    .starts_with("content-disposition:")
+            })
+            .unwrap_or_default();
+        let field_name = disposition
+            .split(';')
+            .find_map(|item| {
+                let item = item.trim();
+                item.strip_prefix("name=\"")
+                    .and_then(|value| value.strip_suffix('"'))
+            })
+            .unwrap_or_default();
+        if field_name != "files" && !field_name.starts_with("files") {
+            continue;
+        }
+        let filename = disposition
+            .split(';')
+            .find_map(|item| {
+                let item = item.trim();
+                item.strip_prefix("filename=\"")
+                    .and_then(|value| value.strip_suffix('"'))
+            })
+            .unwrap_or_default();
+        if filename.is_empty() {
+            continue;
+        }
+        let content_type = headers_text
+            .lines()
+            .find(|line| line.to_ascii_lowercase().starts_with("content-type:"))
+            .and_then(|line| {
+                line.split_once(':')
+                    .map(|(_, value)| value.trim().to_owned())
+            })
+            .unwrap_or_else(|| "application/octet-stream".to_owned());
+        let mut data = content.to_vec();
+        if data.ends_with(b"\r\n") {
+            data.truncate(data.len() - 2);
+        }
+        parts.push(MultipartUpload {
+            filename: filename.to_owned(),
+            content_type,
+            data,
+        });
+    }
+    if parts.is_empty() {
+        return Err("The files field is required".to_owned());
+    }
+    Ok(parts)
+}
+
+pub fn execute_upload(
+    database_dir: &Path,
+    slug: &str,
+    table: &str,
+    kind: &str,
+    id: &str,
+    bytes: &[u8],
+    content_type: Option<&str>,
+    user_id: Option<i64>,
+    public_root: &Path,
+) -> (axum::http::StatusCode, Value) {
+    let connection = match open_connection(database_dir, slug) {
+        Ok(value) => value,
+        Err(error) => return internal_error(error),
+    };
+    match kind {
+        "upload_index" => {
+            let sql = format!("SELECT * FROM {} ORDER BY \"id\" DESC", quote(table));
+            let mut statement = match connection.prepare(&sql) {
+                Ok(value) => value,
+                Err(error) => return internal_error(format!("Unable to read records: {error}")),
+            };
+            let rows = match statement.query_map([], |row| row_to_json(row, &json!({}))) {
+                Ok(value) => value,
+                Err(error) => return internal_error(format!("Unable to read records: {error}")),
+            };
+            let mut records = Vec::new();
+            for row in rows {
+                if let Ok(mut record) = row {
+                    enrich_rust_upload(&mut record);
+                    records.push(record);
+                }
+            }
+            (
+                axum::http::StatusCode::OK,
+                json!({"data": records, "count": records.len()}),
+            )
+        }
+        "upload_url" => {
+            let mut statement = match connection.prepare(&format!(
+                "SELECT \"disk_path\" FROM {} WHERE \"id\" = ?",
+                quote(table)
+            )) {
+                Ok(value) => value,
+                Err(error) => return internal_error(error.to_string()),
+            };
+            let disk_path = match statement.query_row([SqlValue::Text(id.to_owned())], |row| {
+                row.get::<_, String>(0)
+            }) {
+                Ok(value) => value,
+                Err(rusqlite::Error::QueryReturnedNoRows) => {
+                    return (
+                        axum::http::StatusCode::NOT_FOUND,
+                        json!({"message":"Record not found"}),
+                    )
+                }
+                Err(error) => return internal_error(error.to_string()),
+            };
+            let url = rust_upload_url(&disk_path);
+            (
+                axum::http::StatusCode::OK,
+                json!({"data":{"url":url},"url":url}),
+            )
+        }
+        "upload_destroy" => {
+            let mut statement = match connection.prepare(&format!(
+                "SELECT \"disk_path\" FROM {} WHERE \"id\" = ?",
+                quote(table)
+            )) {
+                Ok(value) => value,
+                Err(error) => return internal_error(error.to_string()),
+            };
+            let disk_path = match statement.query_row([SqlValue::Text(id.to_owned())], |row| {
+                row.get::<_, String>(0)
+            }) {
+                Ok(value) => value,
+                Err(rusqlite::Error::QueryReturnedNoRows) => {
+                    return (
+                        axum::http::StatusCode::NOT_FOUND,
+                        json!({"message":"Record not found"}),
+                    )
+                }
+                Err(error) => return internal_error(error.to_string()),
+            };
+            match fs::remove_file(public_root.join(&disk_path)) {
+                Ok(_) => {}
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                Err(error) => {
+                    return internal_error(format!("Unable to delete uploaded file: {error}"));
+                }
+            }
+            match connection.execute(
+                &format!("DELETE FROM {} WHERE \"id\" = ?", quote(table)),
+                [SqlValue::Text(id.to_owned())],
+            ) {
+                Ok(0) => (
+                    axum::http::StatusCode::NOT_FOUND,
+                    json!({"message":"Record not found"}),
+                ),
+                Ok(_) => (
+                    axum::http::StatusCode::OK,
+                    json!({"message":"File deleted"}),
+                ),
+                Err(error) => internal_error(format!("Unable to delete record: {error}")),
+            }
+        }
+        "upload" => {
+            let boundary = content_type.and_then(|value| {
+                value.split(';').find_map(|part| {
+                    let part = part.trim();
+                    part.strip_prefix("boundary=")
+                        .map(|value| value.trim_matches('"'))
+                })
+            });
+            let parts = match parse_multipart(boundary, bytes) {
+                Ok(value) => value,
+                Err(error) => {
+                    return (
+                        axum::http::StatusCode::BAD_REQUEST,
+                        json!({"message":error}),
+                    )
+                }
+            };
+            let columns = column_names(&connection, table).unwrap_or_default();
+            let mut created = Vec::new();
+            for part in parts {
+                if part.data.len() > 10 * 1024 * 1024 {
+                    return (
+                        axum::http::StatusCode::UNPROCESSABLE_ENTITY,
+                        json!({"message":"The file may not be greater than 10240 kilobytes.","errors":{"files":["The file may not be greater than 10240 kilobytes."]}}),
+                    );
+                }
+                let original = Path::new(&part.filename)
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or("file")
+                    .replace(['"', '\\'], "_");
+                let ext = Path::new(&original)
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or_default()
+                    .to_ascii_lowercase();
+                let mut random = [0u8; 16];
+                if let Err(error) = getrandom::getrandom(&mut random) {
+                    return internal_error(format!(
+                        "Unable to generate uploaded file name: {error}"
+                    ));
+                }
+                let stored_name = format!(
+                    "{}{}",
+                    random
+                        .iter()
+                        .map(|byte| format!("{byte:02x}"))
+                        .collect::<String>(),
+                    if ext.is_empty() {
+                        String::new()
+                    } else {
+                        format!(".{ext}")
+                    }
+                );
+                let disk_path = format!("arkzen/{slug}/{stored_name}");
+                let full = public_root.join(&disk_path);
+                if let Err(error) = fs::create_dir_all(full.parent().unwrap_or(public_root)) {
+                    return internal_error(format!("Unable to create upload directory: {error}"));
+                }
+                if let Err(error) = fs::write(&full, &part.data) {
+                    return internal_error(format!("Unable to store uploaded file: {error}"));
+                }
+                let mime_type = if part.content_type.is_empty() {
+                    "application/octet-stream".to_owned()
+                } else {
+                    part.content_type
+                };
+                let is_image = mime_type.starts_with("image/");
+                let mut fields = HashMap::from([
+                    ("original_name", Value::String(original)),
+                    ("stored_name", Value::String(stored_name)),
+                    ("mime_type", Value::String(mime_type)),
+                    ("size_bytes", Value::from(part.data.len() as i64)),
+                    ("disk_path", Value::String(disk_path)),
+                    ("is_image", Value::Bool(is_image)),
+                ]);
+                if let Some(user_id) = user_id {
+                    if columns.iter().any(|column| column == "user_id") {
+                        fields.insert("user_id", Value::from(user_id));
+                    }
+                }
+                let names: Vec<_> = fields
+                    .keys()
+                    .filter(|name| columns.iter().any(|column| column == *name))
+                    .cloned()
+                    .collect();
+                let placeholders = names
+                    .iter()
+                    .enumerate()
+                    .map(|(index, _)| format!("?{}", index + 1))
+                    .collect::<Vec<_>>()
+                    .join(", ");
+                let sql = format!(
+                    "INSERT INTO {} ({}) VALUES ({})",
+                    quote(table),
+                    names
+                        .iter()
+                        .map(|name| quote(name))
+                        .collect::<Vec<_>>()
+                        .join(", "),
+                    placeholders
+                );
+                let params: Vec<_> = names.iter().map(|name| sql_value(&fields[name])).collect();
+                match connection.execute(&sql, crate::db::params_from_iter(params)) {
+                    Ok(_) => {}
+                    Err(error) => {
+                        let _ = fs::remove_file(&full);
+                        return internal_error(format!("Unable to create record: {error}"));
+                    }
+                }
+                let id = connection.last_insert_rowid();
+                let mut record = json!({"id": id});
+                for name in &names {
+                    if let Some(value) = fields.get(name) {
+                        record[name] = value.clone();
+                    }
+                }
+                enrich_rust_upload(&mut record);
+                created.push(record);
+            }
+            (axum::http::StatusCode::CREATED, json!({"data":created}))
+        }
+        _ => (
+            axum::http::StatusCode::NOT_IMPLEMENTED,
+            json!({"message":"Upload operation is not implemented"}),
+        ),
+    }
+}
+
+fn rust_upload_url(disk_path: &str) -> String {
+    if disk_path.starts_with("/storage/") {
+        disk_path.to_owned()
+    } else {
+        format!("/storage/{}", disk_path.trim_start_matches('/'))
+    }
+}
+
+fn enrich_rust_upload(record: &mut Value) {
+    if let Some(object) = record.as_object_mut() {
+        let disk = object
+            .get("disk_path")
+            .and_then(Value::as_str)
+            .unwrap_or_default()
+            .to_owned();
+        let url = rust_upload_url(&disk);
+        object.insert("url".to_owned(), Value::String(url.clone()));
+        let image = object
+            .get("is_image")
+            .and_then(Value::as_bool)
+            .unwrap_or(false);
+        object.insert(
+            "image_url".to_owned(),
+            if image {
+                Value::String(url)
+            } else {
+                Value::Null
+            },
+        );
+    }
+}
+
+pub fn execute_upload_download(
+    database_dir: &Path,
+    slug: &str,
+    table: &str,
+    id: &str,
+    public_root: &Path,
+) -> axum::response::Response {
+    let connection = match open_connection(database_dir, slug) {
+        Ok(value) => value,
+        Err(error) => {
+            return (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"message":error})),
+            )
+                .into_response()
+        }
+    };
+    let mut statement = match connection.prepare(&format!(
+        "SELECT \"disk_path\",\"stored_name\",\"mime_type\",\"original_name\" FROM {} WHERE \"id\" = ?",
+        quote(table)
+    )) {
+        Ok(value) => value,
+        Err(error) => return (axum::http::StatusCode::INTERNAL_SERVER_ERROR, Json(json!({"message":error.to_string()}))).into_response(),
+    };
+    let row = match statement.query_row([SqlValue::Text(id.to_owned())], |row| {
+        Ok((
+            row.get::<_, String>(0)?,
+            row.get::<_, String>(1)?,
+            row.get::<_, String>(2)?,
+            row.get::<_, String>(3)?,
+        ))
+    }) {
+        Ok(value) => value,
+        Err(rusqlite::Error::QueryReturnedNoRows) => {
+            return (
+                axum::http::StatusCode::NOT_FOUND,
+                Json(json!({"message":"Record not found"})),
+            )
+                .into_response()
+        }
+        Err(error) => {
+            return (
+                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({"message":error.to_string()})),
+            )
+                .into_response()
+        }
+    };
+    let (disk_path, stored_name, mut mime_type, original_name) = row;
+    let full = public_root.join(&disk_path);
+    let bytes = match fs::read(&full) {
+        Ok(value) => value,
+        Err(_) => {
+            return (
+                axum::http::StatusCode::NOT_FOUND,
+                Json(json!({"message":"Not Found"})),
+            )
+                .into_response()
+        }
+    };
+    if mime_type.is_empty() {
+        mime_type = match Path::new(&stored_name)
+            .extension()
+            .and_then(|value| value.to_str())
+            .unwrap_or_default()
+            .to_ascii_lowercase()
+            .as_str()
+        {
+            "png" => "image/png",
+            "jpg" | "jpeg" => "image/jpeg",
+            "gif" => "image/gif",
+            "webp" => "image/webp",
+            "txt" => "text/plain; charset=utf-8",
+            "pdf" => "application/pdf",
+            _ => "application/octet-stream",
+        }
+        .to_owned();
+    }
+    let name = Path::new(&original_name)
+        .file_name()
+        .and_then(|value| value.to_str())
+        .unwrap_or(&stored_name)
+        .replace(['"', '\\'], "_");
+    let disposition = if mime_type.starts_with("image/") {
+        "inline"
+    } else {
+        "attachment"
+    };
+    let mut response = bytes.into_response();
+    response.headers_mut().insert(
+        header::CONTENT_TYPE,
+        mime_type
+            .parse()
+            .unwrap_or_else(|_| header::HeaderValue::from_static("application/octet-stream")),
+    );
+    response.headers_mut().insert(
+        header::CONTENT_DISPOSITION,
+        format!("{disposition}; filename=\"{name}\"")
+            .parse()
+            .unwrap_or_else(|_| header::HeaderValue::from_static("attachment; filename=\"file\"")),
+    );
+    response
 }
 
 fn open_connection(database_dir: &Path, slug: &str) -> Result<Connection, String> {
@@ -1265,6 +1725,16 @@ fn pluralize(value: &str) -> String {
 mod tests {
     use super::*;
     use serde_json::json;
+
+    #[test]
+    fn parses_multipart_files_field_for_uploads() {
+        let body = b"--AAA\r\nContent-Disposition: form-data; name=\"files\"; filename=\"note.txt\"\r\nContent-Type: text/plain\r\n\r\nhello upload\r\n--AAA--\r\n";
+        let parts = parse_multipart(Some("AAA"), body).unwrap();
+        assert_eq!(parts.len(), 1);
+        assert_eq!(parts[0].filename, "note.txt");
+        assert_eq!(parts[0].content_type, "text/plain");
+        assert_eq!(parts[0].data, b"hello upload");
+    }
 
     fn module() -> Value {
         json!({

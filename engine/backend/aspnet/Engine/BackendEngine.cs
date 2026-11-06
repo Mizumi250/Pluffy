@@ -360,6 +360,11 @@ public sealed class BackendEngine
                         "destroy" => "destroy",
                         _ => null
                     });
+                    if (type is "upload" or "upload_index" or "upload_destroy" or "upload_url")
+                    {
+                        await ExecuteUploadEndpointAsync(context, slug, module, api, type, values, endpoint);
+                        return true;
+                    }
                     if (IsPolicyProtectedAction(type) &&
                         await RunPolicyAsync(context, slug, api, module, type!, values)) return true;
                     if (type is "mail_send" or "notification_trigger")
@@ -511,6 +516,198 @@ public sealed class BackendEngine
         await Results.Json(new { message = "The given data was invalid.", errors },
             statusCode: StatusCodes.Status422UnprocessableEntity).ExecuteAsync(context);
         return false;
+    }
+
+    private async Task ExecuteUploadEndpointAsync(
+        HttpContext context,
+        string slug,
+        JsonObject module,
+        JsonObject api,
+        string type,
+        IReadOnlyDictionary<string, string> routeValues,
+        JsonObject endpoint)
+    {
+        var model = StringValue(api["model"]) ?? "UploadedFile";
+        var table = TatemonoDatabase.Quote(FindTable(slug, model, module));
+        await using var connection = await _database.OpenAsync(slug, context.RequestAborted);
+
+        if (type == "upload_index")
+        {
+            await using var command = connection.CreateCommand();
+            command.CommandText = $"SELECT * FROM {table} ORDER BY id DESC";
+            await using var reader = await command.ExecuteReaderAsync(context.RequestAborted);
+            var rows = await ReadRowsAsync(reader, context.RequestAborted);
+            foreach (var row in rows)
+            {
+                if (row["disk_path"]?.GetValue<string>() is { } diskPath)
+                    row["url"] = PublicStorageUrl(diskPath);
+            }
+            await Results.Json(new { data = rows }).ExecuteAsync(context);
+            return;
+        }
+
+        if (type == "upload_destroy")
+        {
+            if (!routeValues.TryGetValue("id", out var idValue))
+            {
+                await Results.Json(new { message = "Not Found" }, statusCode: 404).ExecuteAsync(context);
+                return;
+            }
+            await using var find = connection.CreateCommand();
+            find.CommandText = $"SELECT * FROM {table} WHERE id = @id LIMIT 1";
+            TatemonoDatabase.AddParameter(find, "@id", DbRouteValue(idValue));
+            await using var reader = await find.ExecuteReaderAsync(context.RequestAborted);
+            var rows = await ReadRowsAsync(reader, context.RequestAborted);
+            if (rows.Count == 0)
+            {
+                await Results.Json(new { message = "Not Found" }, statusCode: 404).ExecuteAsync(context);
+                return;
+            }
+            if (rows[0]["disk_path"]?.GetValue<string>() is { } diskPath)
+                DeletePublicFile(diskPath);
+            await using var delete = connection.CreateCommand();
+            delete.CommandText = $"DELETE FROM {table} WHERE id = @id";
+            TatemonoDatabase.AddParameter(delete, "@id", DbRouteValue(idValue));
+            await delete.ExecuteNonQueryAsync(context.RequestAborted);
+            await Results.Json(new { message = StringValue(endpoint["response"]?["value"]) ?? "File deleted" }).ExecuteAsync(context);
+            return;
+        }
+
+        if (type == "upload_url")
+        {
+            if (!routeValues.TryGetValue("id", out var idValue))
+            {
+                await Results.Json(new { message = "Not Found" }, statusCode: 404).ExecuteAsync(context);
+                return;
+            }
+            await using var find = connection.CreateCommand();
+            find.CommandText = $"SELECT * FROM {table} WHERE id = @id LIMIT 1";
+            TatemonoDatabase.AddParameter(find, "@id", DbRouteValue(idValue));
+            await using var reader = await find.ExecuteReaderAsync(context.RequestAborted);
+            var rows = await ReadRowsAsync(reader, context.RequestAborted);
+            if (rows.Count == 0)
+            {
+                await Results.Json(new { message = "Not Found" }, statusCode: 404).ExecuteAsync(context);
+                return;
+            }
+            var row = rows[0];
+            var diskPath = row["disk_path"]?.GetValue<string>() ?? "";
+            var file = ResolvePublicFile(diskPath);
+            if (file is null)
+            {
+                await Results.Json(new { message = "File not found" }, statusCode: 404).ExecuteAsync(context);
+                return;
+            }
+            var originalName = SafeFileName(row["original_name"]?.GetValue<string>() ?? "download");
+            var mimeType = row["mime_type"]?.GetValue<string>();
+            if (string.IsNullOrWhiteSpace(mimeType)) mimeType = "application/octet-stream";
+            var encodedName = Uri.EscapeDataString(originalName).Replace("%20", "%20");
+            context.Response.ContentType = mimeType;
+            context.Response.Headers.ContentDisposition =
+                $"attachment; filename=\"{originalName}\"; filename*=UTF-8''{encodedName}";
+            await context.Response.SendFileAsync(file, context.RequestAborted);
+            return;
+        }
+
+        if (!context.Request.HasFormContentType || context.Request.Form.Files.Count == 0)
+        {
+            await Results.Json(new { message = "The files field is required." },
+                statusCode: 422).ExecuteAsync(context);
+            return;
+        }
+
+        var user = IsTruthy(module["auth"])
+            ? (await ResolveUserAsync(context, connection, slug, context.RequestAborted)).User
+            : null;
+        var storageRoot = Path.Combine(_backendDirectory, "storage").Replace('\\', '/');
+        var moduleRoot = Path.Combine(storageRoot, "arkzen", slug);
+        Directory.CreateDirectory(moduleRoot);
+        var created = new JsonArray();
+        var uploadFiles = context.Request.Form.Files.GetFiles("files")
+            .Concat(context.Request.Form.Files.GetFiles("files[]"))
+            .ToList();
+        foreach (var file in uploadFiles)
+        {
+            if (file.Length > 10 * 1024 * 1024)
+            {
+                await Results.Json(new { message = "A file exceeds the maximum size of 10240 KB." },
+                    statusCode: 422).ExecuteAsync(context);
+                return;
+            }
+            var originalName = SafeFileName(file.FileName);
+            var extension = Path.GetExtension(originalName).ToLowerInvariant();
+            if (!Regex.IsMatch(extension, @"^\.[a-z0-9]{1,10}$")) extension = "";
+            var storedName = Guid.NewGuid().ToString("N") + extension;
+            var target = Path.Combine(moduleRoot, storedName);
+            await using var input = file.OpenReadStream();
+            await using var output = File.Create(target);
+            await input.CopyToAsync(output, context.RequestAborted);
+            var diskPath = $"arkzen/{slug}/{storedName}";
+            var mimeType = string.IsNullOrWhiteSpace(file.ContentType) ? "application/octet-stream" : file.ContentType;
+            var isImage = mimeType.StartsWith("image/", StringComparison.OrdinalIgnoreCase)
+                || Regex.IsMatch(extension, @"^\.(png|jpe?g|gif|webp|bmp|svg)$", RegexOptions.IgnoreCase);
+            var now = DateTime.UtcNow.ToString("O");
+            await using var insert = connection.CreateCommand();
+            insert.CommandText = $"INSERT INTO {table} (user_id, original_name, stored_name, mime_type, size_bytes, disk_path, is_image, created_at, updated_at) VALUES (@user_id, @original_name, @stored_name, @mime_type, @size_bytes, @disk_path, @is_image, @created_at, @updated_at)";
+            TatemonoDatabase.AddParameter(insert, "@user_id", user?["id"]);
+            TatemonoDatabase.AddParameter(insert, "@original_name", originalName);
+            TatemonoDatabase.AddParameter(insert, "@stored_name", storedName);
+            TatemonoDatabase.AddParameter(insert, "@mime_type", mimeType);
+            TatemonoDatabase.AddParameter(insert, "@size_bytes", file.Length);
+            TatemonoDatabase.AddParameter(insert, "@disk_path", diskPath);
+            TatemonoDatabase.AddParameter(insert, "@is_image", isImage ? 1 : 0);
+            TatemonoDatabase.AddParameter(insert, "@created_at", now);
+            TatemonoDatabase.AddParameter(insert, "@updated_at", now);
+            await insert.ExecuteNonQueryAsync(context.RequestAborted);
+            await using var idCommand = connection.CreateCommand();
+            idCommand.CommandText = "SELECT last_insert_rowid()";
+            var id = Convert.ToInt64(await idCommand.ExecuteScalarAsync(context.RequestAborted));
+            created.Add(new JsonObject
+            {
+                ["id"] = id,
+                ["user_id"] = user?["id"]?.DeepClone(),
+                ["original_name"] = originalName,
+                ["stored_name"] = storedName,
+                ["mime_type"] = mimeType,
+                ["size_bytes"] = file.Length,
+                ["disk_path"] = diskPath,
+                ["is_image"] = isImage,
+                ["url"] = PublicStorageUrl(diskPath),
+                ["created_at"] = now,
+                ["updated_at"] = now
+            });
+        }
+        await Results.Json(new { data = created }, statusCode: 201).ExecuteAsync(context);
+    }
+
+    private static string PublicStorageUrl(string diskPath) =>
+        "/storage/" + diskPath.Replace('\\', '/').TrimStart('/');
+
+    private static string SafeFileName(string name)
+    {
+        var fileName = Path.GetFileName(name.Replace('\\', '/'));
+        var safe = Regex.Replace(fileName, @"[\r\n\x00-\x1F]", "_");
+        safe = Regex.Replace(safe, @"[^A-Za-z0-9._ -]", "_");
+        return string.IsNullOrWhiteSpace(safe) ? "file" : safe;
+    }
+
+    private static void DeletePublicFile(string diskPath)
+    {
+        var root = Path.Combine(Directory.GetCurrentDirectory(), "storage").Replace('\\', '/');
+        var full = Path.GetFullPath(Path.Combine(root, diskPath.Replace('\\', '/'))).Replace('\\', '/');
+        if (full.StartsWith(root.TrimEnd('/') + "/", StringComparison.OrdinalIgnoreCase) && File.Exists(full))
+            File.Delete(full);
+    }
+
+    private static string? ResolvePublicFile(string diskPath)
+    {
+        if (string.IsNullOrWhiteSpace(diskPath)) return null;
+        var root = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "storage"));
+        var full = Path.GetFullPath(Path.Combine(root, diskPath.Replace('/', Path.DirectorySeparatorChar)));
+        if (!full.StartsWith(root.TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar,
+                StringComparison.OrdinalIgnoreCase) || !File.Exists(full))
+            return null;
+        return full;
     }
 
     private async Task ExecuteCrudAsync(

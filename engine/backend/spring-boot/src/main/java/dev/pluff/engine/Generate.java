@@ -249,6 +249,40 @@ public final class Generate {
     String variable = snake(model);
     String name = endpointName.toLowerCase();
     String type = text(endpoint.get("type"), "");
+    if ("upload_index".equals(type)) {
+      return "List<" + model + "> files = " + model + ".query().orderBy(\"created_at\", \"desc\").get();\n"
+          + "for (" + model + " file : files) {\n"
+          + "  if (Boolean.TRUE.equals(file.get(\"is_image\"))) file.set(\"url\", UploadSupport.publicUrl(file.str(\"disk_path\")));\n"
+          + "  else file.set(\"url\", null);\n"
+          + "}\n"
+          + "return response.json(mapOf(\"data\", files));";
+    }
+    if ("upload".equals(type)) {
+      Map<String, Object> rules = map(endpoint.get("validation"));
+      String validation = rules.isEmpty() ? "Map.of()" : mapLiteral(rules);
+      return "Map<String, Object> validated = request.validate(" + validation + ");\n"
+          + "if (request.files(\"files\").isEmpty()) throw Errors.ValidationException.withMessages(mapOf(\"files\", \"The files field is required.\"));\n"
+          + "List<" + model + "> createdFiles = new ArrayList<>();\n"
+          + "for (Map<String, Object> metadata : UploadSupport.store(request, " + quote(slug) + ")) {\n"
+          + "  Model user = request.authUser();\n"
+          + "  if (user != null) metadata.put(\"user_id\", user.get(\"id\"));\n"
+          + "  " + model + " created = " + model + ".create(metadata);\n"
+          + "  created.set(\"url\", UploadSupport.publicUrl(created.str(\"disk_path\")));\n"
+          + "  createdFiles.add(created);\n"
+          + "}\n"
+          + "return response.json(mapOf(\"data\", createdFiles), 201);";
+    }
+    if ("upload_destroy".equals(type)) {
+      return model + " uploaded_file = " + model + ".findOrFail(request.route(\"id\"));\n"
+          + "UploadSupport.delete(uploaded_file.str(\"disk_path\"));\n"
+          + "uploaded_file.delete();\n"
+          + "return response.json(mapOf(\"message\", \"File deleted\"));";
+    }
+    if ("upload_url".equals(type)) {
+      return model + " uploaded_file = " + model + ".findOrFail(request.route(\"id\"));\n"
+          + "byte[] bytes = UploadSupport.read(uploaded_file.str(\"disk_path\"));\n"
+          + "return response.download(bytes, uploaded_file.str(\"mime_type\"), uploaded_file.str(\"original_name\"));";
+    }
     if ("broadcast".equals(type)) return broadcastEndpointBody(model, endpoint, slug, rawRealtimes);
     if ("job_dispatch".equals(type)) {
       return "Map<String, Object> validated = request.validate(mapOf(\"job\", \"required|string\"));\n"

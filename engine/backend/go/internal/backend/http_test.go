@@ -5,10 +5,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/pluff/pluff/engine/backend/go/internal/modulespec"
@@ -760,6 +762,48 @@ func perform(handler http.Handler, method, path, body, secret string) *httptest.
 	response := httptest.NewRecorder()
 	handler.ServeHTTP(response, request)
 	return response
+}
+
+func TestUploadDSLMultipartIndexDestroyAndStatic(t *testing.T) {
+	storageDir := testStorageDir(t)
+	handler, err := NewHandler(Config{Port: 8000, Secret: "test-secret", StorageDir: storageDir})
+	if err != nil {
+		t.Fatal(err)
+	}
+	payload := `{"name":"upload-test","backendVariant":"go","databases":[{"table":"uploaded_files","timestamps":true,"columns":{"original_name":{"type":"string","nullable":false},"stored_name":{"type":"string","nullable":false},"mime_type":{"type":"string","nullable":false},"size_bytes":{"type":"integer","nullable":false},"disk_path":{"type":"string","nullable":false},"is_image":{"type":"boolean","nullable":false},"user_id":{"type":"integer","nullable":true}}}],"apis":[{"model":"UploadedFile","controller":"UploadedFileController","table":"uploaded_files","prefix":"/api/upload-test/files","endpoints":{"store":{"method":"POST","route":"/","type":"upload","validation":{"files":"required|array","files.*":"file|max:10240"},"response":{"type":"collection"}},"index":{"method":"GET","route":"/","type":"upload_index","response":{"type":"collection"}},"destroy":{"method":"DELETE","route":"/{id}","type":"upload_destroy","response":{"type":"message","value":"File deleted"}},"fileUrl":{"method":"GET","route":"/{id}/url","type":"upload_url","response":{"type":"single"}}}}]}`
+	build := httptest.NewRecorder()
+	req := httptest.NewRequest(http.MethodPost, "/arkzen/build", strings.NewReader(payload))
+	req.Header.Set("X-Arkzen-Secret", "test-secret")
+	handler.ServeHTTP(build, req)
+	if build.Code != http.StatusOK {
+		t.Fatalf("build status=%d body=%s", build.Code, build.Body.String())
+	}
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	for _, name := range []string{"first.txt", "second.txt"} {
+		file, err := writer.CreateFormFile("files[]", name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := file.Write(bytes.Repeat([]byte("x"), 6<<20)); err != nil {
+			t.Fatal(err)
+		}
+	}
+	_ = writer.Close()
+	upload := httptest.NewRecorder()
+	req = httptest.NewRequest(http.MethodPost, "/api/upload-test/files", &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	handler.ServeHTTP(upload, req)
+	if upload.Code != http.StatusCreated {
+		t.Fatalf("upload status=%d body=%s", upload.Code, upload.Body.String())
+	}
+
+	index := httptest.NewRecorder()
+	handler.ServeHTTP(index, httptest.NewRequest(http.MethodGet, "/api/upload-test/files", nil))
+	if index.Code != http.StatusOK || !bytes.Contains(index.Body.Bytes(), []byte(`"/storage/arkzen/upload-test/`)) {
+		t.Fatalf("index status=%d body=%s", index.Code, index.Body.String())
+	}
 }
 
 func testStorageDir(t *testing.T) string {

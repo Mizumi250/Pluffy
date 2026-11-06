@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"mime"
 	"net/http"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -18,6 +20,7 @@ import (
 )
 
 const maxRequestBody = 10 << 20
+const maxMultipartRequestBody = 50 << 20
 
 var errBodyTooLarge = errors.New("request body exceeds 10 MiB")
 
@@ -62,6 +65,7 @@ func NewHandler(config Config) (*Handler, error) {
 	router := chi.NewRouter()
 	generated.InstallAll(router, services)
 	router.NotFound(services.Fallback)
+	router.Handle("/storage/*", http.HandlerFunc(handler.serveStorage))
 	router.Get("/arkzen/health", handler.health)
 	router.Get("/arkzen/registry", handler.registry)
 	router.Get("/arkzen/expo-registry", handler.expoRegistry)
@@ -128,6 +132,37 @@ func (h *Handler) scheduleRestart() {
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	h.router.ServeHTTP(w, r)
+}
+
+func (h *Handler) serveStorage(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet && r.Method != http.MethodHead {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	relative := strings.TrimPrefix(r.URL.Path, "/storage/")
+	relative = filepath.FromSlash(relative)
+	if relative == "." || relative == "" || strings.Contains(relative, "..") {
+		http.NotFound(w, r)
+		return
+	}
+	full := filepath.Join(h.service.storageDir, relative)
+	info, err := os.Stat(full)
+	if err != nil || info.IsDir() {
+		http.NotFound(w, r)
+		return
+	}
+	name := filepath.Base(full)
+	contentType := mime.TypeByExtension(strings.ToLower(filepath.Ext(name)))
+	if contentType == "" {
+		contentType = "application/octet-stream"
+	}
+	if strings.HasPrefix(contentType, "image/") {
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`inline; filename="%s"`, safeUploadName(name)))
+	} else {
+		w.Header().Set("Content-Disposition", fmt.Sprintf(`attachment; filename="%s"`, safeUploadName(name)))
+	}
+	w.Header().Set("Content-Type", contentType)
+	http.ServeFile(w, r, full)
 }
 
 func (h *Handler) health(w http.ResponseWriter, _ *http.Request) {

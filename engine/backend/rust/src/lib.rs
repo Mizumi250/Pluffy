@@ -35,6 +35,21 @@ use tower_http::cors::{Any, CorsLayer};
 
 pub use engine::validate_payload;
 
+const JSON_REQUEST_BODY_LIMIT: usize = 2 * 1024 * 1024;
+const MULTIPART_REQUEST_BODY_LIMIT: usize = 50 * 1024 * 1024;
+
+fn request_body_limit(content_type: Option<&str>) -> usize {
+    if content_type.is_some_and(|value| {
+        value
+            .to_ascii_lowercase()
+            .starts_with("multipart/form-data")
+    }) {
+        MULTIPART_REQUEST_BODY_LIMIT
+    } else {
+        JSON_REQUEST_BODY_LIMIT
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct Config {
     pub host: String,
@@ -351,6 +366,69 @@ async fn dispatch(
 ) -> Response {
     let method = request.method().clone();
     let path = request.uri().path().to_owned();
+    if matches!(method, ref m if m == Method::GET || m == Method::HEAD)
+        && path.starts_with("/storage/")
+    {
+        let relative = path
+            .strip_prefix("/storage/")
+            .unwrap_or_default()
+            .replace('\\', "/");
+        if relative.is_empty() || relative.split('/').any(|part| part == "..") {
+            return (StatusCode::NOT_FOUND, Json(json!({"message":"Not Found"}))).into_response();
+        }
+        let root = env::var_os("PLUFF_STORAGE_DIR")
+            .map(PathBuf::from)
+            .unwrap_or_else(|| PathBuf::from("storage"));
+        let full = root.join(relative);
+        match std::fs::read(&full) {
+            Ok(bytes) => {
+                let name = full
+                    .file_name()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or("file");
+                let ext = full
+                    .extension()
+                    .and_then(|value| value.to_str())
+                    .unwrap_or_default()
+                    .to_ascii_lowercase();
+                let content_type = match ext.as_str() {
+                    "png" => "image/png",
+                    "jpg" | "jpeg" => "image/jpeg",
+                    "gif" => "image/gif",
+                    "webp" => "image/webp",
+                    "svg" => "image/svg+xml",
+                    "pdf" => "application/pdf",
+                    "txt" => "text/plain; charset=utf-8",
+                    "html" | "htm" => "text/html; charset=utf-8",
+                    _ => "application/octet-stream",
+                };
+                let disposition = if content_type.starts_with("image/") {
+                    "inline"
+                } else {
+                    "attachment"
+                };
+                let mut response = bytes.into_response();
+                *response.status_mut() = StatusCode::OK;
+                response
+                    .headers_mut()
+                    .insert(header::CONTENT_TYPE, content_type.parse().unwrap());
+                response.headers_mut().insert(
+                    header::CONTENT_DISPOSITION,
+                    format!(
+                        "{disposition}; filename=\"{}\"",
+                        name.replace(['"', '\\'], "_")
+                    )
+                    .parse()
+                    .unwrap(),
+                );
+                return response;
+            }
+            Err(_) => {
+                return (StatusCode::NOT_FOUND, Json(json!({"message":"Not Found"})))
+                    .into_response()
+            }
+        }
+    }
     let query_string = request.uri().query().unwrap_or_default().to_owned();
     let authorization = request
         .headers()
@@ -362,7 +440,8 @@ async fn dispatch(
         .get(header::CONTENT_TYPE)
         .and_then(|value| value.to_str().ok())
         .map(str::to_owned);
-    let body_bytes = match axum::body::to_bytes(request.into_body(), 2 * 1024 * 1024).await {
+    let body_limit = request_body_limit(content_type.as_deref());
+    let body_bytes = match axum::body::to_bytes(request.into_body(), body_limit).await {
         Ok(body) => body,
         Err(error) => {
             return (
@@ -372,7 +451,16 @@ async fn dispatch(
                 .into_response()
         }
     };
-    let body: Value = if body_bytes.is_empty() {
+    let multipart_bytes = if content_type.as_deref().is_some_and(|value| {
+        value
+            .to_ascii_lowercase()
+            .starts_with("multipart/form-data")
+    }) {
+        Some(body_bytes.clone())
+    } else {
+        None
+    };
+    let body: Value = if body_bytes.is_empty() || multipart_bytes.is_some() {
         Value::Null
     } else {
         match serde_json::from_slice(&body_bytes) {
@@ -642,6 +730,65 @@ async fn dispatch(
                             .into_response();
                     }
                 }
+            }
+            if matches!(
+                route.endpoint["type"].as_str(),
+                Some("upload" | "upload_index" | "upload_destroy" | "upload_url")
+            ) {
+                let kind = route.endpoint["type"]
+                    .as_str()
+                    .unwrap_or_default()
+                    .to_owned();
+                let id = if matches!(kind.as_str(), "upload_destroy" | "upload_url") {
+                    path.trim_end_matches("/url")
+                        .rsplit('/')
+                        .next()
+                        .unwrap_or_default()
+                        .to_owned()
+                } else {
+                    String::new()
+                };
+                let mut user_id = None;
+                if module.get("auth").and_then(Value::as_bool) == Some(true) {
+                    let database_dir = state.config.database_dir.clone();
+                    let auth_module = slug.clone();
+                    let auth_header = authorization.clone();
+                    if let Ok(Ok(Some(user))) = tokio::task::spawn_blocking(move || {
+                        auth::authenticated_user(
+                            &database_dir,
+                            &auth_module,
+                            auth_header.as_deref(),
+                        )
+                    })
+                    .await
+                    {
+                        user_id = Some(user.id);
+                    }
+                }
+                let public_root = env::var_os("PLUFF_STORAGE_DIR")
+                    .map(PathBuf::from)
+                    .unwrap_or_else(|| PathBuf::from("storage"));
+                if kind == "upload_url" {
+                    return api::execute_upload_download(
+                        &state.config.database_dir,
+                        &slug,
+                        &route.table,
+                        &id,
+                        &public_root,
+                    );
+                }
+                let result = api::execute_upload(
+                    &state.config.database_dir,
+                    &slug,
+                    &route.table,
+                    &kind,
+                    &id,
+                    multipart_bytes.as_deref().unwrap_or(&[]),
+                    content_type.as_deref(),
+                    user_id,
+                    &public_root,
+                );
+                return (result.0, Json(result.1)).into_response();
             }
             if emulations::supports(&route) {
                 let database_dir = state.config.database_dir.clone();
@@ -1945,7 +2092,8 @@ mod tests {
             .unwrap()
             .contains("application/json"));
     }
-}mod api;
+}
+mod api;
 mod auth;
 mod database;
 mod db;
@@ -2309,7 +2457,8 @@ async fn dispatch(
         .get(header::CONTENT_TYPE)
         .and_then(|value| value.to_str().ok())
         .map(str::to_owned);
-    let body_bytes = match axum::body::to_bytes(request.into_body(), 2 * 1024 * 1024).await {
+    let body_limit = request_body_limit(content_type.as_deref());
+    let body_bytes = match axum::body::to_bytes(request.into_body(), body_limit).await {
         Ok(body) => body,
         Err(error) => {
             return (

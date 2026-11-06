@@ -1,17 +1,24 @@
 package backend
 
 import (
+	"crypto/rand"
 	"database/sql"
-
 	"errors"
 	"fmt"
-
+	"io"
+	"mime"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
+	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/pluff/pluff/engine/backend/go/internal/modulespec"
 )
 
 func defaultEndpoints() map[string]EndpointConfig {
@@ -376,6 +383,257 @@ func paginatorResponse(r *http.Request, records []map[string]any, total, page, p
 		"next_page_url": nextURL, "path": path, "per_page": perPage,
 		"prev_page_url": previousURL, "to": to, "total": total,
 	}
+}
+
+func uploadPublicURL(diskPath string) string {
+	if diskPath == "" {
+		return ""
+	}
+	if strings.HasPrefix(diskPath, "/storage/") {
+		return diskPath
+	}
+	return "/storage/" + strings.TrimPrefix(strings.ReplaceAll(diskPath, "\\", "/"), "/")
+}
+
+func enrichUploadRecords(records []map[string]any) {
+	for _, record := range records {
+		diskPath, _ := record["disk_path"].(string)
+		url := uploadPublicURL(diskPath)
+		record["url"] = url
+		if isImage, _ := record["is_image"].(bool); isImage {
+			record["image_url"] = url
+		} else {
+			record["image_url"] = nil
+		}
+	}
+}
+
+func safeUploadName(name string) string {
+	name = filepath.Base(strings.ReplaceAll(name, "\\", "/"))
+	name = strings.Map(func(r rune) rune {
+		switch {
+		case r >= 32 && r != 127 && r != '"' && r != '/' && r != '\\':
+			return r
+		default:
+			return '_'
+		}
+	}, name)
+	if name == "" || name == "." || name == ".." {
+		return "file"
+	}
+	return name
+}
+
+func (h *Handler) uploadStore(w http.ResponseWriter, r *http.Request, db *sql.DB, module modulespec.APIModule, spec modulespec.EndpointSpec, primary string) {
+	r.Body = http.MaxBytesReader(w, r.Body, maxMultipartRequestBody)
+	if err := r.ParseMultipartForm(maxMultipartRequestBody); err != nil {
+		if errors.Is(err, http.ErrNotSupported) {
+			writeJSON(w, http.StatusUnsupportedMediaType, map[string]string{"message": "Content-Type must be multipart/form-data"})
+		} else {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "Unable to parse multipart form: " + err.Error()})
+		}
+		return
+	}
+	if r.MultipartForm == nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"message": "The files field is required"})
+		return
+	}
+	files := make([]*multipart.FileHeader, 0)
+	for field, headers := range r.MultipartForm.File {
+		indexName := strings.TrimPrefix(field, "files.")
+		plainIndexName := indexName != "" && strings.Trim(indexName, "0123456789") == ""
+		if field == "files" || field == "files[]" || (strings.HasPrefix(field, "files.") && plainIndexName) {
+			files = append(files, headers...)
+		}
+	}
+	if len(files) == 0 {
+		problems := newValidationErrors()
+		problems.add("files", "The files field is required.")
+		writeValidationErrors(w, problems)
+		return
+	}
+
+	var userID any
+	registration, known := h.service.store.Registration(module.Name)
+	if known && registration.Auth {
+		if user, _, authenticated, err := h.resolveAuthUser(r, module.Name); err != nil {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to resolve authenticated user"})
+			return
+		} else if authenticated {
+			userID = user.ID
+		}
+	}
+
+	created := make([]map[string]any, 0, len(files))
+	for _, header := range files {
+		if header.Size > 10*1024*1024 {
+			problems := newValidationErrors()
+			problems.add("files", "The file may not be greater than 10240 kilobytes.")
+			writeValidationErrors(w, problems)
+			return
+		}
+		src, err := header.Open()
+		if err != nil {
+			writeJSON(w, http.StatusBadRequest, map[string]string{"message": "Unable to read uploaded file"})
+			return
+		}
+		random := make([]byte, 16)
+		if _, err := rand.Read(random); err != nil {
+			src.Close()
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to generate file name"})
+			return
+		}
+		storedName := fmt.Sprintf("%x", random)
+		ext := strings.ToLower(filepath.Ext(safeUploadName(header.Filename)))
+		if ext != "" {
+			storedName += ext
+		}
+		diskPath := path.Join("arkzen", module.Name, storedName)
+		fullPath := filepath.Join(h.service.storageDir, filepath.FromSlash(diskPath))
+		if err := os.MkdirAll(filepath.Dir(fullPath), 0o755); err != nil {
+			src.Close()
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to create upload directory"})
+			return
+		}
+		dst, err := os.OpenFile(fullPath, os.O_WRONLY|os.O_CREATE|os.O_EXCL, 0o644)
+		if err != nil {
+			src.Close()
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to store uploaded file"})
+			return
+		}
+		size, copyErr := io.Copy(dst, src)
+		dst.Close()
+		src.Close()
+		if copyErr != nil {
+			_ = os.Remove(fullPath)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to store uploaded file"})
+			return
+		}
+		mimeType := header.Header.Get("Content-Type")
+		if mimeType == "" {
+			mimeType = mime.TypeByExtension(ext)
+		}
+		if mimeType == "" {
+			mimeType = "application/octet-stream"
+		}
+		isImage := strings.HasPrefix(strings.ToLower(mimeType), "image/")
+		input := map[string]any{
+			"original_name": safeUploadName(header.Filename),
+			"stored_name":   storedName,
+			"mime_type":     mimeType,
+			"size_bytes":    size,
+			"disk_path":     diskPath,
+			"is_image":      isImage,
+		}
+		if userID != nil {
+			input["user_id"] = userID
+		}
+		prepareTimestamps(input, map[string]struct{}{}, true)
+		columns, _, err := inspectColumns(db, module.Table)
+		if err != nil {
+			_ = os.Remove(fullPath)
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to inspect module table"})
+			return
+		}
+		record, err := insertRecord(db, quoteIdentifier(module.Table), input, columns, primary)
+		if err != nil {
+			_ = os.Remove(fullPath)
+			writeJSON(w, http.StatusUnprocessableEntity, map[string]string{"message": "Unable to create record: " + err.Error()})
+			return
+		}
+		created = append(created, record)
+	}
+	enrichUploadRecords(created)
+	writeJSON(w, http.StatusCreated, map[string]any{"data": created})
+}
+
+func (h *Handler) uploadIndex(w http.ResponseWriter, r *http.Request, db *sql.DB, table string) {
+	rows, err := db.Query("SELECT * FROM " + quoteIdentifier(table) + " ORDER BY \"id\" DESC")
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read records"})
+		return
+	}
+	records, err := scanRecords(rows)
+	_ = rows.Close()
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read records"})
+		return
+	}
+	enrichUploadRecords(records)
+	writeJSON(w, http.StatusOK, map[string]any{"data": records, "count": len(records)})
+}
+
+func (h *Handler) uploadDestroy(w http.ResponseWriter, db *sql.DB, table, id string) {
+	var diskPath string
+	err := db.QueryRow("SELECT \"disk_path\" FROM "+quoteIdentifier(table)+" WHERE \"id\" = ?", id).Scan(&diskPath)
+	if errors.Is(err, sql.ErrNoRows) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
+		return
+	}
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read record"})
+		return
+	}
+	if diskPath != "" {
+		fullPath := filepath.Join(h.service.storageDir, filepath.FromSlash(diskPath))
+		if err := os.Remove(fullPath); err != nil && !os.IsNotExist(err) {
+			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to delete uploaded file"})
+			return
+		}
+	}
+	result, err := db.Exec("DELETE FROM "+quoteIdentifier(table)+" WHERE \"id\" = ?", id)
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to delete record"})
+		return
+	}
+	affected, _ := result.RowsAffected()
+	if affected == 0 {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
+		return
+	}
+	writeJSON(w, http.StatusOK, map[string]any{"message": "File deleted"})
+}
+
+func (h *Handler) uploadURL(w http.ResponseWriter, r *http.Request, db *sql.DB, table, id string) {
+	var diskPath, storedName, mimeType, originalName string
+	err := db.QueryRow("SELECT \"disk_path\",\"stored_name\",\"mime_type\",\"original_name\" FROM "+quoteIdentifier(table)+" WHERE \"id\" = ?", id).Scan(&diskPath, &storedName, &mimeType, &originalName)
+	if errors.Is(err, sql.ErrNoRows) {
+		writeJSON(w, http.StatusNotFound, map[string]string{"message": "Record not found"})
+		return
+	}
+	if err != nil {
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to read record"})
+		return
+	}
+	fullPath := filepath.Join(h.service.storageDir, filepath.FromSlash(diskPath))
+	info, err := os.Stat(fullPath)
+	if err != nil || info.IsDir() {
+		http.NotFound(w, nil)
+		return
+	}
+	if mimeType == "" {
+		mimeType = mime.TypeByExtension(strings.ToLower(filepath.Ext(storedName)))
+	}
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+	name := safeUploadName(originalName)
+	if name == "" || name == "." || name == ".." {
+		name = safeUploadName(storedName)
+	}
+	disposition := "attachment"
+	if strings.HasPrefix(strings.ToLower(mimeType), "image/") {
+		disposition = "inline"
+	}
+	w.Header().Set("Content-Type", mimeType)
+	w.Header().Set("Content-Disposition", fmt.Sprintf(`%s; filename="%s"`, disposition, name))
+	file, err := os.Open(fullPath)
+	if err != nil {
+		http.NotFound(w, nil)
+		return
+	}
+	defer file.Close()
+	http.ServeContent(w, r, name, info.ModTime(), file)
 }
 
 func (h *Handler) showRecord(w http.ResponseWriter, db *sql.DB, table string, api APIBlock, primary, id string) {
