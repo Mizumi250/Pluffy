@@ -28,6 +28,7 @@ import readline from 'node:readline'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { supportsDocker, dockerRejectionMessage } from './export-docker.js'
 
 const ROOT_DIR  = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH = path.join(ROOT_DIR, 'arkzen.json')
@@ -454,8 +455,14 @@ function cmdSetup() {
   })
 }
 
-async function cmdExport(tatName, stackArg) {
+async function cmdExport(tatName, stackArg, dockerFlag = false) {
   const config = readConfig()
+
+  // --docker is for web stacks only. Reject early when the stack is already known.
+  if (dockerFlag && stackArg && !supportsDocker(stackArg)) {
+    error(dockerRejectionMessage(stackArg))
+    return
+  }
 
   // Step 1 — pick tatemono
   if (!tatName) {
@@ -493,15 +500,32 @@ async function cmdExport(tatName, stackArg) {
       }))
     )
     stack = chosenStack.value
+
+    // Docker is only offered for stacks that can use it (web). Mobile/desktop never see this question.
+    if (!dockerFlag && supportsDocker(stack)) {
+      divider()
+      const withDocker = await picker('Docker？ Also generate Docker files (Dockerfile + docker-compose)?', [
+        { label: 'No',  sub: 'DEPLOY.md only',                         value: false },
+        { label: 'Yes', sub: 'Dockerfiles, docker-compose.yml + DEPLOY.md', value: true },
+      ])
+      dockerFlag = withDocker.value
+    }
+  }
+
+  if (dockerFlag && !supportsDocker(stack)) {
+    error(dockerRejectionMessage(stack))
+    return
   }
 
   console.log()
-  log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  log(`エクスポート中... Exporting ${paint(c.cyan, tatName)} ${paint(c.gray, `(${stack}${dockerFlag ? ' + docker' : ''})`)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
   console.log()
-  const child = spawn(process.execPath, ['export.js', tatName, `--stack=${stack}`], { cwd: ROOT_DIR, stdio: 'inherit' })
+  const exportArgs = ['export.js', tatName, `--stack=${stack}`, ...(dockerFlag ? ['--docker'] : [])]
+  const child = spawn(process.execPath, exportArgs, { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', async code => {
     if (code === 0) {
       success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
+      info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
     }
     else error(`Export failed with code ${code}`)
   })
@@ -1081,6 +1105,7 @@ function printHelp() {
     ['mizumi export',            '→ Export wizard (tatemono → web/app → stack)'],
     ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
+    ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
     ['mizumi publish',           '→ Publish an existing projects/ export to GitHub'],
     ['mizumi publish <name>',    '→ Publish projects/<name> to GitHub'],
     ['mizumi web <stack>',       '→ Switch web stack'],
@@ -1123,7 +1148,12 @@ const arg     = args[1]
 switch (command) {
   case 'start':   cmdStart(args.slice(1)); break
   case 'setup':   cmdSetup();                  break
-  case 'export':  cmdExport(arg, args[2]);     break
+  case 'export': {
+    // Flags (--docker) are not positional: `mizumi export <name> <stack> --docker`
+    const positional = args.slice(1).filter(a => !a.startsWith('--'))
+    cmdExport(positional[0], positional[1], args.includes('--docker'))
+    break
+  }
   case 'publish': cmdPublish(arg);             break
   case 'web':     cmdSwitchWeb(arg);           break
   case 'app':     cmdSwitchApp(arg);           break

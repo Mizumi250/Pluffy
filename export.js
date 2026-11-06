@@ -28,6 +28,7 @@ import { execSync, spawnSync } from 'node:child_process'
 import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
+import { supportsDocker, dockerRejectionMessage, writeDockerFiles, writeDeployGuide } from './export-docker.js'
 
 const ROOT_DIR   = path.dirname(fileURLToPath(import.meta.url))
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
@@ -43,6 +44,14 @@ const activeStack = stackFlag
 const isTauri    = activeStack === 'tauri'
 const isElectron = activeStack === 'electron'
 const isDesktop  = isTauri || isElectron
+
+// --docker: add Dockerfile(s) + docker-compose.yml. Web stacks only — mobile and desktop
+// are built with their own tools, so reject it BEFORE doing any work.
+const wantsDocker = process.argv.includes('--docker')
+if (wantsDocker && !supportsDocker(activeStack)) {
+  console.log(`\n  ✗ ${dockerRejectionMessage(activeStack)}\n`)
+  process.exit(1)
+}
 
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
@@ -108,9 +117,9 @@ function findSystemPython() {
 // VALIDATE INPUT
 // ─────────────────────────────────────────────
 
-const tatName = process.argv[2]
+const tatName = process.argv.slice(2).find(a => !a.startsWith('--'))
 if (!tatName) {
-  console.log('\n  Usage: node export.js <tatemono-name>')
+  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--docker]')
   console.log('  Example: node export.js inventory-management\n')
   console.log('  Available tatemonos:')
   if (fs.existsSync(TATEMONOS_DIR)) {
@@ -1743,12 +1752,48 @@ ${isExpress ? 'npm install\nnpm start' : isFastapi ? 'python -m venv .venv\n.ven
 \`\`\`
 ` : ''}`)
 
+// ─────────────────────────────────────────────
+// STEP 16b — DOCKER (--docker, web stacks only) + DEPLOY.md (always)
+// ─────────────────────────────────────────────
+
+const deployCtx = {
+  projectDir: PROJECT_DIR, projBack: PROJ_BACK, projFront: PROJ_FRONT,
+  tatName, stack: activeStack, backend: activeBackend,
+  isPg, hasBackend: isInertia ? true : (!isNative && hasBackend), hasRealtime, hasJobs, pgDatabaseName,
+  dbPrefix: engineEnvValue('ARKZEN_DB_PREFIX', 'pluff'),
+  docker: wantsDocker, springServerClass: SPRING_SERVER_CLASS,
+  pg: {
+    host: engineEnvValue('DB_HOST', '127.0.0.1'), port: engineEnvValue('DB_PORT', '5432'),
+    user: engineEnvValue('DB_USERNAME', 'postgres'), password: engineEnvValue('DB_PASSWORD', ''),
+  },
+  log: { success, warn },
+}
+if (wantsDocker) {
+  log('Writing Docker files...')
+  writeDockerFiles(deployCtx)
+}
+log('Writing DEPLOY.md...')
+writeDeployGuide(deployCtx)
+fs.appendFileSync(path.join(PROJECT_DIR, 'README.md'), `
+## Deploy
+
+Step-by-step instructions for this exact setup: **[DEPLOY.md](DEPLOY.md)**.${wantsDocker ? `
+
+Quick start with Docker (then open http://localhost:8080):
+
+\`\`\`bash
+docker compose --env-file deploy.env up -d --build
+\`\`\`
+` : ''}
+`)
+
 fs.writeFileSync(path.join(PROJECT_DIR, '.gitignore'), [
   '**/node_modules/',
   '**/vendor/',
   '**/.next/',
   '**/.env',
   '**/.env.local',
+  'deploy.env',
   ...(isGo ? ['backend/storage/'] : []),
   ...(isRust ? ['backend/target/'] : []),
   '*.log',
@@ -1765,4 +1810,5 @@ console.log(`  Version:  v10`)
 console.log(`  Stack:    ${activeStack}`)
 if (hasBackend) console.log(`  DB:       ${isPg ? `PostgreSQL database ${pgDatabaseName}` : `${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`}`)
 console.log(`  Run:      cd projects/${tatName} && node start.js`)
+console.log(`  Deploy:   projects/${tatName}/DEPLOY.md${wantsDocker ? '  (Docker: docker compose --env-file deploy.env up -d --build)' : ''}`)
 divider()
