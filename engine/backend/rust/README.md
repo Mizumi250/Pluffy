@@ -1,3 +1,6 @@
+# May be outdated. See PLUFF_GUIDELINES and the engine source.
+
+
 # Pluff Rust backend engine
 
 Standalone Rust server foundation built with [Axum](https://github.com/tokio-rs/axum),

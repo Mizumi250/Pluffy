@@ -1,3 +1,6 @@
+
+# May be outdated. See PLUFF_GUIDELINES and the engine source.
+
 # Pluff Express backend (`:ts` variant)
 
 TypeScript backend target modeled on Laravel. It implements the same `/arkzen/health | registry | build | remove`

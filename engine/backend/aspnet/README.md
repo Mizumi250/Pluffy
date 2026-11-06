@@ -1,3 +1,6 @@
+# May be outdated. See PLUFF_GUIDELINES and the engine source.
+
+
 # Pluff ASP.NET Core backend engine
 
 The engine targets .NET 8 and implements the Arkzen backend contract at

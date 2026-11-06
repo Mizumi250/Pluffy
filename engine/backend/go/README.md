@@ -1,3 +1,7 @@
+# May be outdated. See PLUFF_GUIDELINES and the engine source.
+
+
+
 # Pluff Go backend
 
 Standalone Go/net-http backend foundation using [Chi](https://github.com/go-chi/chi)

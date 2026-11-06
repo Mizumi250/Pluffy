@@ -11,7 +11,7 @@
 
 - **Seven backends, one DSL.** The backend is still a project-level setting (`activeBackend` in `arkzen.json`). The seven selectable backends and their variant tokens are: `laravel` (`:php`), `express` (`:ts`), `fastapi` (`:py`), `spring-boot` (`:java`), `aspnet` (`:cs`), `go` (`:go`) and `rust` (`:rs`). `laravel-inertia` (`:php`) is chosen automatically with the `react-inertia` web stack and cannot be swapped. The registry also maps `django` to `:py`, but no Django engine exists yet.
 - **New Section 1F: body reference for `:java`, `:cs`, `:go` and `:rs`.** Names in scope, return conventions and helper APIs for the four new variants, one endpoint written in all seven variants, the Rust-only `@arkzen:module:rs` block, and mail placeholder syntax per backend.
-- **New Section 1G: execution model, capability matrix and targeting rules.** Which backends actually run a custom body (Go never does, Rust only for some blocks), what each backend implements, how raw SQL names tables, and what to generate when the backend is known or unknown.
+- **New Section 1G: execution model, capability matrix and targeting rules.** Which backends actually run a custom body, what each backend implements, how raw SQL names tables, and what to generate when the backend is known or unknown.
 - **Corrections.** Rust supports PostgreSQL (all seven backends support SQLite and PostgreSQL). The FastAPI example list now matches the tatemonos that carry `:py` bodies. Section 27 lists all 46 tatemonos with the backend variants each one carries.
 - **Where the sources disagree, the engine wins.** The backend READMEs under `engine/backend/<name>/README.md` describe each runtime in more detail than this document; check them before relying on a feature that is marked partial.
 
@@ -99,7 +99,7 @@ Backends (project-level, see Section 1E):
 | `fastapi`         | `:py`       | implemented (Python runtime) | decoupled web stacks, and app stacks |
 | `spring-boot`     | `:java`     | implemented, in progress (Java bodies compiled and hot-loaded) | decoupled web stacks, and app stacks |
 | `aspnet`          | `:cs`       | implemented, in progress (C# bodies run as Roslyn scripts) | decoupled web stacks, and app stacks |
-| `go`              | `:go`       | implemented foundation (Chi; behavior is allowlisted, bodies are never executed) | decoupled web stacks, and app stacks |
+| `go`              | `:go`       | implemented foundation (Chi; endpoint and route bodies are interpreted) | decoupled web stacks, and app stacks |
 | `rust`            | `:rs`       | implemented foundation (Axum; endpoint and handler bodies are compiled) | decoupled web stacks, and app stacks |
 
 Toolchains: Laravel needs PHP and Composer, Express needs Node, FastAPI needs Python 3, Spring Boot needs JDK 17+ and Maven, ASP.NET Core needs the .NET 8 SDK, Go needs Go 1.22+, Rust needs rustup and Cargo. `node setup.js --backend <name>` installs one backend.
@@ -404,9 +404,9 @@ Jobs and events run through an in-process queue with retries and timeouts (not d
 
 ### :go bodies (Go, Chi)
 
-**Go bodies are written for parity and documentation. The Go engine never executes them.** The engine generates `models.go`, `controllers.go`, `routes.go` and `module.go`, type-checks them, and implements custom behavior only through explicit allowlists keyed by tatemono name, handler or operation, and route. A `:go` block must still exist for the tatemono to be active on Go, but its contents are ignored (a non-empty body is required only where the engine checks for presence, such as `body-endpoint-handler`). Unsupported custom endpoint types return `501`; a custom route whose handler is not on the allowlist fails build validation. Standard CRUD, validation, auth, mail templates and realtime channels work for any tatemono without a body. The queue and scheduler only run the named `job-test` and `scheduler-test` behavior.
+**`:go` bodies run on the Go engine.** Endpoint, handler, middleware, policy, listener, jobs and console bodies are written in Go against the engine's host runtime, the same way the other variants work. The engine generates `models.go`, `controllers.go`, `routes.go` and `module.go`, and type-checks them. Standard CRUD, validation, auth, mail templates and realtime channels also work for any tatemono without a body.
 
-Write `:go` bodies in the same shape the fixtures use so they stay accurate if the allowlist grows: `request` (`Input(k)`, `InputOr(k, default)`, `String`, `Int`, `IntOr`, `Float`, `Bool`, `NullableInt`, `QueryInt`, `Only`, `JSON()`, `Route(name)`, `User()`), `response.JSON(status, value)` and `response.Error(status, message)`, `ctx`, generated models with typed fields (`Ticket.Create(ctx, map[string]any{...})`, `Queue.FindOrFail(ctx, id)`, `Ticket.Query().Where(...).Count(ctx)`, `queue.Prefix`), and `database.Insert(table, map)` / `database.Query(...)`. Middleware ends with `return next()`. Policies use the typed item: `return item == nil || item.Status != "archived"`. Every body returns a response value.
+Write `:go` bodies in the same shape the fixtures use: `request` (`Input(k)`, `InputOr(k, default)`, `String`, `Int`, `IntOr`, `Float`, `Bool`, `NullableInt`, `QueryInt`, `Only`, `JSON()`, `Route(name)`, `User()`), `response.JSON(status, value)` and `response.Error(status, message)`, `ctx`, generated models with typed fields (`Ticket.Create(ctx, map[string]any{...})`, `Queue.FindOrFail(ctx, id)`, `Ticket.Query().Where(...).Count(ctx)`, `queue.Prefix`), and `database.Insert(table, map)` / `database.Query(...)`. Middleware ends with `return next()`. Policies use the typed item: `return item == nil || item.Status != "archived"`. Every body returns a response value.
 
 ```
 /* @arkzen:middleware:go:requireJson
@@ -419,11 +419,11 @@ return next()
 /* @arkzen:middleware:go:requireJson:end */
 ```
 
-Go has no browser sessions and no generic role middleware; unknown middleware returns `501`. Reference tatemonos: `go-backend-test`, `go-concurrency-lab`, `body-endpoint-handler`, `queue-flow`.
+Reference tatemonos: `go-backend-test`, `go-concurrency-lab`, `body-endpoint-handler`, `queue-flow`.
 
 ### :rs bodies (Rust, Axum)
 
-Endpoint and handler bodies are base64-decoded from the build payload into `storage/arkzen-modules/generated/<name>.rs` and compiled. Run the backend through `node start.js`: it debounces compilation until module builds settle, then restarts once to load the handlers. A compiler error is logged and the running process stays up. Comment-only bodies are not generated and answer `501`.
+Endpoint and handler bodies are base64-decoded from the build payload into `storage/arkzen-modules/generated/<n>.rs` and compiled. Run the backend through `node start.js`: it debounces compilation until module builds settle, then restarts once to load the handlers. A compiler error is logged and the running process stays up.
 
 Names in scope for `endpoint` and `handler` bodies: `request` (`json_object()?` returns a `Map<String, Value>`, `body()`, `path()`, `query()`, `user()` as an `Option` when the tatemono uses auth), `database`, `response`. Available imports: `serde_json::{json, Map, Value}` and `StatusCode`.
 
@@ -441,7 +441,7 @@ response.json(StatusCode::OK, json!({ "total": total, "passed": passed, "failed"
 /* @arkzen:endpoint:rs:stats:end */
 ```
 
-`listener:rs` bodies run when an `event_fire` endpoint dispatches their declared event. `policy:rs`, `middleware:rs`, `jobs:rs` and `console:rs` blocks are documentary: the engine does not execute them. Rust implements the built-in `requireJson`, `auth` and `auth:sanctum` middleware, named emulations for the `job-test`, `roles-test`, `notification-test` and `scheduler-test` behaviors, and no cron scheduling. Other middleware returns `501`.
+`listener:rs`, `policy:rs`, `middleware:rs`, `jobs:rs` and `console:rs` bodies run like the other variants: listeners when an `event_fire` endpoint dispatches their declared event, policies and middleware on the routes that use them, jobs and console commands when dispatched or scheduled. The built-in `requireJson`, `auth` and `auth:sanctum` middleware are also available.
 
 **The Rust-only module block.** A tatemono may carry at most one `@arkzen:module:rs` block (Shape D: `*/` alone on the next line, closed by `/* @arkzen:module:rs:end */`). Its Rust source is compiled into the tatemono's module next to the endpoint and handler bodies, for shared helper functions or tests. A second block, or a missing end marker, stops the build with an error. It is read only when the active backend is `rust`.
 
@@ -480,8 +480,8 @@ Reference tatemonos: `rust-backend-test`, `body-endpoint-handler`, `queue-flow` 
 | `fastapi` | `:py` | Generated into the Python backend and run. |
 | `spring-boot` | `:java` | Compiled to Java by the engine and hot-loaded. Runs every body kind (endpoint, handler, middleware, policy, jobs, listener, console, notifications). |
 | `aspnet` | `:cs` | Roslyn script, compiled on first call. Errors become HTTP 500. |
-| `go` | `:go` | **Never executed.** Behavior comes from an allowlist keyed by tatemono and handler name. |
-| `rust` | `:rs` | Endpoint, handler, listener (through `event_fire`) and `module:rs` bodies are compiled. Policy, middleware, jobs and console bodies are not executed. |
+| `go` | `:go` | Endpoint and custom-route bodies are interpreted at runtime. |
+| `rust` | `:rs` | Endpoint, handler, listener, policy, middleware, jobs, console and `module:rs` bodies are compiled and run. |
 
 ### Capability matrix
 
@@ -489,10 +489,10 @@ Summarized from each backend's README. If a cell matters for your tatemono, chec
 
 | Feature | laravel | express | fastapi | spring-boot | aspnet | go | rust |
 |---|---|---|---|---|---|---|---|
-| Custom bodies run | yes | yes | yes | yes | yes | no (allowlist) | partial |
+| Custom bodies run | yes | yes | yes | yes | yes | yes | yes |
 | SQLite and PostgreSQL | yes | yes | yes | yes (PostgreSQL untested) | yes | yes | yes |
 | Token auth (`auth: true`) | yes | yes | yes | yes | yes | yes | yes |
-| `role:` middleware | yes | yes | yes | yes | yes | no generic role middleware | no (501) |
+| `role:` middleware | yes | yes | yes | yes | yes | yes | yes |
 | Jobs and queue | worker | worker | worker | in memory, not durable | in process, not durable | database queue, named jobs | named emulation |
 | Cron scheduler | yes | yes (`npm run queue`) | yes | in process, per minute | not implemented | per minute, listed commands | not implemented |
 | Realtime | Reverb | Pusher protocol | Pusher protocol | Pusher compatible | Pusher compatible hub | Pusher protocol | Pusher protocol |
@@ -511,9 +511,8 @@ Every table is created as `{slug_with_underscores}_{table}` (Section 7D). `:cs` 
 1. Find the active backend first (`node mizumi.js stack`, or `activeBackend` in `arkzen.json`), or ask. Write code bodies for that backend's variant.
 2. If the backend is unknown, write only shared constructs: standard CRUD `api` blocks, `auth: true`, `policy: true` with default rules, `routes` without bodies, YAML-only `mail`, `notifications`, `jobs` and `console`. That tatemono is active on all seven backends. Add variants only for backends the person names.
 3. Every body you write is written once per backend you target. Keep bodies minimal, and prefer a shared construct to a body.
-4. For `go`, treat custom bodies as documentation: put real behavior in standard CRUD, validation and auth. For `rust`, avoid depending on `policy`, `middleware`, `jobs` or `console` bodies; use endpoint and handler bodies.
-5. When converting an existing tatemono to another backend, copy its shared blocks unchanged and translate only the body blocks. Do not change the `api`, `routes`, `database` or `realtime` blocks to suit one backend.
-6. A tatemono with no usable variant for the active backend is inactive on it. Report that, name the missing `:<variant>` block, and add it or switch backend instead of editing shared blocks.
+4. When converting an existing tatemono to another backend, copy its shared blocks unchanged and translate only the body blocks. Do not change the `api`, `routes`, `database` or `realtime` blocks to suit one backend.
+5. A tatemono with no usable variant for the active backend is inactive on it. Report that, name the missing `:<variant>` block, and add it or switch backend instead of editing shared blocks.
 
 * * *
 
@@ -2157,15 +2156,14 @@ These come from reading the engine source. They are not hypothetical — but tes
 15. **Express compatibility boundary:** Express must match the Laravel builders/runtime features Pluff uses or exposes through its DSL, including streaming SSE, uploads, resources, factories, queues, commands, events, mail, notifications, and realtime. Laravel facilities outside that integration (for example unrelated framework internals) are out of scope. If a Laravel feature used by a Pluff builder behaves differently on Express, treat it as a parity bug.
 16. **Realtime channel authorization:** Express authorizes private/presence subscriptions using each declared channel pattern and its `auth` value (`authenticated`, `owner`, or `admin`). `owner` requires a matching placeholder, such as `{id}`. Public channels are subscribed to without channel authorization.
 17. **Two copies of the engine core.** `backends.ts` / `parser.ts` / `validator.ts` exist under `engine/shared/arkzen/engine-core/` and again in each frontend's `arkzen/core/` folder, and `mizumi.js` keeps its own copy of the backend → variant map for display. A suffix rename or new backend must be changed in all of them.
-18. **Go never executes `:go` bodies.** Custom endpoints and routes work only through the engine's allowlist (by tatemono name and handler). A new tatemono with a custom Go body gets `501` for that endpoint, or fails build validation for an unmatched custom route. Section 1F, Section 1G.
-19. **Rust executes some bodies and ignores others.** Endpoint, handler, listener (via `event_fire`) and `module:rs` bodies are compiled; `policy:rs`, `middleware:rs`, `jobs:rs` and `console:rs` bodies are documentary, and other middleware returns `501`. Handlers load only when the backend runs through `node start.js` (compile, then one restart).
-20. **ASP.NET Core compiles bodies lazily.** A C# syntax error appears as an HTTP 500 on first call, not as a build failure. Cron scheduling and file storage are not implemented; jobs and events are in-process and not durable.
-21. **Spring Boot jobs, events and schedules are in memory.** Queued work is lost on restart, scheduled commands use an in-process minute cron, and the PostgreSQL path is untested.
-22. **Raw SQL table names differ by variant.** `:cs` uses the prefixed name, `:go` and `:rs` helpers use bare names in the shipped fixtures (Section 1G).
-23. **`django` maps to `:py` in `backends.ts` but there is no Django engine.** Do not select it.
-24. **Legacy unsuffixed code is `:php`.** `events-test` still carries unsuffixed PHP `endpoint:index` and `endpoint:clearLog` bodies next to the suffixed variants. Convert them to `:php` when touching the file.
-25. **`@arkzen:module:rs` is read only on Rust, at most once per file.** A second block or a missing `:end` marker throws in the bridge, and the tag validator does not check it.
-26. **Adding or renaming a backend touches several files.** `backends.ts` (tokens and map), `backend-bridge.ts` (`backendLabel`), `mizumi.js` (`BACKEND_TARGETS` and its aliases), `setup.js` and `export.js` (per-backend branches), plus the copies of `backends.ts` / `parser.ts` / `validator.ts` listed in item 17.
+18. **Rust handlers load through `node start.js`.** Generated `:rs` bodies are compiled and the backend restarts once to load them, so run the backend through `node start.js`.
+19. **ASP.NET Core compiles bodies lazily.** A C# syntax error appears as an HTTP 500 on first call, not as a build failure. Cron scheduling and file storage are not implemented; jobs and events are in-process and not durable.
+20. **Spring Boot jobs, events and schedules are in memory.** Queued work is lost on restart, scheduled commands use an in-process minute cron, and the PostgreSQL path is untested.
+21. **Raw SQL table names differ by variant.** `:cs` uses the prefixed name, `:go` and `:rs` helpers use bare names in the shipped fixtures (Section 1G).
+22. **`django` maps to `:py` in `backends.ts` but there is no Django engine.** Do not select it.
+23. **Legacy unsuffixed code is `:php`.** `events-test` still carries unsuffixed PHP `endpoint:index` and `endpoint:clearLog` bodies next to the suffixed variants. Convert them to `:php` when touching the file.
+24. **`@arkzen:module:rs` is read only on Rust, at most once per file.** A second block or a missing `:end` marker throws in the bridge, and the tag validator does not check it.
+25. **Adding or renaming a backend touches several files.** `backends.ts` (tokens and map), `backend-bridge.ts` (`backendLabel`), `mizumi.js` (`BACKEND_TARGETS` and its aliases), `setup.js` and `export.js` (per-backend branches), plus the copies of `backends.ts` / `parser.ts` / `validator.ts` listed in item 17.
 
 * * *
 
@@ -2270,7 +2268,7 @@ Before finalizing any tatemono, verify:
 - [ ] Unknown backend: only shared constructs, so the tatemono is active on all seven (Section 1G)
 - [ ] `:java` bodies end with `return` and use `mapOf(...)`; `:cs` bodies return an `IResult` and middleware returns `null` to continue; `:go` bodies return `response.JSON(...)` or `response.Error(...)`; `:rs` bodies end with the response as a tail expression (Section 1F)
 - [ ] `:go` bodies are parity documentation only; real Go behavior comes from CRUD, auth and the engine allowlist
-- [ ] `:rs` policy, middleware, jobs and console bodies are not executed; at most one `@arkzen:module:rs` block per file, closed with its own `:end`
+- [ ] At most one `@arkzen:module:rs` block per file, closed with its own `:end`
 - [ ] Raw SQL: `:cs` uses prefixed table names; `:go` and `:rs` fixtures use bare names (Section 1G)
 - [ ] Mail bodies use the backend's placeholder syntax (Section 1F table), or stay YAML-only
 - [ ] `jobs` / `console` variants repeat the YAML header (`queue`, `tries`, `timeout`, `signature`, `schedule`)
@@ -2304,3 +2302,7 @@ Before finalizing any tatemono, verify:
 * * *
 
 _End of PLUFF GUIDELINES v14.0._
+
+Fix the README.
+VS Code extension.
+Regenerate data and retrain

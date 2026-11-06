@@ -1,3 +1,6 @@
+# May be outdated. See PLUFF_GUIDELINES and the engine source.
+
+
 # Pluff Spring Boot backend (`:java` variant): WORK IN PROGRESS
 
 Spring Boot is selected as `activeBackend: "spring-boot"` and reads `:java` backend code blocks. The shared parser,
