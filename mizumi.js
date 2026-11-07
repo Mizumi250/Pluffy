@@ -10,6 +10,7 @@
 
 //    node mizumi.js setup
 //    node mizumi.js export <name>
+//    node mizumi.js export dino-runner unity
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
 //    node mizumi.js desktop <stack> ← switch desktop stack
@@ -147,6 +148,16 @@ function listGodotTatemonoNames() {
     .filter(entry => {
       const corePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
       return fs.existsSync(corePath) && fs.readFileSync(corePath, 'utf8').includes('/* @arkzen:godot:project')
+    })
+    .map(entry => entry.name)
+}
+function listUnityTatemonoNames() {
+  if (!fs.existsSync(TATEMONOS_DIR)) return []
+  return fs.readdirSync(TATEMONOS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory())
+    .filter(entry => {
+      const corePath = path.join(TATEMONOS_DIR, entry.name, 'core.tsx')
+      return fs.existsSync(corePath) && fs.readFileSync(corePath, 'utf8').includes('/* @arkzen:unity:project')
     })
     .map(entry => entry.name)
 }
@@ -517,14 +528,14 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
 
   // Step 1 — pick tatemono
   if (!tatName) {
-    const modules = [...new Set([...(config.modules ?? []).map(m => m.name), ...listGodotTatemonoNames()])]
+    const modules = [...new Set([...(config.modules ?? []).map(m => m.name), ...listGodotTatemonoNames(), ...listUnityTatemonoNames()])]
     if (modules.length === 0) { warn('タテモノなし — No tatemonos registered yet.'); return }
     divider()
     const chosen = await picker('どのタテモノ？ Which tatemono to export?', modules.map(m => ({ label: m, value: m })))
     tatName = chosen.value
   }
 
-  // Step 2 — pick platform (web, app, desktop, or Godot), Step 3 — pick stack for that platform
+  // Step 2 — pick platform (web, app, desktop, Godot, or Unity), Step 3 — pick a stack
   // This is purely for export.js's --stack=<name> override — it does NOT
   // touch arkzen.json, so the live activeStack/activeAppStack/activeDesktopStack used by
   // `node start.js` / `node mizumi.js start` is left untouched.
@@ -539,10 +550,13 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
     if (listGodotTatemonoNames().includes(tatName)) {
       platforms.push({ label: 'Godot 4 game', sub: 'generate an isolated Godot game project', value: 'godot' })
     }
+    if (listUnityTatemonoNames().includes(tatName)) {
+      platforms.push({ label: 'Unity game', sub: 'generate an isolated Unity project', value: 'unity' })
+    }
     const platform = await picker('どのプラットフォーム？ Export for which platform?', platforms)
 
-    if (platform.value === 'godot') {
-      stack = 'godot'
+    if (platform.value === 'godot' || platform.value === 'unity') {
+      stack = platform.value
     } else {
       const STACKS = platform.value === 'web' ? WEB_STACKS : (platform.value === 'app' ? APP_STACKS : DESKTOP_STACKS)
       const LABELS = platform.value === 'web' ? WEB_LABELS : (platform.value === 'app' ? APP_LABELS : DESKTOP_LABELS)
@@ -572,7 +586,8 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
   }
 
   let backend = backendArg
-  const backendEligible = stack && stack !== 'godot' && !APP_STACKS[stack] && stack !== 'expo' && stack !== 'react-native' && stack !== 'lynx' && stack !== 'native'
+  const gameStack = stack === 'godot' || stack === 'unity'
+  const backendEligible = stack && !gameStack && !APP_STACKS[stack] && stack !== 'expo' && stack !== 'react-native' && stack !== 'lynx' && stack !== 'native'
   if (backendEligible && stack !== 'react-inertia') {
     if (!backend) {
       divider()
@@ -607,7 +622,7 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
     'export.js',
     tatName,
     `--stack=${stack}`,
-    ...(backend && stack !== 'godot' ? [`--backend=${backend}`] : []),
+    ...(backend && !gameStack ? [`--backend=${backend}`] : []),
     ...(dockerFlag ? ['--docker'] : []),
   ]
   const child = spawn(process.execPath, exportArgs, { cwd: ROOT_DIR, stdio: 'inherit' })
@@ -616,6 +631,9 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
       if (stack === 'godot') {
         success(`Generated → projects/godot/${tatName}/  ${paint(c.gray, '(Godot 4)')}`)
         info(`Open projects/godot/${tatName}/project.godot in Godot 4`)
+      } else if (stack === 'unity') {
+        success(`Generated → projects/unity/${tatName}/  ${paint(c.gray, '(Unity)')}`)
+        info(`Open projects/unity/${tatName}/ in Unity Hub`)
       } else {
         success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
         info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
@@ -1234,11 +1252,12 @@ function printHelp() {
 
 
     ['mizumi setup',             '→ Run setup'],
-    ['mizumi export',            '→ Export wizard (tatemono → web/app/desktop/Godot → stack)'],
+    ['mizumi export',            '→ Export wizard (tatemono → web/app/desktop/Godot/Unity → stack)'],
     ['mizumi export <name>',     '→ Export tatemono (then pick platform/stack)'],
     ['mizumi export <name> <stack>', '→ Export directly with given stack'],
     ['mizumi export <name> <stack> --backend=<name>', '→ Choose the backend for the export'],
     ['mizumi export <godot-tatemono> godot', '→ Generate isolated Godot 4 project'],
+    ['mizumi export <unity-tatemono> unity', '→ Generate isolated Unity project'],
     ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
     ['mizumi publish',           '→ Publish an existing projects/ export to GitHub'],
     ['mizumi publish <name>',    '→ Publish projects/<name> to GitHub'],

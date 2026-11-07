@@ -131,6 +131,7 @@ const tatName = process.argv.slice(2).find(a => !a.startsWith('--'))
 if (!tatName) {
   console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name>] [--docker]')
   console.log('         node export.js <godot-tatemono> --stack=godot')
+  console.log('         node export.js <unity-tatemono> --stack=unity')
   console.log('  Example: node export.js inventory-management\n')
   console.log('  Available tatemonos:')
   if (fs.existsSync(TATEMONOS_DIR)) {
@@ -168,6 +169,31 @@ if (activeStack === 'godot') {
       warn(`Optional assets not found: ${result.missingOptionalAssets.join(', ')}`)
     }
     log('Open project.godot in Godot 4. The web/backend stack and active Pluff configuration were not used.')
+    divider()
+  } catch (error) {
+    console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)
+    process.exit(1)
+  }
+  process.exit(0)
+}
+
+if (activeStack === 'unity') {
+  if (!/^[a-z0-9][a-z0-9-]*$/.test(tatName)) {
+    console.error('\n  ✗ Unity Tatemono names may contain only lowercase letters, digits, and hyphens.\n')
+    process.exit(1)
+  }
+  try {
+    const { generateUnityProject } = await import('./engine/game/unity/generator.js')
+    const result = generateUnityProject({
+      tatemonoPath: tatPath,
+      outputDir: path.join(PROJECTS_DIR, 'unity', tatName),
+    })
+    divider()
+    success(`Unity project generated: ${path.relative(ROOT_DIR, result.outputDir)}`)
+    log(`Unity Editor: ${result.unityVersion}`)
+    log(`Scene: ${result.scene}`)
+    log(`Declared assets copied: ${result.copiedAssetCount}`)
+    log('Open this folder in Unity Hub or build it with the included GameCI workflow.')
     divider()
   } catch (error) {
     console.error(`\n  ✗ ${error instanceof Error ? error.message : String(error)}\n`)

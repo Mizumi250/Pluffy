@@ -557,7 +557,7 @@
   5. Lynx uses separate :lynx blocks. Imports may be declared in a Lynx page or component; the Lynx generator also adds imports for referenced shared components.
   6. Source-block import placement and generated-file imports are not the same: generators may collect, strip, or inject imports while producing platform files. Use the block-specific guidance below.
   7. Web, Expo/RN and Lynx sections can all coexist in one core.tsx (a "dual/triple" tatemono)
-  8. A web/app Tatemono needs at least ONE page: web page, native page, or Lynx page. A Godot-only game Tatemono instead needs `@arkzen:godot:project`, a main scene, and generated behavior blocks; it uses the separate `godot` export target.
+  8. A web/app Tatemono needs at least ONE page: web page, native page, or Lynx page. Godot and Unity game Tatemono use their own project blocks and separate `godot` or `unity` export targets.
   9. Tatemono asset files go in tatemonos/<name>/assets/ (auto-copied to public)
   ```
 
@@ -615,6 +615,15 @@
   @arkzen:godot:behavior:player     (required for the generated character controller)
   @arkzen:godot:behavior:camera     (required for the generated follow camera)
   @arkzen:godot:export              (required; declares Godot export presets)
+  --- Unity game (separate export target; not a web/native stack) ---
+  @arkzen:unity:project             (once)
+  @arkzen:unity:game                (dino_runner settings for the runner template)
+  @arkzen:unity:visuals             (optional runner-template visual settings)
+  @arkzen:unity:controls            (optional runner-template controls)
+  @arkzen:unity:scene:<name>        (scene mode; one or more Unity-native scene graphs)
+  @arkzen:unity:environment         (optional scene lighting/fog settings)
+  @arkzen:unity:assets              (optional declared resources for scene mode; required for runner art)
+  @arkzen:unity:export              (optional scene-mode build targets)
   ```
 
   * * *
@@ -2866,6 +2875,190 @@
   - [ ] Optional multiplayer settings are in range and ENet games do not enable the Web export preset.
   - [ ] Export presets contain only supported platform keys and boolean `runnable` values.
   - [ ] Every opening marker closes with the exact matching `/* @arkzen:<marker>:end */`.
+
+  * * *
+
+  ## APPENDIX — UNITY GAME DSL
+
+  Unity support is a standalone export target. A Unity game Tatemono still lives in `tatemonos/<name>/core.tsx`, but does not need web/native pages or a backend. Export with:
+
+  ```sh
+  node mizumi.js export dino-runner unity
+  # or
+  node export.js dino-runner --stack=unity
+  # general Unity-native scene Tatemono
+  node mizumi.js export unity-scene-starter unity
+  ```
+
+  The generator writes a complete Unity Editor project to `projects/unity/<name>/`. Unity Editor is not required to generate files, but is required to import, preview, or build the project. Generated projects include the main scene, C# gameplay script, SVG source art, Package Manager dependencies, a Windows build entry point, and a GameCI workflow template.
+
+  Unity now has two game modes: `dino_runner` keeps the compact runner template, while `mode: scene` generates general Unity-native 2D/3D scenes. The latter is the extensible path for game projects; neither mode translates Godot GDScript or the Godot DSL.
+
+  ### Runner template mode
+
+  The runner template uses the `dino_runner` game type. The project declaration takes a Unity editor version and optional desktop resolution/SVG scale:
+
+  ```tsx
+  /* @arkzen:unity:project
+  unity_version: 6000.0.38f1
+  name: Pluff Dino Runner
+  width: 1280
+  height: 720
+  pixels_per_unit: 100
+  */
+
+  /* @arkzen:unity:game
+  type: dino_runner
+  dinosaur: dino
+  obstacle: cactus
+  jump_key: Space
+  gravity: -30
+  jump_velocity: 12.5
+  ground_y: -2
+  scroll_speed: 7.5
+  spawn_interval_min: 1.1
+  spawn_interval_max: 2
+  */
+
+  /* @arkzen:unity:visuals
+  background_color: "#b3e0f5"
+  ground_color: "#338a4f"
+  dinosaur_tint: "#ffffff"
+  obstacle_tint: "#ffffff"
+  camera_size: 5
+  ground_thickness: 0.22
+  ground_width: 24
+  dinosaur_size: 1.75
+  obstacle_width: 0.9
+  obstacle_height: 1.25
+  */
+
+  /* @arkzen:unity:controls
+  restart_key: R
+  pointer_enabled: true
+  */
+
+  /* @arkzen:unity:assets
+    dino:
+      source: assets/dino.svg
+    cactus:
+      source: assets/cactus.svg
+  */
+  ```
+
+  `unity_version` must be a full explicit editor version such as `6000.0.38f1`. The supported game type is `dino_runner`. `dinosaur` and `obstacle` must name declared SVG assets. `jump_key` is one of Unity's supported `KeyCode` names: `Space`, `UpArrow`, `W`, `Z`, or `Return`. Gravity must be negative; jump velocity, scroll speed, and spawn intervals must be positive; maximum spawn interval cannot be smaller than minimum. The display width, height, and pixels-per-unit are positive integers and default to 1280, 720, and 100. SVGs are imported through `com.unity.vectorgraphics` and must exist inside the Tatemono's `assets/` directory.
+
+  Optional `@arkzen:unity:visuals` settings configure `background_color`, `ground_color`, `dinosaur_tint`, and `obstacle_tint` as `#RRGGBB`; `camera_size`, `ground_thickness`, `ground_width`, `dinosaur_size`, `obstacle_width`, and `obstacle_height` are positive numbers. These settings affect the generated camera, sprites, and ground. `camera_size` is capped at 20. Optional `@arkzen:unity:controls` supports `restart_key` (`R`, `Return`, `Escape`, or `Backspace`) and `pointer_enabled` (boolean, default `true`). The configured jump key always works; pointer input can be disabled. Both blocks are optional and have the defaults shown above.
+
+  The generated runner uses the configured jump key and, by default, mouse click/tap, scrolls cactus obstacles toward the dinosaur, tracks score, detects collisions, and restarts with the configured key or pointer input.
+
+  ### General scene mode
+
+  Set `mode: scene` in `@arkzen:unity:project` to use the scene generator. It requires `main_scene` as a safe `Assets/Scenes/<name>.unity` path and one or more matching scene blocks. Scenes are described declaratively; the generator creates Unity scene assets, then builds the declared hierarchy and components when the scene starts.
+
+  ```tsx
+  /* @arkzen:unity:project
+  mode: scene
+  unity_version: 6000.0.38f1
+  name: My Unity Game
+  main_scene: Assets/Scenes/Main.unity
+  width: 1280
+  height: 720
+  */
+
+  /* @arkzen:unity:environment
+  ambient_color: "#a9c7d7"
+  ambient_intensity: 0.8
+  fog_enabled: true
+  fog_color: "#c5e0dc"
+  fog_density: 0.008
+  */
+
+  /* @arkzen:unity:scene:main
+  path: Assets/Scenes/Main.unity
+  nodes:
+    - name: Ground
+      type: cube
+      position: [0, -0.5, 0]
+      scale: [20, 1, 20]
+      color: "#456b46"
+      components:
+        - type: box_collider
+          size: [1, 1, 1]
+    - name: Player
+      type: capsule
+      position: [0, 1, 0]
+      components:
+        - type: character_controller
+          speed: 5
+          jump_height: 1.6
+    - name: Sun
+      type: light
+      light_type: directional
+      rotation: [45, -30, 0]
+      intensity: 1.2
+      shadows: true
+    - name: MainCamera
+      type: camera
+      main: true
+      position: [0, 4, -7]
+      components:
+        - type: camera_follow
+          target: Player
+          offset: [0, 4, -7]
+          smooth_speed: 8
+  */
+  /* @arkzen:unity:scene:main:end */
+
+  /* @arkzen:unity:export
+  targets: [windows, linux, macos, webgl]
+  */
+  ```
+
+  Project width/height default to 1280x720. Scene names and object names must be unique within each scene. The main scene path must match exactly one declared scene. Supported object types are `empty`, `cube`, `sphere`, `capsule`, `cylinder`, `plane`, `quad`, `sprite`, `model`, `camera`, and `light`. All objects accept optional `position`, `rotation`, `scale`, and nested `children`; renderable objects accept `color` and `emission` (`#RRGGBB`). Sprite/model references must name a declared asset. Each scene needs exactly one camera with `main: true`. Camera options include `projection: perspective|orthographic`, `field_of_view`, `orthographic_size`, and background `color`.
+
+  `@arkzen:unity:assets` is an optional mapping of asset names to `source: assets/...` paths. Scene mode supports Unity-importable image/SVG, model, and audio formats. Assets are copied into `Assets/Resources/` under their logical names; SVG sprites require the Vector Graphics package. Files must exist within the Tatemono's assets folder and be regular files.
+
+  `@arkzen:unity:environment` optionally accepts `ambient_color`, `ambient_intensity`, `fog_enabled`, `fog_color`, and `fog_density`. Lights are scene objects with `light_type: directional|point|spot`, `intensity`, `range`, `spot_angle`, `shadows`, and optional color.
+
+  Supported scene components:
+
+  - `box_collider` (`size`, `center`), `sphere_collider` (`radius`, `center`), and `capsule_collider` (`radius`, `height`, `center`) configure 3D collision shapes; `rigidbody` sets `mass`, `use_gravity`, and `is_kinematic`.
+  - `character_controller` provides configurable WASD/arrow movement and jumping using Unity's `CharacterController`; `speed`, `jump_height`, `gravity`, `keys`, and `camera_relative` customize it.
+  - `rotate` applies local-axis rotation; `camera_follow` follows a named scene object with offset and smoothing.
+  - `box_collider_2d` (`size`, `offset`), `circle_collider_2d` (`radius`, `offset`), and `rigidbody_2d` (`body_type`, `gravity_scale`) expose Unity 2D physics.
+  - `top_down_controller_2d` and `platform_controller_2d` provide key-configurable Rigidbody2D movement; each requires `rigidbody_2d` and a 2D collider. Top-down dynamic bodies need `gravity_scale: 0` (or use a kinematic body); platformer bodies must be dynamic.
+  - `audio_source` configures a declared audio clip, volume, looping, and play-on-awake.
+
+  `@arkzen:unity:export` accepts a non-empty `targets` list from `windows`, `linux`, `macos`, and `webgl`. The generated `PluffBuild` editor script provides a build method for each target, and all declared scenes are included in build settings. Required platform modules must be installed in Unity Editor; the generated GameCI workflow builds the first configured target. Scene graph objects are created at runtime when a scene starts; use Play mode to view the generated hierarchy/gameplay.
+
+  Scene mode is a general, validated base, not an arbitrary Unity API/code escape hatch. The current generator targets Unity's built-in render pipeline and does not generate custom C# scripts, Animator state machines, UI canvases, shader graphs/post-processing, NPC/dialogue systems, or multiplayer. Those remain parity gaps; Unity networking is intentionally deferred.
+
+  ### Unity scene checklist
+
+  - [ ] `@arkzen:meta` name matches the lowercase Tatemono folder.
+  - [ ] `@arkzen:unity:project` declares `mode: scene`, a full Unity version, and a main scene path.
+  - [ ] Every scene marker has its matching `:end`, a unique name/path, and at least one node.
+  - [ ] Each scene has exactly one camera with `main: true`; camera-follow targets exist in that scene.
+  - [ ] Node and component types/keys are supported; object names are unique within each scene.
+  - [ ] Sprite, model, and audio references use declared assets that exist under `assets/`.
+  - [ ] 2D controllers have a Rigidbody2D and a 2D collider; top-down bodies disable gravity or use kinematic mode.
+  - [ ] Export targets are from `windows`, `linux`, `macos`, and `webgl`; install matching Unity build modules.
+  - [ ] Open the generated project in the configured Unity Editor version and press Play; generated scene objects instantiate at runtime.
+
+  Reference scene project: `tatemonos/unity-scene-starter/core.tsx`; runner reference: `tatemonos/dino-runner/core.tsx`.
+
+  ### Import, build, and CI
+
+  Open the generated project folder in Unity Hub using the exact configured editor version. Allow Package Manager to install Vector Graphics, open `Assets/Scenes/Main.unity`, and press Play. For a Windows build, install Windows Build Support and run:
+
+  ```sh
+  Unity -batchmode -quit -projectPath . -executeMethod PluffBuild.BuildWindows -logFile -
+  ```
+
+  The generated project includes `.github/workflows/unity-build.yml` for a GameCI Windows build. Before running it, add a valid Unity license to repository Actions secrets as `UNITY_LICENSE` and review GameCI's current license activation instructions. The workflow belongs to the exported Unity project, not the Pluffy source repository. This machine cannot run Unity Editor; generated assets and C# therefore require validation with Unity Editor or CI.
+
+  Reference implementation: `tatemonos/dino-runner/core.tsx`, `engine/game/unity/generator.js`.
 
   * * *
 
