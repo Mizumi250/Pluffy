@@ -9,7 +9,7 @@ auth: false
 godot_version: "4.x"
 name: Pluff Godot Game
 main_scene: res://scenes/main.tscn
-renderer: gl_compatibility
+renderer: forward_plus
 window:
   width: 1280
   height: 720
@@ -50,6 +50,7 @@ npcs:
   speed: 0.025
   wander_min: 60
   wander_max: 240
+  interact_action: interact
 dialogues:
   - ["Hey there, traveler!", "This world is bigger than it looks..."]
   - ["Beautiful day, isn't it?", "I've been walking for hours and still haven't seen it all."]
@@ -61,6 +62,38 @@ dialogues:
   - ["I've been here since dawn.", "Still not sure where I'm going."]
   - ["Have you seen any strange lights", "to the north? I keep seeing them at night."]
   - ["Just passing through.", "Same as everyone else, I suppose."]
+visuals:
+  sky:
+    zenith_color: "#1565c0"
+    horizon_color: "#e1f5fe"
+    gradient_texture: sky_layer_0
+    cloud_layers: [sky_layer_1, sky_layer_2, sky_layer_3]
+    cloud_speed: 0.004
+    sun_azimuth: -35
+    sun_elevation: 35
+    ray_strength: 0.32
+  fog:
+    color: "#c5e0dc"
+    density: 0.0006
+    volumetric: true
+    volumetric_density: 0.0012
+  lighting:
+    ambient_color: "#a9c7d7"
+    ambient_energy: 0.72
+  post_processing:
+    tonemap: aces
+    glow: true
+    glow_intensity: 0.55
+    bloom: 0.08
+    ssao: true
+    ssao_radius: 1.5
+    ssao_intensity: 1.15
+    ssil: false
+    ssil_radius: 5.0
+    ssil_intensity: 0.35
+    ssr: true
+    ssr_max_steps: 96
+    ssr_depth_tolerance: 0.2
 */
 /* @arkzen:godot:world:end */
 
@@ -132,6 +165,13 @@ nodes:
     type: DirectionalLight3D
     properties:
       shadow_enabled: true
+      light_color: "#fff5e0"
+      light_energy: 1.55
+      shadow_blur: 2.0
+      shadow_bias: 0.035
+      shadow_normal_bias: 1.4
+      directional_shadow_max_distance: 96.0
+      light_volumetric_fog_energy: 2.4
       rotation_degrees: [-55, -35, 0]
   - name: Player
     instance: res://scenes/player.tscn
@@ -141,7 +181,7 @@ nodes:
       - name: Camera
         type: Camera3D
         properties:
-          projection: orthogonal
+          projection: perspective
           size: 12
           current: true
 */
@@ -163,8 +203,10 @@ components:
       height: 0.9
   - type: AnimatedSprite3D
     name: Sprite
+    position: [0, 0.25, 0]
     texture: player_sheet
-    pixel_size: 0.025
+    pixel_size: 0.03125
+    shaded: true
     billboard: enabled
     animation:
       columns: 6
@@ -173,6 +215,7 @@ components:
       idle_row_offset: 0
       walk_row_offset: 4
       frames_per_second: 8
+      run_frames_per_second: 20
 */
 /* @arkzen:godot:scene:player:end */
 
@@ -186,6 +229,7 @@ movement:
   speed: 4.0
   run_action: run
   run_multiplier: 1.65
+  camera_relative: true
   normalize_diagonal: true
   gravity: project_default
 animation:
@@ -202,7 +246,7 @@ language: gdscript
 target: ../../Player
 projection: perspective
 follow:
-  offset: [0, 1.8, 1.6]
+  offset: [0, 1.8, 2.1]
   smoothing: 0.09
 look_at:
   target_offset: [0, 0.5, 0]

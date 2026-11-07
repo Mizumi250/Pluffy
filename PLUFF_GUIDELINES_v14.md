@@ -2616,7 +2616,7 @@
 
   ### Optional and repeated blocks
 
-  - `@arkzen:godot:world` — procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, and `dialogues`.
+  - `@arkzen:godot:world` — procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, `dialogues`, and optional `visuals`.
   - `@arkzen:godot:input` — mapping of action names to keys. Action names use lowercase letters, digits, and underscores. Use plural key arrays such as `keys: [A, LEFT]`.
   - `@arkzen:godot:assets` — texture assets grouped under `textures`, with `source`, optional `filter`, and optional `alpha`.
   - Additional `@arkzen:godot:scene:<name>` blocks may be declared when representing separate scenes or instances.
@@ -2656,6 +2656,69 @@
 
   Relative asset sources are resolved from the Tatemono directory. Supported asset categories include images, audio, fonts, models, videos, and JSON/XML/YAML/TOML/CSV data by file extension. Copy only declared assets; missing optional assets produce generator warnings, while missing required assets can fail export.
 
+  ### World visuals and interaction
+
+  The optional `visuals` mapping in `@arkzen:godot:world` configures the generated shader sky and `WorldEnvironment`. Texture values refer to names declared in `@arkzen:godot:assets`.
+
+  ```yaml
+  visuals:
+    sky:
+      zenith_color: "#1565c0"
+      horizon_color: "#e1f5fe"
+      gradient_texture: sky_layer_0
+      cloud_layers: [sky_layer_1, sky_layer_2, sky_layer_3]
+      cloud_speed: 0.004
+      sun_azimuth: -35
+      sun_elevation: 35
+      ray_strength: 0.14
+    fog:
+      color: "#e1f5fe"
+      density: 0.0006
+      volumetric: true
+      volumetric_density: 0.0012
+    lighting:
+      ambient_color: "#c8e8ff"
+      ambient_energy: 0.72
+    post_processing:
+      tonemap: aces
+      glow: true
+      glow_intensity: 0.55
+      bloom: 0.08
+      ssao: true
+      ssao_radius: 1.5
+      ssao_intensity: 1.15
+      ssil: false
+      ssil_radius: 5.0
+      ssil_intensity: 0.35
+      ssr: true
+      ssr_max_steps: 96
+      ssr_depth_tolerance: 0.2
+  ```
+
+  - `sky.zenith_color` and `sky.horizon_color` are `#RRGGBB` colors. `gradient_texture`, when present, must name a declared texture.
+  - `sky.cloud_layers` is optional and accepts up to three declared texture names. `sky.cloud_speed` is optional and must be between 0 and 1. `sun_azimuth` (-360 to 360 degrees), `sun_elevation` (-90 to 90 degrees), and `ray_strength` (0 to 2) control the shader sun, halo, and rays.
+  - `fog.color` is an optional `#RRGGBB` color; `fog.density` and `volumetric_density` must be non-negative. Volumetric fog requires the `forward_plus` renderer and a `DirectionalLight3D` with volumetric fog energy enabled.
+  - `lighting.ambient_color` is an optional `#RRGGBB` color; `lighting.ambient_energy` must be non-negative.
+  - `post_processing.tonemap` accepts `linear`, `reinhardt`, `filmic`, or `aces`. `glow`, `ssao`, `ssil`, and `ssr` are optional booleans. Their intensity/radius fields, `ssr_depth_tolerance`, and `bloom` are optional non-negative numbers; `ssr_max_steps` must be a positive integer. Volumetric fog, SSAO, SSIL, SSR, and glow require `renderer: forward_plus`; they do not run in Compatibility mode.
+  - The generated Godot environment supports ACES tone mapping, multi-level bloom, screen-space ambient occlusion/indirect lighting/reflections, and volumetric light scattering. Its sky is rendered as a real Godot sky background (not a large mesh); this keeps it behind scene objects at every camera distance. Use restraint with fog and bloom to preserve contrast and avoid washing out pixel-art textures.
+
+  NPC conversation input can be configured under `world.npcs`:
+
+  ```yaml
+  npcs:
+    count: 10
+    spawn_range: 14
+    interact_radius: 1.2
+    speed: 0.025
+    wander_min: 60
+    wander_max: 240
+    interact_action: interact
+  dialogues:
+    - ["Hello, traveler.", "Welcome to this place."]
+  ```
+
+  `interact_action` is optional and must name an action declared in `@arkzen:godot:input`. `dialogues` is an optional list of lists of strings. The generated world animates wandering NPCs, shows a nearby interaction prompt and dialogue panel, pauses player movement during dialogue, and displays a live minimap.
+
   ### Scene declarations
 
   Supported root and child node types include `Node`, `Node2D`, `Node3D`, `WorldEnvironment`, `DirectionalLight3D`, `MeshInstance3D`, `StaticBody3D`, `CharacterBody3D`, `CollisionShape3D`, `Camera3D`, `Sprite3D`, and `AnimatedSprite3D`.
@@ -2680,7 +2743,8 @@
     - type: AnimatedSprite3D
       name: Sprite
       texture: player_sheet
-      pixel_size: 0.025
+      position: [0, 0.25, 0]
+      pixel_size: 0.03125
       billboard: enabled
       animation:
         columns: 6
@@ -2689,11 +2753,12 @@
         idle_row_offset: 0
         walk_row_offset: 4
         frames_per_second: 8
+        run_frames_per_second: 20
   */
   /* @arkzen:godot:scene:player:end */
   ```
 
-  For `AnimatedSprite3D`, `columns` and `rows` must be positive integers. `directions` must be a non-empty list. `idle_row_offset` and `walk_row_offset` must stay within the sprite-sheet rows. Scene instances must reference a declared scene path.
+  For `AnimatedSprite3D`, `columns` and `rows` must be positive integers. `directions` must be a non-empty list. `idle_row_offset`, `walk_row_offset`, and optional `run_row_offset` must stay within the sprite-sheet rows. `run_row_offset` defaults to `walk_row_offset`; `run_frames_per_second` defaults to 1.65 times `frames_per_second`. When `movement.run_action` is configured, the generated controller plays `run_<direction>` while that input is held, using the walk row by default or the configured run row. `pixel_size` scales each source pixel in world units; tune the sprite's local `position` to align its feet with the ground. Scene instances must reference a declared scene path.
 
   ### Behavior declarations
 
@@ -2710,6 +2775,7 @@
     speed: 4.0
     run_action: run
     run_multiplier: 1.65
+    camera_relative: true
     normalize_diagonal: true
     gravity: project_default
   animation:
@@ -2720,7 +2786,7 @@
   /* @arkzen:godot:behavior:player:end */
   ```
 
-  `language` must be `gdscript`; `extends` must be `CharacterBody3D`; movement input names should match declared `@arkzen:godot:input` actions. The camera behavior uses `script`, `node`, `target`, `projection`, `follow.offset`, `follow.smoothing`, and optional `look_at.target_offset`.
+  `language` must be `gdscript`; `extends` must be `CharacterBody3D`; movement input names should match declared `@arkzen:godot:input` actions. Optional `movement.run_action` names a declared input action and `movement.run_multiplier` scales movement speed while it is held. `movement.camera_relative` is an optional boolean, defaults to `false`, and makes player movement and sprite facing follow the active camera when enabled. The camera behavior uses `script`, `node`, `target`, `projection`, `follow.offset`, `follow.smoothing`, and optional `look_at.target_offset`.
 
   Do not invent arbitrary GDScript methods or DSL markers. The current validator supports generated player and camera behaviors only; custom behavior names are rejected.
 
@@ -2767,6 +2833,10 @@
   - [ ] Animated sprite dimensions, rows, offsets, and directions are valid.
   - [ ] Input action names and movement animation references are consistent.
   - [ ] Asset paths exist and use supported extensions.
+  - [ ] Optional world visual textures are declared; colors and numeric settings use supported values.
+  - [ ] Optional NPC `interact_action` references a declared input action and dialogue values are lists of strings.
+  - [ ] `movement.camera_relative`, when present, is a boolean.
+  - [ ] Optional run actions are declared in `godot:input`, and run sheet rows/speeds fit the animation data.
   - [ ] Export presets contain only supported platform keys and boolean `runnable` values.
   - [ ] Every opening marker closes with the exact matching `/* @arkzen:<marker>:end */`.
 

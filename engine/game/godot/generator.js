@@ -145,6 +145,9 @@ function parseTatemono(source, tatemonoPath) {
   for (const actionName of behaviors.get('player').movement?.input ?? []) {
     assert(input.actions[actionName], `Player behavior refers to undeclared input action "${actionName}"`)
   }
+  if (behaviors.get('player').movement?.run_action) {
+    assert(input.actions[behaviors.get('player').movement.run_action], `Player behavior refers to undeclared run action "${behaviors.get('player').movement.run_action}"`)
+  }
 
   const assets = parseAssets(blocks.get('godot:assets') ?? {})
   const world = blocks.get('godot:world') ?? {}
@@ -155,11 +158,69 @@ function parseTatemono(source, tatemonoPath) {
     assert(Number.isInteger(world.seed) && world.seed >= 0, 'Godot world seed must be a non-negative integer')
     assert(world.props && typeof world.props === 'object', 'Godot world props must be a mapping')
     assert(world.npcs && typeof world.npcs === 'object', 'Godot world npcs must be a mapping')
+    if (world.npcs.count !== undefined) assert(Number.isInteger(world.npcs.count) && world.npcs.count >= 0, 'Godot world npcs.count must be a non-negative integer')
+    if (world.npcs.spawn_range !== undefined) assert(Number.isFinite(world.npcs.spawn_range) && world.npcs.spawn_range >= 0, 'Godot world npcs.spawn_range must be non-negative')
+    if (world.npcs.interact_radius !== undefined) assert(Number.isFinite(world.npcs.interact_radius) && world.npcs.interact_radius > 0, 'Godot world npcs.interact_radius must be positive')
+    if (world.npcs.speed !== undefined) assert(Number.isFinite(world.npcs.speed) && world.npcs.speed >= 0, 'Godot world npcs.speed must be non-negative')
+    if (world.npcs.wander_min !== undefined) assert(Number.isFinite(world.npcs.wander_min) && world.npcs.wander_min > 0, 'Godot world npcs.wander_min must be positive')
+    if (world.npcs.wander_max !== undefined) assert(Number.isFinite(world.npcs.wander_max) && world.npcs.wander_max >= (world.npcs.wander_min ?? 1), 'Godot world npcs.wander_max must be at least wander_min')
+    if (world.npcs.interact_action !== undefined) {
+      assert(typeof world.npcs.interact_action === 'string' && input.actions[world.npcs.interact_action], 'Godot world npcs.interact_action must reference a declared input action')
+    }
+    if (world.dialogues !== undefined) {
+      assert(Array.isArray(world.dialogues) && world.dialogues.every(lines => Array.isArray(lines) && lines.every(line => typeof line === 'string')), 'Godot world dialogues must be a list of lists of strings')
+    }
     for (const [name, prop] of Object.entries(world.props)) {
       assert(Number.isInteger(prop.count) && prop.count >= 0, `World prop "${name}" count must be a non-negative integer`)
       assert(Number.isFinite(prop.size) && prop.size > 0, `World prop "${name}" size must be positive`)
       assert(typeof prop.collision === 'boolean', `World prop "${name}" collision must be true or false`)
       assert(assets.has(prop.texture), `World prop "${name}" references undeclared texture "${prop.texture}"`)
+    }
+    const visuals = world.visuals ?? {}
+    assert(visuals && typeof visuals === 'object' && !Array.isArray(visuals), 'Godot world visuals must be a mapping')
+    const sky = visuals.sky ?? {}
+    assert(sky && typeof sky === 'object' && !Array.isArray(sky), 'Godot world visuals.sky must be a mapping')
+    if (sky.gradient_texture !== undefined) {
+      assert(typeof sky.gradient_texture === 'string' && assets.has(sky.gradient_texture), 'Godot world sky.gradient_texture must reference a declared texture')
+    }
+    if (sky.cloud_layers !== undefined) {
+      assert(Array.isArray(sky.cloud_layers) && sky.cloud_layers.length <= 3, 'Godot world sky.cloud_layers must list at most three textures')
+      assert(sky.cloud_layers.every(name => typeof name === 'string' && assets.has(name)), 'Godot world sky.cloud_layers must reference declared textures')
+    }
+    for (const key of ['zenith_color', 'horizon_color']) {
+      if (sky[key] !== undefined) assert(/^#[0-9a-f]{6}$/i.test(sky[key]), `Godot world sky.${key} must be a #RRGGBB color`)
+    }
+    if (sky.cloud_speed !== undefined) assert(Number.isFinite(sky.cloud_speed) && sky.cloud_speed >= 0 && sky.cloud_speed <= 1, 'Godot world sky.cloud_speed must be between 0 and 1')
+    for (const [key, min, max] of [
+      ['sun_azimuth', -360, 360],
+      ['sun_elevation', -90, 90],
+      ['ray_strength', 0, 2],
+    ]) {
+      if (sky[key] !== undefined) assert(Number.isFinite(sky[key]) && sky[key] >= min && sky[key] <= max, `Godot world sky.${key} must be between ${min} and ${max}`)
+    }
+    const fog = visuals.fog ?? {}
+    assert(fog && typeof fog === 'object' && !Array.isArray(fog), 'Godot world visuals.fog must be a mapping')
+    if (fog.color !== undefined) assert(/^#[0-9a-f]{6}$/i.test(fog.color), 'Godot world fog.color must be a #RRGGBB color')
+    if (fog.density !== undefined) assert(Number.isFinite(fog.density) && fog.density >= 0, 'Godot world fog.density must be non-negative')
+    if (fog.volumetric !== undefined) assert(typeof fog.volumetric === 'boolean', 'Godot world fog.volumetric must be true or false')
+    if (fog.volumetric_density !== undefined) assert(Number.isFinite(fog.volumetric_density) && fog.volumetric_density >= 0, 'Godot world fog.volumetric_density must be non-negative')
+    const lighting = visuals.lighting ?? {}
+    assert(lighting && typeof lighting === 'object' && !Array.isArray(lighting), 'Godot world visuals.lighting must be a mapping')
+    if (lighting.ambient_color !== undefined) assert(/^#[0-9a-f]{6}$/i.test(lighting.ambient_color), 'Godot world lighting.ambient_color must be a #RRGGBB color')
+    if (lighting.ambient_energy !== undefined) assert(Number.isFinite(lighting.ambient_energy) && lighting.ambient_energy >= 0, 'Godot world lighting.ambient_energy must be non-negative')
+    const postProcessing = visuals.post_processing ?? {}
+    assert(postProcessing && typeof postProcessing === 'object' && !Array.isArray(postProcessing), 'Godot world visuals.post_processing must be a mapping')
+    if (postProcessing.glow !== undefined) assert(typeof postProcessing.glow === 'boolean', 'Godot world post_processing.glow must be true or false')
+    for (const key of ['ssao', 'ssil', 'ssr']) {
+      if (postProcessing[key] !== undefined) assert(typeof postProcessing[key] === 'boolean', `Godot world post_processing.${key} must be true or false`)
+    }
+    if (postProcessing.tonemap !== undefined) assert(['linear', 'reinhardt', 'filmic', 'aces'].includes(postProcessing.tonemap), 'Godot world post_processing.tonemap must be linear, reinhardt, filmic, or aces')
+    for (const key of ['glow_intensity', 'bloom', 'ssao_radius', 'ssao_intensity', 'ssil_radius', 'ssil_intensity', 'ssr_depth_tolerance']) {
+      if (postProcessing[key] !== undefined) assert(Number.isFinite(postProcessing[key]) && postProcessing[key] >= 0, `Godot world post_processing.${key} must be non-negative`)
+    }
+    if (postProcessing.ssr_max_steps !== undefined) assert(Number.isInteger(postProcessing.ssr_max_steps) && postProcessing.ssr_max_steps > 0, 'Godot world post_processing.ssr_max_steps must be a positive integer')
+    if (project.renderer !== 'forward_plus' && (fog.volumetric || postProcessing.ssao || postProcessing.ssil || postProcessing.ssr || postProcessing.glow)) {
+      assert(false, 'Godot volumetric fog, SSAO, SSIL, SSR, and glow require renderer: forward_plus')
     }
   }
   for (const scene of scenes.values()) {
@@ -203,9 +264,13 @@ function validateNodeConfig(config, context) {
     assert(animation && Number.isInteger(animation.columns) && animation.columns > 0, `${context} AnimatedSprite3D needs a positive animation.columns`)
     assert(Number.isInteger(animation.rows) && animation.rows > 0, `${context} AnimatedSprite3D needs a positive animation.rows`)
     assert(Array.isArray(animation.directions) && animation.directions.length > 0, `${context} AnimatedSprite3D needs animation.directions`)
-    for (const key of ['idle_row_offset', 'walk_row_offset']) {
+    for (const key of ['idle_row_offset', 'walk_row_offset', 'run_row_offset']) {
+      if (animation[key] === undefined && key === 'run_row_offset') continue
       const offset = animation[key] ?? 0
       assert(Number.isInteger(offset) && offset >= 0 && offset + animation.directions.length <= animation.rows, `${context} AnimatedSprite3D ${key} exceeds the sprite sheet rows`)
+    }
+    if (animation.run_frames_per_second !== undefined) {
+      assert(Number.isFinite(animation.run_frames_per_second) && animation.run_frames_per_second > 0, `${context} AnimatedSprite3D run_frames_per_second must be positive`)
     }
   }
   if (config.children) {
@@ -286,6 +351,7 @@ function buildWorldData(world) {
     halfDepth,
     props,
     npcs,
+    npcSettings: world.npcs ?? {},
   }
 }
 
@@ -408,6 +474,67 @@ function sceneFile(scene, scriptPath) {
   ].join('\n')
 }
 
+const SKY_BACKGROUND_SHADER = `shader_type sky;
+
+uniform vec4 zenith_color : source_color = vec4(0.08, 0.30, 0.68, 1.0);
+uniform vec4 horizon_color : source_color = vec4(0.69, 0.90, 0.98, 1.0);
+uniform sampler2D sky_gradient : source_color, repeat_enable, filter_linear;
+uniform float gradient_opacity = 0.0;
+uniform sampler2D cloud_layer_0 : source_color, repeat_enable, filter_linear;
+uniform sampler2D cloud_layer_1 : source_color, repeat_enable, filter_linear;
+uniform sampler2D cloud_layer_2 : source_color, repeat_enable, filter_linear;
+uniform float cloud_opacity_0 = 0.0;
+uniform float cloud_opacity_1 = 0.0;
+uniform float cloud_opacity_2 = 0.0;
+uniform float cloud_speed = 0.004;
+uniform float sun_azimuth = -0.610865;
+uniform float sun_elevation = 0.610865;
+uniform float ray_strength = 0.2;
+
+void sky() {
+	vec2 sky_uv = vec2(atan(EYEDIR.x, -EYEDIR.z) / TAU + 0.5, 0.5 - asin(clamp(EYEDIR.y, -1.0, 1.0)) / PI);
+	float sky_height = max(EYEDIR.y, 0.0);
+	float horizon_haze = exp(-abs(EYEDIR.y) * 5.0);
+	vec3 sky_color = mix(horizon_color.rgb, zenith_color.rgb, smoothstep(0.0, 0.85, sky_height));
+	sky_color = mix(sky_color, horizon_color.rgb, horizon_haze * 0.18);
+	vec3 gradient = texture(sky_gradient, sky_uv).rgb;
+	sky_color = mix(sky_color, gradient, gradient_opacity);
+	if (!AT_CUBEMAP_PASS) {
+		vec2 cloud_uv_0 = vec2(sky_uv.x * 0.85 + TIME * cloud_speed * 0.12, sky_uv.y);
+		vec2 cloud_uv_1 = vec2(sky_uv.x + TIME * cloud_speed * 0.35, sky_uv.y * 0.9);
+		vec2 cloud_uv_2 = vec2(sky_uv.x * 1.2 + TIME * cloud_speed, sky_uv.y * 1.05);
+		vec4 cloud_0 = texture(cloud_layer_0, cloud_uv_0);
+		vec4 cloud_1 = texture(cloud_layer_1, cloud_uv_1);
+		vec4 cloud_2 = texture(cloud_layer_2, cloud_uv_2);
+		sky_color = mix(sky_color, cloud_0.rgb, cloud_0.a * cloud_opacity_0);
+		sky_color = mix(sky_color, cloud_1.rgb, cloud_1.a * cloud_opacity_1);
+		sky_color = mix(sky_color, cloud_2.rgb, cloud_2.a * cloud_opacity_2);
+	}
+	float sun_elevation_visibility = smoothstep(-0.02, 0.12, sin(sun_elevation));
+	vec2 sun_uv = vec2(fract(0.5 + sun_azimuth / TAU), 0.5 - sun_elevation / PI);
+	vec2 sun_delta = sky_uv - sun_uv;
+	sun_delta.x = mod(sun_delta.x + 0.5, 1.0) - 0.5;
+	float sun_distance = length(sun_delta);
+	float sun_disc = (1.0 - smoothstep(0.006, 0.013, sun_distance)) * sun_elevation_visibility;
+	float sun_halo = exp(-sun_distance * 25.0) * sun_elevation_visibility * 0.22;
+	float ray_angle = atan(sun_delta.y, sun_delta.x);
+	float ray_spokes = pow(0.5 + 0.5 * cos(ray_angle * 14.0 + sin(ray_angle * 3.0) * 1.4), 12.0);
+	float sun_rays = ray_spokes * exp(-sun_distance * 15.0) * smoothstep(0.008, 0.04, sun_distance) * ray_strength * sun_elevation_visibility;
+	vec3 sunlight = LIGHT0_ENABLED ? LIGHT0_COLOR * LIGHT0_ENERGY : vec3(1.0, 0.78, 0.56);
+	sky_color += sunlight * (sun_disc * 3.0 + sun_halo + sun_rays);
+	COLOR = sky_color;
+}`
+
+const SOFT_SHADOW_SHADER = `shader_type spatial;
+render_mode unshaded, cull_disabled;
+
+void fragment() {
+	float distance_from_center = distance(UV, vec2(0.5));
+	float alpha = (1.0 - smoothstep(0.12, 0.5, distance_from_center)) * 0.34;
+	ALBEDO = vec3(0.06, 0.09, 0.055);
+	ALPHA = alpha;
+}`
+
 function jsonConstant(value) {
   return JSON.stringify(JSON.stringify(value))
 }
@@ -422,13 +549,32 @@ const INPUT_JSON = ${jsonConstant(input.actions)}
 const ASSETS_JSON = ${jsonConstant(Object.fromEntries([...assets].map(([key, item]) => [key, item.target])))}
 const BEHAVIORS_JSON = ${jsonConstant(behaviorByNode)}
 const WORLD_JSON = ${jsonConstant(world ?? {})}
+const SHADOW_SHADER_SOURCE := ${godotString(SOFT_SHADOW_SHADER)}
+var _world_data: Dictionary = {}
+var _npc_states: Array[Dictionary] = []
+var _minimap: Control
+var _player_marker: ColorRect
+var _npc_markers: Array[ColorRect] = []
+var _dialogue_panel: PanelContainer
+var _dialogue_prompt: Label
+var _dialogue_name: Label
+var _dialogue_text: Label
+var _dialogue_open := false
+var _active_npc: Dictionary = {}
+var _dialogue_line := 0
 
 func _ready() -> void:
+\t_world_data = JSON.parse_string(WORLD_JSON)
 \t_setup_input()
 \t_spawn_ethereane_world()
 \tvar nodes: Array = JSON.parse_string(NODES_JSON)
 \tfor node_config in nodes:
 \t\t_spawn_node(node_config, self)
+
+func _process(delta: float) -> void:
+\t_update_npcs(delta)
+\t_update_interaction()
+\t_update_minimap()
 
 func _setup_input() -> void:
 \tvar actions: Dictionary = JSON.parse_string(INPUT_JSON)
@@ -490,6 +636,7 @@ func _spawn_ethereane_world() -> void:
 \t\tif not texture_path.is_empty() and ResourceLoader.exists(texture_path):
 \t\t\tprop.texture = load(texture_path) as Texture2D
 \t\t\tprop.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+\t\tprop.shaded = true
 \t\tprop.pixel_size = float(prop_variant.get("size", 0.85)) / 32.0
 \t\tprop.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 \t\tprop.position = Vector3(float(prop_variant.get("x", 0)), float(prop_variant.get("size", 0.85)) / 2.0, float(prop_variant.get("z", 0)))
@@ -503,6 +650,267 @@ func _spawn_ethereane_world() -> void:
 \t\tnpc.position = Vector3(float(npc_variant.get("x", 0)), 0.75, float(npc_variant.get("z", 0)))
 \t\t_create_world_character(npc, assets.get("player_sheet", ""))
 \t\tnpc_nodes.add_child(npc)
+\t\t_npc_states.append({
+\t\t\t"node": npc,
+\t\t\t"position": Vector2(npc.position.x, npc.position.z),
+\t\t\t"velocity": Vector2.ZERO,
+\t\t\t"wander_time": 0.0,
+\t\t\t"dialogue_index": int(npc_variant.get("dialogueIndex", 0)),
+\t\t\t"direction": "down",
+\t\t})
+\t_setup_hud(world)
+
+func _create_sky(world: Dictionary, assets: Dictionary) -> Sky:
+\tvar visuals: Dictionary = world.get("visuals", {})
+\tvar sky: Dictionary = visuals.get("sky", {})
+\tvar shader := Shader.new()
+\tshader.code = ${godotString(SKY_BACKGROUND_SHADER)}
+\tvar material := ShaderMaterial.new()
+\tmaterial.shader = shader
+\tmaterial.set_shader_parameter("zenith_color", Color(str(sky.get("zenith_color", "#1565c0"))))
+\tmaterial.set_shader_parameter("horizon_color", Color(str(sky.get("horizon_color", "#e1f5fe"))))
+\tmaterial.set_shader_parameter("cloud_speed", float(sky.get("cloud_speed", 0.004)))
+\tmaterial.set_shader_parameter("sun_azimuth", deg_to_rad(float(sky.get("sun_azimuth", -35.0))))
+\tmaterial.set_shader_parameter("sun_elevation", deg_to_rad(float(sky.get("sun_elevation", 35.0))))
+\tmaterial.set_shader_parameter("ray_strength", float(sky.get("ray_strength", 0.2)))
+\tvar gradient_name := str(sky.get("gradient_texture", ""))
+\tif assets.has(gradient_name):
+\t\tvar gradient_path := str(assets[gradient_name])
+\t\tvar gradient_texture := load(gradient_path) as Texture2D
+\t\tif gradient_texture == null:
+\t\t\tpush_error("Unable to load Godot sky gradient: " + gradient_path)
+\t\telse:
+\t\t\tmaterial.set_shader_parameter("sky_gradient", gradient_texture)
+\t\t\tmaterial.set_shader_parameter("gradient_opacity", 0.22)
+\tvar cloud_names: Array = sky.get("cloud_layers", [])
+\tvar cloud_opacities := [0.72, 0.66, 0.6]
+\tfor index in range(mini(cloud_names.size(), 3)):
+\t\tvar texture_name := str(cloud_names[index])
+\t\tvar texture_path := str(assets.get(texture_name, ""))
+\t\tif texture_path.is_empty():
+\t\t\tcontinue
+\t\tvar cloud_texture := load(texture_path) as Texture2D
+\t\tif cloud_texture == null:
+\t\t\tpush_error("Unable to load Godot sky cloud texture '%s': %s" % [texture_name, texture_path])
+\t\telse:
+\t\t\tmaterial.set_shader_parameter("cloud_layer_%d" % index, cloud_texture)
+\t\t\tmaterial.set_shader_parameter("cloud_opacity_%d" % index, cloud_opacities[index])
+\tvar sky_resource := Sky.new()
+\tsky_resource.sky_material = material
+\tsky_resource.process_mode = Sky.PROCESS_MODE_REALTIME
+\treturn sky_resource
+
+func _setup_hud(world: Dictionary) -> void:
+\tvar layer := CanvasLayer.new()
+\tlayer.name = "GameHUD"
+\tadd_child(layer)
+\tvar map := Control.new()
+\tmap.name = "Minimap"
+\tmap.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+\tmap.offset_left = -108.0
+\tmap.offset_right = -12.0
+\tmap.offset_top = 12.0
+\tmap.offset_bottom = 72.0
+\tmap.mouse_filter = Control.MOUSE_FILTER_IGNORE
+\tlayer.add_child(map)
+\t_minimap = map
+\tvar map_background := ColorRect.new()
+\tmap_background.color = Color(0.035, 0.09, 0.055, 0.82)
+\tmap_background.size = Vector2(96, 60)
+\tmap.add_child(map_background)
+\t_player_marker = _create_map_marker(map, Color("#ffffff"), Vector2(5, 5))
+\tfor _npc in world.get("npcs", []):
+\t\t_npc_markers.append(_create_map_marker(map, Color("#ffc85a"), Vector2(3, 3)))
+\t_dialogue_prompt = Label.new()
+\t_dialogue_prompt.text = ""
+\t_dialogue_prompt.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+\t_dialogue_prompt.add_theme_color_override("font_color", Color("#ffffff"))
+\t_dialogue_prompt.add_theme_font_size_override("font_size", 16)
+\t_dialogue_prompt.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+\t_dialogue_prompt.offset_left = -180.0
+\t_dialogue_prompt.offset_right = 180.0
+\t_dialogue_prompt.offset_top = -184.0
+\t_dialogue_prompt.offset_bottom = -156.0
+\tlayer.add_child(_dialogue_prompt)
+\t_dialogue_panel = PanelContainer.new()
+\t_dialogue_panel.name = "DialoguePanel"
+\t_dialogue_panel.visible = false
+\t_dialogue_panel.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+\t_dialogue_panel.offset_left = -250.0
+\t_dialogue_panel.offset_right = 250.0
+\t_dialogue_panel.offset_top = -146.0
+\t_dialogue_panel.offset_bottom = -66.0
+\tvar panel_style := StyleBoxFlat.new()
+\tpanel_style.bg_color = Color(0.035, 0.055, 0.09, 0.94)
+\tpanel_style.border_color = Color(0.7, 0.86, 0.76, 0.8)
+\tpanel_style.set_border_width_all(2)
+\tpanel_style.set_corner_radius_all(8)
+\t_dialogue_panel.add_theme_stylebox_override("panel", panel_style)
+\tlayer.add_child(_dialogue_panel)
+\tvar dialogue_box := VBoxContainer.new()
+\tdialogue_box.add_theme_constant_override("separation", 6)
+\t_dialogue_panel.add_child(dialogue_box)
+\t_dialogue_name = Label.new()
+\t_dialogue_name.add_theme_color_override("font_color", Color("#a8d8a8"))
+\t_dialogue_name.add_theme_font_size_override("font_size", 12)
+\tdialogue_box.add_child(_dialogue_name)
+\t_dialogue_text = Label.new()
+\t_dialogue_text.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+\t_dialogue_text.add_theme_color_override("font_color", Color("#eeeeee"))
+\t_dialogue_text.add_theme_font_size_override("font_size", 15)
+\tdialogue_box.add_child(_dialogue_text)
+\tfor npc in _npc_states:
+\t\tvar sprite := npc["node"] as AnimatedSprite3D
+\t\t_create_ground_shadow(sprite, -0.73)
+
+func _create_ground_shadow(parent: Node3D, local_y: float) -> void:
+\tvar shadow := MeshInstance3D.new()
+\tshadow.name = "GroundShadow"
+\tvar shadow_mesh := PlaneMesh.new()
+\tshadow_mesh.size = Vector2(0.9, 0.9)
+\tshadow.mesh = shadow_mesh
+\tshadow.rotation_degrees.x = -90.0
+\tshadow.position = Vector3(0, local_y, 0)
+\tvar shadow_shader := Shader.new()
+\tshadow_shader.code = SHADOW_SHADER_SOURCE
+\tvar shadow_material := ShaderMaterial.new()
+\tshadow_material.shader = shadow_shader
+\tshadow.material_override = shadow_material
+\tshadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+\tparent.add_child(shadow)
+
+func _create_map_marker(parent: Control, color: Color, marker_size: Vector2) -> ColorRect:
+\tvar marker := ColorRect.new()
+\tmarker.color = color
+\tmarker.size = marker_size
+\tmarker.mouse_filter = Control.MOUSE_FILTER_IGNORE
+\tparent.add_child(marker)
+\treturn marker
+
+func _update_minimap() -> void:
+\tif _player_marker == null:
+\t\treturn
+\tvar player := get_node_or_null("Player") as Node3D
+\tif player == null:
+\t\treturn
+\tvar world_width := float(_world_data.get("worldWidth", 100.0))
+\tvar world_depth := float(_world_data.get("worldDepth", 64.0))
+\t_player_marker.position = Vector2(
+\t\t4.0 + (player.global_position.x + world_width / 2.0) / world_width * 88.0,
+\t\t4.0 + (player.global_position.z + world_depth / 2.0) / world_depth * 52.0
+\t)
+\tfor index in range(mini(_npc_markers.size(), _npc_states.size())):
+\t\tvar npc_node := _npc_states[index]["node"] as Node3D
+\t\t_npc_markers[index].position = Vector2(
+\t\t\t4.0 + (npc_node.global_position.x + world_width / 2.0) / world_width * 88.0,
+\t\t\t4.0 + (npc_node.global_position.z + world_depth / 2.0) / world_depth * 52.0
+\t\t)
+
+func _update_npcs(delta: float) -> void:
+\tif _npc_states.is_empty():
+\t\treturn
+\tvar half_width := float(_world_data.get("halfWidth", 48.0))
+\tvar half_depth := float(_world_data.get("halfDepth", 30.0))
+\tvar npc_config: Dictionary = _world_data.get("npcSettings", {})
+\tvar speed := float(npc_config.get("speed", 0.025)) * 60.0
+\tvar wait_min := float(npc_config.get("wander_min", 60)) / 60.0
+\tvar wait_max := float(npc_config.get("wander_max", 240)) / 60.0
+\tfor state in _npc_states:
+\t\tvar npc := state["node"] as AnimatedSprite3D
+\t\tif _dialogue_open:
+\t\t\tcontinue
+\t\tstate["wander_time"] = float(state["wander_time"]) - delta
+\t\tif float(state["wander_time"]) <= 0.0:
+\t\t\tstate["wander_time"] = randf_range(wait_min, maxf(wait_min, wait_max))
+\t\t\tstate["velocity"] = Vector2.ZERO if randf() < 0.25 else Vector2.RIGHT.rotated(randf() * TAU)
+\t\tvar velocity: Vector2 = state["velocity"]
+\t\tif velocity.length_squared() > 0.0:
+\t\t\tvar next_position: Vector2 = state["position"] + velocity * speed * delta
+\t\t\tnext_position.x = clampf(next_position.x, -half_width, half_width)
+\t\t\tnext_position.y = clampf(next_position.y, -half_depth, half_depth)
+\t\t\tstate["position"] = next_position
+\t\t\tnpc.position.x = next_position.x
+\t\t\tnpc.position.z = next_position.y
+\t\t\tstate["direction"] = _camera_facing_direction(velocity)
+\t\t\tif npc.sprite_frames != null:
+\t\t\t\tnpc.play("walk_" + str(state["direction"]))
+\t\telse:
+\t\t\tif npc.sprite_frames != null:
+\t\t\t\tnpc.play("idle_" + str(state["direction"]))
+
+func _direction_name(direction: Vector2) -> String:
+\tif absf(direction.x) > absf(direction.y):
+\t\treturn "right" if direction.x > 0.0 else "left"
+\treturn "down" if direction.y > 0.0 else "up"
+
+func _camera_facing_direction(direction: Vector2) -> String:
+\tvar camera := get_viewport().get_camera_3d()
+\tif camera == null:
+\t\treturn _direction_name(direction)
+\tvar forward := -camera.global_basis.z
+\tvar right := camera.global_basis.x
+\tforward.y = 0.0
+\tright.y = 0.0
+\tif forward.length_squared() <= 0.0001 or right.length_squared() <= 0.0001:
+\t\treturn _direction_name(direction)
+\tvar movement := Vector3(direction.x, 0.0, direction.y)
+\tvar forward_dot := movement.dot(forward.normalized())
+\tvar right_dot := movement.dot(right.normalized())
+\tif absf(right_dot) >= absf(forward_dot):
+\t\treturn "right" if right_dot > 0.0 else "left"
+\treturn "up" if forward_dot > 0.0 else "down"
+
+func _update_interaction() -> void:
+\tif _dialogue_prompt == null:
+\t\treturn
+\tvar player := get_node_or_null("Player") as Node3D
+\tif player == null:
+\t\treturn
+\tvar npc_config: Dictionary = _world_data.get("npcSettings", {})
+\tif _dialogue_open:
+\t\tif Input.is_action_just_pressed(str(npc_config.get("interact_action", "interact"))):
+\t\t\t_advance_dialogue()
+\t\treturn
+\tvar nearest: Dictionary = {}
+\tvar nearest_distance := float(npc_config.get("interact_radius", 1.2))
+\tfor state in _npc_states:
+\t\tvar npc := state["node"] as Node3D
+\t\tvar distance := Vector2(player.global_position.x - npc.global_position.x, player.global_position.z - npc.global_position.z).length()
+\t\tif distance < nearest_distance:
+\t\t\tnearest = state
+\t\t\tnearest_distance = distance
+\t_active_npc = nearest
+\t_dialogue_prompt.visible = not nearest.is_empty()
+\tif not nearest.is_empty():
+\t\tvar interact_action := str(npc_config.get("interact_action", "interact"))
+\t\tvar input_actions: Dictionary = JSON.parse_string(INPUT_JSON)
+\t\tvar action_keys: Array = input_actions.get(interact_action, {}).get("keys", ["E"])
+\t\t_dialogue_prompt.text = "Press %s to talk" % str(action_keys[0]).to_upper()
+\t\tif Input.is_action_just_pressed(interact_action):
+\t\t\t_dialogue_open = true
+\t\t\t_dialogue_panel.visible = true
+\t\t\t_dialogue_prompt.visible = false
+\t\t\t_dialogue_line = 0
+\t\t\t_dialogue_name.text = "Wanderer %02d" % int(nearest["node"].name.trim_prefix("NPC_"))
+\t\t\tvar talking_player := get_node_or_null("Player")
+\t\t\tif talking_player != null:
+\t\t\t\ttalking_player.set_physics_process(false)
+\t\t\t_advance_dialogue(false)
+
+func _advance_dialogue(advance: bool = true) -> void:
+\tvar dialogues: Array = _world_data.get("dialogues", [])
+\tvar dialogue_index := int(_active_npc.get("dialogue_index", 0))
+\tvar lines: Array = dialogues[dialogue_index] if dialogue_index < dialogues.size() else []
+\tif advance:
+\t\t_dialogue_line += 1
+\tif _dialogue_line >= lines.size():
+\t\t_dialogue_open = false
+\t\t_dialogue_panel.visible = false
+\t\tvar talking_player := get_node_or_null("Player")
+\t\tif talking_player != null:
+\t\t\ttalking_player.set_physics_process(true)
+\t\treturn
+\t_dialogue_text.text = str(lines[_dialogue_line])
 
 func _create_tiled_ground(node_name: String, positions: Array[Vector3], tile_size: float, block_height: float, texture_path: String, fallback_path: String, plain: bool) -> void:
 \tif positions.is_empty():
@@ -516,14 +924,17 @@ func _create_tiled_ground(node_name: String, positions: Array[Vector3], tile_siz
 \tbox.size = Vector3(tile_size, block_height, tile_size)
 \tmulti_mesh.mesh = box
 \tvar material := StandardMaterial3D.new()
+\tmaterial.albedo_color = Color(0.72, 1.0, 0.78)
+\tmaterial.roughness = 0.76
 \tvar selected_path := texture_path
 \tif selected_path.is_empty():
 \t\tselected_path = fallback_path
 \tif not selected_path.is_empty() and ResourceLoader.exists(selected_path):
 \t\tmaterial.albedo_texture = load(selected_path) as Texture2D
 \telse:
-\t\tmaterial.albedo_color = Color("#7cae50") if not plain else Color("#92bc5a")
+\t\tmaterial.albedo_color = Color("#3d913e") if not plain else Color("#69a94e")
 \tmaterial.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
+\tmaterial.specular_mode = BaseMaterial3D.SPECULAR_SCHLICK_GGX
 \tholder.material_override = material
 \tholder.multimesh = multi_mesh
 \tfor index in range(positions.size()):
@@ -532,6 +943,17 @@ func _create_tiled_ground(node_name: String, positions: Array[Vector3], tile_siz
 
 func _create_world_character(sprite: AnimatedSprite3D, texture_path: String) -> void:
 \tif texture_path.is_empty() or not ResourceLoader.exists(texture_path):
+\t\tvar fallback := MeshInstance3D.new()
+\t\tfallback.name = "SpriteFallback"
+\t\tvar capsule := CapsuleMesh.new()
+\t\tcapsule.radius = 0.25
+\t\tcapsule.height = 0.9
+\t\tfallback.mesh = capsule
+\t\tvar material := StandardMaterial3D.new()
+\t\tmaterial.albedo_color = Color(0.35, 0.75, 0.48)
+\t\tfallback.material_override = material
+\t\tfallback.position.y = 0.45
+\t\tsprite.add_child(fallback)
 \t\treturn
 \tvar texture := load(texture_path) as Texture2D
 \tvar columns := 6
@@ -542,18 +964,26 @@ func _create_world_character(sprite: AnimatedSprite3D, texture_path: String) -> 
 \tframes.remove_animation("default")
 \tfor direction_index in range(4):
 \t\tvar direction: String = ["down", "left", "right", "up"][direction_index]
-\t\tframes.add_animation(direction)
-\t\tframes.set_animation_speed(direction, 1)
-\t\tframes.set_animation_loop(direction, false)
-\t\tvar atlas := AtlasTexture.new()
-\t\tatlas.atlas = texture
-\t\tatlas.region = Rect2(0, direction_index * frame_height, frame_width, frame_height)
-\t\tframes.add_frame(direction, atlas)
+\t\tvar idle_name := "idle_" + direction
+\t\tvar walk_name := "walk_" + direction
+\t\tframes.add_animation(idle_name)
+\t\tframes.add_animation(walk_name)
+\t\tframes.set_animation_speed(idle_name, 4)
+\t\tframes.set_animation_speed(walk_name, 8)
+\t\tframes.set_animation_loop(idle_name, true)
+\t\tframes.set_animation_loop(walk_name, true)
+\t\tvar idle_row := direction_index
+\t\tvar walk_row := direction_index + 4
+\t\tfor column in range(4):
+\t\t\t_sprite_frame(frames, idle_name, texture, column, idle_row, frame_width, frame_height)
+\t\tfor column in range(columns):
+\t\t\t_sprite_frame(frames, walk_name, texture, column, walk_row, frame_width, frame_height)
 \tsprite.sprite_frames = frames
-\tsprite.pixel_size = 0.025
+\tsprite.pixel_size = 0.03125
 \tsprite.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+\tsprite.shaded = true
 \tsprite.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
-\tsprite.play("down")
+\tsprite.play("idle_down")
 
 func _spawn_node(config: Dictionary, parent: Node) -> Node:
 \tvar node: Node
@@ -589,6 +1019,8 @@ func _apply_properties(node: Node, properties: Dictionary) -> void:
 \t\tvar value = properties[key]
 \t\tif key in ["position", "rotation_degrees", "scale"] and value is Array and value.size() == 3:
 \t\t\tvalue = Vector3(value[0], value[1], value[2])
+\t\telif key == "light_color" and value is String:
+\t\t\tvalue = Color(value)
 \t\telif key == "projection" and node is Camera3D:
 \t\t\tvalue = Camera3D.PROJECTION_ORTHOGONAL if value == "orthogonal" else Camera3D.PROJECTION_PERSPECTIVE
 \t\telif key == "billboard" and node is SpriteBase3D:
@@ -655,16 +1087,58 @@ func _apply_material(node: Node, config: Dictionary) -> void:
 func _apply_world_environment(node: Node) -> void:
 \tif not node is WorldEnvironment:
 \t\treturn
+\tvar world: Dictionary = JSON.parse_string(WORLD_JSON)
+\tvar visuals: Dictionary = world.get("visuals", {})
+\tvar sky: Dictionary = visuals.get("sky", {})
+\tvar fog: Dictionary = visuals.get("fog", {})
+\tvar lighting: Dictionary = visuals.get("lighting", {})
+\tvar post_processing: Dictionary = visuals.get("post_processing", {})
 \tvar environment := Environment.new()
-\tenvironment.background_mode = Environment.BG_COLOR
-\tenvironment.background_color = Color("#84b2cc")
-\tenvironment.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-\tenvironment.ambient_light_color = Color.WHITE
-\tenvironment.ambient_light_energy = 0.75
-\tenvironment.fog_enabled = true
-\tenvironment.fog_light_color = Color("#e1f5fe")
-\tenvironment.fog_density = 0.008
-\tenvironment.fog_sky_affect = 1.0
+\tenvironment.background_mode = Environment.BG_SKY
+\tenvironment.sky = _create_sky(world, JSON.parse_string(ASSETS_JSON))
+\tenvironment.ambient_light_source = Environment.AMBIENT_SOURCE_SKY
+\tenvironment.ambient_light_color = Color(str(lighting.get("ambient_color", "#ffffff")))
+\tenvironment.ambient_light_energy = float(lighting.get("ambient_energy", 0.75))
+\tenvironment.fog_enabled = float(fog.get("density", 0.008)) > 0.0
+\tenvironment.fog_light_color = Color(str(fog.get("color", "#e1f5fe")))
+\tenvironment.fog_density = float(fog.get("density", 0.008))
+\tenvironment.fog_sky_affect = 0.0
+\tenvironment.fog_depth_begin = 8.0
+\tenvironment.fog_depth_end = 180.0
+\tenvironment.fog_depth_curve = 1.2
+\tenvironment.volumetric_fog_enabled = bool(fog.get("volumetric", false))
+\tenvironment.volumetric_fog_density = float(fog.get("volumetric_density", 0.012))
+\tenvironment.volumetric_fog_albedo = Color(str(fog.get("color", "#e1f5fe")))
+\tenvironment.volumetric_fog_anisotropy = 0.82
+\tenvironment.volumetric_fog_ambient_inject = 0.0
+\tenvironment.volumetric_fog_length = 96.0
+\tenvironment.volumetric_fog_detail_spread = 2.0
+\tvar post_tonemap := str(post_processing.get("tonemap", "aces"))
+\tenvironment.tonemap_mode = {
+\t\t"linear": Environment.TONE_MAPPER_LINEAR,
+\t\t"reinhardt": Environment.TONE_MAPPER_REINHARDT,
+\t\t"filmic": Environment.TONE_MAPPER_FILMIC,
+\t\t"aces": Environment.TONE_MAPPER_ACES,
+\t}.get(post_tonemap, Environment.TONE_MAPPER_ACES)
+\tenvironment.ssao_enabled = bool(post_processing.get("ssao", false))
+\tenvironment.ssao_radius = float(post_processing.get("ssao_radius", 1.5))
+\tenvironment.ssao_intensity = float(post_processing.get("ssao_intensity", 1.0))
+\tenvironment.ssao_power = 1.35
+\tenvironment.ssao_detail = 0.5
+\tenvironment.ssao_horizon = 0.08
+\tenvironment.ssil_enabled = bool(post_processing.get("ssil", false))
+\tenvironment.ssil_radius = float(post_processing.get("ssil_radius", 5.0))
+\tenvironment.ssil_intensity = float(post_processing.get("ssil_intensity", 0.6))
+\tenvironment.ssr_enabled = bool(post_processing.get("ssr", false))
+\tenvironment.ssr_max_steps = int(post_processing.get("ssr_max_steps", 96))
+\tenvironment.ssr_depth_tolerance = float(post_processing.get("ssr_depth_tolerance", 0.2))
+\tenvironment.ssr_fade_in = 0.12
+\tenvironment.ssr_fade_out = 2.5
+\tenvironment.glow_enabled = bool(post_processing.get("glow", false))
+\tfor level in range(1, 7):
+\t\tenvironment.set("glow_levels/%d" % level, true)
+\tenvironment.glow_intensity = float(post_processing.get("glow_intensity", 0.45))
+\tenvironment.glow_bloom = float(post_processing.get("bloom", 0.12))
 \tnode.environment = environment
 
 func _apply_sprite(node: Node, config: Dictionary) -> void:
@@ -732,6 +1206,7 @@ function playerScript(behavior, playerScene, assets, world) {
   assert(Array.isArray(movement?.input) && movement.input.length === 4, 'Player behavior movement.input must list left, right, up, and down actions')
   assert(movement.input.every(name => /^[a-z][a-z0-9_]*$/.test(name)), 'Player behavior input actions must be valid action names')
   assert(Number.isFinite(movement.speed) && movement.speed > 0, 'Player behavior movement.speed must be a positive number')
+  assert(movement.camera_relative === undefined || typeof movement.camera_relative === 'boolean', 'Player behavior camera_relative must be true or false')
   assert(movement.normalize_diagonal === undefined || typeof movement.normalize_diagonal === 'boolean', 'Player behavior normalize_diagonal must be true or false')
   assert(['project_default', 'none'].includes(movement.gravity), 'Player behavior gravity must be project_default or none')
   assert(movement.run_action === undefined || typeof movement.run_action === 'string', 'Player behavior run_action must be an input action name')
@@ -743,6 +1218,7 @@ function playerScript(behavior, playerScene, assets, world) {
 
 const MOVE_SPEED := ${movement.speed}
 const MOVE_RUN_MULTIPLIER := ${movement.run_multiplier ?? 1}
+const CAMERA_RELATIVE := ${movement.camera_relative === true ? 'true' : 'false'}
 const ACTION_LEFT := ${left}
 const ACTION_RIGHT := ${right}
 const ACTION_UP := ${up}
@@ -751,6 +1227,7 @@ const ACTION_RUN := ${godotString(movement.run_action ?? '')}
 const COMPONENTS_JSON := ${jsonConstant(playerComponents)}
 const ASSETS_JSON := ${jsonConstant(Object.fromEntries([...assets].map(([key, item]) => [key, item.target])))}
 const WORLD_JSON := ${jsonConstant(world ?? {})}
+const SHADOW_SHADER_SOURCE := ${godotString(SOFT_SHADOW_SHADER)}
 
 var _facing := "down"
 @onready var _sprite = get_node_or_null("Sprite")
@@ -759,21 +1236,32 @@ func _ready() -> void:
 \tfor config in JSON.parse_string(COMPONENTS_JSON):
 \t\t_create_component(config, self)
 \t_sprite = get_node_or_null("Sprite")
+\t_create_ground_shadow()
 
 func _physics_process(delta: float) -> void:
 \tvar input := Input.get_vector(ACTION_LEFT, ACTION_RIGHT, ACTION_UP, ACTION_DOWN)
 \tvar direction := Vector3(input.x, 0.0, input.y)
+\tif CAMERA_RELATIVE:
+\t\tvar camera := get_viewport().get_camera_3d()
+\t\tif camera != null:
+\t\t\tvar forward := -camera.global_basis.z
+\t\t\tvar right := camera.global_basis.x
+\t\t\tforward.y = 0.0
+\t\t\tright.y = 0.0
+\t\t\tif forward.length_squared() > 0.0001 and right.length_squared() > 0.0001:
+\t\t\t\tdirection = right.normalized() * input.x - forward.normalized() * input.y
 \tif direction.length_squared() > 0.0 and ${movement.normalize_diagonal === false ? 'false' : 'true'}:
 \t\tdirection = direction.normalized()
+\tvar is_running := ACTION_RUN != "" and Input.is_action_pressed(ACTION_RUN)
 \tvar current_speed := MOVE_SPEED
-\tif ACTION_RUN != "" and Input.is_action_pressed(ACTION_RUN):
+\tif is_running:
 \t\tcurrent_speed *= MOVE_RUN_MULTIPLIER
 \tvelocity.x = direction.x * current_speed
 \tvelocity.z = direction.z * current_speed
 ${movement.gravity === 'project_default' ? '\tif not is_on_floor():\n\t\tvelocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta\n\telif velocity.y < 0.0:\n\t\tvelocity.y = 0.0\n' : ''}
 \tif direction.length_squared() > 0.0:
-\t\t_facing = _direction_for(direction)
-\t\t_play_animation("walk_" + _facing)
+\t\t_facing = _direction_for_input(input) if CAMERA_RELATIVE else _direction_for(direction)
+\t\t_play_animation(("run_" if is_running else "walk_") + _facing)
 \telse:
 \t\t_play_animation("idle_" + _facing)
 \tmove_and_slide()
@@ -795,10 +1283,31 @@ func _play_animation(animation_name: String) -> void:
 \tif _sprite != null and _sprite.sprite_frames != null and _sprite.sprite_frames.has_animation(animation_name):
 \t\t_sprite.play(animation_name)
 
+func _create_ground_shadow() -> void:
+\tvar shadow := MeshInstance3D.new()
+\tshadow.name = "GroundShadow"
+\tvar shadow_mesh := PlaneMesh.new()
+\tshadow_mesh.size = Vector2(0.9, 0.9)
+\tshadow.mesh = shadow_mesh
+\tshadow.rotation_degrees.x = -90.0
+\tshadow.position.y = -0.48
+\tvar shadow_shader := Shader.new()
+\tshadow_shader.code = SHADOW_SHADER_SOURCE
+\tvar shadow_material := ShaderMaterial.new()
+\tshadow_material.shader = shadow_shader
+\tshadow.material_override = shadow_material
+\tshadow.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+\tadd_child(shadow)
+
 func _direction_for(direction: Vector3) -> String:
 \tif absf(direction.x) > absf(direction.z):
 \t\treturn "right" if direction.x > 0.0 else "left"
 \treturn "down" if direction.z > 0.0 else "up"
+
+func _direction_for_input(input: Vector2) -> String:
+\tif absf(input.x) > absf(input.y):
+\t\treturn "right" if input.x > 0.0 else "left"
+\treturn "down" if input.y > 0.0 else "up"
 
 func _create_component(config: Dictionary, parent: Node) -> Node:
 \tvar component := ClassDB.instantiate(str(config.get("type", ""))) as Node
@@ -856,16 +1365,23 @@ func _setup_sprite(component: AnimatedSprite3D, config: Dictionary) -> void:
 \t\tvar direction: String = animation.directions[direction_index]
 \t\tvar idle_name := "idle_" + direction
 \t\tvar walk_name := "walk_" + direction
+\t\tvar run_name := "run_" + direction
 \t\tframes.add_animation(idle_name)
 \t\tframes.add_animation(walk_name)
+\t\tframes.add_animation(run_name)
 \t\tframes.set_animation_speed(walk_name, float(animation.get("frames_per_second", 8)))
+\t\tframes.set_animation_speed(run_name, float(animation.get("run_frames_per_second", float(animation.get("frames_per_second", 8)) * 1.65)))
 \t\tframes.set_animation_loop(walk_name, true)
+\t\tframes.set_animation_loop(run_name, true)
+\t\tvar run_row := int(animation.get("run_row_offset", animation.get("walk_row_offset", 0))) + direction_index
 \t\t_add_atlas_frame(frames, idle_name, texture, 0, int(animation.get("idle_row_offset", 0)) + direction_index, frame_width, frame_height)
 \t\tfor column in range(columns):
 \t\t\t_add_atlas_frame(frames, walk_name, texture, column, int(animation.get("walk_row_offset", 0)) + direction_index, frame_width, frame_height)
+\t\t\t_add_atlas_frame(frames, run_name, texture, column, run_row, frame_width, frame_height)
 \tcomponent.sprite_frames = frames
 \tcomponent.pixel_size = float(config.get("pixel_size", 0.025))
 \tcomponent.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+\tcomponent.shaded = bool(config.get("shaded", true))
 \tcomponent.texture_filter = BaseMaterial3D.TEXTURE_FILTER_NEAREST
 
 func _add_atlas_frame(frames: SpriteFrames, animation: String, texture: Texture2D, column: int, row: int, width: int, height: int) -> void:
@@ -897,6 +1413,7 @@ const SMOOTHING := ${smoothing}
 
 func _ready() -> void:
 \tprojection = Camera3D.PROJECTION_ORTHOGONAL if ${behavior.projection === 'orthogonal' ? 'true' : 'false'} else Camera3D.PROJECTION_PERSPECTIVE
+\tfar = 500.0
 \tif projection == Camera3D.PROJECTION_PERSPECTIVE:
 \t\tfov = 50.0
 

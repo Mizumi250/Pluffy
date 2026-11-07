@@ -25,6 +25,23 @@ is staged first; if generation fails before replacement, the existing project
 remains untouched. Close Godot before regenerating if Windows reports that the
 output folder is locked.
 
+The included game uses Godot's Forward+ renderer for an ACES-tonemapped sky
+background with a shader sun and rays, animated cloud layers, restrained
+volumetric fog and light scattering, bloom, SSAO, and screen-space reflections.
+Because the sky is a real Godot sky background rather than a large mesh, it
+cannot cover or clip the player. Directional shadows and lighting-aware
+character/prop sprites add depth; the camera uses a close third-person follow
+distance. These effects need a GPU supported by
+Godot's Forward+ renderer. The low-resolution source art remains pixel-art, so
+the rendering adds cinematic light and atmosphere rather than changing the art
+into photorealistic assets.
+
+The world DSL can configure sky, fog, lighting, and post-processing. The
+generated world also adds soft character shadows, wandering animated NPCs,
+keyboard dialogue, and a live minimap. Player movement can be camera-relative
+so keyboard directions follow the orbiting camera, matching the web game's
+controls.
+
 At export time, every regular file under the Tatemono's `assets/` directory is
 copied into the generated project. Loose files are grouped by type
 (`images/`, `audio/`, `fonts/`, `models/`, `videos/`, or `data/`); files already
