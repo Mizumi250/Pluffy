@@ -79,12 +79,16 @@ It's bring-your-own-model: point Pluffy at a model server, such as a local one o
 
 ## Made with Pluffy
 
+V0 ARKZEN
 - [hw-coffee](https://hw-coffee.vercel.app/)
 - [lain098](https://lain098.vercel.app/)
 - [ethereane](https://ethereane.vercel.app/)
 - [ethan-pool](https://ethan-pool.vercel.app/)
 - [cafe-teresita](https://cafe-teresita.vercel.app/)
 - [shan-shan](https://shan-shan-eight.vercel.app/)
+
+V1
+- [Kotoba](https://kotoba-khaki.vercel.app/)
 
 As the engine and its AI improve, so does the output.
 

@@ -394,7 +394,6 @@ if (isNative) {
 //   - arkzen/core/builder.ts     (builds tatemonos — engine-only, not needed)
 //   - arkzen/core/watcher.ts     (watches for changes — engine-only)
 //   - arkzen/core/backend-bridge.ts (calls engine API — engine-only)
-//   - arkzen/types/index.ts      (engine type defs — not needed standalone)
 //   - validate.js                (engine validator — not needed standalone)
 //   - arkzen.ts / arkzen.config.ts (engine entry — not needed standalone)
 //   - tatemono/                  (source DSL files — not needed in export)
@@ -427,10 +426,7 @@ const ENGINE_ONLY_FRONTEND = new Set([
   // shared engine-only
   'arkzen/core/backend-bridge.ts',
   'arkzen/core/parser.ts',
-  'arkzen/core/registry.ts',
-  'arkzen/core/shared-sync.ts',
   'arkzen/core/validator.ts',
-  'arkzen/types/index.ts',
   'validate.js',
   'arkzen.ts',
   'arkzen.config.ts',
@@ -664,22 +660,13 @@ if (isInertia) {
     skip('node_modules (Native — run: npm install inside exported project)')
   }
 
-  // ── Step 3a — Inline engine/shared/arkzen/core
-  // The shared core (useArkzenRouter, arkzenFetch, authStore, etc.) lives at
-  // engine/shared/arkzen/core and is symlinked/aliased in the engine.
-  // In the export it must be a real copy so the project is fully standalone.
-  log('Inlining shared arkzen/core...')
+  // ── Step 3a — Finalize standalone Arkzen core
+  // The shared core is synced into each frontend stack's arkzen/core before
+  // export, so copying FRONTEND_DIR above already includes the standalone files.
+  log('Finalizing standalone Arkzen core...')
 
-  const SHARED_CORE    = path.join(ENGINE_DIR, 'shared', 'arkzen', 'core')
   const STACK_ADAPTERS = path.join(FRONTEND_DIR, 'arkzen', 'core', 'adapters')
   const PROJ_CORE      = path.join(PROJ_FRONT, 'arkzen', 'core')
-
-  if (fs.existsSync(SHARED_CORE)) {
-    fs.cpSync(SHARED_CORE, PROJ_CORE, { recursive: true })
-    success('engine/shared/arkzen/core → frontend/arkzen/core')
-  } else {
-    warn('engine/shared/arkzen/core not found — skipping shared inline')
-  }
 
   if (fs.existsSync(STACK_ADAPTERS)) {
     fs.mkdirSync(path.join(PROJ_CORE, 'adapters'), { recursive: true })
@@ -1476,6 +1463,25 @@ if (!isInertia && !isNative) {
     }
   }
   success(`Page URL prefix stripped from ${replacedCount} files`)
+
+  // Exported web routes are hoisted to the root, so auth layouts can no
+  // longer infer the Tatemono slug from the first URL segment.
+  for (const fileName of ['AuthLayout.tsx', 'GuestLayout.tsx']) {
+    const file = path.join(PROJ_FRONT, 'arkzen', 'core', 'layouts', fileName)
+    if (!fs.existsSync(file)) continue
+
+    let src = fs.readFileSync(file, 'utf-8')
+    src = src.replace(/const tatemono\s*=\s*segments\[0\]\s*\?\?\s*''/g, "const tatemono = ''")
+    src = src.replace(
+      /useAuthStoreHydrated\(tatemono\)/g,
+      `useAuthStoreHydrated(${JSON.stringify(tatName)})`
+    )
+    src = src.replace(
+      /if\s*\(tatemono\)\s*setActiveTatemono\(tatemono\)/g,
+      `setActiveTatemono(${JSON.stringify(tatName)})`
+    )
+    fs.writeFileSync(file, src)
+  }
 }
 
 // ─────────────────────────────────────────────
