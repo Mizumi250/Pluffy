@@ -40,7 +40,11 @@ The world DSL can configure sky, fog, lighting, and post-processing. The
 generated world also adds soft character shadows, wandering animated NPCs,
 keyboard dialogue, and a live minimap. Player movement can be camera-relative
 so keyboard directions follow the orbiting camera, matching the web game's
-controls.
+controls. Optional player movement fields add a declared jump action with
+project-default gravity, configurable jump velocity, and independent
+acceleration/deceleration rates. The camera behavior supports bounded mouse
+wheel zoom and right-button orbit; `zoom` settings control the distance limits,
+zoom step, mouse sensitivity, and pitch bounds.
 
 At export time, every regular file under the Tatemono's `assets/` directory is
 copied into the generated project. Loose files are grouped by type
@@ -52,3 +56,11 @@ not moved, and this Godot-only step does not change web or mobile asset handling
 Open the generated `project.godot` in Godot 4. To build a platform release,
 install Godot export templates and any required platform tools. The game target
 does not convert or execute the web version of a Tatemono.
+
+An optional `@arkzen:godot:multiplayer` block enables generated ENet Host/Join/
+Leave controls and server-simulated co-op player movement. It requires exactly
+one player-scene instance in the main scene and disables the Web export preset,
+which does not support this ENet setup. This is direct-IP networking, not
+matchmaking or a relay; internet hosts may need to allow/forward the configured
+UDP port. See the Godot appendix in `PLUFF_GUIDELINES_v14.md` for the DSL shape
+and limits.

@@ -2619,6 +2619,7 @@
   - `@arkzen:godot:world` — procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, `dialogues`, and optional `visuals`.
   - `@arkzen:godot:input` — mapping of action names to keys. Action names use lowercase letters, digits, and underscores. Use plural key arrays such as `keys: [A, LEFT]`.
   - `@arkzen:godot:assets` — texture assets grouped under `textures`, with `source`, optional `filter`, and optional `alpha`.
+  - `@arkzen:godot:multiplayer` — optional ENet host/join and server-authoritative player movement. This feature is opt-in and does not provide matchmaking, accounts, relay servers, or Web export support.
   - Additional `@arkzen:godot:scene:<name>` blocks may be declared when representing separate scenes or instances.
 
   ```tsx
@@ -2636,6 +2637,8 @@
       keys: [E, ENTER]
     run:
       keys: [SHIFT]
+    jump:
+      keys: [SPACE]
   */
   /* @arkzen:godot:input:end */
   ```
@@ -2775,6 +2778,10 @@
     speed: 4.0
     run_action: run
     run_multiplier: 1.65
+    jump_action: jump
+    jump_velocity: 6.5
+    acceleration: 18
+    deceleration: 24
     camera_relative: true
     normalize_diagonal: true
     gravity: project_default
@@ -2786,9 +2793,26 @@
   /* @arkzen:godot:behavior:player:end */
   ```
 
-  `language` must be `gdscript`; `extends` must be `CharacterBody3D`; movement input names should match declared `@arkzen:godot:input` actions. Optional `movement.run_action` names a declared input action and `movement.run_multiplier` scales movement speed while it is held. `movement.camera_relative` is an optional boolean, defaults to `false`, and makes player movement and sprite facing follow the active camera when enabled. The camera behavior uses `script`, `node`, `target`, `projection`, `follow.offset`, `follow.smoothing`, and optional `look_at.target_offset`.
+  `language` must be `gdscript`; `extends` must be `CharacterBody3D`; movement input names should match declared `@arkzen:godot:input` actions. Optional `movement.run_action` names a declared input action and `movement.run_multiplier` scales movement speed while it is held. `movement.camera_relative` is an optional boolean, defaults to `false`, and makes player movement and sprite facing follow the active camera when enabled. Optional `movement.jump_action` must name a declared input action and requires `gravity: project_default`; `jump_velocity` requires `jump_action` and defaults to `6.5`. Optional positive `movement.acceleration` and `movement.deceleration` set horizontal speed ramp-up and slowdown rates; unspecified rates retain immediate movement for that phase. The camera behavior uses `script`, `node`, `target`, `projection`, `follow.offset`, `follow.smoothing`, and optional `look_at.target_offset`. Its optional `zoom` mapping supports positive `min_distance`, `max_distance`, `step`, and `mouse_sensitivity`, plus `min_pitch` and `max_pitch` in radians with `0 <= min_pitch < max_pitch <= PI`. Mouse wheel changes distance and right-drag orbits the camera.
 
-  Do not invent arbitrary GDScript methods or DSL markers. The current validator supports generated player and camera behaviors only; custom behavior names are rejected.
+  ### Optional ENet multiplayer
+
+  Add this block to enable a generated Host/Join/Leave panel and direct-IP co-op:
+
+  ```tsx
+  /* @arkzen:godot:multiplayer
+  enabled: true
+  port: 24567
+  max_clients: 8
+  sync_rate: 20
+  default_address: 127.0.0.1
+  */
+  /* @arkzen:godot:multiplayer:end */
+  ```
+
+  `enabled` may only be `true`. `port` is an integer from 1024 to 65535 (default 24567), `max_clients` is 1–64 (default 8), `sync_rate` is 1–60 updates per second (default 20), and `default_address` is a non-empty host/IP string used to prefill the Join field. The generated ENet host simulates player movement and broadcasts positions; clients send input rather than authoritative positions. The main scene must contain exactly one instance of the player scene. Both peers must run compatible builds. Joining across the internet may require the host to allow/forward the configured UDP port; this feature has no matchmaking, accounts, relay, or encryption layer and must not be used for trusted competitive play. ENet multiplayer is not supported by this generated Web preset; disable it with `runnable: false` or omit that export preset.
+
+  Do not invent arbitrary GDScript methods or DSL markers. The current validator supports generated player and camera behaviors, plus the optional generated multiplayer manager; custom behavior names are rejected.
 
   ### Export presets
 
@@ -2837,6 +2861,9 @@
   - [ ] Optional NPC `interact_action` references a declared input action and dialogue values are lists of strings.
   - [ ] `movement.camera_relative`, when present, is a boolean.
   - [ ] Optional run actions are declared in `godot:input`, and run sheet rows/speeds fit the animation data.
+  - [ ] Optional jump actions are declared in `godot:input`; jumping uses project-default gravity.
+  - [ ] Optional acceleration and deceleration values are positive, and camera zoom limits are valid.
+  - [ ] Optional multiplayer settings are in range and ENet games do not enable the Web export preset.
   - [ ] Export presets contain only supported platform keys and boolean `runnable` values.
   - [ ] Every opening marker closes with the exact matching `/* @arkzen:<marker>:end */`.
 

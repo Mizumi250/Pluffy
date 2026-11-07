@@ -48,6 +48,19 @@ The `tatemonos/` folder is a small gallery of what Pluffy has built so far: caf√
 
 They're also the best way to learn the language. Open any `core.tsx` and you'll see how a whole app reads in one place.
 
+### Screenshots
+
+The latest web `index.png` screenshot for each Tatemono is added here
+automatically when `npm run shots -- --module=<name>` completes. To rebuild the
+index from web screenshots already in `Shots/web/`, run
+`npm run shots -- --update-readme`.
+
+<!-- TATEMONO_SHOTS:START -->
+<table>
+<tr><td align="center"><a href="./tatemonos/kotoba/core.tsx"><img src="./Shots/web/nextjs/kotoba/index.png" alt="kotoba index screenshot" width="420"><br><strong>kotoba</strong></a></td><td></td></tr>
+</table>
+<!-- TATEMONO_SHOTS:END -->
+
 ---
 
 ## The AI side

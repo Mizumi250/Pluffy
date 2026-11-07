@@ -8,6 +8,9 @@ const ROOT_DIR = path.dirname(fileURLToPath(import.meta.url))
 const SHOTS_DIR = path.join(ROOT_DIR, 'Shots')
 const ARKZEN_PATH = path.join(ROOT_DIR, 'arkzen.json')
 const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
+const README_PATH = path.join(ROOT_DIR, 'README.md')
+const SHOTS_START = '<!-- TATEMONO_SHOTS:START -->'
+const SHOTS_END = '<!-- TATEMONO_SHOTS:END -->'
 
 function discoverTatemonos(config) {
   if (!fs.existsSync(TATEMONOS_DIR)) return []
@@ -91,6 +94,66 @@ function safeName(value) {
 function pageUrl(baseUrl, moduleName, page) {
   if (page === 'index') return `${baseUrl}/${moduleName}`
   return `${baseUrl}/${moduleName}/${page}`
+}
+
+function updateReadmeShots(activeStack) {
+  const indexShots = []
+  const webShotsDir = path.join(SHOTS_DIR, 'web')
+  const walk = directory => {
+    if (!fs.existsSync(directory)) return
+    for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
+      const filePath = path.join(directory, entry.name)
+      if (entry.isDirectory()) walk(filePath)
+      else if (entry.isFile() && entry.name.toLowerCase() === 'index.png') indexShots.push(filePath)
+    }
+  }
+  walk(webShotsDir)
+
+  const tatemonos = fs.readdirSync(TATEMONOS_DIR, { withFileTypes: true })
+    .filter(entry => entry.isDirectory() && fs.existsSync(path.join(TATEMONOS_DIR, entry.name, 'core.tsx')))
+    .map(entry => entry.name)
+    .sort((a, b) => a.localeCompare(b))
+  const captures = tatemonos.flatMap(name => {
+    const candidates = indexShots
+      .filter(filePath => path.basename(path.dirname(filePath)) === name)
+      .sort((left, right) => {
+        const score = filePath => {
+          const segments = path.relative(webShotsDir, filePath).split(path.sep)
+          return (segments[0] === activeStack ? 0 : 1)
+        }
+        return score(left) - score(right) || left.localeCompare(right)
+      })
+    if (candidates.length === 0) return []
+    const relativePath = path.relative(ROOT_DIR, candidates[0]).split(path.sep)
+      .map(segment => encodeURIComponent(segment))
+      .join('/')
+    const tatemonoPath = `./tatemonos/${encodeURIComponent(name)}/core.tsx`
+    return [{ name, screenshotPath: `./${relativePath}`, tatemonoPath }]
+  })
+
+  const rows = []
+  for (let index = 0; index < captures.length; index += 2) {
+    const cells = captures.slice(index, index + 2).map(({ name, screenshotPath, tatemonoPath }) =>
+      `<td align="center"><a href="${tatemonoPath}"><img src="${screenshotPath}" alt="${name} index screenshot" width="420"><br><strong>${name}</strong></a></td>`
+    )
+    if (cells.length === 1) cells.push('<td></td>')
+    rows.push(`<tr>${cells.join('')}</tr>`)
+  }
+  const gallery = captures.length > 0
+    ? `<table>\n${rows.join('\n')}\n</table>`
+    : 'No Tatemono index screenshots have been captured yet.'
+
+  const readme = fs.readFileSync(README_PATH, 'utf8')
+  const startIndex = readme.indexOf(SHOTS_START)
+  const endIndex = readme.indexOf(SHOTS_END)
+  if (startIndex < 0 || endIndex < 0 || endIndex < startIndex
+    || readme.indexOf(SHOTS_START, startIndex + SHOTS_START.length) >= 0
+    || readme.indexOf(SHOTS_END, endIndex + SHOTS_END.length) >= 0) {
+    throw new Error('README.md must contain exactly one ordered TATEMONO_SHOTS marker pair')
+  }
+  const contentStart = startIndex + SHOTS_START.length
+  const updatedReadme = `${readme.slice(0, contentStart)}\n${gallery}\n${readme.slice(endIndex)}`
+  fs.writeFileSync(README_PATH, updatedReadme, 'utf8')
 }
 
 async function captureWithChromium({ config, baseUrl, category, stack, modules, viewport, fakeAuth, settleMs }) {
@@ -197,6 +260,11 @@ async function captureWithChromium({ config, baseUrl, category, stack, modules, 
 
 async function run() {
   const config = JSON.parse(fs.readFileSync(ARKZEN_PATH, 'utf8'))
+  if (process.argv.includes('--update-readme')) {
+    updateReadmeShots(config.activeStack)
+    console.log('[Screenshots] Updated the README Tatemono screenshot index.')
+    return
+  }
   const moduleArg = process.argv.slice(2).find(argument => argument.startsWith('--module='))
   const selectedModule = moduleArg?.slice('--module='.length).trim()
   const waitArg = process.argv.slice(2).find(argument => argument.startsWith('--wait='))
@@ -251,6 +319,7 @@ async function run() {
 
   fs.mkdirSync(SHOTS_DIR, { recursive: true })
   fs.writeFileSync(path.join(SHOTS_DIR, 'shots.json'), JSON.stringify(report, null, 2))
+  updateReadmeShots(config.activeStack)
   console.log(JSON.stringify(report, null, 2))
 }
 

@@ -134,6 +134,21 @@ function parseTatemono(source, tatemonoPath) {
     assert(EXPORT_PLATFORMS[preset], `Unsupported Godot export preset "${preset}"`)
     assert(settings && typeof settings.runnable === 'boolean', `Export preset "${preset}" must set runnable to true or false`)
   }
+  const multiplayerConfig = blocks.get('godot:multiplayer')
+  if (multiplayerConfig) {
+    assert(typeof multiplayerConfig === 'object' && !Array.isArray(multiplayerConfig), '@arkzen:godot:multiplayer must be a mapping')
+    assert(multiplayerConfig.enabled === undefined || multiplayerConfig.enabled === true, '@arkzen:godot:multiplayer can only be declared with enabled: true')
+    const port = multiplayerConfig.port ?? 24567
+    const maxClients = multiplayerConfig.max_clients ?? 8
+    const syncRate = multiplayerConfig.sync_rate ?? 20
+    const defaultAddress = multiplayerConfig.default_address ?? '127.0.0.1'
+    assert(Number.isInteger(port) && port >= 1024 && port <= 65535, 'Godot multiplayer port must be an integer from 1024 to 65535')
+    assert(Number.isInteger(maxClients) && maxClients >= 1 && maxClients <= 64, 'Godot multiplayer max_clients must be an integer from 1 to 64')
+    assert(Number.isInteger(syncRate) && syncRate >= 1 && syncRate <= 60, 'Godot multiplayer sync_rate must be an integer from 1 to 60')
+    assert(typeof defaultAddress === 'string' && defaultAddress.trim().length > 0, 'Godot multiplayer default_address must be a non-empty string')
+    assert(exportConfig.presets.web?.runnable !== true, 'Godot ENet multiplayer does not support Web exports; set the web preset runnable: false or remove it')
+    Object.assign(multiplayerConfig, { port, max_clients: maxClients, sync_rate: syncRate, default_address: defaultAddress })
+  }
 
   const input = blocks.get('godot:input') ?? { actions: {} }
   assert(input.actions && typeof input.actions === 'object' && !Array.isArray(input.actions), '@arkzen:godot:input actions must be a mapping')
@@ -147,6 +162,9 @@ function parseTatemono(source, tatemonoPath) {
   }
   if (behaviors.get('player').movement?.run_action) {
     assert(input.actions[behaviors.get('player').movement.run_action], `Player behavior refers to undeclared run action "${behaviors.get('player').movement.run_action}"`)
+  }
+  if (behaviors.get('player').movement?.jump_action) {
+    assert(input.actions[behaviors.get('player').movement.jump_action], `Player behavior refers to undeclared jump action "${behaviors.get('player').movement.jump_action}"`)
   }
 
   const assets = parseAssets(blocks.get('godot:assets') ?? {})
@@ -238,6 +256,7 @@ function parseTatemono(source, tatemonoPath) {
     assets,
     behaviors,
     exportConfig,
+    multiplayer: multiplayerConfig ?? null,
     world: buildWorldData(world),
   }
 }
@@ -432,7 +451,7 @@ function godotValue(value) {
   return String(value)
 }
 
-function projectFile(project) {
+function projectFile(project, multiplayer) {
   const lines = [
     'config_version=5',
     '',
@@ -450,6 +469,7 @@ function projectFile(project) {
     `window/size/resizable=${project.window?.resizable === false ? 'false' : 'true'}`,
   ]
   if (project.display?.stretch_mode) lines.push(`window/stretch/mode=${godotString(project.display.stretch_mode)}`)
+  if (multiplayer) lines.push('', '[autoload]', '', 'PluffMultiplayer="*res://scripts/multiplayer.gd"')
   lines.push('', '[rendering]', '', `renderer/rendering_method=${godotString(project.renderer)}`)
   if (project.display?.pixel_art) lines.push('textures/default_filters/use_nearest_mipmap_filter=false')
   return `${lines.join('\n')}\n`
@@ -539,7 +559,7 @@ function jsonConstant(value) {
   return JSON.stringify(JSON.stringify(value))
 }
 
-function mainScript(scene, input, assets, cameraBehavior, world) {
+function mainScript(scene, input, assets, cameraBehavior, world, multiplayer, playerScenePath, playerNodeName) {
   const behaviorByNode = cameraBehavior.node ? { [cameraBehavior.node]: cameraBehavior.script } : {}
   const childNodes = scene.nodes ?? scene.root.children ?? scene.components ?? []
   return `extends ${scene.root.type}
@@ -549,6 +569,9 @@ const INPUT_JSON = ${jsonConstant(input.actions)}
 const ASSETS_JSON = ${jsonConstant(Object.fromEntries([...assets].map(([key, item]) => [key, item.target])))}
 const BEHAVIORS_JSON = ${jsonConstant(behaviorByNode)}
 const WORLD_JSON = ${jsonConstant(world ?? {})}
+const NETWORK_ENABLED := ${multiplayer ? 'true' : 'false'}
+const PLAYER_SCENE_PATH := ${godotString(playerScenePath ?? '')}
+const PLAYER_NODE_NAME := ${godotString(playerNodeName ?? '')}
 const SHADOW_SHADER_SOURCE := ${godotString(SOFT_SHADOW_SHADER)}
 var _world_data: Dictionary = {}
 var _npc_states: Array[Dictionary] = []
@@ -570,11 +593,149 @@ func _ready() -> void:
 \tvar nodes: Array = JSON.parse_string(NODES_JSON)
 \tfor node_config in nodes:
 \t\t_spawn_node(node_config, self)
+${multiplayer ? `\t_create_multiplayer_ui()
+\tPluffMultiplayer.configure_scene(self)
+` : ''}
 
 func _process(delta: float) -> void:
 \t_update_npcs(delta)
 \t_update_interaction()
 \t_update_minimap()
+${multiplayer ? `func configure_network_host() -> void:
+\tvar player := get_node_or_null(PLAYER_NODE_NAME)
+\tif player == null:
+\t\tpush_error("Unable to find the configured player instance for multiplayer hosting")
+\t\treturn
+\tplayer.name = "Player_1"
+\tplayer.configure_network(1)
+\t_set_network_camera_target(player)
+\tif _network_status_label != null:
+\t\t_network_status_label.text = "Hosting on port %d — share your address" % PluffMultiplayer.port
+
+func prepare_network_client() -> void:
+\tvar player := get_node_or_null(PLAYER_NODE_NAME)
+\tif player != null:
+\t\tplayer.name = "Player_1"
+\t\tplayer.configure_network(1)
+\t\tplayer.visible = true
+\t\tplayer.set_physics_process(true)
+\t_set_network_camera_target(null)
+
+func restore_singleplayer_after_network_error() -> void:
+\tvar player: Node3D
+\tif multiplayer.has_multiplayer_peer():
+\t\tplayer = get_node_or_null("Player_%d" % multiplayer.get_unique_id()) as Node3D
+\tif player == null:
+\t\tplayer = get_node_or_null("Player_1") as Node3D
+\tif player == null:
+\t\tplayer = get_node_or_null(PLAYER_NODE_NAME) as Node3D
+\tfor child in get_children():
+\t\tif child.name.begins_with("Player_") and child != player:
+\t\t\tchild.queue_free()
+\tif player != null:
+\t\tplayer.name = PLAYER_NODE_NAME
+\t\tif player.has_method("configure_singleplayer"):
+\t\t\tplayer.configure_singleplayer()
+\t\tplayer.visible = true
+\t\tplayer.set_physics_process(true)
+\t\t_set_network_camera_target(player)
+
+func _on_network_peer_connected(peer_id: int) -> void:
+\tvar spawn_position := Vector3(float(peer_id % 3) * 1.5, 0.5, float(peer_id % 2) * 1.5)
+\tspawn_network_player(1, Vector3.ZERO)
+\trpc("spawn_network_player", 1, Vector3.ZERO)
+\tvar existing_peers: Array[int] = []
+\tfor connected_peer in multiplayer.get_peers():
+\t\tif connected_peer != 1 and not existing_peers.has(connected_peer):
+\t\t\texisting_peers.append(connected_peer)
+\tfor existing_peer in existing_peers:
+\t\tif existing_peer != peer_id:
+\t\t\tvar existing_position := Vector3.ZERO if existing_peer == 1 else Vector3(float(existing_peer % 3) * 1.5, 0.5, float(existing_peer % 2) * 1.5)
+\t\t\trpc_id(peer_id, "spawn_network_player", existing_peer, existing_position)
+\tspawn_network_player(peer_id, spawn_position)
+\trpc("spawn_network_player", peer_id, spawn_position)
+
+func _on_network_peer_disconnected(peer_id: int) -> void:
+\tif peer_id == 1 and not multiplayer.is_server():
+\t\treturn
+\tremove_network_player(peer_id)
+\tif multiplayer.has_multiplayer_peer():
+\t\trpc("remove_network_player", peer_id)
+
+@rpc("authority", "call_remote", "reliable")
+func spawn_network_player(peer_id: int, spawn_position: Vector3) -> void:
+\tvar player_name := "Player_%d" % peer_id
+\tvar player := get_node_or_null(player_name)
+\tif player == null:
+\t\tvar packed_scene := load(PLAYER_SCENE_PATH) as PackedScene
+\t\tif packed_scene == null:
+\t\t\tpush_error("Unable to load multiplayer player scene: " + PLAYER_SCENE_PATH)
+\t\t\treturn
+\t\tplayer = packed_scene.instantiate()
+\t\tplayer.name = player_name
+\t\tadd_child(player)
+\t\tplayer.configure_network(peer_id)
+\t\tplayer.global_position = spawn_position
+\tplayer.visible = true
+\tplayer.set_physics_process(true)
+\tif peer_id == multiplayer.get_unique_id():
+\t\t_set_network_camera_target(player)
+
+@rpc("authority", "call_remote", "reliable")
+func remove_network_player(peer_id: int) -> void:
+\tvar player := get_node_or_null("Player_%d" % peer_id)
+\tif player != null:
+\t\tplayer.queue_free()
+
+func _set_network_camera_target(target: Node3D) -> void:
+\tvar camera := find_child(${godotString(cameraBehavior.node)}, true, false)
+\tif camera != null and camera.has_method("set_target"):
+\t\tcamera.set_target(target)
+
+var _network_status_label: Label
+
+func _create_multiplayer_ui() -> void:
+\tvar layer := CanvasLayer.new()
+\tlayer.name = "MultiplayerUI"
+\tadd_child(layer)
+\tvar panel := PanelContainer.new()
+\tpanel.position = Vector2(16, 16)
+\tlayer.add_child(panel)
+\tvar layout := VBoxContainer.new()
+\tpanel.add_child(layout)
+\tvar address := LineEdit.new()
+\taddress.placeholder_text = "Host address"
+\taddress.text = ${godotString(multiplayer.default_address)}
+\taddress.custom_minimum_size.x = 220
+\tlayout.add_child(address)
+\tvar buttons := HBoxContainer.new()
+\tlayout.add_child(buttons)
+\tvar host_button := Button.new()
+\thost_button.text = "Host"
+\thost_button.pressed.connect(func(): PluffMultiplayer.host_game())
+\tbuttons.add_child(host_button)
+\tvar join_button := Button.new()
+\tjoin_button.text = "Join"
+\tjoin_button.pressed.connect(func(): PluffMultiplayer.join_game(address.text))
+\tbuttons.add_child(join_button)
+\tvar leave_button := Button.new()
+\tleave_button.text = "Leave"
+\tleave_button.pressed.connect(func(): PluffMultiplayer.leave_game())
+\tbuttons.add_child(leave_button)
+\t_network_status_label = Label.new()
+\t_network_status_label.text = "Single-player"
+\tlayout.add_child(_network_status_label)
+\tPluffMultiplayer.status_changed.connect(_set_network_status)
+
+func _set_network_status(message: String) -> void:
+\tif _network_status_label != null:
+\t\t_network_status_label.text = message
+
+` : ''}
+func _get_game_player() -> Node3D:
+\tif NETWORK_ENABLED and multiplayer.has_multiplayer_peer():
+\t\treturn get_node_or_null("Player_%d" % multiplayer.get_unique_id()) as Node3D
+\treturn get_node_or_null(PLAYER_NODE_NAME if NETWORK_ENABLED else "Player") as Node3D
 
 func _setup_input() -> void:
 \tvar actions: Dictionary = JSON.parse_string(INPUT_JSON)
@@ -790,7 +951,7 @@ func _create_map_marker(parent: Control, color: Color, marker_size: Vector2) -> 
 func _update_minimap() -> void:
 \tif _player_marker == null:
 \t\treturn
-\tvar player := get_node_or_null("Player") as Node3D
+\tvar player := _get_game_player()
 \tif player == null:
 \t\treturn
 \tvar world_width := float(_world_data.get("worldWidth", 100.0))
@@ -863,7 +1024,7 @@ func _camera_facing_direction(direction: Vector2) -> String:
 func _update_interaction() -> void:
 \tif _dialogue_prompt == null:
 \t\treturn
-\tvar player := get_node_or_null("Player") as Node3D
+\tvar player := _get_game_player()
 \tif player == null:
 \t\treturn
 \tvar npc_config: Dictionary = _world_data.get("npcSettings", {})
@@ -892,7 +1053,7 @@ func _update_interaction() -> void:
 \t\t\t_dialogue_prompt.visible = false
 \t\t\t_dialogue_line = 0
 \t\t\t_dialogue_name.text = "Wanderer %02d" % int(nearest["node"].name.trim_prefix("NPC_"))
-\t\t\tvar talking_player := get_node_or_null("Player")
+\t\t\tvar talking_player := _get_game_player()
 \t\t\tif talking_player != null:
 \t\t\t\ttalking_player.set_physics_process(false)
 \t\t\t_advance_dialogue(false)
@@ -906,7 +1067,7 @@ func _advance_dialogue(advance: bool = true) -> void:
 \tif _dialogue_line >= lines.size():
 \t\t_dialogue_open = false
 \t\t_dialogue_panel.visible = false
-\t\tvar talking_player := get_node_or_null("Player")
+\t\tvar talking_player := _get_game_player()
 \t\tif talking_player != null:
 \t\t\ttalking_player.set_physics_process(true)
 \t\treturn
@@ -1200,7 +1361,7 @@ func _sprite_frame(frames: SpriteFrames, animation: String, texture: Texture2D, 
 `
 }
 
-function playerScript(behavior, playerScene, assets, world) {
+function playerScript(behavior, playerScene, assets, world, multiplayer) {
   const movement = behavior.movement
   const playerComponents = playerScene.components ?? playerScene.root.components ?? playerScene.root.children ?? []
   assert(Array.isArray(movement?.input) && movement.input.length === 4, 'Player behavior movement.input must list left, right, up, and down actions')
@@ -1211,6 +1372,13 @@ function playerScript(behavior, playerScene, assets, world) {
   assert(['project_default', 'none'].includes(movement.gravity), 'Player behavior gravity must be project_default or none')
   assert(movement.run_action === undefined || typeof movement.run_action === 'string', 'Player behavior run_action must be an input action name')
   assert(movement.run_multiplier === undefined || (Number.isFinite(movement.run_multiplier) && movement.run_multiplier > 0), 'Player behavior run_multiplier must be positive')
+  assert(movement.jump_action === undefined || (typeof movement.jump_action === 'string' && movement.jump_action.length > 0), 'Player behavior jump_action must be a non-empty input action name')
+  assert(movement.jump_velocity === undefined || (Number.isFinite(movement.jump_velocity) && movement.jump_velocity > 0), 'Player behavior jump_velocity must be positive')
+  assert(movement.jump_action === undefined || movement.gravity === 'project_default', 'Player jumping requires movement.gravity: project_default')
+  assert(movement.jump_velocity === undefined || movement.jump_action !== undefined, 'Player movement.jump_velocity requires movement.jump_action')
+  for (const key of ['acceleration', 'deceleration']) {
+    if (movement[key] !== undefined) assert(Number.isFinite(movement[key]) && movement[key] > 0, `Player behavior movement.${key} must be positive`)
+  }
   assert(behavior.animation?.moving === 'walk_{direction}' && behavior.animation?.idle === 'idle_{direction}', 'Player animation must use walk_{direction} and idle_{direction}')
   assert(behavior.animation?.facing_priority === 'dominant_axis', 'Player facing_priority must be dominant_axis')
   const [left, right, up, down] = movement.input.map(godotString)
@@ -1218,15 +1386,30 @@ function playerScript(behavior, playerScene, assets, world) {
 
 const MOVE_SPEED := ${movement.speed}
 const MOVE_RUN_MULTIPLIER := ${movement.run_multiplier ?? 1}
+const MOVE_ACCELERATION := ${movement.acceleration ?? 0}
+const MOVE_DECELERATION := ${movement.deceleration ?? 0}
+const JUMP_VELOCITY := ${movement.jump_velocity ?? 0}
 const CAMERA_RELATIVE := ${movement.camera_relative === true ? 'true' : 'false'}
 const ACTION_LEFT := ${left}
 const ACTION_RIGHT := ${right}
 const ACTION_UP := ${up}
 const ACTION_DOWN := ${down}
 const ACTION_RUN := ${godotString(movement.run_action ?? '')}
+const ACTION_JUMP := ${godotString(movement.jump_action ?? '')}
 const COMPONENTS_JSON := ${jsonConstant(playerComponents)}
 const ASSETS_JSON := ${jsonConstant(Object.fromEntries([...assets].map(([key, item]) => [key, item.target])))}
 const WORLD_JSON := ${jsonConstant(world ?? {})}
+${multiplayer ? `const NETWORK_SYNC_INTERVAL := ${1 / multiplayer.sync_rate}
+var _network_enabled := false
+var _network_owner_peer_id := 1
+var _network_input := Vector2.ZERO
+var _network_running := false
+var _network_facing := "down"
+var _network_jump_requested := false
+var _network_last_input_msec := 0
+var _network_sync_elapsed := 0.0
+var _network_target_position := Vector3.ZERO
+var _network_target_valid := false` : ''}
 const SHADOW_SHADER_SOURCE := ${godotString(SOFT_SHADOW_SHADER)}
 
 var _facing := "down"
@@ -1238,10 +1421,78 @@ func _ready() -> void:
 \t_sprite = get_node_or_null("Sprite")
 \t_create_ground_shadow()
 
+${multiplayer ? `func configure_network(owner_peer_id: int) -> void:
+\t_network_enabled = true
+\t_network_owner_peer_id = owner_peer_id
+\t_network_target_position = global_position
+\t_network_target_valid = true
+\t_network_sync_elapsed = -0.5
+\tset_multiplayer_authority(1)
+\tset_physics_process(true)
+\tvisible = true
+
+func configure_singleplayer() -> void:
+\t_network_enabled = false
+\t_network_owner_peer_id = 1
+\t_network_input = Vector2.ZERO
+\t_network_jump_requested = false
+\t_network_target_valid = false
+
+func _process(delta: float) -> void:
+\tif _network_enabled and multiplayer.has_multiplayer_peer() and not multiplayer.is_server() and _network_target_valid:
+\t\tglobal_position = global_position.lerp(_network_target_position, minf(delta * 15.0, 1.0))
+
+@rpc("any_peer", "call_remote", "unreliable")
+func _receive_network_input(direction: Vector2, running: bool, facing: String) -> void:
+\tif not multiplayer.is_server() or multiplayer.get_remote_sender_id() != _network_owner_peer_id or _network_owner_peer_id == 1:
+\t\treturn
+\t_network_input = direction.limit_length(1.0)
+\t_network_running = running
+\t_network_facing = facing
+\t_network_last_input_msec = Time.get_ticks_msec()
+
+@rpc("any_peer", "call_remote", "reliable")
+func _request_network_jump() -> void:
+\tif multiplayer.is_server() and multiplayer.get_remote_sender_id() == _network_owner_peer_id and _network_owner_peer_id != 1:
+\t\t_network_jump_requested = true
+
+@rpc("authority", "call_remote", "unreliable")
+func _apply_network_state(position: Vector3, facing: String, animation_name: String) -> void:
+\tif multiplayer.is_server():
+\t\treturn
+\t_network_target_position = position
+\t_network_target_valid = true
+\t_facing = facing
+\t_play_animation(animation_name)
+
+` : ''}
 func _physics_process(delta: float) -> void:
+\tif _network_enabled and not multiplayer.has_multiplayer_peer():
+\t\tconfigure_singleplayer()
 \tvar input := Input.get_vector(ACTION_LEFT, ACTION_RIGHT, ACTION_UP, ACTION_DOWN)
 \tvar direction := Vector3(input.x, 0.0, input.y)
-\tif CAMERA_RELATIVE:
+\tvar is_running := ACTION_RUN != "" and Input.is_action_pressed(ACTION_RUN)
+${multiplayer ? `\tif _network_enabled:
+\t\tif multiplayer.is_server():
+\t\t\tif _network_owner_peer_id != 1:
+\t\t\t\tif Time.get_ticks_msec() - _network_last_input_msec > 250:
+\t\t\t\t\t_network_input = Vector2.ZERO
+\t\t\t\t\t_network_running = false
+\t\t\t\tinput = _network_input
+\t\t\t\tdirection = Vector3(input.x, 0.0, input.y)
+\t\t\t\tis_running = _network_running
+\t\telse:
+\t\t\tif _network_owner_peer_id != multiplayer.get_unique_id():
+\t\t\t\treturn
+\t\t\tif CAMERA_RELATIVE:
+\t\t\t\tdirection = _camera_relative_direction(input)
+\t\t\tif direction.length_squared() > 0.0 and ${movement.normalize_diagonal === false ? 'false' : 'true'}:
+\t\t\t\tdirection = direction.normalized()
+\t\t\trpc_id(1, "_receive_network_input", Vector2(direction.x, direction.z), is_running, _direction_for_input(input))
+\t\t\tif ACTION_JUMP != "" and Input.is_action_just_pressed(ACTION_JUMP):
+\t\t\t\trpc_id(1, "_request_network_jump")
+\t\t\treturn
+` : ''}\tif CAMERA_RELATIVE${multiplayer ? ' and not (_network_enabled and multiplayer.is_server() and _network_owner_peer_id != 1)' : ''}:
 \t\tvar camera := get_viewport().get_camera_3d()
 \t\tif camera != null:
 \t\t\tvar forward := -camera.global_basis.z
@@ -1252,15 +1503,24 @@ func _physics_process(delta: float) -> void:
 \t\t\t\tdirection = right.normalized() * input.x - forward.normalized() * input.y
 \tif direction.length_squared() > 0.0 and ${movement.normalize_diagonal === false ? 'false' : 'true'}:
 \t\tdirection = direction.normalized()
-\tvar is_running := ACTION_RUN != "" and Input.is_action_pressed(ACTION_RUN)
 \tvar current_speed := MOVE_SPEED
 \tif is_running:
 \t\tcurrent_speed *= MOVE_RUN_MULTIPLIER
-\tvelocity.x = direction.x * current_speed
-\tvelocity.z = direction.z * current_speed
-${movement.gravity === 'project_default' ? '\tif not is_on_floor():\n\t\tvelocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta\n\telif velocity.y < 0.0:\n\t\tvelocity.y = 0.0\n' : ''}
+${movement.acceleration !== undefined || movement.deceleration !== undefined ? `\tvar target_horizontal := Vector2(direction.x * current_speed, direction.z * current_speed)
+\tvar current_horizontal := Vector2(velocity.x, velocity.z)
+\tvar horizontal_rate := MOVE_ACCELERATION if direction.length_squared() > 0.0 else MOVE_DECELERATION
+\tif horizontal_rate > 0.0:
+\t\tcurrent_horizontal = current_horizontal.move_toward(target_horizontal, horizontal_rate * delta)
+\telse:
+\t\tcurrent_horizontal = target_horizontal
+\tvelocity.x = current_horizontal.x
+\tvelocity.z = current_horizontal.y
+` : '\tvelocity.x = direction.x * current_speed\n\tvelocity.z = direction.z * current_speed\n'}${movement.jump_action ? (multiplayer ? '\tif is_on_floor() and ((_network_enabled and multiplayer.is_server() and _network_owner_peer_id != 1 and _network_jump_requested) or (_network_owner_peer_id == 1 and Input.is_action_just_pressed(ACTION_JUMP)) or (not _network_enabled and Input.is_action_just_pressed(ACTION_JUMP))):\n\t\tvelocity.y = JUMP_VELOCITY\n\t_network_jump_requested = false\n' : '\tif is_on_floor() and Input.is_action_just_pressed(ACTION_JUMP):\n\t\tvelocity.y = JUMP_VELOCITY\n') : ''}${movement.gravity === 'project_default' ? '\tif not is_on_floor():\n\t\tvelocity.y -= float(ProjectSettings.get_setting("physics/3d/default_gravity")) * delta\n\telif velocity.y < 0.0:\n\t\tvelocity.y = 0.0\n' : ''}
 \tif direction.length_squared() > 0.0:
-\t\t_facing = _direction_for_input(input) if CAMERA_RELATIVE else _direction_for(direction)
+\t\tif _network_enabled and multiplayer.is_server() and _network_owner_peer_id != 1:
+\t\t\t_facing = _network_facing
+\t\telse:
+\t\t\t_facing = _direction_for_input(input) if CAMERA_RELATIVE else _direction_for(direction)
 \t\t_play_animation(("run_" if is_running else "walk_") + _facing)
 \telse:
 \t\t_play_animation("idle_" + _facing)
@@ -1278,6 +1538,13 @@ ${movement.gravity === 'project_default' ? '\tif not is_on_floor():\n\t\tvelocit
 \t\t\t\t\tvar push := prop_delta.normalized() * (minimum_distance - prop_delta.length())
 \t\t\t\t\tglobal_position.x += push.x
 \t\t\t\t\tglobal_position.z += push.y
+${multiplayer ? `\tif _network_enabled and multiplayer.is_server():
+\t\t_network_sync_elapsed += delta
+\t\tif _network_sync_elapsed >= NETWORK_SYNC_INTERVAL:
+\t\t\t_network_sync_elapsed = 0.0
+\t\t\tvar animation_name := ("run_" if is_running else "walk_") + _facing if direction.length_squared() > 0.0 else "idle_" + _facing
+\t\t\trpc("_apply_network_state", global_position, _facing, animation_name)
+` : ''}
 
 func _play_animation(animation_name: String) -> void:
 \tif _sprite != null and _sprite.sprite_frames != null and _sprite.sprite_frames.has_animation(animation_name):
@@ -1308,6 +1575,19 @@ func _direction_for_input(input: Vector2) -> String:
 \tif absf(input.x) > absf(input.y):
 \t\treturn "right" if input.x > 0.0 else "left"
 \treturn "down" if input.y > 0.0 else "up"
+
+func _camera_relative_direction(input: Vector2) -> Vector3:
+\tvar direction := Vector3(input.x, 0.0, input.y)
+\tvar camera := get_viewport().get_camera_3d()
+\tif camera == null:
+\t\treturn direction
+\tvar forward := -camera.global_basis.z
+\tvar right := camera.global_basis.x
+\tforward.y = 0.0
+\tright.y = 0.0
+\tif forward.length_squared() > 0.0001 and right.length_squared() > 0.0001:
+\t\treturn right.normalized() * input.x - forward.normalized() * input.y
+\treturn direction
 
 func _create_component(config: Dictionary, parent: Node) -> Node:
 \tvar component := ClassDB.instantiate(str(config.get("type", ""))) as Node
@@ -1402,12 +1682,33 @@ function cameraScript(behavior) {
   const lookOffset = `Vector3(${behavior.look_at.target_offset.join(', ')})`
   const smoothing = Number(behavior.follow.smoothing)
   assert(Number.isFinite(smoothing) && smoothing > 0, 'Camera behavior smoothing must be positive')
+  const zoom = behavior.zoom ?? {}
+  assert(zoom && typeof zoom === 'object' && !Array.isArray(zoom), 'Camera behavior zoom must be a mapping')
+  const minDistance = zoom.min_distance ?? 1.1
+  const maxDistance = zoom.max_distance ?? 9.0
+  const zoomStep = zoom.step ?? 0.14
+  const mouseSensitivity = zoom.mouse_sensitivity ?? 0.0055
+  const minPitch = zoom.min_pitch ?? 0.4
+  const maxPitch = zoom.max_pitch ?? 1.45
+  assert(Number.isFinite(minDistance) && minDistance > 0, 'Camera zoom.min_distance must be positive')
+  assert(Number.isFinite(maxDistance) && maxDistance >= minDistance, 'Camera zoom.max_distance must be at least min_distance')
+  assert(Number.isFinite(zoomStep) && zoomStep > 0, 'Camera zoom.step must be positive')
+  assert(Number.isFinite(mouseSensitivity) && mouseSensitivity > 0, 'Camera zoom.mouse_sensitivity must be positive')
+  assert(Number.isFinite(minPitch) && minPitch >= 0, 'Camera zoom.min_pitch must be non-negative')
+  assert(Number.isFinite(maxPitch) && maxPitch <= Math.PI, 'Camera zoom.max_pitch must not exceed PI')
+  assert(maxPitch > minPitch, 'Camera zoom.max_pitch must be greater than min_pitch')
   return `extends Camera3D
 
 const TARGET_PATH := ${godotString(behavior.target)}
 const FOLLOW_OFFSET := ${offset}
 const LOOK_OFFSET := ${lookOffset}
 const SMOOTHING := ${smoothing}
+const MIN_DISTANCE := ${minDistance}
+const MAX_DISTANCE := ${maxDistance}
+const ZOOM_STEP := ${zoomStep}
+const MOUSE_SENSITIVITY := ${mouseSensitivity}
+const MIN_PITCH := ${minPitch}
+const MAX_PITCH := ${maxPitch}
 
 @onready var _target: Node3D = get_node_or_null(TARGET_PATH) as Node3D
 
@@ -1417,9 +1718,12 @@ func _ready() -> void:
 \tif projection == Camera3D.PROJECTION_PERSPECTIVE:
 \t\tfov = 50.0
 
+func set_target(target: Node3D) -> void:
+\t_target = target
+
 var _yaw := 0.0
 var _pitch := 0.75
-var _distance := clampf(FOLLOW_OFFSET.length(), 1.1, 9.0)
+var _distance := clampf(FOLLOW_OFFSET.length(), MIN_DISTANCE, MAX_DISTANCE)
 var _dragging := false
 var _last_mouse := Vector2.ZERO
 
@@ -1427,14 +1731,14 @@ func _unhandled_input(event: InputEvent) -> void:
 \tif event is InputEventMouseButton:
 \t\tvar button_event := event as InputEventMouseButton
 \t\tif button_event.button_index == MOUSE_BUTTON_WHEEL_UP:
-\t\t\t_distance = clampf(_distance - 0.14, 1.1, 9.0)
+\t\t\t_distance = clampf(_distance - ZOOM_STEP, MIN_DISTANCE, MAX_DISTANCE)
 \t\telif button_event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
-\t\t\t_distance = clampf(_distance + 0.14, 1.1, 9.0)
+\t\t\t_distance = clampf(_distance + ZOOM_STEP, MIN_DISTANCE, MAX_DISTANCE)
 \tif event is InputEventMouseMotion:
 \t\tvar motion := event as InputEventMouseMotion
 \t\tif Input.is_mouse_button_pressed(MOUSE_BUTTON_RIGHT):
-\t\t\t_yaw -= motion.relative.x * 0.0055
-\t\t\t_pitch = clampf(_pitch - motion.relative.y * 0.0055, 0.4, 1.45)
+\t\t\t_yaw -= motion.relative.x * MOUSE_SENSITIVITY
+\t\t\t_pitch = clampf(_pitch - motion.relative.y * MOUSE_SENSITIVITY, MIN_PITCH, MAX_PITCH)
 
 func _process(delta: float) -> void:
 \tif _target == null:
@@ -1447,6 +1751,101 @@ func _process(delta: float) -> void:
 \t)
 \tglobal_position = global_position.lerp(desired_position, clampf(SMOOTHING, 0.01, 1.0))
 \tlook_at(_target.global_position + LOOK_OFFSET, Vector3.UP)
+`
+}
+
+function multiplayerScript(config) {
+  return `extends Node
+
+signal status_changed(message: String)
+
+const PORT := ${config.port}
+const MAX_CLIENTS := ${config.max_clients}
+var port := PORT
+var _peer: ENetMultiplayerPeer
+
+func _ready() -> void:
+\tmultiplayer.peer_connected.connect(_on_peer_connected)
+\tmultiplayer.peer_disconnected.connect(_on_peer_disconnected)
+\tmultiplayer.connected_to_server.connect(_on_connected_to_server)
+\tmultiplayer.connection_failed.connect(_on_connection_failed)
+\tmultiplayer.server_disconnected.connect(_on_server_disconnected)
+
+func configure_scene(scene: Node) -> void:
+\tif scene == null:
+\t\tpush_error("Multiplayer scene is not available")
+
+func host_game() -> void:
+\tleave_game(false)
+\t_peer = ENetMultiplayerPeer.new()
+\tvar error := _peer.create_server(PORT, MAX_CLIENTS)
+\tif error != OK:
+\t\t_peer = null
+\t\tpush_error("Unable to host ENet multiplayer game: " + error_string(error))
+\t\tstatus_changed.emit("Host failed: " + error_string(error))
+\t\treturn
+\tport = PORT
+\tmultiplayer.multiplayer_peer = _peer
+\tvar scene := get_tree().current_scene
+\tif scene != null and scene.has_method("configure_network_host"):
+\t\tscene.configure_network_host()
+\tstatus_changed.emit("Hosting on port %d — share your address" % PORT)
+
+func join_game(address: String) -> void:
+\tvar host := address.strip_edges()
+\tif host.is_empty():
+\t\tstatus_changed.emit("Enter a host address")
+\t\treturn
+\tleave_game(false)
+\t_peer = ENetMultiplayerPeer.new()
+\tvar error := _peer.create_client(host, PORT)
+\tif error != OK:
+\t\t_peer = null
+\t\tpush_error("Unable to join ENet multiplayer game: " + error_string(error))
+\t\tstatus_changed.emit("Join failed: " + error_string(error))
+\t\treturn
+\tmultiplayer.multiplayer_peer = _peer
+\tvar scene := get_tree().current_scene
+\tif scene != null and scene.has_method("prepare_network_client"):
+\t\tscene.prepare_network_client()
+\tstatus_changed.emit("Connecting to %s:%d..." % [host, PORT])
+
+func leave_game(show_status: bool = true) -> void:
+\tvar scene := get_tree().current_scene
+\tif scene != null and scene.has_method("restore_singleplayer_after_network_error"):
+\t\tscene.restore_singleplayer_after_network_error()
+\tif multiplayer.multiplayer_peer != null:
+\t\tmultiplayer.multiplayer_peer.close()
+\tmultiplayer.multiplayer_peer = null
+\t_peer = null
+\tif show_status:
+\t\tstatus_changed.emit("Single-player")
+
+func _on_peer_connected(peer_id: int) -> void:
+\tif not multiplayer.is_server():
+\t\treturn
+\tvar scene := get_tree().current_scene
+\tif scene != null and scene.has_method("_on_network_peer_connected"):
+\t\tscene.call_deferred("_on_network_peer_connected", peer_id)
+
+func _on_peer_disconnected(peer_id: int) -> void:
+\tvar scene := get_tree().current_scene
+\tif scene != null and scene.has_method("_on_network_peer_disconnected"):
+\t\tscene.call_deferred("_on_network_peer_disconnected", peer_id)
+\tstatus_changed.emit("Player %d disconnected" % peer_id)
+
+func _on_connected_to_server() -> void:
+\tstatus_changed.emit("Connected — ready to play")
+
+func _on_connection_failed() -> void:
+\tpush_warning("Godot multiplayer connection failed")
+\tleave_game(false)
+\tstatus_changed.emit("Connection failed")
+
+func _on_server_disconnected() -> void:
+\tpush_warning("Godot multiplayer server disconnected")
+\tleave_game(false)
+\tstatus_changed.emit("Host disconnected")
 `
 }
 
@@ -1537,7 +1936,16 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
 
   const outputScenes = [...model.scenes.values()]
   const playerBehavior = model.behaviors.get('player')
+  const playerSceneInstances = []
+  walkNodeConfigs(model.scenes.get(model.project.main_scene), node => {
+    if (node.instance === playerBehavior.scene) playerSceneInstances.push(node)
+  })
+  if (model.multiplayer) {
+    assert(playerSceneInstances.length === 1, 'Godot multiplayer requires exactly one player scene instance in the main scene')
+    model.multiplayer.player_node = playerSceneInstances[0].name ?? 'Player'
+  }
   const scriptPaths = new Set([playerBehavior.script, model.behaviors.get('camera').script, 'res://scripts/main.gd'])
+  if (model.multiplayer) scriptPaths.add('res://scripts/multiplayer.gd')
   const sceneByPath = model.scenes
   for (const [name, behavior] of model.behaviors) {
     if (name === 'player') assert(sceneByPath.has(behavior.scene), `Player behavior scene "${behavior.scene}" is not declared`)
@@ -1567,7 +1975,7 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
     const missingOptional = registerAssets(model.assets, copiedAssets)
     fs.mkdirSync(path.join(stagingDir, 'scenes'), { recursive: true })
     fs.mkdirSync(path.join(stagingDir, 'scripts'), { recursive: true })
-    fs.writeFileSync(path.join(stagingDir, 'project.godot'), projectFile(model.project), 'utf8')
+    fs.writeFileSync(path.join(stagingDir, 'project.godot'), projectFile(model.project, model.multiplayer), 'utf8')
 
     for (const scene of outputScenes) {
       const scriptPath = scene.path === model.project.main_scene
@@ -1588,9 +1996,12 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
     const mainScriptPath = path.join(stagingDir, ...playerBehavior.script.slice('res://'.length).split('/'))
     const mainSceneScriptPath = path.join(stagingDir, 'scripts', 'main.gd')
     const cameraScriptPath = path.join(stagingDir, ...camera.script.slice('res://'.length).split('/'))
-    fs.writeFileSync(mainSceneScriptPath, mainScript(mainScene, model.input, model.assets, camera, model.world), 'utf8')
-    fs.writeFileSync(mainScriptPath, playerScript(playerBehavior, model.scenes.get(playerBehavior.scene), model.assets, model.world), 'utf8')
+    fs.writeFileSync(mainSceneScriptPath, mainScript(mainScene, model.input, model.assets, camera, model.world, model.multiplayer, playerBehavior.scene, model.multiplayer?.player_node), 'utf8')
+    fs.writeFileSync(mainScriptPath, playerScript(playerBehavior, model.scenes.get(playerBehavior.scene), model.assets, model.world, model.multiplayer), 'utf8')
     fs.writeFileSync(cameraScriptPath, cameraScript(camera), 'utf8')
+    if (model.multiplayer) {
+      fs.writeFileSync(path.join(stagingDir, 'scripts', 'multiplayer.gd'), multiplayerScript(model.multiplayer), 'utf8')
+    }
     fs.writeFileSync(path.join(stagingDir, 'export_presets.cfg'), exportPresets(model.exportConfig, model.project.name), 'utf8')
 
     const missingList = missingOptional.length

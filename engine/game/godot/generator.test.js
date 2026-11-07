@@ -30,10 +30,23 @@ test('generates a Godot project from the Godot DSL blocks', () => {
     assert.deepEqual(result.scenes, ['res://scenes/main.tscn', 'res://scenes/player.tscn'])
     assert.match(fs.readFileSync(path.join(outputDir, 'project.godot'), 'utf8'), /run\/main_scene="res:\/\/scenes\/main\.tscn"/)
     assert.match(fs.readFileSync(path.join(outputDir, 'project.godot'), 'utf8'), /renderer\/rendering_method="forward_plus"/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'project.godot'), 'utf8'), /PluffMultiplayer="\*res:\/\/scripts\/multiplayer\.gd"/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'multiplayer.gd'), 'utf8'), /create_server\(PORT, MAX_CLIENTS\)/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'multiplayer.gd'), 'utf8'), /create_client\(host, PORT\)/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'main.gd'), 'utf8'), /func _create_multiplayer_ui/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'main.gd'), 'utf8'), /func spawn_network_player/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scenes', 'player.tscn'), 'utf8'), /CharacterBody3D/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /func _physics_process/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /func _receive_network_input/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /func _apply_network_state/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /const CAMERA_RELATIVE := true/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /"run_" if is_running else "walk_"/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /const ACTION_JUMP := "jump"/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /const JUMP_VELOCITY := 6\.5/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /var current_horizontal := Vector2\(velocity\.x, velocity\.z\)/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /current_horizontal\.move_toward\(target_horizontal, horizontal_rate \* delta\)/)
+    assert.doesNotMatch(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /velocity\.x = direction\.x \* current_speed/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /Input\.is_action_just_pressed\(ACTION_JUMP\)/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /run_frames_per_second/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /run_row_offset/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /func _direction_for_input/)
@@ -80,8 +93,103 @@ test('generates a Godot project from the Godot DSL blocks', () => {
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'main.gd'), 'utf8'), /BoxShape3D/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'player.gd'), 'utf8'), /component\.name = str\(config\.get/)
     assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'camera_follow.gd'), 'utf8'), /far = 500\.0/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'camera_follow.gd'), 'utf8'), /const MAX_DISTANCE := 7\.5/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'camera_follow.gd'), 'utf8'), /MOUSE_BUTTON_WHEEL_UP/)
+    assert.match(fs.readFileSync(path.join(outputDir, 'scripts', 'camera_follow.gd'), 'utf8'), /MOUSE_BUTTON_RIGHT/)
   })
 })
+
+test('keeps immediate horizontal movement when acceleration options are omitted', () => {
+  withTempDir(tempDir => {
+    const fixtureDir = path.join(tempDir, 'instant-movement-game')
+    fs.mkdirSync(fixtureDir)
+    copyTatemonoAssets(path.join(fixtureDir, 'assets'))
+    const source = fs.readFileSync(TATEMONO_PATH, 'utf8')
+      .replace('name: godot-game', 'name: instant-movement-game')
+      .replace(/  acceleration: 18\r?\n  deceleration: 24\r?\n/, '')
+    const tatemonoPath = path.join(fixtureDir, 'core.tsx')
+    fs.writeFileSync(tatemonoPath, source)
+
+    generateGodotProject({ tatemonoPath, outputDir: path.join(tempDir, 'output') })
+
+    const playerScript = fs.readFileSync(path.join(tempDir, 'output', 'scripts', 'player.gd'), 'utf8')
+    assert.match(playerScript, /velocity\.x = direction\.x \* current_speed/)
+    assert.match(playerScript, /velocity\.z = direction\.z \* current_speed/)
+    assert.doesNotMatch(playerScript, /var target_horizontal :=/)
+  })
+})
+
+test('rejects undeclared jump actions and invalid camera zoom ranges', () => {
+  withTempDir(tempDir => {
+    const fixtureDir = path.join(tempDir, 'invalid-game')
+    fs.mkdirSync(fixtureDir)
+    copyTatemonoAssets(path.join(fixtureDir, 'assets'))
+    const source = fs.readFileSync(TATEMONO_PATH, 'utf8')
+      .replace('name: godot-game', 'name: invalid-game')
+    const tatemonoPath = path.join(fixtureDir, 'core.tsx')
+    const outputDir = path.join(tempDir, 'output')
+
+    fs.writeFileSync(tatemonoPath, source.replace('jump_action: jump', 'jump_action: missing_jump'))
+    assert.throws(
+      () => generateGodotProject({ tatemonoPath, outputDir }),
+      /Player behavior refers to undeclared jump action "missing_jump"/
+    )
+    assert.equal(fs.existsSync(outputDir), false)
+
+    fs.writeFileSync(tatemonoPath, source.replace('max_distance: 7.5', 'max_distance: 0.5'))
+    assert.throws(
+      () => generateGodotProject({ tatemonoPath, outputDir }),
+      /Camera zoom\.max_distance must be at least min_distance/
+    )
+    assert.equal(fs.existsSync(outputDir), false)
+  })
+})
+
+test('keeps multiplayer opt-in when its DSL block is absent', () => {
+    withTempDir(tempDir => {
+      const fixtureDir = path.join(tempDir, 'singleplayer-game')
+      fs.mkdirSync(fixtureDir)
+      copyTatemonoAssets(path.join(fixtureDir, 'assets'))
+      const source = fs.readFileSync(TATEMONO_PATH, 'utf8')
+        .replace('name: godot-game', 'name: singleplayer-game')
+        .replace(/\/\* @arkzen:godot:multiplayer\r?\n[\s\S]*?\/\* @arkzen:godot:multiplayer:end \*\/\r?\n/, '')
+      const tatemonoPath = path.join(fixtureDir, 'core.tsx')
+      const outputDir = path.join(tempDir, 'output')
+      fs.writeFileSync(tatemonoPath, source)
+
+      generateGodotProject({ tatemonoPath, outputDir })
+
+      assert.doesNotMatch(fs.readFileSync(path.join(outputDir, 'project.godot'), 'utf8'), /PluffMultiplayer/)
+      assert.equal(fs.existsSync(path.join(outputDir, 'scripts', 'multiplayer.gd')), false)
+      assert.doesNotMatch(fs.readFileSync(path.join(outputDir, 'scripts', 'main.gd'), 'utf8'), /func _create_multiplayer_ui/)
+    })
+  })
+
+test('rejects invalid ENet multiplayer settings and Web exports', () => {
+    withTempDir(tempDir => {
+      const fixtureDir = path.join(tempDir, 'invalid-multiplayer-game')
+      fs.mkdirSync(fixtureDir)
+      copyTatemonoAssets(path.join(fixtureDir, 'assets'))
+      const source = fs.readFileSync(TATEMONO_PATH, 'utf8')
+        .replace('name: godot-game', 'name: invalid-multiplayer-game')
+      const tatemonoPath = path.join(fixtureDir, 'core.tsx')
+      const outputDir = path.join(tempDir, 'output')
+
+      fs.writeFileSync(tatemonoPath, source.replace('port: 24567', 'port: 80'))
+      assert.throws(
+        () => generateGodotProject({ tatemonoPath, outputDir }),
+        /multiplayer port must be an integer from 1024 to 65535/
+      )
+      assert.equal(fs.existsSync(outputDir), false)
+
+      fs.writeFileSync(tatemonoPath, source.replace(/web:\r?\n    runnable: false/, 'web:\n    runnable: true'))
+      assert.throws(
+        () => generateGodotProject({ tatemonoPath, outputDir }),
+        /ENet multiplayer does not support Web exports/
+      )
+      assert.equal(fs.existsSync(outputDir), false)
+    })
+  })
 
 test('requires Forward+ for volumetric and screen-space effects', () => {
   withTempDir(tempDir => {

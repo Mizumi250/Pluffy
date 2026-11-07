@@ -117,6 +117,9 @@ actions:
   run:
     deadzone: 0.2
     keys: [SHIFT]
+  jump:
+    deadzone: 0.2
+    keys: [SPACE]
 */
 /* @arkzen:godot:input:end */
 
@@ -229,6 +232,10 @@ movement:
   speed: 4.0
   run_action: run
   run_multiplier: 1.65
+  jump_action: jump
+  jump_velocity: 6.5
+  acceleration: 18
+  deceleration: 24
   camera_relative: true
   normalize_diagonal: true
   gravity: project_default
@@ -250,8 +257,24 @@ follow:
   smoothing: 0.09
 look_at:
   target_offset: [0, 0.5, 0]
+zoom:
+  min_distance: 1.1
+  max_distance: 7.5
+  step: 0.35
+  mouse_sensitivity: 0.0055
+  min_pitch: 0.4
+  max_pitch: 1.45
 */
 /* @arkzen:godot:behavior:camera:end */
+
+/* @arkzen:godot:multiplayer
+enabled: true
+port: 24567
+max_clients: 8
+sync_rate: 20
+default_address: 127.0.0.1
+*/
+/* @arkzen:godot:multiplayer:end */
 
 /* @arkzen:godot:export
 presets:
@@ -262,6 +285,6 @@ presets:
   macos:
     runnable: true
   web:
-    runnable: true
+    runnable: false
 */
 /* @arkzen:godot:export:end */
