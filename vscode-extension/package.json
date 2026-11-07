@@ -1,7 +1,7 @@
 {
   "name": "pluff-tatemono",
   "displayName": "Pluff Tatemono",
-  "description": "Tatemono syntax highlighting and completions across Pluff web, mobile, desktop, and backend stacks.",
+  "description": "Tatemono syntax highlighting and completions across Pluff web, mobile, desktop, backend, Godot, and Unity DSLs.",
   "version": "0.1.0",
   "publisher": "mizumi250",
   "license": "MIT",
@@ -88,6 +88,20 @@
             "scope": "entity.name.tag.tatemono.backend",
             "settings": {
               "foreground": "#e06c75",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "entity.name.tag.tatemono.game",
+            "settings": {
+              "foreground": "#e5a84b",
+              "fontStyle": "bold"
+            }
+          },
+          {
+            "scope": "storage.type.tatemono.game",
+            "settings": {
+              "foreground": "#d19a66",
               "fontStyle": "bold"
             }
           },

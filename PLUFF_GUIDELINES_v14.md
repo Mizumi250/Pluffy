@@ -2503,6 +2503,9 @@
   - [ ] `@arkzen:meta:web` if web pages (favicon/title/description; PWA + og here)
   - [ ] `@arkzen:meta:native` + `@arkzen:native:config` if native screens
 
+  **NATIVE LAYOUTS**
+  - [ ] Expo/bare-RN page layout names resolve to `@arkzen:native:layout:<name>`; Lynx page layouts resolve to `@arkzen:native:layout:lynx:<name>`. Built-in `default`, `auth`, and `guest` layouts do not need custom blocks.
+
   **TAG FORMAT** (follow these shapes; the validator checks only a subset)
   - [ ] Shape A (meta, config, database, api, routes): no `*/` on the opening line, no `:end`
   - [ ] Shape B (jobs, console, notifications, mail, events, realtime): YAML in opening comment, `*/`, body, `:end */`

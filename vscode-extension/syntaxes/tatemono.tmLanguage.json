@@ -29,6 +29,7 @@
     { "include": "#backend-rs-b" },
     { "include": "#mail-b" },
     { "include": "#module-rs" },
+    { "include": "#game-yaml-block" },
     { "include": "#yaml-block" },
     { "include": "#web-css-block" },
     { "include": "#native-css-block" },
@@ -42,7 +43,7 @@
     "web-layout-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:layout:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
       "patterns": [
         { "include": "#yaml-content" },
@@ -58,7 +59,7 @@
     "native-layout-lynx-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:layout:lynx:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
       "patterns": [
         { "include": "#yaml-content" },
@@ -74,7 +75,7 @@
     "native-layout-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:layout:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
       "patterns": [
         { "include": "#yaml-content" },
@@ -93,14 +94,14 @@
         "0": { "name": "comment.block.tatemono" },
         "1": { "name": "entity.name.tag.tatemono.shared" }
       },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.shared" } },
       "patterns": [{ "include": "#yaml-content" }]
     },
     "backend-php-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):(?:(?:php):)?[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.php",
       "patterns": [{ "include": "source.php" }]
@@ -108,7 +109,7 @@
     "backend-ts-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.typescript",
       "patterns": [{ "include": "source.ts" }]
@@ -116,7 +117,7 @@
     "backend-py-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.python",
       "patterns": [{ "include": "source.python" }]
@@ -124,7 +125,7 @@
     "backend-java-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.java",
       "patterns": [{ "include": "source.java" }]
@@ -132,7 +133,7 @@
     "backend-cs-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.csharp",
       "patterns": [{ "include": "source.cs" }]
@@ -140,7 +141,7 @@
     "backend-go-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.go",
       "patterns": [{ "include": "source.go" }]
@@ -148,7 +149,7 @@
     "backend-rs-c": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "contentName": "meta.embedded.block.rust",
       "patterns": [{ "include": "source.rust" }]
@@ -160,7 +161,7 @@
         "0": { "name": "comment.block.tatemono" },
         "1": { "name": "entity.name.tag.tatemono.backend" }
       },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": {
         "0": { "name": "comment.block.tatemono" },
         "1": { "name": "entity.name.tag.tatemono.backend" }
@@ -179,7 +180,7 @@
       "name": "Tatemono TypeScript backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):ts:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.typescript", "patterns": [{ "include": "source.ts" }] }]
     },
@@ -187,7 +188,7 @@
       "name": "Tatemono Python backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):py:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.python", "patterns": [{ "include": "source.python" }] }]
     },
@@ -195,7 +196,7 @@
       "name": "Tatemono Java backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):java:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.java", "patterns": [{ "include": "source.java" }] }]
     },
@@ -203,7 +204,7 @@
       "name": "Tatemono C sharp backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):cs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.csharp", "patterns": [{ "include": "source.cs" }] }]
     },
@@ -211,7 +212,7 @@
       "name": "Tatemono Go backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):go:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.go", "patterns": [{ "include": "source.go" }] }]
     },
@@ -219,56 +220,56 @@
       "name": "Tatemono Rust backend body",
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "begin": "^[ \\t]*\\*/[ \\t]*$", "beginCaptures": { "0": { "name": "comment.block.tatemono" } }, "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:(?:endpoint|handler|middleware|policy|listener):rs:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)", "contentName": "meta.embedded.block.rust", "patterns": [{ "include": "source.rust" }] }]
     },
     "backend-php-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):(?:(?:php):)?[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-php" }]
     },
     "backend-ts-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):ts:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-ts" }]
     },
     "backend-py-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):py:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-py" }]
     },
     "backend-java-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):java:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-java" }]
     },
     "backend-cs-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):cs:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-cs" }]
     },
     "backend-go-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):go:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-go" }]
     },
     "backend-rs-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:jobs|console|notifications):rs:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [{ "include": "#yaml-header-rs" }]
     },
@@ -416,7 +417,7 @@
     "mail-b": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:mail(?::(?:php|ts|py|java|cs|go|rs))?:[A-Za-z0-9_-]+)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [
         {
@@ -437,7 +438,7 @@
     "module-rs": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:module:rs)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
       "patterns": [
         {
@@ -460,10 +461,21 @@
       "contentName": "meta.embedded.block.yaml",
       "patterns": [{ "include": "source.yaml" }]
     },
+    "game-yaml-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export)))[ \\t]*$",
+      "beginCaptures": {
+        "0": { "name": "comment.block.tatemono" },
+        "1": { "name": "entity.name.tag.tatemono.game" }
+      },
+      "end": "^[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" } },
+      "contentName": "meta.embedded.block.yaml",
+      "patterns": [{ "include": "source.yaml" }]
+    },
     "web-css-block": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:style(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
       "contentName": "meta.embedded.block.css",
       "patterns": [{ "include": "source.css" }]
@@ -471,7 +483,7 @@
     "native-css-block": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:style(?::[A-Za-z0-9_-]+)?|@arkzen:native:style:lynx(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
       "contentName": "meta.embedded.block.css",
       "patterns": [{ "include": "source.css" }]
@@ -479,7 +491,7 @@
     "tsx-block": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:(?:components|layout|page):[A-Za-z0-9_-]+|@arkzen:web:error:(?:404|500)|@arkzen:native:(?:components|page|error):[A-Za-z0-9_-]+|@arkzen:native:(?:layout):[A-Za-z0-9_-]+)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
       "contentName": "meta.embedded.block.tsx",
       "patterns": [
@@ -490,7 +502,7 @@
     "typescript-block": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:web:(?:animation|script)(?::[A-Za-z0-9_-]+)?|@arkzen:native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.web" } },
       "contentName": "meta.embedded.block.typescript",
       "patterns": [{ "include": "source.ts" }]
@@ -498,7 +510,7 @@
     "lynx-tsx-block": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:(?:components|layout|page):lynx:[A-Za-z0-9_-]+|@arkzen:native:error:(?:404|500):lynx)[ \\t]*\\*/[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
-      "end": "^[ \\t]*/\\*[ \\t]*\\1:end[ \\t]*\\*/[ \\t]*$",
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
       "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
       "contentName": "meta.embedded.block.tsx",
       "patterns": [
@@ -508,6 +520,14 @@
     },
     "dsl-tags": {
       "patterns": [
+        {
+          "match": "(@arkzen:)(godot|unity):([A-Za-z0-9:_-]+)",
+          "captures": {
+            "1": { "name": "punctuation.definition.tag.tatemono" },
+            "2": { "name": "storage.type.tatemono.game" },
+            "3": { "name": "entity.name.tag.tatemono.game" }
+          }
+        },
         {
           "match": "(@arkzen:)(web):(page):(layout):([+A-Za-z0-9_-]+)(?::([A-Za-z0-9_-]+))?",
           "captures": {

@@ -11,6 +11,8 @@ Highlights Tatemono files across every Pluff web, mobile, desktop, and backend t
 - YAML metadata and configuration headers use YAML highlighting.
 - `:php`, `:ts`, `:py`, `:java`, `:cs`, `:go`, and `:rs` backend bodies use PHP, TypeScript, Python, Java, C#, Go, and Rust grammars respectively.
 - Mail templates use HTML highlighting; notification bodies use their backend's language grammar.
+- Godot and Unity game DSL blocks embed YAML highlighting throughout the block body, through the closing `*/`. Their opening and matching `:end` markers are highlighted as game DSL tags.
+- Completions cover the current Godot project/world/input/assets/scene/behavior/multiplayer/export blocks and Unity runner and scene-mode project/game/visuals/controls/scene/environment/assets/export blocks.
 - Parent-chained layouts use their YAML-header form, and Rust module snippets use the required separator-line form.
 - Tauri and Electron shells render the selected web stack, so their Tatemono UI uses the same TSX/CSS highlighting as that web target.
 

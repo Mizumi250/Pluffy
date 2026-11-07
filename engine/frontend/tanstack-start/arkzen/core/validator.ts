@@ -140,6 +140,7 @@ export function validateTatemono(filePath: string): ValidationResult {
         }
       }
     }
+
   }
 
   const circularErrors = detectCircularDeps(parsed.databases)
@@ -227,6 +228,16 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
     seenLynxPages.add(page.name)
   }
+
+  const nativeLayoutNames = new Set(
+    parsed.nativeLayouts.flatMap(layout => layout.name ? [layout.name] : [])
+  )
+  validateNativePageLayouts(parsed.nativePages, nativeLayoutNames, 'Native', 'native:layout', errors)
+
+  const lynxLayoutNames = new Set(
+    parsed.nativeLynxLayouts.flatMap(layout => layout.name ? [layout.name] : [])
+  )
+  validateNativePageLayouts(parsed.nativeLynxPages, lynxLayoutNames, 'Lynx', 'native:layout:lynx', errors)
 
   // ── 6. Consistency ────────────────────────────
   for (const api of parsed.apis) {
@@ -331,4 +342,28 @@ function detectCircularDeps(databases: ArkzenDatabase[]): string[] {
 
 function toSnakeCase(str: string): string {
   return str.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+}
+
+function validateNativePageLayouts(
+  pages: Array<{ name: string; layout?: string }>,
+  declaredLayouts: Set<string>,
+  target: string,
+  marker: string,
+  errors: string[],
+): void {
+  for (const page of pages) {
+    const rawLayout = page.layout ?? 'default'
+    if (rawLayout === 'default') continue
+    const { layout } = parsePageLayoutDecl(rawLayout)
+    const missingLayouts = (layout?.split(':') ?? [])
+      .filter(name => !declaredLayouts.has(name))
+
+    if (missingLayouts.length > 0) {
+      errors.push(
+        `${target} page "${page.name}": layout "${missingLayouts.join(':')}" is not defined. ` +
+        `Valid layouts: ${[...declaredLayouts].join(', ') || '(none)'}. ` +
+        `To define a custom layout, use @arkzen:${marker}:${missingLayouts[0]}`
+      )
+    }
+  }
 }

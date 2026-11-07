@@ -21,6 +21,16 @@ function yamlSnippet(label, tag, body) {
   }
 }
 
+function gameYamlSnippet(engine, label, tag, body) {
+  return {
+    label,
+    detail: `${engine} game DSL YAML block with matching closing marker`,
+    insertText: new vscode.SnippetString(
+      `/* @arkzen:${tag}\n${body}\n*/\n/* @arkzen:${tag}:end */`
+    ),
+  }
+}
+
 function codeSnippet(label, tag, body = '${1:}') {
   return {
     label,
@@ -152,8 +162,31 @@ function backendItems() {
   return items
 }
 
+function gameItems() {
+  return [
+    gameYamlSnippet('Godot', 'godot:project', 'godot:project', 'godot_version: "4.x"\nname: \${1:My Godot Game}\nmain_scene: res://scenes/main.tscn\nrenderer: forward_plus'),
+    gameYamlSnippet('Godot', 'godot:world', 'godot:world', 'tile_size: 1\ngrid_width: 40\ngrid_depth: 40\nblock_height: 0.6\nworld_margin: 2\nseed: 42\nprops: {}\nnpcs: {}'),
+    gameYamlSnippet('Godot', 'godot:input', 'godot:input', 'actions:\n  move_left:\n    deadzone: 0.2\n    keys: [A, LEFT]'),
+    gameYamlSnippet('Godot', 'godot:assets', 'godot:assets', 'textures:\n  player:\n    source: assets/player.png\n    filter: nearest'),
+    gameYamlSnippet('Godot', 'godot:scene:<name>', 'godot:scene:\${1:main}', 'path: res://scenes/main.tscn\nroot:\n  name: Main\n  type: Node3D\nnodes: []'),
+    gameYamlSnippet('Godot', 'godot:behavior:player', 'godot:behavior:player', 'script: res://scripts/player.gd\nscene: res://scenes/player.tscn\nlanguage: gdscript\nextends: CharacterBody3D\nmovement:\n  input: [move_left, move_right, move_up, move_down]\n  speed: 4.0'),
+    gameYamlSnippet('Godot', 'godot:behavior:camera', 'godot:behavior:camera', 'script: res://scripts/camera_follow.gd\nnode: Camera3D\ntarget: Player\nprojection: perspective\nfollow:\n  offset: [0, 4, -7]\n  smoothing: 8'),
+    gameYamlSnippet('Godot', 'godot:multiplayer', 'godot:multiplayer', 'enabled: true\nport: 24567\nmax_clients: 8\nsync_rate: 20\ndefault_address: 127.0.0.1'),
+    gameYamlSnippet('Godot', 'godot:export', 'godot:export', 'presets:\n  windows:\n    runnable: true'),
+    gameYamlSnippet('Unity', 'unity:project (scene mode)', 'unity:project', 'mode: scene\nunity_version: 6000.0.38f1\nname: \${1:My Unity Game}\nmain_scene: Assets/Scenes/Main.unity\nwidth: 1280\nheight: 720'),
+    gameYamlSnippet('Unity', 'unity:project (dino runner)', 'unity:project', 'unity_version: 6000.0.38f1\nname: \${1:My Dino Runner}\nwidth: 1280\nheight: 720\npixels_per_unit: 100'),
+    gameYamlSnippet('Unity', 'unity:game', 'unity:game', 'type: dino_runner\ndinosaur: dino\nobstacle: cactus\njump_key: Space\ngravity: -30\njump_velocity: 12.5\nground_y: -2\nscroll_speed: 7.5\nspawn_interval_min: 1.1\nspawn_interval_max: 2'),
+    gameYamlSnippet('Unity', 'unity:visuals', 'unity:visuals', 'background_color: "#b3e0f5"\nground_color: "#338a4f"\ncamera_size: 5\nground_width: 24'),
+    gameYamlSnippet('Unity', 'unity:controls', 'unity:controls', 'restart_key: R\npointer_enabled: true'),
+    gameYamlSnippet('Unity', 'unity:scene:<name>', 'unity:scene:\${1:main}', 'path: Assets/Scenes/Main.unity\nnodes:\n  - name: MainCamera\n    type: camera\n    main: true\n    position: [0, 0, -10]'),
+    gameYamlSnippet('Unity', 'unity:environment', 'unity:environment', 'ambient_color: "#a9c7d7"\nambient_intensity: 0.8\nfog_enabled: true\nfog_color: "#c5e0dc"\nfog_density: 0.008'),
+    gameYamlSnippet('Unity', 'unity:assets', 'unity:assets', 'dino:\n  source: assets/dino.svg\ncactus:\n  source: assets/cactus.svg'),
+    gameYamlSnippet('Unity', 'unity:export', 'unity:export', 'targets: [windows, linux, webgl]'),
+  ]
+}
+
 function completionProvider() {
-  const items = [...frontendItems(), ...backendItems()]
+  const items = [...frontendItems(), ...backendItems(), ...gameItems()]
   return {
     provideCompletionItems(document, position) {
       const line = document.lineAt(position.line).text
@@ -173,6 +206,10 @@ function completionProvider() {
 
       function closingSuffix(tag, hasInlineClose) {
         const marker = tag.split(':')[0]
+        if (marker === 'godot' || marker === 'unity') {
+          return `\n\${1:}\n*/\n/* @arkzen:${tag}:end */`
+        }
+
         if (['jobs', 'console', 'notifications', 'mail'].includes(marker)) {
           const yaml = marker === 'jobs'
             ? 'queue: ${1:default}\ntries: ${2:3}\ntimeout: ${3:60}'
@@ -196,7 +233,7 @@ function completionProvider() {
       }
 
       function isClosableTag(tag) {
-        return /^(?:(?:endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail):(?:(?:php|ts|py|java|cs|go|rs):)?[A-Za-z0-9_-]+|module:rs|(?:web:(?:components|layout|page):[A-Za-z0-9_-]+|web:error:(?:404|500)|web:(?:animation|script|style)(?::[A-Za-z0-9_-]+)?)|(?:native:(?:components|layout|page):(?:(?:expo|rn|lynx):)?[A-Za-z0-9_-]+|native:error:(?:404|500)(?::(?:expo|rn|lynx))?|native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?|native:style(?::(?:lynx:)?[A-Za-z0-9_-]+)?)|import:(?:expo|rn))$/.test(tag)
+        return /^(?:(?:endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail):(?:(?:php|ts|py|java|cs|go|rs):)?[A-Za-z0-9_-]+|module:rs|(?:web:(?:components|layout|page):[A-Za-z0-9_-]+|web:error:(?:404|500)|web:(?:animation|script|style)(?::[A-Za-z0-9_-]+)?)|(?:native:(?:components|layout|page):(?:(?:expo|rn|lynx):)?[A-Za-z0-9_-]+|native:error:(?:404|500)(?::(?:expo|rn|lynx))?|native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?|native:style(?::(?:lynx:)?[A-Za-z0-9_-]+)?)|(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export))|import:(?:expo|rn))$/.test(tag)
       }
 
       const markerStart = before.lastIndexOf('/* @arkzen:')
