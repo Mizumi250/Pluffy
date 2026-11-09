@@ -1133,6 +1133,22 @@ async function cmdScan() {
   } else error(`scan.js exited with code ${code}`)
 }
 
+// `mizumi index`   → rewrite the online tatemono index inside the guidelines
+// `mizumi index --check` exits 1 when the guidelines are out of date
+async function cmdIndex(rest = []) {
+  if (!fs.existsSync(path.join(ROOT_DIR, 'tatemono-index.js'))) { error('tatemono-index.js not found in the repo root'); return }
+  console.log()
+  log(`インデックス更新中... Rebuilding the online tatemono index ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  console.log()
+  const code = await runNode('tatemono-index.js', rest)
+  console.log()
+  if (code === 0) {
+    if (!rest.includes('--check') && !rest.includes('--dry')) info('Commit + push the guidelines so AIs reading the repo online see the new index.')
+  } else if (rest.includes('--check')) {
+    process.exitCode = code
+  } else error(`tatemono-index.js exited with code ${code}`)
+}
+
 // `mizumi ai`                         → options menu + request loop
 // `mizumi ai "an idea" --ref on ...`  → straight to pluffy-ai.js with your flags
 async function cmdAi(rest = []) {
@@ -1209,6 +1225,7 @@ async function interactiveMenu() {
     { label: 'レビュー         Review project',          sub: 'a second AI reviews the whole folder', value: 'review' },
     { label: 'チャット         Pluffy chat',             sub: 'open the chat window (sessions saved in SQLite)', value: 'chat' },
     { label: '訓練データ       Scan training data',      sub: 'node scan.js → dataset.jsonl',  value: 'scan'       },
+    { label: 'インデックス     Update tatemono index',   sub: 'refresh the online tatemono list in the guidelines', value: 'index' },
     { label: 'おわり           Exit',                    sub: 'またね！(￣▽￣)ノ',           value: 'exit'       },
   ]
 
@@ -1231,6 +1248,7 @@ async function interactiveMenu() {
     case 'modules':   cmdModules();            break
     case 'ai':        await cmdAi();           break
     case 'scan':      await cmdScan();         break
+    case 'index':     await cmdIndex();        break
     case 'chat':      await cmdChat();         break
     case 'review':    await cmdReview();       break
     case 'exit':
@@ -1278,6 +1296,7 @@ function printHelp() {
     ['mizumi ai',                '→ Pluffy AI: option checkboxes, then ask for apps'],
     ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
+    ['mizumi index',             '→ Refresh the online tatemono index in the guidelines (--check / --dry)'],
     ['mizumi chat',              '→ Open the Pluffy chat window (Electron)'],
     ['mizumi review',            '→ Second AI reviews the repo (menu), report in .pluffy-review/'],
     ['mizumi review engine --apply', '→ Review one folder and approve edits one by one'],
@@ -1328,6 +1347,7 @@ switch (command) {
   case 'modules': cmdModules();                break
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break
+  case 'index':   cmdIndex(args.slice(1));     break
   case 'chat':    cmdChat(args.slice(1));      break
   case 'review':  cmdReview(args.slice(1));    break
   case 'help':
