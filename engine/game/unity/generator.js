@@ -1,5 +1,6 @@
 import fs from 'node:fs'
 import path from 'node:path'
+import { validateGameFreeFiles, writeGameFreeFiles } from '../free-files.js'
 import { parseUnitySceneTatemono, writeUnitySceneProject } from './scene-generator.js'
 
 const VECTOR_GRAPHICS_VERSION = '2.0.0-preview.25'
@@ -612,9 +613,11 @@ export function generateUnityProject({ tatemonoPath, outputDir }) {
   const model = sceneMode
     ? parseUnitySceneTatemono(source, absoluteTatemonoPath)
     : parseUnityTatemono(source, absoluteTatemonoPath)
+  validateGameFreeFiles(source, 'Unity generator')
   fs.mkdirSync(path.dirname(absoluteOutputPath), { recursive: true })
   const stagingDir = fs.mkdtempSync(path.join(path.dirname(absoluteOutputPath), `.${path.basename(absoluteOutputPath)}-staging-`))
   let generated
+  let freeFiles
   try {
     generated = sceneMode
       ? writeUnitySceneProject(model, tatemonoDir, stagingDir)
@@ -622,6 +625,8 @@ export function generateUnityProject({ tatemonoPath, outputDir }) {
         scene: 'Assets/Scenes/Main.unity',
         copiedAssetCount: model.assets.size,
       })
+    // @arkzen:file blocks go last so they can add to or replace anything generated above.
+    freeFiles = writeGameFreeFiles(source, stagingDir, 'Unity generator')
     const backupDir = `${absoluteOutputPath}.previous-${process.pid}`
     if (fs.existsSync(backupDir)) fs.rmSync(backupDir, { recursive: true, force: true })
     if (fs.existsSync(absoluteOutputPath)) fs.renameSync(absoluteOutputPath, backupDir)
@@ -642,5 +647,6 @@ export function generateUnityProject({ tatemonoPath, outputDir }) {
     scene: generated.scene,
     copiedAssetCount: generated.copiedAssetCount,
     unityVersion: model.project.unity_version,
+    freeFiles,
   }
 }
