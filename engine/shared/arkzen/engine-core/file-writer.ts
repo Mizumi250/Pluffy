@@ -29,6 +29,11 @@
 //   - Paths cannot escape the project root (.. / absolute / drive letters /
 //     symlinks) and cannot touch the engine's own files (see BLOCKED_*).
 //   - Two blocks in one tatemono cannot write the same file.
+//   - Cleanup: what each tatemono wrote is recorded in
+//     .arkzen/free-files/<name>.json. When a block is deleted or its path
+//     changes, the old file is removed on the next build; when the tatemono
+//     itself is removed (or loses all its file blocks), everything it wrote
+//     is removed. Empty folders under custom/ are pruned.
 //
 // Synced into every stack's arkzen/core/ via ENGINE_FILES (shared-sync.ts).
 // Called from triggerBackendBuild() (backend-bridge.ts), which every
@@ -48,6 +53,7 @@ export interface FreeFileBlock {
 export interface FreeFileResult {
   written:   string[]   // paths relative to the project root
   unchanged: string[]
+  removed:   string[]   // stale files cleaned up (block deleted / path changed / tatemono removed)
 }
 
 interface PlannedFile {
@@ -59,12 +65,13 @@ interface PlannedFile {
 
 const OPEN      = '/* @arkzen:file:'
 const MAX_BYTES = 5 * 1024 * 1024
+const MANIFEST_DIR = '.arkzen/free-files'
 
 // ── Edit these lists to change what free files may never touch ──
 const BLOCKED_SEGMENTS   = new Set(['.git', 'node_modules'])
 const BLOCKED_BASENAMES  = new Set(['arkzen.json'])
 const BLOCKED_ROOT_FILES = new Set(['mizumi.js', 'start.js', 'setup.js', 'export.js', 'export-docker.js'])
-const BLOCKED_PREFIXES   = ['tatemonos', 'engine/shared']
+const BLOCKED_PREFIXES   = ['tatemonos', 'engine/shared', '.arkzen']
 const BLOCKED_PATTERNS: RegExp[] = [
   /^engine\/(frontend|backend|game)\/[^/]+\/arkzen(\/|$)/,   // each stack's engine internals
 ]
@@ -298,6 +305,96 @@ function planFileBlocks(
 }
 
 // ─────────────────────────────────────────────
+// Cleanup (manifest of what each tatemono wrote)
+// ─────────────────────────────────────────────
+
+function manifestFile(root: string, name: string): string {
+  return path.join(root, ...MANIFEST_DIR.split('/'), `${name}.json`)
+}
+
+function readManifest(root: string, name: string): string[] {
+  try {
+    const json = JSON.parse(fs.readFileSync(manifestFile(root, name), 'utf-8'))
+    return Array.isArray(json?.files) ? json.files.filter((f: unknown): f is string => typeof f === 'string') : []
+  } catch {
+    return []
+  }
+}
+
+function writeManifest(root: string, name: string, files: string[]): void {
+  const file = manifestFile(root, name)
+  if (files.length === 0) {
+    try { fs.rmSync(file, { force: true }) } catch { /* ignore */ }
+    return
+  }
+  const next = JSON.stringify({ files: [...files].sort() }, null, 2) + '\n'
+  let current: string | null = null
+  try { current = fs.readFileSync(file, 'utf-8') } catch { /* new manifest */ }
+  if (current === next) return
+  fs.mkdirSync(path.dirname(file), { recursive: true })
+  fs.writeFileSync(file, next, 'utf-8')
+}
+
+/** True when another tatemono's manifest also claims this file (never delete shared ownership). */
+function ownedByAnother(root: string, name: string, rel: string): boolean {
+  const dir = path.join(root, ...MANIFEST_DIR.split('/'))
+  let entries: string[] = []
+  try { entries = fs.readdirSync(dir) } catch { return false }
+  const key = rel.toLowerCase()
+  for (const entry of entries) {
+    if (!entry.endsWith('.json') || entry === `${name}.json`) continue
+    if (readManifest(root, entry.slice(0, -5)).some(f => f.toLowerCase() === key)) return true
+  }
+  return false
+}
+
+/** Removes empty folders under custom/ (stops at custom/ itself). */
+function pruneEmptyDirs(root: string, rel: string): void {
+  if (!rel.startsWith('custom/')) return
+  const stop = path.join(root, 'custom')
+  let dir = path.dirname(path.join(root, ...rel.split('/')))
+  while (dir !== stop && isInside(stop, dir)) {
+    try {
+      if (fs.readdirSync(dir).length > 0) break
+      fs.rmdirSync(dir)
+    } catch { break }
+    dir = path.dirname(dir)
+  }
+}
+
+/** Deletes one previously-written file after re-running the same safety checks as a write. */
+function removeWrittenFile(root: string, realRoot: string, name: string, rel: string): boolean {
+  if (rel.includes('..') || path.isAbsolute(rel) || blockedReason(rel)) return false
+  if (ownedByAnother(root, name, rel)) return false
+
+  const abs = path.resolve(root, ...rel.split('/'))
+  if (!isInside(root, abs)) return false
+
+  try {
+    const st = fs.lstatSync(abs)
+    if (st.isDirectory()) return false
+    // The folder holding the file must still resolve inside the project (symlink guard).
+    if (!isInside(realRoot, fs.realpathSync(path.dirname(abs)))) return false
+    fs.unlinkSync(abs)
+  } catch {
+    return false   // already gone or unreadable: nothing to remove
+  }
+  pruneEmptyDirs(root, rel)
+  return true
+}
+
+function cleanupStale(root: string, name: string, keep: Set<string>, result: FreeFileResult): void {
+  const previous = readManifest(root, name)
+  if (previous.length === 0) return
+  let realRoot = root
+  try { realRoot = fs.realpathSync(root) } catch { /* keep root */ }
+  for (const rel of previous) {
+    if (keep.has(rel)) continue
+    if (removeWrittenFile(root, realRoot, name, rel)) result.removed.push(rel)
+  }
+}
+
+// ─────────────────────────────────────────────
 // Public API
 // ─────────────────────────────────────────────
 
@@ -308,14 +405,25 @@ export function validateFileBlocks(filePath: string, name: string): string[] {
   return planFileBlocks(content, name, filePath).errors
 }
 
-/** Writes every @arkzen:file block of a tatemono. Throws (writing nothing) if any block is invalid. */
+/** Writes every @arkzen:file block of a tatemono. Throws (writing nothing) if any block is invalid.
+ *  Also removes files this tatemono wrote earlier that no block writes any more. */
 export function writeFreeFiles(tatemono: { filePath: string; meta: { name: string } }): FreeFileResult {
-  const result: FreeFileResult = { written: [], unchanged: [] }
+  const result: FreeFileResult = { written: [], unchanged: [], removed: [] }
 
   const content = fs.readFileSync(tatemono.filePath, 'utf-8')
-  if (!hasFileBlocks(content)) return result
+  const name    = tatemono.meta.name
 
-  const name = tatemono.meta.name
+  // No file blocks (any more): clean up whatever this tatemono wrote before.
+  if (!hasFileBlocks(content)) {
+    const root = findProjectRoot(tatemono.filePath)
+    if (root) {
+      cleanupStale(root, name, new Set(), result)
+      writeManifest(root, name, [])
+      logRemoved(name, result)
+    }
+    return result
+  }
+
   const { plan, errors } = planFileBlocks(content, name, tatemono.filePath)
   if (errors.length > 0) {
     throw new Error(`[Arkzen Files] ${name}: ${errors.length} problem(s)\n  - ${errors.join('\n  - ')}`)
@@ -335,8 +443,32 @@ export function writeFreeFiles(tatemono: { filePath: string; meta: { name: strin
     result.written.push(item.rel)
   }
 
+  const root = findProjectRoot(tatemono.filePath)
+  if (root) {
+    const keep = new Set(plan.map(item => item.rel))
+    cleanupStale(root, name, keep, result)
+    writeManifest(root, name, [...keep])
+  }
+
   for (const rel of result.written)   console.log(`[Arkzen Files] ✓ ${name}: wrote ${rel}`)
   if (result.unchanged.length > 0)    console.log(`[Arkzen Files] ○ ${name}: ${result.unchanged.length} file(s) unchanged`)
+  logRemoved(name, result)
 
   return result
+}
+
+/** Called when a tatemono is deleted: removes every file it wrote. Its core.tsx is gone, so the manifest is the source of truth. */
+export function removeFreeFiles(name: string, startAt: string = process.cwd()): FreeFileResult {
+  const result: FreeFileResult = { written: [], unchanged: [], removed: [] }
+  const root = findProjectRoot(startAt)
+  if (!root) return result
+
+  cleanupStale(root, name, new Set(), result)
+  writeManifest(root, name, [])
+  logRemoved(name, result)
+  return result
+}
+
+function logRemoved(name: string, result: FreeFileResult): void {
+  for (const rel of result.removed) console.log(`[Arkzen Files] 🧹 ${name}: removed ${rel}`)
 }
