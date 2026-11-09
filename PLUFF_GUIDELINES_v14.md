@@ -3113,6 +3113,26 @@
     Empty folders under `custom/` are pruned. A file also listed by another tatemono is kept.
     Files in the inactive stack folder are cleaned the same way after a stack switch.
 
+  **In Godot and Unity tatemonos**
+
+  `@arkzen:file` also works next to `@arkzen:godot:*` and `@arkzen:unity:*` blocks. The game
+  generators handle it (`engine/game/free-files.js`), not the web parser.
+
+  - `path` is relative to the generated game project, for example `scripts/enemy.gd` or
+    `Assets/Scripts/Enemy.cs`. A leading `/` means the same root. `{frontend}`, `{app}`,
+    `{desktop}` and `{backend}` are rejected.
+  - Free files are written after everything else is generated, so a free file with the same path
+    as a generated file replaces it. `node export.js` lists those as "replaced generated files".
+  - Same checks as the web DSL: unique ids and paths, no `..`, no drive letters, no `.git`,
+    `node_modules` or `.env*`, 5 MB limit. Nothing is written unless every block is valid, and
+    validation runs before any output folder is touched.
+  - No cleanup is needed: every export rebuilds the whole output folder, so a deleted block is
+    simply not written again.
+  - Binary files (sprites, audio) still go through the tatemono's `assets/` folder and the
+    `assets` block.
+  - Unity creates `.meta` files for new scripts when the project is opened. For a fixed GUID,
+    write the `.meta` file yourself with another file block.
+
   * * *
 
   _End of PLUFF GUIDELINES v14.0._
