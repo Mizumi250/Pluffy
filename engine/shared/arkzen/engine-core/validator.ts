@@ -18,6 +18,7 @@ import * as fs   from 'fs'
 import * as path from 'path'
 import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
+import { hasFileBlocks, validateFileBlocks } from './file-writer'
 import type { ParsedTatemono, ValidationResult, ArkzenDatabase } from '../types'
 
 const VALID_COLUMN_TYPES = new Set([
@@ -104,11 +105,19 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  if (parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+  const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))
+
+  // v14.1: @arkzen:file blocks are valid without any page
+  if (!hasFreeFiles && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 
-  if (parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
+  if (hasFreeFiles) {
+    try { errors.push(...validateFileBlocks(filePath, parsed.meta.name)) }
+    catch (e) { errors.push(e instanceof Error ? e.message : String(e)) }
+  }
+
+  if (!hasFreeFiles && parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
     warnings.push('No @arkzen:components or @arkzen:native:components found – consider adding shared UI components.')
   }
 
