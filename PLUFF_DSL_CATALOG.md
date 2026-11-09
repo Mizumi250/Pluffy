@@ -116,7 +116,7 @@ Game blocks are separate export targets; they are not web or native UI blocks.
 
 | DSL marker | Purpose |
 |---|---|
-| `@arkzen:file:id` | Writes any text file to a `path:` you choose. Default location is `custom/<tatemono-name>/`; `{frontend}`, `{app}`, `{desktop}`, `{backend}` start the path inside the active stack; a leading `/` means the project root. Always overwrites. Valid in a tatemono that has only `@arkzen:meta` and file blocks. |
+| `@arkzen:file:id` | Writes any text file to a `path:` you choose. Default location is `custom/<tatemono-name>/`; `{frontend}`, `{app}`, `{desktop}`, `{backend}` start the path inside the active stack; a leading `/` means the project root. Always overwrites. Valid in a tatemono that has only `@arkzen:meta` and file blocks. Also works in Godot and Unity tatemonos, where `path:` is relative to the generated game project. |
 
 ## Related conventions (not block markers)
 
