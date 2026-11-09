@@ -112,6 +112,12 @@ class {$controllerName} extends Controller
 
     private static function generateMethod(string $name, string $modelName, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy): string
     {
+        // FIX: a custom @arkzen:endpoint:ts/php body always wins on the standard
+        // CRUD names (index/show/store/update/destroy), same as every other backend.
+        if (in_array($name, ['index', 'show', 'store', 'update', 'destroy'], true) && self::hasCustomBody($endpoint)) {
+            return self::generateCrudCustomBody($name, $modelName, $endpoint);
+        }
+
         return match ($name) {
             'index'   => match ($endpoint['type'] ?? '') {
                 'upload_index' => self::generateUploadIndex($modelName, $endpoint),
@@ -346,6 +352,42 @@ class {$controllerName} extends Controller
         \${$varName}->delete();
 
         return response()->json(['message' => '{$message}']);
+    }";
+    }
+
+    // ─────────────────────────────────────────────
+    // CUSTOM BODY ON STANDARD CRUD NAMES
+    // Keeps the standard signature (route-model binding still works)
+    // and injects the user's body instead of the generated default.
+    // With a custom body, authorization/scoping is the user's responsibility.
+    // ─────────────────────────────────────────────
+
+    private static function hasCustomBody(array $endpoint): bool
+    {
+        $encoded = $endpoint['body'] ?? '';
+        if (!$encoded) {
+            return false;
+        }
+        $decoded = base64_decode($encoded, true);
+        return $decoded !== false && trim($decoded) !== '';
+    }
+
+    private static function generateCrudCustomBody(string $name, string $model, array $endpoint): string
+    {
+        $varName   = lcfirst($model);
+        $signature = match ($name) {
+            'show', 'update', 'destroy' => "Request \$request, {$model} \${$varName}",
+            default                     => 'Request $request',
+        };
+        $methodBody  = self::indentBody(trim(base64_decode($endpoint['body'])));
+        $description = $endpoint['description'] ?? "Custom {$name}";
+
+        return "    /**
+     * {$description}
+     */
+    public function {$name}({$signature}): JsonResponse
+    {
+{$methodBody}
     }";
     }
 
