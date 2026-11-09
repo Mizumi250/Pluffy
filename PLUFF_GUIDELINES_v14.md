@@ -31,7 +31,7 @@
   | Mail and notifications | [16](#section-16--arkzenmailidentifier-shared-php--ts--py--java--cs--go--rs-bodies), [15](#section-15--arkzennotificationsidentifier-shared-php--ts-only-with-a-body) |
   | Login, register, protected pages | [4](#section-4--auth), [8](#section-8--arkzenapi) |
   | Web pages, layouts, error pages, components | [19](#section-19--arkzenweblayoutname), [21](#section-21--arkzenwebpagename), [22](#️-section-22--weberror404--weberror500), [23](#section-23--arkzenwebcomponentsidentifier) |
-  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
+  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
@@ -49,6 +49,7 @@
     - [SECTION 1D — DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
     - [SECTION 2 — STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C — DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
+    - [SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
     - [SECTION 3 — TATEMONO FILE RULES](#section-3--tatemono-file-rules)
     - [⚠️ SECTION 3D — DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
     - [SECTION 3A — IMPORT PLACEMENT](#section-3a--import-placement)
@@ -294,6 +295,8 @@
 
 ## SECTION 2C — DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)
 
+  **DESIGN RULE #1:** When design inspiration is needed, get it from **awwwards.com** first. Use it for ideas and direction, then fit the result to the product's own identity. Always check Section 2D before finalizing any UI.
+
   Default to Awwwards-quality design. Pick in order of best fit:
 
   1. **Minimalism** (default) — whitespace, typography-focused, neutral palette, high contrast
@@ -314,6 +317,204 @@
   **Hierarchy:** L1 page title/CTA 32–48px/700–900 · L2 section header 20–28px/600–700 · L3 body/labels 16px/400–500 · L4 helper 12–14px/400 muted. WCAG: body 4.5:1, helper 3:1. Never below 14px mobile / 16px desktop body.
 
   **Spacing:** 8px grid — 4 / 8 / 16 / 24 / 32 / 48. Padding min 12px vertical, 16px horizontal. Match spacing between similar elements.
+
+  * * *
+
+## SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)
+
+  _Applies to every web and native UI. Nothing in this section is banned. Do not use a listed pattern unless the product actually needs it. A pattern is fine when it has a functional or identity reason. It becomes a problem when it is only there to look modern, premium, futuristic, or AI-generated._
+
+  **CORE PRINCIPLE:** Never use a visual pattern merely because it makes an interface look modern, premium, futuristic, or AI-generated. Every visual decision must serve the product's identity, information hierarchy, usability, or intended experience.
+
+  **Why this exists:** AI-generated interfaces look polished, but more and more of them look like they came from the same template. Sameness is the main complaint, bigger than any single effect. Rounded corners, gradients, pills, cards and animations are not the problem on their own. The same combination repeated everywhere is.
+
+  **Example:** A pill-shaped filter can be excellent UX. A pill-shaped decorative label above every heading is just noise.
+
+  **Scope:** This is an external design guardrail. It does not change Tatemono syntax and does not limit what the DSL can express. It exists to prevent repetitive design defaults, not to remove whole classes of components.
+
+  ### Avoid by default
+
+  - [ ] Purple/blue gradient hero backgrounds
+  - [ ] Gradient text headings
+  - [ ] Sparkle icons as generic decoration
+  - [ ] Emoji replacing proper icons
+  - [ ] Announcement pills above every hero
+  - [ ] Excessive badge and chip usage
+  - [ ] Nested rounded cards
+  - [ ] Three identical feature cards by default
+  - [ ] Glassmorphism without a functional reason
+  - [ ] Excessive shadows and glowing borders
+  - [ ] Unnecessary floating decorative elements
+  - [ ] Fake metrics and testimonials
+  - [ ] Generic AI marketing copy
+  - [ ] Unnecessary AI assistant buttons
+  - [ ] Animations without a functional or experiential purpose
+
+  ### Design requirements
+
+  - [ ] Every component must have a reason to exist
+  - [ ] Use hierarchy instead of decorating everything
+  - [ ] Use consistent iconography
+  - [ ] Choose typography according to the product's identity
+  - [ ] Use spacing intentionally
+  - [ ] Make layouts appropriate to the content
+  - [ ] Give each product its own visual identity
+  - [ ] Prioritize usability over visual gimmicks
+  - [ ] Use animations selectively
+  - [ ] Prefer authentic content over placeholder marketing
+
+  ### Full pattern list (use only when necessary)
+
+  **1. Pills, badges and labels** (repetition fatigue; the problem is that everything looks equally important)
+
+  1. Announcement pills, such as "✨ Now with AI"
+  2. Everything is a pill: every label, category, status and filter has a capsule background
+  3. Floating hero badge: a tiny badge above every headline
+  4. Rainbow status chips: green, purple, pink, blue and orange labels everywhere
+  5. Excessively rounded CTA buttons
+  6. Pills nested inside cards nested inside larger cards
+  7. Tiny PRO, NEW, BETA, POPULAR badges everywhere
+  8. Glowing outline pills
+  9. Animated or pulsing status badges without a real status change
+  10. Sparkle icons inside otherwise ordinary buttons
+
+  **2. Colors and visual effects** (the recognizable AI aesthetic)
+
+  11. Purple-blue gradients, the stereotypical AI startup palette
+  12. Neon glow everywhere: borders, text, buttons and cards
+  13. Excessive glassmorphism: every container looks like frosted glass
+  14. Mesh and aurora backgrounds: abstract colorful blobs behind everything
+  15. Gradient text on every major heading
+  16. Random purple-to-pink color transitions
+  17. Glowing cursor-following effects
+  18. Unnecessary blurred light spots behind cards
+  19. Excessive drop shadows
+  20. Low-contrast dark mode with barely visible text
+  21. Random colored borders around otherwise ordinary containers
+  22. Neon outlines on every interactive element
+  23. Animated gradient backgrounds that serve no purpose
+  24. Every section having a different gradient
+
+  **3. Cards and layout patterns** (one of the biggest giveaways)
+
+  25. The three-card layout: centered hero followed by three identical feature cards
+  26. Container soup: cards inside cards inside cards
+  27. Forced bento grids: every piece of information becomes a differently sized card
+  28. Giant metric cards: one enormous number with decorative charts and tiny labels
+  29. Identical card sizes for unrelated information
+  30. Excessive rounded corners on every surface
+  31. Cards with colored left borders for no reason
+  32. A tiny icon above every card heading
+  33. Cards with identical padding regardless of content
+  34. Decorative floating cards that do not represent actual functionality
+  35. Every section separated into a new bordered container
+  36. Three or four columns of identical features
+  37. Excessive whitespace that makes a simple interface feel empty
+  38. Unnecessary dashboard panels
+  39. Nested borders around individual elements
+  40. Repeated rounded rectangles with no meaningful hierarchy
+
+  **4. Icons and decorative elements**
+
+  41. Emoji as icons (🚀 ✨ 🎯 💡) instead of a consistent icon system
+  42. Random outline icons with different stroke weights and visual styles
+  43. Sparkles used as the universal symbol for AI
+  44. Stars beside ordinary navigation items
+  45. Random floating decorative circles
+  46. Decorative plus signs and crosses
+  47. Abstract blobs behind every component
+  48. Unnecessary dotted backgrounds
+  49. Randomly placed miniature illustrations
+  50. Tiny decorative graphs that do not communicate data
+  51. Inconsistent icon sizes
+  52. Three different icon libraries mixed together
+
+  **5. Typography**
+
+  53. Oversized centered hero headlines on every landing page
+  54. Gradient-colored headlines
+  55. Random italic serif words inside sans-serif headings
+  56. Excessive letter spacing
+  57. Tiny uppercase section labels
+  58. The same font pairing on every website
+  59. Every heading using the same font weight
+  60. Excessive use of bold text
+  61. Decorative monospace text such as "// SYSTEM INITIALIZED"
+  62. Artificially spaced-out text like "W E L C O M E"
+  63. Huge headlines that say very little
+  64. Fake technical-looking typography to make products feel futuristic
+
+  Also recognized as an AI design look: repetitive typography, cream backgrounds, rust-colored accents, ticker-like bars and rounded dashboard elements.
+
+  **6. AI-specific interface gimmicks** (especially relevant to AI products)
+
+  65. A sparkle icon attached to every feature
+  66. "Ask AI" buttons everywhere, even when ordinary controls are better
+  67. AI assistant bubbles permanently floating in the bottom-right corner
+  68. Chat interfaces forced into products that do not need chat
+  69. AI-generated suggestions presented as colorful pills
+  70. Suggested prompt chips taking up half the screen
+  71. Fake typing animations that take too long
+  72. Glowing borders around AI-generated responses
+  73. Every AI output presented in a rounded card
+  74. Excessive Regenerate, Enhance, Improve, Magic buttons
+  75. AI avatars with glowing gradients
+  76. Fake AI processing animations
+  77. Excessive animated sparkle effects when generating content
+  78. AI assistant greeting banners that cannot be dismissed
+  79. An AI sidebar that permanently occupies screen space
+  80. Every input field having an AI enhancement button
+
+  **7. Landing page cliches**
+
+  81. Centered hero with a tiny announcement badge
+  82. Giant headline followed by a generic subtitle
+  83. Two CTA buttons: "Get Started" and "Learn More"
+  84. A fake dashboard preview floating on the right
+  85. Three feature cards immediately below the hero
+  86. A logo ticker that says "Trusted by innovative teams"
+  87. Fake customer testimonials
+  88. Generic statistics such as "10K+ users"
+  89. Repeated pricing cards with one highlighted in purple
+  90. Every section having a different background color
+  91. Fake integrations section with random logos
+  92. Generic FAQ accordion at the bottom
+  93. Oversized footer with unnecessary columns
+  94. The same CTA repeated after every section
+  95. A floating announcement bar with a gradient background
+
+  **8. Animations and interactions**
+
+  96. Every element fading in when scrolling
+  97. Stagger animations on every single list
+  98. Buttons scaling up on every hover
+  99. Cards lifting with exaggerated shadows
+  100. Cursor-following glow effects
+  101. Random floating particles
+  102. Continuous pulsing dots
+  103. Shimmering skeleton loaders for instantly available content
+  104. Unnecessary animated counters
+  105. Scroll-triggered horizontal sections when normal scrolling works
+  106. Magnetic buttons everywhere
+  107. Excessive parallax effects
+  108. Every section having its own entrance animation
+  109. Animated gradients on buttons
+  110. Hover effects without keyboard focus equivalents
+
+  **9. Copywriting that makes a UI feel AI-generated** (not inherently bad; suspicious when every product uses them without explaining what it actually does)
+
+  111. "Supercharge your workflow."
+  112. "Unlock your potential."
+  113. "The future of productivity."
+  114. "Everything you need, all in one place."
+  115. "Powered by intelligent AI."
+  116. "Seamless experience."
+  117. "Revolutionize the way you work."
+  118. "Your all-in-one solution."
+  119. "Experience the magic."
+  120. "Built for the next generation."
+
+  Write copy that says what the product actually does.
 
   * * *
 
@@ -660,6 +861,7 @@
   - [ ] Mail / notification bodies avoided (YAML-only) unless custom content is required; Express mail templates use only the documented safe subset (interpolation, comments, basic conditions, and loops), not arbitrary Blade/PHP
 
   **WEB**
+  - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
   - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
   - [ ] Source `'use client'` is supported in components/layout/error:500; page directives are stripped and generated pages receive their own directive
   - [ ] Layouts export `<Name>Layout`, use `useArkzenRouter()`/`useArkzenPathname()`; `parent:` layouts use Shape B
