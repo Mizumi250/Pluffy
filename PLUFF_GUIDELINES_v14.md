@@ -3065,4 +3065,50 @@
 
   * * *
 
+  ## SECTION 30 — FREE FILES (`@arkzen:file`)
+
+  A free file block writes any text file to a path you choose. It is independent of every
+  web, native, desktop, backend and game stack. A tatemono with only `@arkzen:meta` and
+  `@arkzen:file` blocks is valid (no pages, no backend). The block can also sit next to the
+  normal blocks in any tatemono.
+
+  ```tsx
+  /* @arkzen:file:landing
+  path: index.html
+  */
+  <!doctype html>
+  <html><body><h1>Hello</h1></body></html>
+  /* @arkzen:file:landing:end */
+  ```
+
+  The header is `path:` only. The body is written as-is (one newline after the header and one
+  before the closing marker are dropped; a final newline is added).
+
+  **Where `path` lands**
+
+  | `path` | Written to |
+  |---|---|
+  | `index.html` | `custom/<tatemono-name>/index.html` (the default, any depth: `packages/x/src/a.ts`) |
+  | `{frontend}/public/robots.txt` | the active web stack folder (`activeStack` in `arkzen.json`) |
+  | `{app}/...` / `{desktop}/...` | the active app / desktop stack folder |
+  | `{backend}/...` | `engine/backend/<active backend>/` |
+  | `/some/dir/file.ext` | the project root (a leading slash is deliberate) |
+
+  **Rules**
+
+  - Always overwrites; unchanged files are skipped.
+  - Block ids must be unique in the tatemono, and two blocks cannot write the same file.
+  - Nothing is written unless every block in the tatemono is valid.
+  - `..`, drive letters, and links that leave the project are rejected.
+  - Off limits: `.git`, `node_modules`, `.env*`, `arkzen.json`, `tatemonos/`, `engine/shared/`,
+    each stack's `arkzen/` folder, and the root engine scripts (`mizumi.js`, `start.js`,
+    `setup.js`, `export.js`, `export-docker.js`). The lists are at the top of
+    `engine/shared/arkzen/engine-core/file-writer.ts`.
+  - Do not put other `@arkzen:` blocks inside a file body; the parser would read them.
+  - Export copies `custom/<name>/` to the exported project; `{frontend}`/`{backend}` files travel
+    with their stack folders; root (`/`) files are not exported.
+  - Files are not removed when a block is deleted (cleanup is not implemented yet).
+
+  * * *
+
   _End of PLUFF GUIDELINES v14.0._
