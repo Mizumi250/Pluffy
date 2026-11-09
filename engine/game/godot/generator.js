@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
+import { validateGameFreeFiles, writeGameFreeFiles } from '../free-files.js'
 
 const ENGINE_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
 const requireFromNext = createRequire(path.join(ENGINE_DIR, 'frontend', 'nextjs', 'package.json'))
@@ -1933,6 +1934,7 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
   assert(path.basename(absoluteTatemonoPath) === 'core.tsx', 'Godot generation expects a Tatemono core.tsx file')
   const source = fs.readFileSync(absoluteTatemonoPath, 'utf8')
   const model = parseTatemono(source, absoluteTatemonoPath)
+  validateGameFreeFiles(source, 'Godot generator')
 
   const outputScenes = [...model.scenes.values()]
   const playerBehavior = model.behaviors.get('player')
@@ -2009,6 +2011,9 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
       : ''
     fs.writeFileSync(path.join(stagingDir, 'PLUFF_EXPORT.md'), `${exportGuide(model.exportConfig, model.project.name)}${missingList}`, 'utf8')
 
+    // @arkzen:file blocks go last so they can add to or replace anything generated above.
+    const freeFiles = writeGameFreeFiles(source, stagingDir, 'Godot generator')
+
     try {
       if (fs.existsSync(absoluteOutputPath)) {
         fs.rmSync(absoluteOutputPath, { recursive: true, force: true })
@@ -2027,6 +2032,7 @@ export function generateGodotProject({ tatemonoPath, outputDir }) {
       scripts: [...scriptPaths],
       missingOptionalAssets: missingOptional,
       copiedAssetCount: copiedAssets.copied,
+      freeFiles,
     }
   } catch (error) {
     fs.rmSync(stagingDir, { recursive: true, force: true })
