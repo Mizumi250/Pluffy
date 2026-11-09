@@ -8,7 +8,7 @@ import { REPO_ROOT, BACKEND_DIR, env, Log } from './runtime/support'
 import { startRealtime } from './runtime/broadcast'
 import { STORAGE_ROOT } from './runtime/storage'
 import { buildTatemono, removeTatemono, loadAllGenerated, routers, routePrefixes } from './engine/build'
-import { readHubRegistry } from '../../../shared/arkzen/hub/registry'
+import { readHubRegistry } from './hub/registry'
 
 export const app = express()
 app.use(cors())
