@@ -1,4 +1,4 @@
-  # PLUFF GUIDELINES v14.0
+# PLUFF GUIDELINES v14.0
 
   ## For AI — Generating & Editing Tatemono Files
 
@@ -3107,7 +3107,11 @@
   - Do not put other `@arkzen:` blocks inside a file body; the parser would read them.
   - Export copies `custom/<name>/` to the exported project; `{frontend}`/`{backend}` files travel
     with their stack folders; root (`/`) files are not exported.
-  - Files are not removed when a block is deleted (cleanup is not implemented yet).
+  - Cleanup: each tatemono's written files are recorded in `.arkzen/free-files/<name>.json`
+    (gitignored). Delete a block or change its `path` and the old file is removed on the next
+    build. Delete the tatemono, or all its file blocks, and everything it wrote is removed.
+    Empty folders under `custom/` are pruned. A file also listed by another tatemono is kept.
+    Files in the inactive stack folder are cleaned the same way after a stack switch.
 
   * * *
 
