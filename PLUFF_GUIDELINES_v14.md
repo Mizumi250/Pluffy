@@ -11,7 +11,8 @@
 
   This document is long. You do not need all of it for every task.
 
-  1. **Always read Part A** (core rules, especially Sections 3D and 29).
+  1. **Always read Part A** (core rules, especially Sections 3D, 2D and 29).
+     **For all design, copy and sample data, follow Section 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
   2. Find your task in the table below and read only the sections listed.
   3. Section numbers are stable labels, not a sequence. The document is grouped into Parts, so numbers are not in numeric order (for example Section 18 sits in Part C beside the other backend blocks). "SECTION 8" always means the same section.
   4. If you can open files, jump with the links. If this text was pasted into a chat, search for the heading text, for example `SECTION 8 —`.
@@ -31,7 +32,7 @@
   | Mail and notifications | [16](#section-16--arkzenmailidentifier-shared-php--ts--py--java--cs--go--rs-bodies), [15](#section-15--arkzennotificationsidentifier-shared-php--ts-only-with-a-body) |
   | Login, register, protected pages | [4](#section-4--auth), [8](#section-8--arkzenapi) |
   | Web pages, layouts, error pages, components | [19](#section-19--arkzenweblayoutname), [21](#section-21--arkzenwebpagename), [22](#️-section-22--weberror404--weberror500), [23](#section-23--arkzenwebcomponentsidentifier) |
-  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
+  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
@@ -49,7 +50,7 @@
     - [SECTION 1D — DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
     - [SECTION 2 — STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C — DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
-    - [SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
+    - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
     - [SECTION 3 — TATEMONO FILE RULES](#section-3--tatemono-file-rules)
     - [⚠️ SECTION 3D — DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
     - [SECTION 3A — IMPORT PLACEMENT](#section-3a--import-placement)
@@ -299,20 +300,24 @@
 
   Default to Awwwards-quality design. Pick in order of best fit:
 
-  1. **Minimalism** (default) — whitespace, typography-focused, neutral palette, high contrast
+  1. **Minimalism** (default) — whitespace, typography-focused, neutral palette (neutral does not mean cream or beige by default, see Section 2D), high contrast
   2. **Glassmorphism** — `rgba` + `backdrop-filter: blur`
   3. **Skeuomorphism** — textured, realistic depth (finance, familiar UI)
   4. **Claymorphism** — soft, rounded, 3D-plastic (friendly/creative)
   5. **Neo-Brutalism** — thick borders, bold, geometric
   6. **Liquid Glass** — flowing shapes, soft gradients, smooth motion (premium)
 
+  Apply the chosen style sparingly. Glass, gradients and glow only where they have a reason (Section 2D).
+
   Accessibility (contrast, readability) always wins.
 
-  **Transitions:** page fade+slide (`opacity .3s`, `transform .4s`); modal/overlay .25–.35s; buttons .15–.2s; list items staggered (`index * 50ms`). Keep under 500ms; respect `prefers-reduced-motion`.
+  When Section 2C and Section 2D conflict, Section 2D wins.
 
-  **UX patterns:** skeleton screens for API >300ms (match final layout); optimistic UI (update first, revert on error); optimistic pre-loading (fail silently, no spinners); progress illusion (0→30 fast, 30→90 moderate, 90→99 slow crawl); GSAP ScrollTrigger for scroll effects; Framer Motion for hover/entrance.
+  **Transitions:** page fade+slide (`opacity .3s`, `transform .4s`); modal/overlay .25–.35s; buttons .15–.2s; list items may be staggered (`index * 50ms`) where it helps, not on every list. Keep under 500ms; respect `prefers-reduced-motion`.
 
-  **Buttons:** Primary + Ghost pairing. NEVER two primary buttons in one section.
+  **UX patterns:** skeleton screens for API >300ms (match final layout); optimistic UI (update first, revert on error); optimistic pre-loading (fail silently, no spinners); progress illusion (0→30 fast, 30→90 moderate, 90→99 slow crawl); GSAP ScrollTrigger for scroll effects; Framer Motion for hover/entrance. Use them only where the effect has a purpose (Section 2D).
+
+  **Buttons:** Primary + Ghost pairing only when a real secondary action exists. NEVER two primary buttons in one section.
 
   **Hierarchy:** L1 page title/CTA 32–48px/700–900 · L2 section header 20–28px/600–700 · L3 body/labels 16px/400–500 · L4 helper 12–14px/400 muted. WCAG: body 4.5:1, helper 3:1. Never below 14px mobile / 16px desktop body.
 
@@ -320,9 +325,11 @@
 
   * * *
 
-## SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)
+## ⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)
 
-  _Applies to every web and native UI. Nothing in this section is banned. Do not use a listed pattern unless the product actually needs it. A pattern is fine when it has a functional or identity reason. It becomes a problem when it is only there to look modern, premium, futuristic, or AI-generated._
+  **CRITICAL: read this section before writing any UI, copy or sample data, on every task.**
+
+  _Applies to every web and native UI. The pattern lists are not banned. Do not use a listed pattern unless the product actually needs it. The house rules below (style preference, data and content rules, no em dashes) always apply. A pattern is fine when it has a functional or identity reason. It becomes a problem when it is only there to look modern, premium, futuristic, or AI-generated._
 
   **CORE PRINCIPLE:** Never use a visual pattern merely because it makes an interface look modern, premium, futuristic, or AI-generated. Every visual decision must serve the product's identity, information hierarchy, usability, or intended experience.
 
@@ -362,6 +369,26 @@
   - [ ] Prioritize usability over visual gimmicks
   - [ ] Use animations selectively
   - [ ] Prefer authentic content over placeholder marketing
+  - [ ] Build each page around one strong visual idea instead of the safe default
+  - [ ] Human touches such as handwritten type, sketches and small imperfections are welcome
+  - [ ] Every hover effect has a keyboard focus equivalent, and accessibility is never assumed
+
+  ### House style preference
+
+  - Prefer rainbow-style, colorful, human-looking UI over sterile, template-looking UI.
+  - Color itself is not the problem. What 2D warns against is color with no meaning and the same template repeated everywhere.
+  - Where this preference conflicts with an item in the pattern list (for example item 4 or item 24), this preference wins.
+
+  ### Data and content rules (always)
+
+  - Always use real-looking data entries for seeders, sample content, mock lists and previews. Never generic placeholder data.
+  - Never use Juan Dela Cruz style generic placeholder names, the names AI always reaches for.
+  - For sample names, use Japanese (romaji), German, Russian, Indonesian and Korean names.
+  - Applies to seeders (Section 7C), mock UI and any other sample content.
+
+  ### No em dashes
+
+  - Never use em dashes in UI copy or any generated text. Use commas, periods, colons or parentheses instead.
 
   ### Full pattern list (use only when necessary)
 
@@ -515,6 +542,43 @@
   120. "Built for the next generation."
 
   Write copy that says what the product actually does.
+
+  **10. Additions: typography, color, layout, motion and copy**
+
+  Typography
+
+  121. Overused fonts: Inter, Roboto, Open Sans, Lato, Montserrat, Arial
+  122. Syne as the "distinctive" display font
+  123. One font family for the whole page
+  124. All-caps body text
+  125. Letter spacing so tight the characters touch
+  126. Font sizes outside a defined type scale
+  127. Text lines wider than about 80 characters (use a max-width of 65ch to 75ch)
+
+  Color
+
+  128. Cream or beige as the default background
+  129. Gray text on colored backgrounds (use a darker tint of the background or near-white)
+  130. Pure #000 backgrounds (tint toward the brand hue)
+  131. Radial-gradient background halos
+  132. Decorative grid-line backgrounds
+
+  Layout and quality
+
+  133. Everything centered
+  134. Skipped heading levels
+  135. Cramped padding and tight line height
+  136. Small touch targets
+
+  Motion
+
+  137. Bounce or elastic easing
+  138. Scaling or rotating images on hover
+  139. Animating width or height instead of transform and opacity
+
+  Copy
+
+  140. Em dashes in copy, including overuse (the house rule above says never use them at all)
 
   * * *
 
@@ -862,6 +926,8 @@
 
   **WEB**
   - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
+  - [ ] Sample data and seeders use real-looking entries with Japanese (romaji), German, Russian, Indonesian or Korean names, no generic placeholder names (Section 2D)
+  - [ ] No em dashes in any generated copy (Section 2D)
   - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
   - [ ] Source `'use client'` is supported in components/layout/error:500; page directives are stripped and generated pages receive their own directive
   - [ ] Layouts export `<Name>Layout`, use `useArkzenRouter()`/`useArkzenPathname()`; `parent:` layouts use Shape B
@@ -1498,6 +1564,8 @@
   Engine auto-generates `belongsTo` / `hasMany` from `foreign:` columns. Never write them by hand. Migrations are topologically sorted by foreign-key dependencies (parents first); circular dependencies are an error.
 
 ## ⚠️ SECTION 7C — SEEDERS
+
+  Seed data follows the data and content rules in Section 2D (real-looking entries, no generic placeholder names).
 
   Seed parents only when children can reference known ids. Do not seed a child table whose `foreignId` points at rows that may not exist yet. Tables created at runtime (tickets, orders, logs) normally need **no seeder**.
 
