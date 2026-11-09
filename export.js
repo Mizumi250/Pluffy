@@ -760,6 +760,24 @@ if (fs.existsSync(srcAssetsPath)) {
 }
 
 // ─────────────────────────────────────────────
+// Free files (@arkzen:file)
+// custom/<name>/ holds every file the tatemono wrote with the default
+// (no-prefix) path. Files written with {frontend} / {backend} / {app} /
+// {desktop} already live inside those stack folders and travel with them.
+// Files written to the project root with a leading "/" are NOT exported.
+// ─────────────────────────────────────────────
+const srcCustomPath = path.join(ROOT_DIR, 'custom', tatName)
+if (fs.existsSync(srcCustomPath)) {
+  try {
+    const customDest = path.join(PROJECT_DIR, 'custom', tatName)
+    fs.cpSync(srcCustomPath, customDest, { recursive: true })
+    success(`Free files copied → custom/${tatName}/`)
+  } catch (err) {
+    warn(`Could not copy free files: ${err.message}`)
+  }
+}
+
+// ─────────────────────────────────────────────
 // STEP 5 — WRITE STANDALONE backend bootstrap
 //
 // WHY: The engine's bootstrap/app.php registers DB connections for
