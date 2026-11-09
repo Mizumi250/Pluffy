@@ -176,7 +176,13 @@ ${ind(body('delete'), 2)}
       const find = `    const ${v} = await ${M}.findOrFail(request.route(${q('id')}))\n`
       const respType = ep.response?.type ?? ''
       let code: string
-      switch (name) {
+      // FIX: a custom endpoint:ts body always wins on index/show/update/destroy,
+      // same as store/sendMail/notify and every other backend. Without this the
+      // generic "list everything" query silently replaced scoped user code.
+      const customCrudBody = ['index', 'show', 'update', 'destroy'].includes(name) ? dec(ep.body).trim() : ''
+      if (customCrudBody) {
+        code = ind(customCrudBody, 2) + '\n'
+      } else switch (name) {
         case 'index': {
           if (nativeNotificationApi && !ep.body) {
             code = `    const user = request.user()\n    const results = await DatabaseNotification.query().where({ notifiable_type: 'user', notifiable_id: user.id }).orderBy('created_at', 'desc').get()\n    return response.json({ data: results })\n`
