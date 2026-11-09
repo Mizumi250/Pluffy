@@ -112,6 +112,12 @@ Game blocks are separate export targets; they are not web or native UI blocks.
 | `@arkzen:unity:assets` | Declares source assets used by Unity runner or scene mode. |
 | `@arkzen:unity:export` | Declares supported Unity scene-mode build targets. |
 
+## Free files (any stack, or none)
+
+| DSL marker | Purpose |
+|---|---|
+| `@arkzen:file:id` | Writes any text file to a `path:` you choose. Default location is `custom/<tatemono-name>/`; `{frontend}`, `{app}`, `{desktop}`, `{backend}` start the path inside the active stack; a leading `/` means the project root. Always overwrites. Valid in a tatemono that has only `@arkzen:meta` and file blocks. |
+
 ## Related conventions (not block markers)
 
 - Tatemono files reference files under `tatemonos/<name>/assets/`; the `assets/`
