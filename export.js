@@ -165,6 +165,8 @@ if (activeStack === 'godot') {
     success(`Godot project generated: ${path.relative(ROOT_DIR, result.outputDir)}`)
     log(`Scenes: ${result.scenes.join(', ')}`)
     log(`Assets copied and arranged: ${result.copiedAssetCount}`)
+    if (result.freeFiles.written.length) log(`Free files written: ${result.freeFiles.written.join(', ')}`)
+    if (result.freeFiles.overridden.length) warn(`Free files replaced generated files: ${result.freeFiles.overridden.join(', ')}`)
     if (result.missingOptionalAssets.length) {
       warn(`Optional assets not found: ${result.missingOptionalAssets.join(', ')}`)
     }
@@ -193,6 +195,8 @@ if (activeStack === 'unity') {
     log(`Unity Editor: ${result.unityVersion}`)
     log(`Scene: ${result.scene}`)
     log(`Declared assets copied: ${result.copiedAssetCount}`)
+    if (result.freeFiles.written.length) log(`Free files written: ${result.freeFiles.written.join(', ')}`)
+    if (result.freeFiles.overridden.length) warn(`Free files replaced generated files: ${result.freeFiles.overridden.join(', ')}`)
     log('Open this folder in Unity Hub or build it with the included GameCI workflow.')
     divider()
   } catch (error) {
