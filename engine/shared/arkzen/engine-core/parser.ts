@@ -2174,12 +2174,14 @@ function validatePages(
   pages:           ArkzenPage[],
   errorHandlers:   ArkzenErrorHandler[],
   nativePages:     ArkzenPage[],
-  nativeLynxPages: ArkzenPage[]
+  nativeLynxPages: ArkzenPage[],
+  hasFreeFiles:    boolean = false
 ): void {
+  // v14.1: a tatemono made only of @arkzen:file blocks needs no pages
   // v10.0: valid if has web pages, native pages, or error handlers
   // v10.3: nativeLynxPages also counts as valid
   // A native-only tatemono has zero web pages — that's fine
-  if (pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
+  if (!hasFreeFiles && pages.length === 0 && errorHandlers.length === 0 && nativePages.length === 0 && nativeLynxPages.length === 0) {
     throw new Error('[Arkzen Parser] At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
   const seen = new Set<string>()
@@ -2316,7 +2318,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   validateTableNames(databases)
   validateNoDuplicateTables(databases)
   validateNoDuplicateControllers(apis)
-  validatePages(pages, errorHandlers, nativePages, nativeLynxPages)
+  validatePages(pages, errorHandlers, nativePages, nativeLynxPages, content.includes('/* @arkzen:file:'))
 
   const hasBackend =
     databases.length     > 0 ||
