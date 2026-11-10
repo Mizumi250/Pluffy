@@ -29,7 +29,7 @@ class ModelBuilder
 
         $fillable         = self::generateFillable($db['columns']);
         $casts            = self::generateCasts($db['columns']);
-        $relations        = self::generateRelations($db['columns'], $module['databases'] ?? [], $module['database']['table'], $name, $slugNs);
+        $relations        = self::generateRelations($db['columns'], $module['databases'] ?? [], $module['database']['table'], $name, $slugNs, $module['apis'] ?? []);
         $softDeletes      = $db['softDeletes'] ? "use Illuminate\\Database\\Eloquent\\SoftDeletes;\n" : '';
         $softDeletesTrait = $db['softDeletes'] ? "\n    use SoftDeletes;" : '';
 
@@ -140,7 +140,7 @@ class {$modelName} extends Model
     // Uses slugNs (PascalCase) for namespace — no hyphens
     // ─────────────────────────────────────────────
 
-    private static function generateRelations(array $columns, array $allDatabases, string $rawCurrentTable, string $tatSlug, string $slugNs): string
+    private static function generateRelations(array $columns, array $allDatabases, string $rawCurrentTable, string $tatSlug, string $slugNs, array $apis = []): string
     {
         $relations = [];
 
@@ -148,8 +148,9 @@ class {$modelName} extends Model
         foreach ($columns as $name => $config) {
             if (empty($config['foreign'])) continue;
 
-            [$refTable]   = explode('.', $config['foreign']);
-            $relatedModel = self::tableToModel($refTable);
+            [$refTable]   = explode('.', (string) $config['foreign']);
+            $rawRefTable  = self::resolveRawTable($refTable, $tatSlug, $allDatabases);
+            $relatedModel = self::modelForTable($rawRefTable, $apis);
             $methodName   = str_replace('_id', '', $name);
 
             $relations[] = "    public function {$methodName}()
@@ -164,10 +165,10 @@ class {$modelName} extends Model
 
             foreach ($db['columns'] as $col => $cfg) {
                 if (empty($cfg['foreign'])) continue;
-                [$refTable] = explode('.', $cfg['foreign']);
+                [$refTable] = explode('.', (string) $cfg['foreign']);
 
-                if ($refTable === $rawCurrentTable) {
-                    $relatedModel = self::tableToModel($db['table']);
+                if (self::resolveRawTable($refTable, $tatSlug, $allDatabases) === $rawCurrentTable) {
+                    $relatedModel = self::modelForTable($db['table'], $apis);
                     $methodName   = self::pluralize(str_replace('_id', '', $col));
 
                     $relations[] = "    public function {$methodName}()
@@ -181,9 +182,52 @@ class {$modelName} extends Model
         return implode("\n\n", $relations);
     }
 
+    // `foreign:` can be the declared table (employees) or the prefixed physical
+    // name (queue_flow_queues). Resolve either one back to the declared table so
+    // relations match the same way the migration does.
+    private static function resolveRawTable(string $refTable, string $tatSlug, array $allDatabases): string
+    {
+        $declared = array_column($allDatabases, 'table');
+        if (in_array($refTable, $declared, true)) return $refTable;
+
+        $prefix = str_replace('-', '_', $tatSlug) . '_';
+        if (str_starts_with($refTable, $prefix)) {
+            $stripped = substr($refTable, strlen($prefix));
+            if (in_array($stripped, $declared, true)) return $stripped;
+        }
+
+        return $refTable;
+    }
+
+    // Use the model class actually generated for a table (the api block's model),
+    // using the same table <-> model matching as ModuleReader::findDatabaseForModel.
+    // Only fall back to guessing the class name when no api block matches.
+    private static function modelForTable(string $rawTable, array $apis): string
+    {
+        foreach ($apis as $api) {
+            $model = $api['model'] ?? null;
+            if (!$model) continue;
+
+            $snake = strtolower(preg_replace('/(?<!^)[A-Z]/', '_$0', $model));
+            if (
+                strtolower($model) === rtrim($rawTable, 's')
+                || $snake . 's' === $rawTable
+                || $snake === $rawTable
+            ) {
+                return $model;
+            }
+        }
+
+        return self::tableToModel($rawTable);
+    }
+
     private static function tableToModel(string $table): string
     {
-        $singular = rtrim($table, 's');
+        if (str_ends_with($table, 'ies'))     $singular = substr($table, 0, -3) . 'y';
+        elseif (str_ends_with($table, 'ss'))  $singular = $table;
+        elseif (str_ends_with($table, 's'))   $singular = substr($table, 0, -1);
+        else                                  $singular = $table;
+
         return str_replace('_', '', ucwords($singular, '_'));
     }
 
