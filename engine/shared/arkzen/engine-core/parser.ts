@@ -2264,7 +2264,6 @@ export function parseTatemono(filePath: string): ParsedTatemono {
   const policySnippets = parseAllPolicySnippets(content)
 
   // Repeatable sections
-  const stores        = parseAllNamedCode(content, 'store')
   const realtimes     = parseAllRealtime(content)
   const events        = parseAllEvents(content)
   const jobs          = parseAllJobs(content)
@@ -2324,7 +2323,6 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     databases.length     > 0 ||
     apis.length          > 0 ||
     customRoutes.length  > 0 ||
-    stores.length        > 0 ||
     events.length        > 0 ||
     realtimes.length     > 0 ||
     jobs.length          > 0 ||
@@ -2351,7 +2349,6 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     components,
     styles,
     errorHandlers,
-    stores,
     realtimes,
     events,
     jobs,
@@ -2459,7 +2456,6 @@ export function hasSections(filePath: string) {
     database:           content.includes('/* @arkzen:database'),
     api:                content.includes('/* @arkzen:api'),
     routes:             content.includes('/* @arkzen:routes'),
-    store:              content.includes('/* @arkzen:store:'),
     // web
     metaWeb:            content.includes('/* @arkzen:meta:web'),
     config:             content.includes('/* @arkzen:web:config'),
