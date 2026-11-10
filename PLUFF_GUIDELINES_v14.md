@@ -1,13 +1,13 @@
 # PLUFF GUIDELINES v14.0
 
-  ## For AI — Generating & Editing Tatemono Files
+  ## For AI - Generating & Editing Tatemono Files
 
   **VERSION:** 14.0
   **VERIFIED AGAINST:** shared engine parser and validator (including `backends.ts` variant resolution), desktop Electron and Tauri shells, Laravel builders, and the Express, FastAPI, Spring Boot, ASP.NET Core, Go and Rust engine implementations under `engine/backend/`; also `mizumi.js`, `start.js`, `setup.js`, `export.js`, and tatemonos under `tatemonos/`.
   **PURPOSE:** Complete reference for generating valid Pluff tatemono files. Paste into any AI (or use as the system prompt / training source for the Pluff AI).
-  **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins — and the doc should be fixed.
+  **SOURCE OF TRUTH ORDER:** (1) engine parser + builders, (2) real working tatemonos, (3) this document. If this document disagrees with the parser, the parser wins - and the doc should be fixed.
 
-## READ THIS FIRST — HOW TO FIND THINGS IN THIS DOCUMENT
+## READ THIS FIRST - HOW TO FIND THINGS IN THIS DOCUMENT
 
   This document is long. You do not need all of it for every task.
 
@@ -15,9 +15,9 @@
      **For all design, copy and sample data, follow Section 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
   2. Find your task in the table below and read only the sections listed.
   3. Section numbers are stable labels, not a sequence. The document is grouped into Parts, so numbers are not in numeric order (for example Section 18 sits in Part C beside the other backend blocks). "SECTION 8" always means the same section.
-  4. If you can open files, jump with the links. If this text was pasted into a chat, search for the heading text, for example `SECTION 8 —`.
+  4. If you can open files, jump with the links. If this text was pasted into a chat, search for the heading text, for example `SECTION 8 -`.
 
-  ### Quick lookup — what are you building?
+  ### Quick lookup - what are you building?
 
   | If you are working on… | Read sections |
   |---|---|
@@ -43,80 +43,80 @@
 
   ### Table of contents
 
-  - **[PART A — START HERE — CORE RULES](#part-a--start-here--core-rules)**
-    - [SECTION 1 — WHAT IS PLUFF](#section-1--what-is-pluff)
-    - [SECTION 1B — STACKS & CLI](#section-1b--stacks--cli)
-    - [SECTION 1C — DATABASE PROVIDER (project-level, NOT in the DSL)](#section-1c--database-provider-project-level-not-in-the-dsl)
-    - [SECTION 1D — DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
-    - [SECTION 2 — STYLING POLICY](#section-2--styling-policy)
-    - [SECTION 2C — DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
+  - **[PART A - START HERE - CORE RULES](#part-a--start-here--core-rules)**
+    - [SECTION 1 - WHAT IS PLUFF](#section-1--what-is-pluff)
+    - [SECTION 1B - STACKS & CLI](#section-1b--stacks--cli)
+    - [SECTION 1C - DATABASE PROVIDER (project-level, NOT in the DSL)](#section-1c--database-provider-project-level-not-in-the-dsl)
+    - [SECTION 1D - DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
+    - [SECTION 2 - STYLING POLICY](#section-2--styling-policy)
+    - [SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
-    - [SECTION 3 — TATEMONO FILE RULES](#section-3--tatemono-file-rules)
-    - [⚠️ SECTION 3D — DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
-    - [SECTION 3A — IMPORT PLACEMENT](#section-3a--import-placement)
-    - [SECTION 3B — 'use client' (WEB ONLY)](#section-3b--use-client-web-only)
-    - [SECTION 3C — ZUSTAND STORES](#section-3c--zustand-stores)
-    - [⚠️ SECTION 3E — NULL SAFETY](#️-section-3e--null-safety)
-    - [SECTION 3F — LOCALSTORAGE SAFETY](#section-3f--localstorage-safety)
-    - [SECTION 4 — AUTH](#section-4--auth)
-    - [SECTION 29 — AI GENERATION CHECKLIST](#section-29--ai-generation-checklist)
-  - **[PART B — FILE SETUP — META, CONFIG & FREE FILES](#part-b--file-setup--meta-config--free-files)**
-    - [SECTION 5 — @arkzen:meta](#section-5--arkzenmeta)
-    - [SECTION 5B — @arkzen:meta:web](#section-5b--arkzenmetaweb)
-    - [SECTION 5C — @arkzen:meta:native](#section-5c--arkzenmetanative)
-    - [SECTION 6 — @arkzen:web:config](#section-6--arkzenwebconfig)
-    - [SECTION 6B — @arkzen:native:config](#section-6b--arkzennativeconfig)
-    - [SECTION 30 — FREE FILES (@arkzen:file)](#section-30--free-files-arkzenfile)
-  - **[PART C — BACKEND — BACKENDS, DATABASE, API, REALTIME, JOBS, MAIL](#part-c--backend--backends-database-api-realtime-jobs-mail)**
-    - [SECTION 1E — BACKENDS & BACKEND VARIANTS](#section-1e--backends--backend-variants)
+    - [SECTION 3 - TATEMONO FILE RULES](#section-3--tatemono-file-rules)
+    - [⚠️ SECTION 3D - DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
+    - [SECTION 3A - IMPORT PLACEMENT](#section-3a--import-placement)
+    - [SECTION 3B - 'use client' (WEB ONLY)](#section-3b--use-client-web-only)
+    - [SECTION 3C - ZUSTAND STORES](#section-3c--zustand-stores)
+    - [⚠️ SECTION 3E - NULL SAFETY](#️-section-3e--null-safety)
+    - [SECTION 3F - LOCALSTORAGE SAFETY](#section-3f--localstorage-safety)
+    - [SECTION 4 - AUTH](#section-4--auth)
+    - [SECTION 29 - AI GENERATION CHECKLIST](#section-29--ai-generation-checklist)
+  - **[PART B - FILE SETUP - META, CONFIG & FREE FILES](#part-b--file-setup--meta-config--free-files)**
+    - [SECTION 5 - @arkzen:meta](#section-5--arkzenmeta)
+    - [SECTION 5B - @arkzen:meta:web](#section-5b--arkzenmetaweb)
+    - [SECTION 5C - @arkzen:meta:native](#section-5c--arkzenmetanative)
+    - [SECTION 6 - @arkzen:web:config](#section-6--arkzenwebconfig)
+    - [SECTION 6B - @arkzen:native:config](#section-6b--arkzennativeconfig)
+    - [SECTION 30 - FREE FILES (@arkzen:file)](#section-30--free-files-arkzenfile)
+  - **[PART C - BACKEND - BACKENDS, DATABASE, API, REALTIME, JOBS, MAIL](#part-c--backend--backends-database-api-realtime-jobs-mail)**
+    - [SECTION 1E - BACKENDS & BACKEND VARIANTS](#section-1e--backends--backend-variants)
     - [SECTION 1F - BACKEND BODY REFERENCE (:java :cs :go :rs)](#section-1f---backend-body-reference-java-cs-go-rs)
     - [SECTION 1G - EXECUTION MODEL, CAPABILITY MATRIX & TARGETING RULES](#section-1g---execution-model-capability-matrix--targeting-rules)
-    - [SECTION 7 — @arkzen:database](#section-7--arkzendatabase)
-    - [⚠️ SECTION 7B — RELATIONSHIPS](#️-section-7b--relationships)
-    - [⚠️ SECTION 7C — SEEDERS](#️-section-7c--seeders)
-    - [⚠️ SECTION 7D — PHYSICAL TABLE NAMES & foreign: (BACKEND-SPECIFIC)](#️-section-7d--physical-table-names--foreign-backend-specific)
-    - [SECTION 8 — @arkzen:api](#section-8--arkzenapi)
-    - [SECTION 9 — @arkzen:routes (custom routes, no model needed)](#section-9--arkzenroutes-custom-routes-no-model-needed)
-    - [⚠️ SECTION 9B — @arkzen:handler:php:name / @arkzen:handler:ts:name](#️-section-9b--arkzenhandlerphpname--arkzenhandlertsname)
-    - [SECTION 9C — @arkzen:policy:php:method / @arkzen:policy:ts:method](#section-9c--arkzenpolicyphpmethod--arkzenpolicytsmethod)
-    - [SECTION 10 — @arkzen:middleware:php:name / @arkzen:middleware:ts:name](#section-10--arkzenmiddlewarephpname--arkzenmiddlewaretsname)
-    - [SECTION 18 — @arkzen:endpoint:php:name / @arkzen:endpoint:ts:name](#section-18--arkzenendpointphpname--arkzenendpointtsname)
-    - [⚠️ SECTION 11 — @arkzen:realtime:identifier (Reverb)](#️-section-11--arkzenrealtimeidentifier-reverb)
-    - [SECTION 12 — @arkzen:events:identifier](#section-12--arkzeneventsidentifier)
-    - [SECTION 13 — @arkzen:listener:php:Name / @arkzen:listener:ts:Name (singular!)](#section-13--arkzenlistenerphpname--arkzenlistenertsname-singular)
-    - [SECTION 14 — @arkzen:jobs:identifier (shared) / @arkzen:jobs:php:identifier /…](#section-14--arkzenjobsidentifier-shared--arkzenjobsphpidentifier--arkzenjobstsidentifier)
-    - [SECTION 15 — @arkzen:notifications:identifier (shared; :php / :ts only with a…](#section-15--arkzennotificationsidentifier-shared-php--ts-only-with-a-body)
-    - [SECTION 16 — @arkzen:mail:identifier (shared; :php / :ts / :py / :java / :cs…](#section-16--arkzenmailidentifier-shared-php--ts--py--java--cs--go--rs-bodies)
-    - [SECTION 17 — @arkzen:console:identifier (shared) / @arkzen:console:php:identi…](#section-17--arkzenconsoleidentifier-shared--arkzenconsolephpidentifier--arkzenconsoletsidentifier-artisan--scheduler)
-  - **[PART D — WEB FRONTEND — LAYOUTS, PAGES, STYLES, COMPONENTS](#part-d--web-frontend--layouts-pages-styles-components)**
-    - [SECTION 19 — @arkzen:web:layout:name](#section-19--arkzenweblayoutname)
-    - [SECTION 20 — @arkzen:web:style & @arkzen:web:style:Name](#section-20--arkzenwebstyle--arkzenwebstylename)
-    - [SECTION 21 — @arkzen:web:page:name](#section-21--arkzenwebpagename)
-    - [⚠️ SECTION 22 — web:error:404 / web:error:500](#️-section-22--weberror404--weberror500)
-    - [SECTION 23 — @arkzen:web:components:identifier](#section-23--arkzenwebcomponentsidentifier)
-    - [SECTION 24 — @arkzen:web:animation](#section-24--arkzenwebanimation)
-    - [SECTION 24C/D — @arkzen:web:script / @arkzen:web:script:name](#section-24cd--arkzenwebscript--arkzenwebscriptname)
-    - [SECTION 25 — ASSETS](#section-25--assets)
-    - [SECTION 26 — AVAILABLE IMPORTS](#section-26--available-imports)
-    - [SECTION 26B — FRONTEND DATA FETCHING](#section-26b--frontend-data-fetching)
-  - **[PART E — NATIVE APPS — EXPO, REACT NATIVE, LYNX](#part-e--native-apps--expo-react-native-lynx)**
-    - [SECTION 23B — Expo / bare RN: @arkzen:import:expo & @arkzen:import:rn](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn)
-    - [SECTION 19B — @arkzen:native:layout:name (Expo / bare RN)](#section-19b--arkzennativelayoutname-expo--bare-rn)
-    - [SECTION 20B — native styles](#section-20b--native-styles)
-    - [SECTION 21B — @arkzen:native:page:name (Expo / bare RN)](#section-21b--arkzennativepagename-expo--bare-rn)
-    - [SECTION 22B — @arkzen:native:error:404 / :500 (Expo / bare RN)](#section-22b--arkzennativeerror404--500-expo--bare-rn)
-    - [SECTION 24B — native animation (stack-split)](#section-24b--native-animation-stack-split)
-    - [SECTION 24E — native scripts (stack-split)](#section-24e--native-scripts-stack-split)
-    - [SECTION 25L — LYNX BLOCKS](#section-25l--lynx-blocks)
-  - **[PART F — REFERENCE — EXAMPLES, KNOWN QUIRKS, ACTIVE TATEMONOS](#part-f--reference--examples-known-quirks-active-tatemonos)**
-    - [SECTION 28 — EXAMPLES & FIXTURE REFERENCES](#section-28--examples--fixture-references)
-    - [⚠️ SECTION 28B — KNOWN ENGINE QUIRKS (verify after building)](#️-section-28b--known-engine-quirks-verify-after-building)
-    - [SECTION 27 — ACTIVE TATEMONOS (46)](#section-27--active-tatemonos-46)
-  - **[PART G — GAMES — GODOT 4 & UNITY DSL](#part-g--games--godot-4--unity-dsl)**
-    - [APPENDIX — GODOT 4 GAME DSL](#appendix--godot-4-game-dsl)
-    - [APPENDIX — UNITY GAME DSL](#appendix--unity-game-dsl)
-  - **[PART H — ONLINE TATEMONO INDEX (GENERATED)](#part-h--online-tatemono-index-generated)**
-    - [SECTION 31 — ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)](#section-31--online-tatemono-index-fetch-real-examples)
+    - [SECTION 7 - @arkzen:database](#section-7--arkzendatabase)
+    - [⚠️ SECTION 7B - RELATIONSHIPS](#️-section-7b--relationships)
+    - [⚠️ SECTION 7C - SEEDERS](#️-section-7c--seeders)
+    - [⚠️ SECTION 7D - PHYSICAL TABLE NAMES & foreign: (BACKEND-SPECIFIC)](#️-section-7d--physical-table-names--foreign-backend-specific)
+    - [SECTION 8 - @arkzen:api](#section-8--arkzenapi)
+    - [SECTION 9 - @arkzen:routes (custom routes, no model needed)](#section-9--arkzenroutes-custom-routes-no-model-needed)
+    - [⚠️ SECTION 9B - @arkzen:handler:php:name / @arkzen:handler:ts:name](#️-section-9b--arkzenhandlerphpname--arkzenhandlertsname)
+    - [SECTION 9C - @arkzen:policy:php:method / @arkzen:policy:ts:method](#section-9c--arkzenpolicyphpmethod--arkzenpolicytsmethod)
+    - [SECTION 10 - @arkzen:middleware:php:name / @arkzen:middleware:ts:name](#section-10--arkzenmiddlewarephpname--arkzenmiddlewaretsname)
+    - [SECTION 18 - @arkzen:endpoint:php:name / @arkzen:endpoint:ts:name](#section-18--arkzenendpointphpname--arkzenendpointtsname)
+    - [⚠️ SECTION 11 - @arkzen:realtime:identifier (Reverb)](#️-section-11--arkzenrealtimeidentifier-reverb)
+    - [SECTION 12 - @arkzen:events:identifier](#section-12--arkzeneventsidentifier)
+    - [SECTION 13 - @arkzen:listener:php:Name / @arkzen:listener:ts:Name (singular!)](#section-13--arkzenlistenerphpname--arkzenlistenertsname-singular)
+    - [SECTION 14 - @arkzen:jobs:identifier (shared) / @arkzen:jobs:php:identifier /…](#section-14--arkzenjobsidentifier-shared--arkzenjobsphpidentifier--arkzenjobstsidentifier)
+    - [SECTION 15 - @arkzen:notifications:identifier (shared; :php / :ts only with a…](#section-15--arkzennotificationsidentifier-shared-php--ts-only-with-a-body)
+    - [SECTION 16 - @arkzen:mail:identifier (shared; :php / :ts / :py / :java / :cs…](#section-16--arkzenmailidentifier-shared-php--ts--py--java--cs--go--rs-bodies)
+    - [SECTION 17 - @arkzen:console:identifier (shared) / @arkzen:console:php:identi…](#section-17--arkzenconsoleidentifier-shared--arkzenconsolephpidentifier--arkzenconsoletsidentifier-artisan--scheduler)
+  - **[PART D - WEB FRONTEND - LAYOUTS, PAGES, STYLES, COMPONENTS](#part-d--web-frontend--layouts-pages-styles-components)**
+    - [SECTION 19 - @arkzen:web:layout:name](#section-19--arkzenweblayoutname)
+    - [SECTION 20 - @arkzen:web:style & @arkzen:web:style:Name](#section-20--arkzenwebstyle--arkzenwebstylename)
+    - [SECTION 21 - @arkzen:web:page:name](#section-21--arkzenwebpagename)
+    - [⚠️ SECTION 22 - web:error:404 / web:error:500](#️-section-22--weberror404--weberror500)
+    - [SECTION 23 - @arkzen:web:components:identifier](#section-23--arkzenwebcomponentsidentifier)
+    - [SECTION 24 - @arkzen:web:animation](#section-24--arkzenwebanimation)
+    - [SECTION 24C/D - @arkzen:web:script / @arkzen:web:script:name](#section-24cd--arkzenwebscript--arkzenwebscriptname)
+    - [SECTION 25 - ASSETS](#section-25--assets)
+    - [SECTION 26 - AVAILABLE IMPORTS](#section-26--available-imports)
+    - [SECTION 26B - FRONTEND DATA FETCHING](#section-26b--frontend-data-fetching)
+  - **[PART E - NATIVE APPS - EXPO, REACT NATIVE, LYNX](#part-e--native-apps--expo-react-native-lynx)**
+    - [SECTION 23B - Expo / bare RN: @arkzen:import:expo & @arkzen:import:rn](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn)
+    - [SECTION 19B - @arkzen:native:layout:name (Expo / bare RN)](#section-19b--arkzennativelayoutname-expo--bare-rn)
+    - [SECTION 20B - native styles](#section-20b--native-styles)
+    - [SECTION 21B - @arkzen:native:page:name (Expo / bare RN)](#section-21b--arkzennativepagename-expo--bare-rn)
+    - [SECTION 22B - @arkzen:native:error:404 / :500 (Expo / bare RN)](#section-22b--arkzennativeerror404--500-expo--bare-rn)
+    - [SECTION 24B - native animation (stack-split)](#section-24b--native-animation-stack-split)
+    - [SECTION 24E - native scripts (stack-split)](#section-24e--native-scripts-stack-split)
+    - [SECTION 25L - LYNX BLOCKS](#section-25l--lynx-blocks)
+  - **[PART F - REFERENCE - EXAMPLES, KNOWN QUIRKS, ACTIVE TATEMONOS](#part-f--reference--examples-known-quirks-active-tatemonos)**
+    - [SECTION 28 - EXAMPLES & FIXTURE REFERENCES](#section-28--examples--fixture-references)
+    - [⚠️ SECTION 28B - KNOWN ENGINE QUIRKS (verify after building)](#️-section-28b--known-engine-quirks-verify-after-building)
+    - [SECTION 27 - ACTIVE TATEMONOS (46)](#section-27--active-tatemonos-46)
+  - **[PART G - GAMES - GODOT 4 & UNITY DSL](#part-g--games--godot-4--unity-dsl)**
+    - [APPENDIX - GODOT 4 GAME DSL](#appendix--godot-4-game-dsl)
+    - [APPENDIX - UNITY GAME DSL](#appendix--unity-game-dsl)
+  - **[PART H - ONLINE TATEMONO INDEX (GENERATED)](#part-h--online-tatemono-index-generated)**
+    - [SECTION 31 - ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)](#section-31--online-tatemono-index-fetch-real-examples)
 
   * * *
 
@@ -141,7 +141,7 @@
 
   **WHAT'S NEW IN v13.1 (vs v13.0):**
 
-  - **Clarified Express parity scope:** “Laravel parity” means matching the Laravel builders and runtime features that Pluff's engine uses or exposes through its DSL—not recreating unrelated Laravel framework internals. Any difference in an engine-used feature is a parity gap to fix.
+  - **Clarified Express parity scope:** “Laravel parity” means matching the Laravel builders and runtime features that Pluff's engine uses or exposes through its DSL-not recreating unrelated Laravel framework internals. Any difference in an engine-used feature is a parity gap to fix.
   - **Express mail templates:** documented the implemented safe Blade subset: interpolation, comments, conditional branches, and loops. Arbitrary Blade directives and PHP execution are not supported.
   - **Express parity additions:** realtime channel authorization values, notification broadcast channel types, and additional Laravel-style validation rules are documented in Section 1E.
 
@@ -154,10 +154,10 @@
 
   **WHAT'S NEW IN v12.0 (vs v11.0):**
 
-  - **Three stack categories** — `web`, `app`, `desktop` — can all be active at once. New stacks: `react-native` (bare), `lynx`, `tauri`, `electron`.
+  - **Three stack categories** - `web`, `app`, `desktop` - can all be active at once. New stacks: `react-native` (bare), `lynx`, `tauri`, `electron`.
   - **Native DSL is now per-target.** Expo, bare React Native, and Lynx each have their own blocks. Expo/RN blocks use dual-target `@arkzen:import:expo` / `@arkzen:import:rn` pairs. Lynx blocks use separate `:lynx` tags; their imports are handled by the Lynx generator.
   - **New native blocks:** `@arkzen:native:style` (global), `@arkzen:native:error:404|500`, `@arkzen:native:animation:expo|rn|lynx`, `@arkzen:native:script:expo|rn|lynx[:name]`, all `native:*:lynx` blocks. **Removed:** generic `@arkzen:native:script`, and `animation:rn` no longer serves Expo.
-  - **PostgreSQL support** — database driver is a project-level setting (`mizumi db`), one isolated database per tatemono.
+  - **PostgreSQL support** - database driver is a project-level setting (`mizumi db`), one isolated database per tatemono.
   - **Corrected syntax** that v10 had wrong: console blocks use `signature:` (not `command:`), listeners use `@arkzen:listener:Name` (singular), mail blocks use `subject` + `data:` (not `lines`/`action`), body-bearing notifications/mail/events/realtime blocks need `:end`, the multi-table `tables:` database format is **not parsed**, `type: enum` is **not supported**.
   - **Special endpoint `type:` values** (`upload`, `broadcast`, `mail_send`, `notification_trigger`, ...) and role endpoint names, documented.
   - **`@arkzen:meta`** gained `dependencies` and `auth_seed`; **`@arkzen:meta:web`** gained `og`, `twitter`, `pwa`, `label`; `favicon`/`pwa` inside `@arkzen:meta` are deprecated.
@@ -167,11 +167,11 @@
 
   * * *
 
-## PART A — START HERE — CORE RULES
+## PART A - START HERE - CORE RULES
 
   _What Pluff is, the stacks and CLI, project-level settings, styling policy, file rules, the critical DSL tag format rules, auth, and the checklist to run before you finish. Read all of Part A for every task._
 
-## SECTION 1 — WHAT IS PLUFF
+## SECTION 1 - WHAT IS PLUFF
 
   Pluff is a full-stack scaffolding engine. A single file called a **Tatemono** defines an entire system: database tables, backend API, auth, middleware, realtime channels, jobs, events, notifications, mail, scheduled commands, web pages, native screens, components, stores, animations.
 
@@ -179,19 +179,19 @@
 
   No shared auth, components, stores, or database between tatemonos. Every tatemono stands alone. The engine watches `tatemonos/<name>/core.tsx`, parses it, and (re)builds backend + frontend on every save. A tatemono can be exported as a standalone project.
 
-  **The shared Tatemono DSL is consistent across stacks.** Backend code bodies use the active backend's variant (`:php`, `:ts`, `:py`, `:java`, `:cs`, `:go`, or `:rs`); the engine picks the right output for the active web / app / desktop stack. Backend parity is measured against the Laravel features the Pluff engine uses and exposes—not unrelated framework capabilities.
+  **The shared Tatemono DSL is consistent across stacks.** Backend code bodies use the active backend's variant (`:php`, `:ts`, `:py`, `:java`, `:cs`, `:go`, or `:rs`); the engine picks the right output for the active web / app / desktop stack. Backend parity is measured against the Laravel features the Pluff engine uses and exposes-not unrelated framework capabilities.
 
   **Common to all stacks:**
 
-  - Backend: **Laravel 13 + Sanctum + Reverb** (reference backend), **Express (TypeScript)**, **FastAPI (Python)**, **Spring Boot (Java)**, **ASP.NET Core (C#)**, **Go (Chi)**, or **Rust (Axum)**, chosen per project (Sections 1E to 1G). Backend parity is scoped to the Laravel builder/runtime features Pluff uses or exposes through its DSL—not unrelated framework internals.
-  - Database: SQLite (default) or PostgreSQL — one isolated database per tatemono
+  - Backend: **Laravel 13 + Sanctum + Reverb** (reference backend), **Express (TypeScript)**, **FastAPI (Python)**, **Spring Boot (Java)**, **ASP.NET Core (C#)**, **Go (Chi)**, or **Rust (Axum)**, chosen per project (Sections 1E to 1G). Backend parity is scoped to the Laravel builder/runtime features Pluff uses or exposes through its DSL-not unrelated framework internals.
+  - Database: SQLite (default) or PostgreSQL - one isolated database per tatemono
   - Web animation: GSAP + Framer Motion · Native animation: Reanimated / Moti (Expo, RN) or `@lynx-js/motion` (Lynx)
   - Icons: Lucide React (web primary), Hero Icons (secondary)
   - Optional (installed): Matter.js, Three.js, TipTap, Leaflet
 
   * * *
 
-## SECTION 1B — STACKS & CLI
+## SECTION 1B - STACKS & CLI
 
   Stacks are chosen **per project**, in three independent categories.
 
@@ -248,20 +248,20 @@
 
   * * *
 
-## SECTION 1C — DATABASE PROVIDER (project-level, NOT in the DSL)
+## SECTION 1C - DATABASE PROVIDER (project-level, NOT in the DSL)
 
   Every tatemono gets its own isolated database. The driver is a **project setting**, not a tatemono field:
 
   - `sqlite` (default): file `database/arkzen/<slug>.sqlite`
   - `pgsql`: Postgres database `<ARKZEN_DB_PREFIX>_<slug_with_underscores>` (prefix default `pluff`)
 
-  Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`. All seven backends use the same project-level driver choice and isolated-per-tatemono database model, including Rust (`engine/backend/rust/src/db.rs` dispatches to SQLite or PostgreSQL). Spring Boot's PostgreSQL path is still untested according to its README. PostgreSQL needs a database user that may create and drop databases on Go and Rust. Tatemono files never mention the driver — write the same `@arkzen:database` blocks for both supported drivers.
+  Switch with `node mizumi.js db postgresql` (prompts for host/user/password/main DB name, then re-runs setup). Env: `ARKZEN_DB_DRIVER`, `ARKZEN_DB_PREFIX`, `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD`. All seven backends use the same project-level driver choice and isolated-per-tatemono database model, including Rust (`engine/backend/rust/src/db.rs` dispatches to SQLite or PostgreSQL). Spring Boot's PostgreSQL path is still untested according to its README. PostgreSQL needs a database user that may create and drop databases on Go and Rust. Tatemono files never mention the driver - write the same `@arkzen:database` blocks for both supported drivers.
 
   Backends are a separate project-level choice (Section 1E). PostgreSQL is supported by all seven backends. Confirm the selected backend's PostgreSQL driver/dependencies are installed before switching.
 
   * * *
 
-## SECTION 1D — DESKTOP WINDOW CONFIGURATION
+## SECTION 1D - DESKTOP WINDOW CONFIGURATION
 
   Use one optional `@arkzen:desktop:config` YAML block to configure the shared desktop shell window. Omit it to use the shell defaults. This first version supports window settings only; menus and IPC are not part of the DSL yet.
 
@@ -282,7 +282,7 @@
 
   The Electron and Tauri shells wrap the whole web app, so this setting is shared rather than isolated to a single route. Partial settings from active Tatemonos are combined; if two Tatemonos set different values for the same property, the alphabetically earlier Tatemono wins and the shell logs a warning. Tauri applies the size, minimum size, title, and resizing settings. A Tauri export includes only its selected Tatemono's settings. Tauri has no portable API for disabling a window's fullscreen controls, so `fullscreenable: false` is warned about but cannot be enforced.
 
-## SECTION 2 — STYLING POLICY
+## SECTION 2 - STYLING POLICY
 
   **Web:** Tailwind is the default. Inline styles are equally valid for dynamic values, glassmorphism, gradients, `backdrop-filter`, shadows, animation values. Mix freely; never use both for the same property.
 
@@ -294,18 +294,18 @@
 
   * * *
 
-## SECTION 2C — DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)
+## SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)
 
   **DESIGN RULE #1:** When design inspiration is needed, get it from **awwwards.com** first. Use it for ideas and direction, then fit the result to the product's own identity. Always check Section 2D before finalizing any UI.
 
   Default to Awwwards-quality design. Pick in order of best fit:
 
-  1. **Minimalism** (default) — whitespace, typography-focused, neutral palette (neutral does not mean cream or beige by default, see Section 2D), high contrast
-  2. **Glassmorphism** — `rgba` + `backdrop-filter: blur`
-  3. **Skeuomorphism** — textured, realistic depth (finance, familiar UI)
-  4. **Claymorphism** — soft, rounded, 3D-plastic (friendly/creative)
-  5. **Neo-Brutalism** — thick borders, bold, geometric
-  6. **Liquid Glass** — flowing shapes, soft gradients, smooth motion (premium)
+  1. **Minimalism** (default) - whitespace, typography-focused, neutral palette (neutral does not mean cream or beige by default, see Section 2D), high contrast
+  2. **Glassmorphism** - `rgba` + `backdrop-filter: blur`
+  3. **Skeuomorphism** - textured, realistic depth (finance, familiar UI)
+  4. **Claymorphism** - soft, rounded, 3D-plastic (friendly/creative)
+  5. **Neo-Brutalism** - thick borders, bold, geometric
+  6. **Liquid Glass** - flowing shapes, soft gradients, smooth motion (premium)
 
   Apply the chosen style sparingly. Glass, gradients and glow only where they have a reason (Section 2D).
 
@@ -321,7 +321,7 @@
 
   **Hierarchy:** L1 page title/CTA 32–48px/700–900 · L2 section header 20–28px/600–700 · L3 body/labels 16px/400–500 · L4 helper 12–14px/400 muted. WCAG: body 4.5:1, helper 3:1. Never below 14px mobile / 16px desktop body.
 
-  **Spacing:** 8px grid — 4 / 8 / 16 / 24 / 32 / 48. Padding min 12px vertical, 16px horizontal. Match spacing between similar elements.
+  **Spacing:** 8px grid - 4 / 8 / 16 / 24 / 32 / 48. Padding min 12px vertical, 16px horizontal. Match spacing between similar elements.
 
   * * *
 
@@ -582,11 +582,11 @@
 
   * * *
 
-## SECTION 3 — TATEMONO FILE RULES
+## SECTION 3 - TATEMONO FILE RULES
 
   ```
   1. One .tsx file per tatemono, at tatemonos/<name>/core.tsx  (<name> = meta.name; core.tsx is always accepted)
-  2. TypeScript throughout (the file is DSL source — the engine slices blocks out of it)
+  2. TypeScript throughout (the file is DSL source - the engine slices blocks out of it)
   3. Web imports are resolved by the active web generator. For Next.js, imports in web page blocks are collected and moved to the generated module; prefer shared imports in web:components / web:layout blocks.
   4. Expo / bare-RN target-specific imports use @arkzen:import:expo / :rn pairs inside native blocks. The parser selects the matching pair for the active native stack.
   5. Lynx uses separate :lynx blocks. Imports may be declared in a Lynx page or component; the Lynx generator also adds imports for referenced shared components.
@@ -663,11 +663,11 @@
 
   * * *
 
-## ⚠️ SECTION 3D — DSL TAG FORMAT RULES (CRITICAL)
+## ⚠️ SECTION 3D - DSL TAG FORMAT RULES (CRITICAL)
 
   The engine checks DSL tag formatting before parsing, but the tag validator enforces only a subset of the parser's format requirements. A reported tag error stops parsing with an "ARKZEN DSL ERROR"; a successful validation is not proof that generated TypeScript compiles or that the app behaves correctly. Follow the block shapes below even where the validator does not currently catch a malformed tag.
 
-  ### SHAPE A — YAML-only blocks: NO `*/` on the opening line, closed by a bare `*/` line. No `:end`.
+  ### SHAPE A - YAML-only blocks: NO `*/` on the opening line, closed by a bare `*/` line. No `:end`.
 
   ```
   /* @arkzen:meta
@@ -687,7 +687,7 @@
   */
   ```
 
-  ### SHAPE B — YAML-in-comment + body blocks: YAML inside the opening comment, `*/` closes it, code/body follows, then `:end */`.
+  ### SHAPE B - YAML-in-comment + body blocks: YAML inside the opening comment, `*/` closes it, code/body follows, then `:end */`.
 
   ```
   /* @arkzen:jobs:php:process-data
@@ -698,9 +698,9 @@
   /* @arkzen:jobs:php:process-data:end */
   ```
 
-  Used by: `jobs`, `console`, `notifications`, `mail`, `events`, `realtime`, and `web:layout` / `native:layout` when a `parent:` key is needed. **Always write `:end`** for these — bodies need it, and some tags are not enforced by the validator but are still required for bodies to be read.
+  Used by: `jobs`, `console`, `notifications`, `mail`, `events`, `realtime`, and `web:layout` / `native:layout` when a `parent:` key is needed. **Always write `:end`** for these - bodies need it, and some tags are not enforced by the validator but are still required for bodies to be read.
 
-  ### SHAPE C — Code blocks: MUST have `*/` on the SAME opening line, closed by `:end */`.
+  ### SHAPE C - Code blocks: MUST have `*/` on the SAME opening line, closed by `:end */`.
 
   ```
   /* @arkzen:web:components:shared */          /* @arkzen:web:components:shared:end */
@@ -719,7 +719,7 @@
   /* @arkzen:native:error:404:lynx */          /* @arkzen:native:error:500:lynx */
   ```
 
-  ### SHAPE D — Body-separator blocks: opening tag has NO `*/`; the **next line must be exactly `*/`**; then body; then `:end */`.
+  ### SHAPE D - Body-separator blocks: opening tag has NO `*/`; the **next line must be exactly `*/`**; then body; then `:end */`.
 
   ```
   /* @arkzen:endpoint:php:my_endpoint
@@ -733,7 +733,7 @@
 
   The tag validator's suffix handling is not complete for every platform-specific code tag (for example, `native:animation:expo`). Do not rely on the validator to detect every missing opener or separator.
 
-  ### SHAPE E — Godot game blocks
+  ### SHAPE E - Godot game blocks
 
   Godot blocks use a YAML body with a bare `*/` line and a matching `:end */`
   line. They are read by the separate Godot game generator; they are not web or
@@ -788,7 +788,7 @@
 
   Backend code blocks accept a variant token between marker and name (`@arkzen:endpoint:ts:stats`). The opening tag, YAML placement and `*/` rules follow the block's normal shape; the closing tag repeats the suffix (`/* @arkzen:endpoint:ts:stats:end */`). Same-named blocks with different suffixes may coexist in one file. See Section 1E.
 
-  ### Dual-target import pairs (Expo / bare RN) — see Section 23B
+  ### Dual-target import pairs (Expo / bare RN) - see Section 23B
 
   ```
   /* @arkzen:import:expo */ ... /* @arkzen:import:expo:end */
@@ -797,7 +797,7 @@
 
   * * *
 
-## SECTION 3A — IMPORT PLACEMENT
+## SECTION 3A - IMPORT PLACEMENT
 
   | Block                                        | Imports? |
   |----------------------------------------------|----------|
@@ -808,22 +808,22 @@
   | `web:page:*`                                 | ⚠️ Next.js collects page imports and forwards referenced imports from `web:components:*` |
   | `web:error:404`                              | ⚠️ Imports are normalized; React is injected by the generator |
   | `web:error:500`                              | ⚠️ Imports are normalized; generated boundary has `'use client'` |
-  | `native:components:*` / `native:layout:*` / `native:error:*` (Expo/RN) | ✅ YES — use `@arkzen:import:expo/rn` pairs for target-specific imports |
+  | `native:components:*` / `native:layout:*` / `native:error:*` (Expo/RN) | ✅ YES - use `@arkzen:import:expo/rn` pairs for target-specific imports |
   | `native:page:*` (Expo/RN)                    | ⚠️ Target import pairs are extracted by the parser; prefer shared imports in native components |
   | `native:animation:*`, `native:script:*`      | ✅ YES   |
-  | `native:*:lynx:*` (Lynx blocks)              | ✅ YES — pages may import directly; referenced shared components are imported by the generator |
+  | `native:*:lynx:*` (Lynx blocks)              | ✅ YES - pages may import directly; referenced shared components are imported by the generator |
   | `endpoint`, `handler`, `middleware`, `policy`, `listener`, `jobs`, `console` | ❌ NO (bodies are written in the backend's own language) |
 
   These are source-authoring recommendations, not all parser restrictions. The Next.js generator normalizes imports found in web page and error blocks; referenced non-React imports from web component blocks may also be forwarded into generated pages. Across the current Next.js, React/Vite, TanStack Start, Astro, Inertia, Expo, and bare-RN generators, a simple standalone `export default ComponentName` line is stripped from page source; the generated page/screen gets its own framework-specific export or wrapper. Prefer omitting it, but if it appears, it is okay: the engine removes it. This only covers that simple standalone form, not arbitrary default-export expressions or other export forms.
 
-## SECTION 3B — `'use client'` (WEB ONLY)
+## SECTION 3B - `'use client'` (WEB ONLY)
 
   - In `web:components`, `web:layout`, `web:error:500` blocks: writing it is supported; the generator emits client directives in the corresponding client files.
   - Prefer not to write it in `web:page`: the Next.js generator strips it and adds the directive to the generated page. It is not a way to make a page block server-rendered.
   - Never in `web:animation`, `web:error:404`
   - Never in any native or Lynx block
 
-## SECTION 3C — ZUSTAND STORES
+## SECTION 3C - ZUSTAND STORES
 
   Define stores directly inside `web:components` blocks. Always `export` them.
 
@@ -834,7 +834,7 @@
   }))
   ```
 
-## ⚠️ SECTION 3E — NULL SAFETY
+## ⚠️ SECTION 3E - NULL SAFETY
 
   ```ts
   // ✅ guard at component level
@@ -845,13 +845,13 @@
   status?.queue.name
   ```
 
-## SECTION 3F — LOCALSTORAGE SAFETY
+## SECTION 3F - LOCALSTORAGE SAFETY
 
-  Always `try/catch` around `JSON.parse`, validate required fields, and `removeItem` on bad data. Web only — never use localStorage in native/Lynx blocks.
+  Always `try/catch` around `JSON.parse`, validate required fields, and `removeItem` on bad data. Web only - never use localStorage in native/Lynx blocks.
 
   * * *
 
-## SECTION 4 — AUTH
+## SECTION 4 - AUTH
 
   ```
   /* @arkzen:meta
@@ -861,7 +861,7 @@
   ```
 
   - `auth: true` generates, per tatemono: an isolated `users` table, a token table, a user model, an auth controller with injected routes, and Sanctum tokens. Notification infrastructure is added only if the tatemono has `@arkzen:notifications` blocks.
-  - `auth: false` — no auth; all pages public.
+  - `auth: false` - no auth; all pages public.
   - Page guards: `layout:+auth` (requires login) and `layout:+guest` (login/register pages). Plain `layout:auth` / `layout:guest` still work.
   - Seed users with `auth_seed` in `@arkzen:meta` (Section 5). Passwords are hashed; seeding is idempotent.
   - Roles: a `role` column on the users table (`admin`, `user`, ...). Role-gated routes use middleware `[auth, role:admin]` (the engine generates a scoped `CheckRole`).
@@ -869,7 +869,7 @@
 
   * * *
 
-## SECTION 29 — AI GENERATION CHECKLIST
+## SECTION 29 - AI GENERATION CHECKLIST
 
   Before finalizing any tatemono, verify:
 
@@ -897,7 +897,7 @@
   **API**
   - [ ] `model` PascalCase, `controller` ends with `Controller`, `prefix` starts with `/api/`
   - [ ] `description` on every endpoint; `response.type` ∈ paginated | collection | array | single | message
-  - [ ] Custom endpoint names have matching `@arkzen:endpoint:php:name` and/or `@arkzen:endpoint:ts:name` bodies; `@arkzen:routes` entries have matching `@arkzen:handler:php:name` and/or `@arkzen:handler:ts:name` bodies — never mix them
+  - [ ] Custom endpoint names have matching `@arkzen:endpoint:php:name` and/or `@arkzen:endpoint:ts:name` bodies; `@arkzen:routes` entries have matching `@arkzen:handler:php:name` and/or `@arkzen:handler:ts:name` bodies - never mix them
   - [ ] Route params in handlers via `$params[n]`
   - [ ] Special `type:` values used only as documented; no `command_run|job_dispatch|event_fire` for real apps
   - [ ] `policy: true` only when matching `@arkzen:policy:php:update|delete` and/or `@arkzen:policy:ts:update|delete` blocks exist
@@ -934,7 +934,7 @@
   - [ ] Prefer a page `const` named `<Name>Page`; the generator looks for a `const` ending in `Page` and otherwise falls back to the page name. A simple standalone `export default PageName` is okay but stripped out; preferably omit it because the engine generates the export.
   - [ ] `error:404` = `NotFoundPage`, `error:500` = `ServerErrorPage({ reset })`
   - [ ] Animation function has no `export`, is `camelCase(name)Animations`; `pageVariants` exported; no pinned-ScrollTrigger opacity tweens
-  - [ ] `arkzenFetch` result is a `Response` — `await res.json()`, `JSON.stringify` the body; null-safe access everywhere
+  - [ ] `arkzenFetch` result is a `Response` - `await res.json()`, `JSON.stringify` the body; null-safe access everywhere
 
   **NATIVE (Expo / bare RN)**
   - [ ] Target-specific imports use `@arkzen:import:expo` / `:rn` pairs; the parser extracts these from native blocks, including pages
@@ -952,11 +952,11 @@
 
   * * *
 
-## PART B — FILE SETUP — META, CONFIG & FREE FILES
+## PART B - FILE SETUP - META, CONFIG & FREE FILES
 
   _The metadata and config blocks at the top of a tatemono, and free files (`@arkzen:file`)._
 
-## SECTION 5 — @arkzen:meta
+## SECTION 5 - @arkzen:meta
 
   ```
   /* @arkzen:meta
@@ -965,7 +965,7 @@
   description: Optional description
   auth: false                     # default false
   dependencies: []                # optional string[]
-  auth_seed:                      # optional — requires auth: true
+  auth_seed:                      # optional - requires auth: true
     users:
       - name: Admin User
         email: admin@my-app.com
@@ -974,15 +974,15 @@
   */
   ```
 
-  `favicon` and `pwa` inside `@arkzen:meta` are **deprecated** (warning only) — move them to `@arkzen:meta:web`.
+  `favicon` and `pwa` inside `@arkzen:meta` are **deprecated** (warning only) - move them to `@arkzen:meta:web`.
 
-## SECTION 5B — @arkzen:meta:web
+## SECTION 5B - @arkzen:meta:web
 
   All fields optional. Web only.
 
   ```
   /* @arkzen:meta:web
-  title: My App — Tagline          # <title>; defaults to label ?? name
+  title: My App - Tagline          # <title>; defaults to label ?? name
   label: My App                    # human name (nav, PWA name fallback)
   description: SEO description.
   favicon: ☕                      # emoji, URL or path
@@ -1013,7 +1013,7 @@
   */
   ```
 
-## SECTION 5C — @arkzen:meta:native
+## SECTION 5C - @arkzen:meta:native
 
   Required when the tatemono has native screens. Only the `expo:` section is read today.
 
@@ -1038,7 +1038,7 @@
 
   * * *
 
-## SECTION 6 — @arkzen:web:config
+## SECTION 6 - @arkzen:web:config
 
   Optional UI defaults for the built-in Toast / Modal / Table / Breadcrumb / Dialog and layout wrappers.
 
@@ -1070,7 +1070,7 @@
 
   PWA config now belongs in `@arkzen:meta:web`, not here.
 
-## SECTION 6B — @arkzen:native:config
+## SECTION 6B - @arkzen:native:config
 
   Theme tokens for native screens. The engine generates a constants object `C` available across native blocks (`C.primary`, `C.bg`, ...). Custom keys allowed; `fonts` supported.
 
@@ -1089,7 +1089,7 @@
 
   * * *
 
-## SECTION 30 — FREE FILES (`@arkzen:file`)
+## SECTION 30 - FREE FILES (`@arkzen:file`)
 
   A free file block writes any text file to a path you choose. It is independent of every
   web, native, desktop, backend and game stack. A tatemono with only `@arkzen:meta` and
@@ -1157,11 +1157,11 @@
   - Unity creates `.meta` files for new scripts when the project is opened. For a fixed GUID,
     write the `.meta` file yourself with another file block.
 
-## PART C — BACKEND — BACKENDS, DATABASE, API, REALTIME, JOBS, MAIL
+## PART C - BACKEND - BACKENDS, DATABASE, API, REALTIME, JOBS, MAIL
 
   _Backend selection and variants (`:php :ts :py :java :cs :go :rs`), tables, API endpoints and custom code, routes, policies, middleware, realtime, events, jobs, notifications, mail and scheduled commands._
 
-## SECTION 1E — BACKENDS & BACKEND VARIANTS
+## SECTION 1E - BACKENDS & BACKEND VARIANTS
 
   **The backend is not part of a tatemono.** It is a project setting (`arkzen.json` → `activeBackend`; `react-inertia` forces `laravel-inertia`). The same tatemono file can build on any backend that can read it, but available behavior depends on that engine's implementation. Laravel is the **reference backend**: the shared DSL uses Laravel-style vocabulary (rule strings like `required|string|max:255`, `role:admin`, `policy: true`, and queue/mail/notification blocks), while each backend implements its supported behavior behind the scenes. See Section 1G for the distinction between fixture parity and general feature support.
 
@@ -1508,9 +1508,9 @@
 
   * * *
 
-## SECTION 7 — @arkzen:database
+## SECTION 7 - @arkzen:database
 
-  **One block = one table. Only the dict format is parsed.** (The older multi-table `tables:` array format is NOT parsed — a block without `table:` is silently skipped.) Declare as many `@arkzen:database:<identifier>` blocks as you need.
+  **One block = one table. Only the dict format is parsed.** (The older multi-table `tables:` array format is NOT parsed - a block without `table:` is silently skipped.) Declare as many `@arkzen:database:<identifier>` blocks as you need.
 
   ```
   /* @arkzen:database:products
@@ -1557,19 +1557,19 @@
 
   `uuid` + `primary: true` → UUID primary key.
 
-  **Updating a table:** when the table already exists, the engine writes an *update migration* adding only **new columns**. It does not alter or drop existing columns — to change a column type, drop the table's database file (or table) and rebuild.
+  **Updating a table:** when the table already exists, the engine writes an *update migration* adding only **new columns**. It does not alter or drop existing columns - to change a column type, drop the table's database file (or table) and rebuild.
 
-## ⚠️ SECTION 7B — RELATIONSHIPS
+## ⚠️ SECTION 7B - RELATIONSHIPS
 
   Engine auto-generates `belongsTo` / `hasMany` from `foreign:` columns. Never write them by hand. Migrations are topologically sorted by foreign-key dependencies (parents first); circular dependencies are an error.
 
-## ⚠️ SECTION 7C — SEEDERS
+## ⚠️ SECTION 7C - SEEDERS
 
   Seed data follows the data and content rules in Section 2D (real-looking entries, no generic placeholder names).
 
   Seed parents only when children can reference known ids. Do not seed a child table whose `foreignId` points at rows that may not exist yet. Tables created at runtime (tickets, orders, logs) normally need **no seeder**.
 
-## ⚠️ SECTION 7D — PHYSICAL TABLE NAMES & `foreign:` (BACKEND-SPECIFIC)
+## ⚠️ SECTION 7D - PHYSICAL TABLE NAMES & `foreign:` (BACKEND-SPECIFIC)
 
   Physical table naming depends on the active backend. Go and Rust use an isolated database per tatemono and create tables with the declared name (for example, `tickets`); they do not require a tatemono slug prefix. Some other engines prefix physical table names (for example, `queue-flow` + `tickets` → `queue_flow_tickets`). Models stay unprefixed (`Ticket`). The migration builder uses the `foreign:` value **literally** as the real table name, so use the physical target table name for the active backend:
 
@@ -1584,7 +1584,7 @@
 
   * * *
 
-## SECTION 8 — @arkzen:api
+## SECTION 8 - @arkzen:api
 
   ```
   /* @arkzen:api:products
@@ -1627,7 +1627,7 @@
 
   **Response types:** `paginated`, `collection`, `array` (index only; plain list), `single`, `message` (with `value:`). Optional `resource:` name.
 
-  **Standard method names** map to generated CRUD: `index`, `show`, `store`, `update`, `destroy`. **Any other endpoint name** is a *custom method* — it gets a stub unless you provide an `@arkzen:endpoint:<name>` body.
+  **Standard method names** map to generated CRUD: `index`, `show`, `store`, `update`, `destroy`. **Any other endpoint name** is a *custom method* - it gets a stub unless you provide an `@arkzen:endpoint:<name>` body.
 
   ### Special endpoint `type:` values (set on the endpoint, next to `method`)
 
@@ -1640,21 +1640,21 @@
   | `store`       | `broadcast`            | save then `broadcast()` on the realtime channel (also drives the Lynx SSE bridge) |
   | `store`       | `mail_send`            | send a `@arkzen:mail` mailable; declare `mail`, `to`, optional `data` in `validation:` |
   | `store`       | `notification_trigger` | `$user->notify()` a `@arkzen:notifications` class; declare `notification` in `validation:` |
-  | `store`/`run` | `command_run`          | run an Artisan command **(hardcoded map — test tatemonos only)** |
-  | `store`       | `job_dispatch`         | dispatch a job **(hardcoded map — test tatemonos only)** |
-  | `store`       | `event_fire`           | fire an event **(hardcoded map — test tatemonos only)** |
+  | `store`/`run` | `command_run`          | run an Artisan command **(hardcoded map - test tatemonos only)** |
+  | `store`       | `job_dispatch`         | dispatch a job **(hardcoded map - test tatemonos only)** |
+  | `store`       | `event_fire`           | fire an event **(hardcoded map - test tatemonos only)** |
 
-  For your own jobs / events / commands, **do not** use `command_run | job_dispatch | event_fire` — write a custom endpoint with an `@arkzen:endpoint:<name>` body (or an `@arkzen:routes` handler) that dispatches them.
+  For your own jobs / events / commands, **do not** use `command_run | job_dispatch | event_fire` - write a custom endpoint with an `@arkzen:endpoint:<name>` body (or an `@arkzen:routes` handler) that dispatches them.
 
   ### Role endpoint names (generate role-specific methods)
 
-  `me`, `adminOnly`, `userOnly`, `promote`, `demote` — used with `auth: true` and role middleware (see `roles-test`).
+  `me`, `adminOnly`, `userOnly`, `promote`, `demote` - used with `auth: true` and role middleware (see `roles-test`).
 
   **Backend notes (Section 8):** the `api` block is shared: validation rule strings, `role:` middleware, `policy: true`, `response.type` and the standard CRUD methods behave the same on Laravel and Express. Only the *bodies* (`endpoint`, `policy`, `middleware`) are variants. Express provides custom runtime equivalents for uploads, resources, factories, command/job/event dispatch, mail, notifications, and realtime.
 
   * * *
 
-## SECTION 9 — @arkzen:routes (custom routes, no model needed)
+## SECTION 9 - @arkzen:routes (custom routes, no model needed)
 
   ```
   /* @arkzen:routes
@@ -1674,7 +1674,7 @@
 
   **Backend notes:** the `routes` block is shared. In `:ts` handlers the route params are available as `request.route('name')` or the `params` array (see 9B for the PHP `$params[n]` form). Other variants: `:java` handlers receive `List<Object> params` and `request.route(name)`, `:cs` reads `RouteValues`, `:go` reads `request.Route(...)` (Section 1F).
 
-## ⚠️ SECTION 9B — @arkzen:handler:php:name / @arkzen:handler:ts:name
+## ⚠️ SECTION 9B - @arkzen:handler:php:name / @arkzen:handler:ts:name
 
   Body for a route entry: `:php` for Laravel, `:ts` for Express. Shape D (`*/` on the next line).
 
@@ -1703,9 +1703,9 @@
   /* @arkzen:handler:ts:probe:end */
   ```
 
-## SECTION 9C — @arkzen:policy:php:method / @arkzen:policy:ts:method
+## SECTION 9C - @arkzen:policy:php:method / @arkzen:policy:ts:method
 
-  Requires `policy: true` on the api. Supported methods: `update`, `delete`. Body has `$user` and the model instance (named after the model, e.g. `$item`/`$product` — see `crud-test`).
+  Requires `policy: true` on the api. Supported methods: `update`, `delete`. Body has `$user` and the model instance (named after the model, e.g. `$item`/`$product` - see `crud-test`).
 
   ```
   /* @arkzen:policy:php:update
@@ -1724,7 +1724,7 @@
   /* @arkzen:policy:ts:delete:end */
   ```
 
-## SECTION 10 — @arkzen:middleware:php:name / @arkzen:middleware:ts:name
+## SECTION 10 - @arkzen:middleware:php:name / @arkzen:middleware:ts:name
 
   Declare in `middleware: [name]` on an api/routes block; the body becomes `handle()`. The alias is registered automatically. Include `return $next($request);`.
 
@@ -1740,7 +1740,7 @@
 
   **Per-backend forms:** `@arkzen:middleware:php:name` / `@arkzen:middleware:ts:name` (Section 1E has the paired example). The alias in `middleware: [name]` is registered on every backend.
 
-## SECTION 18 — @arkzen:endpoint:php:name / @arkzen:endpoint:ts:name
+## SECTION 18 - @arkzen:endpoint:php:name / @arkzen:endpoint:ts:name
 
   Body for an `@arkzen:api` method (the method name must exist in the api block).
 
@@ -1767,7 +1767,7 @@
 
   * * *
 
-## ⚠️ SECTION 11 — @arkzen:realtime:identifier (Reverb)
+## ⚠️ SECTION 11 - @arkzen:realtime:identifier (Reverb)
 
   Two uses, decided by the `channel:` key. Always close with `:end`.
 
@@ -1804,7 +1804,7 @@
 
   **Backend notes:** `realtime` blocks are shared (pure config); Express serves a Pusher-protocol realtime server (public / private / presence) instead of Reverb, and the browser-side client setup does not change. The `broadcast(new \App\Events\...)` call shown above is PHP; on Express use `broadcast(...)` with the generated broadcast event from a `:ts` body.
 
-## SECTION 12 — @arkzen:events:identifier
+## SECTION 12 - @arkzen:events:identifier
 
   YAML in the opening comment; `listeners:` names the listener classes. Close with `:end`. No body.
 
@@ -1819,9 +1819,9 @@
 
   **Backend notes:** `events` blocks are shared. Event firing in a body is backend-specific (`event(new ...)` in PHP, the runtime's `event(...)` in `:ts`).
 
-## SECTION 13 — @arkzen:listener:php:Name / @arkzen:listener:ts:Name (singular!)
+## SECTION 13 - @arkzen:listener:php:Name / @arkzen:listener:ts:Name (singular!)
 
-  Body of the listener's `handle($event)` — **only the method body**, not a class. Shape D. If no body is given the engine generates a log-and-record stub (it inserts into the tatemono's `event_log` table).
+  Body of the listener's `handle($event)` - **only the method body**, not a class. Shape D. If no body is given the engine generates a log-and-record stub (it inserts into the tatemono's `event_log` table).
 
   ```
   /* @arkzen:listener:php:SendWelcomeEmail
@@ -1830,7 +1830,7 @@
   /* @arkzen:listener:php:SendWelcomeEmail:end */
   ```
 
-  > Legacy: `events-test` also contains plural `@arkzen:listeners:Name */ class ... { }` blocks with full PHP classes. The parser only reads the singular `@arkzen:listener:` form for bodies — write the singular form.
+  > Legacy: `events-test` also contains plural `@arkzen:listeners:Name */ class ... { }` blocks with full PHP classes. The parser only reads the singular `@arkzen:listener:` form for bodies - write the singular form.
 
   **Per-backend forms:** `@arkzen:listener:php:Name` / `@arkzen:listener:ts:Name`. Express example:
 
@@ -1841,7 +1841,7 @@
   /* @arkzen:listener:ts:LogTicket:end */
   ```
 
-## SECTION 14 — @arkzen:jobs:identifier (shared) / @arkzen:jobs:php:identifier / @arkzen:jobs:ts:identifier
+## SECTION 14 - @arkzen:jobs:identifier (shared) / @arkzen:jobs:php:identifier / @arkzen:jobs:ts:identifier
 
   YAML (`queue`, `tries`, `timeout`) inside the opening comment; the body is the **whole `handle()` method**. Close with `:end`. Queue worker is started by `start.js`.
 
@@ -1875,7 +1875,7 @@
 
   A YAML-only `jobs` block (no body) is shared and generates a stub on every backend. Express runs jobs with `npm run queue` (started automatically by `start.js`).
 
-## SECTION 15 — @arkzen:notifications:identifier (shared; `:php` / `:ts` only with a body)
+## SECTION 15 - @arkzen:notifications:identifier (shared; `:php` / `:ts` only with a body)
 
   YAML inside the opening comment. Close with `:end`. Optional PHP body between `*/` and `:end` replaces the generated `toMail()` body.
 
@@ -1900,7 +1900,7 @@
 
   **Backend notes:** with **no body** a `notifications` block is shared (Express supports the `database`, `mail` and `broadcast` channels). A body makes it a variant: `:php` replaces `toMail()`; on Express use `@arkzen:notifications:ts:name` with a `toMail(notifiable)` body returning `new MailMessage().subject(...).line(...)`.
 
-## SECTION 16 — @arkzen:mail:identifier (shared; `:php` / `:ts` / `:py` / `:java` / `:cs` / `:go` / `:rs` bodies)
+## SECTION 16 - @arkzen:mail:identifier (shared; `:php` / `:ts` / `:py` / `:java` / `:cs` / `:go` / `:rs` bodies)
 
   YAML inside the opening comment (`subject`, `data:` = field → type). Close with `:end`. Optional Blade/HTML body between `*/` and `:end` becomes the email view.
 
@@ -1916,11 +1916,11 @@
   /* @arkzen:mail:php:welcome-mail:end */
   ```
 
-  Class: `\App\Mail\Arkzen\{SlugNs}\{Studly}Mail` (`welcome-mail` → `WelcomeMailMail`: the engine appends `Mail` to the studly name — keep identifiers short, e.g. `welcome`). Trigger via an api endpoint with `type: mail_send`.
+  Class: `\App\Mail\Arkzen\{SlugNs}\{Studly}Mail` (`welcome-mail` → `WelcomeMailMail`: the engine appends `Mail` to the studly name - keep identifiers short, e.g. `welcome`). Trigger via an api endpoint with `type: mail_send`.
 
   **Backend notes:** with **no body** a `mail` block is shared and gets a generated template. A Blade/HTML body makes it a variant. Express, FastAPI, and Spring Boot render `{{ var }}`, `{{ $var }}`, and `{!! var !!}` placeholders; Spring Boot escapes the double-brace forms. Spring Boot supports the `mail_send` endpoint and logs delivery by default; SMTP delivery requires `MAIL_MAILER=smtp` and SMTP environment settings. To stay shared on every backend, keep mail YAML-only unless you need custom markup.
 
-## SECTION 17 — @arkzen:console:identifier (shared) / @arkzen:console:php:identifier / @arkzen:console:ts:identifier (Artisan + scheduler)
+## SECTION 17 - @arkzen:console:identifier (shared) / @arkzen:console:php:identifier / @arkzen:console:ts:identifier (Artisan + scheduler)
 
   YAML (`signature`, `description`, `schedule`) in the opening comment; body is the **whole `handle(): int` method**. `schedule` is a quoted cron string and is auto-registered with the scheduler. Close with `:end`.
 
@@ -1959,11 +1959,11 @@
 
   * * *
 
-## PART D — WEB FRONTEND — LAYOUTS, PAGES, STYLES, COMPONENTS
+## PART D - WEB FRONTEND - LAYOUTS, PAGES, STYLES, COMPONENTS
 
   _Web blocks: layouts, styles, pages, error pages, components, animation, scripts, assets, imports and data fetching._
 
-## SECTION 19 — @arkzen:web:layout:name
+## SECTION 19 - @arkzen:web:layout:name
 
   Custom named layout wrapper for web pages.
 
@@ -1989,7 +1989,7 @@
 
   ### Layout nesting
 
-  A layout may declare `parent:` (Shape B — YAML inside the opening comment, then `*/`):
+  A layout may declare `parent:` (Shape B - YAML inside the opening comment, then `*/`):
 
   ```
   /* @arkzen:web:layout:panel
@@ -2020,7 +2020,7 @@
 
   * * *
 
-## SECTION 20 — @arkzen:web:style & @arkzen:web:style:Name
+## SECTION 20 - @arkzen:web:style & @arkzen:web:style:Name
 
   Global stylesheet and per-component **CSS Modules**. Can appear before or after components (or be omitted entirely).
 
@@ -2039,7 +2039,7 @@
 
   * * *
 
-## SECTION 21 — @arkzen:web:page:name
+## SECTION 21 - @arkzen:web:page:name
 
   ```
   /* @arkzen:web:page:dashboard */
@@ -2059,12 +2059,12 @@
   - Define the page as a PascalCase `const` whose name ends in `Page` (for example, `IndexPage`). The generator looks for that shape; if it does not find one, it falls back to `<PageName>Page`.
   - Page name → route `/<tatemono>/<page>`; `index` = the tatemono root
 
-## ⚠️ SECTION 22 — web:error:404 / web:error:500
+## ⚠️ SECTION 22 - web:error:404 / web:error:500
 
   ```
   /* @arkzen:web:error:404 */
 
-  const NotFoundPage = () => (<div>404 — Page not found</div>)
+  const NotFoundPage = () => (<div>404 - Page not found</div>)
 
   /* @arkzen:web:error:404:end */
 
@@ -2081,7 +2081,7 @@
 
   404: define `NotFoundPage`; imports are normalized and React is injected. 500: define `ServerErrorPage({ reset })`; the generated boundary has `'use client'`. In both cases, the generator adds the default export. These generate segment-scoped error files, not routed pages.
 
-## SECTION 23 — @arkzen:web:components:identifier
+## SECTION 23 - @arkzen:web:components:identifier
 
   ```
   /* @arkzen:web:components:shared */
@@ -2102,7 +2102,7 @@
 
   Export names decide which file an export lands in. Top-level exports in web:components blocks are sorted by name: PascalCase becomes one file per component, useXxx goes to hooks.tsx, ALL_CAPS constants go to constants.tsx, camelCase functions and values go to utils.tsx, and type/interface go to types.ts. Pages and other components import what they use automatically. A theme object, language list or limit is an ALL_CAPS export. Dark-mode or state logic is a use* export, and a zustand store works as one. No extra block is needed.
 
-## SECTION 24 — @arkzen:web:animation
+## SECTION 24 - @arkzen:web:animation
 
   ```
   /* @arkzen:web:animation */
@@ -2133,7 +2133,7 @@
   - GSAP target classes must exist on rendered elements
   - **Pinned ScrollTrigger:** never also tween `opacity`/`transform` on children of a pinned element (they vanish on refresh). Animate on mount with `clearProps: 'opacity,transform'`, use `invalidateOnRefresh: true`, and `requestAnimationFrame(() => ScrollTrigger.refresh())` after pin setup.
 
-## SECTION 24C/D — @arkzen:web:script / @arkzen:web:script:name
+## SECTION 24C/D - @arkzen:web:script / @arkzen:web:script:name
 
   Pure-TypeScript helper blocks (Three.js factories, constants). No JSX; all exports use `export`.
 
@@ -2148,15 +2148,15 @@
   /* @arkzen:web:script:three-scene:end */
   ```
 
-  Generated files: `<name>.scripts.ts` and `<name>.<block>.script.ts`; import path `@/arkzen/generated/<file-without-.ts>`. The old unprefixed `@arkzen:script` is gone — always `web:script`.
+  Generated files: `<name>.scripts.ts` and `<name>.<block>.script.ts`; import path `@/arkzen/generated/<file-without-.ts>`. The old unprefixed `@arkzen:script` is gone - always `web:script`.
 
-## SECTION 25 — ASSETS
+## SECTION 25 - ASSETS
 
   `tatemonos/<name>/assets/{images,svg,fonts,icons,audio,data}/` → copied to public. Web reference: `/tatemonos/<name>/assets/<category>/<file>`.
 
   * * *
 
-  # NATIVE DSL — EXPO, BARE REACT NATIVE, LYNX
+  # NATIVE DSL - EXPO, BARE REACT NATIVE, LYNX
 
   Native blocks live in the same `core.tsx` (after the web blocks, or standalone for a native-only tatemono). There are **three native targets**, each with its own rules:
 
@@ -2170,9 +2170,9 @@
 
   * * *
 
-## SECTION 26 — AVAILABLE IMPORTS
+## SECTION 26 - AVAILABLE IMPORTS
 
-  **Web (`web:components` / `web:layout`) — always available:**
+  **Web (`web:components` / `web:layout`) - always available:**
 
   ```ts
   import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
@@ -2207,7 +2207,7 @@
 
   * * *
 
-## SECTION 26B — FRONTEND DATA FETCHING
+## SECTION 26B - FRONTEND DATA FETCHING
 
   `arkzenFetch(url, options)` (from `@/arkzen/core/stores/authStore`) is a thin `fetch` wrapper: it adds `Authorization: Bearer <token>` (when logged in) and JSON `Content-Type`/`Accept` headers, and **returns the raw `Response`**. You must call `await res.json()` yourself, and pass `body` as a **string**:
 
@@ -2228,11 +2228,11 @@
 
   * * *
 
-## PART E — NATIVE APPS — EXPO, REACT NATIVE, LYNX
+## PART E - NATIVE APPS - EXPO, REACT NATIVE, LYNX
 
   _Native blocks for Expo and bare React Native, plus Lynx._
 
-## SECTION 23B — Expo / bare RN: `@arkzen:import:expo` & `@arkzen:import:rn`
+## SECTION 23B - Expo / bare RN: `@arkzen:import:expo` & `@arkzen:import:rn`
 
   Inside a `native:components`, `native:layout`, `native:page` or `native:error` block you may write dual-target import pairs (both have `:end`):
 
@@ -2265,7 +2265,7 @@
   - Code outside any pair is kept for both targets.
   - A block may contain several pairs side by side (e.g. one pair for imports, another wrapping a stack-specific handler).
   - A block whose only import pair belongs to the other stack is dropped for this stack. This is how you write **one error block per target** (see below).
-  - Expo uses `expo-router` (`useRouter`, `usePathname`); bare RN has no expo-router — put router code in the `expo` pair only, or write RN-specific navigation in the `rn` pair.
+  - Expo uses `expo-router` (`useRouter`, `usePathname`); bare RN has no expo-router - put router code in the `expo` pair only, or write RN-specific navigation in the `rn` pair.
 
   Always available in native component scope: `React` hooks, RN primitives (`View, Text, TouchableOpacity, Pressable, ScrollView, FlatList, Image, StyleSheet, RefreshControl, TextInput, ActivityIndicator`), `SafeAreaView` from `react-native-safe-area-context`, and `useRouter, usePathname` from `expo-router` (Expo). Animation (optional): `react-native-reanimated`, `moti`.
 
@@ -2275,7 +2275,7 @@
 
   * * *
 
-## SECTION 19B — @arkzen:native:layout:name (Expo / bare RN)
+## SECTION 19B - @arkzen:native:layout:name (Expo / bare RN)
 
   ```
   /* @arkzen:native:layout:app */
@@ -2314,9 +2314,9 @@
   */
   ```
 
-  **Page layout declarations** (line right after the page opener): `layout:default` (engine SafeAreaView wrapper, **the default**), `layout:guest`, `layout:auth`, `layout:+auth`, `layout:+guest`, `layout:app` (your own named layout), `layout:+auth:tab-panel`, `layout:+guest:app` — same chain rules as web.
+  **Page layout declarations** (line right after the page opener): `layout:default` (engine SafeAreaView wrapper, **the default**), `layout:guest`, `layout:auth`, `layout:+auth`, `layout:+guest`, `layout:app` (your own named layout), `layout:+auth:tab-panel`, `layout:+guest:app` - same chain rules as web.
 
-## SECTION 20B — native styles
+## SECTION 20B - native styles
 
   Two forms, both Shape C:
 
@@ -2343,7 +2343,7 @@
 
   Named blocks export their own constant (`S`, `HeroS`, …), merged into the generated `.native-styles.ts`, and are available in native pages/components without importing. The global block is CSS-like (see `new-updates-styles`); named blocks are TypeScript `StyleSheet.create` exports (see `shan-shan`).
 
-## SECTION 21B — @arkzen:native:page:name (Expo / bare RN)
+## SECTION 21B - @arkzen:native:page:name (Expo / bare RN)
 
   ```
   /* @arkzen:native:page:index */
@@ -2369,7 +2369,7 @@
   - Navigate with `router.push('/<tatemono>/<page>' as any)`
   - Native-only tatemonos (no web page) are valid
 
-## SECTION 22B — @arkzen:native:error:404 / :500 (Expo / bare RN)
+## SECTION 22B - @arkzen:native:error:404 / :500 (Expo / bare RN)
 
   Generates `+not-found` / error boundary. Use **one block per target**, distinguished by the import pair:
 
@@ -2393,7 +2393,7 @@
   /* @arkzen:native:error:404:end */
   ```
 
-## SECTION 24B — native animation (stack-split)
+## SECTION 24B - native animation (stack-split)
 
   | Tag                           | Target  | Tech |
   |-------------------------------|---------|------|
@@ -2414,7 +2414,7 @@
   /* @arkzen:native:animation:expo:end */
   ```
 
-## SECTION 24E — native scripts (stack-split)
+## SECTION 24E - native scripts (stack-split)
 
   Global: `@arkzen:native:script:expo | :rn | :lynx`. Named (many): `@arkzen:native:script:expo:name | :rn:name | :lynx:name`. Shape C, `:end` closes with the full tag. Pure TypeScript helpers, imports allowed, no JSX. The old generic `@arkzen:native:script` no longer exists.
 
@@ -2426,7 +2426,7 @@
 
   * * *
 
-## SECTION 25L — LYNX BLOCKS
+## SECTION 25L - LYNX BLOCKS
 
   Lynx is a separate renderer (not React Native). Its blocks are all under `:lynx` and do not use Expo/RN `@arkzen:import` pairs. Page-level imports are retained in the generated page. The generator also creates imports for known shared components referenced by the page, so those component imports do not need to be repeated.
 
@@ -2462,19 +2462,19 @@
   /* @arkzen:native:page:lynx:index:end */
   ```
 
-  **Page layout line for Lynx:** the parser reads `/* @arkzen:native:page:lynx:layout:<name> */`. `layout-test` writes the shorter `/* @arkzen:native:page:layout:<name> */` inside Lynx pages — see "Known engine quirks"; prefer the `lynx:layout` form.
+  **Page layout line for Lynx:** the parser reads `/* @arkzen:native:page:lynx:layout:<name> */`. `layout-test` writes the shorter `/* @arkzen:native:page:layout:<name> */` inside Lynx pages - see "Known engine quirks"; prefer the `lynx:layout` form.
 
-  **Lynx has no WebSocket** — live updates use SSE (auto-generated, see Section 11).
+  **Lynx has no WebSocket** - live updates use SSE (auto-generated, see Section 11).
 
   Lynx pages use `<view>` / `<text>` elements with Tailwind-preset `className`s (see `hello-native`). Copy conventions from a working tatemono (`hello-native`, `asset-hub`, `animation-lab`, `crud-test`) instead of inventing APIs; Lynx primitives differ from React Native.
 
   * * *
 
-## PART F — REFERENCE — EXAMPLES, KNOWN QUIRKS, ACTIVE TATEMONOS
+## PART F - REFERENCE - EXAMPLES, KNOWN QUIRKS, ACTIVE TATEMONOS
 
   _Worked examples, known engine quirks to verify after building, and the list of active tatemonos._
 
-## SECTION 28 — EXAMPLES & FIXTURE REFERENCES
+## SECTION 28 - EXAMPLES & FIXTURE REFERENCES
 
   The compact Examples A–D below illustrate syntax; they are not substitutes for complete, tested Tatemono files. For copyable, fixture-backed patterns, use the actual sources listed here; the excerpts that follow are copied from those files.
 
@@ -2492,7 +2492,7 @@
 
   These are real fixture excerpts, not standalone files; use the linked `core.tsx` for each complete working sample:
 
-  **CRUD database and API** — from `crud-test`:
+  **CRUD database and API** - from `crud-test`:
 
   ```
   /* @arkzen:database:items
@@ -2528,7 +2528,7 @@
   */
   ```
 
-  **Real backend variant bodies** — `body-endpoint-handler` has `echo` and `stats` endpoint bodies in all seven variants, plus handler variants. This PHP/Express pair is copied from its `echo` endpoint:
+  **Real backend variant bodies** - `body-endpoint-handler` has `echo` and `stats` endpoint bodies in all seven variants, plus handler variants. This PHP/Express pair is copied from its `echo` endpoint:
 
   ```
   /* @arkzen:endpoint:php:echo
@@ -2539,7 +2539,7 @@
       'source'  => 'endpoint-body',
       'probe'   => 'echo',
       'payload' => json_encode($input),
-      'result'  => "Echoed {$count} field(s) — ControllerBuilder v7.0 body injection ✓",
+      'result'  => "Echoed {$count} field(s) - ControllerBuilder v7.0 body injection ✓",
       'ok'      => true,
   ]);
   return response()->json([
@@ -2559,7 +2559,7 @@
     source: 'endpoint-body',
     probe: 'echo',
     payload: JSON.stringify(input),
-    result: `Echoed ${Object.keys(input).length} field(s) — ControllerBuilder v7.0 body injection ✓`,
+    result: `Echoed ${Object.keys(input).length} field(s) - ControllerBuilder v7.0 body injection ✓`,
     ok: true,
   })
   return response.json({
@@ -2573,7 +2573,7 @@
   /* @arkzen:endpoint:ts:echo:end */
   ```
 
-  **Real Expo/RN import pairs** — from `hello-native`:
+  **Real Expo/RN import pairs** - from `hello-native`:
 
   ```
   /* @arkzen:native:components:shared */
@@ -2612,7 +2612,7 @@
 
   `hello-native` also contains the separate `native:components:lynx:*` and `native:page:lynx:*` forms. Do not copy React Native elements or imports into those Lynx blocks.
 
-  ### Example A — Minimal web + backend tatemono
+  ### Example A - Minimal web + backend tatemono
 
   ```
   /* @arkzen:meta
@@ -2744,7 +2744,7 @@
   /* @arkzen:web:page:index:end */
   ```
 
-  ### Example B — Native-only tatemono (Expo + bare React Native)
+  ### Example B - Native-only tatemono (Expo + bare React Native)
 
   The shared native DSL and UI can target both stacks, but navigation APIs differ. Keep shared components stack-neutral and use paired `@arkzen:import:expo` / `@arkzen:import:rn` blocks for imports and code that differs by stack. This follows the shipped `hello-native` fixture.
 
@@ -2871,9 +2871,9 @@
   /* @arkzen:native:page:about:end */
   ```
 
-  (For a Lynx build of the same app add `native:components:lynx:shared` and `native:page:lynx:index` blocks — see `hello-native` for the full triple-target file.)
+  (For a Lynx build of the same app add `native:components:lynx:shared` and `native:page:lynx:index` blocks - see `hello-native` for the full triple-target file.)
 
-  ### Example C — Auth app with roles
+  ### Example C - Auth app with roles
 
   ```
   /* @arkzen:meta
@@ -2907,7 +2907,7 @@
   /* @arkzen:web:page:dashboard:end */
   ```
 
-  ### Example D — Backend variants (`express-test` shape)
+  ### Example D - Backend variants (`express-test` shape)
 
   Shared blocks once, then one variant per backend for every code body. `auth: true` creates per-tatemono users and the `/api/<slug>/auth/*` routes on every backend.
 
@@ -2962,9 +2962,9 @@
 
   * * *
 
-## ⚠️ SECTION 28B — KNOWN ENGINE QUIRKS (verify after building)
+## ⚠️ SECTION 28B - KNOWN ENGINE QUIRKS (verify after building)
 
-  These come from reading the engine source. They are not hypothetical — but test them in your build before relying on them, and fix the engine or the doc when resolved.
+  These come from reading the engine source. They are not hypothetical - but test them in your build before relying on them, and fix the engine or the doc when resolved.
 
   1. **Backend-specific `foreign:` names vs auto relations.** The migration builder uses `foreign:` literally as the table name. Use the physical name required by the active backend: prefixing engines may require `queue_flow_queues.id`, while Go/Rust use the declared table name in each tatemono's isolated database. The model builder may match `foreign:` against the raw table name when generating `belongsTo`/`hasMany`, so generated relation methods can differ. Check generated models/migrations for the active backend.
   2. **`type: enum` is unsupported.** The migration builder turns unknown types into `string` and ignores `values:`; use `type: string` with validation rules for allowed values. The shared parser accepts `foreignId`, slug-prefixed foreign keys, markerless legacy native blocks, and guarded layout chains. The separate Expo frontend validator currently requires explicit Expo/RN import pairs on native blocks, although the Expo generator retains markerless legacy support; use explicit pairs for new native code.
@@ -2973,7 +2973,7 @@
   5. **Lynx page layout line.** Parser: `@arkzen:native:page:lynx:layout:<name>`. `layout-test` uses `@arkzen:native:page:layout:<name>` in Lynx pages.
   6. **Mail/notification/job class names append a suffix** to the studly identifier (`welcome-mail` → `WelcomeMailMail`). Prefer short identifiers (`welcome`).
   7. **`type: enum`** appears in `queue-flow` but is silently a `string` column; `values:` is ignored.
-  8. **Update migrations add new columns only** — they never alter or drop existing columns.
+  8. **Update migrations add new columns only** - they never alter or drop existing columns.
   10. **Table/model warnings are heuristics.** The validator appends a literal `s` when suggesting a table name, so `Inventory` is reported as expecting `inventorys` even when the declared table is `inventories`; the Laravel model builder writes its table explicitly. Singular `send_log` and `event_log` also warn because plural snake_case is preferred. These are warnings, not parse errors; keep table declarations and raw SQL references aligned if renaming.
   11. **Native validation must be target-aware.** A target-neutral validator may see both Expo and bare-RN variants before the builder filters them, causing false duplicate-page errors for the same route. Validate using the active native target; the generators filter the other target's import pair.
 
@@ -2994,7 +2994,7 @@
 
   * * *
 
-## SECTION 27 — ACTIVE TATEMONOS (46)
+## SECTION 27 - ACTIVE TATEMONOS (46)
 
   Format: `name vVersion auth | web pages | native (Expo/RN) screen count | Lynx page count | backend variants carried`. "shared only" means no code bodies, so the tatemono is active on every backend. "all 7" means `:php :ts :py :java :cs :go :rs`.
 
@@ -3051,11 +3051,11 @@
 
   * * *
 
-## PART G — GAMES — GODOT 4 & UNITY DSL
+## PART G - GAMES - GODOT 4 & UNITY DSL
 
   _Game DSL appendices. Not needed for web, app or backend work._
 
-## APPENDIX — GODOT 4 GAME DSL
+## APPENDIX - GODOT 4 GAME DSL
 
   Godot support is a separate export target, not a web, mobile, desktop, or backend stack. A Godot Tatemono is still a source file under `tatemonos/<name>/core.tsx`, but it uses the Godot marker set below. Export it through:
 
@@ -3071,12 +3071,12 @@
 
   Every Godot Tatemono must include these blocks:
 
-  - `/* @arkzen:meta */` — standard Pluff metadata. `name` must exactly match the folder name and contain only lowercase letters, digits, and hyphens.
-  - `@arkzen:godot:project` — Godot project settings.
-  - `@arkzen:godot:scene:<name>` — one or more scene declarations. The project `main_scene` must match a declared scene `path`.
-  - `@arkzen:godot:behavior:player` — player GDScript behavior. It must extend `CharacterBody3D` and target a scene different from the main scene.
-  - `@arkzen:godot:behavior:camera` — generated camera-follow behavior.
-  - `@arkzen:godot:export` — at least one runnable export preset.
+  - `/* @arkzen:meta */` - standard Pluff metadata. `name` must exactly match the folder name and contain only lowercase letters, digits, and hyphens.
+  - `@arkzen:godot:project` - Godot project settings.
+  - `@arkzen:godot:scene:<name>` - one or more scene declarations. The project `main_scene` must match a declared scene `path`.
+  - `@arkzen:godot:behavior:player` - player GDScript behavior. It must extend `CharacterBody3D` and target a scene different from the main scene.
+  - `@arkzen:godot:behavior:camera` - generated camera-follow behavior.
+  - `@arkzen:godot:export` - at least one runnable export preset.
 
   `@arkzen:godot:scene:<name>` and other Godot blocks use a plain comment opening and a matching `:end` comment:
 
@@ -3109,10 +3109,10 @@
 
   ### Optional and repeated blocks
 
-  - `@arkzen:godot:world` — procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, `dialogues`, and optional `visuals`.
-  - `@arkzen:godot:input` — mapping of action names to keys. Action names use lowercase letters, digits, and underscores. Use plural key arrays such as `keys: [A, LEFT]`.
-  - `@arkzen:godot:assets` — texture assets grouped under `textures`, with `source`, optional `filter`, and optional `alpha`.
-  - `@arkzen:godot:multiplayer` — optional ENet host/join and server-authoritative player movement. This feature is opt-in and does not provide matchmaking, accounts, relay servers, or Web export support.
+  - `@arkzen:godot:world` - procedural world data: name, `tile_size`, `grid_width`, `grid_depth`, `block_height`, `world_margin`, seed, `props`, `npcs`, `dialogues`, and optional `visuals`.
+  - `@arkzen:godot:input` - mapping of action names to keys. Action names use lowercase letters, digits, and underscores. Use plural key arrays such as `keys: [A, LEFT]`.
+  - `@arkzen:godot:assets` - texture assets grouped under `textures`, with `source`, optional `filter`, and optional `alpha`.
+  - `@arkzen:godot:multiplayer` - optional ENet host/join and server-authoritative player movement. This feature is opt-in and does not provide matchmaking, accounts, relay servers, or Web export support.
   - Additional `@arkzen:godot:scene:<name>` blocks may be declared when representing separate scenes or instances.
 
   ```tsx
@@ -3362,7 +3362,7 @@
 
   * * *
 
-## APPENDIX — UNITY GAME DSL
+## APPENDIX - UNITY GAME DSL
 
   Unity support is a standalone export target. A Unity game Tatemono still lives in `tatemonos/<name>/core.tsx`, but does not need web/native pages or a backend. Export with:
 
@@ -3546,12 +3546,12 @@
 
   * * *
 
-## PART H — ONLINE TATEMONO INDEX (GENERATED)
+## PART H - ONLINE TATEMONO INDEX (GENERATED)
 
   _Generated by `node mizumi.js index`. Raw URLs of real tatemono files to fetch as examples._
 
 <!-- TATEMONO-INDEX:START -->
-## SECTION 31 — ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)
+## SECTION 31 - ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)
 
   _This section is generated by `node mizumi.js index` (`tatemono-index.js`). Do not edit it by hand; run the script and it updates itself from each tatemono's `@arkzen:meta` block._
 
@@ -3595,154 +3595,154 @@
 
   Full index of 50 tatemonos (title · description · block families · stacks · size · raw URL):
 
-  - **animation-lab** — Full animation testing lab — GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures,...
+  - **animation-lab** - Full animation testing lab - GSAP (entrance, exit, scroll trigger, timeline, stagger, morph, 3D, magnetic), Framer Motion (variants, gestures,...
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~49k tokens, 153 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/animation-lab/core.tsx
-  - **aspnet-ledger** — ASP.NET Core showcase: atomic ledger transfers in C# with decimal arithmetic, per-Tatemono database transactions, a rollback proof, validation and...
+  - **aspnet-ledger** - ASP.NET Core showcase: atomic ledger transfers in C# with decimal arithmetic, per-Tatemono database transactions, a rollback proof, validation and...
     families: api, database, endpoint · stacks: web · S (~7k tokens, 21 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/aspnet-ledger/core.tsx
-  - **aspnet-test** — Exercises the ASP.NET Core backend (:cs variants) end to end: token auth, CRUD with validation and filters, update/delete policies, role and...
+  - **aspnet-test** - Exercises the ASP.NET Core backend (:cs variants) end to end: token auth, CRUD with validation and filters, update/delete policies, role and...
     families: api, database, endpoint, handler, middleware, policy, routes · stacks: web · S (~7k tokens, 23 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/aspnet-test/core.tsx
-  - **asset-hub** — Tests how assets are placed in the tatemono folder and distributed by the engine. Drop any file into tatemonos/asset-hub/assets/<category>/ — the...
+  - **asset-hub** - Tests how assets are placed in the tatemono folder and distributed by the engine. Drop any file into tatemonos/asset-hub/assets/<category>/ - the...
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~6k tokens, 20 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/asset-hub/core.tsx
-  - **atelier** — Atelier — A Home for Creative Journeys. Social platform for artists, supporters, commissioners, and collaborators. Centered on creative...
+  - **atelier** - Atelier - A Home for Creative Journeys. Social platform for artists, supporters, commissioners, and collaborators. Centered on creative...
     families: UI only (no backend blocks) · stacks: web, native · L (~48k tokens, 150 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/atelier/core.tsx
-  - **auth-test** — Tests core authentication — register, login, logout, and protected dashboard.
+  - **auth-test** - Tests core authentication - register, login, logout, and protected dashboard.
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~8k tokens, 26 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/auth-test/core.tsx
-  - **body-endpoint-handler** — Tests ControllerBuilder endpoint bodies and CustomRouteBuilder handlers across backend variants. Go and Rust provide purpose-built emulations for...
+  - **body-endpoint-handler** - Tests ControllerBuilder endpoint bodies and CustomRouteBuilder handlers across backend variants. Go and Rust provide purpose-built emulations for...
     families: api, database, endpoint, handler, routes · stacks: web, native, lynx · M (~25k tokens, 77 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/body-endpoint-handler/core.tsx
-  - **body-mail-notification** — Tests MailBuilder v3.1 blade_body injection and NotificationBuilder v3.9 toMail_body injection. Blade HTML is placed between the closing YAML...
+  - **body-mail-notification** - Tests MailBuilder v3.1 blade_body injection and NotificationBuilder v3.9 toMail_body injection. Blade HTML is placed between the closing YAML...
     families: api, database, endpoint, mail, notifications · stacks: web, native, lynx · L (~34k tokens, 105 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/body-mail-notification/core.tsx
-  - **broadcast-test** — Tests all three Laravel Reverb channel types end-to-end. Public channel (no auth), private channel (user-scoped), and presence channel (member...
+  - **broadcast-test** - Tests all three Laravel Reverb channel types end-to-end. Public channel (no auth), private channel (user-scoped), and presence channel (member...
     families: api, database, realtime · stacks: web, native, lynx · M (~20k tokens, 63 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/broadcast-test/core.tsx
-  - **cafe-teresita** — Cafe Teresita (by Guada's) Tatemono — Concept landing page for the cafe in Calubo, Kinoguitan, Misamis Oriental. Full Couvee-mirrored design: dark...
+  - **cafe-teresita** - Cafe Teresita (by Guada's) Tatemono - Concept landing page for the cafe in Calubo, Kinoguitan, Misamis Oriental. Full Couvee-mirrored design: dark...
     families: UI only (no backend blocks) · stacks: web · M (~28k tokens, 88 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/cafe-teresita/core.tsx
-  - **crud-test** — Tests the full CRUD pipeline — Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.
+  - **crud-test** - Tests the full CRUD pipeline - Model, Migration, Controller, Request, Resource, Policy, Factory, Seeder. The canonical Arkzen CRUD verification.
     families: api, database, policy · stacks: web, native, lynx · M (~13k tokens, 41 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/crud-test/core.tsx
-  - **dino-runner** — Unity SVG dinosaur runner game. Jump over cactus obstacles and survive as long as possible.
+  - **dino-runner** - Unity SVG dinosaur runner game. Jump over cactus obstacles and survive as long as possible.
     families: unity · stacks: - · S (~0k tokens, 1 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/dino-runner/core.tsx
-  - **dtr-geofencing** — (no description in meta)
+  - **dtr-geofencing** - (no description in meta)
     families: api, database, endpoint · stacks: web, native · L (~41k tokens, 127 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/dtr-geofencing/core.tsx
-  - **errors-test** — Tests real HTTP error handlers. Next.js segment-scoped not-found.tsx and error.tsx. API codes trigger toasts via arkzenFetch interceptor.
+  - **errors-test** - Tests real HTTP error handlers. Next.js segment-scoped not-found.tsx and error.tsx. API codes trigger toasts via arkzenFetch interceptor.
     families: routes · stacks: web, native, lynx · M (~10k tokens, 31 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/errors-test/core.tsx
-  - **ethan-pool** — Ethan Pool — Luxury aquatic resort landing page tatemono. Structural & animation port of a luxury hotel one-page template: fullscreen hero with...
+  - **ethan-pool** - Ethan Pool - Luxury aquatic resort landing page tatemono. Structural & animation port of a luxury hotel one-page template: fullscreen hero with...
     families: UI only (no backend blocks) · stacks: web · M (~20k tokens, 64 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/ethan-pool/core.tsx
-  - **ethereane** — Real-time 3D voxel-pixel RPG — free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for...
+  - **ethereane** - Real-time 3D voxel-pixel RPG - free-orbit camera, block-based ground (placeholder for upcoming voxelization), camera-facing billboard sprites for...
     families: UI only (no backend blocks) · stacks: web · M (~18k tokens, 55 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/ethereane/core.tsx
-  - **events-test** — Tests event and listener dispatch. Fire events manually, inspect each listener execution.
+  - **events-test** - Tests event and listener dispatch. Fire events manually, inspect each listener execution.
     families: api, database, endpoint, events, listener · stacks: web, native, lynx · M (~18k tokens, 56 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/events-test/core.tsx
-  - **express-test** — Exercises the Express backend (:ts variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener,...
+  - **express-test** - Exercises the Express backend (:ts variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener,...
     families: api, console, database, endpoint, events, handler, jobs, listener, mail, middleware, notifications, policy, realtime, routes · stacks: web · S (~5k tokens, 16 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/express-test/core.tsx
-  - **express-test-2** — Express parity fixture: one tatemono covering the Laravel backend test surfaces.
+  - **express-test-2** - Express parity fixture: one tatemono covering the Laravel backend test surfaces.
     families: api, console, database, endpoint, events, handler, jobs, listener, mail, middleware, notifications, policy, realtime, routes · stacks: web · S (~6k tokens, 20 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/express-test-2/core.tsx
-  - **fastapi-test** — Exercises the FastAPI backend (:py variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener,...
+  - **fastapi-test** - Exercises the FastAPI backend (:py variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener,...
     families: api, console, database, endpoint, events, handler, jobs, listener, mail, middleware, notifications, policy, realtime, routes · stacks: web · S (~4k tokens, 13 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/fastapi-test/core.tsx
-  - **free-demo** — Free file blocks only — plain HTML, a package, and a stack file. No pages, no backend.
+  - **free-demo** - Free file blocks only - plain HTML, a package, and a stack file. No pages, no backend.
     families: file · stacks: - · S (~0k tokens, 1 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/free-demo/core.tsx
-  - **go-backend-test** — Exercises the Go (Chi) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.
+  - **go-backend-test** - Exercises the Go (Chi) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/go-backend-test/core.tsx
-  - **go-concurrency-lab** — Demonstrates Go net/http handling with a sequential-versus-parallel read burst and a validated SQLite-backed task API.
+  - **go-concurrency-lab** - Demonstrates Go net/http handling with a sequential-versus-parallel read burst and a validated SQLite-backed task API.
     families: api, database · stacks: web · S (~3k tokens, 10 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/go-concurrency-lab/core.tsx
-  - **godot-game** — Godot 4 game Tatemono DSL. Defines project settings, scenes, nodes, input, assets, and gameplay behavior for the Godot project generator.
+  - **godot-game** - Godot 4 game Tatemono DSL. Defines project settings, scenes, nodes, input, assets, and gameplay behavior for the Godot project generator.
     families: godot · stacks: - · S (~2k tokens, 6 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/godot-game/core.tsx
-  - **hello-native** — Native-only starter tatemono. Two screens — home and about. No auth, no backend.
+  - **hello-native** - Native-only starter tatemono. Two screens - home and about. No auth, no backend.
     families: UI only (no backend blocks) · stacks: native, lynx · S (~4k tokens, 12 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/hello-native/core.tsx
-  - **hw-coffee** — H&W Coffee Tatemono — Concept landing page for H&W Coffee, Gingoog City's #1 café. GSAP ScrollTrigger, SplitText-style reveals, magnetic buttons,...
+  - **hw-coffee** - H&W Coffee Tatemono - Concept landing page for H&W Coffee, Gingoog City's #1 café. GSAP ScrollTrigger, SplitText-style reveals, magnetic buttons,...
     families: UI only (no backend blocks) · stacks: web · M (~28k tokens, 87 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/hw-coffee/core.tsx
-  - **inventory-management** — Full inventory management with stock tracking
+  - **inventory-management** - Full inventory management with stock tracking
     families: api, database, endpoint · stacks: web, native, lynx · M (~16k tokens, 51 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/inventory-management/core.tsx
-  - **jo-payroll** — J.O Payroll System v2 — Job Order management, payroll processing, deductions tracking, cash/ATM groupings, and appointment sequencing for local...
+  - **jo-payroll** - J.O Payroll System v2 - Job Order management, payroll processing, deductions tracking, cash/ATM groupings, and appointment sequencing for local...
     families: api, database, endpoint · stacks: web, native, lynx · L (~58k tokens, 181 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/jo-payroll/core.tsx
-  - **job-test** — Tests Laravel Queue Jobs. Dispatch a job, watch it process, see the result. Tests sync, default, and failed queues.
+  - **job-test** - Tests Laravel Queue Jobs. Dispatch a job, watch it process, see the result. Tests sync, default, and failed queues.
     families: api, database, endpoint, jobs · stacks: web, native, lynx · M (~9k tokens, 30 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/job-test/core.tsx
-  - **kotoba** — Kotoba — a social language-learning network. Learn by using the language: daily missions, a community feed with native-speaker corrections,...
+  - **kotoba** - Kotoba - a social language-learning network. Learn by using the language: daily missions, a community feed with native-speaker corrections,...
     families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~175k tokens, 547 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kotoba/core.tsx
-  - **lain098** — Art portfolio for Lain — fullscreen bottom-slide image slider, centered orbit.
+  - **lain098** - Art portfolio for Lain - fullscreen bottom-slide image slider, centered orbit.
     families: UI only (no backend blocks) · stacks: web · M (~29k tokens, 91 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/lain098/core.tsx
-  - **layout-test** — Tests the v11.0 infinite layout nesting system — every combo of single layout, chain, guard-only, guard+chain, and native parity.
+  - **layout-test** - Tests the v11.0 infinite layout nesting system - every combo of single layout, chain, guard-only, guard+chain, and native parity.
     families: UI only (no backend blocks) · stacks: web, native, lynx · M (~12k tokens, 39 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/layout-test/core.tsx
-  - **mail-test** — Tests backend email delivery with configurable SMTP and mail logs.
+  - **mail-test** - Tests backend email delivery with configurable SMTP and mail logs.
     families: api, database, mail · stacks: web, native, lynx · M (~19k tokens, 58 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/mail-test/core.tsx
-  - **middleware-test** — Tests MiddlewareBuilder v7.0 body injection. Declares [requireJson] with real logic injected via @arkzen:middleware:requireJson DSL block. Also...
+  - **middleware-test** - Tests MiddlewareBuilder v7.0 body injection. Declares [requireJson] with real logic injected via @arkzen:middleware:requireJson DSL block. Also...
     families: api, database, middleware · stacks: web, native, lynx · S (~9k tokens, 27 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/middleware-test/core.tsx
-  - **mobile-sdui** — Mobile-only server-driven UI demo. Admins publish safe button definitions now or at a scheduled time; the user screen refreshes without an app...
+  - **mobile-sdui** - Mobile-only server-driven UI demo. Admins publish safe button definitions now or at a scheduled time; the user screen refreshes without an app...
     families: api, database · stacks: native · S (~5k tokens, 17 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/mobile-sdui/core.tsx
-  - **new-updates-styles** — Showcase tatemono demonstrating component separation, CSS/Style DSL, multiple pages, and custom components
+  - **new-updates-styles** - Showcase tatemono demonstrating component separation, CSS/Style DSL, multiple pages, and custom components
     families: style · stacks: web, native, lynx · M (~15k tokens, 48 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/new-updates-styles/core.tsx
-  - **notification-test** — Tests Laravel Notifications across all three channels — database (bell), mail, and broadcast (real-time popup). Uses Laravel's native...
+  - **notification-test** - Tests Laravel Notifications across all three channels - database (bell), mail, and broadcast (real-time popup). Uses Laravel's native...
     families: api, notifications · stacks: web, native, lynx · M (~23k tokens, 73 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/notification-test/core.tsx
-  - **ollama-studio** — A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.
+  - **ollama-studio** - A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.
     families: api, endpoint · stacks: web · S (~2k tokens, 7 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/ollama-studio/core.tsx
-  - **portfolio-test** — Frontend-only portfolio showcase
+  - **portfolio-test** - Frontend-only portfolio showcase
     families: UI only (no backend blocks) · stacks: web, native, lynx · S (~6k tokens, 20 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/portfolio-test/core.tsx
-  - **queue-flow** — Real-time queue management system with PWA support
+  - **queue-flow** - Real-time queue management system with PWA support
     families: api, database, handler, module, realtime, routes · stacks: web, native, lynx · L (~47k tokens, 147 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/queue-flow/core.tsx
-  - **roles-test** — Tests role-based access control with real Sanctum auth. Two roles (admin, user), protected routes, role-gated UI. v2.1: middleware now declares...
+  - **roles-test** - Tests role-based access control with real Sanctum auth. Two roles (admin, user), protected routes, role-gated UI. v2.1: middleware now declares...
     families: api, database, endpoint · stacks: web, native, lynx · M (~19k tokens, 61 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/roles-test/core.tsx
-  - **rust-backend-test** — Exercises the Rust (Axum) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.
+  - **rust-backend-test** - Exercises the Rust (Axum) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/rust-backend-test/core.tsx
-  - **scheduler-test** — Tests Laravel Console Commands + Scheduler. Register Artisan commands, run them manually, inspect execution history.
+  - **scheduler-test** - Tests Laravel Console Commands + Scheduler. Register Artisan commands, run them manually, inspect execution history.
     families: api, console, database · stacks: web, native, lynx · M (~13k tokens, 42 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/scheduler-test/core.tsx
-  - **shan-shan** — Portfolio for Shan Sabal Cezar — Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers,...
+  - **shan-shan** - Portfolio for Shan Sabal Cezar - Indigo-lab-inspired epic scroll experience. Animated stroke SHAN logo, sticky tale covers, parallax layers,...
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~37k tokens, 116 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shan-shan/core.tsx
-  - **shikaku** — Shikaku — a full pixel art editor. Combines Aseprite's layer/frame system, PixSquare's clean mobile UI, Resprite's gesture-native canvas, and...
+  - **shikaku** - Shikaku - a full pixel art editor. Combines Aseprite's layer/frame system, PixSquare's clean mobile UI, Resprite's gesture-native canvas, and...
     families: api, database, realtime · stacks: web · M (~25k tokens, 78 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/shikaku/core.tsx
-  - **spring-ledger** — Spring Boot showcase: atomic ledger transfers using Java BigDecimal and per-Tatemono database transactions.
+  - **spring-ledger** - Spring Boot showcase: atomic ledger transfers using Java BigDecimal and per-Tatemono database transactions.
     families: api, database, endpoint · stacks: web · S (~3k tokens, 8 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/spring-ledger/core.tsx
-  - **spring-test** — Spring Boot backend contract sample for Java variant selection, isolated SQLite migrations, validation, CRUD, and pagination.
+  - **spring-test** - Spring Boot backend contract sample for Java variant selection, isolated SQLite migrations, validation, CRUD, and pagination.
     families: api, database · stacks: web · S (~2k tokens, 7 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/spring-test/core.tsx
-  - **unity-scene-starter** — A Unity scene-based starter showing 3D game objects, lighting, physics, and camera-follow controls.
+  - **unity-scene-starter** - A Unity scene-based starter showing 3D game objects, lighting, physics, and camera-follow controls.
     families: unity · stacks: - · S (~1k tokens, 2 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/unity-scene-starter/core.tsx
-  - **upload-test** — Tests file uploads — single file, multiple files, image preview, download, delete. Backend stores in storage/app/public/arkzen/upload-test/.
+  - **upload-test** - Tests file uploads - single file, multiple files, image preview, download, delete. Backend stores in storage/app/public/arkzen/upload-test/.
     families: api, database · stacks: web, native, lynx · S (~9k tokens, 27 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/upload-test/core.tsx
-  - **visual-lab** — Visual Lab — tests every new frontend package installed across all 5 stacks (Three.js/R3F, BabylonJS, PlayCanvas, PixiJS, OGL, Phaser, Matter.js,...
+  - **visual-lab** - Visual Lab - tests every new frontend package installed across all 5 stacks (Three.js/R3F, BabylonJS, PlayCanvas, PixiJS, OGL, Phaser, Matter.js,...
     families: components, script · stacks: web · L (~33k tokens, 102 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/visual-lab/core.tsx
 
