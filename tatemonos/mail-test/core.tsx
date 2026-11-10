@@ -1,7 +1,7 @@
 /* @arkzen:meta
 name: mail-test
 version: 2.0.0
-description: Tests backend email delivery with configurable SMTP and mail logs.
+description: Tests backend email delivery with configurable SMTP and mail logs; the welcome-mail identifier also verifies generated names normalize to WelcomeMail instead of WelcomeMailMail.
 auth: true
 auth_seed:
   users:

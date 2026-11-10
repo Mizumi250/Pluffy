@@ -477,6 +477,39 @@ fn create_table(
         let existing = transaction
             .table_columns(table)
             .map_err(|error| format!("Could not inspect table {table}: {error}"))?;
+        let mut expected: HashSet<String> = columns
+            .into_iter()
+            .flat_map(|columns| columns.keys().cloned())
+            .collect();
+        let has_primary = columns
+            .map(|columns| {
+                columns
+                    .values()
+                    .any(|column| column["primary"].as_bool() == Some(true))
+            })
+            .unwrap_or(false);
+        if !has_primary {
+            expected.insert("id".to_owned());
+        }
+        if definition["timestamps"].as_bool() != Some(false) {
+            expected.insert("created_at".to_owned());
+            expected.insert("updated_at".to_owned());
+        }
+        if definition["softDeletes"].as_bool() == Some(true) {
+            expected.insert("deleted_at".to_owned());
+        }
+        let mut undeclared: Vec<String> = existing
+            .iter()
+            .filter(|column| !expected.contains(*column))
+            .cloned()
+            .collect();
+        undeclared.sort();
+        if !undeclared.is_empty() {
+            tracing::warn!(
+                "schema drift: undeclared columns retained in {table}: {}",
+                undeclared.join(", ")
+            );
+        }
         for (name, config) in columns.into_iter().flat_map(|columns| columns.iter()) {
             if existing.iter().any(|column| column == name) {
                 continue;
@@ -706,18 +739,19 @@ fn table_columns(
 
 /// Logical column type. SQLite keeps its historical affinities (booleans are stored in
 /// TEXT columns); PostgreSQL uses integer columns for booleans so `flag = 0` works.
-fn column_sql_type(kind: &str, postgres: bool) -> &'static str {
+fn column_sql_type(kind: &str, postgres: bool) -> Result<&'static str, String> {
     match kind {
-        "integer" | "bigInteger" | "foreignId" => "INTEGER",
-        "decimal" | "float" => "REAL",
-        "boolean" if postgres => "INTEGER",
-        _ => "TEXT",
+        "integer" | "bigInteger" | "foreignId" => Ok("INTEGER"),
+        "decimal" | "float" => Ok("REAL"),
+        "boolean" if postgres => Ok("INTEGER"),
+        "string" | "text" | "longText" | "boolean" | "date" | "datetime" | "timestamp" | "json" | "uuid" => Ok("TEXT"),
+        _ => Err(format!("Unsupported database column type \"{kind}\"")),
     }
 }
 
 fn added_column_declaration(name: &str, config: &Value, postgres: bool) -> Result<String, String> {
     let kind = config["type"].as_str().unwrap_or("string");
-    let sql_type = column_sql_type(kind, postgres);
+    let sql_type = column_sql_type(kind, postgres)?;
     let mut declaration = format!("{} {sql_type}", quote_identifier(name)?);
     if let Some(default) = config.get("default") {
         declaration.push_str(" DEFAULT ");
@@ -737,7 +771,7 @@ fn column_declaration(
     let kind = config["type"].as_str().unwrap_or("string");
     let primary = config["primary"].as_bool() == Some(true);
     let auto_increment = config["autoIncrement"].as_bool() != Some(false);
-    let sql_type = column_sql_type(kind, postgres);
+    let sql_type = column_sql_type(kind, postgres)?;
     let mut declaration = if primary && auto_increment && sql_type == "INTEGER" {
         format!("{name} INTEGER PRIMARY KEY AUTOINCREMENT")
     } else if primary {

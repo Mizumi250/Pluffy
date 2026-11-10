@@ -20,6 +20,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .map_err(|error| format!("REVERB_PORT must be a valid TCP port: {error}"))?;
     let realtime_address = format!("{}:{realtime_port}", config.host);
     let state = AppState::open(config)?;
+    state.start_console_scheduler();
+    state.start_job_recovery();
     let realtime_listener = TcpListener::bind(&realtime_address).await?;
     let realtime_state = state.clone();
     tokio::spawn(async move {

@@ -59,7 +59,7 @@ def _sql_type(c: Any) -> str:
         return "JSON" if pg else "TEXT"
     if t == "uuid":
         return "UUID" if pg else "VARCHAR(36)"
-    return "VARCHAR(255)"
+    raise ValueError(f'Unsupported database column type "{t}"')
 
 
 def _lit(v) -> str:
@@ -118,6 +118,18 @@ def _ensure_table(db: Connection, slug: str, d: Any, steps: list[str]) -> None:
     else:
         have = set(db.column_names(table))
         missing = [(n, c) for n, c in cols.items() if n not in have]
+        expected = set(cols)
+        if not any(c.get("primary") for c in cols.values()):
+            expected.add("id")
+        if d.get("timestamps") is not False:
+            expected.update(("created_at", "updated_at"))
+        if d.get("softDeletes"):
+            expected.add("deleted_at")
+        undeclared = sorted(have - expected)
+        if undeclared:
+            steps.append(
+                f"Schema mismatch: {table} has undeclared columns retained to avoid data loss ({', '.join(undeclared)})"
+            )
         for n, c in missing:
             db.execute(f"ALTER TABLE {qi(table)} ADD COLUMN {_column_sql(slug, n, c, True)}")
         if missing:

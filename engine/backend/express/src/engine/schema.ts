@@ -45,7 +45,7 @@ function addColumn(t: Knex.CreateTableBuilder | Knex.AlterTableBuilder, slug: st
     case 'timestamp':  col = t.timestamp(name); break
     case 'json':       col = t.json(name); break
     case 'uuid':       col = t.uuid(name); break
-    default:           col = t.string(name)
+    default:           throw new Error(`Unsupported database column type "${type}" for "${name}"`)
   }
   if (c.primary) col.primary()
   if (c.nullable || alter) col.nullable(); else if (!c.primary) col.notNullable()
@@ -76,6 +76,14 @@ async function ensureTable(db: Knex, slug: string, d: Any, steps: string[]) {
   } else {
     const info = await db(table).columnInfo()
     const missing = Object.entries(d.columns ?? {}).filter(([n]) => !(n in info)) as [string, Any][]
+    const expected = new Set(Object.keys(d.columns ?? {}))
+    if (!Object.values(d.columns ?? {}).some((c: any) => c.primary)) expected.add('id')
+    if (d.timestamps !== false) { expected.add('created_at'); expected.add('updated_at') }
+    if (d.softDeletes) expected.add('deleted_at')
+    const undeclared = Object.keys(info).filter(name => !expected.has(name))
+    if (undeclared.length) {
+      steps.push(`Schema mismatch: ${table} has undeclared columns retained to avoid data loss (${undeclared.join(', ')})`)
+    }
     if (missing.length) {
       await db.schema.alterTable(table, t => { for (const [n, c] of missing) addColumn(t, slug, n, c, true) })
       steps.push(`Table updated: ${table} (+${missing.map(m => m[0]).join(', ')})`)

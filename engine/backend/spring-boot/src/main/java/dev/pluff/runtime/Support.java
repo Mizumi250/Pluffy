@@ -76,6 +76,11 @@ public final class Support {
     return sb.toString();
   }
 
+  public static String classNameFor(String name, String suffix) {
+    String base = studly(name);
+    return base.length() > suffix.length() && base.endsWith(suffix) ? base : base + suffix;
+  }
+
   public static String slugToConn(String slug) { return slug.replace('-', '_'); }
 
   public static String prefixedTable(String slug, String raw) {

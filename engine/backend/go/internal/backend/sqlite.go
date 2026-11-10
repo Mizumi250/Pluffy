@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"sort"
@@ -565,6 +566,16 @@ func ensureTableDialect(tx *sql.Tx, definition DatabaseDefinition, dialect datab
 	}
 	if err := rows.Close(); err != nil {
 		return fmt.Errorf("close table inspection: %w", err)
+	}
+	undeclared := make([]string, 0)
+	for name := range existing {
+		if _, declared := columns[name]; !declared {
+			undeclared = append(undeclared, name)
+		}
+	}
+	sort.Strings(undeclared)
+	if len(undeclared) > 0 {
+		log.Printf("schema drift: undeclared columns retained in %s: %s", definition.Table, strings.Join(undeclared, ", "))
 	}
 	for _, name := range names {
 		if _, found := existing[name]; found {

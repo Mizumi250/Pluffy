@@ -130,23 +130,19 @@ func (h *Handler) fireEvent(w http.ResponseWriter, r *http.Request, registration
 	}
 	jobs := make([]queuedJob, 0, len(event.listeners))
 	for _, listener := range event.listeners {
-		logEventName, logListenerName, err := goEventLogFields(listener.body)
-		if err != nil {
-			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": fmt.Sprintf("Go listener %q is not supported: %v", listener.name, err)})
-			return
-		}
-		if normalizeEventIdentifier(logListenerName) != normalizeEventIdentifier(listener.name) ||
-			normalizeEventIdentifier(logEventName) != normalizeEventIdentifier(event.name) {
-			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": fmt.Sprintf("Go listener body does not match event %q and listener %q", event.name, listener.name)})
+		if strings.TrimSpace(listener.body) == "" {
+			writeJSON(w, http.StatusNotImplemented, map[string]string{
+				"message": fmt.Sprintf("Go listener %q has no executable :go body", listener.name),
+			})
 			return
 		}
 		jobs = append(jobs, queuedJob{
-			Kind: "event_listener", Module: "events-test", Name: listener.name,
-			EventName: logEventName, EventData: eventData, ListenerBody: listener.body,
+			Kind: "event_listener", Module: registration.Name, Name: listener.name,
+			EventName: event.name, EventData: eventData, ListenerBody: listener.body,
 			Tries: 3, Timeout: 60,
 		})
 	}
-	db, err := openModuleDatabase(h.service.storageDir, "events-test")
+	db, err := openModuleDatabase(h.service.storageDir, registration.Name)
 	if err != nil {
 		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to open module database"})
 		return
@@ -154,8 +150,8 @@ func (h *Handler) fireEvent(w http.ResponseWriter, r *http.Request, registration
 	defer db.Close()
 	if strings.EqualFold(envOr("QUEUE_CONNECTION", "database"), "sync") {
 		for _, job := range jobs {
-			if err := executeGoEventListener(r.Context(), db, job); err != nil {
-				writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not execute event listener"})
+			if err := h.executeGoEventListener(r.Context(), registration, job); err != nil {
+				writeJSON(w, http.StatusInternalServerError, map[string]string{"message": fmt.Sprintf("Could not execute event listener %q: %v", job.Name, err)})
 				return
 			}
 		}
@@ -190,16 +186,6 @@ func (h *Handler) fireEvent(w http.ResponseWriter, r *http.Request, registration
 		return
 	}
 	writeJSON(w, http.StatusAccepted, map[string]string{"message": "Event fired"})
-}
-
-func normalizeEventIdentifier(value string) string {
-	var normalized strings.Builder
-	for _, character := range strings.ToLower(value) {
-		if character >= 'a' && character <= 'z' || character >= '0' && character <= '9' {
-			normalized.WriteRune(character)
-		}
-	}
-	return normalized.String()
 }
 
 func (h *Handler) sendBroadcastMessage(w http.ResponseWriter, r *http.Request, match matchedEndpoint) {

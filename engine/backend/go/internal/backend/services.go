@@ -2,6 +2,7 @@ package backend
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
@@ -343,12 +344,15 @@ func (s engineServices) commandRun(w http.ResponseWriter, r *http.Request, regis
 		}
 		triggeredBy = value
 	}
-	record, err := recordCommandRun(s.handler.service.storageDir, registration.Name, name, triggeredBy)
-	if err != nil {
-		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Could not record command run"})
+	if err := s.handler.executeGoConsole(r.Context(), registration, name, triggeredBy); err != nil {
+		if errors.Is(err, errGoConsoleBodyUnavailable) {
+			writeJSON(w, http.StatusNotImplemented, map[string]string{"message": err.Error()})
+			return
+		}
+		writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
 		return
 	}
-	writeJSON(w, http.StatusCreated, map[string]any{"data": record, "emulated": true})
+	writeJSON(w, http.StatusCreated, map[string]string{"message": "Command executed"})
 }
 
 // notificationAction serves the notification_trigger capability for the

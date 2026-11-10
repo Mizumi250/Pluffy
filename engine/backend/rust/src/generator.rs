@@ -35,6 +35,8 @@ pub fn write_module(module_dir: &Path, payload: &Value) -> Result<bool, String> 
             }
         }
     }
+    handlers.extend(job_handlers(payload)?);
+    handlers.extend(console_handlers(payload)?);
     handlers.extend(event_listener_handlers(payload)?);
 
     let prelude = payload["rustPrelude"]
@@ -109,8 +111,78 @@ pub fn validate_payload_sources(payload: &Value) -> Result<(), String> {
             decode_body(body, &format!("handler {handler}"))?;
         }
     }
+    job_handlers(payload)?;
+    console_handlers(payload)?;
     event_listener_handlers(payload)?;
     Ok(())
+}
+
+fn console_handlers(payload: &Value) -> Result<BTreeMap<String, String>, String> {
+    let mut handlers = BTreeMap::new();
+    for (index, section) in payload["consoles"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .enumerate()
+    {
+        let Some((name, _)) = section.trim().split_once(':') else {
+            continue;
+        };
+        let name = name.trim();
+        let Some(encoded_body) = section
+            .lines()
+            .find_map(|line| line.trim().strip_prefix("body:").map(str::trim))
+        else {
+            continue;
+        };
+        let encoded_body = encoded_body.trim_matches(['\'', '"']);
+        if let Some(body) =
+            decode_body(encoded_body, &format!("console {name} in block {index}"))?
+        {
+            let key = format!("console:{name}");
+            if handlers
+                .insert(key, body.clone())
+                .is_some_and(|existing| existing != body)
+            {
+                return Err(format!("Rust console {name} has conflicting source bodies"));
+            }
+        }
+    }
+    Ok(handlers)
+}
+
+fn job_handlers(payload: &Value) -> Result<BTreeMap<String, String>, String> {
+    let mut handlers = BTreeMap::new();
+    for (index, section) in payload["jobs"]
+        .as_array()
+        .into_iter()
+        .flatten()
+        .filter_map(Value::as_str)
+        .enumerate()
+    {
+        let Some((name, _)) = section.trim().split_once(':') else {
+            continue;
+        };
+        let name = name.trim();
+        let Some(encoded_body) = section
+            .lines()
+            .find_map(|line| line.trim().strip_prefix("body:").map(str::trim))
+        else {
+            continue;
+        };
+        let encoded_body = encoded_body.trim_matches(['\'', '"']);
+        if let Some(body) = decode_body(encoded_body, &format!("job {name} in block {index}"))? {
+            let key = format!("job:{name}");
+            if handlers
+                .insert(key, body.clone())
+                .is_some_and(|existing| existing != body)
+            {
+                return Err(format!("Rust job {name} has conflicting source bodies"));
+            }
+        }
+    }
+    Ok(handlers)
 }
 
 fn event_listener_handlers(payload: &Value) -> Result<BTreeMap<String, String>, String> {
@@ -304,6 +376,52 @@ response.json(StatusCode::OK, json!({"message": "Listener completed"}))
         let source = fs::read_to_string(directory.path().join("generated/sample.rs")).unwrap();
         assert!(source.contains("\"listener:Listener\""), "{source}");
         assert!(source.contains("database.insert(\"event_log\""));
+    }
+
+    #[test]
+    fn generates_rust_job_handlers_from_tatemono_job_sources() {
+        let directory = tempfile::tempdir().unwrap();
+        let job_source = r#"
+database.insert("job_results", json!({"status": "completed"}))?;
+response.json(StatusCode::OK, json!({"message": "Job completed"}))
+"#;
+        let payload = json!({
+            "name": "sample",
+            "jobs": [format!(
+                "sample-job:\n  queue: default\n  body: '{}'",
+                STANDARD.encode(job_source)
+            )]
+        });
+
+        assert!(job_handlers(&payload).unwrap().contains_key("job:sample-job"));
+        assert!(write_module(directory.path(), &payload).unwrap());
+        let source = fs::read_to_string(directory.path().join("generated/sample.rs")).unwrap();
+        assert!(source.contains("\"job:sample-job\""), "{source}");
+        assert!(source.contains("database.insert(\"job_results\""));
+    }
+
+    #[test]
+    fn generates_rust_console_handlers_from_tatemono_console_sources() {
+        let directory = tempfile::tempdir().unwrap();
+        let console_source = r#"
+let record = database.insert("command_runs", json!({"command_name": "sample"}))?;
+response.json(StatusCode::CREATED, json!({"data": record}))
+"#;
+        let payload = json!({
+            "name": "sample",
+            "consoles": [format!(
+                "sample-command:\n  signature: sample:command\n  body: '{}'",
+                STANDARD.encode(console_source)
+            )]
+        });
+
+        assert!(console_handlers(&payload)
+            .unwrap()
+            .contains_key("console:sample-command"));
+        assert!(write_module(directory.path(), &payload).unwrap());
+        let source = fs::read_to_string(directory.path().join("generated/sample.rs")).unwrap();
+        assert!(source.contains("\"console:sample-command\""), "{source}");
+        assert!(source.contains("database.insert(\"command_runs\""));
     }
 
     #[test]

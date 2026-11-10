@@ -63,7 +63,17 @@ export function validateTatemono(filePath: string): ValidationResult {
         `or switch backend. This tatemono is inactive on ${backend}.`
       )
     }
-  } catch { /* variant check must never mask the real parse result */ }
+  } catch (e) {
+    errors.push(e instanceof Error ? e.message : String(e))
+  }
+
+  try {
+    if (resolveActiveBackend(filePath) === 'rust') {
+      errors.push(...validateRustModuleBlocks(fs.readFileSync(filePath, 'utf-8')))
+    }
+  } catch (e) {
+    errors.push(e instanceof Error ? e.message : String(e))
+  }
 
   if (parsed.desktopConfig) {
     const windowConfig = parsed.desktopConfig.window
@@ -130,12 +140,17 @@ export function validateTatemono(filePath: string): ValidationResult {
   }
 
   for (const db of parsed.databases) {
-    if (!/^[a-z][a-z0-9_]*s$/.test(db.table) && db.table !== 'users') {
+    if (!/^[a-z][a-z0-9_]*s$/.test(db.table) && db.table !== 'users' && !db.table.endsWith('_log')) {
       warnings.push(`Table "${db.table}" should be plural snake_case (e.g., "${db.table}s")`)
     }
 
     for (const [colName, col] of Object.entries(db.columns)) {
-      if (!VALID_COLUMN_TYPES.has(col.type)) {
+      if (col.type === 'enum') {
+        errors.push(
+          `Table "${db.table}", column "${colName}": type "enum" is unsupported; ` +
+          `use type "string" and check allowed values in the endpoint code.`
+        )
+      } else if (!VALID_COLUMN_TYPES.has(col.type)) {
         errors.push(`Table "${db.table}", column "${colName}": invalid type "${col.type}"`)
       }
 
@@ -250,7 +265,7 @@ export function validateTatemono(filePath: string): ValidationResult {
 
   // ── 6. Consistency ────────────────────────────
   for (const api of parsed.apis) {
-    const expectedTable = toSnakeCase(api.model) + 's'
+    const expectedTable = pluralizeTableName(toSnakeCase(api.model))
     const hasTable = parsed.databases.some(d => d.table === expectedTable || d.table === toSnakeCase(api.model))
     if (!hasTable && parsed.databases.length > 0) {
       warnings.push(
@@ -351,6 +366,33 @@ function detectCircularDeps(databases: ArkzenDatabase[]): string[] {
 
 function toSnakeCase(str: string): string {
   return str.replace(/(?<!^)([A-Z])/g, '_$1').toLowerCase()
+}
+
+function pluralizeTableName(name: string): string {
+  if (/[^aeiou]y$/i.test(name)) return `${name.slice(0, -1)}ies`
+  if (/(s|x|z|ch|sh)$/i.test(name)) return `${name}es`
+  return `${name}s`
+}
+
+function validateRustModuleBlocks(source: string): string[] {
+  const normalized = source.replace(/\r\n?/g, '\n')
+  const startMarker = '/* @arkzen:module:rs\n*/'
+  const endMarker = '/* @arkzen:module:rs:end */'
+  const startCount = normalized.split(startMarker).length - 1
+  const endCount = normalized.split(endMarker).length - 1
+
+  if (startCount > 1) return ['@arkzen:module:rs may appear at most once per Tatemono']
+  if (startCount === 0) {
+    return endCount ? ['@arkzen:module:rs has an end marker but no opening marker'] : []
+  }
+  if (endCount === 0) return ['@arkzen:module:rs is missing its matching :end marker']
+  if (endCount > 1) return ['@arkzen:module:rs has more than one :end marker']
+
+  const start = normalized.indexOf(startMarker)
+  const bodyStart = start + startMarker.length
+  const end = normalized.indexOf(endMarker, bodyStart)
+  if (end < 0) return ['@arkzen:module:rs end marker must follow its opening marker']
+  return []
 }
 
 function validateNativePageLayouts(

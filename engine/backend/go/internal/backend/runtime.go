@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"context"
 	"crypto/sha256"
 	"database/sql"
 	"encoding/base64"
@@ -8,6 +9,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httptest"
 	"path"
 	"reflect"
 	"regexp"
@@ -74,6 +76,8 @@ type moduleRuntime struct {
 	entries    map[string]*runtimeEntry
 	entriesMu  sync.Mutex
 }
+
+type interpretedPayloadContextKey struct{}
 
 // ------------------------------------------------------------ service side
 
@@ -145,6 +149,23 @@ func registrationBodies(registration Registration) map[string]string {
 		for operation, endpoint := range api.Endpoints {
 			if strings.TrimSpace(endpoint.Body) != "" {
 				operations["op:"+operation] = decodeInterpretedBody(endpoint.Body)
+			}
+		}
+	}
+	for _, section := range parseRealtimeSections(registration.Jobs) {
+		if body := strings.TrimSpace(section.values["body"]); body != "" {
+			operations["job:"+section.name] = decodeInterpretedBody(body)
+		}
+	}
+	for _, section := range parseRealtimeSections(registration.Consoles) {
+		if body := strings.TrimSpace(section.values["body"]); body != "" {
+			operations["console:"+section.name] = decodeInterpretedBody(body)
+		}
+	}
+	for _, event := range eventDefinitions(registration) {
+		for _, listener := range event.listeners {
+			if body := strings.TrimSpace(listener.body); body != "" {
+				operations["listener:"+event.name+":"+listener.name] = listener.body
 			}
 		}
 	}
@@ -719,8 +740,8 @@ func runtimePostgresKind(dataType string) string {
 // preludeStdlibPackages are always bound into a module's yaegi universe
 // because the generated prelude/wrapper scaffolding references fmt, strings,
 // context, time and encoding/json regardless of the user handler body's own
-// imports.
-var preludeStdlibPackages = []string{"fmt", "strings", "context", "time", "encoding/json", "reflect"}
+// imports. errors is also available to error-returning job bodies.
+var preludeStdlibPackages = []string{"fmt", "strings", "context", "time", "encoding/json", "reflect", "errors"}
 
 // eventsFacadeIdentifier finds <Name>Events receivers used in handler bodies.
 var eventsFacadeIdentifier = regexp.MustCompile(`\b([A-Z][A-Za-z0-9]*Events)\b`)
@@ -1249,6 +1270,95 @@ func (m *moduleRuntime) Execute(w http.ResponseWriter, r *http.Request, spec mod
 	return interpretedRun{Status: 200, Bytes: payload}
 }
 
+func (m *moduleRuntime) ExecuteJob(ctx context.Context, name string, data map[string]any, module Registration) (runErr error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("[error] %s: interpreted job %q panicked: %v\n%s", module.Name, name, recovered, debug.Stack())
+			runErr = fmt.Errorf("job %q panicked: %v", name, recovered)
+		}
+	}()
+	operation := "job:" + name
+	spec := modulespec.EndpointSpec{Operation: operation, Body: m.operations[operation]}
+	ctx = context.WithValue(ctx, interpretedPayloadContextKey{}, data)
+	request := httptest.NewRequest(http.MethodPost, "/", nil).WithContext(ctx)
+	result, err, problem := m.run(httptest.NewRecorder(), request, spec, module)
+	if problem != "" {
+		return fmt.Errorf("job %q: %s", name, problem)
+	}
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		return nil
+	}
+	if jobErr, ok := result.(error); ok {
+		return jobErr
+	}
+	return fmt.Errorf("job %q returned unsupported result %T", name, result)
+}
+
+func (m *moduleRuntime) ExecuteConsole(ctx context.Context, name string, data map[string]any, module Registration) (runErr error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("[error] %s: interpreted console %q panicked: %v\n%s", module.Name, name, recovered, debug.Stack())
+			runErr = fmt.Errorf("console %q panicked: %v", name, recovered)
+		}
+	}()
+	operation := "console:" + name
+	spec := modulespec.EndpointSpec{Operation: operation, Body: m.operations[operation]}
+	ctx = context.WithValue(ctx, interpretedPayloadContextKey{}, data)
+	request := httptest.NewRequest(http.MethodPost, "/", nil).WithContext(ctx)
+	result, err, problem := m.run(httptest.NewRecorder(), request, spec, module)
+	if problem != "" {
+		return fmt.Errorf("console %q: %s", name, problem)
+	}
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		return nil
+	}
+	if consoleErr, ok := result.(error); ok {
+		return consoleErr
+	}
+	return fmt.Errorf("console %q returned unsupported result %T", name, result)
+}
+
+func (m *moduleRuntime) ExecuteListener(ctx context.Context, eventName, name string, data map[string]any, module Registration) (runErr error) {
+	defer func() {
+		if recovered := recover(); recovered != nil {
+			log.Printf("[error] %s: interpreted listener %q panicked: %v\n%s", module.Name, name, recovered, debug.Stack())
+			runErr = fmt.Errorf("listener %q panicked: %v", name, recovered)
+		}
+	}()
+	operation := "listener:" + eventName + ":" + name
+	spec := modulespec.EndpointSpec{Operation: operation, Body: m.operations[operation]}
+	ctx = context.WithValue(ctx, interpretedPayloadContextKey{}, data)
+	request := httptest.NewRequest(http.MethodPost, "/", nil).WithContext(ctx)
+	result, err, problem := m.run(httptest.NewRecorder(), request, spec, module)
+	if problem != "" {
+		return fmt.Errorf("listener %q: %s", name, problem)
+	}
+	if err != nil {
+		return err
+	}
+	if result == nil {
+		return nil
+	}
+	if listenerErr, ok := result.(error); ok {
+		return listenerErr
+	}
+	return fmt.Errorf("listener %q returned unsupported result %T", name, result)
+}
+
+func interpretedPayload(ctx context.Context) map[string]any {
+	data, _ := ctx.Value(interpretedPayloadContextKey{}).(map[string]any)
+	if data == nil {
+		return map[string]any{}
+	}
+	return data
+}
+
 func (m *moduleRuntime) run(w http.ResponseWriter, r *http.Request, spec modulespec.EndpointSpec, module Registration) (any, error, string) {
 	if strings.TrimSpace(spec.Body) == "" {
 		return nil, nil, "handler body is empty"
@@ -1277,6 +1387,7 @@ func (m *moduleRuntime) run(w http.ResponseWriter, r *http.Request, spec modules
 		R:        r,
 		Context:  r.Context(),
 		Database: rt.NewDatabase(m.database, m.module, m.postgres),
+		Data:     interpretedPayload(r.Context()),
 		Params:   interpretParams(r, spec),
 		Services: &m.services,
 	}
@@ -1346,8 +1457,12 @@ func (m *moduleRuntime) runOperation(session *rt.Session, sessionID int64, op st
 }
 
 func (m *moduleRuntime) entryFor(operation string, module Registration) (*runtimeEntry, string) {
-	key := "op:" + operation
+	key := operation
 	body, exists := m.operations[key]
+	if !exists {
+		key = "op:" + operation
+		body, exists = m.operations[key]
+	}
 	if !exists {
 		key = "route:" + operation
 		body, exists = m.operations[key]
@@ -1368,7 +1483,10 @@ func (m *moduleRuntime) entryFor(operation string, module Registration) (*runtim
 }
 
 func (m *moduleRuntime) compileEntry(entry *runtimeEntry, spec modulespec.EndpointSpec, module Registration) error {
-	body, exists := m.operations["op:"+spec.Operation]
+	body, exists := m.operations[spec.Operation]
+	if !exists {
+		body, exists = m.operations["op:"+spec.Operation]
+	}
 	if !exists {
 		body = m.operations["route:"+spec.Operation]
 	}
@@ -1433,6 +1551,12 @@ func (m *moduleRuntime) wrapperSource(operation string, module Registration, rew
 	builder.WriteString("\tdatabase := func() *rt.Database { return __s.Database }()\n")
 	builder.WriteString("\tparams := func() rt.Params { return __s.Params }()\n")
 	builder.WriteString("\tctx := func() context.Context { return __s.Context }()\n")
+	if strings.HasPrefix(operation, "job:") || strings.HasPrefix(operation, "console:") {
+		builder.WriteString("\tdata := func() map[string]any { return __s.Data }()\n")
+	}
+	if strings.HasPrefix(operation, "listener:") {
+		builder.WriteString("\tevent := struct { Data map[string]any }{Data: __s.Data}\n")
+	}
 	helpers := map[string]bool{}
 	for key := range m.operations {
 		_, name, found := strings.Cut(key, ":")
@@ -1466,9 +1590,15 @@ func (m *moduleRuntime) wrapperSource(operation string, module Registration, rew
 		builder.WriteString("\t\tif res, ok := v.(*rt.Result); ok && res != nil && res.Status >= 400 {\n\t\t\treturn fmt.Errorf(\"handler " + name + " failed with status %d\", res.Status)\n\t\t}\n")
 		builder.WriteString("\t\treturn nil\n\t}\n")
 	}
-	builder.WriteString("\treturn func() any {\n")
-	builder.WriteString(rewritten)
-	builder.WriteString("\n\t\treturn nil\n\t}()\n}\n")
+	if strings.HasPrefix(operation, "job:") || strings.HasPrefix(operation, "listener:") {
+		builder.WriteString("\treturn func() any {\n\t\treturn func() error {\n")
+		builder.WriteString(rewritten)
+		builder.WriteString("\n\t\t\treturn nil\n\t\t}()\n\t}()\n}\n")
+	} else {
+		builder.WriteString("\treturn func() any {\n")
+		builder.WriteString(rewritten)
+		builder.WriteString("\n\t\treturn nil\n\t}()\n}\n")
+	}
 	return builder.String()
 }
 

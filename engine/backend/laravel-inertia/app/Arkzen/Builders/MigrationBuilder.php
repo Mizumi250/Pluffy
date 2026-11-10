@@ -29,6 +29,7 @@ class MigrationBuilder
     private static array $typeMap = [
         'integer'    => 'integer',
         'bigInteger' => 'bigInteger',
+        'foreignId' => 'foreignId',
         'string'     => 'string',
         'text'       => 'text',
         'longText'   => 'longText',
@@ -163,7 +164,10 @@ return new class extends Migration
     private static function generateColumn(string $name, array $config, string $slug): string
     {
         $type   = $config['type'] ?? 'string';
-        $method = self::$typeMap[$type] ?? 'string';
+        if (!array_key_exists($type, self::$typeMap)) {
+            throw new \InvalidArgumentException("[Arkzen Migration] Unsupported column type '{$type}' for '{$name}'.");
+        }
+        $method = self::$typeMap[$type];
 
         if (!empty($config['primary']) && !empty($config['autoIncrement'])) {
             return "\$table->id();";
@@ -239,6 +243,25 @@ return new class extends Migration
     private static function buildUpdateMigration(array $module, string $tableName, string $dbConn, string $name): void
     {
         $db = $module['database'];
+
+        $actualColumns = Schema::connection($dbConn)->getColumnListing($tableName);
+        $expectedColumns = array_keys($db['columns']);
+        if (!array_filter($db['columns'], fn($column) => !empty($column['primary']))) {
+            $expectedColumns[] = 'id';
+        }
+        if (($db['timestamps'] ?? true) !== false) {
+            $expectedColumns = array_merge($expectedColumns, ['created_at', 'updated_at']);
+        }
+        if (!empty($db['softDeletes'])) {
+            $expectedColumns[] = 'deleted_at';
+        }
+        $undeclaredColumns = array_values(array_diff($actualColumns, $expectedColumns));
+        if ($undeclaredColumns) {
+            Log::warning(
+                "[Arkzen Migration] Table '{$tableName}' has columns absent from the DSL; retaining them to avoid data loss: " .
+                implode(', ', $undeclaredColumns)
+            );
+        }
 
         $newColumns = [];
         foreach ($db['columns'] as $colName => $config) {

@@ -933,15 +933,37 @@ const DashboardScreen = () => {
 
 /* @arkzen:jobs:rs:process-data
 */
-// Rust emulates the named job with a two-second delay and records its result.
+let started = std::time::Instant::now();
+std::thread::sleep(std::time::Duration::from_secs(2));
+let now = utc_now_rfc3339();
+database.insert("job_results", json!({
+    "job_name": "process-data",
+    "status": "completed",
+    "result": format!("Data processed successfully in {}ms", started.elapsed().as_millis()),
+    "processed_at": now,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::OK, json!({"message": "Job completed"}))
 /* @arkzen:jobs:rs:process-data:end */
 
 /* @arkzen:jobs:rs:heavy-computation
 */
-// Rust emulates the named job with a five-second delay and records its result.
+let started = std::time::Instant::now();
+std::thread::sleep(std::time::Duration::from_secs(5));
+let now = utc_now_rfc3339();
+database.insert("job_results", json!({
+    "job_name": "heavy-computation",
+    "status": "completed",
+    "result": format!("Heavy computation completed in {}ms", started.elapsed().as_millis()),
+    "processed_at": now,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::OK, json!({"message": "Job completed"}))
 /* @arkzen:jobs:rs:heavy-computation:end */
 
 /* @arkzen:jobs:rs:always-fails
 */
-// Rust emulates the failed job handler and records the failure in failed_jobs.
+Err(HandlerError("This job always fails".to_owned()))
 /* @arkzen:jobs:rs:always-fails:end */

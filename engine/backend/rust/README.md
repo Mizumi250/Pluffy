@@ -151,24 +151,30 @@ available when the module uses auth, and `database.query_params` and
 A Tatemono may provide one module-level Rust source block using
 `/* @arkzen:module:rs` followed by `*/`, then Rust source, and the closing
 `/* @arkzen:module:rs:end */` marker. The block is compiled into that module
-alongside its endpoint and custom-route bodies. This supports shared helpers
-while keeping all module-specific code in the Tatemono source of truth.
+alongside endpoint, custom-route, listener, and job bodies. This supports
+shared helpers while keeping module-specific code in the Tatemono source of
+truth.
 
 Comment-only placeholder bodies are not generated and remain unsupported
 (`501`). Event-fire endpoints dispatch their declared listeners in order using
 generated `@arkzen:listener:rs` bodies and return `202` after they complete.
-The `job-test` module has the same named job emulations as the Go backend;
-these run in-process and record results plus terminal failures. Durable queues,
-general Rust job DSL execution, middleware snippets, and policies are not
-implemented. The `roles-test`, `notification-test`, and `scheduler-test`
-endpoints have named emulations matching Go: role changes and audit records,
-per-user database/mail/broadcast notifications, and manually run console
-commands recorded in `command_runs`. These named emulations do not execute
-arbitrary endpoint or console source bodies, and Rust does not yet run scheduled
-console commands from cron metadata. Generic CRUD, auth, and mail-send behavior
-are implemented by the engine. Other module-specific custom behavior must be
-authored in that Tatemono's `:rs` body or module source block; the engine does
-not provide named per-Tatemono substitutes.
+Executable `@arkzen:jobs:rs` bodies are generated and dispatched with their
+payload available at `request.body()["data"]`; they can use the generated
+`database` and `response` helpers. Comment-only job bodies retain the
+`job-test` named emulation for compatibility. Job dispatch runs in-process,
+and pending database-queue rows are retried when the backend starts. This is
+at-least-once execution: a process stop after a job's effects but before its
+queue row is removed can repeat those effects. A separate durable worker,
+middleware snippets, and policies are not implemented. The
+`roles-test` and `notification-test` endpoints have named emulations matching
+Go. `command_run` executes the declared `@arkzen:console:rs` body, and the
+background scheduler runs executable console bodies whose five-field numeric
+cron schedule matches the current UTC minute. It supports wildcards, lists,
+ranges, and step values; scheduled runs are process-local and missed runs are
+not replayed after downtime. Generic CRUD, auth, and mail-send behavior are
+implemented by the engine. Other module-specific
+custom behavior must be authored in that Tatemono's `:rs` body or module source
+block; the engine does not provide named per-Tatemono substitutes.
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears and reseeds that table, including
 resetting its SQLite auto-increment sequence; tables without seed rows are

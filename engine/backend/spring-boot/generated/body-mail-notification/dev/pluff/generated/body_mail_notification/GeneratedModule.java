@@ -38,7 +38,7 @@ public final class GeneratedModule {
       };
       Model user = request.authUser();
       String to = String.valueOf(validated.get("to"));
-      String mailClass = studly(mailKey) + "Mail";
+      String mailClass = classNameFor(mailKey, "Mail");
       try {
           Mail.send(to, template, mailData);
           SendLog log = SendLog.create(mapOf(
@@ -70,7 +70,7 @@ public final class GeneratedModule {
       ));
       Model user = request.authUser();
       String notificationKey = String.valueOf(validated.get("notification"));
-      String notificationClass = studly(notificationKey) + "Notification";
+      String notificationClass = classNameFor(notificationKey, "Notification");
       Object rawMessage = validated.get("message");
       String message = rawMessage == null
           ? ("action-required".equals(notificationKey)

@@ -231,6 +231,7 @@ class {$className} extends Notification implements ShouldQueue
 
     public static function toClassName(string $name): string
     {
-        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name))) . 'Notification';
+        $base = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name)));
+        return strlen($base) > 12 && substr($base, -12) === 'Notification' ? $base : $base . 'Notification';
     }
 }

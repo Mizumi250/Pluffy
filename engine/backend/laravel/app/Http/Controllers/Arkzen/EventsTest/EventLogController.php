@@ -38,15 +38,17 @@ class EventLogController extends Controller
         {
             $validated = $request->validate([
                 'event' => 'required|string',
-                'payload' => 'sometimes|array'
+                'payload' => 'nullable|array'
             ]);
     
-            $eventClass = match($validated['event']) {
+            $eventClasses = [
                 'user-signed-up' => \App\Events\Arkzen\EventsTest\UserSignedUp::class,
                 'order-placed' => \App\Events\Arkzen\EventsTest\OrderPlaced::class,
                 'data-exported' => \App\Events\Arkzen\EventsTest\DataExported::class,
-                default => throw new \Exception('Unknown event: ' . $validated['event']),
             };
+            $eventName = str_replace('_', '-', $validated['event']);
+            $eventClass = $eventClasses[$eventName] ?? null;
+            if (!$eventClass) return response()->json(['message' => 'Unknown event: ' . $eventName], 400);
     
             event(new $eventClass($validated['payload'] ?? []));
     

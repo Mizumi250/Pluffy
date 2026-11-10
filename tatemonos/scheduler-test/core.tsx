@@ -505,12 +505,16 @@ description: Deletes temporary files older than 24h
 schedule: '0 * * * *'
 */
 started := time.Now()
+triggeredBy := "manual"
+if value, ok := data["triggered_by"].(string); ok && value != "" {
+    triggeredBy = value
+}
 if _, err := CommandRun.Create(ctx, map[string]any{
     "command_name": "cleanup-temp",
     "signature": "scheduler-test:cleanup-temp",
     "exit_code": 0,
     "output": "Cleanup completed successfully.",
-    "triggered_by": "schedule",
+    "triggered_by": triggeredBy,
     "duration_ms": time.Since(started).Milliseconds(),
 }); err != nil {
     return err
@@ -525,12 +529,16 @@ description: Generates a daily activity report
 schedule: '0 8 * * *'
 */
 started := time.Now()
+triggeredBy := "manual"
+if value, ok := data["triggered_by"].(string); ok && value != "" {
+    triggeredBy = value
+}
 if _, err := CommandRun.Create(ctx, map[string]any{
     "command_name": "generate-report",
     "signature": "scheduler-test:generate-report",
     "exit_code": 0,
     "output": "Daily report generated successfully.",
-    "triggered_by": "schedule",
+    "triggered_by": triggeredBy,
     "duration_ms": time.Since(started).Milliseconds(),
 }); err != nil {
     return err
@@ -545,12 +553,16 @@ description: Pings all services and records health status
 schedule: '0-59/5 * * * *'
 */
 started := time.Now()
+triggeredBy := "manual"
+if value, ok := data["triggered_by"].(string); ok && value != "" {
+    triggeredBy = value
+}
 if _, err := CommandRun.Create(ctx, map[string]any{
     "command_name": "ping-health",
     "signature": "scheduler-test:ping-health",
     "exit_code": 0,
     "output": "All services healthy.",
-    "triggered_by": "schedule",
+    "triggered_by": triggeredBy,
     "duration_ms": time.Since(started).Milliseconds(),
 }); err != nil {
     return err
@@ -565,12 +577,16 @@ description: Syncs data from external source
 schedule: '0-59/15 * * * *'
 */
 started := time.Now()
+triggeredBy := "manual"
+if value, ok := data["triggered_by"].(string); ok && value != "" {
+    triggeredBy = value
+}
 if _, err := CommandRun.Create(ctx, map[string]any{
     "command_name": "sync-data",
     "signature": "scheduler-test:sync-data",
     "exit_code": 0,
     "output": "Data synced successfully.",
-    "triggered_by": "schedule",
+    "triggered_by": triggeredBy,
     "duration_ms": time.Since(started).Milliseconds(),
 }); err != nil {
     return err
@@ -1157,24 +1173,72 @@ const DashboardLynxPage = () => {
 
 /* @arkzen:console:rs:cleanup-temp
 */
-// Executed through the Rust scheduler-test command emulation.
-// The Rust engine does not execute this body or run cron schedules automatically.
+let started = std::time::Instant::now();
+let now = utc_now_rfc3339();
+let triggered_by = request.body().get("triggered_by").and_then(Value::as_str).unwrap_or("manual");
+let record = database.insert("command_runs", json!({
+    "command_name": "cleanup-temp",
+    "signature": "scheduler-test:cleanup-temp",
+    "exit_code": 0,
+    "output": "Cleanup completed successfully.",
+    "triggered_by": triggered_by,
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, json!({"data": record, "emulated": false}))
 /* @arkzen:console:rs:cleanup-temp:end */
 
 /* @arkzen:console:rs:generate-report
 */
-// Executed through the Rust scheduler-test command emulation.
-// The Rust engine does not execute this body or run cron schedules automatically.
+let started = std::time::Instant::now();
+let now = utc_now_rfc3339();
+let triggered_by = request.body().get("triggered_by").and_then(Value::as_str).unwrap_or("manual");
+let record = database.insert("command_runs", json!({
+    "command_name": "generate-report",
+    "signature": "scheduler-test:generate-report",
+    "exit_code": 0,
+    "output": "Daily report generated successfully.",
+    "triggered_by": triggered_by,
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, json!({"data": record, "emulated": false}))
 /* @arkzen:console:rs:generate-report:end */
 
 /* @arkzen:console:rs:ping-health
 */
-// Executed through the Rust scheduler-test command emulation.
-// The Rust engine does not execute this body or run cron schedules automatically.
+let started = std::time::Instant::now();
+let now = utc_now_rfc3339();
+let triggered_by = request.body().get("triggered_by").and_then(Value::as_str).unwrap_or("manual");
+let record = database.insert("command_runs", json!({
+    "command_name": "ping-health",
+    "signature": "scheduler-test:ping-health",
+    "exit_code": 0,
+    "output": "All services healthy.",
+    "triggered_by": triggered_by,
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, json!({"data": record, "emulated": false}))
 /* @arkzen:console:rs:ping-health:end */
 
 /* @arkzen:console:rs:sync-data
 */
-// Executed through the Rust scheduler-test command emulation.
-// The Rust engine does not execute this body or run cron schedules automatically.
+let started = std::time::Instant::now();
+let now = utc_now_rfc3339();
+let triggered_by = request.body().get("triggered_by").and_then(Value::as_str).unwrap_or("manual");
+let record = database.insert("command_runs", json!({
+    "command_name": "sync-data",
+    "signature": "scheduler-test:sync-data",
+    "exit_code": 0,
+    "output": "Data synced successfully.",
+    "triggered_by": triggered_by,
+    "duration_ms": started.elapsed().as_millis() as i64,
+    "created_at": now,
+    "updated_at": now
+}))?;
+response.json(StatusCode::CREATED, json!({"data": record, "emulated": false}))
 /* @arkzen:console:rs:sync-data:end */

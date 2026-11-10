@@ -1,7 +1,7 @@
 /* @arkzen:meta
 name: events-test
 version: 1.0.0
-description: Tests event and listener dispatch. Fire events manually, inspect each listener execution.
+description: Tests event and listener dispatch. Fire events manually, inspect each listener execution. All backends use singular @arkzen:listener blocks with method bodies.
 auth: false
 */
 
@@ -89,165 +89,45 @@ listeners: [LogExportActivity, CleanupTempFiles]
 */
 /* @arkzen:events:data-exported:end */
 
-/* @arkzen:listeners:SendWelcomeEmail */
-class SendWelcomeEmail implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
+/* @arkzen:listener:php:SendWelcomeEmail
+*/
+EventLog::create(['event_name' => 'UserSignedUp', 'listener_name' => 'SendWelcomeEmail', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:SendWelcomeEmail:end */
 
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'UserSignedUp',
-      'listener_name' => 'SendWelcomeEmail',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:SendWelcomeEmail:end */
+/* @arkzen:listener:php:UpdateUserStats
+*/
+EventLog::create(['event_name' => 'UserSignedUp', 'listener_name' => 'UpdateUserStats', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:UpdateUserStats:end */
 
-/* @arkzen:listeners:UpdateUserStats */
-class UpdateUserStats implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
+/* @arkzen:listener:php:NotifyAdmins
+*/
+EventLog::create(['event_name' => 'UserSignedUp', 'listener_name' => 'NotifyAdmins', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:NotifyAdmins:end */
 
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'UserSignedUp',
-      'listener_name' => 'UpdateUserStats',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:UpdateUserStats:end */
+/* @arkzen:listener:php:ProcessPayment
+*/
+EventLog::create(['event_name' => 'OrderPlaced', 'listener_name' => 'ProcessPayment', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:ProcessPayment:end */
 
-/* @arkzen:listeners:NotifyAdmins */
-class NotifyAdmins implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
+/* @arkzen:listener:php:UpdateInventory
+*/
+EventLog::create(['event_name' => 'OrderPlaced', 'listener_name' => 'UpdateInventory', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:UpdateInventory:end */
 
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'UserSignedUp',
-      'listener_name' => 'NotifyAdmins',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:NotifyAdmins:end */
+/* @arkzen:listener:php:SendOrderConfirmation
+*/
+EventLog::create(['event_name' => 'OrderPlaced', 'listener_name' => 'SendOrderConfirmation', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:SendOrderConfirmation:end */
 
-/* @arkzen:listeners:ProcessPayment */
-class ProcessPayment implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
+/* @arkzen:listener:php:LogExportActivity
+*/
+EventLog::create(['event_name' => 'DataExported', 'listener_name' => 'LogExportActivity', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:LogExportActivity:end */
 
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'OrderPlaced',
-      'listener_name' => 'ProcessPayment',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:ProcessPayment:end */
-
-/* @arkzen:listeners:UpdateInventory */
-class UpdateInventory implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
-
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'OrderPlaced',
-      'listener_name' => 'UpdateInventory',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:UpdateInventory:end */
-
-/* @arkzen:listeners:SendOrderConfirmation */
-class SendOrderConfirmation implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
-
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'OrderPlaced',
-      'listener_name' => 'SendOrderConfirmation',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:SendOrderConfirmation:end */
-
-/* @arkzen:listeners:LogExportActivity */
-class LogExportActivity implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
-
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'DataExported',
-      'listener_name' => 'LogExportActivity',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:LogExportActivity:end */
-
-/* @arkzen:listeners:CleanupTempFiles */
-class CleanupTempFiles implements ShouldQueue {
-  use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
-  public $timeout = 30;
-
-  public function handle($event) {
-    $start = microtime(true);
-    \DB::table('event_log')->insert([
-      'event_name'    => 'DataExported',
-      'listener_name' => 'CleanupTempFiles',
-      'status'        => 'completed',
-      'payload'       => json_encode($event->payload ?? []),
-      'duration_ms'   => intval((microtime(true) - $start) * 1000),
-      'created_at'    => now(),
-      'updated_at'    => now(),
-    ]);
-  }
-}
-/* @arkzen:listeners:CleanupTempFiles:end */
+/* @arkzen:listener:php:CleanupTempFiles
+*/
+EventLog::create(['event_name' => 'DataExported', 'listener_name' => 'CleanupTempFiles', 'status' => 'completed', 'payload' => json_encode($event->data)]);
+/* @arkzen:listener:php:CleanupTempFiles:end */
 
 /* @arkzen:listener:py:SendWelcomeEmail
 */
@@ -585,26 +465,26 @@ await ScriptDatabase.ExecuteAsync(
     Context.RequestAborted);
 /* @arkzen:listener:cs:CleanupTempFiles:end */
 
-/* @arkzen:endpoint:index */
+/* @arkzen:endpoint:php:index */
 public function index(Request $request): JsonResponse
 {
     $perPage = $request->get('per_page', 100);
     $results = EventLog::query()->latest()->paginate($perPage);
     return response()->json($results);
 }
-/* @arkzen:endpoint:index:end */
+/* @arkzen:endpoint:php:index:end */
 
 /* @arkzen:endpoint:ts:index */
 return response.json({ ok: true, endpoint: 'index', input: request.all() })
 /* @arkzen:endpoint:ts:index:end */
 
-/* @arkzen:endpoint:clearLog */
+/* @arkzen:endpoint:php:clearLog */
 public function clearLog(Request $request): JsonResponse
 {
     \DB::table('event_log')->truncate();
     return response()->json(['message' => 'Log cleared']);
 }
-/* @arkzen:endpoint:clearLog:end */
+/* @arkzen:endpoint:php:clearLog:end */
 
 /* @arkzen:endpoint:ts:clearLog */
 return response.json({ ok: true, endpoint: 'clearLog', input: request.all() })

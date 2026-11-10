@@ -41,10 +41,9 @@ class CommandRunController extends Controller
             'triggered_by' => 'sometimes|string'
         ]);
 
-        $commandName = $validated['command'];
+        $commandName = str_replace('_', '-', $validated['command']);
         $triggeredBy = $validated['triggered_by'] ?? 'manual';
 
-        // Map command name to signature (extracted from tatemono)
         $signatures = [
             'cleanup-temp' => 'scheduler-test:cleanup-temp',
             'generate-report' => 'scheduler-test:generate-report',

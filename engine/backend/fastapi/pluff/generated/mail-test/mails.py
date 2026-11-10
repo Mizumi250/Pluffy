@@ -2,7 +2,7 @@
 from pluff.runtime import *
 
 
-class WelcomeMailMail(Mailable):
+class WelcomeMail(Mailable):
     subject = "Welcome to Arkzen"
     template = "<p>Welcome, {{ username }}!</p>\r\n<p>Thanks for joining {{ app_name }}.</p>"
 
@@ -26,4 +26,4 @@ class PasswordResetMail(Mailable):
         super().__init__({"reset_link": reset_link, "expires_in": expires_in})
 
 
-mail_classes = {"welcome-mail": WelcomeMailMail, "order-confirmation": OrderConfirmationMail, "password-reset": PasswordResetMail}
+mail_classes = {"welcome-mail": WelcomeMail, "order-confirmation": OrderConfirmationMail, "password-reset": PasswordResetMail}

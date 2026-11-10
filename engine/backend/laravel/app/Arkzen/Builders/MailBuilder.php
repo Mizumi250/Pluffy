@@ -186,6 +186,7 @@ class {$className} extends Mailable
 
     public static function toClassName(string $name): string
     {
-        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name))) . 'Mail';
+        $base = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name)));
+        return strlen($base) > 4 && substr($base, -4) === 'Mail' ? $base : $base . 'Mail';
     }
 }

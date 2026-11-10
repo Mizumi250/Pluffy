@@ -136,6 +136,7 @@ class {$className} implements ShouldQueue
 
     public static function toClassName(string $name): string
     {
-        return str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name))) . 'Job';
+        $base = str_replace(' ', '', ucwords(str_replace(['-', '_'], ' ', $name)));
+        return strlen($base) > 3 && substr($base, -3) === 'Job' ? $base : $base . 'Job';
     }
 }

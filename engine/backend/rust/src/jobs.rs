@@ -7,6 +7,17 @@ struct JobDefinition {
     name: String,
     queue: String,
     tries: u32,
+    executable: bool,
+}
+
+struct StoredJob {
+    id: i64,
+    name: String,
+    queue: String,
+    payload: String,
+    tries: u32,
+    executable: bool,
+    data: Value,
 }
 
 pub fn dispatch(
@@ -26,14 +37,21 @@ pub fn dispatch(
     let Some(definition) = find_job(module, name) else {
         return validation_error("The job field has an unsupported value.");
     };
-    if slug != "job-test" {
+    if !definition.executable && slug != "job-test" {
         return (
             StatusCode::NOT_IMPLEMENTED,
-            json!({"message": format!("Rust job handler emulation is unavailable for {slug}:{name}")}),
+            json!({"message": format!("Rust job {slug}:{name} has no executable :rs body")}),
         );
     }
 
-    let payload = json!({"module": slug, "name": name, "data": data});
+    let payload = json!({
+        "module": slug,
+        "name": name,
+        "data": data,
+        "result_table": declared_job_result_table(module),
+        "tries": definition.tries,
+        "executable": definition.executable
+    });
     let encoded_payload = match serde_json::to_string(&payload) {
         Ok(payload) => payload,
         Err(error) => {
@@ -73,30 +91,15 @@ pub fn dispatch(
             json!({"message": format!("Unable to enqueue job: {error}")}),
         );
     }
-    let job_id = match database.query_column_params(
-        r#"SELECT "id" FROM "jobs" WHERE "payload"=?1 ORDER BY "id" DESC LIMIT 1"#,
-        vec![json!(encoded_payload)],
-    ) {
-        Ok(rows) => rows.first().and_then(Value::as_i64),
-        Err(error) => {
-            return (
-                StatusCode::INTERNAL_SERVER_ERROR,
-                json!({"message": format!("Unable to retrieve queued job: {error}")}),
-            )
-        }
-    };
-    let Some(job_id) = job_id else {
-        return (
-            StatusCode::INTERNAL_SERVER_ERROR,
-            json!({"message": "Unable to retrieve queued job"}),
-        );
-    };
+    let job_id = database.last_insert_rowid();
 
     let database_dir = database_dir.to_path_buf();
     let slug = slug.to_owned();
     let name = definition.name;
     let queue = definition.queue;
     let tries = definition.tries;
+    let executable = definition.executable;
+    let data = payload["data"].clone();
     tokio::spawn(async move {
         run_job(
             database_dir,
@@ -106,10 +109,123 @@ pub fn dispatch(
             queue,
             encoded_payload,
             tries,
+            executable,
+            data,
         )
         .await;
     });
     (StatusCode::ACCEPTED, json!({"message": "Job dispatched"}))
+}
+
+pub async fn recover_pending_jobs(module: &Value, slug: &str, database_dir: &Path) {
+    let module = module.clone();
+    let slug = slug.to_owned();
+    let database_dir = database_dir.to_path_buf();
+    let load_dir = database_dir.clone();
+    let load_slug = slug.clone();
+    let rows = match tokio::task::spawn_blocking(move || {
+        load_pending_jobs(&module, &load_slug, &load_dir)
+    })
+    .await
+    {
+        Ok(Ok(rows)) => rows,
+        Ok(Err(error)) => {
+            tracing::error!("Could not recover queued jobs for {slug}: {error}");
+            return;
+        }
+        Err(error) => {
+            tracing::error!("Queued-job recovery worker failed for {slug}: {error}");
+            return;
+        }
+    };
+
+    for job in rows {
+        tracing::warn!("Recovering pending Rust job {}:{} after restart", slug, job.name);
+        tokio::spawn(run_job(
+            database_dir.clone(),
+            slug.clone(),
+            job.id,
+            job.name,
+            job.queue,
+            job.payload,
+            job.tries,
+            job.executable,
+            job.data,
+        ));
+    }
+}
+
+fn load_pending_jobs(
+    module: &Value,
+    slug: &str,
+    database_dir: &Path,
+) -> Result<Vec<StoredJob>, String> {
+    if !module["jobs"].as_array().is_some_and(|jobs| !jobs.is_empty()) {
+        return Ok(Vec::new());
+    }
+    let database = Database::open(database_dir, slug).map_err(|error| error.to_string())?;
+    ensure_queue_tables(&database)?;
+    let rows = database
+        .query_params(
+            r#"SELECT "id", "queue", "payload" FROM "jobs"
+               WHERE "available_at" <= ?1 ORDER BY "id""#,
+            vec![json!(unix_timestamp())],
+        )
+        .map_err(|error| error.to_string())?;
+    let mut jobs = Vec::new();
+    for row in rows {
+        let Some(id) = row["id"].as_i64() else {
+            tracing::error!("Skipping queued Rust job with an invalid id in module {slug}");
+            continue;
+        };
+        let Some(queue) = row["queue"].as_str() else {
+            tracing::error!("Skipping queued Rust job {id} with an invalid queue in module {slug}");
+            continue;
+        };
+        let Some(payload) = row["payload"].as_str() else {
+            tracing::error!("Skipping queued Rust job {id} with invalid payload in module {slug}");
+            continue;
+        };
+        let parsed: Value = match serde_json::from_str(payload) {
+            Ok(payload) => payload,
+            Err(error) => {
+                tracing::error!("Skipping queued Rust job {id} with malformed payload: {error}");
+                continue;
+            }
+        };
+        let Some(name) = parsed["name"].as_str() else {
+            tracing::error!("Skipping queued Rust job {id} without a job name");
+            continue;
+        };
+        let Some(definition) = find_job(module, name) else {
+            tracing::error!("Skipping queued Rust job {id} for undeclared job {slug}:{name}");
+            continue;
+        };
+        let data = match parsed.get("data") {
+            Some(Value::Object(data)) => Value::Object(data.clone()),
+            None | Some(Value::Null) => json!({}),
+            Some(_) => {
+                tracing::error!("Skipping queued Rust job {id} with non-object data");
+                continue;
+            }
+        };
+        jobs.push(StoredJob {
+            id,
+            name: name.to_owned(),
+            queue: queue.to_owned(),
+            payload: payload.to_owned(),
+            tries: parsed["tries"]
+                .as_u64()
+                .and_then(|tries| u32::try_from(tries).ok())
+                .filter(|tries| *tries > 0)
+                .unwrap_or(definition.tries),
+            executable: parsed["executable"]
+                .as_bool()
+                .unwrap_or(definition.executable),
+            data,
+        });
+    }
+    Ok(jobs)
 }
 
 fn find_job(module: &Value, requested_name: &str) -> Option<JobDefinition> {
@@ -139,13 +255,26 @@ fn find_job(module: &Value, requested_name: &str) -> Option<JobDefinition> {
             .and_then(|value| parse_scalar(value).parse().ok())
             .filter(|tries| *tries > 0)
             .unwrap_or(1);
+        let executable = field("body")
+            .is_some_and(crate::generator::has_executable_body);
         return Some(JobDefinition {
             name: name.to_owned(),
             queue,
             tries,
+            executable,
         });
     }
     None
+}
+
+fn declared_job_result_table(module: &Value) -> Option<&str> {
+    module["apis"]
+        .as_array()?
+        .iter()
+        .find(|api| api["model"] == "JobResult")?
+        .get("table")?
+        .as_str()
+        .filter(|table| !table.is_empty())
 }
 
 fn parse_scalar(value: &str) -> String {
@@ -205,76 +334,147 @@ async fn run_job(
     queue: String,
     payload: String,
     tries: u32,
+    executable: bool,
+    data: Value,
 ) {
-    let started = tokio::time::Instant::now();
-    let successful_job = match name.as_str() {
-        "process-data" => {
-            tokio::time::sleep(Duration::from_secs(2)).await;
-            true
-        }
-        "heavy-computation" => {
-            tokio::time::sleep(Duration::from_secs(5)).await;
-            true
-        }
-        "always-fails" => {
-            for attempt in 1..tries {
+    let outcome = if executable {
+        let mut outcome = Err("Job did not run".to_owned());
+        for attempt in 1..=tries {
+            let current_database_dir = database_dir.clone();
+            let current_slug = slug.clone();
+            let current_name = name.clone();
+            let current_data = data.clone();
+            match tokio::task::spawn_blocking(move || {
+                run_generated_job(
+                    &current_database_dir,
+                    &current_slug,
+                    &current_name,
+                    current_data,
+                )
+            })
+            .await
+            {
+                Ok(Ok(())) => {
+                    outcome = Ok("Job completed".to_owned());
+                    break;
+                }
+                Ok(Err(error)) => {
+                    outcome = Err(error);
+                }
+                Err(error) => {
+                    outcome = Err(format!("Rust job worker failed: {error}"));
+                }
+            }
+            if attempt < tries {
                 tracing::warn!("Job {name} failed on attempt {attempt}/{tries}; retrying");
-                tokio::time::sleep(Duration::from_secs(5)).await;
+                tokio::time::sleep(Duration::from_secs(1)).await;
             }
-            false
         }
-        _ => false,
-    };
-    let elapsed_ms = started.elapsed().as_millis();
-    let outcome = if successful_job {
-        Ok(format!(
-            "{} in {elapsed_ms}ms",
-            match name.as_str() {
-                "process-data" => "Data processed successfully",
-                _ => "Heavy computation completed",
-            }
-        ))
+        outcome
     } else {
-        Err("This job always fails".to_owned())
+        let started = tokio::time::Instant::now();
+        let successful_job = match name.as_str() {
+            "process-data" => {
+                tokio::time::sleep(Duration::from_secs(2)).await;
+                true
+            }
+            "heavy-computation" => {
+                tokio::time::sleep(Duration::from_secs(5)).await;
+                true
+            }
+            "always-fails" => {
+                for attempt in 1..tries {
+                    tracing::warn!("Job {name} failed on attempt {attempt}/{tries}; retrying");
+                    tokio::time::sleep(Duration::from_secs(5)).await;
+                }
+                false
+            }
+            _ => false,
+        };
+        let elapsed_ms = started.elapsed().as_millis();
+        if successful_job {
+            Ok(format!(
+                "{} in {elapsed_ms}ms",
+                match name.as_str() {
+                    "process-data" => "Data processed successfully",
+                    _ => "Heavy computation completed",
+                }
+            ))
+        } else {
+            Err("This job always fails".to_owned())
+        }
     };
     let logged_name = name.clone();
     let result = tokio::task::spawn_blocking(move || {
         let database = Database::open(&database_dir, &slug).map_err(|error| error.to_string())?;
-        if let Some(result) = outcome.as_ref().ok() {
-            let now = utc_now_rfc3339();
-            database
-                .insert(
-                    "job_results",
-                    json!({
-                        "job_name": name,
-                        "status": "completed",
-                        "result": result,
-                        "processed_at": now,
-                        "created_at": now,
-                        "updated_at": now
-                    }),
-                )
-                .map_err(|error| format!("Could not record completed job: {error}"))?;
+        if !executable {
+            if let Some(result) = outcome.as_ref().ok() {
+                let now = utc_now_rfc3339();
+                database
+                    .insert(
+                        "job_results",
+                        json!({
+                            "job_name": name,
+                            "status": "completed",
+                            "result": result,
+                            "processed_at": now,
+                            "created_at": now,
+                            "updated_at": now
+                        }),
+                    )
+                    .map_err(|error| format!("Could not record completed job: {error}"))?;
+            } else if let Some(error) = outcome.as_ref().err() {
+                let now = utc_now_rfc3339();
+                database
+                    .insert(
+                        "job_results",
+                        json!({
+                            "job_name": name,
+                            "status": "failed",
+                            "result": error,
+                            "processed_at": now,
+                            "created_at": now,
+                            "updated_at": now
+                        }),
+                    )
+                    .map_err(|error| format!("Could not record failed job: {error}"))?;
+                database
+                    .execute(
+                        r#"INSERT INTO "failed_jobs" ("queue","payload","exception","failed_at")
+                           VALUES (?1,?2,?3,?4)"#,
+                        vec![json!(queue), json!(payload), json!(error), json!(now)],
+                    )
+                    .map_err(|error| format!("Could not record failed queue job: {error}"))?;
+            }
         } else if let Some(error) = outcome.as_ref().err() {
-            let now = utc_now_rfc3339();
-            database
-                .insert(
-                    "job_results",
-                    json!({
-                        "job_name": name,
-                        "status": "failed",
-                        "result": error,
-                        "processed_at": now,
-                        "created_at": now,
-                        "updated_at": now
-                    }),
-                )
-                .map_err(|error| format!("Could not record failed job: {error}"))?;
+            let queued_payload: Value = serde_json::from_str(&payload)
+                .map_err(|error| format!("Could not read failed job payload: {error}"))?;
+            if let Some(table) = queued_payload["result_table"].as_str() {
+                let now = utc_now_rfc3339();
+                database
+                    .insert(
+                        table,
+                        json!({
+                            "job_name": name,
+                            "status": "failed",
+                            "result": error,
+                            "processed_at": now,
+                            "created_at": now,
+                            "updated_at": now
+                        }),
+                    )
+                    .map_err(|error| format!("Could not record failed job result: {error}"))?;
+            }
             database
                 .execute(
                     r#"INSERT INTO "failed_jobs" ("queue","payload","exception","failed_at")
                        VALUES (?1,?2,?3,?4)"#,
-                    vec![json!(queue), json!(payload), json!(error), json!(now)],
+                    vec![
+                        json!(queue),
+                        json!(payload),
+                        json!(error),
+                        json!(utc_now_rfc3339()),
+                    ],
                 )
                 .map_err(|error| format!("Could not record failed queue job: {error}"))?;
         }
@@ -288,6 +488,39 @@ async fn run_job(
         Ok(Ok(())) => {}
         Ok(Err(error)) => tracing::error!("Job {logged_name} could not be finalized: {error}"),
         Err(error) => tracing::error!("Job {logged_name} worker failed: {error}"),
+    }
+}
+
+fn run_generated_job(
+    database_dir: &std::path::Path,
+    slug: &str,
+    name: &str,
+    data: Value,
+) -> Result<(), String> {
+    let database = Database::open(database_dir, slug).map_err(|error| error.to_string())?;
+    let request = crate::generated_runtime::RequestContext::new(
+        json!({"data": data}),
+        String::new(),
+        String::new(),
+        None,
+        database_dir.to_path_buf(),
+    );
+    let handler = format!("job:{name}");
+    match crate::generated_registry::dispatch(
+        slug,
+        &handler,
+        request,
+        database,
+        crate::generated_runtime::ResponseContext,
+    ) {
+        Some(Ok(response)) if response.status.is_success() => Ok(()),
+        Some(Ok(response)) => Err(format!(
+            "Job {name} returned HTTP {}: {}",
+            response.status.as_u16(),
+            response.payload
+        )),
+        Some(Err(error)) => Err(error.to_string()),
+        None => Err(format!("No compiled Rust job handler for {slug}:{name}")),
     }
 }
 

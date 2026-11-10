@@ -30,7 +30,7 @@ public final class GeneratedModule {
       if (rawData instanceof Map<?, ?> values) values.forEach((key, value) -> data.put(String.valueOf(key), value));
       Model user = request.authUser();
       Mail.send(String.valueOf(validated.get("to")), mail, data);
-      MailLog sent = MailLog.create(mapOf("user_id", user == null ? null : user.get("id"), "to_email", validated.get("to"), "subject", mail.getOrDefault("subject", mailKey), "mail_class", studly(mailKey) + "Mail", "status", "sent"));
+      MailLog sent = MailLog.create(mapOf("user_id", user == null ? null : user.get("id"), "to_email", validated.get("to"), "subject", mail.getOrDefault("subject", mailKey), "mail_class", classNameFor(mailKey, "Mail"), "status", "sent"));
       return response.json(sent, 201);
     });
     return router;

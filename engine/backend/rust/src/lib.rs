@@ -25,10 +25,11 @@ use axum::{
 use serde::Serialize;
 use serde_json::{json, Value};
 use std::{
-    collections::BTreeMap,
+    collections::{BTreeMap, HashMap},
     env,
     path::{Path, PathBuf},
     sync::Arc,
+    time::{Duration, SystemTime, UNIX_EPOCH},
 };
 use tokio::sync::{Mutex, RwLock};
 use tower_http::cors::{Any, CorsLayer};
@@ -136,6 +137,85 @@ impl AppState {
             operations: Arc::new(Mutex::new(())),
             realtime,
         })
+    }
+
+    pub fn start_console_scheduler(&self) {
+        let state = self.clone();
+        tokio::spawn(async move {
+            let mut last_run = HashMap::<String, u64>::new();
+            let seconds = match SystemTime::now().duration_since(UNIX_EPOCH) {
+                Ok(seconds) => seconds.as_secs(),
+                Err(error) => {
+                    tracing::error!("Rust console scheduler could not read system time: {error}");
+                    return;
+                }
+            };
+            let first_tick =
+                tokio::time::Instant::now() + Duration::from_secs(60 - seconds % 60);
+            let mut ticker = tokio::time::interval_at(first_tick, Duration::from_secs(60));
+            ticker.set_missed_tick_behavior(tokio::time::MissedTickBehavior::Skip);
+
+            loop {
+                ticker.tick().await;
+                let now = match SystemTime::now().duration_since(UNIX_EPOCH) {
+                    Ok(now) => now.as_secs(),
+                    Err(error) => {
+                        tracing::error!("Rust console scheduler could not read system time: {error}");
+                        continue;
+                    }
+                };
+                let minute = now / 60;
+                let modules = state.modules.read().await.clone();
+                for (slug, module) in modules {
+                    for name in emulations::scheduled_console_names(&module, minute) {
+                        let key = format!("{slug}:{name}");
+                        if last_run.get(&key) == Some(&minute) {
+                            continue;
+                        }
+                        last_run.insert(key.clone(), minute);
+                        let database_dir = state.config.database_dir.clone();
+                        let module = module.clone();
+                        let slug = slug.clone();
+                        let task = tokio::task::spawn_blocking(move || {
+                            emulations::execute_console(
+                                &module,
+                                &slug,
+                                &database_dir,
+                                &name,
+                                "schedule",
+                            )
+                        });
+                        tokio::spawn(async move {
+                            match task.await {
+                                Ok((status, _payload)) if status.is_success() => {
+                                    tracing::info!("Rust scheduled command completed: {key}");
+                                }
+                                Ok((status, payload)) => {
+                                    tracing::error!(
+                                        "Rust scheduled command failed: {key} ({status}): {payload}"
+                                    );
+                                }
+                                Err(error) => {
+                                    tracing::error!(
+                                        "Rust scheduled command worker failed for {key}: {error}"
+                                    );
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+        });
+    }
+
+    pub fn start_job_recovery(&self) {
+        let state = self.clone();
+        tokio::spawn(async move {
+            let modules = state.modules.read().await.clone();
+            for (slug, module) in modules {
+                jobs::recover_pending_jobs(&module, &slug, &state.config.database_dir).await;
+            }
+        });
     }
 }
 

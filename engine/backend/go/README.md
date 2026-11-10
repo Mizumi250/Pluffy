@@ -10,16 +10,18 @@ PostgreSQL when configured. The engine provides the Arkzen health, registry, bui
 contract. Builds validate module/API/table definitions, prepare isolated
 database schemas, persist module registrations, and expose CRUD routes immediately
 and after restart. It also provides a database-backed queue with retries and a
-minute-resolution cron scheduler. The built-in `job-test` and `scheduler-test`
-handlers are emulated. Kotoba's allowlisted named custom routes are implemented with
-explicit Go emulations; arbitrary `:go` source is never executed.
+minute-resolution cron scheduler. Go endpoint, route-handler, job, and console
+bodies are interpreted against generated model facades; event listeners remain
+limited to the supported event-log operation shape. Kotoba's allowlisted named
+custom routes are implemented with explicit Go emulations.
 
 Each build generates `models.go`, `controllers.go`, `routes.go`, and `module.go`
 under `storage/generated/<tatemono>`. Generated Go is formatted and type-checked
 before registration; the persisted generated route manifest drives request
 dispatch. Startup regenerates artifacts for persisted modules, and removing a
-module removes its generated directory. This source generation does not enable
-arbitrary `:go` body execution; feature operations remain allowlisted.
+module removes its generated directory. Source generation is separate from
+runtime body interpretation; built-in capability endpoints and named module
+workflows may still use engine logic.
 
 ## Run
 
@@ -133,17 +135,17 @@ return 403. CRUD responses use JSON `data` envelopes, explicit 4xx/5xx errors,
 and 404 responses for missing records. The registry retains route configuration
 so CRUD remains active after the server restarts.
 
-The engine never executes arbitrary controller code or custom `:go`
-endpoint/handler bodies. It uses explicit module/operation allowlists and
-implements these bounded emulations:
+The engine uses explicit module/operation allowlists. It interprets declared
+custom `:go` endpoint, route-handler, job, and console bodies; other behavior
+is provided by these bounded engine emulations:
 
 | Tatemono | Supported Go-engine behavior |
 | --- | --- |
-| `body-endpoint-handler` | `echo` and `stats` endpoints; `ping`, `recordHandler`, and `latest` custom routes. Endpoint/handler body presence is checked, but source is not evaluated. |
+| `body-endpoint-handler` | `echo` and `stats` use Go engine implementations; custom `:go` endpoint and route-handler bodies are interpreted. Named capability operations can override their body with engine behavior. |
 | `inventory-management` | Seeds the declared inventory rows and `lowStock` queries declared rows below 20 units. |
-| `job-test` | Dispatches the three declared jobs to a database-backed queue. The integrated worker honors each job's queue, tries, and timeout metadata; retries failed jobs and records exhausted jobs in `failed_jobs`. Built-in job work is emulated; Go source bodies are not evaluated. |
-| `scheduler-test` | Runs the four declared commands manually or from their Go cron metadata. Scheduled runs are recorded with `triggered_by: schedule`; command Go source bodies are not evaluated. |
-| `events-test` | Resolves declared events/listeners and their selected `:go` listener bodies, then queues supported event-log listener operations with payload propagation and retries. `QUEUE_CONNECTION=sync` executes them during dispatch. Arbitrary Go listener code is not evaluated. |
+| `job-test` | Dispatches declared jobs to a database-backed queue. The integrated worker honors each job's queue, tries, and timeout metadata, executes its `:go` body, retries failures, and records exhausted jobs in `failed_jobs`. |
+| `scheduler-test` | Executes declared `:go` console bodies manually or from cron metadata. Console bodies receive `data["triggered_by"]`; a small named fallback remains for legacy YAML-only commands. |
+| `events-test` | Resolves declared events/listeners and interprets each selected `:go` listener body with `event.Data` payload propagation and retries. `QUEUE_CONNECTION=sync` executes listeners during dispatch. |
 | `broadcast-test` | Persists messages, publishes Pusher/Reverb-compatible events to public, private, and presence WebSocket channels, authorizes private/presence subscriptions, and exposes `/api/<module>/sse-poll/{channelType}` for polling clients. |
 | `queue-flow` | Implements the allowlisted `join_queue`, `call_next`, `queue_status`, and `my_ticket` route state transitions from route metadata, including `queue-updated` broadcasts on the declared queue channels. |
 | `dtr-geofencing` | Implements check-in/out, employee record lookup, setting updates, and distance-based geofence checks using the module's documented default office settings. |
@@ -158,14 +160,15 @@ implements these bounded emulations:
 
 Custom endpoint operations and custom route handlers are allowlisted by
 Tatemono name, operation/handler, and (for custom routes) the declared method
-and path. A non-empty `:go` endpoint/handler body is required only for
-`body-endpoint-handler`; its contents are ignored. Queue-flow behavior is
-selected solely from its exact route and handler metadata. Kotoba's custom
-routes are handled by fixed Go code selected from the allowlisted handler names;
-source bodies are not evaluated. Unsupported custom endpoint types return `501`, and unsupported or
-mismatched custom route handlers fail build validation. These constraints
-prevent arbitrary code evaluation while allowing the small set of fixed
-behaviors above.
+and path. For `body-endpoint-handler`, executable `:go` bodies are interpreted
+unless a named capability operation intentionally overrides them. Queue-flow
+behavior is selected solely from its exact route and handler metadata. Kotoba's
+custom routes are handled by fixed Go code selected from the allowlisted
+handler names; source bodies are not evaluated. Declared console bodies run
+for manual commands and matching cron schedules; legacy YAML-only scheduler
+commands retain a small named fallback. Unsupported custom endpoint types
+return `501`, and unsupported or mismatched custom route handlers fail build
+validation.
 
 Declared `database.seeder.data` rows are inserted when the module is built.
 Rebuilding a module with seed rows clears that table and restores the declared
@@ -198,9 +201,9 @@ broadcast channels. Kotoba behavior is limited to the allowlisted handlers
 and operates on the declared module tables; realtime broadcast delivery for
 Kotoba-specific notifications is not emitted by these handlers.
 
-The Go source-language payload's event, job, and console metadata configures the built-in
-`job-test` queue and `scheduler-test` cron emulation; arbitrary source bodies,
-custom Go jobs/commands, and external sync/health checks are not executed.
+The Go source-language payload's event, job, and console metadata configures
+queueing, scheduled execution, and the selected body variants. Arbitrary Go
+listener source and external sync/health checks are not executed.
 `events-test` supports its declared event-log listener operation but does not
 evaluate arbitrary listener source. SMTP delivery is available for mail and
 email-notification emulations when configured. Broadcast WebSocket delivery and

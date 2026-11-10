@@ -119,6 +119,10 @@ impl Database {
             .map_err(HandlerError::from)
     }
 
+    pub fn last_insert_rowid(&self) -> i64 {
+        self.connection.last_insert_rowid()
+    }
+
     pub fn query_row(&self, sql: &str) -> Result<(i64, i64, i64), HandlerError> {
         self.connection
             .query_row(sql, db::params![], |row| {

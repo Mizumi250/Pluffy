@@ -37,17 +37,20 @@ class JobResultController extends Controller
         public function store(Request $request): JsonResponse
         {
             $validated = $request->validate([
-                'job' => 'required|string'
+                'job' => 'required|string',
+                'data' => 'sometimes|array'
             ]);
     
-            $jobClass = match($validated['job']) {
+            $jobClasses = [
                 'process-data' => \App\Jobs\Arkzen\JobTest\ProcessDataJob::class,
                 'heavy-computation' => \App\Jobs\Arkzen\JobTest\HeavyComputationJob::class,
                 'always-fails' => \App\Jobs\Arkzen\JobTest\AlwaysFailsJob::class,
-                default => throw new \Exception('Unknown job: ' . $validated['job']),
             };
+            $jobName = str_replace('_', '-', $validated['job']);
+            $jobClass = $jobClasses[$jobName] ?? null;
+            if (!$jobClass) return response()->json(['message' => 'Unknown job: ' . $jobName], 400);
     
-            dispatch(new $jobClass());
+            dispatch(new $jobClass($validated['data'] ?? []));
     
             return response()->json(['message' => 'Job dispatched'], 202);
         }

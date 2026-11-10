@@ -13,6 +13,10 @@ export interface Generated {
 const dec = (b64?: string) => (b64 ? Buffer.from(b64, 'base64').toString('utf-8') : '')
 const ind = (body: string, n = 2) => body.split('\n').map(l => (l.trim() ? '  '.repeat(n) + l : l)).join('\n')
 const q = (s: string) => JSON.stringify(s)
+const classNameFor = (name: string, suffix: string) => {
+  const base = studly(name)
+  return base.length > suffix.length && base.endsWith(suffix) ? base : `${base}${suffix}`
+}
 const pluralize = (w: string) => w.endsWith('y') ? w.slice(0, -1) + 'ies' : w.endsWith('s') ? w + 'es' : w + 's'
 const tableToModel = (t: string) => studly(t.replace(/s$/, ''))
 const expressPath = (p: string) => p.replace(/\{(\w+)\??\}/g, ':$1')
@@ -158,6 +162,16 @@ ${ind(body('delete'), 2)}
   const controllerNames: string[] = []
   let ctl = `// ARKZEN GENERATED CONTROLLERS: ${slug}\n${IMPORTS}${modelImports}${policyNames.length ? `import { ${policyNames.join(', ')} } from './policies'\n` : ''}\n`
   const rules = (v: Any = {}) => '{ ' + Object.entries(v).map(([k, r]) => `${q(k)}: ${q(String(r))}`).join(', ') + ' }'
+  const endpointRules = (ep: Any, defaults: Any) => rules({ ...defaults, ...(ep.validation ?? {}) })
+  const classLookup = (sections: Any, suffix: string, namespace: string) =>
+    Object.entries(sections).flatMap(([name]) =>
+      [...new Set([name, name.replace(/_/g, '-')])]
+        .map(key => `${q(key)}: ${namespace}${classNameFor(name, suffix)}`)
+    ).join(', ')
+  const commandLookup = Object.entries(consoles).flatMap(([name, cfg]) =>
+    [...new Set([name, name.replace(/_/g, '-')])]
+      .map(key => `${q(key)}: ${q(String(cfg.signature ?? `${slug}:${name}`))}`)
+  ).join(', ')
   const commandRun = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => ['command_run', 'run'].includes(e.type)))
   const jobDispatch = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'job_dispatch'))
   const eventFire = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'event_fire'))
@@ -206,11 +220,11 @@ ${ind(body('delete'), 2)}
         }
         case 'store':
           if (ep.type === 'command_run') {
-            code = `    const validated = await request.validate({ command: 'required|string', triggered_by: 'sometimes|string' })\n    const started = Date.now()\n    const entry = [...(await import('@pluff/runtime')).commands].find(([signature]) => signature.endsWith(':' + validated.command))\n    if (!entry) return response.json({ message: 'Invalid command' }, 400)\n    const exitCode = await runCommand(entry[0])\n    const commandRun = await ${M}.create({ command_name: validated.command, signature: entry[0], exit_code: exitCode, output: '', triggered_by: validated.triggered_by ?? 'manual', duration_ms: Date.now() - started })\n    return response.json(commandRun, 201)\n`
+            code = `    const validated = await request.validate(${endpointRules(ep, { command: 'required|string', triggered_by: 'sometimes|string' })})\n    const commandSignatures: Record<string, string> = { ${commandLookup} }\n    const signature = commandSignatures[String(validated.command)]\n    const commandEntry = signature ? (await import('@pluff/runtime')).commands.get(signature) : undefined\n    if (!commandEntry || commandEntry.tatemono !== ${q(slug)}) return response.json({ message: 'Invalid command' }, 400)\n    const started = Date.now()\n    const exitCode = await runCommand(signature)\n    const commandRun = await ${M}.create({ command_name: validated.command, signature, exit_code: exitCode, output: '', triggered_by: validated.triggered_by ?? 'manual', duration_ms: Date.now() - started })\n    return response.json(commandRun, 201)\n`
           } else if (ep.type === 'job_dispatch') {
-            code = `    const validated = await request.validate({ job: 'required|string' })\n    const jobClass = Object.values(GeneratedJobs).find((C: any) => C?.name?.toLowerCase().includes(String(validated.job).replace(/[-_]/g, '').toLowerCase())) as any\n    if (!jobClass) throw new Error('Unknown job: ' + validated.job)\n    await dispatch(new jobClass(request.input('data', {})))\n    return response.json({ message: 'Job dispatched' }, 202)\n`
+            code = `    const validated = await request.validate(${endpointRules(ep, { job: 'required|string' })})\n    const jobClasses: Record<string, any> = { ${classLookup(jobs, 'Job', 'GeneratedJobs.')} }\n    const jobClass = jobClasses[String(validated.job)]\n    if (!jobClass) return response.json({ message: 'Unknown job: ' + validated.job }, 400)\n    await dispatch(new jobClass(request.input('data', {})))\n    return response.json({ message: 'Job dispatched' }, 202)\n`
           } else if (ep.type === 'event_fire') {
-            code = `    const validated = await request.validate({ event: 'required|string', payload: 'sometimes|array' })\n    const eventClass = Object.values(GeneratedEvents).find((C: any) => C?.name?.toLowerCase().includes(String(validated.event).replace(/[-_]/g, '').toLowerCase())) as any\n    if (!eventClass) throw new Error('Unknown event: ' + validated.event)\n    await event(new eventClass(validated.payload ?? {}))\n    return response.json({ message: 'Event fired' }, 202)\n`
+            code = `    const validated = await request.validate(${endpointRules(ep, { event: 'required|string', payload: 'sometimes|array' })})\n    const eventClasses: Record<string, any> = { ${classLookup(events, '', 'GeneratedEvents.')} }\n    const eventClass = eventClasses[String(validated.event)]\n    if (!eventClass) return response.json({ message: 'Unknown event: ' + validated.event }, 400)\n    await event(new eventClass(validated.payload ?? {}))\n    return response.json({ message: 'Event fired' }, 202)\n`
           } else if (ep.type === 'broadcast') {
             code = `    const validated = await request.validate(${rules(ep.validation)})\n    const message = await ${M}.create(validated)\n    const channelType = validated.channel_type ?? 'public'\n    const userId = (await request.authUser())?.id ?? null\n    broadcast(Object.assign(new MessageSentEvents[channelType](message.toJSON()), { userId }))\n    return response.json(message, 201)\n`
           } else if (ep.type === 'mail_send') {
@@ -300,7 +314,7 @@ ${ind(body('delete'), 2)}
   }
 
   // mail / notification class lookups used by the typed endpoints
-  const lookup = (names: string[], suffix: string) => names.flatMap(n => [...new Set([n, n.replace(/_/g, '-')])].map(k => `${q(k)}: ${studly(n)}${suffix}`)).join(', ')
+  const lookup = (names: string[], suffix: string) => names.flatMap(n => [...new Set([n, n.replace(/_/g, '-')])].map(k => `${q(k)}: ${classNameFor(n, suffix)}`)).join(', ')
   const mailClasses = lookup(Object.keys(mails), 'Mail')
   const notifClasses = lookup(Object.keys(notifs), 'Notification')
   const needsMsgEvents = apis.some(a => Object.values(a.endpoints ?? {}).some((e: any) => e.type === 'broadcast'))
@@ -312,7 +326,7 @@ ${ind(body('delete'), 2)}
   let jb = `// ARKZEN GENERATED JOBS: ${slug}\n${IMPORTS}${modelImports}\n`
   const jobClasses: string[] = []
   for (const [name, cfg] of Object.entries(jobs)) {
-    const cls = `${studly(name)}Job`
+    const cls = classNameFor(name, 'Job')
     const body = dec(cfg.body).trim() || `Log.info('[Arkzen Job] Running: ${cls}', this.data)`
     jb += `export class ${cls} extends Job {
   static tatemono = ${q(slug)}
@@ -362,7 +376,7 @@ ${methodBody(body, 'handle', ': Promise<number>')}
   // ── mail ───────────────────────────────────────────────
   let ml = `// ARKZEN GENERATED MAIL: ${slug}\n${IMPORTS}\n`
   for (const [name, cfg] of Object.entries(mails)) {
-    const cls = `${studly(name)}Mail`
+    const cls = classNameFor(name, 'Mail')
     const fields = Object.keys(cfg.data ?? {}).map(f => (f === 'message' ? 'mail_message' : f))
     const tpl = dec(cfg.blade_body) || `<p>${cfg.subject ?? cls}</p>` + fields.map(f => `<p>{{ ${f} }}</p>`).join('')
     ml += `export class ${cls} extends Mailable {
@@ -377,7 +391,7 @@ ${methodBody(body, 'handle', ': Promise<number>')}
   // ── notifications ──────────────────────────────────────
   let nt = `// ARKZEN GENERATED NOTIFICATIONS: ${slug}\n${IMPORTS}\n`
   for (const [name, cfg] of Object.entries(notifs)) {
-    const cls = `${studly(name)}Notification`
+    const cls = classNameFor(name, 'Notification')
     const channels = Array.isArray(cfg.channels) ? cfg.channels : String(cfg.channels ?? 'database').split(',').map((s: string) => s.trim())
     const channelType = ['public', 'presence'].includes(cfg.channel_type) ? cfg.channel_type : 'private'
     const mailBody = dec(cfg.toMail_body).trim()

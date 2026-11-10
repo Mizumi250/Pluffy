@@ -34,6 +34,10 @@ def ind(body: str, spaces: int = 8) -> str:
 def q(s) -> str:
     return json.dumps(str(s), ensure_ascii=False)
 
+def class_name_for(name: str, suffix: str) -> str:
+    base = studly(name)
+    return base if len(base) > len(suffix) and base.endswith(suffix) else base + suffix
+
 
 def pluralize(w: str) -> str:
     return w[:-1] + "ies" if w.endswith("y") else w + "es" if w.endswith("s") else w + "s"
@@ -168,7 +172,7 @@ def generate(p: Any) -> Any:
     if policy_names:
         ctl += f"from .policies import {', '.join(policy_names)}\n"
     if any(ep.get("type") == "job_dispatch" for api in apis for ep in (api.get("endpoints") or {}).values()):
-        job_class_names = [f"{studly(name)}Job" for name in jobs]
+        job_class_names = [class_name_for(name, "Job") for name in jobs]
         if job_class_names:
             ctl += f"from .jobs import {', '.join(job_class_names)}\n"
     if any(ep.get("type") == "event_fire" for api in apis for ep in (api.get("endpoints") or {}).values()):
@@ -252,7 +256,7 @@ def generate(p: Any) -> Any:
                              "return response.json(command_run, 201)\n")
                 elif etype == "job_dispatch":
                     job_classes = {
-                        name.replace("_", "-"): f"{studly(name)}Job"
+                        name.replace("_", "-"): class_name_for(name, "Job")
                         for name in jobs
                     }
                     lines = (f"validated = await request.validate({rules(ep.get('validation'))})\n"
@@ -375,7 +379,7 @@ def generate(p: Any) -> Any:
     jb = f"# ARKZEN GENERATED JOBS: {slug}\n{common}\n\n"
     job_classes: list[str] = []
     for name, cfg in jobs.items():
-        cls = f"{studly(name)}Job"
+        cls = class_name_for(name, "Job")
         body = dec(cfg.get("body")).strip() or f"Log.info('[Arkzen Job] Running: {cls}', self.data)"
         jb += (f"class {cls}(Job):\n    tatemono = {q(slug)}\n    queue = {q(cfg.get('queue') or 'default')}\n"
                f"    tries = {int(cfg.get('tries') or 3)}\n    timeout = {int(cfg.get('timeout') or 60)}\n{method_body(body, 'handle')}\n\n\n")
@@ -423,14 +427,14 @@ def generate(p: Any) -> Any:
     ml = f"# ARKZEN GENERATED MAIL: {slug}\n{IMPORTS}\n\n"
     mail_map: list[str] = []
     for name, cfg in mails.items():
-        cls = f"{studly(name)}Mail"
+        cls = class_name_for(name, "Mail")
         fields = ["mail_message" if f == "message" else f for f in (cfg.get("data") or {}).keys()]
         tpl = dec(cfg.get("blade_body")) or f"<p>{cfg.get('subject') or cls}</p>" + "".join(f"<p>{{{{ {f} }}}}</p>" for f in fields)
         sig = ", ".join(f"{f}=None" for f in fields)
         ml += (f"class {cls}(Mailable):\n    subject = {q(cfg.get('subject') or cls)}\n    template = {q(tpl)}\n\n"
                f"    def __init__(self{', ' + sig if sig else ''}):\n        super().__init__({{{', '.join(f'{q(f)}: {f}' for f in fields)}}})\n\n\n")
         for k in dict.fromkeys([name, name.replace("_", "-")]):
-            mail_map.append(f"{q(k)}: {studly(name)}Mail")
+            mail_map.append(f"{q(k)}: {class_name_for(name, 'Mail')}")
     ml += "mail_classes = {" + ", ".join(mail_map) + "}\n"
     files["mails.py"] = ml
 
@@ -438,7 +442,7 @@ def generate(p: Any) -> Any:
     nt = f"# ARKZEN GENERATED NOTIFICATIONS: {slug}\n{IMPORTS}\n\n"
     notif_map: list[str] = []
     for name, cfg in notifs.items():
-        cls = f"{studly(name)}Notification"
+        cls = class_name_for(name, "Notification")
         ch = cfg.get("channels")
         channels = ch if isinstance(ch, list) else [s.strip() for s in str(ch or "database").split(",")]
         msg = cfg.get("message") or "You have a new notification."
@@ -450,7 +454,7 @@ def generate(p: Any) -> Any:
                f"    channel_type = {q(channel_type)}\n\n"
                f"    def to_database(self, notifiable):\n        return {{'message': {q(msg)}, 'type': {q(cls)}}}\n\n{to_mail}\n\n")
         for k in dict.fromkeys([name, name.replace("_", "-")]):
-            notif_map.append(f"{q(k)}: {studly(name)}Notification")
+            notif_map.append(f"{q(k)}: {class_name_for(name, 'Notification')}")
     nt += "notification_classes = {" + ", ".join(notif_map) + "}\n"
     files["notifications.py"] = nt
 

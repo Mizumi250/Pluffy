@@ -97,7 +97,23 @@ public sealed class TatemonoDatabase
             await using var command = connection.CreateCommand();
             command.CommandText = $"CREATE TABLE IF NOT EXISTS {Quote(tableName)} ({string.Join(", ", definitions)})";
             await command.ExecuteNonQueryAsync(cancellationToken);
-            await AddMissingColumnsAsync(connection, tableName, columns, cancellationToken);
+            var existingColumns = await AddMissingColumnsAsync(connection, tableName, columns, cancellationToken);
+            var expectedColumns = new HashSet<string>(columns.Select(column => column.Key), StringComparer.OrdinalIgnoreCase);
+            if (!columns.Any(column => column.Value?["primary"]?.GetValue<bool>() == true))
+                expectedColumns.Add("id");
+            if (definition["timestamps"]?.GetValue<bool>() != false)
+            {
+                expectedColumns.Add("created_at");
+                expectedColumns.Add("updated_at");
+            }
+            if (definition["softDeletes"]?.GetValue<bool>() == true)
+                expectedColumns.Add("deleted_at");
+            var undeclaredColumns = existingColumns
+                .Where(column => !expectedColumns.Contains(column))
+                .OrderBy(column => column, StringComparer.OrdinalIgnoreCase)
+                .ToArray();
+            if (undeclaredColumns.Length > 0)
+                Console.Error.WriteLine($"[ASP.NET schema] Undeclared columns retained in {tableName}: {string.Join(", ", undeclaredColumns)}");
             await ApplyIndexesAsync(connection, tableName, definition["indexes"] as JsonArray, cancellationToken);
         }
     }
@@ -349,9 +365,8 @@ public sealed class TatemonoDatabase
         return ordered;
     }
 
-    private async Task AddMissingColumnsAsync(DbConnection connection, string table, JsonObject columns, CancellationToken cancellationToken)
+    private async Task<HashSet<string>> AddMissingColumnsAsync(DbConnection connection, string table, JsonObject columns, CancellationToken cancellationToken)
     {
-        if (columns.Count == 0) return;
         var existing = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         await using (var command = connection.CreateCommand())
         {
@@ -373,7 +388,9 @@ public sealed class TatemonoDatabase
             await using var command = connection.CreateCommand();
             command.CommandText = $"ALTER TABLE {Quote(table)} ADD COLUMN {Quote(RequiredIdentifier(name, "column"))} {SqlType(type, config)}{(nullable ? "" : " NULL")}";
             await command.ExecuteNonQueryAsync(cancellationToken);
+            existing.Add(name);
         }
+        return existing;
     }
 
     private async Task EnsurePostgresDatabaseAsync(string databaseName, CancellationToken cancellationToken)
@@ -416,7 +433,7 @@ public sealed class TatemonoDatabase
         "json" => _driver == "pgsql" ? "JSONB" : "TEXT",
         "text" or "longText" => "TEXT",
         "uuid" => _driver == "pgsql" ? "UUID" : "TEXT",
-        _ => $"VARCHAR({IntegerValue(config["length"], 255)})"
+        _ => throw new InvalidOperationException($"Unsupported database column type \"{type}\".")
     };
 
     private static string SqlLiteral(JsonValue value)

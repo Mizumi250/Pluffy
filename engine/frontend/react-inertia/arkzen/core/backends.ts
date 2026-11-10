@@ -7,7 +7,7 @@
 //
 //   laravel / laravel-inertia → php
 //   express                   → ts
-//   fastapi / django          → py
+//   fastapi                   → py
 //   spring-boot               → java
 //   aspnet                    → cs
 //   go                        → go
@@ -41,7 +41,6 @@ export const BACKEND_VARIANTS: Record<string, BackendVariant> = {
   'laravel-inertia': 'php',
   'express':         'ts',
   'fastapi':         'py',
-  'django':          'py',
   'spring-boot':     'java',
   'aspnet':          'cs',
   'go':              'go',
@@ -50,8 +49,12 @@ export const BACKEND_VARIANTS: Record<string, BackendVariant> = {
 
 /** Walks up from startPath to the root arkzen.json and returns the effective backend name. */
 export function resolveActiveBackend(startPath: string = process.cwd()): string {
-  if (process.env.PLUFF_BACKEND && BACKEND_VARIANTS[process.env.PLUFF_BACKEND]) {
-    return process.env.PLUFF_BACKEND
+  const override = process.env.PLUFF_BACKEND
+  if (override) {
+    if (!BACKEND_VARIANTS[override]) {
+      throw new Error(`[Arkzen] Unsupported backend "${override}" in PLUFF_BACKEND`)
+    }
+    return override
   }
   let dir = path.resolve(startPath)
   try { if (fs.statSync(dir).isFile()) dir = path.dirname(dir) } catch { /* keep dir */ }
@@ -64,9 +67,17 @@ export function resolveActiveBackend(startPath: string = process.cwd()): string 
         // The root registry has activeStack; stack-local arkzen.json files do not.
         if (json && typeof json === 'object' && 'activeStack' in json) {
           if (json.activeStack === 'react-inertia') return 'laravel-inertia'
-          return BACKEND_VARIANTS[json.activeBackend] ? json.activeBackend : 'laravel'
+          if (json.activeBackend === undefined) return 'laravel'
+          if (typeof json.activeBackend !== 'string' || !BACKEND_VARIANTS[json.activeBackend]) {
+            throw new Error(`[Arkzen] Unsupported activeBackend "${String(json.activeBackend)}" in ${file}`)
+          }
+          return json.activeBackend
         }
-      } catch { /* malformed json: keep walking */ }
+      } catch (error) {
+        if (error instanceof Error && error.message.startsWith('[Arkzen] Unsupported activeBackend')) {
+          throw error
+        }
+      }
     }
     const parent = path.dirname(dir)
     if (parent === dir) break

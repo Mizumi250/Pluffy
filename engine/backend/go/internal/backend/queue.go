@@ -21,6 +21,7 @@ type jobDefinition struct {
 	queue   string
 	tries   int
 	timeout time.Duration
+	body    string
 }
 
 type queuedJob struct {
@@ -29,6 +30,7 @@ type queuedJob struct {
 	Name         string         `json:"name"`
 	Data         map[string]any `json:"data"`
 	EventName    string         `json:"eventName,omitempty"`
+	EventTable   string         `json:"eventTable,omitempty"`
 	EventData    map[string]any `json:"eventData,omitempty"`
 	ListenerBody string         `json:"listenerBody,omitempty"`
 	Tries        int            `json:"tries"`
@@ -44,6 +46,9 @@ type eventDefinition struct {
 	name      string
 	listeners []eventListenerDefinition
 }
+
+var errGoConsoleBodyUnavailable = errors.New("Go console has no :go body")
+var errGoConsoleFallbackUnavailable = errors.New("Go console has no built-in fallback")
 
 func runtimeDSLSections(rawSections []string, allowedFields ...string) []string {
 	allowed := make(map[string]struct{}, len(allowedFields))
@@ -92,13 +97,7 @@ func jobDefinitions(registration Registration) map[string]jobDefinition {
 		}
 		definitions[section.name] = jobDefinition{
 			name: section.name, queue: queue, tries: tries, timeout: time.Duration(timeout) * time.Second,
-		}
-	}
-	if registration.Name == "job-test" && len(definitions) == 0 {
-		definitions = map[string]jobDefinition{
-			"process-data":      {name: "process-data", queue: "default", tries: 3, timeout: 30 * time.Second},
-			"heavy-computation": {name: "heavy-computation", queue: "heavy", tries: 1, timeout: 120 * time.Second},
-			"always-fails":      {name: "always-fails", queue: "default", tries: 2, timeout: 10 * time.Second},
+			body: decodeInterpretedBody(section.values["body"]),
 		}
 	}
 	return definitions
@@ -185,6 +184,12 @@ func (h *Handler) dispatchQueuedJob(w http.ResponseWriter, registration Registra
 		})
 		return false
 	}
+	if strings.TrimSpace(definition.body) == "" {
+		writeJSON(w, http.StatusNotImplemented, map[string]string{
+			"message": fmt.Sprintf("Go job %q has no :go body to execute", name),
+		})
+		return false
+	}
 	payload := queuedJob{
 		Kind: "job", Module: registration.Name, Name: name, Data: data,
 		Tries: definition.tries, Timeout: int(definition.timeout.Seconds()),
@@ -203,13 +208,11 @@ func (h *Handler) dispatchQueuedJob(w http.ResponseWriter, registration Registra
 	if strings.EqualFold(envOr("QUEUE_CONNECTION", "database"), "sync") {
 		jobCtx, cancel := context.WithTimeout(context.Background(), definition.timeout)
 		defer cancel()
-		started := time.Now()
-		if err := executeGoJob(jobCtx, payload); err != nil {
+		if err := h.executeGoJob(jobCtx, registration, payload); err != nil {
+			if recordErr := recordFailedJobResult(db, registration, name, err.Error(), time.Now()); recordErr != nil {
+				log.Printf("record failed job result for %s:%s: %v", registration.Name, name, recordErr)
+			}
 			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": err.Error()})
-			return false
-		}
-		if err := recordJobResult(db, name, "completed", jobResultText(name, time.Since(started)), time.Now()); err != nil {
-			writeJSON(w, http.StatusInternalServerError, map[string]string{"message": "Unable to record job result"})
 			return false
 		}
 		writeJSON(w, http.StatusAccepted, map[string]string{"message": "Job dispatched"})
@@ -231,13 +234,29 @@ func (h *Handler) dispatchQueuedJob(w http.ResponseWriter, registration Registra
 	return true
 }
 
-func queueNames() []string {
+func queueNames(registration Registration) []string {
 	names := strings.Split(envOr("QUEUE_NAMES", "default,heavy"), ",")
+	seen := make(map[string]struct{}, len(names))
 	result := make([]string, 0, len(names))
-	for _, name := range names {
+	appendQueue := func(name string) {
 		if name = strings.TrimSpace(name); name != "" {
+			if _, exists := seen[name]; exists {
+				return
+			}
+			seen[name] = struct{}{}
 			result = append(result, name)
 		}
+	}
+	for _, name := range names {
+		appendQueue(name)
+	}
+	declaredQueues := make([]string, 0)
+	for _, definition := range jobDefinitions(registration) {
+		declaredQueues = append(declaredQueues, definition.queue)
+	}
+	sort.Strings(declaredQueues)
+	for _, name := range declaredQueues {
+		appendQueue(name)
 	}
 	return result
 }
@@ -273,7 +292,7 @@ func (h *Handler) queueWorker(ctx context.Context) {
 			if len(jobDefinitions(registration)) == 0 && len(eventDefinitions(registration)) == 0 {
 				continue
 			}
-			for _, queue := range queueNames() {
+			for _, queue := range queueNames(registration) {
 				worked = h.workQueueOnce(ctx, registration, queue) || worked
 			}
 		}
@@ -382,11 +401,10 @@ func (h *Handler) workQueueOnce(ctx context.Context, registration Registration, 
 		return true
 	}
 	jobCtx, cancel := context.WithTimeout(ctx, timeout)
-	started := time.Now()
 	if kind == "event_listener" {
-		err = executeGoEventListener(jobCtx, db, payload)
+		err = h.executeGoEventListener(jobCtx, registration, payload)
 	} else {
-		err = executeGoJob(jobCtx, payload)
+		err = h.executeGoJob(jobCtx, registration, payload)
 	}
 	cancel()
 	if errors.Is(err, context.Canceled) && ctx.Err() != nil {
@@ -395,13 +413,6 @@ func (h *Handler) workQueueOnce(ctx context.Context, registration Registration, 
 			log.Printf("release interrupted %s job: %v", payload.Name, releaseErr)
 		}
 		return true
-	}
-	if err == nil {
-		if kind == "job" {
-			if recordErr := recordJobResult(db, payload.Name, "completed", jobResultText(payload.Name, time.Since(started)), time.Now()); recordErr != nil {
-				err = fmt.Errorf("record job result: %w", recordErr)
-			}
-		}
 	}
 	if err == nil {
 		_, err = db.Exec(`DELETE FROM "jobs" WHERE "id" = ?`, id)
@@ -415,7 +426,9 @@ func (h *Handler) workQueueOnce(ctx context.Context, registration Registration, 
 	if attempts+1 >= tries {
 		h.failQueuedJob(db, queue, id, rawPayload, attempts+1, tries, err)
 		if kind == "job" {
-			_ = recordJobResult(db, payload.Name, "failed", err.Error(), time.Now())
+			if recordErr := recordFailedJobResult(db, registration, payload.Name, err.Error(), time.Now()); recordErr != nil {
+				log.Printf("record failed job result for %s:%s: %v", registration.Name, payload.Name, recordErr)
+			}
 		}
 		return true
 	}
@@ -440,118 +453,80 @@ func (h *Handler) failQueuedJob(db *sql.DB, queue string, id int64, payload stri
 	log.Printf("Failed job after %d attempt(s): %v (configured tries: %d)", attempts, cause, tries)
 }
 
-func executeGoJob(ctx context.Context, payload queuedJob) error {
-	if payload.Module != "job-test" {
-		return fmt.Errorf("Go job handler emulation is unavailable for %s:%s", payload.Module, payload.Name)
+func (h *Handler) executeGoJob(ctx context.Context, registration Registration, payload queuedJob) error {
+	definition, exists := jobDefinitions(registration)[payload.Name]
+	if !exists || strings.TrimSpace(definition.body) == "" {
+		return fmt.Errorf("Go job body %q is unavailable in module %q", payload.Name, registration.Name)
 	}
-	duration := map[string]time.Duration{
-		"process-data":      2 * time.Second,
-		"heavy-computation": 5 * time.Second,
-		"always-fails":      0,
-	}[payload.Name]
-	if payload.Name != "always-fails" && duration == 0 {
-		return fmt.Errorf("unknown job %q", payload.Name)
+	runtime, err := h.service.moduleRuntimeFor(registration.Name)
+	if err != nil {
+		return fmt.Errorf("initialize Go job runtime for %q: %w", registration.Name, err)
 	}
-	if payload.Name == "always-fails" {
-		return errors.New("This job always fails")
-	}
-	timer := time.NewTimer(duration)
-	defer timer.Stop()
-	select {
-	case <-ctx.Done():
-		return ctx.Err()
-	case <-timer.C:
-		return nil
-	}
+	return runtime.ExecuteJob(ctx, payload.Name, payload.Data, registration)
 }
 
-func goEventLogFields(body string) (string, string, error) {
-	if !strings.Contains(body, "EventLog.Create(ctx, map[string]any{") ||
-		!strings.Contains(body, `"status": "completed"`) ||
-		!strings.Contains(body, `"payload": event.Data`) ||
-		!strings.Contains(body, `"duration_ms": time.Since(started).Milliseconds()`) {
-		return "", "", errors.New("Go listener body uses an unsupported event-log operation")
-	}
-	fieldValue := func(key string) (string, error) {
-		marker := `"` + key + `":`
-		index := strings.Index(body, marker)
-		if index < 0 {
-			return "", fmt.Errorf("Go listener body is missing %q", key)
-		}
-		raw := strings.TrimSpace(body[index+len(marker):])
-		if len(raw) < 2 || raw[0] != '"' {
-			return "", fmt.Errorf("Go listener field %q must be a string literal", key)
-		}
-		end := strings.Index(raw[1:], `"`)
-		if end < 0 {
-			return "", fmt.Errorf("Go listener field %q has an unterminated string", key)
-		}
-		return raw[1 : end+1], nil
-	}
-	eventName, err := fieldValue("event_name")
-	if err != nil {
-		return "", "", err
-	}
-	listenerName, err := fieldValue("listener_name")
-	if err != nil {
-		return "", "", err
-	}
-	return eventName, listenerName, nil
-}
-
-func executeGoEventListener(ctx context.Context, db *sql.DB, payload queuedJob) error {
-	if payload.Module != "events-test" || payload.Kind != "event_listener" {
+func (h *Handler) executeGoEventListener(ctx context.Context, registration Registration, payload queuedJob) error {
+	if payload.Module != registration.Name || payload.Kind != "event_listener" || payload.Name == "" {
 		return fmt.Errorf("Go event listener is unavailable for %s:%s", payload.Module, payload.Name)
 	}
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	eventName, listenerName, err := goEventLogFields(payload.ListenerBody)
+	found := false
+	for _, event := range eventDefinitions(registration) {
+		if normalizeEventIdentifier(event.name) != normalizeEventIdentifier(payload.EventName) {
+			continue
+		}
+		for _, listener := range event.listeners {
+			if listener.name == payload.Name && listener.body == payload.ListenerBody {
+				found = true
+				break
+			}
+		}
+	}
+	if !found {
+		return fmt.Errorf("listener %q is not declared for event %q", payload.Name, payload.EventName)
+	}
+	runtime, err := h.service.moduleRuntimeFor(registration.Name)
+	if err != nil {
+		return fmt.Errorf("initialize Go listener runtime for %q: %w", payload.Name, err)
+	}
+	for _, event := range eventDefinitions(registration) {
+		if normalizeEventIdentifier(event.name) == normalizeEventIdentifier(payload.EventName) {
+			return runtime.ExecuteListener(ctx, event.name, payload.Name, payload.EventData, registration)
+		}
+	}
+	return fmt.Errorf("event %q is no longer declared for listener %q", payload.EventName, payload.Name)
+}
+
+func normalizeEventIdentifier(value string) string {
+	var normalized strings.Builder
+	for _, character := range strings.ToLower(value) {
+		if character >= 'a' && character <= 'z' || character >= '0' && character <= '9' {
+			normalized.WriteRune(character)
+		}
+	}
+	return normalized.String()
+}
+
+func recordFailedJobResult(db *sql.DB, registration Registration, name, result string, processedAt time.Time) error {
+	table := ""
+	for _, api := range registration.APIs {
+		if api.Model == "JobResult" {
+			table = api.Table
+			break
+		}
+	}
+	if table == "" {
+		return nil
+	}
+	columns, primary, err := inspectColumns(db, table)
 	if err != nil {
 		return err
 	}
-	if eventName != payload.EventName || listenerName != payload.Name {
-		return fmt.Errorf("Go listener body does not match registered event %q and listener %q", payload.EventName, payload.Name)
-	}
-	columns, primary, err := inspectColumns(db, "event_log")
-	if err != nil {
-		return fmt.Errorf("inspect event log table: %w", err)
-	}
-	encodedPayload, err := json.Marshal(payload.EventData)
-	if err != nil {
-		return fmt.Errorf("encode event payload: %w", err)
-	}
-	started := time.Now()
-	record := map[string]any{
-		"event_name": eventName, "listener_name": listenerName, "status": "completed",
-		"payload": string(encodedPayload), "duration_ms": time.Since(started).Milliseconds(),
-	}
-	prepareTimestamps(record, columns, true)
-	if _, err := insertRecord(db, quoteIdentifier("event_log"), record, columns, primary); err != nil {
-		return fmt.Errorf("record event listener: %w", err)
-	}
-	return nil
-}
-
-func jobResultText(name string, elapsed time.Duration) string {
-	switch name {
-	case "process-data":
-		return fmt.Sprintf("Data processed successfully in %dms", elapsed.Milliseconds())
-	case "heavy-computation":
-		return fmt.Sprintf("Heavy computation completed in %dms", elapsed.Milliseconds())
-	default:
-		return ""
-	}
-}
-
-func recordJobResult(db *sql.DB, name, status, result string, processedAt time.Time) error {
-	columns, primary, err := inspectColumns(db, "job_results")
-	if err != nil {
-		return err
-	}
-	input := map[string]any{"job_name": name, "status": status, "result": result, "processed_at": processedAt.UTC().Format(time.RFC3339Nano)}
+	input := map[string]any{"job_name": name, "status": "failed", "result": result, "processed_at": processedAt.UTC().Format(time.RFC3339Nano)}
 	prepareTimestamps(input, columns, true)
-	_, err = insertRecord(db, quoteIdentifier("job_results"), input, columns, primary)
+	_, err = insertRecord(db, quoteIdentifier(table), input, columns, primary)
 	return err
 }
 
@@ -588,7 +563,7 @@ func (h *Handler) runScheduledCommandsAt(now time.Time) {
 			}
 			h.scheduledMinutes[key] = minute
 			h.scheduleMu.Unlock()
-			if _, err := recordCommandRun(h.service.storageDir, registration.Name, section.name, "schedule"); err != nil {
+			if err := h.executeGoConsole(context.Background(), registration, section.name, "schedule"); err != nil {
 				log.Printf("scheduled command %s failed: %v", key, err)
 			} else {
 				log.Printf("Scheduled command completed: %s", key)
@@ -660,6 +635,28 @@ func cronFieldMatches(expression string, value, minimum, maximum int) bool {
 	return false
 }
 
+func (h *Handler) executeGoConsole(ctx context.Context, registration Registration, name, triggeredBy string) error {
+	var body string
+	for _, section := range parseRealtimeSections(registration.Consoles) {
+		if section.name == name {
+			body = decodeInterpretedBody(section.values["body"])
+			break
+		}
+	}
+	if strings.TrimSpace(body) == "" {
+		_, err := recordCommandRun(h.service.storageDir, registration.Name, name, triggeredBy)
+		if errors.Is(err, errGoConsoleFallbackUnavailable) {
+			return fmt.Errorf("%w: %q", errGoConsoleBodyUnavailable, name)
+		}
+		return err
+	}
+	runtime, err := h.service.moduleRuntimeFor(registration.Name)
+	if err != nil {
+		return fmt.Errorf("initialize Go console runtime for %q: %w", registration.Name, err)
+	}
+	return runtime.ExecuteConsole(ctx, name, map[string]any{"triggered_by": triggeredBy}, registration)
+}
+
 func recordCommandRun(storageDir, module, name, triggeredBy string) (map[string]any, error) {
 	outputs := map[string]string{
 		"cleanup-temp":    "Cleanup completed successfully.",
@@ -669,7 +666,7 @@ func recordCommandRun(storageDir, module, name, triggeredBy string) (map[string]
 	}
 	output, exists := outputs[name]
 	if !exists {
-		return nil, fmt.Errorf("no Go console handler for %q", name)
+		return nil, fmt.Errorf("%w: %q", errGoConsoleFallbackUnavailable, name)
 	}
 	db, err := openModuleDatabase(storageDir, module)
 	if err != nil {

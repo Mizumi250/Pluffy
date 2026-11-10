@@ -1,7 +1,7 @@
 <?php
 
 // ============================================================
-// ARKZEN GENERATED MAILABLE — WelcomeMailMail
+// ARKZEN GENERATED MAILABLE — WelcomeMail
 // Tatemono: mail-test
 // Subject: Welcome to Arkzen
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
@@ -16,7 +16,7 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class WelcomeMailMail extends Mailable
+class WelcomeMail extends Mailable
 {
     use Queueable, SerializesModels;
 

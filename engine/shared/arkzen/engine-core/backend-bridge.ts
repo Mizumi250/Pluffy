@@ -76,7 +76,6 @@ function backendLabel(backend = resolveActiveBackend()): string {
     express: 'Express',
     aspnet: 'ASP.NET Core',
     fastapi: 'FastAPI',
-    django: 'Django',
     'spring-boot': 'Spring Boot',
     go: 'Go',
     rust: 'Rust',

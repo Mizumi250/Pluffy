@@ -244,7 +244,7 @@ endpoints:
     description: Run a command
     type: command_run
     validation:
-      command: required|string
+      command: required|string|in:cleanup
       triggered_by: sometimes|string
     response:
       type: single
@@ -262,7 +262,7 @@ endpoints:
     description: Dispatch a queued job
     type: job_dispatch
     validation:
-      job: required|string
+      job: required|string|in:process-record,always-fails
     response:
       type: single
 */
@@ -279,7 +279,7 @@ endpoints:
     description: Fire an event
     type: event_fire
     validation:
-      event: required|string
+      event: required|string|in:record-created
       payload: sometimes|array
     response:
       type: single

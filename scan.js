@@ -282,11 +282,11 @@ async function main() {
   }
 
   let validator
-  let validatorError = ''
   try {
     validator = await loadValidator()
   } catch (error) {
-    validatorError = error instanceof Error ? error.message : String(error)
+    const detail = error instanceof Error ? error.message : String(error)
+    throw new Error(`Training-data scan aborted before rewriting dataset files: ${detail}`)
   }
 
   const blockLines = []
@@ -296,17 +296,15 @@ async function main() {
   const report = []
   let oversizedAppExamples = 0
 
-  if (validatorError) {
-    report.push(`ENGINE VALIDATION UNAVAILABLE: ${validatorError}`)
-  }
-
   for (const name of names) {
     const filePath = path.join(TAT_DIR, name, 'core.tsx')
     const src = fs.readFileSync(filePath, 'utf8').replace(/^\uFEFF/, '').replace(/\r\n?/g, '\n')
     const { blocks, problems } = splitBlocks(src)
-    const validation = validator
-      ? validateWithEngine(validator.validateTatemono, filePath, validator.validationDir).result
-      : null
+    const validation = validateWithEngine(
+      validator.validateTatemono,
+      filePath,
+      validator.validationDir
+    ).result
     const meta = metaDescription(src)
     const description = getDescription(existingDesc, name).trim() || meta
     const estimatedTokens = estimateTokens(`${SYSTEM_PROMPT}\n${description}\n${src}`)
@@ -326,11 +324,6 @@ async function main() {
 
     if (problems.length) {
       report.push(`${name}: ${problems.join('; ')}`)
-    }
-
-    if (!validation) {
-      report.push(`${name}: not validated by the engine; excluded from training`)
-      continue
     }
 
     if (!validation.valid) {
@@ -393,7 +386,7 @@ async function main() {
   console.log(`Apps above ${MAX_APP_SEQUENCE_TOKENS} tokens:    ${oversizedAppExamples}  (included whole; check training context)`)
   console.log(`Block-level examples:          ${blockDataset.length}`)
   console.log(`Missing descriptions:          ${missing}${missing ? '  (fill them in descriptions.json)' : ''}`)
-  console.log(`Engine validator available:    ${validatorError ? 'no' : 'yes'}`)
+  console.log('Engine validator available:    yes')
   console.log(`Report entries:                ${report.length}  (see scan-report.txt)`)
 }
 

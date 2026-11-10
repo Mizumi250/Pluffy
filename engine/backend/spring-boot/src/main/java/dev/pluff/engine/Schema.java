@@ -83,7 +83,7 @@ public final class Schema {
       case "datetime": case "timestamp": return pg ? "TIMESTAMP" : "DATETIME";
       case "json": return pg ? "JSON" : "TEXT";
       case "uuid": return pg ? "UUID" : "VARCHAR(36)";
-      default: return "VARCHAR(255)";
+      default: throw new IllegalArgumentException("Unsupported database column type \"" + t + "\"");
     }
   }
 
@@ -149,6 +149,13 @@ public final class Schema {
       steps.add("Table created: " + table);
     } else {
       Set<String> have = new HashSet<>(db.columns(table));
+      Set<String> expected = new HashSet<>(cols.keySet());
+      if (cols.values().stream().noneMatch(c -> truthy(map(c).get("primary")))) expected.add("id");
+      if (!Boolean.FALSE.equals(d.get("timestamps")) && !cols.containsKey("created_at")) {
+        expected.add("created_at");
+        expected.add("updated_at");
+      }
+      if (truthy(d.get("softDeletes")) && !cols.containsKey("deleted_at")) expected.add("deleted_at");
       List<String> added = new ArrayList<>();
       for (Map.Entry<String, Object> e : cols.entrySet()) {
         if (have.contains(e.getKey())) continue;
@@ -156,6 +163,8 @@ public final class Schema {
         added.add(e.getKey());
       }
       if (!added.isEmpty()) steps.add("Table updated: " + table + " (+" + String.join(", ", added) + ")");
+      List<String> retained = have.stream().filter(column -> !expected.contains(column)).sorted().toList();
+      if (!retained.isEmpty()) steps.add("Undeclared columns retained: " + table + " (" + String.join(", ", retained) + ")");
     }
     try {
       Path out = Support.BACKEND_DIR.resolve("database").resolve("migrations").resolve("arkzen").resolve(slug);

@@ -54,6 +54,10 @@ public final class Generate {
     return out.toString();
   }
 
+  private static String classNameFor(String value, String suffix) {
+    return Support.classNameFor(value, suffix);
+  }
+
   private static String modelForTable(String table) {
     String base = table.endsWith("ies") ? table.substring(0, table.length() - 3) + "y"
         : table.endsWith("s") ? table.substring(0, table.length() - 1) : table;
@@ -365,7 +369,7 @@ public final class Generate {
           + "Mail.send(String.valueOf(validated.get(\"to\")), mail, data);\n"
           + model + " sent = " + model + ".create(mapOf(\"user_id\", user == null ? null : user.get(\"id\"), "
           + "\"to_email\", validated.get(\"to\"), \"subject\", mail.getOrDefault(\"subject\", mailKey), "
-          + "\"mail_class\", studly(mailKey) + \"Mail\", \"status\", \"sent\"));\n"
+          + "\"mail_class\", classNameFor(mailKey, \"Mail\"), \"status\", \"sent\"));\n"
           + "return response.json(sent, 201);";
     }
     if (name.equals("index")) {
@@ -519,7 +523,7 @@ public final class Generate {
     for (Map.Entry<String, Map<String, Object>> entry : jobs.entrySet()) {
       String body = decode(text(entry.getValue().get("body"), "")).trim();
       if (body.isEmpty()) continue;
-      String cls = identifier(studly(entry.getKey()) + "Job");
+      String cls = identifier(classNameFor(entry.getKey(), "Job"));
       String queue = text(entry.getValue().get("queue"), "default");
       int tries = Support.toInt(entry.getValue().get("tries"), 3);
       int timeout = Support.toInt(entry.getValue().get("timeout"), 60);
@@ -595,7 +599,7 @@ public final class Generate {
     out.append("  private static Notification notificationFor(String name) {\n    return switch (name) {\n");
     for (String notification : notifications.keySet()) {
       out.append("      case ").append(quote(notification)).append(" -> new ")
-          .append(identifier(studly(notification) + "Notification")).append("();\n");
+          .append(identifier(classNameFor(notification, "Notification"))).append("();\n");
     }
     out.append("      default -> null;\n    };\n  }\n")
         .append("  private static Map<String, Object> objectMap(Object value) {\n")
@@ -686,7 +690,7 @@ public final class Generate {
       Map<String, Object> config = entry.getValue();
       String body = decode(text(config.get("body"), "")).trim();
       if (body.isEmpty()) continue;
-      String cls = identifier(studly(entry.getKey()) + "Job");
+      String cls = identifier(classNameFor(entry.getKey(), "Job"));
       String queue = quote(text(config.get("queue"), "default"));
       int tries = Support.toInt(config.get("tries"), 3);
       int timeout = Support.toInt(config.get("timeout"), 60);
@@ -722,7 +726,7 @@ public final class Generate {
     StringBuilder out = new StringBuilder();
     for (Map.Entry<String, Map<String, Object>> entry : notifications.entrySet()) {
       Map<String, Object> config = entry.getValue();
-      String cls = identifier(studly(entry.getKey()) + "Notification");
+      String cls = identifier(classNameFor(entry.getKey(), "Notification"));
       List<String> channels = new ArrayList<>();
       Object rawChannels = config.get("channels");
       if (rawChannels instanceof List<?>) {

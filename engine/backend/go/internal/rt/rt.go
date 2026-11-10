@@ -33,6 +33,7 @@ type Session struct {
 	Response *Response
 	Database *Database
 	Params   Params
+	Data     map[string]any
 	Context  context.Context
 	Services *Services
 	// Bridge executes another operation of the same module within this

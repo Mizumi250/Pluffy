@@ -51,7 +51,7 @@ class ControllerBuilder
 
         $methods = $isNativeNotifications
             ? self::generateNativeNotificationMethods($endpoints, $slugNs)
-            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource, $usePolicy);
+            : self::generateMethods($modelName, $endpoints, $slugNs, $useResource, $usePolicy, $module);
 
         $resourceImport = $useResource 
             ? "use App\\Http\\Resources\\Arkzen\\{$slugNs}\\{$modelName}Resource;\n" 
@@ -95,7 +95,7 @@ class {$controllerName} extends Controller
     // GENERATE METHODS
     // ─────────────────────────────────────────────
 
-    private static function generateMethods(string $modelName, array $endpoints, string $slugNs, bool $useResource, bool $usePolicy): string
+    private static function generateMethods(string $modelName, array $endpoints, string $slugNs, bool $useResource, bool $usePolicy, array $module): string
     {
         $methods = [];
         
@@ -105,12 +105,12 @@ class {$controllerName} extends Controller
         }
         
         foreach ($endpoints as $name => $endpoint) {
-            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource, $usePolicy);
+            $methods[] = self::generateMethod($name, $modelName, $endpoint, $slugNs, $useResource, $usePolicy, $module);
         }
         return implode("\n\n", $methods);
     }
 
-    private static function generateMethod(string $name, string $modelName, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy): string
+    private static function generateMethod(string $name, string $modelName, array $endpoint, string $slugNs, bool $useResource, bool $usePolicy, array $module): string
     {
         // FIX: a custom @arkzen:endpoint:ts/php body always wins on the standard
         // CRUD names (index/show/store/update/destroy), same as every other backend.
@@ -127,9 +127,9 @@ class {$controllerName} extends Controller
             'update'  => self::generateUpdate($modelName, $endpoint, $slugNs, $useResource, $usePolicy), 
             'store' => match ($endpoint['type'] ?? '') {
                 'upload'      => self::generateUploadStore($modelName, $endpoint),
-                'command_run' => self::generateCommandRun($modelName, $endpoint),
-                'job_dispatch' => self::generateJobDispatch($modelName, $endpoint),
-                'event_fire' => self::generateEventFire($modelName, $endpoint),
+                'command_run' => self::generateCommandRun($modelName, $endpoint, $module),
+                'job_dispatch' => self::generateJobDispatch($modelName, $endpoint, $module, $slugNs),
+                'event_fire' => self::generateEventFire($modelName, $endpoint, $module, $slugNs),
                 'broadcast' => self::generateBroadcast($modelName, $slugNs, $endpoint),
                  'mail_send'      => self::generateMailSend($modelName, $endpoint, $slugNs),
                  'notification_trigger' => self::generateNotificationTrigger($modelName, $endpoint, $slugNs),
@@ -145,7 +145,7 @@ class {$controllerName} extends Controller
             'userOnly'   => self::generateRoleUserOnly($modelName, $endpoint),
             'promote'    => self::generateRolePromote($endpoint),
             'demote'     => self::generateRoleDemote($endpoint),
-            'run'        => self::generateCommandRun($modelName, $endpoint),
+            'run'        => self::generateCommandRun($modelName, $endpoint, $module),
             default      => self::generateCustomMethod($name, $modelName, $endpoint),
         };
     }
@@ -674,30 +674,34 @@ class {$controllerName} extends Controller
     // COMMAND RUN — executes Artisan command and records result
     // ─────────────────────────────────────────────
 
-    private static function generateCommandRun(string $model, array $endpoint): string
+    private static function generateCommandRun(string $model, array $endpoint, array $module): string
     {
         $description = $endpoint['description'] ?? 'Execute a command and record the result';
-        
+        $signatures = [];
+        foreach (($module['consoles'] ?? []) as $name => $config) {
+            $signatures[str_replace('_', '-', (string) $name)] = is_array($config) && !empty($config['signature'])
+                ? $config['signature']
+                : "{$module['name']}:{$name}";
+        }
+        $signatureMap = var_export($signatures, true);
+        $validation = self::generateValidation(array_merge(
+            ['command' => 'required|string', 'triggered_by' => 'sometimes|string'],
+            is_array($endpoint['validation'] ?? null) ? $endpoint['validation'] : []
+        ));
+
         return "    /**
      * {$description}
      */
     public function store(Request \$request): JsonResponse
     {
         \$validated = \$request->validate([
-            'command' => 'required|string',
-            'triggered_by' => 'sometimes|string'
+{$validation}
         ]);
 
-        \$commandName = \$validated['command'];
+        \$commandName = str_replace('_', '-', \$validated['command']);
         \$triggeredBy = \$validated['triggered_by'] ?? 'manual';
 
-        // Map command name to signature (extracted from tatemono)
-        \$signatures = [
-            'cleanup-temp' => 'scheduler-test:cleanup-temp',
-            'generate-report' => 'scheduler-test:generate-report',
-            'ping-health' => 'scheduler-test:ping-health',
-            'sync-data' => 'scheduler-test:sync-data',
-        ];
+        \$signatures = {$signatureMap};
 
         \$signature = \$signatures[\$commandName] ?? null;
         if (!\$signature) {
@@ -733,27 +737,35 @@ class {$controllerName} extends Controller
     // JOB DISPATCH — queues a job and returns immediately
     // ─────────────────────────────────────────────
     
-    private static function generateJobDispatch(string $model, array $endpoint): string
+    private static function generateJobDispatch(string $model, array $endpoint, array $module, string $slugNs): string
     {
         $description = $endpoint['description'] ?? 'Dispatch a job';
-        
+        $jobClasses = [];
+        foreach (($module['jobs'] ?? []) as $name => $_) {
+            $jobClasses[str_replace('_', '-', (string) $name)] =
+                "\\App\\Jobs\\Arkzen\\{$slugNs}\\" . JobBuilder::toClassName((string) $name);
+        }
+        $jobClassMap = var_export($jobClasses, true);
+        $validation = self::generateValidation(array_merge(
+            ['job' => 'required|string', 'data' => 'sometimes|array'],
+            is_array($endpoint['validation'] ?? null) ? $endpoint['validation'] : []
+        ));
+
         return "    /**
          * {$description}
          */
         public function store(Request \$request): JsonResponse
         {
             \$validated = \$request->validate([
-                'job' => 'required|string'
+{$validation}
             ]);
     
-            \$jobClass = match(\$validated['job']) {
-                'process-data' => \\App\\Jobs\\Arkzen\\JobTest\\ProcessDataJob::class,
-                'heavy-computation' => \\App\\Jobs\\Arkzen\\JobTest\\HeavyComputationJob::class,
-                'always-fails' => \\App\\Jobs\\Arkzen\\JobTest\\AlwaysFailsJob::class,
-                default => throw new \\Exception('Unknown job: ' . \$validated['job']),
-            };
+            \$jobClasses = {$jobClassMap};
+            \$jobName = str_replace('_', '-', \$validated['job']);
+            \$jobClass = \$jobClasses[\$jobName] ?? null;
+            if (!\$jobClass) return response()->json(['message' => 'Unknown job: ' . \$jobName], 400);
     
-            dispatch(new \$jobClass());
+            dispatch(new \$jobClass(\$validated['data'] ?? []));
     
             return response()->json(['message' => 'Job dispatched'], 202);
         }";
@@ -763,26 +775,33 @@ class {$controllerName} extends Controller
     // EVENT FIRE — fires an event and returns immediately
     // ─────────────────────────────────────────────
     
-    private static function generateEventFire(string $model, array $endpoint): string
+    private static function generateEventFire(string $model, array $endpoint, array $module, string $slugNs): string
     {
         $description = $endpoint['description'] ?? 'Fire an event';
-        
+        $eventClasses = [];
+        foreach (($module['events'] ?? []) as $name => $_) {
+            $eventClasses[str_replace('_', '-', (string) $name)] =
+                "\\App\\Events\\Arkzen\\{$slugNs}\\" . EventBuilder::toClassName((string) $name);
+        }
+        $eventClassMap = var_export($eventClasses, true);
+        $validation = self::generateValidation(array_merge(
+            ['event' => 'required|string', 'payload' => 'sometimes|array'],
+            is_array($endpoint['validation'] ?? null) ? $endpoint['validation'] : []
+        ));
+
         return "    /**
          * {$description}
          */
         public function store(Request \$request): JsonResponse
         {
             \$validated = \$request->validate([
-                'event' => 'required|string',
-                'payload' => 'sometimes|array'
+{$validation}
             ]);
     
-            \$eventClass = match(\$validated['event']) {
-                'user-signed-up' => \\App\\Events\\Arkzen\\EventsTest\\UserSignedUp::class,
-                'order-placed' => \\App\\Events\\Arkzen\\EventsTest\\OrderPlaced::class,
-                'data-exported' => \\App\\Events\\Arkzen\\EventsTest\\DataExported::class,
-                default => throw new \\Exception('Unknown event: ' . \$validated['event']),
-            };
+            \$eventClasses = {$eventClassMap};
+            \$eventName = str_replace('_', '-', \$validated['event']);
+            \$eventClass = \$eventClasses[\$eventName] ?? null;
+            if (!\$eventClass) return response()->json(['message' => 'Unknown event: ' . \$eventName], 400);
     
             event(new \$eventClass(\$validated['payload'] ?? []));
     

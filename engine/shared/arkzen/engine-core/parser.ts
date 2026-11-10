@@ -715,9 +715,10 @@ function parseAllNativePages(content: string): ArkzenPage[] {
 function parseAllNativeLynxPages(content: string): ArkzenPage[] {
   const sections = extractAllNamedSections(content, 'native:page:lynx')
   return sections.map(section => {
-    const layoutMatch = section.raw.match(/\/\* @arkzen:native:page:lynx:layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//)
+    const layoutPattern = /\/\* @arkzen:native:page:(?:lynx:)?layout:(\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)?) \*\//
+    const layoutMatch = section.raw.match(layoutPattern)
     const raw = layoutMatch
-      ? section.raw.replace(/\/\* @arkzen:native:page:lynx:layout:\+?[a-zA-Z0-9_-]+(?::[a-zA-Z0-9_-]+)? \*\/\n?/, '').trim()
+      ? section.raw.replace(layoutPattern, '').trim()
       : section.raw
     return {
       name:   section.name!,

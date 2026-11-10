@@ -4,8 +4,6 @@
 
 Pluffy is a place where an app starts as a single file and grows into a complete, working system: database, backend, web pages, mobile screens and a desktop shell, all from the same source. Make yourself at home.
 
-*(Pluffy was previously known as Arkzen.)*
-
 ---
 
 ## The idea
