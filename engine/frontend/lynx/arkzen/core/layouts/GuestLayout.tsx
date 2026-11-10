@@ -15,7 +15,7 @@
 // Auth: useAuthStore + setActiveTatemono from stores/authStore.
 // ============================================================
 
-import React, { useEffect, useRef } from '@lynx-js/react'
+import { useEffect, useRef } from '@lynx-js/react'
 import { useArkzenRouter }   from '../adapters/router'
 import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 

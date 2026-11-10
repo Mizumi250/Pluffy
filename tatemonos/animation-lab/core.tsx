@@ -3334,8 +3334,9 @@ const EasingSection = () => {
 
 /* @arkzen:native:components:lynx:shared */
 
-import { type ReactNode, useState, useEffect, useRef } from '@lynx-js/react'
-import { animate, useMotionValueRef } from '@lynx-js/motion'
+import { type ReactNode, useState, useEffect, useMainThreadRef, runOnMainThread } from '@lynx-js/react'
+import { type MainThread } from '@lynx-js/types'
+import { animate } from '@lynx-js/motion'
 
 // ─── NAV SECTIONS ─────────────────────────────────────────────────────────────
 const LYNX_NAV_SECTIONS = [
@@ -3355,179 +3356,199 @@ const LynxSectionHeader = ({
 }: {
   icon: string; title: string; subtitle: string; color: string
 }) => (
-  <div className="flex flex-row items-start gap-3 p-4 bg-white/5 border border-white/10 rounded-xl mx-4 mb-3">
-    <div className="w-9 h-9 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${color}22` }}>
-      <span className="text-base">{icon}</span>
-    </div>
-    <div className="flex-1">
-      <div className="text-sm font-extrabold text-white">{title}</div>
-      <div className="text-xs text-white/40">{subtitle}</div>
-    </div>
-  </div>
+  <view className="flex-row items-start gap-3 p-4 bg-white/5 border border-white/10 rounded-xl mx-4 mb-3">
+    <view className="w-9 h-9 rounded-lg items-center justify-center" style={{ backgroundColor: `${color}22` }}>
+      <text className="text-base">{icon}</text>
+    </view>
+    <view className="flex-1">
+      <text className="text-sm font-extrabold text-white">{title}</text>
+      <text className="text-xs text-white/40">{subtitle}</text>
+    </view>
+  </view>
 )
 
 // ─── DEMO CARD ─────────────────────────────────────────────────────────────────
 const LynxDemoCard = ({ title, desc, full = false, children }: {
-  title: string; desc: string; full?: boolean; children: ReactNode
+  title: string; desc: string; full?: boolean; children?: ReactNode
 }) => (
-  <div className={`${full ? 'mx-4 mb-3' : 'w-[46%] m-1'} bg-white/5 border border-white/10 rounded-xl overflow-hidden`}>
-    <div className="px-3 py-2 border-b border-white/5">
-      <div className="text-xs font-bold text-white/90">{title}</div>
-      <div className="text-[10px] text-white/35">{desc}</div>
-    </div>
-    <div className="p-4 min-h-[70px] flex flex-col items-center justify-center gap-2">
+  <view
+    className="bg-white/5 border border-white/10 rounded-xl overflow-hidden"
+    style={full ? { marginLeft: 16, marginRight: 16, marginBottom: 12 } : { width: '46%', margin: 4 }}
+  >
+    <view className="px-3 py-2 border-b border-white/5">
+      <text className="text-xs font-bold text-white/90">{title}</text>
+      <text className="text-[10px] text-white/35">{desc}</text>
+    </view>
+    <view className="p-4 items-center justify-center gap-2" style={{ minHeight: 70 }}>
       {children}
-    </div>
-  </div>
+    </view>
+  </view>
 )
 
 // ─── PLAY/RESET BUTTONS ───────────────────────────────────────────────────────
 const LynxPlayReset = ({ onPlay, onReset }: { onPlay: () => void; onReset: () => void }) => (
-  <div className="flex flex-row gap-2 items-center justify-center mt-2">
-    <button className="flex flex-row items-center gap-1 px-4 py-2 rounded-lg bg-indigo-500 text-white font-bold text-xs" onPress={onPlay}>
-      <span>▶</span> Play
-    </button>
-    <button className="flex flex-row items-center gap-1 px-3 py-2 rounded-lg bg-white/10 border border-white/10 text-white/60 text-xs" onPress={onReset}>
-      <span>↺</span> Reset
-    </button>
-  </div>
+  <view className="flex-row gap-2 items-center justify-center mt-2">
+    <view className="px-4 py-2 rounded-lg bg-indigo-500" bindtap={onPlay}>
+      <text className="text-white font-bold text-xs">▶ Play</text>
+    </view>
+    <view className="px-3 py-2 rounded-lg bg-white/10 border border-white/10" bindtap={onReset}>
+      <text className="text-white/60 text-xs">↺ Reset</text>
+    </view>
+  </view>
 )
 
-// ─── ENTRANCE SECTION ────────────────────────────────────────────────────────
+// ─── ENTRANCE SECTION (main-thread motion) ───────────────────────────────────
 
 const LynxEntranceSection = () => {
-  const box1Ref = useMotionValueRef()
-  const box2Ref = useMotionValueRef()
-  const box3Ref = useMotionValueRef()
-  const [show, setShow] = useState(false)
+  const box1Ref = useMainThreadRef<MainThread.Element>(null)
+  const box2Ref = useMainThreadRef<MainThread.Element>(null)
+  const box3Ref = useMainThreadRef<MainThread.Element>(null)
 
-  const runEntrance = () => {
-    if (!show) {
-      // Reset first
-      animate(box1Ref.current, { opacity: 1, y: 0 }, { duration: 0, instant: true })
-      animate(box2Ref.current, { opacity: 1, scaleX: 1 }, { duration: 0, instant: true })
-      animate(box3Ref.current, { opacity: 1, x: 0 }, { duration: 0, instant: true })
-      setShow(true)
-      // Then animate them
-      animate(box1Ref.current, { opacity: 1, y: 0 }, { duration: 800, easing: [0.34, 1.56, 0.64, 1] })
-      animate(box2Ref.current, { opacity: 1, scaleX: 1 }, { duration: 700, delay: 100, easing: [0.34, 1.56, 0.64, 1] })
-      animate(box3Ref.current, { opacity: 1, x: 0 }, { duration: 600, delay: 200, easing: 'ease-out' })
-    } else {
-      // Reset
-      animate(box1Ref.current, { opacity: 0, y: 30 }, { duration: 300, easing: 'ease-in' })
-      animate(box2Ref.current, { opacity: 0, scaleX: 0 }, { duration: 300, easing: 'ease-in' })
-      animate(box3Ref.current, { opacity: 0, x: 40 }, { duration: 300, easing: 'ease-in' })
-      setTimeout(() => setShow(false), 400)
-    }
+  const playFade = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box1Ref.current) animate(box1Ref.current, { opacity: 1, y: 0 }, { duration: 0.8, type: 'spring', bounce: 0.35 })
+    })()
+  }
+  const resetFade = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box1Ref.current) animate(box1Ref.current, { opacity: 0, y: 30 }, { duration: 0.3 })
+    })()
+  }
+  const playScale = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box2Ref.current) animate(box2Ref.current, { scaleX: 1 }, { duration: 0.7, type: 'spring', bounce: 0.35 })
+    })()
+  }
+  const resetScale = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box2Ref.current) animate(box2Ref.current, { scaleX: 0 }, { duration: 0.3 })
+    })()
+  }
+  const playSlide = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box3Ref.current) animate(box3Ref.current, { opacity: 1, x: 0 }, { duration: 0.6, ease: 'easeOut' })
+    })()
+  }
+  const resetSlide = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (box3Ref.current) animate(box3Ref.current, { opacity: 0, x: 40 }, { duration: 0.3 })
+    })()
   }
 
   return (
     <>
       <LynxSectionHeader icon="▶" title="Entrance Animations" subtitle="with @lynx-js/motion" color="#6366f1" />
-      <div className="flex flex-row flex-wrap px-3">
+      <view className="flex-row flex-wrap px-3">
         <LynxDemoCard title="Fade In" desc="opacity 0→1">
-          <div ref={box1Ref} className="w-12 h-8 rounded-lg bg-indigo-500 opacity-0" />
-          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+          <view main-thread:ref={box1Ref} className="w-12 h-8 rounded-lg bg-indigo-500" style={{ opacity: 0, transform: 'translateY(30px)' }} />
+          <LynxPlayReset onPlay={playFade} onReset={resetFade} />
         </LynxDemoCard>
         <LynxDemoCard title="Scale X" desc="scaleX 0→1">
-          <div ref={box2Ref} className="w-12 h-8 rounded-lg bg-purple-500 scale-x-0" />
-          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+          <view main-thread:ref={box2Ref} className="w-12 h-8 rounded-lg bg-purple-500" style={{ transform: 'scaleX(0)' }} />
+          <LynxPlayReset onPlay={playScale} onReset={resetScale} />
         </LynxDemoCard>
         <LynxDemoCard title="Slide Right" desc="x 40→0">
-          <div ref={box3Ref} className="w-12 h-8 rounded-lg bg-pink-500 opacity-0" style={{ transform: 'translateX(40px)' }} />
-          <LynxPlayReset onPlay={runEntrance} onReset={runEntrance} />
+          <view main-thread:ref={box3Ref} className="w-12 h-8 rounded-lg bg-pink-500" style={{ opacity: 0, transform: 'translateX(40px)' }} />
+          <LynxPlayReset onPlay={playSlide} onReset={resetSlide} />
         </LynxDemoCard>
-      </div>
+      </view>
     </>
   )
 }
 
-// ─── TIMELINE SECTION ─────────────────────────────────────────────────────────
+// ─── TIMELINE SECTION (state-driven CSS transitions) ─────────────────────────
 
 const LynxTimelineSection = () => {
   const [step, setStep] = useState(0)
-  const dotRefs = useRef([])
+  const [running, setRunning] = useState(false)
 
-  const runTimeline = () => {
-    setStep(0)
-    // Reset all dots
-    dotRefs.current.forEach((ref, i) => {
-      animate(ref, { scale: 0, opacity: 0 }, { duration: 0, instant: true })
-    })
-    // Animate sequentially
-    dotRefs.current.forEach((ref, i) => {
-      animate(ref, { scale: 1, opacity: 1 }, { duration: 300, delay: i * 200, easing: 'spring' })
-    })
-    // Update step after all done
-    setTimeout(() => setStep(5), dotRefs.current.length * 200 + 200)
-  }
+  useEffect(() => {
+    if (!running) return
+    if (step >= 5) { setRunning(false); return }
+    const t = setTimeout(() => setStep(s => s + 1), 200)
+    return () => clearTimeout(t)
+  }, [running, step])
+
+  const play = () => { setStep(0); setRunning(true) }
+  const reset = () => { setRunning(false); setStep(0) }
 
   return (
     <>
       <LynxSectionHeader icon="⏱" title="Timeline Sequence" subtitle="Sequential animation with delay" color="#a78bfa" />
       <LynxDemoCard title="Chained Timeline" desc="Sequential steps" full>
-        <div className="flex flex-row gap-2 mb-3">
+        <view className="flex-row gap-2 mb-3">
           {[0, 1, 2, 3, 4].map(i => (
-            <div key={i}
-                 ref={el => dotRefs.current[i] = el}
-                 className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold bg-purple-500 text-white scale-0 opacity-0`}
-                 style={{ transform: 'scale(0)', opacity: 0 }}>
-              {i + 1}
-            </div>
+            <view
+              key={i}
+              className="w-6 h-6 rounded-full items-center justify-center bg-purple-500"
+              style={{
+                opacity: step > i ? 1 : 0,
+                transform: step > i ? 'scale(1)' : 'scale(0)',
+                transition: 'opacity 300ms ease-out, transform 300ms ease-out',
+              }}
+            >
+              <text className="text-xs font-bold text-white">{i + 1}</text>
+            </view>
           ))}
-        </div>
-        <div className="flex flex-row gap-2">
-          <button className="px-4 py-2 rounded-lg bg-purple-500 text-white text-xs font-bold" onPress={runTimeline}>
-            Play Timeline
-          </button>
-          <button className="px-3 py-2 rounded-lg bg-white/10 text-white/60 text-xs" onPress={() => { setStep(0); dotRefs.current.forEach(ref => animate(ref, { scale: 0, opacity: 0 }, { duration: 0, instant: true })) }}>
-            Reset
-          </button>
-        </div>
+        </view>
+        <view className="flex-row gap-2">
+          <view className="px-4 py-2 rounded-lg bg-purple-500" bindtap={play}>
+            <text className="text-white text-xs font-bold">Play Timeline</text>
+          </view>
+          <view className="px-3 py-2 rounded-lg bg-white/10" bindtap={reset}>
+            <text className="text-white/60 text-xs">Reset</text>
+          </view>
+        </view>
       </LynxDemoCard>
     </>
   )
 }
 
-// ─── STAGGER SECTION ──────────────────────────────────────────────────────────
+// ─── STAGGER SECTION (state-driven CSS transitions) ──────────────────────────
 
 const LynxStaggerSection = () => {
-  const [show, setShow] = useState(false)
-  const itemsRef = useRef([])
+  const [visible, setVisible] = useState(0)
+  const [direction, setDirection] = useState<'in' | 'out' | null>(null)
   const LETTERS = 'ABCDEF'.split('')
 
-  const runStagger = () => {
-    if (show) {
-      // Reset
-      itemsRef.current.forEach(ref => animate(ref, { scale: 0, opacity: 0 }, { duration: 200, easing: 'ease-in' }))
-      setTimeout(() => setShow(false), 300)
-    } else {
-      // Show with stagger
-      setShow(true)
-      itemsRef.current.forEach((ref, i) => {
-        animate(ref, { scale: 1, opacity: 1 }, { duration: 400, delay: i * 100, easing: 'spring', bounce: 0.3 })
-      })
-    }
-  }
+  useEffect(() => {
+    if (direction === null) return
+    const done = direction === 'in' ? visible >= LETTERS.length : visible <= 0
+    if (done) { setDirection(null); return }
+    const t = setTimeout(() => setVisible(v => v + (direction === 'in' ? 1 : -1)), 100)
+    return () => clearTimeout(t)
+  }, [direction, visible])
+
+  const toggle = () => setDirection(visible > 0 && direction !== 'in' ? 'out' : 'in')
 
   return (
     <>
       <LynxSectionHeader icon="⋮" title="Stagger" subtitle="Staggered reveal with spring" color="#8b5cf6" />
       <LynxDemoCard title="Stagger Items" desc="Elements appear one by one" full>
-        <button className="px-4 py-2 rounded-lg bg-indigo-500 text-white text-xs font-bold mb-3" onPress={runStagger}>
-          {show ? 'Hide' : 'Stagger In'}
-        </button>
-        {show && (
-          <div className="flex flex-row flex-wrap gap-2 justify-center">
-            {LETTERS.map((w, i) => (
-              <div key={w} ref={el => itemsRef.current[i] = el}
-                   className="px-3 py-1 rounded-full bg-amber-500 text-white text-xs font-bold scale-0 opacity-0"
-                   style={{ transform: 'scale(0)', opacity: 0 }}>
-                {w}
-              </div>
-            ))}
-          </div>
-        )}
+        <view className="px-4 py-2 rounded-lg bg-indigo-500 mb-3" bindtap={toggle}>
+          <text className="text-white text-xs font-bold">{visible > 0 && direction !== 'in' ? 'Hide' : 'Stagger In'}</text>
+        </view>
+        <view className="flex-row flex-wrap gap-2 justify-center">
+          {LETTERS.map((w, i) => (
+            <view
+              key={w}
+              className="px-3 py-1 rounded-full bg-amber-500"
+              style={{
+                opacity: visible > i ? 1 : 0,
+                transform: visible > i ? 'scale(1)' : 'scale(0)',
+                transition: 'opacity 250ms ease-out, transform 250ms ease-out',
+              }}
+            >
+              <text className="text-white text-xs font-bold">{w}</text>
+            </view>
+          ))}
+        </view>
       </LynxDemoCard>
     </>
   )
@@ -3537,156 +3558,167 @@ const LynxStaggerSection = () => {
 
 const LynxPressSection = () => {
   const [pressed, setPressed] = useState(false)
-  const [scale, setScale] = useState(1)
 
   const handlePress = () => {
     setPressed(true)
-    animate(null, { scale: 1.2 }, { duration: 150, easing: 'spring', onComplete: () => {
-      animate(null, { scale: 1 }, { duration: 150, easing: 'spring' })
-      setPressed(false)
-    } })
+    setTimeout(() => setPressed(false), 150)
   }
 
   return (
     <>
       <LynxSectionHeader icon="⊙" title="Press Feedback" subtitle="Spring on tap" color="#ec4899" />
-      <LynxDemoCard title="Press Me" desc="Spring scale on press" full>
-        <button onPress={handlePress} className="w-24 h-24 rounded-2xl flex items-center justify-center bg-pink-500">
-          <span className="text-3xl">👆</span>
-        </button>
+      <LynxDemoCard title="Press Me" desc="Scale on press" full>
+        <view
+          bindtap={handlePress}
+          className="w-24 h-24 rounded-2xl items-center justify-center bg-pink-500"
+          style={{ transform: pressed ? 'scale(1.2)' : 'scale(1)', transition: 'transform 150ms ease-out' }}
+        >
+          <text className="text-3xl">👆</text>
+        </view>
       </LynxDemoCard>
     </>
   )
 }
 
-// ─── LOOP SECTION ─────────────────────────────────────────────────────────────
+// ─── LOOP SECTION (main-thread motion) ───────────────────────────────────────
 
 const LynxLoopSection = () => {
   const [spinning, setSpinning] = useState(false)
-  const spinRef = useRef()
+  const spinRef = useMainThreadRef<MainThread.Element>(null)
+  const controlsRef = useMainThreadRef<{ stop: () => void } | null>(null)
 
   const toggleSpin = () => {
-    if (spinning) {
-      animate(spinRef.current, { rotate: 0 }, { duration: 0, instant: true })
-      setSpinning(false)
-    } else {
-      setSpinning(true)
-      animate(spinRef.current, { rotate: 360 }, { duration: 2000, repeat: Infinity, easing: 'linear' })
-    }
+    const next = !spinning
+    setSpinning(next)
+    runOnMainThread((start: boolean) => {
+      'main thread'
+      if (!spinRef.current) return
+      if (controlsRef.current) { controlsRef.current.stop(); controlsRef.current = null }
+      if (start) {
+        controlsRef.current = animate(spinRef.current, { rotate: 360 }, { duration: 2, repeat: Infinity, ease: 'linear' })
+      } else {
+        animate(spinRef.current, { rotate: 0 }, { duration: 0 })
+      }
+    })(next)
   }
 
   return (
     <>
       <LynxSectionHeader icon="∞" title="Loop" subtitle="Infinite rotate" color="#f59e0b" />
       <LynxDemoCard title="Spin" desc="Infinite rotation" full>
-        <button className="px-4 py-2 rounded-lg bg-amber-500 text-white text-xs font-bold mb-3" onPress={toggleSpin}>
-          {spinning ? 'Stop' : 'Spin'}
-        </button>
-        <div ref={spinRef} className="w-12 h-12 rounded-full border-4 border-amber-200 border-t-amber-500 flex items-center justify-center">
-          <span className="text-xs text-amber-500 font-bold">∞</span>
-        </div>
+        <view className="px-4 py-2 rounded-lg bg-amber-500 mb-3" bindtap={toggleSpin}>
+          <text className="text-white text-xs font-bold">{spinning ? 'Stop' : 'Spin'}</text>
+        </view>
+        <view
+          main-thread:ref={spinRef}
+          className="w-12 h-12 rounded-full items-center justify-center"
+          style={{ borderWidth: 4, borderStyle: 'solid', borderColor: '#fde68a', borderTopColor: '#f59e0b' }}
+        >
+          <text className="text-xs text-amber-500 font-bold">∞</text>
+        </view>
       </LynxDemoCard>
     </>
   )
 }
 
-// ─── TRANSFORMS SECTION ──────────────────────────────────────────────────────
+// ─── TRANSFORMS SECTION (main-thread motion) ─────────────────────────────────
 
 const LynxTransformsSection = () => {
   const [transformed, setTransformed] = useState(false)
-  const boxRef = useRef()
+  const boxRef = useMainThreadRef<MainThread.Element>(null)
 
   const toggleTransform = () => {
-    if (transformed) {
-      animate(boxRef.current, { rotate: 0, scale: 1, y: 0 }, { duration: 300, easing: 'ease-in-out' })
-      setTransformed(false)
-    } else {
-      animate(boxRef.current, { rotate: 45, scale: 1.2, y: -8 }, { duration: 400, easing: 'spring' })
-      setTransformed(true)
-    }
+    const next = !transformed
+    setTransformed(next)
+    runOnMainThread((on: boolean) => {
+      'main thread'
+      if (!boxRef.current) return
+      if (on) animate(boxRef.current, { rotate: 45, scale: 1.2, y: -8 }, { duration: 0.4, type: 'spring', bounce: 0.3 })
+      else animate(boxRef.current, { rotate: 0, scale: 1, y: 0 }, { duration: 0.3, ease: 'easeInOut' })
+    })(next)
   }
 
   return (
     <>
       <LynxSectionHeader icon="⟳" title="Transforms" subtitle="Translate, rotate, scale" color="#10b981" />
       <LynxDemoCard title="Transform" desc="Tap to transform" full>
-        <button onPress={toggleTransform}>
-          <div ref={boxRef} className="w-16 h-16 rounded-xl bg-emerald-500 flex items-center justify-center">
-            <span className="text-white font-bold">⟳</span>
-          </div>
-        </button>
+        <view bindtap={toggleTransform}>
+          <view main-thread:ref={boxRef} className="w-16 h-16 rounded-xl bg-emerald-500 items-center justify-center">
+            <text className="text-white font-bold">⟳</text>
+          </view>
+        </view>
       </LynxDemoCard>
     </>
   )
 }
 
-// ─── SPRING SECTION ──────────────────────────────────────────────────────────
+// ─── SPRING SECTION (main-thread motion) ─────────────────────────────────────
 
 const LynxSpringSection = () => {
   const [big, setBig] = useState(false)
-  const ballRef = useRef()
+  const ballRef = useMainThreadRef<MainThread.Element>(null)
 
   const toggleSpring = () => {
-    if (big) {
-      animate(ballRef.current, { width: 48, height: 48 }, { duration: 500, easing: 'spring', damping: 15, stiffness: 200 })
-      setBig(false)
-    } else {
-      animate(ballRef.current, { width: 96, height: 96 }, { duration: 500, easing: 'spring', damping: 10, stiffness: 150 })
-      setBig(true)
-    }
+    const next = !big
+    setBig(next)
+    runOnMainThread((grow: boolean) => {
+      'main thread'
+      if (!ballRef.current) return
+      animate(ballRef.current, { scale: grow ? 2 : 1 }, { type: 'spring', stiffness: grow ? 150 : 200, damping: grow ? 10 : 15 })
+    })(next)
   }
 
   return (
     <>
       <LynxSectionHeader icon="⌇" title="Spring" subtitle="Spring physics" color="#3b82f6" />
       <LynxDemoCard title="Spring" desc="Tap to bounce" full>
-        <button onPress={toggleSpring}>
-          <div ref={ballRef} className="rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs w-12 h-12">
-            {big ? '⌇' : ''}
-          </div>
-        </button>
+        <view bindtap={toggleSpring} style={{ height: 100, alignItems: 'center', justifyContent: 'center' }}>
+          <view main-thread:ref={ballRef} className="rounded-full bg-blue-500 items-center justify-center w-12 h-12">
+            <text className="text-white font-bold text-xs">{big ? '⌇' : ''}</text>
+          </view>
+        </view>
       </LynxDemoCard>
     </>
   )
 }
 
-// ─── EASING SECTION ──────────────────────────────────────────────────────────
+// ─── EASING SECTION (main-thread motion) ─────────────────────────────────────
 
-const LynxEasingSection = () => {
-  const barRefs = useRef([])
-  const easings = ['linear', 'ease-in', 'ease-out', 'ease-in-out']
+const LynxEasingCard = ({ name, ease }: { name: string; ease: 'linear' | 'easeIn' | 'easeOut' | 'easeInOut' }) => {
+  const barRef = useMainThreadRef<MainThread.Element>(null)
 
-  const runEasingDemo = () => {
-    barRefs.current.forEach((ref, i) => {
-      animate(ref, { width: '100%' }, {
-        duration: 800,
-        easing: easings[i] === 'linear' ? 'linear' :
-                easings[i] === 'ease-in' ? [0.42, 0, 1, 1] :
-                easings[i] === 'ease-out' ? [0, 0, 0.58, 1] :
-                [0.42, 0, 0.58, 1],
-        onComplete: () => {
-          setTimeout(() => animate(ref, { width: '50%' }, { duration: 300, easing: 'ease-in' }), 500)
-        }
-      })
-    })
+  const run = () => {
+    runOnMainThread(() => {
+      'main thread'
+      if (!barRef.current) return
+      animate(barRef.current, { scaleX: 1 }, { duration: 0.8, ease })
+        .then(() => animate(barRef.current as MainThread.Element, { scaleX: 0.5 }, { duration: 0.3, delay: 0.5, ease: 'easeIn' }))
+    })()
   }
 
   return (
-    <>
-      <LynxSectionHeader icon="⌗" title="Easing" subtitle="Transition curves" color="#ef4444" />
-      <div className="flex flex-row flex-wrap px-3">
-        {easings.map((e, i) => (
-          <LynxDemoCard key={e} title={e} desc="Tap to run">
-            <div className="w-24 h-3 rounded-full bg-red-200 overflow-hidden">
-              <div ref={el => barRefs.current[i] = el} className="h-full bg-red-500 w-1/2" />
-            </div>
-            <button className="mt-2 px-3 py-1 bg-red-500 text-white text-xs rounded" onPress={runEasingDemo}>Run</button>
-          </LynxDemoCard>
-        ))}
-      </div>
-    </>
+    <LynxDemoCard title={name} desc="Tap to run">
+      <view className="w-24 h-3 rounded-full bg-red-200 overflow-hidden">
+        <view main-thread:ref={barRef} className="h-full w-24 bg-red-500" style={{ transform: 'scaleX(0.5)', transformOrigin: 'left center' }} />
+      </view>
+      <view className="mt-2 px-3 py-1 bg-red-500 rounded" bindtap={run}>
+        <text className="text-white text-xs">Run</text>
+      </view>
+    </LynxDemoCard>
   )
 }
+
+const LynxEasingSection = () => (
+  <>
+    <LynxSectionHeader icon="⌗" title="Easing" subtitle="Transition curves" color="#ef4444" />
+    <view className="flex-row flex-wrap px-3">
+      <LynxEasingCard name="linear" ease="linear" />
+      <LynxEasingCard name="ease-in" ease="easeIn" />
+      <LynxEasingCard name="ease-out" ease="easeOut" />
+      <LynxEasingCard name="ease-in-out" ease="easeInOut" />
+    </view>
+  </>
+)
 
 /* @arkzen:native:components:lynx:shared:end */
 
@@ -3696,7 +3728,7 @@ const LynxEasingSection = () => {
 
 /* @arkzen:native:page:lynx:index */
 
-import React, { useState } from '@lynx-js/react'
+import { useState } from '@lynx-js/react'
 
 const IndexLynxPage = () => {
   const [activeSection, setActiveSection] = useState('entrance')
@@ -3716,35 +3748,34 @@ const IndexLynxPage = () => {
   }
 
   return (
-    <div className="flex-1 min-h-screen bg-neutral-900 text-white">
-      <div className="border-b border-white/10 px-5 py-4">
-        <div className="text-lg font-bold text-purple-400">🎬 Animation Lab</div>
-        <div className="text-xs text-white/35">Lynx · @lynx-js/motion</div>
-      </div>
+    <view className="flex-1 bg-neutral-900" style={{ height: '100%' }}>
+      <view className="border-b border-white/10 px-5 py-4">
+        <text className="text-lg font-bold text-purple-400">🎬 Animation Lab</text>
+        <text className="text-xs text-white/35">Lynx · @lynx-js/motion</text>
+      </view>
 
-      <div className="flex flex-row overflow-x-auto border-b border-white/10 px-3 py-2 gap-1">
-        {LYNX_NAV_SECTIONS.map(({ id, label, icon, color }) => {
-          const active = activeSection === id
-          return (
-            <button
-              key={id}
-              className={`flex flex-row items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold ${
-                active ? 'bg-neutral-800 text-white' : 'bg-white/10 text-white/60'
-              }`}
-              onPress={() => setActiveSection(id)}
-            >
-              <span>{icon}</span>
-              {label}
-            </button>
-          )
-        })}
-      </div>
+      <scroll-view scroll-orientation="horizontal" show-scrollbar={false} className="border-b border-white/10" style={{ height: 56 }}>
+        <view className="flex-row px-3 py-2 gap-1">
+          {LYNX_NAV_SECTIONS.map(({ id, label, icon }) => {
+            const active = activeSection === id
+            return (
+              <view
+                key={id}
+                className={`flex-row items-center gap-1.5 px-3 py-2 rounded-xl ${active ? 'bg-neutral-800' : 'bg-white/10'}`}
+                bindtap={() => setActiveSection(id)}
+              >
+                <text className={`text-xs font-semibold ${active ? 'text-white' : 'text-white/60'}`}>{icon} {label}</text>
+              </view>
+            )
+          })}
+        </view>
+      </scroll-view>
 
-      <div className="flex-1 overflow-y-auto">
+      <scroll-view scroll-orientation="vertical" className="flex-1">
         {renderSection()}
-        <div className="h-8" />
-      </div>
-    </div>
+        <view className="h-8" />
+      </scroll-view>
+    </view>
   )
 }
 
@@ -3785,14 +3816,12 @@ const NotFoundRN = () => (
 /* @arkzen:native:error:404:end */
 
 /* @arkzen:native:error:404:lynx */
-import React from '@lynx-js/react'
-
 const NotFoundLynx = () => (
-  <div className="flex-1 min-h-screen bg-neutral-950 text-white flex items-center justify-center flex-col">
-    <div className="text-6xl mb-4">404</div>
-    <div className="text-xl font-bold">Page Not Found</div>
-    <div className="text-white/40 text-sm mt-2">The page you're looking for doesn't exist.</div>
-  </div>
+  <view className="flex-1 bg-neutral-950 items-center justify-center" style={{ height: '100%' }}>
+    <text className="text-6xl mb-4 text-white">404</text>
+    <text className="text-xl font-bold text-white">Page Not Found</text>
+    <text className="text-white/40 text-sm mt-2">The page you're looking for doesn't exist.</text>
+  </view>
 )
 /* @arkzen:native:error:404:lynx:end */
 
@@ -3827,14 +3856,12 @@ const ServerErrorRN = () => (
 /* @arkzen:native:error:500:end */
 
 /* @arkzen:native:error:500:lynx */
-import React from '@lynx-js/react'
-
 const ServerErrorLynx = () => (
-  <div className="flex-1 min-h-screen bg-neutral-950 text-white flex items-center justify-center flex-col">
-    <div className="text-6xl mb-4">500</div>
-    <div className="text-xl font-bold">Server Error</div>
-    <div className="text-white/40 text-sm mt-2">Something went wrong on our end. Please try again later.</div>
-  </div>
+  <view className="flex-1 bg-neutral-950 items-center justify-center" style={{ height: '100%' }}>
+    <text className="text-6xl mb-4 text-white">500</text>
+    <text className="text-xl font-bold text-white">Server Error</text>
+    <text className="text-white/40 text-sm mt-2">Something went wrong on our end. Please try again later.</text>
+  </view>
 )
 /* @arkzen:native:error:500:lynx:end */
 

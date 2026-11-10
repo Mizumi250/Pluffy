@@ -6,6 +6,8 @@
     "jsx": "react-jsx",
     "jsxImportSource": "@lynx-js/react",
 
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
     "module": "ESNext",
     "moduleResolution": "Bundler",
 
@@ -16,6 +18,8 @@
     "./**/*.tsx",
     "../arkzen/core/components/**/*.ts",
     "../arkzen/core/components/**/*.tsx",
+    "../arkzen/core/layouts/**/*.tsx",
+    "../arkzen/core/adapters/**/*.ts",
     "../arkzen/core/stores/**/*.ts",
     "../arkzen/core/native-bridge.ts"
   ],

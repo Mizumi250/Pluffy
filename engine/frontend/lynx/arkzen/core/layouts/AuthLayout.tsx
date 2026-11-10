@@ -12,7 +12,7 @@
 // Auth: useAuthStore + setActiveTatemono from stores/authStore.
 // ============================================================
 
-import React, { useEffect, useRef } from '@lynx-js/react'
+import { useEffect, useRef } from '@lynx-js/react'
 import { useArkzenRouter }   from '../adapters/router'
 import { useAuthStore, setActiveTatemono } from '../stores/authStore'
 
@@ -83,7 +83,7 @@ export function AuthLayout({ children, tatSlug, loginRoute }: AuthLayoutProps) {
         </text>
         <view className="flex-row items-center gap-3">
           {user && (
-            <text className="text-xs text-neutral-400 max-w-36" numberOfLines={1}>
+            <text className="text-xs text-neutral-400 max-w-36" text-maxline="1">
               {user.email}
             </text>
           )}

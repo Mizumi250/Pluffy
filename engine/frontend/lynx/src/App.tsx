@@ -280,7 +280,7 @@ export function App() {
           )}
 
           <input
-            value={query}
+            default-value={query}
             bindinput={event => setQuery(event.detail.value)}
             placeholder="Search Tatemono or framework"
             className="mb-3 h-12 rounded-2xl border border-neutral-200 bg-white px-4 text-sm text-neutral-900"

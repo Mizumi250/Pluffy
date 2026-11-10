@@ -669,7 +669,7 @@ function resolveLynxRouteLayout(
   const compositePath = path.join(LAYOUT_COMPOSITE_DIR, `${compositeFile}.tsx`)
 
   const imports = layers.map(l => getLynxLayoutImport(l, tatName, '_layout-composites'))
-  const opens   = layers.map(l => `<${getLynxLayoutComponent(l)}>`)
+  const opens   = layers.map(l => `<${getLynxLayoutComponent(l)} {...layoutProps}>`)
   const closes  = [...layers].reverse().map(l => `</${getLynxLayoutComponent(l)}>`)
 
   const content = `// ARKZEN GENERATED — composite layout chain for ${tatName} (${layers.join(' → ')})
@@ -678,7 +678,9 @@ function resolveLynxRouteLayout(
 // and app-routes.ts can only reference a single layout component per route.
 ${imports.join('\n')}
 
-export function ${compositeName}({ children }: { children: JSX.Element }) {
+// Props (tatSlug, loginRoute, dashboardRoute) are forwarded to every layer so
+// the built-in AuthLayout / GuestLayout guards receive what they require.
+export function ${compositeName}({ children, ...layoutProps }: any) {
   return (
     ${opens.join('\n    ')}
       {children}
@@ -1447,7 +1449,9 @@ function generateErrorFiles(tatemono: ParsedTatemono): { has404: boolean; has500
     if (code === '500') has500 = true
 
     const raw = h.raw.trim()
-    const nameMatch = raw.match(/^(?:export\s+)?(?:const|function)\s+(\w+)/)
+    // Multiline: handler bodies often start with import lines, so the first
+    // top-level const/function is not on line 1.
+    const nameMatch = raw.match(/^[ \t]*(?:export\s+)?(?:const|function)\s+(\w+)/m)
     const compName  = nameMatch ? nameMatch[1] : null
     if (!compName) {
       console.log(`[Arkzen Lynx Router] ⚠ Could not isolate a component name for ${tatName} error ${code}; app-routes.ts expects a default export here`)
@@ -1669,7 +1673,10 @@ function regenerateRoutesFile(tatemono?: ParsedTatemono): void {
         resolveLynxRouteLayout(route.layout, tat, nativeLynxLayouts)
 
       for (const importLine of layoutImportLines) {
-        const key = `${tat}:${importLine}`
+        // Dedupe by the import line itself: built-in AuthLayout/GuestLayout
+        // lines are identical for every tatemono, keying by tat re-emitted
+        // them per tatemono (TS2300 Duplicate identifier).
+        const key = importLine
         if (!layoutImportSeen.has(key)) {
           layoutImportSeen.add(key)
           layoutImports.push(importLine)
