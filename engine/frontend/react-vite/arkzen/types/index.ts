@@ -1,5 +1,5 @@
 // ============================================================
-// ARKZEN ENGINE — TYPE DEFINITIONS v10.4 (Expo)
+// ARKZEN ENGINE — TYPE DEFINITIONS v10.4 (React vite)
 // v10.4: Stack-split animation and script fields.
 //        nativeAnimationExpo added (was previously merged into :rn).
 //        nativeScript / nativeScripts replaced by per-stack variants.
@@ -294,10 +294,6 @@ export interface ArkzenMiddlewareSnippets {
 }
 
 // Interfaces for parsed named sections
-export interface ArkzenStore {
-  [key: string]: unknown
-}
-
 export interface ArkzenRealtime {
   [key: string]: unknown
 }
@@ -384,7 +380,6 @@ export interface ParsedTatemono {
   errorHandlers:       ArkzenErrorHandler[]  // web: @arkzen:web:error:404/500
   nativeErrorHandlers: ArkzenErrorHandler[]  // @arkzen:native:error:404/500 (Expo + Bare RN)
 
-  stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
   events:             ArkzenEvent[]
   jobs:               ArkzenJob[]
