@@ -39,8 +39,9 @@ func ensureSQLiteSchema(storageDir, module string, definitions []DatabaseDefinit
 		}
 	}()
 
+	resolver := newForeignKeyResolver(module, definitions)
 	for _, definition := range definitions {
-		if err := ensureTable(tx, definition); err != nil {
+		if err := ensureTable(tx, definition, resolver); err != nil {
 			return fmt.Errorf("configure table %q: %w", definition.Table, err)
 		}
 		if definition.Seeder != nil && len(definition.Seeder.Data) > 0 {
@@ -70,6 +71,11 @@ func ensureSQLiteSchema(storageDir, module string, definitions []DatabaseDefinit
 }
 
 func ensureModuleSchema(storageDir, module string, definitions []DatabaseDefinition, auth bool, authSeed *AuthSeed, notifications bool) error {
+	resolver := newForeignKeyResolver(module, definitions)
+	definitions, err := orderDefinitionsByForeignKeys(resolver, definitions)
+	if err != nil {
+		return fmt.Errorf("order tables by foreign keys: %w", err)
+	}
 	if configuredDialect() == postgresDialect {
 		if err := ensurePostgresDatabase(module); err != nil {
 			return err
@@ -93,7 +99,7 @@ func ensureModuleSchema(storageDir, module string, definitions []DatabaseDefinit
 			}
 		}()
 		for _, definition := range definitions {
-			if err := ensureTableDialect(tx, definition, postgresDialect); err != nil {
+			if err := ensureTableDialect(tx, definition, postgresDialect, resolver); err != nil {
 				return fmt.Errorf("configure table %q: %w", definition.Table, err)
 			}
 			if definition.Seeder != nil && len(definition.Seeder.Data) > 0 {
@@ -434,11 +440,16 @@ func seedValue(raw json.RawMessage) (any, error) {
 	}
 }
 
-func ensureTable(tx *sql.Tx, definition DatabaseDefinition) error {
-	return ensureTableDialect(tx, definition, sqliteDialect)
+func ensureTable(tx *sql.Tx, definition DatabaseDefinition, resolver *foreignKeyResolver) error {
+	return ensureTableDialect(tx, definition, sqliteDialect, resolver)
 }
 
-func ensureTableDialect(tx *sql.Tx, definition DatabaseDefinition, dialect databaseDialect) error {
+// ensureTableDialect creates the table (with foreign key constraints from
+// `foreign:` when a resolver is given) and adds any missing columns. A table
+// that already exists is not altered, so a database created before foreign keys
+// were supported keeps its old schema until it is recreated. Columns added to
+// an existing table get no constraint, the same as the other backends.
+func ensureTableDialect(tx *sql.Tx, definition DatabaseDefinition, dialect databaseDialect, resolver *foreignKeyResolver) error {
 	columns := make(map[string]ColumnDefinition, len(definition.Columns)+3)
 	for name, column := range definition.Columns {
 		columns[name] = column
@@ -511,6 +522,13 @@ func ensureTableDialect(tx *sql.Tx, definition DatabaseDefinition, dialect datab
 				return fmt.Errorf("invalid default for column %q: %w", name, err)
 			}
 			part += " DEFAULT " + value
+		}
+		clause, err := resolver.clause(column)
+		if err != nil {
+			return fmt.Errorf("column %q: %w", name, err)
+		}
+		if clause != "" {
+			part += " " + clause
 		}
 		parts = append(parts, part)
 	}
