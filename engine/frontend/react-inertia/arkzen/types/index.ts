@@ -211,10 +211,6 @@ export interface ArkzenMiddlewareSnippets {
 }
 
 // Interfaces for parsed named sections
-export interface ArkzenStore {
-  [key: string]: unknown
-}
-
 export interface ArkzenRealtime {
   [key: string]: unknown
 }
@@ -308,7 +304,6 @@ export interface ParsedTatemono {
 
   errorHandlers:      ArkzenErrorHandler[]
 
-  stores:             ArkzenStore[]
   realtimes:          ArkzenRealtime[]
   events:             ArkzenEvent[]
   jobs:               ArkzenJob[]
