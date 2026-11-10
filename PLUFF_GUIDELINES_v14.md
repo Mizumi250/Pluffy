@@ -780,10 +780,6 @@
   /* @arkzen:native:page:lynx:layout:app */      ← same for Lynx pages
   ```
 
-  ### Parsed markers that are not supported DSL
-
-  `@arkzen:store:<name>` is detected by `hasSections()` and parsed into an internal `stores` field, but no builder consumes or emits it. It is not a usable store declaration; do not generate it. For web Zustand state, export the store from `@arkzen:web:components` (Section 3C). Native state belongs in native component code.
-
   ### Backend variant suffix (`:php` `:ts` `:py` `:java` `:cs` `:go` `:rs`)
 
   Backend code blocks accept a variant token between marker and name (`@arkzen:endpoint:ts:stats`). The opening tag, YAML placement and `*/` rules follow the block's normal shape; the closing tag repeats the suffix (`/* @arkzen:endpoint:ts:stats:end */`). Same-named blocks with different suffixes may coexist in one file. See Section 1E.
