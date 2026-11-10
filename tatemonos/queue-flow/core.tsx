@@ -100,7 +100,7 @@ columns:
     autoIncrement: true
   queue_id:
     type: foreignId
-    foreign: queue_flow_queues.id
+    foreign: queues.id
     nullable: false
   ticket_number:
     type: string
