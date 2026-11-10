@@ -73,6 +73,8 @@ type ColumnDefinition struct {
 	Primary       bool            `json:"primary"`
 	AutoIncrement *bool           `json:"autoIncrement"`
 	Default       json.RawMessage `json:"default"`
+	Foreign       string          `json:"foreign"`
+	OnDelete      string          `json:"onDelete"`
 }
 
 type APIBlock struct {
