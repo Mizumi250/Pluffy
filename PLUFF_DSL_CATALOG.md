@@ -122,6 +122,3 @@ Game blocks are separate export targets; they are not web or native UI blocks.
 
 - Tatemono files reference files under `tatemonos/<name>/assets/`; the `assets/`
   folder itself is not a DSL block.
-- `@arkzen:store:<name>` may be detected by legacy parser helpers, but it is not
-  a supported store declaration. Put web stores in `@arkzen:web:components`;
-  native state belongs in native component code.
