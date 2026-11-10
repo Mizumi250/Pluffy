@@ -118,7 +118,6 @@ export interface ArkzenCustomRoute {
 }
 
 export interface ArkzenMiddlewareSnippets { [middlewareName: string]: string }
-export interface ArkzenStore { [key: string]: unknown }
 export interface ArkzenRealtime { [key: string]: unknown }
 export interface ArkzenEvent { [key: string]: unknown }
 export interface ArkzenJob { [key: string]: unknown }
@@ -156,8 +155,7 @@ export interface ParsedTatemono {
   config?: ArkzenConfigOverride
   desktopConfig?: ArkzenDesktopConfig
   databases: ArkzenDatabase[]; apis: ArkzenApi[]; customRoutes: ArkzenCustomRoute[]
-  pages: ArkzenPage[]; layouts: ArkzenLayout[]; errorHandlers: ArkzenErrorHandler[]
-  stores: ArkzenStore[]; realtimes: ArkzenRealtime[]; events: ArkzenEvent[]
+  pages: ArkzenPage[]; layouts: ArkzenLayout[]; errorHandlers: ArkzenErrorHandler[]; realtimes: ArkzenRealtime[]; events: ArkzenEvent[]
   jobs: ArkzenJob[]; notifications: ArkzenNotification[]; mails: ArkzenMail[]
   consoles: ArkzenConsole[]; components: ArkzenSection[]; styles: ArkzenStyle[]
   middlewareSnippets: ArkzenMiddlewareSnippets; policySnippets: Record<string, string>
