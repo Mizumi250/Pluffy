@@ -64,7 +64,13 @@ interface UseCRDTResult<T extends Record<string, unknown>> {
 // ─────────────────────────────────────────────
 
 const CLIENT_ID = (() => {
-  if (typeof window === 'undefined') return 'server'
+  const sessionStorage = (globalThis as typeof globalThis & {
+    sessionStorage?: {
+      getItem(key: string): string | null
+      setItem(key: string, value: string): void
+    }
+  }).sessionStorage
+  if (!sessionStorage) return 'server'
   const stored = sessionStorage.getItem('arkzen_crdt_client_id')
   if (stored) return stored
   const id = `client_${Math.random().toString(36).slice(2, 9)}`

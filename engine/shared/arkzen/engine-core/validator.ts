@@ -237,12 +237,18 @@ export function validateTatemono(filePath: string): ValidationResult {
   // The parser and builders resolve those imports; markerless legacy blocks are valid.
 
   // Duplicate native page names
-  const seenNativePages = new Set<string>()
+  // Same rule as the parser's own check: one page name may be declared once per
+  // Expo/RN target (dual-target tatemonos like shan-shan carry `index` for both).
+  // Stacks with no native target (web, lynx) keep both blocks, so comparing names
+  // alone would wrongly reject them.
+  const seenNativePages = new Map<string, 'expo' | 'rn' | null>()
   for (const page of parsed.nativePages) {
-    if (seenNativePages.has(page.name)) {
+    const target = page.raw.match(/@arkzen:(?:resolved:import|import:)\s*:?\s*(expo|rn)/)?.[1] as 'expo' | 'rn' | undefined
+    const previousTarget = seenNativePages.get(page.name)
+    if (seenNativePages.has(page.name) && (!target || !previousTarget || target === previousTarget)) {
       errors.push(`Duplicate native page: "${page.name}"`)
     }
-    seenNativePages.add(page.name)
+    seenNativePages.set(page.name, target ?? null)
   }
 
   const seenLynxPages = new Set<string>()

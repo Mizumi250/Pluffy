@@ -42,11 +42,32 @@
 //     also gain `Accept: application/json` for consistency.
 // ============================================================
 
+import * as fs from 'fs'
 import type { ParsedTatemono } from '../types'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
+import { writeFreeFiles, removeFreeFiles } from './file-writer'
 
 const BACKEND_URL          = process.env.ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 const ARKZEN_ENGINE_SECRET = process.env.ARKZEN_ENGINE_SECRET ?? 'arkzen-engine-secret'
+
+function rustPrelude(filePath: string): string | undefined {
+  const contents = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n')
+  const startMarker = '/* @arkzen:module:rs\n*/'
+  const endMarker = '/* @arkzen:module:rs:end */'
+  const start = contents.indexOf(startMarker)
+  if (start < 0) return undefined
+  if (contents.indexOf(startMarker, start + startMarker.length) >= 0) {
+    throw new Error(`Tatemono must contain at most one Rust module source block: ${filePath}`)
+  }
+  const bodyStart = start + startMarker.length
+  const end = contents.indexOf(endMarker, bodyStart)
+  if (end < 0) throw new Error(`Rust module source block is missing its end marker: ${filePath}`)
+  if (contents.indexOf(endMarker, end + endMarker.length) >= 0) {
+    throw new Error(`Tatemono contains an unexpected extra Rust module source end marker: ${filePath}`)
+  }
+  const source = contents.slice(bodyStart, end).trim()
+  return source || undefined
+}
 
 function backendLabel(backend = resolveActiveBackend()): string {
   return ({
@@ -62,6 +83,9 @@ function backendLabel(backend = resolveActiveBackend()): string {
 }
 
 export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<void> {
+  // v5.7: @arkzen:file blocks are written for every stack, before the backend check.
+  writeFreeFiles(tatemono)
+
   const hasBackend =
     tatemono.databases.length                             > 0 ||
     tatemono.apis.length                                  > 0 ||
@@ -83,6 +107,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
 
   const backend = resolveActiveBackend()
   const label = backendLabel(backend)
+  const rustSource = backend === 'rust' ? rustPrelude(tatemono.filePath) : undefined
   console.log(`[Arkzen Bridge] Sending to ${label}: ${tatemono.meta.name}`)
   if (tatemono.databases.length)    console.log(`[Arkzen Bridge]   Tables: ${tatemono.databases.map(d => d.table).join(', ')}`)
   if (tatemono.apis.length)         console.log(`[Arkzen Bridge]   Resources: ${tatemono.apis.map(a => a.model).join(', ')}`)
@@ -136,6 +161,8 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
         ...(r.body ? { body: r.body } : {}),  // ← v5.3: forward injected handler body
       })),
     })),
+
+    ...(rustSource ? { rustPrelude: rustSource } : {}),
 
     // Send raw YAML strings only — ModuleReader.parse() normalises these
     // into typed PHP arrays before any builder ever sees them.
@@ -206,6 +233,10 @@ export async function triggerBackendRemove(
     tables:      string[]
   }
 ): Promise<void> {
+  // @arkzen:file cleanup runs for every stack, before the backend check.
+  try { removeFreeFiles(tatemononName) }
+  catch (error) { console.warn(`[Arkzen Files] ⚠ Cleanup failed for ${tatemononName}:`, error instanceof Error ? error.message : error) }
+
   const label = backendLabel()
   console.log(`[Arkzen Bridge] Removing from ${label}: ${tatemononName}`)
 

@@ -17,7 +17,7 @@
 
 import React, { useEffect, useRef, useState } from 'react'
 import { useArkzenRouter, useArkzenPathname } from '../adapters/router'
-import { useAuthStore, useAuthStoreHydrated } from '../stores/authStore'
+import { useAuthStore, setActiveTatemono, useAuthStoreHydrated } from '../stores/authStore'
 import { ToastProvider } from '../components/Toast'
 
 export interface GuestLayoutProps {
@@ -37,7 +37,9 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
 }) => {
   const router              = useArkzenRouter()
   const pathname            = useArkzenPathname()
-  const hydrated            = useAuthStoreHydrated()
+  const segments             = pathname.split('/').filter(Boolean)
+  const tatemono             = segments[0] ?? ''
+  const hydrated            = useAuthStoreHydrated(tatemono)
   const { isAuthenticated } = useAuthStore()
   const shouldGuard         = redirectIfAuth || guestOnly
   const [checking, setChecking] = useState(shouldGuard)

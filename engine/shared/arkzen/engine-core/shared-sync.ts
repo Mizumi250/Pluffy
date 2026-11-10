@@ -86,15 +86,27 @@ const NATIVE_CORE_RN_RUNTIME_STACKS = new Set(['expo', 'react-native'])
 const NATIVE_CORE_RN_RUNTIME_ONLY = new Set(['assets.ts', 'stores', 'lib'])
 
 export function syncSharedCoreToCurrentStack(label: string): void {
-  const rootDir       = path.resolve(process.cwd(), '..', '..', '..')
+  const rootDir      = path.resolve(process.cwd(), '..', '..', '..')
+  const stackCoreDir = path.join(process.cwd(), 'arkzen', 'core')
+  syncSharedCoreToDir(rootDir, path.basename(process.cwd()), stackCoreDir, label)
+}
+
+// Same sync, but into an arbitrary destination core directory.
+// Used by the react-inertia builder to also fill
+// engine/backend/laravel-inertia/resources/js/arkzen/core/ (Vite + export target),
+// treating it as a web stack (stackName = 'react-inertia').
+export function syncSharedCoreToDir(
+  rootDir:      string,
+  stackName:    string,
+  stackCoreDir: string,
+  label:        string,
+): void {
   const sharedDir     = path.join(rootDir, 'engine', 'shared', 'arkzen')
   const engineCoreDir = path.join(sharedDir, 'engine-core')
   const webCoreDir    = path.join(sharedDir, 'web-core')
   const nativeCoreDir = path.join(sharedDir, 'native-core')
-  const stackCoreDir  = path.join(process.cwd(), 'arkzen', 'core')
 
-  // Determine if current stack is mobile
-  const stackName = path.basename(process.cwd())
+  // Determine if the target stack is mobile
   const isMobile  = MOBILE_STACKS.has(stackName)
 
   fs.mkdirSync(stackCoreDir, { recursive: true })

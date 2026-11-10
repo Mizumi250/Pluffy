@@ -45,6 +45,7 @@
 import * as fs from 'fs'
 import type { ParsedTatemono } from '../types'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
+import { writeFreeFiles, removeFreeFiles } from './file-writer'
 
 const BACKEND_URL          = process.env.ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 const ARKZEN_ENGINE_SECRET = process.env.ARKZEN_ENGINE_SECRET ?? 'arkzen-engine-secret'
@@ -82,6 +83,9 @@ function backendLabel(backend = resolveActiveBackend()): string {
 }
 
 export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<void> {
+  // v5.7: @arkzen:file blocks are written for every stack, before the backend check.
+  writeFreeFiles(tatemono)
+
   const hasBackend =
     tatemono.databases.length                             > 0 ||
     tatemono.apis.length                                  > 0 ||
@@ -229,6 +233,10 @@ export async function triggerBackendRemove(
     tables:      string[]
   }
 ): Promise<void> {
+  // @arkzen:file cleanup runs for every stack, before the backend check.
+  try { removeFreeFiles(tatemononName) }
+  catch (error) { console.warn(`[Arkzen Files] ⚠ Cleanup failed for ${tatemononName}:`, error instanceof Error ? error.message : error) }
+
   const label = backendLabel()
   console.log(`[Arkzen Bridge] Removing from ${label}: ${tatemononName}`)
 

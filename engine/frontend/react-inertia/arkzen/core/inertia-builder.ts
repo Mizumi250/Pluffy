@@ -27,7 +27,7 @@
 //     Previously the inertia stack silently skipped PWA generation.
 //
 // v1.1 (kept): syncSharedCoreToLaravelInertia() — also spreads
-//   engine/shared/arkzen/core directly into laravel-inertia/resources/js/
+//   engine/shared/arkzen/{engine-core,web-core} directly into laravel-inertia/resources/js/
 //   arkzen/core/ so Vite's @/ alias resolves correctly and export.js
 //   ships a fully self-contained Laravel app.
 // ============================================================
@@ -35,7 +35,7 @@
 import * as fs   from 'fs'
 import * as path from 'path'
 import { parseTatemono }                from './parser'
-import { syncSharedCoreToCurrentStack } from './shared-sync'
+import { syncSharedCoreToCurrentStack, syncSharedCoreToDir } from './shared-sync'
 import { registerInertiaPages, unregisterInertiaPages } from './inertia-router'
 import { triggerBackendBuild, triggerBackendRemove }     from './backend-bridge'
 import { updateRegistry, removeFromRegistry }            from './registry'
@@ -44,7 +44,7 @@ import type { InertiaBuildResult }      from '../types'
 
 // ─── Sync shared core → laravel-inertia/resources/js/arkzen/core/ ─────────────
 //
-// engine/shared/arkzen/core/ is the source of truth for all stacks.
+// engine/shared/arkzen/{engine-core,web-core}/ is the source of truth for all stacks.
 // shared-sync already spreads it to engine/frontend/react-inertia/arkzen/core/
 // but Vite runs from laravel-inertia/ and @/ points to resources/js/ —
 // so we need the core to also live there for imports and export.js to work.
@@ -53,18 +53,21 @@ import type { InertiaBuildResult }      from '../types'
 // (Link.tsx, router.ts) so they're never overwritten by the shared copy.
 // ──────────────────────────────────────────────────────────────────────────────
 function syncSharedCoreToLaravelInertia(): void {
-  const rootDir        = path.resolve(process.cwd(), '..', '..', '..')
-  const sharedCoreDir  = path.join(rootDir, 'engine', 'shared', 'arkzen', 'core')
-  const destCoreDir    = path.join(rootDir, 'engine', 'backend', 'laravel-inertia', 'resources', 'js', 'arkzen', 'core')
+  const rootDir         = path.resolve(process.cwd(), '..', '..', '..')
+  const sharedDir       = path.join(rootDir, 'engine', 'shared', 'arkzen')
+  const destCoreDir     = path.join(rootDir, 'engine', 'backend', 'laravel-inertia', 'resources', 'js', 'arkzen', 'core')
   const inertiaAdapters = path.join(process.cwd(), 'arkzen', 'core', 'adapters')
 
-  if (!fs.existsSync(sharedCoreDir)) {
-    console.warn('[Arkzen Inertia Builder] ⚠ Shared core not found — skipping laravel-inertia sync')
+  // The shared core was split into engine-core/ + web-core/ (+ native-core/) in
+  // shared-sync v3.0. The old flat engine/shared/arkzen/core/ no longer exists,
+  // so check the real sources instead.
+  if (!fs.existsSync(path.join(sharedDir, 'engine-core')) || !fs.existsSync(path.join(sharedDir, 'web-core'))) {
+    console.warn('[Arkzen Inertia Builder] ⚠ Shared engine-core/web-core not found — skipping laravel-inertia sync')
     return
   }
 
-  // Spread shared core into resources/js/arkzen/core/
-  fs.cpSync(sharedCoreDir, destCoreDir, { recursive: true })
+  // Spread shared core into resources/js/arkzen/core/ with the same rules as any web stack
+  syncSharedCoreToDir(rootDir, 'react-inertia', destCoreDir, 'Arkzen Inertia Builder')
 
   // Overlay inertia-specific adapters (Link.tsx uses @inertiajs/react, router.ts uses Inertia router)
   // These must win over anything shared may have copied into adapters/

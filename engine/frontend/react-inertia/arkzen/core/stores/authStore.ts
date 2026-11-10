@@ -167,11 +167,16 @@ export const useAuthStore = create<AuthState>()(
           const res = await fetch(`${getAuthBase()}/me`, {
             headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
           })
-          if (!res.ok) { set({ user: null, token: null, isAuthenticated: false }); return }
+          if (!res.ok) {
+            set({ user: null, token: null, isAuthenticated: false })
+            clearCookie(getSlug())
+            return
+          }
           const user = await safeJson<ArkzenUser>(res)
           set({ user, isAuthenticated: true })
         } catch {
           set({ user: null, token: null, isAuthenticated: false })
+          clearCookie(getSlug())
         } finally {
           set({ isLoading: false })
         }
@@ -231,11 +236,14 @@ export const useAuthStore = create<AuthState>()(
 //   const hydrated = useAuthStoreHydrated()
 //   if (!hydrated) return <spinner>
 
-export function useAuthStoreHydrated(): boolean {
+export function useAuthStoreHydrated(tatemono?: string): boolean {
   // On the server (SSR), zustand/persist skips storage init because localStorage
   // doesn't exist — useAuthStore.persist is undefined. Return true immediately so
   // layouts don't block render. Hydration only matters client-side.
   const isServer = typeof window === 'undefined'
+  if (!isServer && tatemono && window.__ARKZEN_TATEMONO__ !== tatemono) {
+    setActiveTatemono(tatemono)
+  }
 
   const [hydrated, setHydrated] = useState(() => {
     if (isServer) return true
@@ -260,11 +268,12 @@ export function useAuthStoreHydrated(): boolean {
 
 export async function arkzenFetch(url: string, options: RequestInit = {}): Promise<Response> {
   const token = useAuthStore.getState().token
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData
 
   return fetch(url, {
     ...options,
     headers: {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       'Accept':       'application/json',
       ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,

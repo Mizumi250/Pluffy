@@ -42,13 +42,50 @@
 //     also gain `Accept: application/json` for consistency.
 // ============================================================
 
+import * as fs from 'fs'
 import type { ParsedTatemono } from '../types'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
+import { writeFreeFiles, removeFreeFiles } from './file-writer'
 
 const BACKEND_URL          = process.env.ARKZEN_BACKEND_URL   ?? 'http://localhost:8000'
 const ARKZEN_ENGINE_SECRET = process.env.ARKZEN_ENGINE_SECRET ?? 'arkzen-engine-secret'
 
+function rustPrelude(filePath: string): string | undefined {
+  const contents = fs.readFileSync(filePath, 'utf8').replace(/\r\n/g, '\n')
+  const startMarker = '/* @arkzen:module:rs\n*/'
+  const endMarker = '/* @arkzen:module:rs:end */'
+  const start = contents.indexOf(startMarker)
+  if (start < 0) return undefined
+  if (contents.indexOf(startMarker, start + startMarker.length) >= 0) {
+    throw new Error(`Tatemono must contain at most one Rust module source block: ${filePath}`)
+  }
+  const bodyStart = start + startMarker.length
+  const end = contents.indexOf(endMarker, bodyStart)
+  if (end < 0) throw new Error(`Rust module source block is missing its end marker: ${filePath}`)
+  if (contents.indexOf(endMarker, end + endMarker.length) >= 0) {
+    throw new Error(`Tatemono contains an unexpected extra Rust module source end marker: ${filePath}`)
+  }
+  const source = contents.slice(bodyStart, end).trim()
+  return source || undefined
+}
+
+function backendLabel(backend = resolveActiveBackend()): string {
+  return ({
+    laravel: 'Laravel',
+    'laravel-inertia': 'Laravel Inertia',
+    express: 'Express',
+    aspnet: 'ASP.NET Core',
+    fastapi: 'FastAPI',
+    'spring-boot': 'Spring Boot',
+    go: 'Go',
+    rust: 'Rust',
+  } as Record<string, string>)[backend] ?? backend
+}
+
 export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<void> {
+  // v5.7: @arkzen:file blocks are written for every stack, before the backend check.
+  writeFreeFiles(tatemono)
+
   const hasBackend =
     tatemono.databases.length                             > 0 ||
     tatemono.apis.length                                  > 0 ||
@@ -68,7 +105,10 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
     return
   }
 
-  console.log(`[Arkzen Bridge] Sending to Laravel: ${tatemono.meta.name}`)
+  const backend = resolveActiveBackend()
+  const label = backendLabel(backend)
+  const rustSource = backend === 'rust' ? rustPrelude(tatemono.filePath) : undefined
+  console.log(`[Arkzen Bridge] Sending to ${label}: ${tatemono.meta.name}`)
   if (tatemono.databases.length)    console.log(`[Arkzen Bridge]   Tables: ${tatemono.databases.map(d => d.table).join(', ')}`)
   if (tatemono.apis.length)         console.log(`[Arkzen Bridge]   Resources: ${tatemono.apis.map(a => a.model).join(', ')}`)
   if (tatemono.customRoutes.length) console.log(`[Arkzen Bridge]   Custom routes: ${tatemono.customRoutes.map(c => c.controller).join(', ')}`)
@@ -87,7 +127,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
   const payload = {
     // v5.6: which backend + DSL variant this payload was parsed for.
     // Laravel ignores these. Other backends refuse a payload for a different variant.
-    backend:        resolveActiveBackend(),
+    backend,
     backendVariant: activeBackendVariant(),
 
     name:    tatemono.meta.name,
@@ -121,6 +161,8 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
         ...(r.body ? { body: r.body } : {}),  // ← v5.3: forward injected handler body
       })),
     })),
+
+    ...(rustSource ? { rustPrelude: rustSource } : {}),
 
     // Send raw YAML strings only — ModuleReader.parse() normalises these
     // into typed PHP arrays before any builder ever sees them.
@@ -159,7 +201,7 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Laravel backend returned ${response.status}: ${errorText}`)
+      throw new Error(`${label} backend returned ${response.status}: ${errorText}`)
     }
 
     const result = await response.json() as {
@@ -167,15 +209,17 @@ export async function triggerBackendBuild(tatemono: ParsedTatemono): Promise<voi
       message: string
       steps:   string[]
       errors:  string[]
+      warnings?: string[]
     }
 
     console.log(`[Arkzen Bridge] ✓ Backend build complete: ${tatemono.meta.name}`)
     result.steps?.forEach(step => console.log(`  ✓ ${step}`))
     result.errors?.forEach(err  => console.log(`  ✗ ${err}`))
+    result.warnings?.forEach(warning => console.warn(`  ⚠ ${warning}`))
 
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      throw new Error(`[Arkzen Bridge] Cannot reach Laravel at ${BACKEND_URL}. Is it running?`)
+      throw new Error(`[Arkzen Bridge] Cannot reach ${label} at ${BACKEND_URL}. Is it running?`)
     }
     throw error
   }
@@ -189,7 +233,12 @@ export async function triggerBackendRemove(
     tables:      string[]
   }
 ): Promise<void> {
-  console.log(`[Arkzen Bridge] Removing from Laravel: ${tatemononName}`)
+  // @arkzen:file cleanup runs for every stack, before the backend check.
+  try { removeFreeFiles(tatemononName) }
+  catch (error) { console.warn(`[Arkzen Files] ⚠ Cleanup failed for ${tatemononName}:`, error instanceof Error ? error.message : error) }
+
+  const label = backendLabel()
+  console.log(`[Arkzen Bridge] Removing from ${label}: ${tatemononName}`)
 
   const payload = {
     name:        tatemononName,
@@ -210,7 +259,7 @@ export async function triggerBackendRemove(
 
     if (!response.ok) {
       const errorText = await response.text()
-      throw new Error(`Laravel backend returned ${response.status}: ${errorText}`)
+      throw new Error(`${label} backend returned ${response.status}: ${errorText}`)
     }
 
     const result = await response.json()
@@ -218,7 +267,7 @@ export async function triggerBackendRemove(
 
   } catch (error) {
     if (error instanceof TypeError && error.message.includes('fetch')) {
-      console.warn(`[Arkzen Bridge] ⚠ Cannot reach Laravel. Manual cleanup may be needed.`)
+      console.warn(`[Arkzen Bridge] ⚠ Cannot reach ${label}. Manual cleanup may be needed.`)
       return
     }
     throw error

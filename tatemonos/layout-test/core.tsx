@@ -839,6 +839,98 @@ export const NativeLayerBadge = ({ layers }: { layers: string[] }) => (
 
 /* @arkzen:native:components:lynx:shared:end */
 
+// ─────────────────────────────────────────────────────────────────────────────
+// LYNX LAYOUTS
+// Lynx counterparts of the Expo/RN layouts above. The Lynx pages below declare
+// `layout: app-shell | tab-panel | card-modal`; Lynx layouts live under
+// @arkzen:native:layout:lynx:<name> and must export <PascalName>Layout.
+//   app-shell (outermost)
+//     └── tab-panel (mid)
+//           └── card-modal (innermost custom)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/* @arkzen:native:layout:lynx:app-shell */
+
+export const AppShellLayout = ({ children }: { children?: any; tatSlug?: string }) => (
+  <view className="flex-1 bg-indigo-50">
+    {/* Shell header */}
+    <view
+      className="px-4 py-3 bg-white border-b border-indigo-100"
+      style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', gap: 10 }}
+    >
+      <view
+        className="bg-indigo-500 rounded-lg"
+        style={{ width: 28, height: 28, alignItems: 'center', justifyContent: 'center' }}
+      >
+        <text className="text-white text-xs font-black">A</text>
+      </view>
+      <text className="text-sm font-bold text-gray-700">AppShellLayout</text>
+      <view className="px-2 py-1 bg-indigo-100 rounded-full" style={{ marginLeft: 'auto' }}>
+        <text className="text-xs text-indigo-600 font-semibold">outermost</text>
+      </view>
+    </view>
+
+    {/* Content */}
+    <view className="flex-1">
+      {children}
+    </view>
+
+    {/* Shell footer */}
+    <view className="py-2 bg-white border-t border-indigo-100" style={{ alignItems: 'center' }}>
+      <text className="text-xs text-gray-400">AppShellLayout footer</text>
+    </view>
+  </view>
+)
+
+/* @arkzen:native:layout:lynx:app-shell:end */
+
+/* @arkzen:native:layout:lynx:tab-panel
+parent: app-shell
+*/
+
+const TAB_PANEL_TABS = ['Overview', 'Settings', 'Reports']
+
+export const TabPanelLayout = ({ children }: { children?: any; tatSlug?: string }) => (
+  <view className="flex-1" style={{ display: 'flex', flexDirection: 'row' }}>
+    {/* Side tabs */}
+    <view className="bg-white border-r border-indigo-100 px-2 pt-3" style={{ width: 120, gap: 4 }}>
+      <text className="text-xs font-black text-gray-400 px-2 mb-1">TABPANEL</text>
+      {TAB_PANEL_TABS.map(tab => (
+        <view key={tab} className="px-3 py-2 rounded-lg">
+          <text className="text-xs text-gray-500">{tab}</text>
+        </view>
+      ))}
+      <view className="px-2 py-1 bg-purple-50 rounded-full mt-3" style={{ alignItems: 'center' }}>
+        <text className="text-xs text-purple-500 font-semibold">parent: app-shell</text>
+      </view>
+    </view>
+
+    {/* Panel content */}
+    <view className="flex-1">
+      {children}
+    </view>
+  </view>
+)
+
+/* @arkzen:native:layout:lynx:tab-panel:end */
+
+/* @arkzen:native:layout:lynx:card-modal
+parent: tab-panel
+*/
+
+export const CardModalLayout = ({ children }: { children?: any; tatSlug?: string }) => (
+  <scroll-view className="flex-1 p-4">
+    <view className="bg-white rounded-2xl p-5 border border-indigo-100">
+      <view className="px-3 py-1 bg-purple-100 rounded-full mb-4" style={{ alignSelf: 'flex-start' }}>
+        <text className="text-xs text-purple-700 font-bold">CardModalLayout — parent: tab-panel</text>
+      </view>
+      {children}
+    </view>
+  </scroll-view>
+)
+
+/* @arkzen:native:layout:lynx:card-modal:end */
+
 /* @arkzen:native:page:lynx:index */
 
 const IndexLynxPage = ({ onNavigate }: { onNavigate: (page: string) => void }) => (

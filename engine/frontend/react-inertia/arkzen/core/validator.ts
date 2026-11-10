@@ -18,6 +18,7 @@ import * as fs   from 'fs'
 import * as path from 'path'
 import { parsePageLayoutDecl, parseTatemono, findMissingBackendVariants } from './parser'
 import { activeBackendVariant, resolveActiveBackend } from './backends'
+import { hasFileBlocks, validateFileBlocks } from './file-writer'
 import type { ParsedTatemono, ValidationResult, ArkzenDatabase } from '../types'
 
 const VALID_COLUMN_TYPES = new Set([
@@ -114,11 +115,19 @@ export function validateTatemono(filePath: string): ValidationResult {
     }
   }
 
-  if (parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
+  const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))
+
+  // v14.1: @arkzen:file blocks are valid without any page
+  if (!hasFreeFiles && parsed.pages.length === 0 && parsed.nativePages.length === 0 && parsed.nativeLynxPages.length === 0) {
     errors.push('At least one @arkzen:web:page:name, @arkzen:native:page:name, or @arkzen:native:page:lynx:name section is required')
   }
 
-  if (parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
+  if (hasFreeFiles) {
+    try { errors.push(...validateFileBlocks(filePath, parsed.meta.name)) }
+    catch (e) { errors.push(e instanceof Error ? e.message : String(e)) }
+  }
+
+  if (!hasFreeFiles && parsed.components.length === 0 && parsed.nativeComponents.length === 0 && parsed.nativeLynxComponents.length === 0) {
     warnings.push('No @arkzen:components or @arkzen:native:components found – consider adding shared UI components.')
   }
 
@@ -228,12 +237,18 @@ export function validateTatemono(filePath: string): ValidationResult {
   // The parser and builders resolve those imports; markerless legacy blocks are valid.
 
   // Duplicate native page names
-  const seenNativePages = new Set<string>()
+  // Same rule as the parser's own check: one page name may be declared once per
+  // Expo/RN target (dual-target tatemonos like shan-shan carry `index` for both).
+  // Stacks with no native target (web, lynx) keep both blocks, so comparing names
+  // alone would wrongly reject them.
+  const seenNativePages = new Map<string, 'expo' | 'rn' | null>()
   for (const page of parsed.nativePages) {
-    if (seenNativePages.has(page.name)) {
+    const target = page.raw.match(/@arkzen:(?:resolved:import|import:)\s*:?\s*(expo|rn)/)?.[1] as 'expo' | 'rn' | undefined
+    const previousTarget = seenNativePages.get(page.name)
+    if (seenNativePages.has(page.name) && (!target || !previousTarget || target === previousTarget)) {
       errors.push(`Duplicate native page: "${page.name}"`)
     }
-    seenNativePages.add(page.name)
+    seenNativePages.set(page.name, target ?? null)
   }
 
   const seenLynxPages = new Set<string>()

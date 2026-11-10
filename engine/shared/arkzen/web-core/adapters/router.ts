@@ -1,6 +1,6 @@
 // ============================================================
 // ARKZEN ENGINE — ROUTER ADAPTER INTERFACE
-// engine/shared/arkzen/core/adapters/router.ts
+// engine/shared/arkzen/web-core/adapters/router.ts
 //
 // This file is the INTERFACE DEFINITION only.
 // It is NOT sync-copied to stacks — each stack ships its own

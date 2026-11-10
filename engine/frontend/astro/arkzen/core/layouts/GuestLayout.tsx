@@ -37,7 +37,9 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
 }) => {
   const router              = useArkzenRouter()
   const pathname            = useArkzenPathname()
-  const hydrated            = useAuthStoreHydrated()
+  const segments             = pathname.split('/').filter(Boolean)
+  const tatemono             = segments[0] ?? ''
+  const hydrated            = useAuthStoreHydrated(tatemono)
   const { isAuthenticated } = useAuthStore()
   const shouldGuard         = redirectIfAuth || guestOnly
   const [checking, setChecking] = useState(shouldGuard)
@@ -55,10 +57,6 @@ export const GuestLayout: React.FC<GuestLayoutProps> = ({
     if (!hydrated) return
     if (checked.current) return
     checked.current = true
-
-    const segments = pathname.split('/').filter(Boolean)
-    const tatemono = segments[0] ?? ''
-    if (tatemono) setActiveTatemono(tatemono)
 
     if (!shouldGuard) { setChecking(false); setReady(true); return }
 
