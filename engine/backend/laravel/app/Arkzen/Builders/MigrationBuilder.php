@@ -83,7 +83,7 @@ class MigrationBuilder
 
         File::ensureDirectoryExists(database_path("migrations/arkzen/{$name}"));
 
-        $content = self::generateCreateMigration($className, $db, $tableName, $dbConn);
+        $content = self::generateCreateMigration($className, $db, $tableName, $dbConn, $name);
         File::put($filePath, $content);
         Log::info("[Arkzen Migration] ✓ Migration created: {$name}/{$fileName}");
 
@@ -103,9 +103,9 @@ class MigrationBuilder
     // GENERATE CREATE MIGRATION
     // ─────────────────────────────────────────────
 
-    private static function generateCreateMigration(string $className, array $db, string $tableName, string $dbConn): string
+    private static function generateCreateMigration(string $className, array $db, string $tableName, string $dbConn, string $slug): string
     {
-        $columns     = self::generateColumns($db['columns']);
+        $columns     = self::generateColumns($db['columns'], $slug);
         $indexes     = self::generateIndexes($db['indexes'] ?? []);
         $timestamps  = $db['timestamps']  ? "\n            \$table->timestamps();"  : '';
         $softDeletes = $db['softDeletes'] ? "\n            \$table->softDeletes();" : '';
@@ -146,12 +146,12 @@ return new class extends Migration
     // GENERATE COLUMNS
     // ─────────────────────────────────────────────
 
-    private static function generateColumns(array $columns): string
+    private static function generateColumns(array $columns, string $slug): string
     {
         $lines = [];
 
         foreach ($columns as $name => $config) {
-            $line = self::generateColumn($name, $config);
+            $line = self::generateColumn($name, $config, $slug);
             if ($line) {
                 $lines[] = "            {$line}";
             }
@@ -160,7 +160,7 @@ return new class extends Migration
         return implode("\n", $lines);
     }
 
-    private static function generateColumn(string $name, array $config): string
+    private static function generateColumn(string $name, array $config, string $slug): string
     {
         $type   = $config['type'] ?? 'string';
         $method = self::$typeMap[$type] ?? 'string';
@@ -174,10 +174,16 @@ return new class extends Migration
         }
 
         if (!empty($config['foreign'])) {
-            [$refTable, $refColumn] = explode('.', $config['foreign']);
-            $onDelete = $config['onDelete'] ?? 'cascade';
-            $nullable = !empty($config['nullable']) ? '->nullable()' : '';
-            return "\$table->foreignId('{$name}'){$nullable}->constrained('{$refTable}')->onDelete('{$onDelete}');";
+            // `foreign:` may be the bare declared table (employees.id) or the
+            // already prefixed physical name (queue_flow_queues.id). prefixedTable()
+            // is idempotent, so both resolve to the same physical table, matching
+            // the Express, FastAPI, Spring Boot and ASP.NET builders.
+            [$refTable, $refColumn] = array_pad(explode('.', (string) $config['foreign'], 2), 2, 'id');
+            $refColumn = $refColumn !== '' ? $refColumn : 'id';
+            $refTable  = ModelBuilder::prefixedTable($slug, $refTable);
+            $onDelete  = $config['onDelete'] ?? 'cascade';
+            $nullable  = !empty($config['nullable']) ? '->nullable()' : '';
+            return "\$table->foreignId('{$name}'){$nullable}->constrained('{$refTable}', '{$refColumn}')->onDelete('{$onDelete}');";
         }
 
         $call = "\$table->{$method}('{$name}'";
@@ -253,7 +259,7 @@ return new class extends Migration
 
         File::ensureDirectoryExists(database_path("migrations/arkzen/{$name}"));
 
-        $columns = self::generateColumns($newColumns);
+        $columns = self::generateColumns($newColumns, $name);
 
         $content = "<?php
 
