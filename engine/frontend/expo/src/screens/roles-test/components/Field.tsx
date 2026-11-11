@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — Field [Expo]
 // Source: @arkzen:native:components (roles-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:39.041Z
+// Generated: 2026-11-11T08:35:44.177Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'

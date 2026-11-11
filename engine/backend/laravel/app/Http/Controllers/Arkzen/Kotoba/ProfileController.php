@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — ProfileController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:49.375235Z
+// Generated: 2026-11-11T08:35:36.938696Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

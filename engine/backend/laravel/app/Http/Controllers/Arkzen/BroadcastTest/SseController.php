@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED — Lynx SSE bridge for broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:56.478796Z
+// Generated: 2026-11-11T08:35:29.084297Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\BroadcastTest;

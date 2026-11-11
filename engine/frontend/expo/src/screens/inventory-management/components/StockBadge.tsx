@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — StockBadge [Expo]
 // Source: @arkzen:native:components (inventory-management)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:57.169Z
+// Generated: 2026-11-11T08:35:33.710Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FrameCounter [Expo]
 // Source: @arkzen:native:components (frame-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:47.957Z
+// Generated: 2026-11-11T08:35:32.891Z
 // ============================================================
 
 import React, { useState } from 'react'

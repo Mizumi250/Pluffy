@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — FollowController
 // Tatemono: kotoba
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:49.386871Z
+// Generated: 2026-11-11T08:35:36.955950Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\Kotoba;

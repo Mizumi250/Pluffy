@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FrameCard [Expo]
 // Source: @arkzen:native:components (frame-lab)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:47.950Z
+// Generated: 2026-11-11T08:35:32.889Z
 // ============================================================
 
 import React, { useState } from 'react'

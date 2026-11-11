@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — SduiButton [Expo]
 // Source: @arkzen:native:components (mobile-sdui)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:32.990Z
+// Generated: 2026-11-11T08:35:41.024Z
 // ============================================================
 
 import React, { useCallback, useEffect, useState } from 'react'

@@ -14,23 +14,23 @@
     "arkzen:once": "tsx arkzen.ts"
   },
   "dependencies": {
-    "@lynx-js/motion": "^0.0.6",
-    "@lynx-js/react": "^0.127.0",
-    "@lynx-js/web-elements": "^0.12.12",
+    "@fortawesome/fontawesome-free": "^7.3.1",
+    "@fortawesome/free-brands-svg-icons": "^7.3.1",
+    "@fortawesome/free-regular-svg-icons": "^7.3.1",
+    "@fortawesome/free-solid-svg-icons": "^7.3.1",
     "@lucide/icons": "^1.53.0",
+    "@lynx-js/motion": "^0.0.6",
+    "@lynx-js/react": "^0.129.2",
+    "@lynx-js/web-elements": "^0.12.12",
     "@sigx/lynx-icons": "^0.35.0",
     "@sigx/lynx-icons-fa-free": "^0.35.0",
-    "@fortawesome/fontawesome-free": "^7.3.1",
-    "@fortawesome/free-solid-svg-icons": "^7.3.1",
-    "@fortawesome/free-regular-svg-icons": "^7.3.1",
-    "@fortawesome/free-brands-svg-icons": "^7.3.1",
-    "zustand": "^5.0.15",
-    "js-yaml": "^5.4.3"
+    "js-yaml": "^5.4.3",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@lynx-js/preact-devtools": "^5.0.1",
     "@lynx-js/qrcode-rsbuild-plugin": "^0.7.3",
-    "@lynx-js/react-rsbuild-plugin": "^0.20.3",
+    "@lynx-js/react-rsbuild-plugin": "^0.22.2",
     "@lynx-js/rspeedy": "^0.18.0",
     "@lynx-js/tailwind-preset": "^0.6.0",
     "@lynx-js/types": "4.3.0",

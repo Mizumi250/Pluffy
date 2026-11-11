@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — LangPicker [Expo]
 // Source: @arkzen:native:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:11.491Z
+// Generated: 2026-11-11T08:35:36.062Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
