@@ -1142,6 +1142,10 @@
     Empty folders under `custom/` are pruned. A file also listed by another tatemono is kept.
     Files in the inactive stack folder are cleaned the same way after a stack switch.
 
+  **Reference fixture:** [`tatemonos/free-demo/core.tsx`](./tatemonos/free-demo/core.tsx) has three file blocks and nothing else: a plain `index.html` and a `packages/my-lib/src/index.ts` (both land under `custom/free-demo/`), and a `{frontend}/public/robots.txt` that lands in the active web stack. The maintainer reports that `free-demo` has been run and checked, and that it passes.
+
+  **What running it looks like.** `free-demo` has no pages and no backend, so the dev server shows nothing for it and there is nothing to open at the web URL. It only writes its files when the watcher builds it. To see the result, open `custom/free-demo/index.html` directly in a browser.
+
   **In Godot and Unity tatemonos**
 
   `@arkzen:file` also works next to `@arkzen:godot:*` and `@arkzen:unity:*` blocks. The game
@@ -2402,7 +2406,7 @@
 
   **Reference fixture:** [`tatemonos/frame-lab/core.tsx`](./tatemonos/frame-lab/core.tsx) has a frame for all five targets plus two screens per mobile target.
 
-  **Verification status.** Parsing, validation, and generation for Expo, React Native and Lynx were run over all existing tatemonos before and after the change (generated output identical apart from timestamps). The Electron loader was run against a fake `electron` object, and the Tauri glue was compiled against stub `tauri` and `serde_json` modules. Nothing has been run on a device, a real Electron window, or a real Tauri build yet; run `frame-lab` there first.
+  **Verification status.** Parsing, validation, and generation for Expo, React Native and Lynx were run over all existing tatemonos before and after the change (generated output identical apart from timestamps). The Electron loader was run against a fake `electron` object, and the Tauri glue was compiled against stub `tauri` and `serde_json` modules. The maintainer reports that the `frame-lab` fixture has since been run and checked, and that it passes. This document does not record which targets that run covered (a device, a real Electron window, a real Tauri build), so treat any frame behavior that `frame-lab` does not exercise as untested.
 
   * * *
 
