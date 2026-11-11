@@ -34,6 +34,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler'
 import { SafeAreaProvider } from 'react-native-safe-area-context'
 
 import { ARKZEN_NATIVE_ROUTES } from './arkzen/generated/routes'
+import { applyArkzenFrame, getArkzenFrameOptions } from './arkzen/generated/frames'
 import type { ArkzenRootStackParamList } from './arkzen/generated/routes'
 import { getTokenForSlug } from '../arkzen/core/stores/authStore'
 
@@ -324,8 +325,8 @@ export default function App() {
               <Stack.Screen
                 key={route.name}
                 name={route.name as keyof AppStackParamList}
-                component={route.component}
-                options={{ headerShown: false }}
+                component={applyArkzenFrame(route.tatemono, route.component)}
+                options={getArkzenFrameOptions(route.tatemono) ?? { headerShown: false }}
               />
             ))}
           </Stack.Navigator>

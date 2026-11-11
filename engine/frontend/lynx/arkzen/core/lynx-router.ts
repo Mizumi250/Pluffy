@@ -1835,6 +1835,78 @@ function cleanupTatemono(tatName: string): void {
 
 // ─── Main register function ───────────────────────────────────────────────────
 
+// ─── Frame (v15.0) ─────────────────────────────────────────────────────────────
+// @arkzen:native:frame:lynx
+//
+// Lynx has no navigator, so a frame is a component: the block body is a complete
+// TSX module (own imports) that must `export` a `Frame` component. It receives
+// { module, page, children } and renders `children` (the page) inside its own
+// chrome — header, tab bar, safe-area padding, anything built from Lynx elements.
+//
+// Bodies are written to src/arkzen/generated/frames/{tat}.frame.tsx;
+// src/arkzen/generated/frames.ts is rebuilt from that folder and read by the
+// static src/App.tsx through getLynxFrame(). With no frames, getLynxFrame
+// returns undefined and App.tsx renders the page exactly as before.
+
+const LYNX_FRAMES_DIR   = path.join(GENERATED_DIR, 'frames')
+const LYNX_FRAMES_INDEX = path.join(GENERATED_DIR, 'frames.ts')
+const LYNX_FRAME_MARKER = '// ARKZEN GENERATED FRAME — @arkzen:native:frame:lynx'
+
+function listLynxFrameTatemonos(): string[] {
+  if (!fs.existsSync(LYNX_FRAMES_DIR)) return []
+  return fs.readdirSync(LYNX_FRAMES_DIR)
+    .filter(f => f.endsWith('.frame.tsx'))
+    .map(f => f.slice(0, -'.frame.tsx'.length))
+    .sort()
+}
+
+function buildLynxFrameIndex(tatNames: string[]): string {
+  const imports = tatNames
+    .map(t => `import { Frame as Frame_${toPascalCase(t)} } from './frames/${t}.frame'`)
+    .join('\n')
+  const entries = tatNames
+    .map(t => `  '${t}': Frame_${toPascalCase(t)},`)
+    .join('\n')
+
+  return `// ============================================================
+// ARKZEN GENERATED — Lynx Frame Registry v1.0
+// Rebuilt from src/arkzen/generated/frames/ — DO NOT EDIT
+// ============================================================
+${imports ? '\n' + imports + '\n' : ''}
+const LYNX_FRAMES: Record<string, any> = {
+${entries}
+}
+
+/** The tatemono's Frame component, or undefined when it declares none. */
+export function getLynxFrame(tatemono: string): any {
+  return LYNX_FRAMES[tatemono]
+}
+`
+}
+
+function syncLynxFrameIndex(): void {
+  writeIfChanged(LYNX_FRAMES_INDEX, buildLynxFrameIndex(listLynxFrameTatemonos()))
+}
+
+function syncLynxFrame(tatemono: ParsedTatemono): void {
+  const tatName   = tatemono.meta.name
+  const framePath = path.join(LYNX_FRAMES_DIR, `${tatName}.frame.tsx`)
+  const frame     = tatemono.frames?.lynx
+
+  if (frame) {
+    writeIfChanged(
+      framePath,
+      `${LYNX_FRAME_MARKER}\n// Source: tatemonos/${tatName}/core.tsx — edit the DSL block, not this file.\n\n${frame.raw}\n`,
+    )
+    console.log(`[Arkzen Lynx Router] ✓ Frame: ${tatName}.frame.tsx (@arkzen:native:frame:lynx)`)
+  } else if (fs.existsSync(framePath) && fs.readFileSync(framePath, 'utf-8').startsWith(LYNX_FRAME_MARKER)) {
+    fs.unlinkSync(framePath)
+    console.log(`[Arkzen Lynx Router] ✓ Removed frame: ${tatName}.frame.tsx`)
+  }
+
+  syncLynxFrameIndex()
+}
+
 export function registerLynxPages(tatemono: ParsedTatemono): void {
   const tatName = tatemono.meta.name
   const pages   = tatemono.nativeLynxPages ?? []
@@ -1874,10 +1946,21 @@ export function registerLynxPages(tatemono: ParsedTatemono): void {
   updateRoutesRegistry(tatName, routeEntries, has404, has500)
   regenerateRoutesFile(tatemono)
 
+  // v15.0: @arkzen:native:frame:lynx (opt-in; frames.ts only changes when frames change)
+  syncLynxFrame(tatemono)
+
   console.log(`[Arkzen Lynx Router] ✓ Registered ${pages.length} page(s) for: ${tatName}`)
 }
 
 export function unregisterLynxPages(tatName: string): void {
   cleanupTatemono(tatName)
+
+  // v15.0: drop this tatemono's generated frame and rebuild the frame index
+  const generatedFrame = path.join(LYNX_FRAMES_DIR, `${tatName}.frame.tsx`)
+  if (fs.existsSync(generatedFrame)) {
+    fs.unlinkSync(generatedFrame)
+    syncLynxFrameIndex()
+  }
+
   console.log(`[Arkzen Lynx Router] ✓ Unregistered: ${tatName}`)
 }

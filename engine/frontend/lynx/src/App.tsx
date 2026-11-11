@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from '@lynx-js/react'
 import { LYNX_ROUTES } from './arkzen/generated/app-routes.js'
+import { getLynxFrame } from './arkzen/generated/frames.js'
 
 const BACKEND_URL =
   (typeof process !== 'undefined' && process.env && process.env.ARKZEN_BACKEND_URL) ||
@@ -231,6 +232,7 @@ export function App() {
   if (currentRoute) {
     const route = LYNX_ROUTES.find(r => r.module === currentRoute.mod && r.page === currentRoute.page)
     const Page  = route?.component
+    const Frame = getLynxFrame(currentRoute.mod)   // undefined unless the tatemono declares @arkzen:native:frame:lynx
     return (
       <page>
         <view style={{ height: '100%' }} className="bg-neutral-50">
@@ -240,7 +242,10 @@ export function App() {
             </view>
             <text className="text-xs text-neutral-400">{currentRoute.mod} / {currentRoute.page}</text>
           </view>
-          {Page ? <Page /> : (
+          {Page ? (Frame
+            ? <Frame module={currentRoute.mod} page={currentRoute.page}><Page /></Frame>
+            : <Page />
+          ) : (
             <view className="items-center justify-center py-16">
               <text className="text-xs text-neutral-400">Page not found</text>
             </view>

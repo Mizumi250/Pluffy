@@ -30,6 +30,60 @@ const VALID_COLUMN_TYPES = new Set([
 const VALID_METHODS = new Set(['GET', 'POST', 'PUT', 'PATCH', 'DELETE'])
 
 // ────────────────────────────────────────────────────────────────────────────
+// FRAME BLOCKS (v15.0)
+// @arkzen:native:frame:expo|rn|lynx and @arkzen:desktop:frame:electron|tauri.
+// Each target's body must satisfy that target's small contract; anything else
+// inside the body is the author's own code. Only Tatemonos that declare a frame
+// are checked — Tatemonos without one never reach this code.
+// ────────────────────────────────────────────────────────────────────────────
+
+function validateFrames(parsed: ParsedTatemono): { errors: string[]; warnings: string[] } {
+  const errors:   string[] = []
+  const warnings: string[] = []
+  const frames = parsed.frames
+  if (!frames) return { errors, warnings }
+
+  if (frames.expo) {
+    if (!/export\s+default\b/.test(frames.expo.raw)) {
+      errors.push('@arkzen:native:frame:expo must `export default` a layout component (Expo Router requires it for app/{tatemono}/_layout.tsx)')
+    }
+    if (parsed.nativePages.length === 0) warnings.push('@arkzen:native:frame:expo is declared but there are no @arkzen:native:page blocks for it to wrap')
+  }
+
+  if (frames.rn) {
+    if (!/export\s+(?:const|let|function)\s+(?:screenOptions|Frame)\b/.test(frames.rn.raw)) {
+      errors.push('@arkzen:native:frame:rn must export `screenOptions` (native-stack options object or function) and/or a `Frame` component')
+    }
+    if (parsed.nativePages.length === 0) warnings.push('@arkzen:native:frame:rn is declared but there are no @arkzen:native:page blocks for it to wrap')
+  }
+
+  if (frames.lynx) {
+    if (!/export\s+(?:const|let|function)\s+Frame\b/.test(frames.lynx.raw)) {
+      errors.push('@arkzen:native:frame:lynx must export a `Frame` component that renders its `children`')
+    }
+    if (parsed.nativeLynxPages.length === 0) warnings.push('@arkzen:native:frame:lynx is declared but there are no @arkzen:native:page:lynx blocks for it to wrap')
+  }
+
+  if (frames.electron) {
+    if (!/export\s+(?:default\b|(?:const|let|function)\s+(?:setup|windowOptions)\b)/.test(frames.electron.raw)) {
+      errors.push('@arkzen:desktop:frame:electron must export `setup`, `windowOptions`, or a default function (plain JavaScript — it runs in the Electron main process)')
+    }
+  }
+
+  if (frames.tauri) {
+    if (!/pub\s+fn\s+frame\s*\(/.test(frames.tauri.raw)) {
+      errors.push('@arkzen:desktop:frame:tauri must define `pub fn frame(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>>`')
+    }
+  }
+
+  if ((frames.electron || frames.tauri) && parsed.pages.length === 0) {
+    warnings.push('Desktop frames wrap the web app, but this Tatemono has no @arkzen:web:page blocks to show inside the window')
+  }
+
+  return { errors, warnings }
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // MAIN VALIDATOR
 // ────────────────────────────────────────────────────────────────────────────
 
@@ -113,6 +167,13 @@ export function validateTatemono(filePath: string): ValidationResult {
         errors.push('@arkzen:desktop:config window.min_height cannot exceed window.height')
       }
     }
+  }
+
+  // v15.0: frame blocks (opt-in)
+  if (parsed.frames) {
+    const frameResult = validateFrames(parsed)
+    errors.push(...frameResult.errors)
+    warnings.push(...frameResult.warnings)
   }
 
   const hasFreeFiles = hasFileBlocks(fs.readFileSync(filePath, 'utf-8'))

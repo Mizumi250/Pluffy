@@ -37,6 +37,7 @@
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
   | Desktop window (Electron / Tauri) | [1D](#section-1d--desktop-window-configuration) |
+  | Navigator, header, tab bar, status bar, desktop menu / tray (frames) | [19C](#section-19c--frames-native-and-desktop) |
   | Plain files written anywhere (HTML, config, scripts) | [30](#section-30--free-files-arkzenfile) |
   | Game (Godot / Unity) | [Godot](#appendix--godot-4-game-dsl), [Unity](#appendix--unity-game-dsl) |
   | Checking your work, real examples | [29](#section-29--ai-generation-checklist), [28B](#️-section-28b--known-engine-quirks-verify-after-building), [28](#section-28--examples--fixture-references), [27](#section-27--active-tatemonos-50), [31](#section-31--online-tatemono-index-fetch-real-examples) |
@@ -102,6 +103,7 @@
   - **[PART E - NATIVE APPS - EXPO, REACT NATIVE, LYNX](#part-e--native-apps--expo-react-native-lynx)**
     - [SECTION 23B - Expo / bare RN: @arkzen:import:expo & @arkzen:import:rn](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn)
     - [SECTION 19B - @arkzen:native:layout:name (Expo / bare RN)](#section-19b--arkzennativelayoutname-expo--bare-rn)
+    - [SECTION 19C - FRAMES (native and desktop)](#section-19c--frames-native-and-desktop)
     - [SECTION 20B - native styles](#section-20b--native-styles)
     - [SECTION 21B - @arkzen:native:page:name (Expo / bare RN)](#section-21b--arkzennativepagename-expo--bare-rn)
     - [SECTION 22B - @arkzen:native:error:404 / :500 (Expo / bare RN)](#section-22b--arkzennativeerror404--500-expo--bare-rn)
@@ -163,6 +165,7 @@
   - **`@arkzen:meta`** gained `dependencies` and `auth_seed`; **`@arkzen:meta:web`** gained `og`, `twitter`, `pwa`, `label`; `favicon`/`pwa` inside `@arkzen:meta` are deprecated.
   - **Lynx realtime:** an SSE bridge controller is auto-generated for Lynx when a tatemono has realtime + a `type: broadcast` endpoint.
   - **Desktop window configuration:** `@arkzen:desktop:config` supports shared window sizing, minimum dimensions, title, resizing, and fullscreen behavior. Electron and Tauri apply the settings from the active Tatemono registry; if configured Tatemonos conflict, the alphabetically earlier value wins with a warning.
+  - **Frames (parser v15.0, opt-in).** Five per-target blocks give a Tatemono full control of its parent chrome: `@arkzen:native:frame:expo|rn|lynx` (navigator, header, tab bar, status bar) and `@arkzen:desktop:frame:electron|tauri` (menu, tray, window code, web-to-host events). Each is written in its target's own language. A Tatemono with no frame block generates byte-identical output to before. New Section 19C; new fixture `frame-lab`. Web stacks are not part of frames.
   - **33 tatemonos** (new: `ethereane`, `lain098`, `shikaku`). A "Known engine quirks" section lists behaviors worth double-checking.
 
   * * *
@@ -263,7 +266,7 @@
 
 ## SECTION 1D - DESKTOP WINDOW CONFIGURATION
 
-  Use one optional `@arkzen:desktop:config` YAML block to configure the shared desktop shell window. Omit it to use the shell defaults. This first version supports window settings only; menus and IPC are not part of the DSL yet.
+  Use one optional `@arkzen:desktop:config` YAML block to configure the shared desktop shell window. Omit it to use the shell defaults. `@arkzen:desktop:config` supports window settings only. Menus, tray and web-to-host messages are written with `@arkzen:desktop:frame:electron` / `@arkzen:desktop:frame:tauri` (Section 19C).
 
   ```tsx
   /* @arkzen:desktop:config
@@ -876,6 +879,12 @@
 
   **NATIVE LAYOUTS**
   - [ ] Expo/bare-RN page layout names resolve to `@arkzen:native:layout:<name>`; Lynx page layouts resolve to `@arkzen:native:layout:lynx:<name>`. Built-in `default`, `auth`, and `guest` layouts do not need custom blocks.
+
+  **FRAMES** (only if the Tatemono needs its own navigator, header, menu or tray)
+  - [ ] One `@arkzen:native:frame:expo|rn|lynx` or `@arkzen:desktop:frame:electron|tauri` block per target, with `*/` on the opening line and a closing `:end */`
+  - [ ] Body satisfies its target's required export (Section 19C table); no frame block means the engine default, which is fine
+  - [ ] Expo/RN: the frame draws the status bar (the engine wrapper stops once a frame exists); Expo: the frame also handles top and bottom insets
+  - [ ] Desktop: no web-stack frame exists; the web nav stays in `@arkzen:web:layout`
 
   **TAG FORMAT** (follow these shapes; the validator checks only a subset)
   - [ ] Shape A (meta, config, database, api, routes): no `*/` on the opening line, no `:end`
@@ -2312,6 +2321,91 @@
 
   **Page layout declarations** (line right after the page opener): `layout:default` (engine SafeAreaView wrapper, **the default**), `layout:guest`, `layout:auth`, `layout:+auth`, `layout:+guest`, `layout:app` (your own named layout), `layout:+auth:tab-panel`, `layout:+guest:app` - same chain rules as web.
 
+## SECTION 19C - FRAMES (native and desktop)
+
+  A **frame** is the parent that wraps every screen of one Tatemono on one target: navigator, header, tab bar and status bar on mobile; menu, tray and window code on desktop. Each target has its **own marker, in its own language**, and the body is yours; the engine writes it out verbatim. This is the same idea as the backend variants (Section 1E), applied to the frontend targets that cannot share code.
+
+  **Opt-in.** A Tatemono with no frame block generates exactly what it did before. A block you delete reverts that target to the engine default. **Web stacks do not use frames**; a web Tatemono keeps `@arkzen:web:layout` (Section 19).
+
+  | Marker | Language | What the engine does with the body | Required in the body |
+  |---|---|---|---|
+  | `@arkzen:native:frame:expo` | TSX | Written to `app/{tatemono}/_layout.tsx` | `export default` a layout component |
+  | `@arkzen:native:frame:rn` | TSX | Written to `src/arkzen/generated/frames/{tatemono}.frame.tsx`, read by `App.tsx` | `export` `screenOptions` and/or `Frame` |
+  | `@arkzen:native:frame:lynx` | TSX | Written to `src/arkzen/generated/frames/{tatemono}.frame.tsx`, read by `App.tsx` | `export` a `Frame` component |
+  | `@arkzen:desktop:frame:electron` | JavaScript (ESM) | Runs in the Electron main process | `export` `setup` and/or `windowOptions`, or a default function |
+  | `@arkzen:desktop:frame:tauri` | Rust | Compiled into the Tauri shell by `build.rs` | `pub fn frame(app: &mut tauri::App) -> Result<(), Box<dyn Error>>` |
+
+  **Tag shape (Shape C).** `*/` on the opening line and a closing `:end */`, like the other code blocks. At most one block per target per Tatemono. An empty body, a missing `:end`, or a duplicate block is a parser error; a body that lacks its target's required export is a validator error. Every body brings its own imports.
+
+  ```tsx
+  /* @arkzen:native:frame:expo */
+  import React from 'react'
+  import { Tabs } from 'expo-router'
+  import { StatusBar } from 'expo-status-bar'
+
+  export default function MyLayout() {
+    return (
+      <>
+        <StatusBar style="light" />
+        <Tabs screenOptions={{ headerShown: true }}>
+          <Tabs.Screen name="index" options={{ title: 'Home' }} />
+          <Tabs.Screen name="settings" options={{ title: 'Settings' }} />
+        </Tabs>
+      </>
+    )
+  }
+  /* @arkzen:native:frame:expo:end */
+  ```
+
+  ### Expo
+
+  - The body is the whole Expo Router layout for that Tatemono, so it can use anything from `expo-router`. Tab and stack screen names are the page names (`index`, `settings`, ...).
+  - **With a frame, the engine's screen wrapper stops drawing the status bar and stops applying the top and bottom safe-area insets** (it keeps left and right). The frame owns them. A native header and a tab bar already inset themselves. A plain `<Stack>` without a header can pad itself, for example `const insets = useSafeAreaInsets()` in the layout and `contentStyle: { paddingBottom: insets.bottom }`.
+  - The generated file starts with a marker line. Removing the block deletes `_layout.tsx` only if it still starts with that marker; a hand-written `_layout.tsx` is never touched.
+  - The root `app/_layout.tsx` is unchanged. Its `headerShown: false` still applies to the Tatemono's route group; your frame's own navigator draws the header.
+
+  ### React Native (bare)
+
+  - `screenOptions` is a native-stack options object, or `(props) => object`. It is applied to every screen of this Tatemono and merged over `headerShown: false`.
+  - `Frame` wraps every screen of this Tatemono and receives the navigation props plus `children` (the screen). Render the status bar here: with a frame the engine's wrapper stops rendering `StatusBar`.
+  - Without a frame both helpers in `frames.ts` are no-ops, so `App.tsx` behaves as before.
+
+  ### Lynx
+
+  - Lynx has no navigator, so the frame is a component: `export const Frame = ({ module, page, children }) => ...`. It renders `children` (the page) inside its own chrome, built from `<view>` and `<text>`.
+  - Status bar, safe area, orientation and transitions are **not** controlled by this DSL on Lynx. Use what your Lynx host exposes.
+
+  ### Electron
+
+  - Plain JavaScript in the **main process**, not the web app. Exports:
+    - `windowOptions`: merged into the `BrowserWindow` options. `webPreferences` is ignored; the shell keeps `contextIsolation` on and `nodeIntegration` off.
+    - `setup(ctx)` (or a default function): runs once the web app has loaded. It may return a teardown function.
+  - `ctx` has `electron`, `app`, `win`, `ipcMain`, `tatemono`, `command(id, payload)` (host to web) and `onEvent(channel, handler)` (web to host; returns a stop function).
+  - **Web bridge.** Only when at least one frame exists, the shell attaches a preload script that exposes `window.arkzenHost` with `platform`, `onCommand((id, payload) => ...)` (returns an unsubscribe function) and `emit(channel, payload)`. Without a frame there is no preload and no `window.arkzenHost`.
+
+  ### Tauri
+
+  - Rust. `build.rs` reads the active Tatemonos in the root `arkzen.json`, wraps each body in its own module, and calls its `frame` from the shell's setup hook. Inside a body these are in scope without importing: `tauri`, `Manager`, `Emitter`, `Error`, and `command(&AppHandle, "id", serde_json::Value)`, which emits the `arkzen:command` event with `{ id, payload }`.
+  - A Tauri export writes the selected Tatemono's body to `src-tauri/desktop-frame.rs`, which `build.rs` then uses instead of the registry.
+  - **Not enabled by default.** A tray needs the `tray-icon` Cargo feature (and `image-png` for PNG icons) added to `tauri` in `src-tauri/Cargo.toml`. Receiving `arkzen:command` in the web app needs either `@tauri-apps/api/event` or `app.withGlobalTauri: true` in `tauri.conf.json`. Neither is changed for you.
+  - A mistake in a Rust body fails the Tauri build for the whole project, because every active Tatemono's frame is compiled into the one shell. Use `desktopPrimary` or remove the block while fixing it.
+
+  ### Several Tatemonos, one desktop shell
+
+  Electron and Tauri each have one shell for all Tatemonos. If more than one active Tatemono declares a frame for that target, all of them run in alphabetical order and a warning is printed. Set `"desktopPrimary": "<tatemono>"` in the root `arkzen.json` to run only that Tatemono's frame. (`@arkzen:desktop:config` window settings still merge alphabetically, as in Section 1D.)
+
+  ### What frames do not do
+
+  - No shared YAML form. A frame is code for one target; write one block per target you care about.
+  - No tray or menu on mobile, and no navigator on desktop: each marker only exists for the target it names.
+  - The desktop web view is the normal web stack. Its nav and header come from `@arkzen:web:layout`; the desktop frame only controls the host around it.
+
+  **Reference fixture:** [`tatemonos/frame-lab/core.tsx`](./tatemonos/frame-lab/core.tsx) has a frame for all five targets plus two screens per mobile target.
+
+  **Verification status.** Parsing, validation, and generation for Expo, React Native and Lynx were run over all existing tatemonos before and after the change (generated output identical apart from timestamps). The Electron loader was run against a fake `electron` object, and the Tauri glue was compiled against stub `tauri` and `serde_json` modules. Nothing has been run on a device, a real Electron window, or a real Tauri build yet; run `frame-lab` there first.
+
+  * * *
+
 ## SECTION 20B - native styles
 
   Two forms, both Shape C:
@@ -2996,6 +3090,8 @@
 
 ## SECTION 27 - ACTIVE TATEMONOS (50)
 
+  `frame-lab` (the Frames fixture, Section 19C) is newer than this list and is not counted below: `v1.0.0 auth:false web:index native:2 lynx:2 backends: shared only`.
+
   Format: `name vVersion auth | web pages | native (Expo/RN) screen count | Lynx page count | backend variants carried`. "shared only" means no code bodies, so the tatemono is active on every backend. "all 7" means `:php :ts :py :java :cs :go :rs`.
 
   ```
@@ -3588,6 +3684,7 @@
   | Styles | `new-updates-styles` |
   | Components | `visual-lab` |
   | Desktop window config | `kotoba` |
+  | Frames (native and desktop) | `frame-lab` |
   | Modules | `queue-flow`, `kotoba` |
   | Free files (@arkzen:file) | `free-demo` |
   | Godot game | `godot-game` |

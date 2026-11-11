@@ -827,6 +827,9 @@ function buildNativeLayoutJSX(
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const tatName = tatemono.meta.name
+  // v15.0: with @arkzen:native:frame:rn the frame owns the status bar; without a
+  // frame the line is byte-for-byte what it always was.
+  const statusBarLine = tatemono.frames?.rn ? '' : '<StatusBar barStyle="dark-content" />'
   const { imports: layoutImports, openTags: layoutOpen, closeTags: layoutClose } =
     buildNativeLayoutJSX(page, tatemono)
 
@@ -848,7 +851,7 @@ export function ${wrapperName}({ navigation }: any) {
   setActiveTatemono('${tatName}')
   return (
     <>
-      <StatusBar barStyle="dark-content" />
+      ${statusBarLine}
       ${layoutOpen}
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content}>
         <View style={styles.center}>
@@ -1028,7 +1031,7 @@ export function ${wrapperName}({ navigation, route }: any) {
   setActiveTatemono('${tatName}')
   return (
     <>
-      <StatusBar barStyle="dark-content" />
+      ${statusBarLine}
       ${layoutOpen}
       <ScrollView
         style={{ flex: 1 }}
@@ -1212,6 +1215,110 @@ export function getDashboardRoute(tatName: string): string {
 
 // ─── Register / Unregister ─────────────────────────────────────────────────────
 
+// ─── Frame (v15.0) ─────────────────────────────────────────────────────────────
+// @arkzen:native:frame:rn
+//
+// The block body is a complete TSX module (own imports) that exports either or
+// both of:
+//   screenOptions  — native-stack options (object, or (props) => object) applied
+//                    to every screen of this tatemono
+//   Frame          — a component that wraps every screen of this tatemono
+//                    (receives the navigation props plus `children`)
+//
+// Each tatemono's body is written to src/arkzen/generated/frames/{tat}.frame.tsx.
+// src/arkzen/generated/frames.ts is rebuilt from that folder, and App.tsx reads
+// it through applyArkzenFrame / getArkzenFrameOptions. With no frames the index
+// exports empty helpers that return the screen / options unchanged.
+
+const FRAMES_DIR   = path.join(GENERATED_DIR, 'frames')
+const FRAMES_INDEX = path.join(GENERATED_DIR, 'frames.ts')
+const RN_FRAME_MARKER = '// ARKZEN GENERATED FRAME — @arkzen:native:frame:rn'
+
+function listFrameTatemonos(): string[] {
+  if (!fs.existsSync(FRAMES_DIR)) return []
+  return fs.readdirSync(FRAMES_DIR)
+    .filter(f => f.endsWith('.frame.tsx'))
+    .map(f => f.slice(0, -'.frame.tsx'.length))
+    .sort()
+}
+
+function buildFrameIndex(tatNames: string[]): string {
+  const imports = tatNames
+    .map(t => `import * as Frame_${toPascalCase(t)} from './frames/${t}.frame'`)
+    .join('\n')
+  const entries = tatNames
+    .map(t => `  '${t}': Frame_${toPascalCase(t)} as ArkzenFrameModule,`)
+    .join('\n')
+
+  return `// ============================================================
+// ARKZEN GENERATED — React Native Frame Registry v1.0
+// Rebuilt from src/arkzen/generated/frames/ — DO NOT EDIT
+// ============================================================
+
+import React from 'react'
+${imports}
+
+interface ArkzenFrameModule {
+  screenOptions?: Record<string, unknown> | ((props: any) => Record<string, unknown>)
+  Frame?: React.ComponentType<any>
+}
+
+const FRAMES: Record<string, ArkzenFrameModule> = {
+${entries}
+}
+
+const wrappedScreens = new WeakMap<React.ComponentType<any>, React.ComponentType<any>>()
+
+/** Wraps a screen in its tatemono's Frame; returns the screen untouched when there is none. */
+export function applyArkzenFrame(tatemono: string, Screen: React.ComponentType<any>): React.ComponentType<any> {
+  const Frame = FRAMES[tatemono]?.Frame
+  if (!Frame) return Screen
+  let Wrapped = wrappedScreens.get(Screen)
+  if (!Wrapped) {
+    const Inner = Frame
+    Wrapped = (props: any) => React.createElement(Inner, props, React.createElement(Screen, props))
+    wrappedScreens.set(Screen, Wrapped)
+  }
+  return Wrapped
+}
+
+/** native-stack options for a tatemono's screens; undefined when it has no frame options. */
+export function getArkzenFrameOptions(tatemono: string): ((props: any) => Record<string, unknown>) | undefined {
+  const screenOptions = FRAMES[tatemono]?.screenOptions
+  if (!screenOptions) return undefined
+  return (props: any) => ({
+    headerShown: false,
+    ...(typeof screenOptions === 'function' ? screenOptions(props) : screenOptions),
+  })
+}
+`
+}
+
+function syncFrameIndex(): void {
+  ensureDir(GENERATED_DIR)
+  writeIfChanged(FRAMES_INDEX, buildFrameIndex(listFrameTatemonos()))
+}
+
+function syncRnFrame(tatemono: ParsedTatemono): void {
+  const tatName   = tatemono.meta.name
+  const framePath = path.join(FRAMES_DIR, `${tatName}.frame.tsx`)
+  const frame     = tatemono.frames?.rn
+
+  if (frame) {
+    ensureDir(FRAMES_DIR)
+    writeIfChanged(
+      framePath,
+      `${RN_FRAME_MARKER}\n// Source: tatemonos/${tatName}/core.tsx — edit the DSL block, not this file.\n\n${frame.raw}\n`,
+    )
+    console.log(`[Arkzen Native Router] ✓ Frame: ${tatName}.frame.tsx (@arkzen:native:frame:rn)`)
+  } else if (fs.existsSync(framePath) && fs.readFileSync(framePath, 'utf-8').startsWith(RN_FRAME_MARKER)) {
+    fs.unlinkSync(framePath)
+    console.log(`[Arkzen Native Router] ✓ Removed frame: ${tatName}.frame.tsx`)
+  }
+
+  syncFrameIndex()
+}
+
 export function registerNativeScreens(tatemono: ParsedTatemono): void {
   const tatName   = tatemono.meta.name
   const screenDir = path.join(SRC_SCREENS_DIR, tatName)
@@ -1270,6 +1377,9 @@ export function registerNativeScreens(tatemono: ParsedTatemono): void {
     }
   }
 
+  // v15.0: @arkzen:native:frame:rn (opt-in; rewrites frames.ts only when its content changes)
+  syncRnFrame(tatemono)
+
   writeRouteRegistry([...existingRoutes, ...newRoutes])
   console.log(`[Arkzen Native Router] ✓ Navigation registry updated: ${newRoutes.length} screen(s)`)
 }
@@ -1298,6 +1408,14 @@ export function unregisterNativeScreens(tatName: string): void {
         console.log(`[Arkzen Native Router] ✓ Removed layout: ${f}`)
       }
     }
+  }
+
+  // v15.0: remove this tatemono's generated frame and rebuild the frame index
+  const generatedFrame = path.join(FRAMES_DIR, `${tatName}.frame.tsx`)
+  if (fs.existsSync(generatedFrame)) {
+    fs.unlinkSync(generatedFrame)
+    console.log(`[Arkzen Native Router] ✓ Removed frame: ${tatName}.frame.tsx`)
+    syncFrameIndex()
   }
 
   const routes = readExistingRoutes().filter(r => r.tatName !== tatName)

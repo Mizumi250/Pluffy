@@ -88,6 +88,22 @@ Lynx-specific markers and do not use Expo/RN import pairs.
 | `@arkzen:native:animation:lynx` | Defines Lynx animation helpers. |
 | `@arkzen:native:script:lynx` / `@arkzen:native:script:lynx:name` | Defines global or named Lynx helpers. |
 
+## Frames: per-target parent chrome
+
+A frame is the parent that wraps every screen of a Tatemono on one target:
+navigator, header, tab bar and status bar on mobile; menu, tray and window code
+on desktop. Each target has its own marker and is written in that target's own
+language. Frames are opt-in: a Tatemono without a frame block generates exactly
+what it did before. Web stacks do not use frames (they keep `@arkzen:web:layout`).
+
+| DSL marker | Purpose |
+|---|---|
+| `@arkzen:native:frame:expo` | Expo Router layout (TSX) written to `app/{tatemono}/_layout.tsx`: your own `<Tabs>`, `<Stack>`, headers and status bar. |
+| `@arkzen:native:frame:rn` | Bare React Native frame (TSX): `screenOptions` for the native stack and/or a `Frame` component that wraps every screen. |
+| `@arkzen:native:frame:lynx` | Lynx frame (TSX): a `Frame` component, because Lynx has no navigator. |
+| `@arkzen:desktop:frame:electron` | Electron main-process code (JavaScript): `windowOptions` and `setup(ctx)` for menus, tray, shortcuts and web-to-host events. |
+| `@arkzen:desktop:frame:tauri` | Tauri shell code (Rust): `pub fn frame(app)` for menus, tray and events. Compiled into the shell by `build.rs`. |
+
 ## Games
 
 Game blocks are separate export targets; they are not web or native UI blocks.

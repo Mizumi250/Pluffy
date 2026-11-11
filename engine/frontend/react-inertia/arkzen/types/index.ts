@@ -55,6 +55,18 @@ export interface ArkzenWebMeta {
   pwa?:         ArkzenPWAMeta
 }
 
+// v15.0 — frame blocks: per-target parent chrome (see parser parseFrames)
+export type ArkzenFrameTarget = 'expo' | 'rn' | 'lynx' | 'electron' | 'tauri'
+
+export interface ArkzenFrame {
+  target: ArkzenFrameTarget
+  raw:    string   // the code body, verbatim
+  start:  number
+  end:    number
+}
+
+export type ArkzenFrames = Partial<Record<ArkzenFrameTarget, ArkzenFrame>>
+
 export interface ArkzenMeta {
   name: string
   version: string
@@ -295,6 +307,7 @@ export interface ParsedTatemono {
   webMeta?: ArkzenWebMeta    // v6.0: from @arkzen:meta:web block
   config?: ArkzenConfigOverride
   desktopConfig?: ArkzenDesktopConfig
+  frames?:        ArkzenFrames        // v15.0: @arkzen:native:frame:* / @arkzen:desktop:frame:*
 
   databases:          ArkzenDatabase[]
   apis:               ArkzenApi[]

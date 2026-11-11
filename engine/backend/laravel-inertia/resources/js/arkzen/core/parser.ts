@@ -6,6 +6,10 @@
 //        suffix between marker and name (:php :ts :py :java :cs). The active backend
 //        (arkzen.json activeBackend, see backends.ts) decides which variant is read.
 //        Unsuffixed code = :php. Unsuffixed YAML-only block = shared.
+// v15.0: Frame blocks — per-target parent chrome (navigator/header/status bar,
+//        desktop window host). @arkzen:native:frame:expo|rn|lynx and
+//        @arkzen:desktop:frame:electron|tauri. New parser: parseFrames().
+//        Opt-in: Tatemonos without a frame block parse exactly as before.
 // v12.0: Shared desktop window config from @arkzen:desktop:config.
 // v10.6: Global (unnamed) native style block for Expo + Bare RN.
 //        New parser: parseGlobalNativeStyle() — @arkzen:native:style
@@ -126,6 +130,8 @@ import type {
   ArkzenNativeMeta,
   ArkzenNativeConfig,
   ArkzenDesktopConfig,
+  ArkzenFrames,
+  ArkzenFrameTarget,
   ArkzenConfigOverride,
   ArkzenDatabase,
   ArkzenApi,
@@ -565,6 +571,54 @@ function parseDesktopConfig(content: string): ArkzenDesktopConfig | undefined {
     throw new Error('[Arkzen Parser] @arkzen:desktop:config must contain a YAML mapping')
   }
   return parsed as ArkzenDesktopConfig
+}
+
+
+// ─────────────────────────────────────────────
+// FRAME BLOCKS — v15.0
+//
+// A frame is the parent chrome that wraps a Tatemono's screens on one
+// target: navigator + header + status bar on mobile, window host on
+// desktop. Each target has its own variant tag and its own language:
+//
+//   @arkzen:native:frame:expo      — TSX, becomes app/{tat}/_layout.tsx
+//   @arkzen:native:frame:rn        — TSX, screenOptions + optional Frame
+//   @arkzen:native:frame:lynx      — TSX, Frame component (Lynx has no navigator)
+//   @arkzen:desktop:frame:electron — JS (ESM), runs in the Electron main process
+//   @arkzen:desktop:frame:tauri    — Rust items, compiled into the Tauri shell
+//
+// Every block is a CODE block (Type B, :end required). At most one per
+// target per Tatemono. Opt-in: a Tatemono with no frame block parses
+// exactly as before (the `frames` field is simply absent).
+// ─────────────────────────────────────────────
+
+const FRAME_BLOCKS: ReadonlyArray<{ target: ArkzenFrameTarget; marker: string }> = [
+  { target: 'expo',     marker: 'native:frame:expo' },
+  { target: 'rn',       marker: 'native:frame:rn' },
+  { target: 'lynx',     marker: 'native:frame:lynx' },
+  { target: 'electron', marker: 'desktop:frame:electron' },
+  { target: 'tauri',    marker: 'desktop:frame:tauri' },
+]
+
+function parseFrames(content: string): ArkzenFrames | undefined {
+  const frames: ArkzenFrames = {}
+  for (const { target, marker } of FRAME_BLOCKS) {
+    // Opening tags only: "(?=\\s|\\*\\/)" keeps ":end" closers from counting.
+    const openers = content.match(new RegExp(`^[ \\t]*\\/\\*\\s*@arkzen:${marker}(?=\\s|\\*\\/)`, 'gm')) ?? []
+    if (openers.length === 0) continue
+    if (openers.length > 1) {
+      throw new Error(`[Arkzen Parser] Only one @arkzen:${marker} block is allowed per Tatemono`)
+    }
+    const section = extractSectionWithPosition(content, marker)
+    if (!section) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is missing its closing /* @arkzen:${marker}:end */`)
+    }
+    if (!section.raw.trim()) {
+      throw new Error(`[Arkzen Parser] @arkzen:${marker} is empty — write the frame body or remove the block`)
+    }
+    frames[target] = { target, raw: section.raw, start: section.start, end: section.end }
+  }
+  return Object.keys(frames).length > 0 ? frames : undefined
 }
 
 // ─────────────────────────────────────────────
@@ -2000,6 +2054,8 @@ const CODE_BLOCK_TAGS = [
   'native:script:expo', 'native:script:rn', 'native:script:lynx',
   // native Lynx — v10.3
   'native:page:lynx', 'native:layout:lynx', 'native:components:lynx', 'native:style:lynx', 'native:error:lynx',
+  // frame blocks — v15.0 (new; checked for a same-line "*/" like the other code blocks)
+  'native:frame', 'desktop:frame',
 ]
 const BODY_SEP_TAGS   = ['endpoint', 'handler', 'middleware', 'policy']
 const YAML_ONLY_TAGS  = [
@@ -2307,6 +2363,9 @@ export function parseTatemono(filePath: string): ParsedTatemono {
 
   validateDslTags(content, filePath)
 
+  // v15.0: frame blocks (opt-in; undefined when the Tatemono declares none)
+  const frames = parseFrames(content)
+
   // Clear any existing DSL error file for this tatemono on successful parse
   try {
     const tatemono  = path.basename(path.dirname(filePath))
@@ -2384,6 +2443,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     nativeLynxStyleGlobal,
     nativeLynxStyles,
     nativeLynxErrorHandlers,
+    ...(frames ? { frames } : {}),   // v15.0
   }
 
   console.log(`[Arkzen Parser] ✓ Parsed: ${meta.name} v${meta.version}`)
@@ -2433,6 +2493,7 @@ export function parseTatemono(filePath: string): ParsedTatemono {
     if (nativeScriptsExpo.length)        console.log(`[Arkzen Parser]   Native scripts expo (${nativeScriptsExpo.length}): named blocks`)
     if (nativeScriptsRN.length)          console.log(`[Arkzen Parser]   Native scripts rn (${nativeScriptsRN.length}): named blocks`)
   }
+  if (frames) console.log(`[Arkzen Parser]   Frames: ${Object.keys(frames).join(', ')}`)
   if (nativeLynxPages.length > 0 || nativeLynxLayouts.length > 0 || nativeLynxComponents.length > 0 || nativeLynxStyleGlobal || nativeLynxStyles.length > 0 || nativeLynxErrorHandlers.length > 0 || nativeAnimationLynx || nativeScriptLynx || nativeScriptsLynx.length > 0) {
     console.log(`[Arkzen Parser]   ── Native (Lynx) ──`)
     if (nativeLynxPages.length)         console.log(`[Arkzen Parser]   Lynx pages (${nativeLynxPages.length}): ${nativeLynxPages.map(p => p.name).join(', ')}`)

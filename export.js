@@ -523,6 +523,20 @@ if (isInertia) {
       }, null, 2)
     )
     fs.writeFileSync(configPath, JSON.stringify(tauriConfig, null, 2))
+
+    // v15.0: @arkzen:desktop:frame:tauri — ship this Tatemono's frame with the shell.
+    // build.rs reads desktop-frame.rs next to Cargo.toml; no block, no file.
+    const tauriFrameSource = fs.readFileSync(tatPath, 'utf-8')
+    const tauriFrameOpen = tauriFrameSource.search(/\/\* @arkzen:desktop:frame:tauri(?=\s|\*\/)/)
+    if (tauriFrameOpen !== -1) {
+      const openingEnd = tauriFrameSource.indexOf('*/', tauriFrameOpen) + 2
+      const closeAt = tauriFrameSource.indexOf('/* @arkzen:desktop:frame:tauri:end */', openingEnd)
+      const frameBody = closeAt === -1 ? '' : tauriFrameSource.slice(openingEnd, closeAt).trim()
+      if (frameBody) {
+        fs.writeFileSync(path.join(projectTauriDir, 'desktop-frame.rs'), frameBody + '\n')
+        success('Tauri frame included (@arkzen:desktop:frame:tauri)')
+      }
+    }
     success('Tauri shell copied and configured for this exported Tatemono')
   }
 

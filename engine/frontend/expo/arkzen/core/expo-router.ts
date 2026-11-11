@@ -1256,6 +1256,13 @@ function buildNativeLayoutJSX(
 
 function generateScreenFile(tatemono: ParsedTatemono, page: ArkzenPage): string {
   const tatName  = tatemono.meta.name
+  // v15.0: when the tatemono declares @arkzen:native:frame:expo the frame owns the
+  // status bar and the top/bottom safe-area insets (a native header and a tab bar
+  // already inset themselves; a bare Stack can pad with useSafeAreaInsets in the frame).
+  // Without a frame all of this stays exactly as before.
+  const frameOwned     = Boolean(tatemono.frames?.expo)
+  const statusBarLine  = frameOwned ? '' : '<ArkzenStatusBar style="dark" />'
+  const safeAreaProps  = frameOwned ? " edges={['left', 'right']}" : ''
   const { imports: nativeLayoutImports, openTags: layoutOpen, closeTags: layoutClose } = buildNativeLayoutJSX(page, tatemono)
   const layoutImport = nativeLayoutImports.join('\n')
 
@@ -1279,8 +1286,8 @@ export function ${wrapperName}() {
   setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <ArkzenStatusBar style="dark" />
+    <SafeAreaView className="flex-1 bg-neutral-50"${safeAreaProps}>
+      ${statusBarLine}
       ${layoutOpen}
       <ScrollView className="flex-1">
         <View className="flex-1 items-center justify-center p-6">
@@ -1483,8 +1490,8 @@ export function ${wrapperName}() {
   setActiveTatemono('${tatName}')
   const router = useRouter()
   return (
-    <SafeAreaView className="flex-1 bg-neutral-50">
-      <ArkzenStatusBar style="dark" />
+    <SafeAreaView className="flex-1 bg-neutral-50"${safeAreaProps}>
+      ${statusBarLine}
       ${layoutOpen}
       <ScrollView
         className="flex-1"
@@ -1891,6 +1898,39 @@ ${clean}
   }
 }
 
+// ─── Frame (v15.0) ─────────────────────────────────────────────────────────────
+// @arkzen:native:frame:expo → app/{tat}/_layout.tsx
+//
+// The block body is a complete Expo Router layout module (it brings its own
+// imports and `export default`s a component). The engine writes it verbatim
+// under a marker line. A Tatemono without the block gets no _layout.tsx, and a
+// _layout.tsx is only ever deleted if it carries our marker, so a hand-written
+// layout is never touched.
+
+const EXPO_FRAME_MARKER = '// ARKZEN GENERATED FRAME — @arkzen:native:frame:expo'
+
+function syncExpoFrame(tatemono: ParsedTatemono, appDir: string): void {
+  const tatName    = tatemono.meta.name
+  const layoutPath = path.join(appDir, '_layout.tsx')
+  const frame      = tatemono.frames?.expo
+
+  if (frame) {
+    const content =
+      `${EXPO_FRAME_MARKER}\n` +
+      `// Source: tatemonos/${tatName}/core.tsx — edit the DSL block, not this file.\n\n` +
+      `${frame.raw}\n`
+    writeIfChanged(layoutPath, content)
+    console.log(`[Arkzen Expo Router] ✓ Frame: app/${tatName}/_layout.tsx (@arkzen:native:frame:expo)`)
+    return
+  }
+
+  // Block removed: clean up only a layout this engine generated.
+  if (fs.existsSync(layoutPath) && fs.readFileSync(layoutPath, 'utf-8').startsWith(EXPO_FRAME_MARKER)) {
+    fs.unlinkSync(layoutPath)
+    console.log(`[Arkzen Expo Router] ✓ Removed frame: app/${tatName}/_layout.tsx`)
+  }
+}
+
 // ─── Register / Unregister ─────────────────────────────────────────────────────
 
 export function registerExpoScreens(tatemono: ParsedTatemono): void {
@@ -1900,6 +1940,9 @@ export function registerExpoScreens(tatemono: ParsedTatemono): void {
   const appDir    = path.join(APP_DIR, tatName)
   ensureDir(screenDir)
   ensureDir(appDir)
+
+  // v15.0: @arkzen:native:frame:expo (opt-in; no-op without the block)
+  syncExpoFrame(tatemono, appDir)
 
   // v4.0: per-file native component generation
   generateIndividualNativeComponentFiles(tatemono, screenDir)
