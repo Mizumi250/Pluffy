@@ -133,6 +133,17 @@ function frontendItems() {
     codeSnippet('native:error:500:lynx', 'native:error:500:lynx', 'const ErrorLynx = () => <view><text>Something went wrong</text></view>'),
     codeSnippet('native:style:lynx', 'native:style:lynx', '.card {\n  background-color: ${1:#ffffff};\n}'),
     codeSnippet('native:style:lynx:<name>', 'native:style:lynx:${1:shared}', '.card {\n  background-color: ${2:#ffffff};\n}'),
+
+    codeSnippet('native:frame:expo', 'native:frame:expo', "import React from 'react'\nimport { Tabs } from 'expo-router'\nimport { StatusBar } from 'expo-status-bar'\n\nexport default function ${1:MyLayout}() {\n  return (\n    <>\n      <StatusBar style=\"light\" />\n      <Tabs screenOptions={{ headerShown: true }}>\n        <Tabs.Screen name=\"index\" options={{ title: '${2:Home}' }} />\n      </Tabs>\n    </>\n  )\n}"),
+    codeSnippet('native:frame:rn', 'native:frame:rn', "import React from 'react'\nimport { View, StatusBar } from 'react-native'\n\nexport const screenOptions = { headerShown: true }\n\nexport const Frame = ({ children }: { children: React.ReactNode }) => (\n  <View style={{ flex: 1 }}>\n    <StatusBar barStyle=\"light-content\" />\n    {children}\n  </View>\n)"),
+    codeSnippet('native:frame:lynx', 'native:frame:lynx', "import { type ReactNode } from '@lynx-js/react'\n\nexport const Frame = ({ children }: { module: string; page: string; children: ReactNode }) => (\n  <view style={{ flex: 1 }}>{children}</view>\n)"),
+    codeSnippet('desktop:frame:electron', 'desktop:frame:electron', "export const windowOptions = { width: ${1:1200}, height: ${2:800} }\n\nexport function setup(ctx) {\n  ${3:// menus, tray, shortcuts, ctx.onEvent(channel, handler)}\n}"),
+    codeSnippet('desktop:frame:tauri', 'desktop:frame:tauri', "pub fn frame(app: &mut tauri::App) -> Result<(), Box<dyn Error>> {\n    ${1:// menus, tray, events}\n    Ok(())\n}"),
+    {
+      label: 'file:<id>',
+      detail: 'Free file block: writes any text file to a path you choose',
+      insertText: new vscode.SnippetString('/* @arkzen:file:${1:landing}\npath: ${2:index.html}\n*/\n${3:}\n/* @arkzen:file:${1:landing}:end */'),
+    },
   ]
 
   items.push(
@@ -222,6 +233,10 @@ function completionProvider() {
           return `\n${yaml}\n*/\n${body}\n/* @arkzen:${tag}:end */`
         }
 
+        if (marker === 'file') {
+          return `\npath: \${1:index.html}\n*/\n\${2:}\n/* @arkzen:${tag}:end */`
+        }
+
         if (/^(?:web|native):layout:/.test(tag) && !hasInlineClose) {
           return `\nparent: \${1:parent-layout}\n*/\n\${2:}\n/* @arkzen:${tag}:end */`
         }
@@ -233,7 +248,7 @@ function completionProvider() {
       }
 
       function isClosableTag(tag) {
-        return /^(?:(?:endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail):(?:(?:php|ts|py|java|cs|go|rs):)?[A-Za-z0-9_-]+|module:rs|(?:web:(?:components|layout|page):[A-Za-z0-9_-]+|web:error:(?:404|500)|web:(?:animation|script|style)(?::[A-Za-z0-9_-]+)?)|(?:native:(?:components|layout|page):(?:(?:expo|rn|lynx):)?[A-Za-z0-9_-]+|native:error:(?:404|500)(?::(?:expo|rn|lynx))?|native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?|native:style(?::(?:lynx:)?[A-Za-z0-9_-]+)?)|(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export))|import:(?:expo|rn))$/.test(tag)
+        return /^(?:(?:endpoint|handler|middleware|policy|listener|jobs|console|notifications|mail):(?:(?:php|ts|py|java|cs|go|rs):)?[A-Za-z0-9_-]+|module:rs|(?:web:(?:components|layout|page):[A-Za-z0-9_-]+|web:error:(?:404|500)|web:(?:animation|script|style)(?::[A-Za-z0-9_-]+)?)|(?:native:(?:components|layout|page):(?:(?:expo|rn|lynx):)?[A-Za-z0-9_-]+|native:error:(?:404|500)(?::(?:expo|rn|lynx))?|native:(?:animation|script):(?:expo|rn|lynx)(?::[A-Za-z0-9_-]+)?|native:style(?::(?:lynx:)?[A-Za-z0-9_-]+)?)|(?:godot:(?:project|world|input|assets|scene:[A-Za-z0-9_-]+|behavior:(?:player|camera)|multiplayer|export)|unity:(?:project|game|visuals|controls|scene:[A-Za-z0-9_-]+|environment|assets|export))|import:(?:expo|rn)|native:frame:(?:expo|rn|lynx)|desktop:frame:(?:electron|tauri)|file:[A-Za-z0-9_-]+)$/.test(tag)
       }
 
       const markerStart = before.lastIndexOf('/* @arkzen:')

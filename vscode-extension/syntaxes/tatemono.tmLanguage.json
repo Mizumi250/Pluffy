@@ -29,6 +29,10 @@
     { "include": "#backend-rs-b" },
     { "include": "#mail-b" },
     { "include": "#module-rs" },
+    { "include": "#file-block" },
+    { "include": "#frame-tsx-block" },
+    { "include": "#frame-js-block" },
+    { "include": "#frame-rs-block" },
     { "include": "#game-yaml-block" },
     { "include": "#yaml-block" },
     { "include": "#web-css-block" },
@@ -435,6 +439,44 @@
         }
       ]
     },
+    "file-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:file:[A-Za-z0-9_-]+)[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.shared" } },
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.shared" } },
+      "patterns": [
+        { "include": "#yaml-content" },
+        {
+          "begin": "^[ \\t]*\\*/[ \\t]*$",
+          "beginCaptures": { "0": { "name": "comment.block.tatemono" } },
+          "end": "(?=^[ \\t]*/\\*[ \\t]*@arkzen:file:[A-Za-z0-9_-]+:end[ \\t]*\\*/[ \\t]*$)"
+        }
+      ]
+    },
+    "frame-tsx-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:native:frame:(?:expo|rn|lynx))[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.native" } },
+      "contentName": "meta.embedded.block.tsx",
+      "patterns": [{ "include": "#dsl-tags" }, { "include": "source.tsx" }]
+    },
+    "frame-js-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:desktop:frame:electron)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.desktop" } },
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.desktop" } },
+      "contentName": "meta.embedded.block.javascript",
+      "patterns": [{ "include": "source.js" }]
+    },
+    "frame-rs-block": {
+      "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:desktop:frame:tauri)[ \\t]*\\*/[ \\t]*$",
+      "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.desktop" } },
+      "end": "^[ \\t]*/\\*[ \\t]*((?:\\1):end)[ \\t]*\\*/[ \\t]*$",
+      "endCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.desktop" } },
+      "contentName": "meta.embedded.block.rust",
+      "patterns": [{ "include": "source.rust" }]
+    },
     "module-rs": {
       "begin": "^[ \\t]*/\\*[ \\t]*(@arkzen:module:rs)[ \\t]*$",
       "beginCaptures": { "0": { "name": "comment.block.tatemono" }, "1": { "name": "entity.name.tag.tatemono.backend" } },
@@ -590,11 +632,13 @@
           }
         },
         {
-          "match": "(@arkzen:)(desktop):([A-Za-z-]+)",
+          "match": "(@arkzen:)(desktop):([A-Za-z-]+)(?::(electron|tauri))?(?::(end))?",
           "captures": {
             "1": { "name": "punctuation.definition.tag.tatemono" },
             "2": { "name": "storage.type.tatemono.desktop" },
-            "3": { "name": "entity.name.tag.tatemono.desktop" }
+            "3": { "name": "entity.name.tag.tatemono.desktop" },
+            "4": { "name": "storage.type.variant.tatemono" },
+            "5": { "name": "punctuation.definition.tag.tatemono" }
           }
         },
         {

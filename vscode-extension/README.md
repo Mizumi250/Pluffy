@@ -13,6 +13,8 @@ Highlights Tatemono files across every Pluff web, mobile, desktop, and backend t
 - Mail templates use HTML highlighting; notification bodies use their backend's language grammar.
 - Godot and Unity game DSL blocks embed YAML highlighting throughout the block body, through the closing `*/`. Their opening and matching `:end` markers are highlighted as game DSL tags.
 - Completions cover the current Godot project/world/input/assets/scene/behavior/multiplayer/export blocks and Unity runner and scene-mode project/game/visuals/controls/scene/environment/assets/export blocks.
+- Frame blocks are highlighted and completed: `@arkzen:native:frame:expo|rn|lynx` use TSX, `@arkzen:desktop:frame:electron` uses JavaScript, and `@arkzen:desktop:frame:tauri` uses Rust.
+- Free file blocks (`@arkzen:file:<id>`) are highlighted with a YAML `path:` header and complete with the header and closing marker.
 - Parent-chained layouts use their YAML-header form, and Rust module snippets use the required separator-line form.
 - Tauri and Electron shells render the selected web stack, so their Tatemono UI uses the same TSX/CSS highlighting as that web target.
 
