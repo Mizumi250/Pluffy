@@ -10,9 +10,9 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "baseUrl": ".",
     "paths": {
-      "@/*": ["./*"]
+      "@/arkzen/core/*": ["./arkzen/core/*"],
+      "@/*": ["./src/*"]
     },
     "outDir": "./dist"
   },

@@ -317,14 +317,6 @@ timeout: 10
 return errors.New("This job always fails")
 /* @arkzen:jobs:go:always-fails:end */
 
-/* @arkzen:web:components:shared */
-
-'use client'
-
-import React, { useState, useEffect } from 'react'
-import { Cpu } from 'lucide-react'
-import { arkzenFetch } from '@/arkzen/core/stores/authStore'
-
 /* @arkzen:endpoint:cs:index
 */
 var page = int.TryParse(Context.Request.Query["page"], out var requestedPage) ? Math.Max(1, requestedPage) : 1;
@@ -407,6 +399,15 @@ timeout: 10
 */
 throw new InvalidOperationException("This job always fails");
 /* @arkzen:jobs:cs:always-fails:end */
+
+/* @arkzen:web:components:shared */
+
+'use client'
+
+import React, { useState, useEffect } from 'react'
+import { Cpu } from 'lucide-react'
+import { arkzenFetch } from '@/arkzen/core/stores/authStore'
+
 
 /* @arkzen:web:components:shared:end */
 

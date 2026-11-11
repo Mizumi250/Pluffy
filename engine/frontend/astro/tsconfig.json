@@ -1,7 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "baseUrl": ".",
     "paths": {
       "@/arkzen/core/*": ["./arkzen/core/*"],
       "@/arkzen/generated/*": ["./src/arkzen/generated/*"],
