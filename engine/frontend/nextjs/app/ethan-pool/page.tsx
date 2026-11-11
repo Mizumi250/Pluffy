@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — ethan-pool/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:17.892Z
+// Generated: 2026-11-11T07:26:16.509Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -19,7 +19,6 @@ import { ethanPoolAnimations, pageVariants } from '@/arkzen/generated/ethan-pool
 
 // Page component code (from @arkzen:page:index)
 const clamp = (min: number, max: number, value: number) => Math.min(Math.max(value, min), max)
-
 
 const IndexPage = () => {
   const mounted = useMounted()
@@ -546,6 +545,7 @@ const EpBookingBarInner = () => {
     </form>
   )
 }
+
 
 // Wrapper for animation + layout
 const ArkzenPage_EthanPool_Index = () => {

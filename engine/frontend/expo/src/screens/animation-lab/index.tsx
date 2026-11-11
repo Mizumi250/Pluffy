@@ -31,7 +31,8 @@ import { nativeStyles } from './components/utils'
 
 // User screen (from @arkzen:native:page:index)
 /* @arkzen:resolved:import expo */
-/* @arkzen:import:expo */const IndexPageExpo = () => {
+/* @arkzen:import:expo */
+const IndexPageExpo = () => {
   const { activeSection, setActiveSection } = useAnimLabStore()
   const [key, setKey] = useState(0)
 

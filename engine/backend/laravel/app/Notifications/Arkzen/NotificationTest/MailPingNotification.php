@@ -6,7 +6,7 @@
 // Channels: mail
 // Broadcast channel type: private
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:46.784504Z
+// Generated: 2026-11-11T07:26:55.846494Z
 // ============================================================
 
 namespace App\Notifications\Arkzen\NotificationTest;
@@ -50,7 +50,7 @@ class MailPingNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new \Illuminate\Notifications\Messages\MailMessage)
             ->subject('Mail Ping from Arkzen')
             ->line('This is a test mail notification')
             ->action('View', url('/'))

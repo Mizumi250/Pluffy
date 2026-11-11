@@ -33,3 +33,54 @@ Broadcast::channel('notification-test.{id}', function ($user, $id = null) {
 Broadcast::channel('notification-test.notifications', function () {
     return true;
 });
+
+// Module: broadcast-test
+Broadcast::channel('broadcast-test.{id}', function ($user, $id = null) {
+    return $user !== null;
+});
+
+// Module: kotoba
+Broadcast::channel('kotoba.{id}', function ($user, $id = null) {
+    return (int) $user->id === (int) $id;
+});
+
+// Module: express-test
+Broadcast::channel('express-test.{id}', function ($user, $id = null) {
+    return (int) $user->id === (int) $id;
+});
+
+// Module: express-test
+Broadcast::channel('express-test-public', function () {
+    return true;
+});
+
+// Module: express-test-2
+Broadcast::channel('express-test-2.{id}', function ($user, $id = null) {
+    return (int) $user->id === (int) $id;
+});
+
+// Module: express-test-2
+Broadcast::channel('express-test-2-public', function () {
+    return true;
+});
+
+// Module: fastapi-test
+Broadcast::channel('fastapi-test.{id}', function ($user, $id = null) {
+    return (int) $user->id === (int) $id;
+});
+
+// Module: fastapi-test
+Broadcast::channel('fastapi-test-public', function () {
+    return true;
+});
+
+// Module: queue-flow
+Broadcast::channel('queue-flow.{queueId}', function () {
+    return true;
+});
+
+// Module: shikaku
+Broadcast::channel('shikaku.project.{id}', function ($user, $id = null) {
+    if (!$user) return false;
+    return ['id' => $user->id, 'name' => $user->name];
+});

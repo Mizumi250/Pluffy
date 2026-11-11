@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — mail-test [Expo]
 // Source: @arkzen:native:components (mail-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-04T15:49:13.363Z
+// Generated: 2026-11-11T07:26:25.651Z
 // ============================================================
 
 import React, { useEffect, useState } from 'react'

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE CONSTANTS — queue-flow [Expo]
 // Source: @arkzen:native:components (queue-flow)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-04T15:49:15.682Z
+// Generated: 2026-11-11T07:26:37.802Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -14,6 +14,7 @@ import { ActivityIndicator, Animated, AppState, Easing, Platform, RefreshControl
 import { SafeAreaView } from 'react-native-safe-area-context'
 
 
-/* @arkzen:native:components:shared + @arkzen:import:rn */export const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
+/* @arkzen:native:components:shared + @arkzen:import:rn */
+export const BACKEND_URL = process.env.EXPO_PUBLIC_ARKZEN_BACKEND_URL ?? 'http://localhost:8000'
 
 // ─── Types ────────────────────────────────────────────────────────────────────

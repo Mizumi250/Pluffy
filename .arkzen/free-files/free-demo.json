@@ -1,0 +1,7 @@
+{
+  "files": [
+    "custom/free-demo/index.html",
+    "custom/free-demo/packages/my-lib/src/index.ts",
+    "engine/frontend/nextjs/public/robots.txt"
+  ]
+}

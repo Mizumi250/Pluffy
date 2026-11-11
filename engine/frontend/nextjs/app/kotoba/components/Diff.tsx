@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Diff
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T16:03:02.877Z
+// Generated: 2026-11-11T07:26:46.679Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

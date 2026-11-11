@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shikaku
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:29.482Z
+// Generated: 2026-11-11T07:27:03.064Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -10,7 +10,8 @@ import React from 'react'
 
 gsap.registerPlugin(ScrollTrigger)
 
-// GSAP — pixel scatter entrance on editor canvas loadif (typeof window !== 'undefined') {
+// GSAP — pixel scatter entrance on editor canvas load
+if (typeof window !== 'undefined') {
   // Animate tool buttons into view on mount
   document.addEventListener('DOMContentLoaded', () => {
     const tools = document.querySelectorAll('.sk-tool-btn')

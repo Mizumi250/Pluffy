@@ -1,0 +1,37 @@
+{
+  "tatemono": "dino-runner",
+  "filePath": "C:\\Users\\Administrator\\Documents\\Pluffy\\tatemonos\\dino-runner\\core.tsx",
+  "errors": [
+    {
+      "line": 8,
+      "tag": "@arkzen:unity:project",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:project:end */` after the block content"
+    },
+    {
+      "line": 16,
+      "tag": "@arkzen:unity:game",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:game:end */` after the block content"
+    },
+    {
+      "line": 29,
+      "tag": "@arkzen:unity:visuals",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:visuals:end */` after the block content"
+    },
+    {
+      "line": 42,
+      "tag": "@arkzen:unity:controls",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:controls:end */` after the block content"
+    },
+    {
+      "line": 47,
+      "tag": "@arkzen:unity:assets",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:assets:end */` after the block content"
+    }
+  ],
+  "timestamp": 1794381935566
+}

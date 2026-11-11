@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — dtr-geofencing
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:16.835Z
+// Generated: 2026-11-11T07:26:08.439Z
 // ============================================================
 
 import { gsap } from 'gsap'

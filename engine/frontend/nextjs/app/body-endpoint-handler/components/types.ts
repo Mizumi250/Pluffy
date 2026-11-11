@@ -2,7 +2,7 @@
 // ARKZEN GENERATED TYPES — body-endpoint-handler
 // Source: @arkzen:components (body-endpoint-handler)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:14.418Z
+// Generated: 2026-11-11T07:25:42.392Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

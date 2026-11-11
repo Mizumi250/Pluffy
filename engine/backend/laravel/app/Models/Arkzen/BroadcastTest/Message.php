@@ -4,7 +4,7 @@
 // ARKZEN GENERATED MODEL — Message
 // Tatemono: broadcast-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:07.783981Z
+// Generated: 2026-11-11T07:25:55.970954Z
 // ============================================================
 
 namespace App\Models\Arkzen\BroadcastTest;
@@ -21,12 +21,14 @@ class Message extends Model
     protected $table = 'broadcast_test_messages';
 
     protected $fillable = [
+        'user_id',
         'content',
         'channel_type'
     ];
 
     protected $casts = [
-        'id' => 'integer'
+        'id' => 'integer',
+        'user_id' => 'integer'
     ];
 
 

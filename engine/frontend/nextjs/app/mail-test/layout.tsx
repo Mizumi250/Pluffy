@@ -6,11 +6,11 @@ import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
   title: 'mail-test',
-  description: 'Tests backend email delivery with configurable SMTP and mail logs.',
+  description: 'Tests backend email delivery with configurable SMTP and mail logs; the welcome-mail identifier also verifies generated names normalize to WelcomeMail instead of WelcomeMailMail.',
   openGraph: {
     type: 'website',
     title: 'mail-test',
-    description: 'Tests backend email delivery with configurable SMTP and mail logs.',
+    description: 'Tests backend email delivery with configurable SMTP and mail logs; the welcome-mail identifier also verifies generated names normalize to WelcomeMail instead of WelcomeMailMail.',
   },
 }
 

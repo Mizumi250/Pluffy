@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE UTILITIES — events-test [Expo]
 // Source: @arkzen:native:components (events-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-04T15:49:06.821Z
+// Generated: 2026-11-11T07:25:42.663Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

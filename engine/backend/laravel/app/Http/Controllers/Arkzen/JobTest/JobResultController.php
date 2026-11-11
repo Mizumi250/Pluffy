@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — JobResultController
 // Tatemono: job-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:32.071513Z
+// Generated: 2026-11-11T07:26:45.457478Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\JobTest;
@@ -22,12 +22,10 @@ class JobResultController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = JobResult::query();
-
-
+        $query = \App\Models\Arkzen\JobTest\JobResult::query();
+        $query->orderBy('created_at', 'desc');
         $perPage = $request->get('per_page', 15);
         $results = $query->paginate($perPage);
-
         return response()->json($results);
     }
 
@@ -37,15 +35,15 @@ class JobResultController extends Controller
         public function store(Request $request): JsonResponse
         {
             $validated = $request->validate([
-                'job' => 'required|string',
-                'data' => 'sometimes|array'
+            'job' => 'required|string',
+            'data' => 'sometimes|array'
             ]);
     
-            $jobClasses = [
-                'process-data' => \App\Jobs\Arkzen\JobTest\ProcessDataJob::class,
-                'heavy-computation' => \App\Jobs\Arkzen\JobTest\HeavyComputationJob::class,
-                'always-fails' => \App\Jobs\Arkzen\JobTest\AlwaysFailsJob::class,
-            };
+            $jobClasses = array (
+  'process-data' => '\\App\\Jobs\\Arkzen\\JobTest\\ProcessDataJob',
+  'heavy-computation' => '\\App\\Jobs\\Arkzen\\JobTest\\HeavyComputationJob',
+  'always-fails' => '\\App\\Jobs\\Arkzen\\JobTest\\AlwaysFailsJob',
+);
             $jobName = str_replace('_', '-', $validated['job']);
             $jobClass = $jobClasses[$jobName] ?? null;
             if (!$jobClass) return response()->json(['message' => 'Unknown job: ' . $jobName], 400);

@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:28.287558Z
+// Generated: 2026-11-11T07:26:41.285268Z
 // Resources: Inventory
 // Custom controllers: 
 // ============================================================
@@ -30,5 +30,8 @@ Route::middleware(['api'])
 
         // Delete inventory item
         Route::delete('/{inventory}', [InventoryController::class, 'destroy']);
+
+        // Get items with fewer than 20 units in stock
+        Route::get('/low-stock', [InventoryController::class, 'lowStock']);
 
     });

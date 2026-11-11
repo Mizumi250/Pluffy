@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — CommandRunController
 // Tatemono: scheduler-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:51.938698Z
+// Generated: 2026-11-11T07:27:02.291924Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\SchedulerTest;
@@ -44,12 +44,12 @@ class CommandRunController extends Controller
         $commandName = str_replace('_', '-', $validated['command']);
         $triggeredBy = $validated['triggered_by'] ?? 'manual';
 
-        $signatures = [
-            'cleanup-temp' => 'scheduler-test:cleanup-temp',
-            'generate-report' => 'scheduler-test:generate-report',
-            'ping-health' => 'scheduler-test:ping-health',
-            'sync-data' => 'scheduler-test:sync-data',
-        ];
+        $signatures = array (
+  'cleanup-temp' => 'scheduler-test:cleanup-temp',
+  'generate-report' => 'scheduler-test:generate-report',
+  'ping-health' => 'scheduler-test:ping-health',
+  'sync-data' => 'scheduler-test:sync-data',
+);
 
         $signature = $signatures[$commandName] ?? null;
         if (!$signature) {

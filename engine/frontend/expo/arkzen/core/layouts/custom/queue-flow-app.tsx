@@ -6,7 +6,8 @@ import { LayoutGrid, Settings, Ticket, WifiOff } from 'lucide-react-native'
 import { AppState, Platform, StatusBar, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 
-/* @arkzen:native:layout:app + @arkzen:import:rn */const NAV = [
+/* @arkzen:native:layout:app + @arkzen:import:rn */
+const NAV = [
   { href: '/queue-flow',       icon: LayoutGrid, label: 'Display' },
   { href: '/queue-flow/join',  icon: Ticket,     label: 'Join'    },
   { href: '/queue-flow/admin', icon: Settings,   label: 'Admin'   },

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — InventoryController
 // Tatemono: inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:28.283491Z
+// Generated: 2026-11-11T07:26:41.274541Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\InventoryManagement;
@@ -90,5 +90,16 @@ class InventoryController extends Controller
         $inventory->delete();
 
         return response()->json(['message' => 'Item deleted successfully']);
+    }
+
+    /**
+     * Get items with fewer than 20 units in stock
+     */
+    public function lowStock(Request $request): JsonResponse
+    {
+        $items = \App\Models\Arkzen\InventoryManagement\Inventory::where('quantity', '<', 20)
+            ->orderBy('quantity')
+            ->get();
+        return response()->json(['data' => $items, 'count' => $items->count()]);
     }
 }

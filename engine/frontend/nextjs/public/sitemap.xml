@@ -31,16 +31,6 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/auth-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/auth-test/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/auth-test/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -51,17 +41,12 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>http://localhost:3000/auth-test/dashboard</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://localhost:3000/body-endpoint-handler</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/body-mail-notification</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/body-mail-notification/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -76,12 +61,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/broadcast-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/broadcast-test/dashboard</loc>
+    <loc>http://localhost:3000/body-mail-notification/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -92,6 +72,11 @@
   </url>
   <url>
     <loc>http://localhost:3000/broadcast-test/register</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/broadcast-test/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -117,11 +102,6 @@
   </url>
   <url>
     <loc>http://localhost:3000/errors-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/errors-test/[...catchAll]</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -181,7 +161,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/jo-payroll/appointments</loc>
+    <loc>http://localhost:3000/jo-payroll/job-database</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -191,32 +171,22 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/jo-payroll/hdmf</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/job-database</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/jo-payroll/payslip</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/jo-payroll/sss</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/jo-payroll/[...catchAll]</loc>
+    <loc>http://localhost:3000/jo-payroll/hdmf</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/job-test</loc>
+    <loc>http://localhost:3000/jo-payroll/appointments</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/jo-payroll/payslip</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -231,12 +201,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/kotoba/chat</loc>
+    <loc>http://localhost:3000/kotoba/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/kotoba/circles</loc>
+    <loc>http://localhost:3000/kotoba/register</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -256,7 +226,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/kotoba/login</loc>
+    <loc>http://localhost:3000/kotoba/review</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -266,7 +236,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/kotoba/profile</loc>
+    <loc>http://localhost:3000/kotoba/chat</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/kotoba/circles</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -276,12 +251,7 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/kotoba/register</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/kotoba/review</loc>
+    <loc>http://localhost:3000/kotoba/profile</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -291,22 +261,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/lain098/[...catchAll]</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/layout-test</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/layout-test/chain-auth</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/layout-test/chain-guest</loc>
+    <loc>http://localhost:3000/layout-test/panel</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -321,27 +281,17 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>http://localhost:3000/layout-test/chain-auth</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
     <loc>http://localhost:3000/layout-test/guard-guest</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/layout-test/panel</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/layout-test/[...catchAll]</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/mail-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/mail-test/dashboard</loc>
+    <loc>http://localhost:3000/layout-test/chain-guest</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -352,6 +302,11 @@
   </url>
   <url>
     <loc>http://localhost:3000/mail-test/register</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/mail-test/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -376,27 +331,17 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/new-updates-styles/[...catchAll]</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/notification-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/notification-test/dashboard</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/notification-test/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://localhost:3000/notification-test/register</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/notification-test/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -416,27 +361,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/queue-flow/admin</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/queue-flow/join</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/queue-flow/[...catchAll]</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/roles-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/roles-test/dashboard</loc>
+    <loc>http://localhost:3000/queue-flow/admin</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -451,12 +381,12 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/rust-backend-test</loc>
+    <loc>http://localhost:3000/roles-test/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/scheduler-test</loc>
+    <loc>http://localhost:3000/rust-backend-test</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -471,22 +401,22 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/shikaku</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
-    <loc>http://localhost:3000/shikaku/editor</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/shikaku/login</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://localhost:3000/shikaku/register</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/shikaku</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/shikaku/editor</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -501,17 +431,17 @@
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>http://localhost:3000/upload-test</loc>
-    <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
-  </url>
-  <url>
     <loc>http://localhost:3000/upload-test/dashboard</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
     <loc>http://localhost:3000/visual-lab</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>http://localhost:3000/frame-lab</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

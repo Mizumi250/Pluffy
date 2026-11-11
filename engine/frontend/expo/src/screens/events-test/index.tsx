@@ -83,7 +83,7 @@ const IndexScreen = () => {
     finally { setClearing(false) }
   }
 
-  // Group by event + second bucket — same logic as web
+  // Match the shared Events test view used by the Laravel backend.
   const grouped = log.reduce((acc: Record<string, EventLogEntry[]>, entry) => {
     const key = `${entry.event_name}:${entry.created_at?.slice(0, 19)}`
     if (!acc[key]) acc[key] = []
@@ -101,7 +101,7 @@ const IndexScreen = () => {
           <Text className="text-lg font-bold text-neutral-900">Events Test</Text>
         </View>
         <Text className="text-xs text-neutral-500 mt-0.5">
-          Each event fires its listeners as queued jobs.
+          Each event fire runs its declared listeners; execution may be queued or synchronous, depending on the backend.
         </Text>
       </View>
 
@@ -208,7 +208,7 @@ const IndexScreen = () => {
         <View className="bg-neutral-100 rounded-2xl px-4 py-3">
           <Text className="text-xs text-neutral-500 font-mono leading-5">
             backend: /api/events-test{'\n'}
-            queue: php artisan queue:work
+            listener execution: backend-dependent
           </Text>
         </View>
 

@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — shan-shan
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:29.095Z
+// Generated: 2026-11-11T07:27:02.650Z
 // ============================================================
 
 import { gsap } from 'gsap'
@@ -11,8 +11,7 @@ import React from 'react'
 gsap.registerPlugin(ScrollTrigger)
 
 export const shanShanAnimations = (pageRef: React.RefObject<HTMLDivElement | null>) => {
-  
-  const ctx = gsap.context(() => {
+    const ctx = gsap.context(() => {
     gsap.utils.toArray<HTMLElement>('.mask-top, .mask-bottom').forEach((el) => {
       gsap.to(el.querySelector('svg'), {
         yPercent: 14, ease: 'none',

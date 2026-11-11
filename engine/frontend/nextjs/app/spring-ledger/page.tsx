@@ -3,7 +3,7 @@
 // ARKZEN GENERATED PAGE — spring-ledger/index
 // Layout: guest | Auth guard: false | Guest-only: false
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T15:36:30.034Z
+// Generated: 2026-11-11T07:27:04.495Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

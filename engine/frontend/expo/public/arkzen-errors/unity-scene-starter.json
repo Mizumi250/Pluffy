@@ -1,0 +1,25 @@
+{
+  "tatemono": "unity-scene-starter",
+  "filePath": "C:\\Users\\Administrator\\Documents\\Pluffy\\tatemonos\\unity-scene-starter\\core.tsx",
+  "errors": [
+    {
+      "line": 8,
+      "tag": "@arkzen:unity:project",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:project:end */` after the block content"
+    },
+    {
+      "line": 17,
+      "tag": "@arkzen:unity:environment",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:environment:end */` after the block content"
+    },
+    {
+      "line": 79,
+      "tag": "@arkzen:unity:export",
+      "problem": "Missing closing tag",
+      "fix": "Add `/* @arkzen:unity:export:end */` after the block content"
+    }
+  ],
+  "timestamp": 1794382003396
+}

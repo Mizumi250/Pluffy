@@ -54,6 +54,10 @@ export const ARKZEN_EXPO_ROUTES: ArkzenExpoRoute[] = [
   { tatName: 'errors-test', screenName: 'index', routePath: '/errors-test', layout: 'default', auth: false },
 // ROUTE:events-test:index:/events-test:default:false
   { tatName: 'events-test', screenName: 'index', routePath: '/events-test', layout: 'default', auth: false },
+// ROUTE:frame-lab:index:/frame-lab:default:false
+  { tatName: 'frame-lab', screenName: 'index', routePath: '/frame-lab', layout: 'default', auth: false },
+// ROUTE:frame-lab:settings:/frame-lab/settings:default:false
+  { tatName: 'frame-lab', screenName: 'settings', routePath: '/frame-lab/settings', layout: 'default', auth: false },
 // ROUTE:hello-native:index:/hello-native:default:false
   { tatName: 'hello-native', screenName: 'index', routePath: '/hello-native', layout: 'default', auth: false },
 // ROUTE:hello-native:about:/hello-native/about:default:false

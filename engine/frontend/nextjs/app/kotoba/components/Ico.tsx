@@ -3,7 +3,7 @@
 // ARKZEN GENERATED COMPONENT — Ico
 // Source: @arkzen:components (kotoba)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-06T16:03:02.843Z
+// Generated: 2026-11-11T07:26:46.658Z
 // ============================================================
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'

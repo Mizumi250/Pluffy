@@ -2,7 +2,7 @@
 // ARKZEN GENERATED NATIVE COMPONENT — FeatureCard [Expo]
 // Source: @arkzen:native:components (new-updates-styles)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-04T15:49:14.513Z
+// Generated: 2026-11-11T07:26:36.239Z
 // ============================================================
 
 import React, { useState } from 'react'

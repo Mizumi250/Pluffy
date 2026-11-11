@@ -4,7 +4,7 @@
 // ARKZEN GENERATED CONTROLLER — EventLogController
 // Tatemono: events-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:24.754515Z
+// Generated: 2026-11-11T07:26:25.031433Z
 // ============================================================
 
 namespace App\Http\Controllers\Arkzen\EventsTest;
@@ -22,13 +22,9 @@ class EventLogController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $query = EventLog::query();
-
-
-        $perPage = $request->get('per_page', 15);
-        $results = $query->paginate($perPage);
-
-        return response()->json($results);
+        $perPage = $request->get('per_page', 100);
+            $results = EventLog::query()->latest()->paginate($perPage);
+            return response()->json($results);
     }
 
     /**
@@ -37,15 +33,15 @@ class EventLogController extends Controller
         public function store(Request $request): JsonResponse
         {
             $validated = $request->validate([
-                'event' => 'required|string',
-                'payload' => 'nullable|array'
+            'event' => 'required|string',
+            'payload' => 'nullable|array'
             ]);
     
-            $eventClasses = [
-                'user-signed-up' => \App\Events\Arkzen\EventsTest\UserSignedUp::class,
-                'order-placed' => \App\Events\Arkzen\EventsTest\OrderPlaced::class,
-                'data-exported' => \App\Events\Arkzen\EventsTest\DataExported::class,
-            };
+            $eventClasses = array (
+  'user-signed-up' => '\\App\\Events\\Arkzen\\EventsTest\\UserSignedUp',
+  'order-placed' => '\\App\\Events\\Arkzen\\EventsTest\\OrderPlaced',
+  'data-exported' => '\\App\\Events\\Arkzen\\EventsTest\\DataExported',
+);
             $eventName = str_replace('_', '-', $validated['event']);
             $eventClass = $eventClasses[$eventName] ?? null;
             if (!$eventClass) return response()->json(['message' => 'Unknown event: ' . $eventName], 400);

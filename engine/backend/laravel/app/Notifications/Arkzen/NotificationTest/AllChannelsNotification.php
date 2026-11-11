@@ -6,7 +6,7 @@
 // Channels: database, mail, broadcast
 // Broadcast channel type: private
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-29T03:33:46.789096Z
+// Generated: 2026-11-11T07:26:55.853853Z
 // ============================================================
 
 namespace App\Notifications\Arkzen\NotificationTest;
@@ -51,7 +51,7 @@ class AllChannelsNotification extends Notification implements ShouldQueue
 
     public function toMail(object $notifiable): MailMessage
     {
-        return (new MailMessage)
+        return (new \Illuminate\Notifications\Messages\MailMessage)
             ->subject('All Channels Test')
             ->line('This notification was sent to all three channels simultaneously')
             ->action('View', url('/'))
