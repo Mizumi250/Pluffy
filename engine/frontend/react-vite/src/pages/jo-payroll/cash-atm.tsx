@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/cash-atm [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:33.055Z
+// Generated: 2026-11-12T01:55:49.580Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -35,7 +35,8 @@ const CashAtmPage = () => {
       setLoading(true)
       try {
         const res = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
-        setJobOrders(await res.json())
+        const data = await res.json()
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { }
       finally { setLoading(false) }
     }

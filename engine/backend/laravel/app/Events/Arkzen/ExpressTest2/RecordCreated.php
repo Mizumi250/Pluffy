@@ -4,7 +4,7 @@
 // ARKZEN GENERATED EVENT — RecordCreated
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:31.999353Z
+// Generated: 2026-11-12T01:55:45.282646Z
 // ============================================================
 
 namespace App\Events\Arkzen\ExpressTest2;

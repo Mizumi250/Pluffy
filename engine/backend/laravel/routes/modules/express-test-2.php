@@ -67,7 +67,7 @@ Route::middleware(['api', 'auth:sanctum'])->prefix('/api/express-test-2/auth')->
 // ============================================================
 // ARKZEN GENERATED ROUTES — express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:31.314765Z
+// Generated: 2026-11-12T01:55:44.750171Z
 // Resources: TestRecord, UploadedFile, CommandRun, JobResult, EventLog, SendLog
 // Custom controllers: ExpressParityController
 // ============================================================

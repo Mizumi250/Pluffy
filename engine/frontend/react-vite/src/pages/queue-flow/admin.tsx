@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — queue-flow/admin [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:33.856Z
+// Generated: 2026-11-12T01:56:01.198Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -20,25 +20,53 @@ import { AppLayout } from '@/arkzen/core/layouts/custom/queue-flow-app'
 import { arkzenFetch } from '@/arkzen/core/stores/authStore'
 import { ArrowRight, Calendar, CheckCircle, Clock, Loader2, Pause, SkipForward, Users, Volume2 } from 'lucide-react'
 import { useNavigate } from 'react-router'
-import type { QueueStatus } from './components/types'
+import type { Queue, QueueStatus } from './components/types'
 
 // ── Page component from @arkzen:page:admin ─────────────────────────────
 const AdminPage = () => {
   const { statuses, setStatus } = useQueueStore()
-  const [queueId] = useState(1)
+  const [queueId, setQueueId] = useState<number | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [calling, setCalling] = useState(false)
-  const status = statuses[queueId]
+  const status = queueId === null ? undefined : statuses[queueId]
   const announce = useAnnounce()
 
+  const loadQueues = useCallback(async () => {
+    try {
+      const res = await arkzenFetch('/api/queue-flow/queues')
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'Unable to load queues')
+      const queues = Array.isArray(data) ? data : data.data
+      if (!Array.isArray(queues)) throw new Error('Queue response is invalid')
+      const active = queues.find((queue: Queue) => queue.is_active)
+      if (!active) throw new Error('No active queue is available')
+      setQueueId(active.id)
+      setLoadError(null)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Unable to load queues')
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadQueues()
+  }, [loadQueues])
+
   const load = useCallback(async () => {
+    if (queueId === null) return
     try {
       const res = await arkzenFetch(`/api/queue-flow/status/${queueId}`)
-      const data = await res.json() as QueueStatus
-      setStatus(queueId, data)
-    } catch {}
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.message ?? 'Unable to load queue status')
+      if (!data?.queue || !Array.isArray(data.waiting)) throw new Error('Queue status response is invalid')
+      setStatus(queueId, data as QueueStatus)
+      setLoadError(null)
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : 'Unable to load queue status')
+    }
   }, [queueId])
 
   useEffect(() => {
+    if (queueId === null) return
     load()
     const interval = setInterval(load, 3000)
     return () => clearInterval(interval)
@@ -61,8 +89,10 @@ const AdminPage = () => {
 
   if (!status) {
     return (
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', paddingTop: 64 }}>
-        <Loader2 size={24} style={{ color: '#4a72c8', animation: 'spin 1s linear infinite' }} />
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: '64px 20px 0' }}>
+        {loadError
+          ? <><p role="alert" style={{ color: '#b42318', textAlign: 'center' }}>{loadError}</p><button onClick={() => queueId === null ? void loadQueues() : void load()} style={{ color: '#4a72c8', fontWeight: 600 }}>Retry</button></>
+          : <Loader2 size={24} style={{ color: '#4a72c8', animation: 'spin 1s linear infinite' }} />}
       </div>
     )
   }

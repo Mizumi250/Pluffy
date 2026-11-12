@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — broadcast-test/dashboard [React+Vite]
 // Layout: auth | Auth: true | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:30.991Z
+// Generated: 2026-11-12T01:55:37.258Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -81,7 +81,6 @@ const DashboardPage = () => {
         const socketId  = (connData as any).socket_id as string
 
         // 1. public — no auth needed
-        setPublicStatus('connected')
         ws.send(JSON.stringify({
           event: 'pusher:subscribe',
           data:  { channel: 'broadcast-test-public' },
@@ -99,7 +98,6 @@ const DashboardPage = () => {
               event: 'pusher:subscribe',
               data:  { channel: `private-broadcast-test.${userId}`, auth },
             }))
-            setPrivateStatus('connected')
           } else {
             setPrivateStatus('error')
           }
@@ -127,7 +125,6 @@ const DashboardPage = () => {
                 channel_data, // use server-issued channel_data — must match what was signed
               },
             }))
-            setPresenceStatus('connected')
           } else {
             setPresenceStatus('error')
           }
@@ -136,6 +133,16 @@ const DashboardPage = () => {
 
       // ── debug — log every message ─────────────────────────
       console.log('[Reverb RX]', msg.event, msg.channel, msg.data)
+
+      if (msg.event === 'pusher_internal:subscription_succeeded') {
+        if (msg.channel === 'broadcast-test-public') setPublicStatus('connected')
+        else if (msg.channel?.startsWith('private-broadcast-test.')) setPrivateStatus('connected')
+        else if (msg.channel === 'presence-broadcast-test-presence') setPresenceStatus('connected')
+      }
+      if (msg.event === 'pusher:error') {
+        if (msg.channel?.startsWith('private-broadcast-test.')) setPrivateStatus('error')
+        else if (msg.channel === 'presence-broadcast-test-presence') setPresenceStatus('error')
+      }
 
       // ── public message ──────────────────────────────────────
       if (msg.event === 'broadcast-test.message-sent-public' || msg.channel === 'broadcast-test-public') {

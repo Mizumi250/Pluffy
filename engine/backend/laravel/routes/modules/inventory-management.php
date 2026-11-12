@@ -3,7 +3,7 @@
 // ============================================================
 // ARKZEN GENERATED ROUTES — inventory-management
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T08:35:33.922470Z
+// Generated: 2026-11-12T01:55:49.136250Z
 // Resources: Inventory
 // Custom controllers: 
 // ============================================================

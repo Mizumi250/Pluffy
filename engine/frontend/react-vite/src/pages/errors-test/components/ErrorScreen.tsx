@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — ErrorScreen [React+Vite]
 // Source: @arkzen:components (errors-test)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-13T14:10:31.940Z
+// Generated: 2026-11-12T01:55:40.590Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'

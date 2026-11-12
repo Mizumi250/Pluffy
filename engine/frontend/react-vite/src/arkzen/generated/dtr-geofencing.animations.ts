@@ -1,7 +1,7 @@
 // ============================================================
 // ARKZEN GENERATED ANIMATIONS — dtr-geofencing [React+Vite]
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:31.783Z
+// Generated: 2026-11-12T01:55:39.475Z
 // ============================================================
 
 import { gsap } from 'gsap'

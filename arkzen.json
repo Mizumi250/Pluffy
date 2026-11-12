@@ -11,32 +11,32 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.134Z",
-      "lastUpdated": "2026-11-06T15:43:10.868Z",
+      "lastUpdated": "2026-11-12T01:55:29.872Z",
       "auth": false
     },
     {
       "name": "aspnet-ledger",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "filePath": "tatemonos/aspnet-ledger/core.tsx",
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.870Z",
-      "lastUpdated": "2026-11-06T15:43:10.870Z"
+      "lastUpdated": "2026-11-12T01:55:32.902Z",
+      "auth": false
     },
     {
       "name": "aspnet-test",
-      "version": "1.0.0",
+      "version": "2.0.0",
       "status": "active",
       "filePath": "tatemonos/aspnet-test/core.tsx",
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.870Z",
-      "lastUpdated": "2026-11-06T15:43:10.870Z"
+      "lastUpdated": "2026-11-12T01:55:34.192Z",
+      "auth": true
     },
     {
       "name": "asset-hub",
@@ -47,7 +47,7 @@
         "index"
       ],
       "registered": "2026-05-15T01:38:01.152Z",
-      "lastUpdated": "2026-11-06T15:43:10.871Z",
+      "lastUpdated": "2026-11-12T01:55:34.347Z",
       "auth": false
     },
     {
@@ -59,7 +59,7 @@
         "index"
       ],
       "registered": "2026-06-14T15:57:51.225Z",
-      "lastUpdated": "2026-11-06T15:43:10.872Z",
+      "lastUpdated": "2026-11-12T01:55:34.649Z",
       "auth": false
     },
     {
@@ -68,13 +68,12 @@
       "status": "active",
       "filePath": "tatemonos/auth-test/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:15.619Z",
-      "lastUpdated": "2026-11-06T15:43:10.873Z",
+      "lastUpdated": "2026-11-12T01:55:34.797Z",
       "auth": true
     },
     {
@@ -86,7 +85,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:15.964Z",
-      "lastUpdated": "2026-11-06T15:43:10.874Z",
+      "lastUpdated": "2026-11-12T01:55:35.549Z",
       "auth": false
     },
     {
@@ -95,13 +94,12 @@
       "status": "active",
       "filePath": "tatemonos/body-mail-notification/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.454Z",
-      "lastUpdated": "2026-11-06T15:43:10.875Z",
+      "lastUpdated": "2026-11-12T01:55:37.030Z",
       "auth": true
     },
     {
@@ -110,13 +108,12 @@
       "status": "active",
       "filePath": "tatemonos/broadcast-test/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:16.532Z",
-      "lastUpdated": "2026-11-06T15:43:10.879Z",
+      "lastUpdated": "2026-11-12T01:55:38.084Z",
       "auth": true
     },
     {
@@ -128,7 +125,7 @@
         "index"
       ],
       "registered": "2026-06-14T14:55:57.943Z",
-      "lastUpdated": "2026-11-06T15:43:10.880Z",
+      "lastUpdated": "2026-11-12T01:55:38.308Z",
       "auth": false
     },
     {
@@ -140,7 +137,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.748Z",
-      "lastUpdated": "2026-11-06T15:43:10.881Z",
+      "lastUpdated": "2026-11-12T01:55:38.989Z",
       "auth": false
     },
     {
@@ -153,7 +150,7 @@
         "admin"
       ],
       "registered": "2026-05-07T23:46:16.876Z",
-      "lastUpdated": "2026-11-06T15:43:10.882Z",
+      "lastUpdated": "2026-11-12T01:55:40.441Z",
       "auth": false
     },
     {
@@ -162,11 +159,10 @@
       "status": "active",
       "filePath": "tatemonos/errors-test/core.tsx",
       "pages": [
-        "index",
-        "[...catchAll]"
+        "index"
       ],
       "registered": "2026-05-07T23:46:16.889Z",
-      "lastUpdated": "2026-11-06T15:43:10.882Z",
+      "lastUpdated": "2026-11-12T01:55:40.625Z",
       "auth": false
     },
     {
@@ -178,7 +174,7 @@
         "index"
       ],
       "registered": "2026-06-15T06:31:17.917Z",
-      "lastUpdated": "2026-11-06T15:43:10.883Z",
+      "lastUpdated": "2026-11-12T01:55:40.848Z",
       "auth": false
     },
     {
@@ -190,7 +186,7 @@
         "index"
       ],
       "registered": "2026-06-16T06:01:49.613Z",
-      "lastUpdated": "2026-11-06T15:43:10.884Z",
+      "lastUpdated": "2026-11-12T01:55:41.179Z",
       "auth": false
     },
     {
@@ -202,7 +198,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:16.961Z",
-      "lastUpdated": "2026-11-06T15:43:10.884Z",
+      "lastUpdated": "2026-11-12T01:55:42.341Z",
       "auth": false
     },
     {
@@ -213,9 +209,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.885Z",
-      "lastUpdated": "2026-11-06T15:43:10.885Z"
+      "lastUpdated": "2026-11-12T01:55:43.592Z",
+      "auth": true
     },
     {
       "name": "express-test-2",
@@ -225,9 +221,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.885Z",
-      "lastUpdated": "2026-11-06T15:43:10.885Z"
+      "lastUpdated": "2026-11-12T01:55:45.368Z",
+      "auth": true
     },
     {
       "name": "fastapi-test",
@@ -237,9 +233,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.886Z",
-      "lastUpdated": "2026-11-06T15:43:10.886Z"
+      "lastUpdated": "2026-11-12T01:55:46.586Z",
+      "auth": true
     },
     {
       "name": "go-backend-test",
@@ -249,9 +245,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.886Z",
-      "lastUpdated": "2026-11-06T15:43:10.886Z"
+      "lastUpdated": "2026-11-12T01:55:47.357Z",
+      "auth": false
     },
     {
       "name": "go-concurrency-lab",
@@ -261,9 +257,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.886Z",
-      "lastUpdated": "2026-11-06T15:43:10.886Z"
+      "lastUpdated": "2026-11-12T01:55:47.899Z",
+      "auth": false
     },
     {
       "name": "godot-game",
@@ -282,7 +278,7 @@
       "filePath": "tatemonos/hello-native/core.tsx",
       "pages": [],
       "registered": "2026-06-04T00:45:44.271Z",
-      "lastUpdated": "2026-11-06T15:43:10.889Z",
+      "lastUpdated": "2026-11-12T01:55:48.116Z",
       "auth": false
     },
     {
@@ -294,7 +290,7 @@
         "index"
       ],
       "registered": "2026-06-14T06:15:37.909Z",
-      "lastUpdated": "2026-11-06T15:43:10.890Z",
+      "lastUpdated": "2026-11-12T01:55:48.426Z",
       "auth": false
     },
     {
@@ -306,7 +302,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.040Z",
-      "lastUpdated": "2026-11-06T15:43:10.890Z",
+      "lastUpdated": "2026-11-12T01:55:49.165Z",
       "auth": false
     },
     {
@@ -316,16 +312,15 @@
       "filePath": "tatemonos/jo-payroll/core.tsx",
       "pages": [
         "index",
-        "appointments",
-        "cash-atm",
-        "hdmf",
         "job-database",
-        "payslip",
+        "cash-atm",
         "sss",
-        "[...catchAll]"
+        "hdmf",
+        "appointments",
+        "payslip"
       ],
       "registered": "2026-05-07T23:46:17.164Z",
-      "lastUpdated": "2026-11-06T15:43:10.894Z",
+      "lastUpdated": "2026-11-12T01:55:50.276Z",
       "auth": false
     },
     {
@@ -334,11 +329,10 @@
       "status": "active",
       "filePath": "tatemonos/job-test/core.tsx",
       "pages": [
-        "index",
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.234Z",
-      "lastUpdated": "2026-11-06T15:43:10.896Z",
+      "lastUpdated": "2026-11-12T01:55:50.856Z",
       "auth": false
     },
     {
@@ -348,21 +342,32 @@
       "filePath": "tatemonos/kotoba/core.tsx",
       "pages": [
         "index",
-        "chat",
-        "circles",
+        "login",
+        "register",
         "dashboard",
         "feed",
         "learn",
-        "login",
+        "review",
         "partners",
-        "profile",
+        "chat",
+        "circles",
         "progress",
-        "register",
-        "review"
+        "profile"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.899Z",
-      "lastUpdated": "2026-11-06T15:43:10.899Z"
+      "lastUpdated": "2026-11-12T01:55:56.311Z",
+      "auth": true,
+      "desktopConfig": {
+        "window": {
+          "width": 1280,
+          "height": 840,
+          "min_width": 960,
+          "min_height": 640,
+          "resizable": true,
+          "fullscreenable": true,
+          "title": "Kotoba"
+        }
+      }
     },
     {
       "name": "lain098",
@@ -370,11 +375,10 @@
       "status": "active",
       "filePath": "tatemonos/lain098/core.tsx",
       "pages": [
-        "index",
-        "[...catchAll]"
+        "index"
       ],
       "registered": "2026-06-25T01:16:58.270Z",
-      "lastUpdated": "2026-11-06T15:43:10.900Z",
+      "lastUpdated": "2026-11-12T01:55:56.636Z",
       "auth": false
     },
     {
@@ -384,16 +388,15 @@
       "filePath": "tatemonos/layout-test/core.tsx",
       "pages": [
         "index",
-        "chain-auth",
-        "chain-guest",
+        "panel",
         "deep",
         "guard-auth",
+        "chain-auth",
         "guard-guest",
-        "panel",
-        "[...catchAll]"
+        "chain-guest"
       ],
       "registered": "2026-06-14T03:49:00.850Z",
-      "lastUpdated": "2026-11-06T15:43:10.902Z",
+      "lastUpdated": "2026-11-12T01:55:56.948Z",
       "auth": false
     },
     {
@@ -402,13 +405,12 @@
       "status": "active",
       "filePath": "tatemonos/mail-test/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.302Z",
-      "lastUpdated": "2026-11-06T15:43:10.903Z",
+      "lastUpdated": "2026-11-12T01:55:58.177Z",
       "auth": true
     },
     {
@@ -420,7 +422,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.397Z",
-      "lastUpdated": "2026-11-06T15:43:10.903Z",
+      "lastUpdated": "2026-11-12T01:55:58.885Z",
       "auth": false
     },
     {
@@ -429,9 +431,9 @@
       "status": "active",
       "filePath": "tatemonos/mobile-sdui/core.tsx",
       "pages": [],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.906Z",
-      "lastUpdated": "2026-11-06T15:43:10.906Z"
+      "lastUpdated": "2026-11-12T01:55:59.464Z",
+      "auth": false
     },
     {
       "name": "new-updates-styles",
@@ -441,11 +443,10 @@
       "pages": [
         "index",
         "about",
-        "features",
-        "[...catchAll]"
+        "features"
       ],
       "registered": "2026-05-07T23:46:17.412Z",
-      "lastUpdated": "2026-11-06T15:43:10.907Z",
+      "lastUpdated": "2026-11-12T01:55:59.654Z",
       "auth": false
     },
     {
@@ -454,13 +455,12 @@
       "status": "active",
       "filePath": "tatemonos/notification-test/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:17.482Z",
-      "lastUpdated": "2026-11-06T15:43:10.911Z",
+      "lastUpdated": "2026-11-12T01:56:00.322Z",
       "auth": true
     },
     {
@@ -471,9 +471,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.913Z",
-      "lastUpdated": "2026-11-06T15:43:10.913Z"
+      "lastUpdated": "2026-11-12T01:56:00.746Z",
+      "auth": false
     },
     {
       "name": "portfolio-test",
@@ -484,7 +484,7 @@
         "index"
       ],
       "registered": "2026-05-07T23:46:17.494Z",
-      "lastUpdated": "2026-11-06T15:43:10.914Z",
+      "lastUpdated": "2026-11-12T01:56:00.881Z",
       "auth": false
     },
     {
@@ -494,12 +494,11 @@
       "filePath": "tatemonos/queue-flow/core.tsx",
       "pages": [
         "index",
-        "admin",
         "join",
-        "[...catchAll]"
+        "admin"
       ],
       "registered": "2026-05-07T23:46:17.613Z",
-      "lastUpdated": "2026-11-06T15:43:10.915Z",
+      "lastUpdated": "2026-11-12T01:56:01.908Z",
       "auth": false
     },
     {
@@ -508,13 +507,12 @@
       "status": "active",
       "filePath": "tatemonos/roles-test/core.tsx",
       "pages": [
-        "index",
-        "dashboard",
         "login",
-        "register"
+        "register",
+        "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.362Z",
-      "lastUpdated": "2026-11-06T15:43:10.917Z",
+      "lastUpdated": "2026-11-12T01:56:03.349Z",
       "auth": true
     },
     {
@@ -525,9 +523,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.917Z",
-      "lastUpdated": "2026-11-06T15:43:10.917Z"
+      "lastUpdated": "2026-11-12T01:56:04.290Z",
+      "auth": false
     },
     {
       "name": "scheduler-test",
@@ -535,11 +533,10 @@
       "status": "active",
       "filePath": "tatemonos/scheduler-test/core.tsx",
       "pages": [
-        "index",
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.447Z",
-      "lastUpdated": "2026-11-06T15:43:10.918Z",
+      "lastUpdated": "2026-11-12T01:56:04.968Z",
       "auth": false
     },
     {
@@ -551,7 +548,7 @@
         "index"
       ],
       "registered": "2026-05-25T07:15:09.255Z",
-      "lastUpdated": "2026-11-06T15:43:10.919Z",
+      "lastUpdated": "2026-11-12T01:56:05.302Z",
       "auth": false
     },
     {
@@ -560,13 +557,13 @@
       "status": "active",
       "filePath": "tatemonos/shikaku/core.tsx",
       "pages": [
-        "index",
-        "editor",
         "login",
-        "register"
+        "register",
+        "index",
+        "editor"
       ],
       "registered": "2026-06-22T11:43:30.168Z",
-      "lastUpdated": "2026-11-06T15:43:10.919Z",
+      "lastUpdated": "2026-11-12T01:56:06.720Z",
       "auth": true
     },
     {
@@ -577,9 +574,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.920Z",
-      "lastUpdated": "2026-11-06T15:43:10.920Z"
+      "lastUpdated": "2026-11-12T01:56:07.491Z",
+      "auth": false
     },
     {
       "name": "spring-test",
@@ -589,9 +586,9 @@
       "pages": [
         "index"
       ],
-      "auth": false,
       "registered": "2026-11-06T15:43:10.920Z",
-      "lastUpdated": "2026-11-06T15:43:10.920Z"
+      "lastUpdated": "2026-11-12T01:56:08.132Z",
+      "auth": false
     },
     {
       "name": "upload-test",
@@ -599,11 +596,10 @@
       "status": "active",
       "filePath": "tatemonos/upload-test/core.tsx",
       "pages": [
-        "index",
         "dashboard"
       ],
       "registered": "2026-05-07T23:46:18.508Z",
-      "lastUpdated": "2026-11-06T15:43:10.921Z",
+      "lastUpdated": "2026-11-12T01:56:08.781Z",
       "auth": false
     },
     {
@@ -615,7 +611,41 @@
         "index"
       ],
       "registered": "2026-05-23T08:37:02.596Z",
-      "lastUpdated": "2026-11-06T15:43:10.922Z",
+      "lastUpdated": "2026-11-12T01:56:09.407Z",
+      "auth": false
+    },
+    {
+      "name": "frame-lab",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "tatemonos/frame-lab/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-11-12T01:55:46.699Z",
+      "lastUpdated": "2026-11-12T01:55:46.699Z",
+      "auth": false
+    },
+    {
+      "name": "free-demo",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "tatemonos/free-demo/core.tsx",
+      "pages": [],
+      "registered": "2026-11-12T01:55:46.806Z",
+      "lastUpdated": "2026-11-12T01:55:46.806Z",
+      "auth": false
+    },
+    {
+      "name": "rubik-solver",
+      "version": "1.0.0",
+      "status": "active",
+      "filePath": "tatemonos/rubik-solver/core.tsx",
+      "pages": [
+        "index"
+      ],
+      "registered": "2026-11-12T01:56:03.699Z",
+      "lastUpdated": "2026-11-12T01:56:03.699Z",
       "auth": false
     }
   ],
@@ -634,6 +664,6 @@
     "tauri": "engine/frontend/tauri",
     "electron": "engine/frontend/electron"
   },
-  "activeBackend": "express",
+  "activeBackend": "laravel",
   "activeDatabase": "sqlite"
 }

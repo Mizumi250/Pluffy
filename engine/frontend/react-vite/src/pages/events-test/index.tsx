@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — events-test/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:32.511Z
+// Generated: 2026-11-12T01:55:41.339Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
@@ -50,6 +50,10 @@ const IndexPage = () => {
   const loadLog = useCallback(async () => {
     try {
       const res = await arkzenFetch('/api/events-test/log?per_page=100')
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Log request failed (${res.status}): ${detail || res.statusText}`)
+      }
       const d   = await res.json()
       setLog(d.data ?? [])
     } catch (e) {
@@ -72,10 +76,14 @@ const IndexPage = () => {
   const fire = async (eventKey: string, payload: object) => {
     setFiring(eventKey)
     try {
-      await arkzenFetch('/api/events-test/fire', {
+      const res = await arkzenFetch('/api/events-test/fire', {
         method: 'POST',
         body:   JSON.stringify({ event: eventKey, payload }),
       })
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Event request failed (${res.status}): ${detail || res.statusText}`)
+      }
 
       // Clear any existing poll then start aggressive polling immediately
       if (pollingRef.current) clearInterval(pollingRef.current)
@@ -100,9 +108,15 @@ const IndexPage = () => {
   const clearLog = async () => {
     setClearing(true)
     try {
-      await arkzenFetch('/api/events-test/log/clear', { method: 'POST' })
+      const res = await arkzenFetch('/api/events-test/log/clear', { method: 'POST' })
+      if (!res.ok) {
+        const detail = await res.text()
+        throw new Error(`Clear-log request failed (${res.status}): ${detail || res.statusText}`)
+      }
       setLog([])
-    } catch {} finally { setClearing(false) }
+    } catch (e) {
+      console.error('Failed to clear log:', e)
+    } finally { setClearing(false) }
   }
 
   const statusColor = (s: string) => ({
@@ -111,7 +125,7 @@ const IndexPage = () => {
     failed:    'bg-red-100 text-red-700',
   }[s] ?? 'bg-neutral-100 text-neutral-600')
 
-  // Group by event + second bucket — latest() order means newest groups appear first
+  // Match the shared Events test view used by the Laravel backend.
   const grouped = log.reduce((acc: Record<string, EventLogEntry[]>, entry) => {
     const key = `${entry.event_name}:${entry.created_at?.slice(0, 19)}`
     if (!acc[key]) acc[key] = []
@@ -124,7 +138,7 @@ const IndexPage = () => {
       <div className="max-w-2xl mx-auto space-y-6">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Zap size={20} /> Events Test</h1>
-          <p className="text-sm text-neutral-500 mt-1">Each event fires its listeners as queued jobs.</p>
+          <p className="text-sm text-neutral-500 mt-1">Each event fire runs its declared listeners and records one entry per listener.</p>
         </div>
 
         {/* Event fire buttons */}
@@ -176,7 +190,7 @@ const IndexPage = () => {
               {Object.entries(grouped).map(([groupKey, entries]) => (
                 <div key={groupKey} className="px-5 py-3">
                   <div className="text-xs font-medium text-neutral-500 mb-2 flex items-center gap-1">
-                    <Flame size={13} className="text-amber-500" /> {entries[0].event_name} — {entries[0].created_at?.slice(11, 19)}
+                    <Flame size={13} className="text-amber-500" /> {entries[0].event_name} — {entries[0].created_at?.slice(11, 19) ?? 'time unavailable'}
                   </div>
                   <div className="space-y-1.5 pl-3 border-l-2 border-neutral-100">
                     {entries.map((e, i) => (
@@ -196,7 +210,7 @@ const IndexPage = () => {
         </div>
 
         <div className="text-xs text-neutral-400 bg-neutral-50 rounded-xl p-4">
-          <strong>How it works:</strong> The backend fires the Arkzen-generated Event class → Laravel event dispatcher → each listener is a queued job (ShouldQueue). Run <code>php artisan queue:work</code> to process them.
+          <strong>How it works:</strong> The backend dispatches the listeners declared in this Tatemono. Queue-capable backends may run them asynchronously; Rust currently runs them synchronously because its queue worker is not implemented.
         </div>
       </div>
     </div>

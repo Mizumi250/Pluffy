@@ -16,6 +16,10 @@ export interface ArkzenRoute {
 
 // ROUTE:animation-lab:index:/animation-lab:false
 const ArkzenPage_AnimationLab_Index = lazy(() => import('@/pages/animation-lab/index'))
+// ROUTE:aspnet-ledger:index:/aspnet-ledger:false
+const ArkzenPage_AspnetLedger_Index = lazy(() => import('@/pages/aspnet-ledger/index'))
+// ROUTE:aspnet-test:index:/aspnet-test:true
+const ArkzenPage_AspnetTest_Index = lazy(() => import('@/pages/aspnet-test/index'))
 // ROUTE:asset-hub:index:/asset-hub:false
 const ArkzenPage_AssetHub_Index = lazy(() => import('@/pages/asset-hub/index'))
 // ROUTE:atelier:index:/atelier:false
@@ -64,6 +68,18 @@ const ArkzenPage_EthanPool_Index = lazy(() => import('@/pages/ethan-pool/index')
 const ArkzenPage_Ethereane_Index = lazy(() => import('@/pages/ethereane/index'))
 // ROUTE:events-test:index:/events-test:false
 const ArkzenPage_EventsTest_Index = lazy(() => import('@/pages/events-test/index'))
+// ROUTE:express-test:index:/express-test:true
+const ArkzenPage_ExpressTest_Index = lazy(() => import('@/pages/express-test/index'))
+// ROUTE:express-test-2:index:/express-test-2:true
+const ArkzenPage_ExpressTest2_Index = lazy(() => import('@/pages/express-test-2/index'))
+// ROUTE:fastapi-test:index:/fastapi-test:true
+const ArkzenPage_FastapiTest_Index = lazy(() => import('@/pages/fastapi-test/index'))
+// ROUTE:frame-lab:index:/frame-lab:false
+const ArkzenPage_FrameLab_Index = lazy(() => import('@/pages/frame-lab/index'))
+// ROUTE:go-backend-test:index:/go-backend-test:false
+const ArkzenPage_GoBackendTest_Index = lazy(() => import('@/pages/go-backend-test/index'))
+// ROUTE:go-concurrency-lab:index:/go-concurrency-lab:false
+const ArkzenPage_GoConcurrencyLab_Index = lazy(() => import('@/pages/go-concurrency-lab/index'))
 // ROUTE:hw-coffee:index:/hw-coffee:false
 const ArkzenPage_HwCoffee_Index = lazy(() => import('@/pages/hw-coffee/index'))
 // ROUTE:inventory-management:index:/inventory-management:false
@@ -88,6 +104,30 @@ const ArkzenPage_JoPayroll_NotFound = lazy(() => import('@/pages/jo-payroll/not-
 const ArkzenPage_JobTest_Dashboard = lazy(() => import('@/pages/job-test/dashboard'))
 // ROUTE:job-test:__root_redirect:/job-test:false
 const ArkzenPage_JobTest_RootRedirect = lazy(() => import('@/pages/job-test/__root_redirect'))
+// ROUTE:kotoba:index:/kotoba:true
+const ArkzenPage_Kotoba_Index = lazy(() => import('@/pages/kotoba/index'))
+// ROUTE:kotoba:login:/kotoba/login:true
+const ArkzenPage_Kotoba_Login = lazy(() => import('@/pages/kotoba/login'))
+// ROUTE:kotoba:register:/kotoba/register:true
+const ArkzenPage_Kotoba_Register = lazy(() => import('@/pages/kotoba/register'))
+// ROUTE:kotoba:dashboard:/kotoba/dashboard:true
+const ArkzenPage_Kotoba_Dashboard = lazy(() => import('@/pages/kotoba/dashboard'))
+// ROUTE:kotoba:feed:/kotoba/feed:true
+const ArkzenPage_Kotoba_Feed = lazy(() => import('@/pages/kotoba/feed'))
+// ROUTE:kotoba:learn:/kotoba/learn:true
+const ArkzenPage_Kotoba_Learn = lazy(() => import('@/pages/kotoba/learn'))
+// ROUTE:kotoba:review:/kotoba/review:true
+const ArkzenPage_Kotoba_Review = lazy(() => import('@/pages/kotoba/review'))
+// ROUTE:kotoba:partners:/kotoba/partners:true
+const ArkzenPage_Kotoba_Partners = lazy(() => import('@/pages/kotoba/partners'))
+// ROUTE:kotoba:chat:/kotoba/chat:true
+const ArkzenPage_Kotoba_Chat = lazy(() => import('@/pages/kotoba/chat'))
+// ROUTE:kotoba:circles:/kotoba/circles:true
+const ArkzenPage_Kotoba_Circles = lazy(() => import('@/pages/kotoba/circles'))
+// ROUTE:kotoba:progress:/kotoba/progress:true
+const ArkzenPage_Kotoba_Progress = lazy(() => import('@/pages/kotoba/progress'))
+// ROUTE:kotoba:profile:/kotoba/profile:true
+const ArkzenPage_Kotoba_Profile = lazy(() => import('@/pages/kotoba/profile'))
 // ROUTE:lain098:index:/lain098:false
 const ArkzenPage_Lain098_Index = lazy(() => import('@/pages/lain098/index'))
 // ROUTE:lain098:not-found:/lain098/*:false
@@ -134,6 +174,8 @@ const ArkzenPage_NotificationTest_Register = lazy(() => import('@/pages/notifica
 const ArkzenPage_NotificationTest_Dashboard = lazy(() => import('@/pages/notification-test/dashboard'))
 // ROUTE:notification-test:__root_redirect:/notification-test:true
 const ArkzenPage_NotificationTest_RootRedirect = lazy(() => import('@/pages/notification-test/__root_redirect'))
+// ROUTE:ollama-studio:index:/ollama-studio:false
+const ArkzenPage_OllamaStudio_Index = lazy(() => import('@/pages/ollama-studio/index'))
 // ROUTE:portfolio-test:index:/portfolio-test:false
 const ArkzenPage_PortfolioTest_Index = lazy(() => import('@/pages/portfolio-test/index'))
 // ROUTE:queue-flow:index:/queue-flow:false
@@ -152,16 +194,28 @@ const ArkzenPage_RolesTest_Register = lazy(() => import('@/pages/roles-test/regi
 const ArkzenPage_RolesTest_Dashboard = lazy(() => import('@/pages/roles-test/dashboard'))
 // ROUTE:roles-test:__root_redirect:/roles-test:true
 const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/__root_redirect'))
+// ROUTE:rubik-solver:index:/rubik-solver:false
+const ArkzenPage_RubikSolver_Index = lazy(() => import('@/pages/rubik-solver/index'))
+// ROUTE:rust-backend-test:index:/rust-backend-test:false
+const ArkzenPage_RustBackendTest_Index = lazy(() => import('@/pages/rust-backend-test/index'))
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:false
 const ArkzenPage_SchedulerTest_Dashboard = lazy(() => import('@/pages/scheduler-test/dashboard'))
 // ROUTE:scheduler-test:__root_redirect:/scheduler-test:false
 const ArkzenPage_SchedulerTest_RootRedirect = lazy(() => import('@/pages/scheduler-test/__root_redirect'))
 // ROUTE:shan-shan:index:/shan-shan:false
 const ArkzenPage_ShanShan_Index = lazy(() => import('@/pages/shan-shan/index'))
+// ROUTE:shikaku:login:/shikaku/login:true
+const ArkzenPage_Shikaku_Login = lazy(() => import('@/pages/shikaku/login'))
+// ROUTE:shikaku:register:/shikaku/register:true
+const ArkzenPage_Shikaku_Register = lazy(() => import('@/pages/shikaku/register'))
 // ROUTE:shikaku:index:/shikaku:true
 const ArkzenPage_Shikaku_Index = lazy(() => import('@/pages/shikaku/index'))
 // ROUTE:shikaku:editor:/shikaku/editor:true
 const ArkzenPage_Shikaku_Editor = lazy(() => import('@/pages/shikaku/editor'))
+// ROUTE:spring-ledger:index:/spring-ledger:false
+const ArkzenPage_SpringLedger_Index = lazy(() => import('@/pages/spring-ledger/index'))
+// ROUTE:spring-test:index:/spring-test:false
+const ArkzenPage_SpringTest_Index = lazy(() => import('@/pages/spring-test/index'))
 // ROUTE:upload-test:dashboard:/upload-test/dashboard:false
 const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/dashboard'))
 // ROUTE:upload-test:__root_redirect:/upload-test:false
@@ -177,6 +231,8 @@ export const ARKZEN_ERROR_BOUNDARIES: Record<string, React.ComponentType<{ child
 
 export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/animation-lab', name: 'index', tatemono: 'animation-lab', component: ArkzenPage_AnimationLab_Index, auth: false },
+  { path: '/aspnet-ledger', name: 'index', tatemono: 'aspnet-ledger', component: ArkzenPage_AspnetLedger_Index, auth: false },
+  { path: '/aspnet-test', name: 'index', tatemono: 'aspnet-test', component: ArkzenPage_AspnetTest_Index, auth: true },
   { path: '/asset-hub', name: 'index', tatemono: 'asset-hub', component: ArkzenPage_AssetHub_Index, auth: false },
   { path: '/atelier', name: 'index', tatemono: 'atelier', component: ArkzenPage_Atelier_Index, auth: false },
   { path: '/auth-test/login', name: 'login', tatemono: 'auth-test', component: ArkzenPage_AuthTest_Login, auth: true },
@@ -201,6 +257,12 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/ethan-pool', name: 'index', tatemono: 'ethan-pool', component: ArkzenPage_EthanPool_Index, auth: false },
   { path: '/ethereane', name: 'index', tatemono: 'ethereane', component: ArkzenPage_Ethereane_Index, auth: false },
   { path: '/events-test', name: 'index', tatemono: 'events-test', component: ArkzenPage_EventsTest_Index, auth: false },
+  { path: '/express-test', name: 'index', tatemono: 'express-test', component: ArkzenPage_ExpressTest_Index, auth: true },
+  { path: '/express-test-2', name: 'index', tatemono: 'express-test-2', component: ArkzenPage_ExpressTest2_Index, auth: true },
+  { path: '/fastapi-test', name: 'index', tatemono: 'fastapi-test', component: ArkzenPage_FastapiTest_Index, auth: true },
+  { path: '/frame-lab', name: 'index', tatemono: 'frame-lab', component: ArkzenPage_FrameLab_Index, auth: false },
+  { path: '/go-backend-test', name: 'index', tatemono: 'go-backend-test', component: ArkzenPage_GoBackendTest_Index, auth: false },
+  { path: '/go-concurrency-lab', name: 'index', tatemono: 'go-concurrency-lab', component: ArkzenPage_GoConcurrencyLab_Index, auth: false },
   { path: '/hw-coffee', name: 'index', tatemono: 'hw-coffee', component: ArkzenPage_HwCoffee_Index, auth: false },
   { path: '/inventory-management', name: 'index', tatemono: 'inventory-management', component: ArkzenPage_InventoryManagement_Index, auth: false },
   { path: '/jo-payroll', name: 'index', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_Index, auth: false },
@@ -213,6 +275,18 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/jo-payroll/*', name: 'not-found', tatemono: 'jo-payroll', component: ArkzenPage_JoPayroll_NotFound, auth: false },
   { path: '/job-test/dashboard', name: 'dashboard', tatemono: 'job-test', component: ArkzenPage_JobTest_Dashboard, auth: false },
   { path: '/job-test', name: '__root_redirect', tatemono: 'job-test', component: ArkzenPage_JobTest_RootRedirect, auth: false },
+  { path: '/kotoba', name: 'index', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Index, auth: true },
+  { path: '/kotoba/login', name: 'login', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Login, auth: true },
+  { path: '/kotoba/register', name: 'register', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Register, auth: true },
+  { path: '/kotoba/dashboard', name: 'dashboard', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Dashboard, auth: true },
+  { path: '/kotoba/feed', name: 'feed', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Feed, auth: true },
+  { path: '/kotoba/learn', name: 'learn', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Learn, auth: true },
+  { path: '/kotoba/review', name: 'review', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Review, auth: true },
+  { path: '/kotoba/partners', name: 'partners', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Partners, auth: true },
+  { path: '/kotoba/chat', name: 'chat', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Chat, auth: true },
+  { path: '/kotoba/circles', name: 'circles', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Circles, auth: true },
+  { path: '/kotoba/progress', name: 'progress', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Progress, auth: true },
+  { path: '/kotoba/profile', name: 'profile', tatemono: 'kotoba', component: ArkzenPage_Kotoba_Profile, auth: true },
   { path: '/lain098', name: 'index', tatemono: 'lain098', component: ArkzenPage_Lain098_Index, auth: false },
   { path: '/lain098/*', name: 'not-found', tatemono: 'lain098', component: ArkzenPage_Lain098_NotFound, auth: false },
   { path: '/layout-test', name: 'index', tatemono: 'layout-test', component: ArkzenPage_LayoutTest_Index, auth: false },
@@ -236,6 +310,7 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/notification-test/register', name: 'register', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Register, auth: true },
   { path: '/notification-test/dashboard', name: 'dashboard', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_Dashboard, auth: true },
   { path: '/notification-test', name: '__root_redirect', tatemono: 'notification-test', component: ArkzenPage_NotificationTest_RootRedirect, auth: true },
+  { path: '/ollama-studio', name: 'index', tatemono: 'ollama-studio', component: ArkzenPage_OllamaStudio_Index, auth: false },
   { path: '/portfolio-test', name: 'index', tatemono: 'portfolio-test', component: ArkzenPage_PortfolioTest_Index, auth: false },
   { path: '/queue-flow', name: 'index', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Index, auth: false },
   { path: '/queue-flow/join', name: 'join', tatemono: 'queue-flow', component: ArkzenPage_QueueFlow_Join, auth: false },
@@ -245,11 +320,17 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
+  { path: '/rubik-solver', name: 'index', tatemono: 'rubik-solver', component: ArkzenPage_RubikSolver_Index, auth: false },
+  { path: '/rust-backend-test', name: 'index', tatemono: 'rust-backend-test', component: ArkzenPage_RustBackendTest_Index, auth: false },
   { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
   { path: '/shan-shan', name: 'index', tatemono: 'shan-shan', component: ArkzenPage_ShanShan_Index, auth: false },
+  { path: '/shikaku/login', name: 'login', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Login, auth: true },
+  { path: '/shikaku/register', name: 'register', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Register, auth: true },
   { path: '/shikaku', name: 'index', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Index, auth: true },
   { path: '/shikaku/editor', name: 'editor', tatemono: 'shikaku', component: ArkzenPage_Shikaku_Editor, auth: true },
+  { path: '/spring-ledger', name: 'index', tatemono: 'spring-ledger', component: ArkzenPage_SpringLedger_Index, auth: false },
+  { path: '/spring-test', name: 'index', tatemono: 'spring-test', component: ArkzenPage_SpringTest_Index, auth: false },
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },

@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — body-endpoint-handler/index [React+Vite]
 // Layout: guest | Auth: false | Guest: true
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:30.747Z
+// Generated: 2026-11-12T01:55:34.983Z
 // ============================================================
 
 import React, { useEffect, useRef, useState } from 'react'
@@ -120,15 +120,6 @@ const IndexPage = () => {
     <div style={{ minHeight: '100vh', background: '#fafafa', padding: '32px 16px' }}>
       {toast && <div style={{ position: 'fixed', top: 20, right: 20, background: toast.type === 'success' ? '#22c55e' : '#ef4444', color: '#fff', padding: '10px 18px', borderRadius: 8, fontSize: 13, fontWeight: 600, zIndex: 9999 }}>{toast.msg}</div>}
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
-
-        {/* Header */}
-        <div style={{ marginBottom: 28 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#18181b', margin: 0 }}>Body Injection — Endpoint & Handler</h1>
-          <p style={{ fontSize: 13, color: '#71717a', margin: '6px 0 0' }}>
-            <strong>ControllerBuilder v7.0</strong> <code>@arkzen:endpoint</code> ·{' '}
-            <strong>CustomRouteBuilder v2.0</strong> <code>@arkzen:handler</code>
-          </p>
-        </div>
 
         {/* Stats card — ControllerBuilder endpoint body */}
         <div style={card}>

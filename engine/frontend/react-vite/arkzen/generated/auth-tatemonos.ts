@@ -5,9 +5,14 @@
 // ============================================================
 
 export const AUTH_TATEMONOS: string[] = [
+  "aspnet-test",
   "auth-test",
   "body-mail-notification",
   "broadcast-test",
+  "express-test",
+  "express-test-2",
+  "fastapi-test",
+  "kotoba",
   "mail-test",
   "notification-test",
   "roles-test",

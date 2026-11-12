@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/job-database [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:33.031Z
+// Generated: 2026-11-12T01:55:49.550Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -40,7 +40,7 @@ const JobDatabasePage = () => {
       try {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders`)
         const data = await res.json()
-        setJobOrders(data)
+        setJobOrders(Array.isArray(data) ? data : data.data ?? [])
       } catch { /* use existing */ }
       finally { setLoading(false) }
     }
@@ -50,8 +50,8 @@ const JobDatabasePage = () => {
   const filtered = useMemo(() => {
     return jobOrders.filter(jo => {
       const matchSearch = search === '' ||
-        jo.name_of_jo.toLowerCase().includes(search.toLowerCase()) ||
-        jo.funding.toLowerCase().includes(search.toLowerCase()) ||
+        (jo.name_of_jo ?? '').toLowerCase().includes(search.toLowerCase()) ||
+        (jo.funding ?? '').toLowerCase().includes(search.toLowerCase()) ||
         (jo.sss_number ?? '').includes(search)
       const matchTab =
         activeTab === 'All'      ? true :
@@ -69,13 +69,15 @@ const JobDatabasePage = () => {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders/${editTarget.id}`, {
           method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
         })
-        const updated = await res.json()
+        const response = await res.json()
+        const updated = response.data ?? response
         updateJobOrder(editTarget.id, updated)
       } else {
         const res  = await fetch(`${API_BASE}/api/jo-payroll/job-orders`, {
           method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data),
         })
-        const created = await res.json()
+        const response = await res.json()
+        const created = response.data ?? response
         addJobOrder(created)
       }
     } catch { /* silent */ }
@@ -140,8 +142,8 @@ const JobDatabasePage = () => {
           : filtered.length === 0
             ? <EmptyRow message="No records match your filters" />
             : <div>
-                {filtered.map(jo => (
-                  <div key={jo.id} className="jo-row">
+                {filtered.map((jo, index) => (
+                  <div key={`${jo.id ?? jo.jor_number ?? 'job-order'}-${index}`} className="jo-row">
                     <JORow
                       jo={jo}
                       onEdit={j => { setEditTarget(j); setFormOpen(true) }}

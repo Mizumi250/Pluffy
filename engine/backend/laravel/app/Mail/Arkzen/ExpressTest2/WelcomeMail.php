@@ -5,7 +5,7 @@
 // Tatemono: express-test-2
 // Subject: Welcome to Express parity
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:32.107669Z
+// Generated: 2026-11-12T01:55:45.338447Z
 // ============================================================
 
 namespace App\Mail\Arkzen\ExpressTest2;

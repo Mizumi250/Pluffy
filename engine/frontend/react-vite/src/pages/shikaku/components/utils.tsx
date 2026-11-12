@@ -2,11 +2,12 @@
 // ARKZEN GENERATED UTILITIES — shikaku [React+Vite]
 // Source: @arkzen:components (shikaku)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-10-13T14:10:34.200Z
+// Generated: 2026-11-12T01:56:05.533Z
 // ============================================================
 
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useAuthStore } from '@/arkzen/core/stores/authStore'
 import { ArrowLeft, Check, ChevronDown, Circle, Copy, Crosshair, Download, Eraser, Eye, EyeOff, Film, FlipHorizontal, FlipVertical, Grid3x3, Layers, Lock, Minus, Move, PaintBucket as Bucket, Palette, Pause, Pencil, Pipette, Play, Plus, Redo2, RefreshCw, RotateCcw, Save, Settings, Share2, SkipBack, SkipForward, Sparkles, Square, Trash2, Type, Undo2, Unlock, X } from 'lucide-react'
 import type { Frame, Layer, Pixel } from './types'
 
@@ -123,7 +124,7 @@ export function renderFrameThumb(frame: Frame, width: number, height: number, si
 
 export async function skFetch(url: string, options?: RequestInit) {
   const base = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-  const token = typeof window !== 'undefined' ? localStorage.getItem('shikaku_token') : null
+  const token = typeof window !== 'undefined' ? useAuthStore.getState().token : null
   const res = await fetch(`${base}${url}`, {
     ...options,
     headers: {

@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — CheckUpdateRequest
 // Tatemono: aspnet-test
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:25:31.180674Z
+// Generated: 2026-11-12T01:55:33.493477Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\AspnetTest;

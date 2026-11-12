@@ -2,7 +2,7 @@
 // ARKZEN GENERATED PAGE — jo-payroll/index [React+Vite]
 // Layout: app | Auth: false | Guest: false
 // DO NOT EDIT — edit tatemono instead
-// Generated: 2026-10-13T14:10:33.005Z
+// Generated: 2026-11-12T01:55:49.514Z
 // ============================================================
 
 import React, { useEffect, useMemo, useRef, useState } from 'react'
@@ -39,7 +39,7 @@ const DashboardPage = () => {
         const sumData = await sumRes.json()
         const joData  = await joRes.json()
         setSummary(sumData)
-        setJobOrders(joData)
+        setJobOrders(Array.isArray(joData) ? joData : joData.data ?? [])
       } catch {
         // Use realistic mock data if API is unavailable
         setSummary({

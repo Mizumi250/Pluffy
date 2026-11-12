@@ -5,7 +5,7 @@
 // Tatemono: express-test-2
 // Listens to: App\Events\Arkzen\ExpressTest2\RecordCreated
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:32.008838Z
+// Generated: 2026-11-12T01:55:45.287012Z
 // ============================================================
 
 namespace App\Listeners\Arkzen\ExpressTest2;

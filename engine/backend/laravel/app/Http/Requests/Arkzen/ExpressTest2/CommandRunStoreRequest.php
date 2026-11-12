@@ -4,7 +4,7 @@
 // ARKZEN GENERATED REQUEST — CommandRunStoreRequest
 // Tatemono: express-test-2
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-11T07:26:31.093402Z
+// Generated: 2026-11-12T01:55:44.579290Z
 // ============================================================
 
 namespace App\Http\Requests\Arkzen\ExpressTest2;
