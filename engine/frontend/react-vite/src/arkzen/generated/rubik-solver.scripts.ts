@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — rubik-solver
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T06:24:07.560Z
+// Generated: 2026-11-12T07:31:48.668Z
 // ============================================================
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1281,25 +1281,36 @@ function rkParseAlg(alg: string): string[] { return alg.split(' ').filter(Boolea
 function rkMapFaces(moves: string[], map: Record<string, string>): string[] {
   return moves.map((m) => map[m.charAt(0)] + m.slice(1))
 }
+// The same pattern played backwards (reverse the order, flip every turn).
+function rkInvertAlg(moves: string[]): string[] {
+  return moves.slice().reverse().map((m) => (m.length === 1 ? m + "'" : m.charAt(1) === "'" ? m.charAt(0) : m))
+}
+// Drop duplicate macros so the search never looks at the same sequence twice.
+function rkUnique(list: RkMacro[]): RkMacro[] {
+  const seen: Record<string, boolean> = {}
+  return list.filter((m) => { const k = m.moves.join(' '); if (seen[k]) return false; seen[k] = true; return true })
+}
 // The four versions of a pattern around the vertical axis, each mapped to the real hold.
+// Each one also comes with its reverse: a pattern that would have to run 5 times
+// (20 turns) is just its reverse run once (4 turns).
 function rkVariants(alg: string, label: string): RkMacro[] {
   const out: RkMacro[] = []
   let cur = rkParseAlg(alg)
   for (let k = 0; k < 4; k++) {
-    out.push({ moves: rkMapFaces(cur, RK_Z2), label, pattern: true })
+    const mapped = rkMapFaces(cur, RK_Z2)
+    out.push({ moves: mapped, label, pattern: true })
+    out.push({ moves: rkInvertAlg(mapped), label, pattern: true })
     cur = rkMapFaces(cur, RK_YTURN)
   }
-  return out
+  return rkUnique(out)
 }
-function rkOnePattern(alg: string, label: string): RkMacro {
-  return { moves: rkMapFaces(rkParseAlg(alg), RK_Z2), label, pattern: true }
+function rkOnePattern(alg: string, label: string): RkMacro[] {
+  const mapped = rkMapFaces(rkParseAlg(alg), RK_Z2)
+  return rkUnique([
+    { moves: mapped, label, pattern: true },
+    { moves: rkInvertAlg(mapped), label, pattern: true },
+  ])
 }
-
-const RK_ALL_TURNS: RkMacro[] = (() => {
-  const out: RkMacro[] = []
-  for (const f of RK_FACES) for (const s of ['', '2', "'"]) out.push({ moves: [f + s], label: 'Cross move', pattern: false })
-  return out
-})()
 
 // bottom layer turns (the canonical "U" turns after the half turn mapping)
 const RK_SETUP: RkMacro[] = [
@@ -1308,33 +1319,29 @@ const RK_SETUP: RkMacro[] = [
   { moves: ['D2'], label: 'Setup turn', pattern: false },
 ]
 
-const RK_CORNER_MACROS: RkMacro[] = RK_SETUP
+const RK_CORNER_MACROS: RkMacro[] = rkUnique(RK_SETUP
   .concat(rkVariants("R U R' U'", 'Corner drop pattern'))
-  .concat(rkVariants("L' U' L U", 'Corner drop pattern'))
+  .concat(rkVariants("L' U' L U", 'Corner drop pattern')))
 
-const RK_MIDDLE_MACROS: RkMacro[] = RK_SETUP
+const RK_MIDDLE_MACROS: RkMacro[] = rkUnique(RK_SETUP
   .concat(rkVariants("U R U' R' U' F' U F", 'Edge insert pattern'))
-  .concat(rkVariants("U' L' U L U F U' F'", 'Edge insert pattern'))
+  .concat(rkVariants("U' L' U L U F U' F'", 'Edge insert pattern')))
 
-const RK_YCROSS_MACROS: RkMacro[] = RK_SETUP.concat([
-  rkOnePattern("F R U R' U' F'", 'Cross pattern'),
-  rkOnePattern("F' L' U' L U F", 'Cross pattern'),
-])
+const RK_YCROSS_MACROS: RkMacro[] = rkUnique(RK_SETUP
+  .concat(rkOnePattern("F R U R' U' F'", 'Cross pattern'))
+  .concat(rkOnePattern("F' L' U' L U F", 'Cross pattern')))
 
-const RK_YFACE_MACROS: RkMacro[] = RK_SETUP.concat([
-  rkOnePattern("R U R' U R U2 R'", 'Corner twist pattern'),
-  rkOnePattern("L' U' L U' L' U2 L", 'Corner twist pattern'),
-])
+const RK_YFACE_MACROS: RkMacro[] = rkUnique(RK_SETUP
+  .concat(rkOnePattern("R U R' U R U2 R'", 'Corner twist pattern'))
+  .concat(rkOnePattern("L' U' L U' L' U2 L", 'Corner twist pattern')))
 
-const RK_YCORNER_MACROS: RkMacro[] = RK_SETUP.concat([
-  rkOnePattern("U R U' L' U R' U' L", 'Corner swap pattern'),
-  rkOnePattern("U' L' U R U' L U R'", 'Corner swap pattern'),
-])
+const RK_YCORNER_MACROS: RkMacro[] = rkUnique(RK_SETUP
+  .concat(rkOnePattern("U R U' L' U R' U' L", 'Corner swap pattern'))
+  .concat(rkOnePattern("U' L' U R U' L U R'", 'Corner swap pattern')))
 
-const RK_YEDGE_MACROS: RkMacro[] = RK_SETUP.concat([
-  rkOnePattern("R U' R U R U R U' R' U' R2", 'Edge cycle pattern'),
-  rkOnePattern("R2 U R U R' U' R' U' R' U R'", 'Edge cycle pattern'),
-])
+const RK_YEDGE_MACROS: RkMacro[] = rkUnique(RK_SETUP
+  .concat(rkOnePattern("R U' R U R U R U' R' U' R2", 'Edge cycle pattern'))
+  .concat(rkOnePattern("R2 U R U R' U' R' U' R' U R'", 'Edge cycle pattern')))
 
 // Cheapest sequence of macros (cost = number of face turns) from start to a goal state.
 function rkSearch<S>(
@@ -1384,16 +1391,160 @@ function rkSearch<S>(
   return null
 }
 
+// Like rkSearch on whole cube states, but returns several different finished cubes that are
+// all within `slack` turns of the cheapest one, so the next step can pick the best start.
+function rkSearchMany(
+  start: string[],
+  macros: RkMacro[],
+  isGoal: (s: string[]) => boolean,
+  maxCost: number,
+  maxNodes: number,
+  want: number,
+  slack: number
+): number[][] {
+  const states: string[][] = [start]
+  const keys: string[] = [start.join('')]
+  const parent: number[] = [-1]
+  const via: number[] = [-1]
+  const cost: number[] = [0]
+  const best: Record<string, number> = {}
+  best[keys[0]] = 0
+  const buckets: number[][] = []
+  for (let i = 0; i <= maxCost + 40; i++) buckets.push([])
+  buckets[0].push(0)
+  const found: number[][] = []
+  let limit = maxCost
+  for (let c = 0; c <= limit; c++) {
+    const list = buckets[c]
+    for (let li = 0; li < list.length; li++) {
+      const id = list[li]
+      if (cost[id] !== c || best[keys[id]] !== c) continue
+      const s = states[id]
+      if (isGoal(s)) {
+        const path: number[] = []
+        let cur = id
+        while (parent[cur] >= 0) { path.push(via[cur]); cur = parent[cur] }
+        found.push(path.reverse())
+        if (found.length === 1) limit = Math.min(maxCost, c + slack)
+        if (found.length >= want) return found
+        continue
+      }
+      for (let mi = 0; mi < macros.length; mi++) {
+        const nc = c + macros[mi].moves.length
+        if (nc > limit) continue
+        const ns = rkApplyMoves(s, macros[mi].moves)
+        const k = ns.join('')
+        if (best[k] !== undefined && best[k] <= nc) continue
+        best[k] = nc
+        states.push(ns); keys.push(k); parent.push(id); via.push(mi); cost.push(nc)
+        buckets[nc].push(states.length - 1)
+      }
+      if (states.length > maxNodes) return found
+    }
+  }
+  return found
+}
+
+// ── no wasted turns ──────────────────────────────────────────────────────────
+// Searches are done one piece at a time, so the seams between them can leave turns that
+// undo or double up (U' then U, D' then D'). This folds them away: same-face turns
+// combine (D' D' -> D2, U' U -> nothing) and a turn can slide past turns of the
+// opposite face (U D U' -> D) because those two faces never get in each other's way.
+type RkTok = { f: string; q: number; seg: number }
+
+function rkTokOf(move: string, seg: number): RkTok {
+  const q = move.length === 1 ? 1 : move.charAt(1) === '2' ? 2 : 3
+  return { f: move.charAt(0), q, seg }
+}
+function rkTokName(t: RkTok): string { return t.q === 1 ? t.f : t.q === 2 ? t.f + '2' : t.f + "'" }
+
+function rkReduceToks(toks: RkTok[]): RkTok[] {
+  let changed = true
+  while (changed) {
+    changed = false
+    for (let i = 0; i < toks.length && !changed; i++) {
+      for (let j = i + 1; j < toks.length; j++) {
+        if (toks[j].f === toks[i].f) {
+          const q = (toks[i].q + toks[j].q) % 4
+          if (q === 0) { toks.splice(j, 1); toks.splice(i, 1) }
+          else { toks[i] = { f: toks[i].f, q, seg: toks[i].seg }; toks.splice(j, 1) }
+          changed = true
+          break
+        }
+        if (toks[j].f !== RK_OPPOSITE[toks[i].f]) break
+      }
+    }
+  }
+  return toks
+}
+function rkMacroToks(macros: RkMacro[]): RkTok[] {
+  const toks: RkTok[] = []
+  macros.forEach((mc, si) => mc.moves.forEach((m) => toks.push(rkTokOf(m, si))))
+  return rkReduceToks(toks)
+}
+
+// Cheapest way to bring all four white edges home at once (breadth first over just those
+// four edges: under 200 thousand states, so it is quick and always the true minimum).
+const RK_KEEP_SLACK = 2
+
+// Reused between solves so the big table is only allocated once.
+let rkCrossMem: { seen: Uint8Array; pos: Uint8Array; par: Int32Array; via: Uint8Array } | null = null
+
+function rkOptimalCross(starts: number[], goals: number[], TO: Record<string, number[]>, keepHome: boolean): string[] | null {
+  const names = Object.keys(TO)
+  // edges that are already home stay home after every single turn (when keepHome is on)
+  const lock = starts.map((p, i) => keepHome && p === goals[i])
+  const enc = (a: number, b: number, c: number, d: number) => ((a * 54 + b) * 54 + c) * 54 + d
+  const goalKey = enc(goals[0], goals[1], goals[2], goals[3])
+  const startKey = enc(starts[0], starts[1], starts[2], starts[3])
+  if (startKey === goalKey) return []
+  const CAP = 400000
+  if (!rkCrossMem) rkCrossMem = { seen: new Uint8Array(54 * 54 * 54 * 54), pos: new Uint8Array(CAP * 4), par: new Int32Array(CAP), via: new Uint8Array(CAP) }
+  const { seen, pos, par, via } = rkCrossMem
+  seen.fill(0)
+  let n = 1
+  pos[0] = starts[0]; pos[1] = starts[1]; pos[2] = starts[2]; pos[3] = starts[3]
+  par[0] = -1
+  seen[startKey] = 1
+  let lo = 0
+  while (lo < n) {
+    const hi = n
+    for (let id = lo; id < hi; id++) {
+      const a = pos[id * 4], b = pos[id * 4 + 1], c = pos[id * 4 + 2], d = pos[id * 4 + 3]
+      for (let mi = 0; mi < names.length; mi++) {
+        const t = TO[names[mi]]
+        const qa = t[a], qb = t[b], qc = t[c], qd = t[d]
+        if ((lock[0] && qa !== goals[0]) || (lock[1] && qb !== goals[1]) || (lock[2] && qc !== goals[2]) || (lock[3] && qd !== goals[3])) continue
+        const k = enc(qa, qb, qc, qd)
+        if (seen[k]) continue
+        seen[k] = 1
+        if (n >= CAP) return null
+        pos[n * 4] = qa; pos[n * 4 + 1] = qb; pos[n * 4 + 2] = qc; pos[n * 4 + 3] = qd
+        par[n] = id; via[n] = mi
+        if (k === goalKey) {
+          const out: string[] = []
+          let cur = n
+          while (par[cur] >= 0) { out.push(names[via[cur]]); cur = par[cur] }
+          return out.reverse()
+        }
+        n++
+      }
+    }
+    lo = hi
+  }
+  return null
+}
+
 const RK_BEGINNER_INFO: Record<string, { title: string; goal: string; tip: string }> = {
   cross: {
     title: 'White cross',
     goal: 'A white plus on the top face, with each edge matching the center of its side.',
-    tip: 'There is no fixed pattern here. These are the fewest turns for each white edge.',
+    tip: 'There is no fixed pattern here. These are the fewest turns that bring all four white edges home together.',
   },
   corners: {
     title: 'White corners',
     goal: 'The whole top layer is white and the top row of every side matches its center.',
-    tip: 'Turn the bottom layer until the corner sits right under its spot, then repeat the short pattern until it drops in.',
+    tip: 'Turn the bottom layer until the corner sits right under its spot, then run the short pattern (or its reverse, whichever is shorter) until it drops in.',
   },
   middle: {
     title: 'Middle layer',
@@ -1426,8 +1577,7 @@ export function rkSolveBeginner(start: string[]): { moves: string[]; plan: RkPla
   if (rkIsSolved(start)) return { moves: [], plan: [] }
   const TO = rkMoveTo()
   let state = start.slice()
-  const moves: string[] = []
-  const plan: RkPlanStage[] = []
+  const stageMacros: { id: string; macros: RkMacro[] }[] = []
 
   const letterFace = (i: number) => RK_FACES[Math.floor(i / 9)]
   const findPiece = (colors: string[], letterAt: (i: number) => string): number => {
@@ -1441,117 +1591,236 @@ export function rkSolveBeginner(start: string[]): { moves: string[]; plan: RkPla
     return -1
   }
   const targetOf = (colors: string[]) => findPiece(colors, letterFace)
-  const whereIs = (colors: string[]) => findPiece(colors, (i) => state[i])
-
-  const beginStage = (id: string): RkPlanStage => {
-    const info = RK_BEGINNER_INFO[id]
-    const st: RkPlanStage = { id, title: info.title, goal: info.goal, tip: info.tip, from: moves.length, to: moves.length, parts: [] }
-    plan.push(st)
-    return st
-  }
-  let lastSig = ''
-  const run = (st: RkPlanStage, macro: RkMacro) => {
-    const from = moves.length
-    macro.moves.forEach((m) => moves.push(m))
-    state = rkApplyMoves(state, macro.moves)
-    const sig = macro.moves.join(' ')
-    const lastPart = st.parts[st.parts.length - 1]
-    if (macro.pattern && lastPart && lastSig === sig && lastPart.to === from) {
-      lastPart.to = moves.length
-      lastPart.times++
-    } else {
-      st.parts.push({ label: macro.label, from, to: moves.length, times: 1 })
-    }
-    lastSig = sig
-    st.to = moves.length
-  }
+  const whereIn = (st: string[], colors: string[]) => findPiece(colors, (i) => st[i])
 
   const applyTracked = (s: number[], mv: string[]): number[] =>
     s.map((i) => { let j = i; for (const m of mv) j = TO[m][j]; return j })
 
   // Bring one piece home while every piece in `fixed` ends up back where it is now.
+  // The answer only depends on where the pieces are, so it is cached.
+  const planCache = new Map<string, number[] | null>()
   const trackedPlan = (fixed: number[], from: number, goal: number, macros: RkMacro[]): number[] | null => {
+    const ck = macros.length + ':' + fixed.join(',') + '|' + from + '>' + goal
+    if (planCache.has(ck)) return planCache.get(ck)!
     const goals = fixed.concat([goal])
-    return rkSearch<number[]>(
+    const p = rkSearch<number[]>(
       fixed.concat([from]), macros, applyTracked,
       (s) => s.join(','),
       (s) => { for (let k = 0; k < s.length; k++) if (s[k] !== goals[k]) return false; return true },
       90, 600000
     )
+    planCache.set(ck, p)
+    return p
   }
-  const planCost = (p: number[], macros: RkMacro[]) => p.reduce((a, mi) => a + macros[mi].moves.length, 0)
+  const toMacros = (st: string[], p: number[], macros: RkMacro[]): { list: RkMacro[]; end: string[] } => {
+    const list = p.map((mi) => macros[mi])
+    let end = st
+    list.forEach((mc) => { end = rkApplyMoves(end, mc.moves) })
+    return { list, end }
+  }
 
-  // Greedy: of the pieces still to place, do the one that needs the fewest turns first.
-  const placePieces = (st: RkPlanStage, pieces: string[][], refOf: (c: string[]) => string[], fixed: number[], macros: RkMacro[]): boolean => {
-    let todo = pieces.slice()
-    const fixedNow = fixed.slice()
-    // pieces already home just join the fixed set
-    todo = todo.filter((c) => {
-      const ref = refOf(c)
-      const here = whereIs(ref), home = targetOf(ref)
-      if (here === home) { fixedNow.push(home); return false }
-      return true
-    })
-    while (todo.length) {
-      let bestIdx = -1
-      let bestPlan: number[] | null = null
-      let bestCost = Infinity
-      for (let k = 0; k < todo.length; k++) {
-        const ref = refOf(todo[k])
-        const p = trackedPlan(fixedNow, whereIs(ref), targetOf(ref), macros)
-        if (!p) continue
-        const c = planCost(p, macros)
-        if (c < bestCost) { bestCost = c; bestPlan = p; bestIdx = k }
+  // Try every order for the pieces and keep the one with the fewest turns once the seams
+  // between pieces are folded away. Each piece still uses its own shortest route.
+  const placeBest = (pieces: string[][], fixedBase: number[], macros: RkMacro[]): RkMacro[] | null => {
+    let best: RkMacro[] | null = null
+    let bestLen = Infinity
+    const rec = (st: string[], todo: string[][], fixedNow: number[], acc: RkMacro[]) => {
+      const fx = fixedNow.slice()
+      const rest = todo.filter((c) => {
+        const home = targetOf(c)
+        if (whereIn(st, c) === home) { fx.push(home); return false }
+        return true
+      })
+      if (!rest.length) {
+        const len = rkMacroToks(acc).length
+        if (len < bestLen) { bestLen = len; best = acc }
+        return
       }
-      if (!bestPlan || bestIdx < 0) return false
-      bestPlan.forEach((mi) => run(st, macros[mi]))
-      fixedNow.push(targetOf(refOf(todo[bestIdx])))
-      todo.splice(bestIdx, 1)
+      for (let k = 0; k < rest.length; k++) {
+        const c = rest[k]
+        const p = trackedPlan(fx, whereIn(st, c), targetOf(c), macros)
+        if (!p) continue
+        const step = toMacros(st, p, macros)
+        rec(step.end, rest.filter((_, j) => j !== k), fx.concat([targetOf(c)]), acc.concat(step.list))
+      }
     }
-    return true
+    rec(state, pieces, fixedBase, [])
+    return best
   }
 
   const fail = (what: string) => ({ error: 'The beginner method got stuck at ' + what + '. Check the stickers, or try the fastest mode.' })
+  const commit = (id: string, macros: RkMacro[]) => {
+    stageMacros.push({ id, macros })
+    macros.forEach((mc) => { state = rkApplyMoves(state, mc.moves) })
+  }
 
-  // 1. white cross
+  // 1. white cross: all four edges together, the true minimum number of turns
   {
-    const st = beginStage('cross')
-    const pieces = ['F', 'R', 'B', 'L'].map((x) => ['U', x])
-    if (!placePieces(st, pieces, (c) => c, [], RK_ALL_TURNS)) return fail('the white cross')
+    const sides = ['F', 'R', 'B', 'L']
+    const starts = sides.map((x) => whereIn(state, ['U', x]))
+    const goals = sides.map((x) => targetOf(['U', x]))
+    // Edges that are already home stay put. Only if that costs more than a couple of extra
+    // turns than the absolute shortest cross do we take one apart.
+    const free = rkOptimalCross(starts, goals, TO, false)
+    if (!free) return fail('the white cross')
+    const kept = starts.some((p, i) => p === goals[i]) ? rkOptimalCross(starts, goals, TO, true) : null
+    const seq = kept && kept.length <= free.length + RK_KEEP_SLACK ? kept : free
+    commit('cross', seq.map((m) => ({ moves: [m], label: 'Cross move', pattern: false })))
   }
 
   // 2. white corners (cross edges stay tracked)
   {
-    const st = beginStage('corners')
     const crossHome = ['F', 'R', 'B', 'L'].map((x) => targetOf(['U', x]))
     const pieces = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']].map((p) => ['U', p[0], p[1]])
-    if (!placePieces(st, pieces, (c) => c, crossHome, RK_CORNER_MACROS)) return fail('the white corners')
+    const list = placeBest(pieces, crossHome, RK_CORNER_MACROS)
+    if (!list) return fail('the white corners')
+    commit('corners', list)
   }
 
   // 3. middle layer (whole first layer stays tracked)
   {
-    const st = beginStage('middle')
     const firstLayer = [0, 1, 2, 3, 5, 6, 7, 8]
     const pieces = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']]
-    if (!placePieces(st, pieces, (c) => c, firstLayer, RK_MIDDLE_MACROS)) return fail('the middle layer')
+    const list = placeBest(pieces, firstLayer, RK_MIDDLE_MACROS)
+    if (!list) return fail('the middle layer')
+    commit('middle', list)
   }
 
-  // 4 to 7. last layer, small enough to search on whole cube states
-  const lastLayer = (id: string, macros: RkMacro[], goal: (s: string[]) => boolean): boolean => {
-    const st = beginStage(id)
-    const p = rkSearch<string[]>(state, macros, rkApplyMoves, (s) => s.join(''), goal, 120, 300000)
-    if (!p) return false
-    p.forEach((mi) => run(st, macros[mi]))
-    return true
-  }
+  // 4 to 7. last layer, small enough to search on whole cube states.
+  // Each step keeps a few near-shortest answers instead of only the first one, and the four
+  // steps are chosen together so the total is the shortest, not just each step on its own.
   const dEdges = [28, 30, 32, 34]
   const dFace = [27, 28, 29, 30, 31, 32, 33, 34, 35]
   const dCorners = [27, 29, 33, 35]
-  if (!lastLayer('ycross', RK_YCROSS_MACROS, (s) => dEdges.every((i) => s[i] === 'D'))) return fail('the yellow cross')
-  if (!lastLayer('yface', RK_YFACE_MACROS, (s) => dFace.every((i) => s[i] === 'D'))) return fail('the yellow face')
-  if (!lastLayer('ycorners', RK_YCORNER_MACROS, (s) => dCorners.every((c) => RK_SIBLINGS[c].every((j) => s[j] === letterFace(j))))) return fail('the corner positions')
-  if (!lastLayer('yedges', RK_YEDGE_MACROS, (s) => rkIsSolved(s))) return fail('the last edges')
+  const lastSteps: { id: string; macros: RkMacro[]; goal: (s: string[]) => boolean }[] = [
+    { id: 'ycross', macros: RK_YCROSS_MACROS, goal: (s) => dEdges.every((i) => s[i] === 'D') },
+    { id: 'yface', macros: RK_YFACE_MACROS, goal: (s) => dFace.every((i) => s[i] === 'D') },
+    { id: 'ycorners', macros: RK_YCORNER_MACROS, goal: (s) => dCorners.every((c) => RK_SIBLINGS[c].every((j) => s[j] === letterFace(j))) },
+    { id: 'yedges', macros: RK_YEDGE_MACROS, goal: (s) => rkIsSolved(s) },
+  ]
+  {
+    type Cand = { state: string[]; stages: RkMacro[][]; len: number }
+    let beam: Cand[] = [{ state, stages: [], len: 0 }]
+    for (let si = 0; si < lastSteps.length; si++) {
+      const step = lastSteps[si]
+      const next: Record<string, Cand> = {}
+      for (const cand of beam) {
+        const paths = rkSearchMany(cand.state, step.macros, step.goal, 120, 300000, 16, 6)
+        for (const p of paths) {
+          const list = p.map((mi) => step.macros[mi])
+          let end = cand.state
+          list.forEach((mc) => { end = rkApplyMoves(end, mc.moves) })
+          const stages = cand.stages.concat([list])
+          const len = stages.reduce((a, l) => a + rkMacroToks(l).length, 0)
+          const key = end.join('')
+          if (!next[key] || next[key].len > len) next[key] = { state: end, stages, len }
+        }
+      }
+      beam = Object.keys(next).map((k) => next[k]).sort((a, b) => a.len - b.len).slice(0, 16)
+      if (!beam.length) return fail(RK_BEGINNER_INFO[step.id].title.toLowerCase())
+    }
+    const win = beam[0]
+    win.stages.forEach((list, i) => commit(lastSteps[i].id, list))
+  }
 
   if (!rkIsSolved(state)) return fail('the end')
+
+  // Fold away wasted turns inside each step.
+  const stageToks: RkTok[][] = stageMacros.map((sm) => rkMacroToks(sm.macros))
+
+  // What must be true when each step is finished (every earlier step stays finished too).
+  const home = (st: string[], list: string[][]) => list.every((c) => whereIn(st, c) === targetOf(c))
+  const sideNames = ['F', 'R', 'B', 'L']
+  const crossSet = sideNames.map((x) => ['U', x])
+  const cornerSet = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']].map((p) => ['U', p[0], p[1]])
+  const middleSet = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']]
+  const layer1 = (s: string[]) => home(s, crossSet) && home(s, cornerSet)
+  const layer2 = (s: string[]) => layer1(s) && home(s, middleSet)
+  const goalOf: Record<string, (s: string[]) => boolean> = {
+    cross: (s) => home(s, crossSet),
+    corners: layer1,
+    middle: layer2,
+    ycross: (s) => layer2(s) && dEdges.every((i) => s[i] === 'D'),
+    yface: (s) => layer2(s) && dFace.every((i) => s[i] === 'D'),
+    ycorners: (s) => layer2(s) && dFace.every((i) => s[i] === 'D') && dCorners.every((c) => RK_SIBLINGS[c].every((j) => s[j] === letterFace(j))),
+    yedges: (s) => rkIsSolved(s),
+  }
+  const stateAfter = (upTo: number): string[] => {
+    let s = start
+    for (let k = 0; k <= upTo; k++) s = rkApplyMoves(s, stageToks[k].map(rkTokName))
+    return s
+  }
+
+  // The same folding across the seam between two steps (F' | F, D' | D2 ...). The seam only
+  // moves if the finished step is still really finished at its new end.
+  for (let k = 0; k + 1 < stageToks.length; k++) {
+    for (let guard = 0; guard < 8; guard++) {
+      const cur = stageToks[k], nxt = stageToks[k + 1]
+      if (!nxt.length || !cur.length) break
+      const b = nxt[0]
+      let j = cur.length - 1
+      while (j >= 0 && cur[j].f !== b.f && cur[j].f === RK_OPPOSITE[b.f]) j--
+      if (j < 0 || cur[j].f !== b.f) break
+      const q = (cur[j].q + b.q) % 4
+      let done = false
+      // A: the merged turn stays at the end of the finished step
+      {
+        const a = cur.slice()
+        if (q === 0) a.splice(j, 1); else a[j] = { f: b.f, q, seg: cur[j].seg }
+        const n2 = nxt.slice(1)
+        const saved = [stageToks[k], stageToks[k + 1]]
+        stageToks[k] = rkReduceToks(a); stageToks[k + 1] = n2
+        if (goalOf[stageMacros[k].id](stateAfter(k))) done = true
+        else { stageToks[k] = saved[0]; stageToks[k + 1] = saved[1] }
+      }
+      // B: the merged turn moves to the start of the next step
+      if (!done && j === cur.length - 1) {
+        const a = cur.slice(0, j)
+        const n2 = nxt.slice(1)
+        if (q !== 0) n2.unshift({ f: b.f, q, seg: nxt[0].seg })
+        const saved = [stageToks[k], stageToks[k + 1]]
+        stageToks[k] = a; stageToks[k + 1] = n2
+        if (goalOf[stageMacros[k].id](stateAfter(k))) done = true
+        else { stageToks[k] = saved[0]; stageToks[k + 1] = saved[1] }
+      }
+      if (!done) break
+      stageToks[k + 1] = rkReduceToks(stageToks[k + 1])
+    }
+  }
+
+  // Lay out the steps and their parts.
+  const moves: string[] = []
+  const plan: RkPlanStage[] = []
+  let lastKey = ''
+  stageMacros.forEach((sm, si) => {
+    const info = RK_BEGINNER_INFO[sm.id]
+    const st: RkPlanStage = { id: sm.id, title: info.title, goal: info.goal, tip: info.tip, from: moves.length, to: moves.length, parts: [] }
+    const toks = stageToks[si]
+    let i = 0
+    while (i < toks.length) {
+      // one run = all turns that still belong to the same macro
+      let j = i
+      while (j < toks.length && toks[j].seg === toks[i].seg) j++
+      const run = toks.slice(i, j).map(rkTokName)
+      const macro = sm.macros[toks[i].seg]
+      const from = moves.length
+      run.forEach((m) => moves.push(m))
+      const last = st.parts[st.parts.length - 1]
+      const key = run.join(' ')
+      if (macro.pattern && last && last.label === macro.label && lastKey === key && last.to === from) {
+        last.to = moves.length
+        last.times++
+      } else {
+        st.parts.push({ label: macro.label, from, to: moves.length, times: 1 })
+      }
+      lastKey = macro.pattern ? key : ''
+      i = j
+    }
+    lastKey = ''
+    st.to = moves.length
+    plan.push(st)
+  })
+
+  if (!rkSolutionWorks(start, moves)) return fail('the end')
   return { moves, plan }
 }
