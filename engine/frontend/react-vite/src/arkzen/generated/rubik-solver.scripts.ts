@@ -2,7 +2,7 @@
 // ARKZEN GENERATED SCRIPT — rubik-solver
 // Source: @arkzen:script (global)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T07:31:48.668Z
+// Generated: 2026-11-12T08:41:53.594Z
 // ============================================================
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1251,7 +1251,7 @@ export type RkMode = 'kociemba' | 'beginner' | 'pro'
 export const RK_MODE_OPTIONS: { id: RkMode; name: string; blurb: string; soon: boolean }[] = [
   { id: 'kociemba', name: 'Fastest', blurb: 'The shortest solution, usually about 20 moves. Best when you just want it solved.', soon: false },
   { id: 'beginner', name: 'Beginner', blurb: 'One layer at a time with the classic patterns, using the fewest turns for your cube. Longer, but easy to learn from.', soon: false },
-  { id: 'pro', name: 'Pro', blurb: 'Cross, F2L, OLL and PLL like a speedcuber.', soon: true },
+  { id: 'pro', name: 'Pro', blurb: 'Cross, F2L, OLL and PLL like a speedcuber. About 50 moves, with the algorithms the pros use.', soon: false },
 ]
 
 export type RkPlanPart = { label: string; from: number; to: number; times: number }
@@ -1817,6 +1817,496 @@ export function rkSolveBeginner(start: string[]): { moves: string[]; plan: RkPla
       i = j
     }
     lastKey = ''
+    st.to = moves.length
+    plan.push(st)
+  })
+
+  if (!rkSolutionWorks(start, moves)) return fail('the end')
+  return { moves, plan }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Pro mode: CFOP, the way speedcubers solve it. Cross, F2L, OLL, PLL.
+// Pure TypeScript, no DOM, no AI. Same hold as the other modes (white on top, green in
+// front, no cube turns), so the first layer is U and the last layer is D.
+//  - Cross: the true shortest cross (all four white edges at once).
+//  - F2L: each corner+edge pair is solved with the shortest turns that keep everything
+//    already solved, found by a search from both ends. The order of the four pairs is
+//    chosen for the fewest turns overall, like a pro looking ahead.
+//  - OLL then PLL: one-look algorithms (57 + 21 cases, face turns only), mirrors and
+//    reverses included. Every start turn and end turn is tried and the cheapest is kept.
+// Every algorithm below was checked against the cube model: it keeps the first two layers
+// and does the job it is listed for.
+// ─────────────────────────────────────────────────────────────────────────────
+
+// One-look OLL algorithms, written with the last layer on top (the usual way).
+// 57 algorithms, one for every last-layer orientation case.
+const RK_PRO_OLL_SRC: string[] = [
+  "R U2 R2 F R F' U2 R' F R F'",
+  "F R U R' U' F' B U L U' L' B'",
+  "B U L U' L' B' U' F R U R' U' F'",
+  "B U L U' L' B' U F R U R' U' F'",
+  "L' B2 R B R' B L",
+  "L F2 R' F' R F' L'",
+  "L F R' F R F2 L'",
+  "L' B' R B' R' B2 L",
+  "R U R' U' R' F R2 U R' U' F'",
+  "R U R' U R' F R F' R U2 R'",
+  "L F R' F R' D R D' R F2 L'",
+  "F R U R' U' F' U F R U R' U' F'",
+  "F U R U2 R' U' R U R' F'",
+  "R' F R U R' F' R F U' F'",
+  "L' B' L R' U' R U L' B L",
+  "L F L' R U R' U' L F' L'",
+  "R U R' U R' F R F' U2 R' F R F'",
+  "R U2 R2 F R F' U2 R' L F R F' L'",
+  "L' R B R B R' B' L R2 F R F'",
+  "L F R' F' R L' R L' B R B' R' B' R' L",
+  "R U2 R' U' R U R' U' R U' R'",
+  "R U2 R2 U' R2 U' R2 U2 R",
+  "R2 D R' U2 R D' R' U2 R'",
+  "L F R' F' L' F R F'",
+  "F' L F R' F' L' F R",
+  "R U2 R' U' R U' R'",
+  "R U R' U R U2 R'",
+  "L F R' F' L' R U R U' R'",
+  "R U R' U' R U' R' F' U' F R U R'",
+  "F R' F R2 U' R' U' R U R' F2",
+  "R' U' F U R U' R' F' R",
+  "F' B U L U' L' U' F U B'",
+  "R U R' U' R' F R F'",
+  "R U R2 U' R' F R U R U' F'",
+  "R U2 R2 F R F' R U2 R'",
+  "R' U' R U' R' U R U R B' R' B",
+  "F R' F' R U R U' R'",
+  "R U R' U R U' R' U' R' F R F'",
+  "R U R' F' U' F U R U2 R'",
+  "R' F R U R' U' F' U R",
+  "R U R' U R U2 R' F R U R' U' F'",
+  "R' U' R U' R' U2 R F R U R' U' F'",
+  "B' U' R' U R B",
+  "B U L U' L' B'",
+  "F R U R' U' F'",
+  "R' U' R' F R F' U R",
+  "R' U' R' F R F' R' F R F' U R",
+  "F R U R' U' R U R' U' F'",
+  "L F' L2 B L2 F L2 B' L",
+  "L' B L2 F' L2 B' L2 F L'",
+  "F U R U' R' U R U' R' F'",
+  "R U R' U R U' B U' B' R'",
+  "L' B' R B' R' B R B' R' B2 L",
+  "L F R' F R F' R' F R F2 L'",
+  "R U2 R2 U' R U' R' U2 F R F'",
+  "L F L' U R U' R' U R U' R' L F' L'",
+  "R U R' U' R' L F R F' L'",
+]
+
+// One-look PLL algorithms, same convention. 21 algorithms for every last-layer permutation case.
+const RK_PRO_PLL_SRC: string[] = [
+  "R' F R' B2 R F' R' B2 R2",
+  "R2 B2 R F R' B2 R F' R",
+  "R B' R' F R B R' F' R B R' F R B' R' F'",
+  "R' U' F' R U R' U' R' F R2 U' R' U' R U R' U R",
+  "R2 U R' U R' U' R U' R2 D U' R' U R D'",
+  "R' U' R U D' R2 U R' U R U' R U' R2 D",
+  "R2 U' R U' R U R' U R2 D' U R U' R' D",
+  "R U R' U' D R2 U' R U' R' U R' U R2 D'",
+  "R2 U2 R U2 R2 U2 R2 U2 R U2 R2",
+  "L' U' L F L' U' L U L F' L2 U L",
+  "R U R' F' R U R' U' R' F R2 U' R'",
+  "R U R' U R U R' F' R U R' U' R' F R2 U' R' U2 R U' R'",
+  "R' U R U' R' F' U' F R U R' F R' F' R U' R",
+  "R U' R' U' R U R D R' U' R D' R' U2 R'",
+  "R' U2 R U2 R' F R U R' U' R' F' R2",
+  "R U R' U' R' F R2 U' R' U' R U R' F'",
+  "R U' R U R U R U' R' U' R2",
+  "R2 U R U R' U' R' U' R' U R'",
+  "R' U R' U' B' R' B2 U' B' U B' R B R",
+  "F R U' R' U' R U R' F' R U R' U' R' F R F'",
+  "R' U' R U' R U R U' R' U R U R2 U' R'",
+]
+
+type RkProLib = { oll: string[][]; pll: string[][] }
+let rkProLibCache: RkProLib | null = null
+
+// Mirror image of an algorithm (left and right swap, every turn flips direction).
+function rkMirrorAlg(moves: string[]): string[] {
+  return moves.map((m) => {
+    const f = m.charAt(0)
+    const q = m.slice(1)
+    const nf = f === 'R' ? 'L' : f === 'L' ? 'R' : f
+    const nq = q === '' ? "'" : q === "'" ? '' : q
+    return nf + nq
+  })
+}
+
+function rkProLib(): RkProLib {
+  if (rkProLibCache) return rkProLibCache
+  const uniq = (list: string[][]): string[][] => {
+    const seen: Record<string, boolean> = {}
+    return list.filter((a) => { const k = a.join(' '); if (seen[k]) return false; seen[k] = true; return true })
+  }
+  // The usual way has the last layer on top; this app holds it at the bottom (half turn of the cube).
+  const toHold = (list: string[][]): string[][] => list.map((a) => rkMapFaces(a, RK_Z2))
+  const oll0 = RK_PRO_OLL_SRC.map(rkParseAlg)
+  const pll0 = RK_PRO_PLL_SRC.map(rkParseAlg)
+  rkProLibCache = {
+    oll: toHold(uniq(oll0.concat(oll0.map(rkMirrorAlg)))),
+    pll: toHold(uniq(pll0.concat(pll0.map(rkMirrorAlg), pll0.map(rkInvertAlg), pll0.map((a) => rkMirrorAlg(rkInvertAlg(a)))))),
+  }
+  return rkProLibCache
+}
+
+// Turns of the last layer (bottom face) used to line a case up before or after an algorithm.
+const RK_PRO_AUF: string[][] = [[], ['D'], ['D2'], ["D'"]]
+
+const RK_PRO_INFO: Record<string, { title: string; goal: string; tip: string }> = {
+  cross: {
+    title: 'Cross',
+    goal: 'A white plus on the top face, with each edge matching the center of its side.',
+    tip: 'Speedcubers plan the whole cross before the first turn. These are the fewest turns that bring all four white edges home together.',
+  },
+  f2l: {
+    title: 'F2L (first two layers)',
+    goal: 'The top two layers are finished: white face on top and every side matching in its top two rows.',
+    tip: 'Each white corner is paired with its edge and put in together. Every pair uses the fewest turns that keep the cross and the finished pairs, and the order is picked to keep the total short.',
+  },
+  oll: {
+    title: 'OLL (orient the last layer)',
+    goal: 'The whole bottom face is yellow.',
+    tip: 'One algorithm turns every bottom piece yellow side down in a single go. The turn before it lines the case up.',
+  },
+  pll: {
+    title: 'PLL (permute the last layer)',
+    goal: 'The cube is solved.',
+    tip: 'One algorithm moves the bottom pieces to their places without touching the top two layers. The last bottom turn finishes the cube.',
+  },
+}
+
+const RK_PRO_SLOT_NAME: Record<string, string> = { FR: 'Front-right pair', RB: 'Back-right pair', BL: 'Back-left pair', LF: 'Front-left pair' }
+
+// Shortest way to carry some tracked stickers from where they are to where they must be,
+// searching from both ends at once. Everything is tracked by sticker position, so the
+// pieces that must stay home are allowed to leave and come back.
+function rkProSearch(
+  start: number[], goal: number[], names: string[], TO: Record<string, number[]>,
+  maxLen: number, maxNodes: number
+): string[] | null {
+  const key = (p: number[]): string => String.fromCharCode.apply(null, p as any)
+  const sk = key(start)
+  if (sk === key(goal)) return []
+  const inv = (m: string): string => (m.length === 1 ? m + "'" : m.charAt(1) === "'" ? m.charAt(0) : m)
+  const fwd: number[][][] = names.map((m) => [TO[m]])
+  const back: number[][][] = names.map((m) => [TO[inv(m)]])
+  type Side = { pos: number[][]; par: number[]; via: number[]; dep: number[]; seen: Map<string, number>; front: number[]; depth: number }
+  const mk = (p: number[]): Side => ({ pos: [p], par: [-1], via: [-1], dep: [0], seen: new Map([[key(p), 0]]), front: [0], depth: 0 })
+  const F = mk(start)
+  const B = mk(goal)
+  let nodes = 2
+  while (F.depth + B.depth < maxLen) {
+    const sideIsF = F.front.length <= B.front.length
+    const me = sideIsF ? F : B
+    const other = sideIsF ? B : F
+    const tabs = sideIsF ? fwd : back
+    const next: number[] = []
+    let bestTotal = Infinity
+    let bestMe = -1
+    let bestOther = -1
+    for (let fi = 0; fi < me.front.length; fi++) {
+      const id = me.front[fi]
+      const p = me.pos[id]
+      for (let mi = 0; mi < names.length; mi++) {
+        const t = tabs[mi][0]
+        const q: number[] = new Array(p.length)
+        for (let k = 0; k < p.length; k++) q[k] = t[p[k]]
+        const kq = key(q)
+        if (me.seen.has(kq)) continue
+        const nid = me.pos.length
+        me.pos.push(q); me.par.push(id); me.via.push(mi); me.dep.push(me.depth + 1)
+        me.seen.set(kq, nid)
+        next.push(nid)
+        const oid = other.seen.get(kq)
+        if (oid !== undefined) {
+          const total = me.depth + 1 + other.dep[oid]
+          if (total < bestTotal) { bestTotal = total; bestMe = nid; bestOther = oid }
+        }
+      }
+      nodes = F.pos.length + B.pos.length
+      if (nodes > maxNodes) return null
+    }
+    me.front = next
+    me.depth++
+    if (bestMe >= 0) {
+      const f = sideIsF ? bestMe : bestOther
+      const b = sideIsF ? bestOther : bestMe
+      const head: string[] = []
+      for (let c = f; F.par[c] >= 0; c = F.par[c]) head.push(names[F.via[c]])
+      head.reverse()
+      const tail: string[] = []
+      for (let c = b; B.par[c] >= 0; c = B.par[c]) tail.push(names[B.via[c]])
+      return head.concat(tail)
+    }
+    if (!next.length) return null
+  }
+  return null
+}
+
+const RK_PRO_FACE_MOVES = (faces: string[]): string[] => {
+  const out: string[] = []
+  faces.forEach((f) => { out.push(f, f + "'", f + '2') })
+  return out
+}
+
+// Last layer: pick the cheapest OLL + PLL (with their start and end turns) for this cube.
+function rkProLastLayer(state: string[]): { oll: RkMacro[]; pll: RkMacro[] } | null {
+  const lib = rkProLib()
+  const dFace = [27, 28, 29, 30, 31, 32, 33, 34, 35]
+  const oriented = (s: string[]) => dFace.every((i) => s[i] === 'D')
+  type OCand = { macros: RkMacro[]; state: string[]; len: number }
+  let ocands: OCand[] = []
+  if (oriented(state)) ocands.push({ macros: [], state, len: 0 })
+  else {
+    const byState: Record<string, OCand> = {}
+    for (const pre of RK_PRO_AUF) {
+      const s1 = pre.length ? rkApplyMoves(state, pre) : state
+      for (const alg of lib.oll) {
+        const s2 = rkApplyMoves(s1, alg)
+        if (!oriented(s2)) continue
+        const macros: RkMacro[] = []
+        if (pre.length) macros.push({ moves: pre, label: 'Setup turn', pattern: false })
+        macros.push({ moves: alg, label: 'OLL algorithm', pattern: true })
+        const len = rkMacroToks(macros).length
+        const k = s2.join('')
+        if (!byState[k] || byState[k].len > len) byState[k] = { macros, state: s2, len }
+      }
+    }
+    ocands = Object.keys(byState).map((k) => byState[k]).sort((a, b) => a.len - b.len).slice(0, 12)
+  }
+  const pick: { best: { oll: RkMacro[]; pll: RkMacro[]; len: number } | null } = { best: null }
+  for (const oc of ocands) {
+    if (pick.best && oc.len >= pick.best.len) continue
+    const tryPll = (pll: RkMacro[]) => {
+      const len = rkMacroToks(oc.macros.concat(pll)).length
+      if (!pick.best || len < pick.best.len) pick.best = { oll: oc.macros, pll, len }
+    }
+    if (rkIsSolved(oc.state)) { tryPll([]); continue }
+    for (const pre of RK_PRO_AUF) {
+      const s1 = pre.length ? rkApplyMoves(oc.state, pre) : oc.state
+      for (const alg of lib.pll) {
+        const s2 = rkApplyMoves(s1, alg)
+        for (const post of RK_PRO_AUF) {
+          const s3 = post.length ? rkApplyMoves(s2, post) : s2
+          if (!rkIsSolved(s3)) continue
+          const macros: RkMacro[] = []
+          if (pre.length) macros.push({ moves: pre, label: 'Setup turn', pattern: false })
+          macros.push({ moves: alg, label: 'PLL algorithm', pattern: true })
+          if (post.length) macros.push({ moves: post, label: 'Final turn', pattern: false })
+          tryPll(macros)
+          break
+        }
+      }
+    }
+    // the last layer may already be in place up to a bottom turn
+    for (const post of RK_PRO_AUF) {
+      if (!post.length) continue
+      if (rkIsSolved(rkApplyMoves(oc.state, post))) tryPll([{ moves: post, label: 'Final turn', pattern: false }])
+    }
+  }
+  return pick.best ? { oll: pick.best.oll, pll: pick.best.pll } : null
+}
+
+// Fold wasted turns across the seam between two finished steps (F' | F, D' | D2 ...).
+// The seam only moves if the finished step is still really finished at its new end.
+function rkProFoldSeams(start: string[], stageToks: RkTok[][], goals: ((s: string[]) => boolean)[]): void {
+  const stateAfter = (upTo: number): string[] => {
+    let s = start
+    for (let k = 0; k <= upTo; k++) s = rkApplyMoves(s, stageToks[k].map(rkTokName))
+    return s
+  }
+  for (let k = 0; k + 1 < stageToks.length; k++) {
+    for (let guard = 0; guard < 8; guard++) {
+      const cur = stageToks[k], nxt = stageToks[k + 1]
+      if (!nxt.length || !cur.length) break
+      const b = nxt[0]
+      let j = cur.length - 1
+      while (j >= 0 && cur[j].f !== b.f && cur[j].f === RK_OPPOSITE[b.f]) j--
+      if (j < 0 || cur[j].f !== b.f) break
+      const q = (cur[j].q + b.q) % 4
+      let done = false
+      {
+        const a = cur.slice()
+        if (q === 0) a.splice(j, 1); else a[j] = { f: b.f, q, seg: cur[j].seg }
+        const saved = [stageToks[k], stageToks[k + 1]]
+        stageToks[k] = rkReduceToks(a); stageToks[k + 1] = nxt.slice(1)
+        if (goals[k](stateAfter(k))) done = true
+        else { stageToks[k] = saved[0]; stageToks[k + 1] = saved[1] }
+      }
+      if (!done && j === cur.length - 1) {
+        const a = cur.slice(0, j)
+        const n2 = nxt.slice(1)
+        if (q !== 0) n2.unshift({ f: b.f, q, seg: nxt[0].seg })
+        const saved = [stageToks[k], stageToks[k + 1]]
+        stageToks[k] = a; stageToks[k + 1] = n2
+        if (goals[k](stateAfter(k))) done = true
+        else { stageToks[k] = saved[0]; stageToks[k + 1] = saved[1] }
+      }
+      if (!done) break
+      stageToks[k + 1] = rkReduceToks(stageToks[k + 1])
+    }
+  }
+}
+
+export function rkSolvePro(start: string[]): { moves: string[]; plan: RkPlanStage[] } | { error: string } {
+  if (rkIsSolved(start)) return { moves: [], plan: [] }
+  const TO = rkMoveTo()
+  const letterFace = (i: number) => RK_FACES[Math.floor(i / 9)]
+  const findPiece = (colors: string[], letterAt: (i: number) => string): number => {
+    const a = colors[0]
+    const rest = colors.slice(1).sort().join('')
+    for (let i = 0; i < 54; i++) {
+      const sib = RK_SIBLINGS[i]
+      if (sib.length !== colors.length || letterAt(i) !== a) continue
+      if (sib.filter((j) => j !== i).map(letterAt).sort().join('') === rest) return i
+    }
+    return -1
+  }
+  const targetOf = (colors: string[]) => findPiece(colors, letterFace)
+  const whereIn = (st: string[], colors: string[]) => findPiece(colors, (i) => st[i])
+  const fail = (what: string) => ({ error: 'The pro method got stuck at ' + what + '. Check the stickers, or try the fastest mode.' })
+
+  const sides = ['F', 'R', 'B', 'L']
+  const slots = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']]
+  const crossSet = sides.map((x) => ['U', x])
+  const cornerOf = (sl: string[]) => ['U', sl[0], sl[1]]
+  const edgeOf = (sl: string[]) => [sl[0], sl[1]]
+  const home = (st: string[], list: string[][]) => list.every((c) => whereIn(st, c) === targetOf(c))
+  const f2lSet = crossSet.concat(slots.map(cornerOf), slots.map(edgeOf))
+  const dFace = [27, 28, 29, 30, 31, 32, 33, 34, 35]
+
+  // One pair: the fewest turns that bring it home while every piece in `fixed` ends up where it is now.
+  const pairCache = new Map<string, string[] | null>()
+  const pairPlan = (fixed: number[], cFrom: number, eFrom: number, cGoal: number, eGoal: number, sl: string[]): string[] | null => {
+    const ck = fixed.join(',') + '|' + cFrom + ',' + eFrom + '|' + sl.join('')
+    if (pairCache.has(ck)) return pairCache.get(ck)!
+    const s = fixed.concat([cFrom, eFrom])
+    const g = fixed.concat([cGoal, eGoal])
+    let res = rkProSearch(s, g, RK_PRO_FACE_MOVES([sl[0], sl[1], 'D']), TO, 10, 150000)
+    if (!res || res.length > 6) {
+      const wide = rkProSearch(s, g, RK_PRO_FACE_MOVES(['F', 'R', 'B', 'L', 'D']), TO, res ? res.length - 1 : 9, 450000)
+      if (wide && (!res || wide.length < res.length)) res = wide
+    }
+    pairCache.set(ck, res)
+    return res
+  }
+
+  // F2L from a state whose cross is done: beam search over the order of the four pairs.
+  type F2lNode = { st: string[]; fixed: number[]; todo: number[]; parts: { slot: number; moves: string[] }[]; len: number }
+  const solveF2L = (crossState: string[]): F2lNode | null => {
+    const crossHome = sides.map((x) => targetOf(['U', x]))
+    const settle = (n: F2lNode): F2lNode => {
+      const fixed = n.fixed.slice()
+      const todo: number[] = []
+      n.todo.forEach((si) => {
+        const c = cornerOf(slots[si]), e = edgeOf(slots[si])
+        if (whereIn(n.st, c) === targetOf(c) && whereIn(n.st, e) === targetOf(e)) fixed.push(targetOf(c), targetOf(e))
+        else todo.push(si)
+      })
+      return { st: n.st, fixed, todo, parts: n.parts, len: n.len }
+    }
+    let beam: F2lNode[] = [{ st: crossState, fixed: crossHome, todo: [0, 1, 2, 3], parts: [], len: 0 }]
+    for (let level = 0; level < 4; level++) {
+      const next: F2lNode[] = []
+      const seen: Record<string, boolean> = {}
+      for (const raw of beam) {
+        const n = settle(raw)
+        if (!n.todo.length) { next.push(n); continue }
+        for (const si of n.todo) {
+          const sl = slots[si]
+          const c = cornerOf(sl), e = edgeOf(sl)
+          const p = pairPlan(n.fixed, whereIn(n.st, c), whereIn(n.st, e), targetOf(c), targetOf(e), sl)
+          if (!p) continue
+          const st2 = rkApplyMoves(n.st, p)
+          const parts = n.parts.concat([{ slot: si, moves: p }])
+          const flat: RkTok[] = []
+          parts.forEach((pt) => pt.moves.forEach((m) => flat.push(rkTokOf(m, 0))))
+          const k = st2.join('')
+          if (seen[k]) continue
+          seen[k] = true
+          next.push({ st: st2, fixed: n.fixed.concat([targetOf(c), targetOf(e)]), todo: n.todo.filter((x) => x !== si), parts, len: rkReduceToks(flat).length })
+        }
+      }
+      if (!next.length) return null
+      next.sort((a, b) => a.len - b.len)
+      beam = next.slice(0, 5)
+    }
+    const win = settle(beam[0])
+    return win.todo.length ? null : win
+  }
+
+  // 1. Cross. Several different shortest crosses (same length, different turns) so F2L has options.
+  const sidesStart = sides.map((x) => whereIn(start, ['U', x]))
+  const sidesGoal = sides.map((x) => targetOf(['U', x]))
+  const baseNames = Object.keys(TO)
+  const crosses: string[][] = []
+  for (let v = 0; v < 3; v++) {
+    const rot = (v * 7) % baseNames.length
+    const TOv: Record<string, number[]> = {}
+    baseNames.slice(rot).concat(baseNames.slice(0, rot)).forEach((nm) => { TOv[nm] = TO[nm] })
+    const c = rkOptimalCross(sidesStart, sidesGoal, TOv, false)
+    if (!c) return fail('the cross')
+    if (crosses.length && c.length > crosses[0].length) continue
+    if (!crosses.some((x) => x.join(' ') === c.join(' '))) crosses.push(c)
+  }
+
+  let bestRun: { cross: string[]; f2l: F2lNode; len: number } | null = null
+  for (const cross of crosses) {
+    const f = solveF2L(rkApplyMoves(start, cross))
+    if (!f) continue
+    const flat: RkTok[] = []
+    cross.forEach((m) => flat.push(rkTokOf(m, 0)))
+    f.parts.forEach((pt) => pt.moves.forEach((m) => flat.push(rkTokOf(m, 0))))
+    const len = rkReduceToks(flat).length
+    if (!bestRun || len < bestRun.len) bestRun = { cross, f2l: f, len }
+  }
+  if (!bestRun) return fail('the first two layers')
+  const run = bestRun as { cross: string[]; f2l: F2lNode; len: number }
+
+  // 2. Last layer: OLL then PLL.
+  const ll = rkProLastLayer(run.f2l.st)
+  if (!ll) return fail('the last layer')
+
+  // 3. Lay the steps out and fold wasted turns.
+  const stageMacros: { id: string; macros: RkMacro[] }[] = [
+    { id: 'cross', macros: [{ moves: run.cross, label: 'Cross', pattern: false }] },
+    { id: 'f2l', macros: run.f2l.parts.map((pt) => ({ moves: pt.moves, label: RK_PRO_SLOT_NAME[slots[pt.slot].join('')], pattern: false })) },
+    { id: 'oll', macros: ll.oll },
+    { id: 'pll', macros: ll.pll },
+  ]
+  const stageToks: RkTok[][] = stageMacros.map((sm) => rkMacroToks(sm.macros))
+  const goals: ((s: string[]) => boolean)[] = [
+    (s) => home(s, crossSet),
+    (s) => home(s, f2lSet),
+    (s) => home(s, f2lSet) && dFace.every((i) => s[i] === 'D'),
+    (s) => rkIsSolved(s),
+  ]
+  rkProFoldSeams(start, stageToks, goals)
+
+  const moves: string[] = []
+  const plan: RkPlanStage[] = []
+  stageMacros.forEach((sm, si) => {
+    const info = RK_PRO_INFO[sm.id]
+    const st: RkPlanStage = { id: sm.id, title: info.title, goal: info.goal, tip: info.tip, from: moves.length, to: moves.length, parts: [] }
+    const toks = stageToks[si]
+    let i = 0
+    while (i < toks.length) {
+      let j = i
+      while (j < toks.length && toks[j].seg === toks[i].seg) j++
+      const macro = sm.macros[toks[i].seg]
+      const from = moves.length
+      toks.slice(i, j).forEach((t) => moves.push(rkTokName(t)))
+      st.parts.push({ label: macro.label, from, to: moves.length, times: 1 })
+      i = j
+    }
     st.to = moves.length
     plan.push(st)
   })

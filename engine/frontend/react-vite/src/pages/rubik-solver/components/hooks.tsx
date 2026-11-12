@@ -2,12 +2,12 @@
 // ARKZEN GENERATED HOOKS — rubik-solver [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T07:31:48.608Z
+// Generated: 2026-11-12T08:41:53.494Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
@@ -37,7 +37,7 @@ export const useRkStore = create<RkStoreState>((set, get) => ({
   mode: 'kociemba',
   plan: null,
 
-  setMode: (m) => set({ mode: m === 'pro' ? 'kociemba' : m }),
+  setMode: (m) => set({ mode: m }),
   setStage: (s) => set({ stage: s }),
 
   resetAll: () => set({
@@ -253,12 +253,12 @@ export function useRkSolver() {
   const solve = useCallback((stickers: string[], maxTimeMs: number, maxLen?: number) => {
     const st = useRkStore.getState()
     rkSolverBox.facelets = stickers.slice()
-    if (st.mode === 'beginner' && !maxLen) {
+    if ((st.mode === 'beginner' || st.mode === 'pro') && !maxLen) {
       st.beginSolve()
       window.setTimeout(() => {
         try {
           const t0 = Date.now()
-          const res = rkSolveBeginner(stickers)
+          const res = st.mode === 'pro' ? rkSolvePro(stickers) : rkSolveBeginner(stickers)
           const store = useRkStore.getState()
           if ('error' in res) store.failSolve(res.error)
           else if (!rkSolutionWorks(stickers, res.moves)) store.failSolve(RK_BAD_SOLUTION_MSG)

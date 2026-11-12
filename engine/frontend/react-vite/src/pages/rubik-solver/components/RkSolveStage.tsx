@@ -2,12 +2,12 @@
 // ARKZEN GENERATED COMPONENT — RkSolveStage [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T07:31:48.629Z
+// Generated: 2026-11-12T08:41:53.525Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvePro, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
 import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
@@ -44,8 +44,8 @@ export const RkSolveStage = () => {
     <section className="rk-panel rk-solve-panel" aria-live="polite">
       {working && !solution ? (
         <>
-          <h2 className="rk-h2">{mode === 'beginner' ? 'Planning the layers' : prepPct < 1 ? 'Getting the solver ready' : 'Searching'}</h2>
-          <p className="rk-p">{mode === 'beginner' ? 'Finding the fewest turns for each step...' : prepPct < 1 ? prepStage || 'Building search tables' : 'Looking for a short solution...'}</p>
+          <h2 className="rk-h2">{mode === 'pro' ? 'Planning your solve' : mode === 'beginner' ? 'Planning the layers' : prepPct < 1 ? 'Getting the solver ready' : 'Searching'}</h2>
+          <p className="rk-p">{mode === 'pro' ? 'Finding the shortest cross, the best order for the pairs and the right algorithms...' : mode === 'beginner' ? 'Finding the fewest turns for each step...' : prepPct < 1 ? prepStage || 'Building search tables' : 'Looking for a short solution...'}</p>
           <div className="rk-bar" aria-hidden="true"><span style={{ width: Math.round(Math.max(0.05, prepPct) * 100) + '%' }} /></div>
           <p className="rk-note">This takes a second or two the first time, then the search itself runs for a few seconds.</p>
         </>
@@ -57,7 +57,9 @@ export const RkSolveStage = () => {
           <h2 className="rk-h2">{solution.length === 0 ? 'This cube is already solved' : solution.length + ' moves'}</h2>
           <p className="rk-p rk-mono">{rkMoveNames(solution)}</p>
           <p className="rk-note">
-            {mode === 'beginner'
+            {mode === 'pro'
+              ? 'Speedcuber style in 4 steps: cross, first two layers, then one algorithm to orient and one to permute the last layer. Much shorter than beginner mode, and it is the method behind tournament solves.'
+              : mode === 'beginner'
               ? 'Layer by layer, in 7 steps, with the classic patterns. Each step uses the fewest turns for your cube, so it is much longer than the fastest mode but easy to follow.'
               : 'This is a very short solution found by a two-phase search, usually within 1 to 3 moves of the shortest possible. It is not proven to be the single shortest.'}
             {!working && solveMs > 0 ? ' Found in ' + (solveMs >= 1000 ? (solveMs / 1000).toFixed(1) + ' s.' : solveMs + ' ms.') : ''}
