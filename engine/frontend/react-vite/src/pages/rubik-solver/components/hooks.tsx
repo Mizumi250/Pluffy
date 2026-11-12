@@ -2,15 +2,15 @@
 // ARKZEN GENERATED HOOKS — rubik-solver [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:03.570Z
+// Generated: 2026-11-12T06:24:07.462Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
-import type { RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
+import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 
 
 export const useRkStore = create<RkStoreState>((set, get) => ({
@@ -34,7 +34,10 @@ export const useRkStore = create<RkStoreState>((set, get) => ({
   guideOn: false,
   step: 0,
   refining: false,
+  mode: 'kociemba',
+  plan: null,
 
+  setMode: (m) => set({ mode: m === 'pro' ? 'kociemba' : m }),
   setStage: (s) => set({ stage: s }),
 
   resetAll: () => set({
@@ -123,7 +126,8 @@ export const useRkStore = create<RkStoreState>((set, get) => ({
 
   setPrep: (pct, stage) => set({ prepPct: pct, prepStage: stage }),
 
-  beginSolve: () => set({ solveStatus: 'working', solution: null, solveError: '', guideOn: false, step: 0, stage: 'solve', refining: false }),
+  beginSolve: () => set({ solveStatus: 'working', solution: null, plan: null, solveError: '', guideOn: false, step: 0, stage: 'solve', refining: false }),
+  setPlan: (solution, stages) => set({ plan: { solution, stages } }),
   beginRefine: () => set({ solveStatus: 'working', refining: true }),
   endRefine: () => set({ solveStatus: 'done', refining: false }),
 
@@ -210,8 +214,15 @@ export function useRkSolver() {
       const st = useRkStore.getState()
       if (d.type === 'progress') st.setPrep(d.pct, d.stage)
       else if (d.type === 'ready') st.setPrep(1, 'Ready')
-      else if (d.type === 'solution') st.setSolution(d.names, true, 0)
-      else if (d.type === 'done') st.setSolution(d.names, false, d.elapsed)
+      else if (d.type === 'solution') {
+        if (rkSolutionWorks(rkSolverBox.facelets, d.names)) st.setSolution(d.names, true, 0)
+        else if (!st.refining) st.failSolve(RK_BAD_SOLUTION_MSG)
+      }
+      else if (d.type === 'done') {
+        if (rkSolutionWorks(rkSolverBox.facelets, d.names)) st.setSolution(d.names, false, d.elapsed)
+        else if (st.refining) { /* keep the earlier, verified solution */ }
+        else st.failSolve(RK_BAD_SOLUTION_MSG)
+      }
       else if (d.type === 'error') { if (st.refining) st.endRefine(); else st.failSolve(d.message) }
       if (d.type === 'done' && st.refining) st.endRefine()
     }
@@ -241,6 +252,23 @@ export function useRkSolver() {
 
   const solve = useCallback((stickers: string[], maxTimeMs: number, maxLen?: number) => {
     const st = useRkStore.getState()
+    rkSolverBox.facelets = stickers.slice()
+    if (st.mode === 'beginner' && !maxLen) {
+      st.beginSolve()
+      window.setTimeout(() => {
+        try {
+          const t0 = Date.now()
+          const res = rkSolveBeginner(stickers)
+          const store = useRkStore.getState()
+          if ('error' in res) store.failSolve(res.error)
+          else if (!rkSolutionWorks(stickers, res.moves)) store.failSolve(RK_BAD_SOLUTION_MSG)
+          else { store.setPlan(res.moves, res.plan); store.setSolution(res.moves, false, Date.now() - t0) }
+        } catch (e: any) {
+          useRkStore.getState().failSolve(String(e && e.message ? e.message : e))
+        }
+      }, 30)
+      return
+    }
     if (maxLen) st.beginRefine(); else st.beginSolve()
     let w = rkSolverBox.worker
     if (!w) {
@@ -257,7 +285,9 @@ export function useRkSolver() {
         const sv = rkInlineSolver()
         const res = sv.solve(stickers.join(''), { maxTimeMs: Math.min(maxTimeMs, 3000), stopAt: RK_STOP_AT, maxLen })
         if (res.error) { if (maxLen) useRkStore.getState().endRefine(); else useRkStore.getState().failSolve(res.error) }
-        else useRkStore.getState().setSolution(res.names, false, res.elapsed)
+        else if (rkSolutionWorks(stickers, res.names)) useRkStore.getState().setSolution(res.names, false, res.elapsed)
+        else if (!maxLen) useRkStore.getState().failSolve(RK_BAD_SOLUTION_MSG)
+        else useRkStore.getState().endRefine()
       } catch (e: any) {
         useRkStore.getState().failSolve(String(e && e.message ? e.message : e))
       }

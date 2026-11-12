@@ -2,15 +2,15 @@
 // ARKZEN GENERATED COMPONENT — RkGuide [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:03.589Z
+// Generated: 2026-11-12T06:24:07.501Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
-import type { RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
+import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 import { useRkInterval, useRkSolver, useRkStore } from './hooks'
 import { RkCube3D } from './RkCube3D'
 import { RkCubeNet } from './RkCubeNet'
@@ -22,6 +22,7 @@ export const RkGuide = () => {
   const step = useRkStore((s) => s.step)
   const setStep = useRkStore((s) => s.setStep)
   const status = useRkStore((s) => s.solveStatus)
+  const planState = useRkStore((s) => s.plan)
   const resetAll = useRkStore((s) => s.resetAll)
   const setStage = useRkStore((s) => s.setStage)
   const { solve } = useRkSolver()
@@ -35,6 +36,18 @@ export const RkGuide = () => {
   const move = atEnd ? null : solution[step]
   const info = move ? rkDescribeMove(move) : null
   const nextMove = step + 1 < total ? solution[step + 1] : null
+
+  // Beginner mode: which step and which pattern the current move belongs to.
+  const plan: RkPlanStage[] | null = planState && planState.solution === solution ? planState.stages : null
+  const doneAt = (st: RkPlanStage) => st.to === st.from
+  let curStageIdx = -1
+  let curPart: RkPlanPart | null = null
+  if (plan) {
+    const at = Math.min(step, Math.max(total - 1, 0))
+    curStageIdx = plan.findIndex((st) => !doneAt(st) && at >= st.from && at < st.to)
+    if (curStageIdx >= 0 && !atEnd) curPart = plan[curStageIdx].parts.find((pt) => step >= pt.from && step < pt.to) || null
+  }
+  const curStage = plan && curStageIdx >= 0 ? plan[curStageIdx] : null
 
   const go = useCallback((n: number) => {
     setStep(Math.max(0, Math.min(total, n)))
@@ -86,17 +99,24 @@ export const RkGuide = () => {
             />
           </div>
           <div className="rk-move-box">
+            {curStage && !atEnd ? (
+              <p className="rk-stagechip">Step {curStageIdx + 1} of {plan ? plan.length : 0} · {curStage.title}</p>
+            ) : null}
             <p className="rk-kicker">{atEnd ? 'Finished' : 'Move ' + (step + 1) + ' of ' + total}</p>
             {move ? (
               <>
                 <div className="rk-big"><RkMoveToken move={move} /></div>
                 <h2 className="rk-h2">{info ? info.headline : ''}</h2>
                 <p className="rk-p">{info ? info.detail : ''}</p>
+                {curPart && curPart.label !== 'Setup turn' ? (
+                  <p className="rk-note"><strong>{curPart.label}</strong>{curPart.times > 1 ? ' · run ' + (Math.floor((step - curPart.from) / ((curPart.to - curPart.from) / curPart.times)) + 1) + ' of ' + curPart.times : ''}</p>
+                ) : curPart ? <p className="rk-note"><strong>Setup turn</strong> · lines the piece up for the next pattern</p> : null}
+                {curStage && step === curStage.from ? <p className="rk-note">{curStage.goal} {curStage.tip}</p> : null}
                 {nextMove ? <p className="rk-note">Next: <RkMoveToken move={nextMove} /></p> : <p className="rk-note">This is the last move.</p>}
               </>
             ) : (
               <>
-                <h2 className="rk-h2">{total === 0 ? 'This cube is already solved' : 'Solved'}</h2>
+                <h2 className="rk-h2">{rkIsSolved(states[Math.min(step, total)] || stickers) ? (total === 0 ? 'This cube is already solved' : 'Solved') : 'Something is off'}</h2>
                 <p className="rk-p">{rkIsSolved(states[Math.min(step, total)] || stickers) ? 'Every face should now be one color.' : 'The final state does not match a solved cube. Rescan and try again.'}</p>
               </>
             )}
@@ -123,18 +143,42 @@ export const RkGuide = () => {
 
       <section className="rk-side">
         <h2 className="rk-h2">All {total} moves</h2>
-        <ol className="rk-moves" aria-label="Full move list">
-          {solution.map((m, i) => (
-            <li key={i}>
-              <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
-                <RkMoveToken move={m} />
-              </button>
-            </li>
-          ))}
-        </ol>
+        {plan ? (
+          <div className="rk-stages">
+            {plan.map((st, si) => (
+              <div key={st.id} className={'rk-stage' + (si === curStageIdx ? ' is-now' : '') + (doneAt(st) ? ' is-skip' : '')}>
+                <h3 className="rk-stage-h"><span className="rk-stage-n">{si + 1}</span> {st.title} <span className="rk-stage-c">{doneAt(st) ? 'already done' : st.to - st.from + ' moves'}</span></h3>
+                {doneAt(st) ? null : (
+                  <ol className="rk-moves" aria-label={st.title + ' moves'}>
+                    {solution.slice(st.from, st.to).map((m, k) => {
+                      const i = st.from + k
+                      return (
+                        <li key={i}>
+                          <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
+                            <RkMoveToken move={m} />
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ol className="rk-moves" aria-label="Full move list">
+            {solution.map((m, i) => (
+              <li key={i}>
+                <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
+                  <RkMoveToken move={m} />
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
         <div className="rk-row rk-row-wrap">
           <button type="button" className="rk-btn rk-btn-small" onClick={copy}><Copy size={14} aria-hidden="true" /> {copied ? 'Copied' : 'Copy moves'}</button>
-          {step === 0 && status !== 'working' && total > 0 ? (
+          {step === 0 && status !== 'working' && total > 0 && !plan ? (
             <button type="button" className="rk-btn rk-btn-small" onClick={() => solve(stickers, RK_SEARCH_LONG_MS, total)}>
               <Search size={14} aria-hidden="true" /> Look for a shorter one
             </button>

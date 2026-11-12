@@ -2,15 +2,15 @@
 // ARKZEN GENERATED COMPONENT — RkReviewStage [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T01:56:03.586Z
+// Generated: 2026-11-12T06:24:07.489Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion } from 'framer-motion'
-import { RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
+import { RK_BAD_SOLUTION_MSG, RK_COLOR_NAME, RK_FACES, RK_FACE_NAME, RK_HEX, RK_MODE_OPTIONS, RK_SCAN_ORDER, RK_SCAN_TOP, RK_SEARCH_LONG_MS, RK_SEARCH_MS, RK_SIBLINGS, RK_SOLVER_SRC, RK_STOP_AT, RK_STORAGE_KEY, RK_VIEWS, rkAnalyze, rkAnchorMeans, rkApplyMove, rkApplyMoves, rkAvgSamples, rkBlankStickers, rkBuildPolys, rkCaptureGrid, rkCenterMatches, rkClassify, rkClassifyFace, rkCreateWorker, rkDescribeMove, rkInlineSolver, rkIsCenter, rkIsSolved, rkLoadLocal, rkMaxShift, rkMoveNames, rkNearestFace, rkNominalFace, rkPieceKind, rkPieceLabel, rkRgbToLab, rkSampleGrid, rkSaveLocal, rkSolutionWorks, rkSolveBeginner, rkSolvedState, rkSolverBox, rkStatesAlong, rkViewFor } from '@/arkzen/generated/rubik-solver.scripts'
 import { ArrowLeftRight, Ban, Camera, Check, ChevronLeft, ChevronRight, Copy, Eraser, Lock, Paintbrush, Pause, Play, RotateCcw, ScanLine, Search, Upload } from 'lucide-react'
 import { create } from 'zustand'
-import type { RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
+import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 import { useRkSolver, useRkStore } from './hooks'
 import { RkCubeNet } from './RkCubeNet'
 import { RkSwatch } from './RkSwatch'
@@ -28,6 +28,8 @@ export const RkReviewStage = () => {
   const clearSelection = useRkStore((s) => s.clearSelection)
   const clearStickers = useRkStore((s) => s.clearStickers)
   const startRescan = useRkStore((s) => s.startRescan)
+  const mode = useRkStore((s) => s.mode)
+  const setMode = useRkStore((s) => s.setMode)
   const { solve } = useRkSolver()
 
   const report: RkReport = React.useMemo(() => rkAnalyze(stickers), [stickers])
@@ -104,6 +106,24 @@ export const RkReviewStage = () => {
             </>
           )}
           {unsureCount > 0 ? <p className="rk-note">{unsureCount} sticker{unsureCount === 1 ? '' : 's'} with a dot in the corner {unsureCount === 1 ? 'was' : 'were'} hard to read. Check those first.</p> : null}
+        </div>
+
+        <div className="rk-modes" role="radiogroup" aria-label="How to solve it">
+          <p className="rk-kicker">How do you want to solve it?</p>
+          {RK_MODE_OPTIONS.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={mode === o.id}
+              disabled={o.soon}
+              className={'rk-mode' + (mode === o.id ? ' is-on' : '') + (o.soon ? ' is-soon' : '')}
+              onClick={() => setMode(o.id)}
+            >
+              <span className="rk-mode-name">{o.name}{o.soon ? <em className="rk-soon">Soon</em> : null}</span>
+              <span className="rk-mode-blurb">{o.blurb}</span>
+            </button>
+          ))}
         </div>
 
         <div className="rk-row rk-row-wrap">

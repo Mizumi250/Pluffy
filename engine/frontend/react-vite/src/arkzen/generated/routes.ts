@@ -194,8 +194,6 @@ const ArkzenPage_RolesTest_Register = lazy(() => import('@/pages/roles-test/regi
 const ArkzenPage_RolesTest_Dashboard = lazy(() => import('@/pages/roles-test/dashboard'))
 // ROUTE:roles-test:__root_redirect:/roles-test:true
 const ArkzenPage_RolesTest_RootRedirect = lazy(() => import('@/pages/roles-test/__root_redirect'))
-// ROUTE:rubik-solver:index:/rubik-solver:false
-const ArkzenPage_RubikSolver_Index = lazy(() => import('@/pages/rubik-solver/index'))
 // ROUTE:rust-backend-test:index:/rust-backend-test:false
 const ArkzenPage_RustBackendTest_Index = lazy(() => import('@/pages/rust-backend-test/index'))
 // ROUTE:scheduler-test:dashboard:/scheduler-test/dashboard:false
@@ -222,6 +220,8 @@ const ArkzenPage_UploadTest_Dashboard = lazy(() => import('@/pages/upload-test/d
 const ArkzenPage_UploadTest_RootRedirect = lazy(() => import('@/pages/upload-test/__root_redirect'))
 // ROUTE:visual-lab:index:/visual-lab:false
 const ArkzenPage_VisualLab_Index = lazy(() => import('@/pages/visual-lab/index'))
+// ROUTE:rubik-solver:index:/rubik-solver:false
+const ArkzenPage_RubikSolver_Index = lazy(() => import('@/pages/rubik-solver/index'))
 
 import { ArkzenErrorBoundary_ErrorsTest } from '@/pages/errors-test/error-boundary'
 
@@ -320,7 +320,6 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/roles-test/register', name: 'register', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Register, auth: true },
   { path: '/roles-test/dashboard', name: 'dashboard', tatemono: 'roles-test', component: ArkzenPage_RolesTest_Dashboard, auth: true },
   { path: '/roles-test', name: '__root_redirect', tatemono: 'roles-test', component: ArkzenPage_RolesTest_RootRedirect, auth: true },
-  { path: '/rubik-solver', name: 'index', tatemono: 'rubik-solver', component: ArkzenPage_RubikSolver_Index, auth: false },
   { path: '/rust-backend-test', name: 'index', tatemono: 'rust-backend-test', component: ArkzenPage_RustBackendTest_Index, auth: false },
   { path: '/scheduler-test/dashboard', name: 'dashboard', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_Dashboard, auth: false },
   { path: '/scheduler-test', name: '__root_redirect', tatemono: 'scheduler-test', component: ArkzenPage_SchedulerTest_RootRedirect, auth: false },
@@ -334,4 +333,5 @@ export const ARKZEN_ROUTES: ArkzenRoute[] = [
   { path: '/upload-test/dashboard', name: 'dashboard', tatemono: 'upload-test', component: ArkzenPage_UploadTest_Dashboard, auth: false },
   { path: '/upload-test', name: '__root_redirect', tatemono: 'upload-test', component: ArkzenPage_UploadTest_RootRedirect, auth: false },
   { path: '/visual-lab', name: 'index', tatemono: 'visual-lab', component: ArkzenPage_VisualLab_Index, auth: false },
+  { path: '/rubik-solver', name: 'index', tatemono: 'rubik-solver', component: ArkzenPage_RubikSolver_Index, auth: false },
 ]

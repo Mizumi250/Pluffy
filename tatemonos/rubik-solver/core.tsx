@@ -757,7 +757,7 @@ export const RK_SOLVER_SRC = String.raw`(function () {
       var c1 = f[CORNER_FACELET[i][(ori + 1) % 3]], c2 = f[CORNER_FACELET[i][(ori + 2) % 3]];
       var found = false;
       for (j = 0; j < 8; j++) {
-        if (c1 === CORNER_COLOR[j][1] && c2 === CORNER_COLOR[j][2]) { cc.cp[i] = j; cc.co[i] = ori; found = true; break; }
+        if (f[CORNER_FACELET[i][ori]] === CORNER_COLOR[j][0] && c1 === CORNER_COLOR[j][1] && c2 === CORNER_COLOR[j][2]) { cc.cp[i] = j; cc.co[i] = ori; found = true; break; }
       }
       if (!found) return { error: 'A corner has a color combination that does not exist.' };
     }
@@ -1137,6 +1137,9 @@ export type RkStoreState = {
   guideOn: boolean
   step: number
   refining: boolean
+  mode: RkMode
+  plan: { solution: string[]; stages: RkPlanStage[] } | null
+  setMode: (m: RkMode) => void
   setStage: (s: RkStage) => void
   resetAll: () => void
   startManual: () => void
@@ -1152,6 +1155,7 @@ export type RkStoreState = {
   clearStickers: () => void
   setPrep: (pct: number, stage: string) => void
   beginSolve: () => void
+  setPlan: (solution: string[], stages: RkPlanStage[]) => void
   setSolution: (moves: string[], working: boolean, ms: number) => void
   failSolve: (msg: string) => void
   startGuide: () => void
@@ -1220,7 +1224,15 @@ export function rkLoadLocal(): { stickers: string[]; stage: RkStage } | null {
   }
 }
 
-export const rkSolverBox: { worker: Worker | null } = { worker: null }
+export const rkSolverBox: { worker: Worker | null; facelets: string[] | null } = { worker: null, facelets: null }
+
+// A solution is only trusted if replaying it on the scanned cube really gives a solved cube.
+export function rkSolutionWorks(start: string[] | null, names: string[]): boolean {
+  if (!start || start.length !== 54) return false
+  return rkIsSolved(rkApplyMoves(start, names))
+}
+
+export const RK_BAD_SOLUTION_MSG = 'The solver could not find a valid solution for these stickers. A sticker is probably misread, or the cube is not a real, solvable cube. Check every face against your cube.'
 
 export function rkCreateWorker(): Worker | null {
   try {
@@ -1234,6 +1246,325 @@ export function rkCreateWorker(): Worker | null {
 
 
 export type RkCamState = 'idle' | 'starting' | 'live' | 'blocked' | 'unsupported' | 'error'
+// ─────────────────────────────────────────────────────────────────────────────
+// Beginner mode: layer by layer with the classic patterns, using the shortest
+// route for the cube in front of you. Pure TypeScript, no DOM, no AI.
+// Hold: white on top, green in front (same as the rest of the app, no cube turns).
+// First layer = U (white), last layer = D (yellow). The classic patterns are written
+// the usual way (first layer down, last layer up) and mapped through a half turn of
+// the whole cube (z2): U<->D, R<->L, F and B stay.
+// ─────────────────────────────────────────────────────────────────────────────
+
+export type RkMode = 'kociemba' | 'beginner' | 'pro'
+
+export const RK_MODE_OPTIONS: { id: RkMode; name: string; blurb: string; soon: boolean }[] = [
+  { id: 'kociemba', name: 'Fastest', blurb: 'The shortest solution, usually about 20 moves. Best when you just want it solved.', soon: false },
+  { id: 'beginner', name: 'Beginner', blurb: 'One layer at a time with the classic patterns, using the fewest turns for your cube. Longer, but easy to learn from.', soon: false },
+  { id: 'pro', name: 'Pro', blurb: 'Cross, F2L, OLL and PLL like a speedcuber.', soon: true },
+]
+
+export type RkPlanPart = { label: string; from: number; to: number; times: number }
+export type RkPlanStage = { id: string; title: string; goal: string; tip: string; from: number; to: number; parts: RkPlanPart[] }
+
+type RkMacro = { moves: string[]; label: string; pattern: boolean }
+
+let rkMoveToCache: Record<string, number[]> | null = null
+function rkMoveTo(): Record<string, number[]> {
+  if (!rkMoveToCache) {
+    const out: Record<string, number[]> = {}
+    Object.keys(RK_MOVE_PERMS).forEach((m) => {
+      const p = RK_MOVE_PERMS[m]
+      const to: number[] = new Array(54)
+      for (let j = 0; j < 54; j++) to[p[j]] = j
+      out[m] = to
+    })
+    rkMoveToCache = out
+  }
+  return rkMoveToCache
+}
+
+const RK_Z2: Record<string, string> = { U: 'D', D: 'U', R: 'L', L: 'R', F: 'F', B: 'B' }
+const RK_YTURN: Record<string, string> = { U: 'U', D: 'D', R: 'F', F: 'L', L: 'B', B: 'R' }
+
+function rkParseAlg(alg: string): string[] { return alg.split(' ').filter(Boolean) }
+function rkMapFaces(moves: string[], map: Record<string, string>): string[] {
+  return moves.map((m) => map[m.charAt(0)] + m.slice(1))
+}
+// The four versions of a pattern around the vertical axis, each mapped to the real hold.
+function rkVariants(alg: string, label: string): RkMacro[] {
+  const out: RkMacro[] = []
+  let cur = rkParseAlg(alg)
+  for (let k = 0; k < 4; k++) {
+    out.push({ moves: rkMapFaces(cur, RK_Z2), label, pattern: true })
+    cur = rkMapFaces(cur, RK_YTURN)
+  }
+  return out
+}
+function rkOnePattern(alg: string, label: string): RkMacro {
+  return { moves: rkMapFaces(rkParseAlg(alg), RK_Z2), label, pattern: true }
+}
+
+const RK_ALL_TURNS: RkMacro[] = (() => {
+  const out: RkMacro[] = []
+  for (const f of RK_FACES) for (const s of ['', '2', "'"]) out.push({ moves: [f + s], label: 'Cross move', pattern: false })
+  return out
+})()
+
+// bottom layer turns (the canonical "U" turns after the half turn mapping)
+const RK_SETUP: RkMacro[] = [
+  { moves: ['D'], label: 'Setup turn', pattern: false },
+  { moves: ["D'"], label: 'Setup turn', pattern: false },
+  { moves: ['D2'], label: 'Setup turn', pattern: false },
+]
+
+const RK_CORNER_MACROS: RkMacro[] = RK_SETUP
+  .concat(rkVariants("R U R' U'", 'Corner drop pattern'))
+  .concat(rkVariants("L' U' L U", 'Corner drop pattern'))
+
+const RK_MIDDLE_MACROS: RkMacro[] = RK_SETUP
+  .concat(rkVariants("U R U' R' U' F' U F", 'Edge insert pattern'))
+  .concat(rkVariants("U' L' U L U F U' F'", 'Edge insert pattern'))
+
+const RK_YCROSS_MACROS: RkMacro[] = RK_SETUP.concat([
+  rkOnePattern("F R U R' U' F'", 'Cross pattern'),
+  rkOnePattern("F' L' U' L U F", 'Cross pattern'),
+])
+
+const RK_YFACE_MACROS: RkMacro[] = RK_SETUP.concat([
+  rkOnePattern("R U R' U R U2 R'", 'Corner twist pattern'),
+  rkOnePattern("L' U' L U' L' U2 L", 'Corner twist pattern'),
+])
+
+const RK_YCORNER_MACROS: RkMacro[] = RK_SETUP.concat([
+  rkOnePattern("U R U' L' U R' U' L", 'Corner swap pattern'),
+  rkOnePattern("U' L' U R U' L U R'", 'Corner swap pattern'),
+])
+
+const RK_YEDGE_MACROS: RkMacro[] = RK_SETUP.concat([
+  rkOnePattern("R U' R U R U R U' R' U' R2", 'Edge cycle pattern'),
+  rkOnePattern("R2 U R U R' U' R' U' R' U R'", 'Edge cycle pattern'),
+])
+
+// Cheapest sequence of macros (cost = number of face turns) from start to a goal state.
+function rkSearch<S>(
+  start: S,
+  macros: RkMacro[],
+  apply: (s: S, mv: string[]) => S,
+  keyOf: (s: S) => string,
+  isGoal: (s: S) => boolean,
+  maxCost: number,
+  maxNodes: number
+): number[] | null {
+  const states: S[] = [start]
+  const keys: string[] = [keyOf(start)]
+  const parent: number[] = [-1]
+  const via: number[] = [-1]
+  const cost: number[] = [0]
+  const best: Record<string, number> = {}
+  best[keys[0]] = 0
+  const buckets: number[][] = []
+  for (let i = 0; i <= maxCost + 40; i++) buckets.push([])
+  buckets[0].push(0)
+  for (let c = 0; c <= maxCost; c++) {
+    const list = buckets[c]
+    for (let li = 0; li < list.length; li++) {
+      const id = list[li]
+      if (cost[id] !== c || best[keys[id]] !== c) continue
+      const s = states[id]
+      if (isGoal(s)) {
+        const path: number[] = []
+        let cur = id
+        while (parent[cur] >= 0) { path.push(via[cur]); cur = parent[cur] }
+        return path.reverse()
+      }
+      for (let mi = 0; mi < macros.length; mi++) {
+        const nc = c + macros[mi].moves.length
+        if (nc > maxCost) continue
+        const ns = apply(s, macros[mi].moves)
+        const k = keyOf(ns)
+        if (best[k] !== undefined && best[k] <= nc) continue
+        best[k] = nc
+        states.push(ns); keys.push(k); parent.push(id); via.push(mi); cost.push(nc)
+        buckets[nc].push(states.length - 1)
+      }
+      if (states.length > maxNodes) return null
+    }
+  }
+  return null
+}
+
+const RK_BEGINNER_INFO: Record<string, { title: string; goal: string; tip: string }> = {
+  cross: {
+    title: 'White cross',
+    goal: 'A white plus on the top face, with each edge matching the center of its side.',
+    tip: 'There is no fixed pattern here. These are the fewest turns for each white edge.',
+  },
+  corners: {
+    title: 'White corners',
+    goal: 'The whole top layer is white and the top row of every side matches its center.',
+    tip: 'Turn the bottom layer until the corner sits right under its spot, then repeat the short pattern until it drops in.',
+  },
+  middle: {
+    title: 'Middle layer',
+    goal: 'The middle row of every side matches its center.',
+    tip: 'Line the edge up under the side it belongs to, then use the insert pattern. The same pattern also pops out a wrong edge.',
+  },
+  ycross: {
+    title: 'Yellow cross',
+    goal: 'A yellow plus on the bottom face.',
+    tip: 'Run the cross pattern. Turn the bottom layer between runs so the pattern starts from the right place.',
+  },
+  yface: {
+    title: 'Yellow face',
+    goal: 'The whole bottom face is yellow.',
+    tip: 'Run the twist pattern, turning the bottom layer between runs. The yellow cross stays put.',
+  },
+  ycorners: {
+    title: 'Corner positions',
+    goal: 'Every bottom corner sits at its correct spot.',
+    tip: 'The swap pattern moves three corners around. The bottom turn lines them up.',
+  },
+  yedges: {
+    title: 'Last edges',
+    goal: 'The cube is solved.',
+    tip: 'The cycle pattern moves three edges around. One last bottom turn finishes it.',
+  },
+}
+
+export function rkSolveBeginner(start: string[]): { moves: string[]; plan: RkPlanStage[] } | { error: string } {
+  if (rkIsSolved(start)) return { moves: [], plan: [] }
+  const TO = rkMoveTo()
+  let state = start.slice()
+  const moves: string[] = []
+  const plan: RkPlanStage[] = []
+
+  const letterFace = (i: number) => RK_FACES[Math.floor(i / 9)]
+  const findPiece = (colors: string[], letterAt: (i: number) => string): number => {
+    const a = colors[0]
+    const rest = colors.slice(1).sort().join('')
+    for (let i = 0; i < 54; i++) {
+      const sib = RK_SIBLINGS[i]
+      if (sib.length !== colors.length || letterAt(i) !== a) continue
+      if (sib.filter((j) => j !== i).map(letterAt).sort().join('') === rest) return i
+    }
+    return -1
+  }
+  const targetOf = (colors: string[]) => findPiece(colors, letterFace)
+  const whereIs = (colors: string[]) => findPiece(colors, (i) => state[i])
+
+  const beginStage = (id: string): RkPlanStage => {
+    const info = RK_BEGINNER_INFO[id]
+    const st: RkPlanStage = { id, title: info.title, goal: info.goal, tip: info.tip, from: moves.length, to: moves.length, parts: [] }
+    plan.push(st)
+    return st
+  }
+  let lastSig = ''
+  const run = (st: RkPlanStage, macro: RkMacro) => {
+    const from = moves.length
+    macro.moves.forEach((m) => moves.push(m))
+    state = rkApplyMoves(state, macro.moves)
+    const sig = macro.moves.join(' ')
+    const lastPart = st.parts[st.parts.length - 1]
+    if (macro.pattern && lastPart && lastSig === sig && lastPart.to === from) {
+      lastPart.to = moves.length
+      lastPart.times++
+    } else {
+      st.parts.push({ label: macro.label, from, to: moves.length, times: 1 })
+    }
+    lastSig = sig
+    st.to = moves.length
+  }
+
+  const applyTracked = (s: number[], mv: string[]): number[] =>
+    s.map((i) => { let j = i; for (const m of mv) j = TO[m][j]; return j })
+
+  // Bring one piece home while every piece in `fixed` ends up back where it is now.
+  const trackedPlan = (fixed: number[], from: number, goal: number, macros: RkMacro[]): number[] | null => {
+    const goals = fixed.concat([goal])
+    return rkSearch<number[]>(
+      fixed.concat([from]), macros, applyTracked,
+      (s) => s.join(','),
+      (s) => { for (let k = 0; k < s.length; k++) if (s[k] !== goals[k]) return false; return true },
+      90, 600000
+    )
+  }
+  const planCost = (p: number[], macros: RkMacro[]) => p.reduce((a, mi) => a + macros[mi].moves.length, 0)
+
+  // Greedy: of the pieces still to place, do the one that needs the fewest turns first.
+  const placePieces = (st: RkPlanStage, pieces: string[][], refOf: (c: string[]) => string[], fixed: number[], macros: RkMacro[]): boolean => {
+    let todo = pieces.slice()
+    const fixedNow = fixed.slice()
+    // pieces already home just join the fixed set
+    todo = todo.filter((c) => {
+      const ref = refOf(c)
+      const here = whereIs(ref), home = targetOf(ref)
+      if (here === home) { fixedNow.push(home); return false }
+      return true
+    })
+    while (todo.length) {
+      let bestIdx = -1
+      let bestPlan: number[] | null = null
+      let bestCost = Infinity
+      for (let k = 0; k < todo.length; k++) {
+        const ref = refOf(todo[k])
+        const p = trackedPlan(fixedNow, whereIs(ref), targetOf(ref), macros)
+        if (!p) continue
+        const c = planCost(p, macros)
+        if (c < bestCost) { bestCost = c; bestPlan = p; bestIdx = k }
+      }
+      if (!bestPlan || bestIdx < 0) return false
+      bestPlan.forEach((mi) => run(st, macros[mi]))
+      fixedNow.push(targetOf(refOf(todo[bestIdx])))
+      todo.splice(bestIdx, 1)
+    }
+    return true
+  }
+
+  const fail = (what: string) => ({ error: 'The beginner method got stuck at ' + what + '. Check the stickers, or try the fastest mode.' })
+
+  // 1. white cross
+  {
+    const st = beginStage('cross')
+    const pieces = ['F', 'R', 'B', 'L'].map((x) => ['U', x])
+    if (!placePieces(st, pieces, (c) => c, [], RK_ALL_TURNS)) return fail('the white cross')
+  }
+
+  // 2. white corners (cross edges stay tracked)
+  {
+    const st = beginStage('corners')
+    const crossHome = ['F', 'R', 'B', 'L'].map((x) => targetOf(['U', x]))
+    const pieces = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']].map((p) => ['U', p[0], p[1]])
+    if (!placePieces(st, pieces, (c) => c, crossHome, RK_CORNER_MACROS)) return fail('the white corners')
+  }
+
+  // 3. middle layer (whole first layer stays tracked)
+  {
+    const st = beginStage('middle')
+    const firstLayer = [0, 1, 2, 3, 5, 6, 7, 8]
+    const pieces = [['F', 'R'], ['R', 'B'], ['B', 'L'], ['L', 'F']]
+    if (!placePieces(st, pieces, (c) => c, firstLayer, RK_MIDDLE_MACROS)) return fail('the middle layer')
+  }
+
+  // 4 to 7. last layer, small enough to search on whole cube states
+  const lastLayer = (id: string, macros: RkMacro[], goal: (s: string[]) => boolean): boolean => {
+    const st = beginStage(id)
+    const p = rkSearch<string[]>(state, macros, rkApplyMoves, (s) => s.join(''), goal, 120, 300000)
+    if (!p) return false
+    p.forEach((mi) => run(st, macros[mi]))
+    return true
+  }
+  const dEdges = [28, 30, 32, 34]
+  const dFace = [27, 28, 29, 30, 31, 32, 33, 34, 35]
+  const dCorners = [27, 29, 33, 35]
+  if (!lastLayer('ycross', RK_YCROSS_MACROS, (s) => dEdges.every((i) => s[i] === 'D'))) return fail('the yellow cross')
+  if (!lastLayer('yface', RK_YFACE_MACROS, (s) => dFace.every((i) => s[i] === 'D'))) return fail('the yellow face')
+  if (!lastLayer('ycorners', RK_YCORNER_MACROS, (s) => dCorners.every((c) => RK_SIBLINGS[c].every((j) => s[j] === letterFace(j))))) return fail('the corner positions')
+  if (!lastLayer('yedges', RK_YEDGE_MACROS, (s) => rkIsSolved(s))) return fail('the last edges')
+
+  if (!rkIsSolved(state)) return fail('the end')
+  return { moves, plan }
+}
+
 /* @arkzen:web:script:end */
 
 /* @arkzen:web:style */
@@ -1429,6 +1760,23 @@ span.rk-st { cursor: default; }
 .rk-verdict.is-warn { background: var(--rk-warn-soft); color: #7a2d05; }
 .rk-rescan { margin: 10px 0 6px; }
 
+.rk-modes { margin: 12px 0 6px; display: grid; gap: 8px; }
+.rk-mode { display: grid; gap: 2px; text-align: left; padding: 10px 14px; border: 2px solid var(--rk-line); border-radius: 12px; background: #fff; font: inherit; color: var(--rk-ink); cursor: pointer; }
+.rk-mode.is-on { border-color: var(--rk-ink); background: #f6f8fc; }
+.rk-mode.is-soon { opacity: 0.55; cursor: not-allowed; }
+.rk-mode-name { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.rk-mode-blurb { font-size: 14px; color: var(--rk-ink-2); line-height: 1.4; }
+.rk-soon { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #e7ebf5; color: var(--rk-ink-2); }
+.rk-stagechip { display: inline-block; margin: 0 0 8px; padding: 4px 10px; border-radius: 999px; background: var(--rk-ink); color: #fff; font-size: 13px; font-weight: 700; }
+.rk-stages { display: grid; gap: 10px; margin-bottom: 12px; }
+.rk-stage { padding: 10px 12px; border: 1px solid var(--rk-line); border-radius: 12px; }
+.rk-stage.is-now { border-color: var(--rk-ink); }
+.rk-stage.is-skip { opacity: 0.6; }
+.rk-stage .rk-moves { margin: 8px 0 0; }
+.rk-stage-h { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rk-stage-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #e7ebf5; font-size: 12px; }
+.rk-stage-c { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--rk-ink-2); }
+
 /* step 3, solve and guide */
 .rk-solve-panel .rk-bar { max-width: 420px; }
 .rk-guide-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
@@ -1490,9 +1838,9 @@ import {
   rkApplyMove, rkApplyMoves, rkSolvedState, rkIsSolved, rkAnalyze, rkPieceLabel, rkPieceKind,
   rkIsCenter, rkClassify, rkClassifyFace, rkAnchorMeans, rkNearestFace, rkRgbToLab, rkNominalFace,
   rkSampleGrid, rkAvgSamples, rkMaxShift, rkDescribeMove, rkViewFor, rkBuildPolys, rkInlineSolver,
-  RK_STORAGE_KEY, RK_SEARCH_MS, RK_SEARCH_LONG_MS, RK_STOP_AT, rkBlankStickers, rkCaptureGrid, rkCenterMatches, rkMoveNames, rkStatesAlong, rkSaveLocal, rkLoadLocal, rkSolverBox, rkCreateWorker,
+  RK_STORAGE_KEY, RK_SEARCH_MS, RK_SEARCH_LONG_MS, RK_STOP_AT, rkBlankStickers, rkCaptureGrid, rkCenterMatches, rkMoveNames, rkStatesAlong, rkSaveLocal, rkLoadLocal, rkSolverBox, rkSolutionWorks, RK_BAD_SOLUTION_MSG, rkCreateWorker, rkSolveBeginner, RK_MODE_OPTIONS,
 } from '@/arkzen/generated/rubik-solver.scripts'
-import type { RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
+import type { RkMode, RkPlanStage, RkPlanPart, RkLab, RkReport, RkPoly, RkStage, RkSolveStatus, RkTool, RkStoreState, RkCamState } from '@/arkzen/generated/rubik-solver.scripts'
 
 // ── store ────────────────────────────────────────────────────────────────────
 export const useRkStore = create<RkStoreState>((set, get) => ({
@@ -1516,7 +1864,10 @@ export const useRkStore = create<RkStoreState>((set, get) => ({
   guideOn: false,
   step: 0,
   refining: false,
+  mode: 'kociemba',
+  plan: null,
 
+  setMode: (m) => set({ mode: m === 'pro' ? 'kociemba' : m }),
   setStage: (s) => set({ stage: s }),
 
   resetAll: () => set({
@@ -1605,7 +1956,8 @@ export const useRkStore = create<RkStoreState>((set, get) => ({
 
   setPrep: (pct, stage) => set({ prepPct: pct, prepStage: stage }),
 
-  beginSolve: () => set({ solveStatus: 'working', solution: null, solveError: '', guideOn: false, step: 0, stage: 'solve', refining: false }),
+  beginSolve: () => set({ solveStatus: 'working', solution: null, plan: null, solveError: '', guideOn: false, step: 0, stage: 'solve', refining: false }),
+  setPlan: (solution, stages) => set({ plan: { solution, stages } }),
   beginRefine: () => set({ solveStatus: 'working', refining: true }),
   endRefine: () => set({ solveStatus: 'done', refining: false }),
 
@@ -1695,8 +2047,15 @@ export function useRkSolver() {
       const st = useRkStore.getState()
       if (d.type === 'progress') st.setPrep(d.pct, d.stage)
       else if (d.type === 'ready') st.setPrep(1, 'Ready')
-      else if (d.type === 'solution') st.setSolution(d.names, true, 0)
-      else if (d.type === 'done') st.setSolution(d.names, false, d.elapsed)
+      else if (d.type === 'solution') {
+        if (rkSolutionWorks(rkSolverBox.facelets, d.names)) st.setSolution(d.names, true, 0)
+        else if (!st.refining) st.failSolve(RK_BAD_SOLUTION_MSG)
+      }
+      else if (d.type === 'done') {
+        if (rkSolutionWorks(rkSolverBox.facelets, d.names)) st.setSolution(d.names, false, d.elapsed)
+        else if (st.refining) { /* keep the earlier, verified solution */ }
+        else st.failSolve(RK_BAD_SOLUTION_MSG)
+      }
       else if (d.type === 'error') { if (st.refining) st.endRefine(); else st.failSolve(d.message) }
       if (d.type === 'done' && st.refining) st.endRefine()
     }
@@ -1726,6 +2085,23 @@ export function useRkSolver() {
 
   const solve = useCallback((stickers: string[], maxTimeMs: number, maxLen?: number) => {
     const st = useRkStore.getState()
+    rkSolverBox.facelets = stickers.slice()
+    if (st.mode === 'beginner' && !maxLen) {
+      st.beginSolve()
+      window.setTimeout(() => {
+        try {
+          const t0 = Date.now()
+          const res = rkSolveBeginner(stickers)
+          const store = useRkStore.getState()
+          if ('error' in res) store.failSolve(res.error)
+          else if (!rkSolutionWorks(stickers, res.moves)) store.failSolve(RK_BAD_SOLUTION_MSG)
+          else { store.setPlan(res.moves, res.plan); store.setSolution(res.moves, false, Date.now() - t0) }
+        } catch (e: any) {
+          useRkStore.getState().failSolve(String(e && e.message ? e.message : e))
+        }
+      }, 30)
+      return
+    }
     if (maxLen) st.beginRefine(); else st.beginSolve()
     let w = rkSolverBox.worker
     if (!w) {
@@ -1742,7 +2118,9 @@ export function useRkSolver() {
         const sv = rkInlineSolver()
         const res = sv.solve(stickers.join(''), { maxTimeMs: Math.min(maxTimeMs, 3000), stopAt: RK_STOP_AT, maxLen })
         if (res.error) { if (maxLen) useRkStore.getState().endRefine(); else useRkStore.getState().failSolve(res.error) }
-        else useRkStore.getState().setSolution(res.names, false, res.elapsed)
+        else if (rkSolutionWorks(stickers, res.names)) useRkStore.getState().setSolution(res.names, false, res.elapsed)
+        else if (!maxLen) useRkStore.getState().failSolve(RK_BAD_SOLUTION_MSG)
+        else useRkStore.getState().endRefine()
       } catch (e: any) {
         useRkStore.getState().failSolve(String(e && e.message ? e.message : e))
       }
@@ -2165,6 +2543,8 @@ export const RkReviewStage = () => {
   const clearSelection = useRkStore((s) => s.clearSelection)
   const clearStickers = useRkStore((s) => s.clearStickers)
   const startRescan = useRkStore((s) => s.startRescan)
+  const mode = useRkStore((s) => s.mode)
+  const setMode = useRkStore((s) => s.setMode)
   const { solve } = useRkSolver()
 
   const report: RkReport = React.useMemo(() => rkAnalyze(stickers), [stickers])
@@ -2243,6 +2623,24 @@ export const RkReviewStage = () => {
           {unsureCount > 0 ? <p className="rk-note">{unsureCount} sticker{unsureCount === 1 ? '' : 's'} with a dot in the corner {unsureCount === 1 ? 'was' : 'were'} hard to read. Check those first.</p> : null}
         </div>
 
+        <div className="rk-modes" role="radiogroup" aria-label="How to solve it">
+          <p className="rk-kicker">How do you want to solve it?</p>
+          {RK_MODE_OPTIONS.map((o) => (
+            <button
+              key={o.id}
+              type="button"
+              role="radio"
+              aria-checked={mode === o.id}
+              disabled={o.soon}
+              className={'rk-mode' + (mode === o.id ? ' is-on' : '') + (o.soon ? ' is-soon' : '')}
+              onClick={() => setMode(o.id)}
+            >
+              <span className="rk-mode-name">{o.name}{o.soon ? <em className="rk-soon">Soon</em> : null}</span>
+              <span className="rk-mode-blurb">{o.blurb}</span>
+            </button>
+          ))}
+        </div>
+
         <div className="rk-row rk-row-wrap">
           <button type="button" className="rk-btn rk-btn-primary" disabled={!report.solvable} onClick={() => solve(stickers, RK_SEARCH_MS)}>
             Find the solution <ChevronRight size={18} aria-hidden="true" />
@@ -2280,6 +2678,7 @@ export const RkGuide = () => {
   const step = useRkStore((s) => s.step)
   const setStep = useRkStore((s) => s.setStep)
   const status = useRkStore((s) => s.solveStatus)
+  const planState = useRkStore((s) => s.plan)
   const resetAll = useRkStore((s) => s.resetAll)
   const setStage = useRkStore((s) => s.setStage)
   const { solve } = useRkSolver()
@@ -2293,6 +2692,18 @@ export const RkGuide = () => {
   const move = atEnd ? null : solution[step]
   const info = move ? rkDescribeMove(move) : null
   const nextMove = step + 1 < total ? solution[step + 1] : null
+
+  // Beginner mode: which step and which pattern the current move belongs to.
+  const plan: RkPlanStage[] | null = planState && planState.solution === solution ? planState.stages : null
+  const doneAt = (st: RkPlanStage) => st.to === st.from
+  let curStageIdx = -1
+  let curPart: RkPlanPart | null = null
+  if (plan) {
+    const at = Math.min(step, Math.max(total - 1, 0))
+    curStageIdx = plan.findIndex((st) => !doneAt(st) && at >= st.from && at < st.to)
+    if (curStageIdx >= 0 && !atEnd) curPart = plan[curStageIdx].parts.find((pt) => step >= pt.from && step < pt.to) || null
+  }
+  const curStage = plan && curStageIdx >= 0 ? plan[curStageIdx] : null
 
   const go = useCallback((n: number) => {
     setStep(Math.max(0, Math.min(total, n)))
@@ -2344,17 +2755,24 @@ export const RkGuide = () => {
             />
           </div>
           <div className="rk-move-box">
+            {curStage && !atEnd ? (
+              <p className="rk-stagechip">Step {curStageIdx + 1} of {plan ? plan.length : 0} · {curStage.title}</p>
+            ) : null}
             <p className="rk-kicker">{atEnd ? 'Finished' : 'Move ' + (step + 1) + ' of ' + total}</p>
             {move ? (
               <>
                 <div className="rk-big"><RkMoveToken move={move} /></div>
                 <h2 className="rk-h2">{info ? info.headline : ''}</h2>
                 <p className="rk-p">{info ? info.detail : ''}</p>
+                {curPart && curPart.label !== 'Setup turn' ? (
+                  <p className="rk-note"><strong>{curPart.label}</strong>{curPart.times > 1 ? ' · run ' + (Math.floor((step - curPart.from) / ((curPart.to - curPart.from) / curPart.times)) + 1) + ' of ' + curPart.times : ''}</p>
+                ) : curPart ? <p className="rk-note"><strong>Setup turn</strong> · lines the piece up for the next pattern</p> : null}
+                {curStage && step === curStage.from ? <p className="rk-note">{curStage.goal} {curStage.tip}</p> : null}
                 {nextMove ? <p className="rk-note">Next: <RkMoveToken move={nextMove} /></p> : <p className="rk-note">This is the last move.</p>}
               </>
             ) : (
               <>
-                <h2 className="rk-h2">{total === 0 ? 'This cube is already solved' : 'Solved'}</h2>
+                <h2 className="rk-h2">{rkIsSolved(states[Math.min(step, total)] || stickers) ? (total === 0 ? 'This cube is already solved' : 'Solved') : 'Something is off'}</h2>
                 <p className="rk-p">{rkIsSolved(states[Math.min(step, total)] || stickers) ? 'Every face should now be one color.' : 'The final state does not match a solved cube. Rescan and try again.'}</p>
               </>
             )}
@@ -2381,18 +2799,42 @@ export const RkGuide = () => {
 
       <section className="rk-side">
         <h2 className="rk-h2">All {total} moves</h2>
-        <ol className="rk-moves" aria-label="Full move list">
-          {solution.map((m, i) => (
-            <li key={i}>
-              <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
-                <RkMoveToken move={m} />
-              </button>
-            </li>
-          ))}
-        </ol>
+        {plan ? (
+          <div className="rk-stages">
+            {plan.map((st, si) => (
+              <div key={st.id} className={'rk-stage' + (si === curStageIdx ? ' is-now' : '') + (doneAt(st) ? ' is-skip' : '')}>
+                <h3 className="rk-stage-h"><span className="rk-stage-n">{si + 1}</span> {st.title} <span className="rk-stage-c">{doneAt(st) ? 'already done' : st.to - st.from + ' moves'}</span></h3>
+                {doneAt(st) ? null : (
+                  <ol className="rk-moves" aria-label={st.title + ' moves'}>
+                    {solution.slice(st.from, st.to).map((m, k) => {
+                      const i = st.from + k
+                      return (
+                        <li key={i}>
+                          <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
+                            <RkMoveToken move={m} />
+                          </button>
+                        </li>
+                      )
+                    })}
+                  </ol>
+                )}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <ol className="rk-moves" aria-label="Full move list">
+            {solution.map((m, i) => (
+              <li key={i}>
+                <button type="button" className={'rk-mv' + (i === step ? ' is-now' : i < step ? ' is-past' : '')} aria-current={i === step ? 'step' : undefined} onClick={() => go(i)}>
+                  <RkMoveToken move={m} />
+                </button>
+              </li>
+            ))}
+          </ol>
+        )}
         <div className="rk-row rk-row-wrap">
           <button type="button" className="rk-btn rk-btn-small" onClick={copy}><Copy size={14} aria-hidden="true" /> {copied ? 'Copied' : 'Copy moves'}</button>
-          {step === 0 && status !== 'working' && total > 0 ? (
+          {step === 0 && status !== 'working' && total > 0 && !plan ? (
             <button type="button" className="rk-btn rk-btn-small" onClick={() => solve(stickers, RK_SEARCH_LONG_MS, total)}>
               <Search size={14} aria-hidden="true" /> Look for a shorter one
             </button>
@@ -2435,6 +2877,7 @@ export const RkSolveStage = () => {
   const guideOn = useRkStore((s) => s.guideOn)
   const startGuide = useRkStore((s) => s.startGuide)
   const setStage = useRkStore((s) => s.setStage)
+  const mode = useRkStore((s) => s.mode)
   const { stop } = useRkSolver()
 
   if (status === 'error') {
@@ -2454,8 +2897,8 @@ export const RkSolveStage = () => {
     <section className="rk-panel rk-solve-panel" aria-live="polite">
       {working && !solution ? (
         <>
-          <h2 className="rk-h2">{prepPct < 1 ? 'Getting the solver ready' : 'Searching'}</h2>
-          <p className="rk-p">{prepPct < 1 ? prepStage || 'Building search tables' : 'Looking for a short solution...'}</p>
+          <h2 className="rk-h2">{mode === 'beginner' ? 'Planning the layers' : prepPct < 1 ? 'Getting the solver ready' : 'Searching'}</h2>
+          <p className="rk-p">{mode === 'beginner' ? 'Finding the fewest turns for each step...' : prepPct < 1 ? prepStage || 'Building search tables' : 'Looking for a short solution...'}</p>
           <div className="rk-bar" aria-hidden="true"><span style={{ width: Math.round(Math.max(0.05, prepPct) * 100) + '%' }} /></div>
           <p className="rk-note">This takes a second or two the first time, then the search itself runs for a few seconds.</p>
         </>
@@ -2467,8 +2910,10 @@ export const RkSolveStage = () => {
           <h2 className="rk-h2">{solution.length === 0 ? 'This cube is already solved' : solution.length + ' moves'}</h2>
           <p className="rk-p rk-mono">{rkMoveNames(solution)}</p>
           <p className="rk-note">
-            This is a very short solution found by a two-phase search, usually within 1 to 3 moves of the shortest possible.
-            It is not proven to be the single shortest.{!working && solveMs > 0 ? ' Found in ' + (solveMs / 1000).toFixed(1) + ' s.' : ''}
+            {mode === 'beginner'
+              ? 'Layer by layer, in 7 steps, with the classic patterns. Each step uses the fewest turns for your cube, so it is much longer than the fastest mode but easy to follow.'
+              : 'This is a very short solution found by a two-phase search, usually within 1 to 3 moves of the shortest possible. It is not proven to be the single shortest.'}
+            {!working && solveMs > 0 ? ' Found in ' + (solveMs >= 1000 ? (solveMs / 1000).toFixed(1) + ' s.' : solveMs + ' ms.') : ''}
           </p>
           <div className="rk-row rk-row-wrap">
             <button type="button" className="rk-btn rk-btn-primary" onClick={() => { if (working) stop(); startGuide() }}>

@@ -190,6 +190,23 @@ span.rk-st { cursor: default; }
 .rk-verdict.is-warn { background: var(--rk-warn-soft); color: #7a2d05; }
 .rk-rescan { margin: 10px 0 6px; }
 
+.rk-modes { margin: 12px 0 6px; display: grid; gap: 8px; }
+.rk-mode { display: grid; gap: 2px; text-align: left; padding: 10px 14px; border: 2px solid var(--rk-line); border-radius: 12px; background: #fff; font: inherit; color: var(--rk-ink); cursor: pointer; }
+.rk-mode.is-on { border-color: var(--rk-ink); background: #f6f8fc; }
+.rk-mode.is-soon { opacity: 0.55; cursor: not-allowed; }
+.rk-mode-name { font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.rk-mode-blurb { font-size: 14px; color: var(--rk-ink-2); line-height: 1.4; }
+.rk-soon { font-style: normal; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 2px 8px; border-radius: 999px; background: #e7ebf5; color: var(--rk-ink-2); }
+.rk-stagechip { display: inline-block; margin: 0 0 8px; padding: 4px 10px; border-radius: 999px; background: var(--rk-ink); color: #fff; font-size: 13px; font-weight: 700; }
+.rk-stages { display: grid; gap: 10px; margin-bottom: 12px; }
+.rk-stage { padding: 10px 12px; border: 1px solid var(--rk-line); border-radius: 12px; }
+.rk-stage.is-now { border-color: var(--rk-ink); }
+.rk-stage.is-skip { opacity: 0.6; }
+.rk-stage .rk-moves { margin: 8px 0 0; }
+.rk-stage-h { margin: 0; font-size: 15px; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rk-stage-n { display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #e7ebf5; font-size: 12px; }
+.rk-stage-c { margin-left: auto; font-size: 13px; font-weight: 500; color: var(--rk-ink-2); }
+
 /* step 3, solve and guide */
 .rk-solve-panel .rk-bar { max-width: 420px; }
 .rk-guide-layout { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 20px; align-items: start; }
