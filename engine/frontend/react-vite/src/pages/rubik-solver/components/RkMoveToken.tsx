@@ -2,7 +2,7 @@
 // ARKZEN GENERATED COMPONENT — RkMoveToken [React+Vite]
 // Source: @arkzen:components (rubik-solver)
 // DO NOT EDIT DIRECTLY. Edit the tatemono file instead.
-// Generated: 2026-11-12T08:41:53.520Z
+// Generated: 2026-11-12T09:33:10.109Z
 // ============================================================
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'

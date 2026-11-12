@@ -11,6 +11,7 @@
 //    node mizumi.js setup
 //    node mizumi.js export <name>
 //    node mizumi.js export dino-runner unity
+//    node mizumi.js export <name> --backend=none   ← frontend only, no backend
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
 //    node mizumi.js desktop <stack> ← switch desktop stack
@@ -457,12 +458,27 @@ async function publishProject(tatName, stack = 'existing export') {
   }
   try {
     runGit(['remote', 'add', 'origin', repoUrl], projectDir)
+    runGit(['symbolic-ref', 'HEAD', `refs/heads/${branch}`], projectDir)
+    // Re-exporting wipes projects/<name>/, including its .git, so this repo starts with no history.
+    // If the remote branch already has commits, build on top of them (soft reset keeps the files)
+    // so the push is a normal fast-forward and nothing on GitHub is overwritten.
+    let remoteHasBranch = false
+    try {
+      runGit(['fetch', 'origin', branch], projectDir)
+      runGit(['reset', '--soft', 'FETCH_HEAD'], projectDir)
+      remoteHasBranch = true
+    } catch {
+      // Empty remote or branch does not exist yet: first push, plain commit.
+    }
     runGit(['add', '-A'], projectDir)
+    if (remoteHasBranch && !runGit(['status', '--porcelain'], projectDir).toString().trim()) {
+      success(`Nothing to publish: ${repoUrl} (${branch}) already matches this export.`)
+      return
+    }
     const configArgs = authorName && authorEmail
       ? ['-c', `user.name=${authorName}`, '-c', `user.email=${authorEmail}`]
       : []
     runGit([...configArgs, 'commit', '-m', commitMessage], projectDir)
-    runGit(['branch', '-M', branch], projectDir)
     log(`Pushing to ${repoUrl}...`)
     runGit(['push', '-u', 'origin', branch], projectDir)
     success(`Published → ${repoUrl} (${branch})`)
@@ -600,10 +616,11 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
           sub: key === currentBackend ? '(active)' : key,
           value: key,
         })),
+        { label: '  No backend (frontend only)', sub: 'none', value: 'none' },
       ])
       backend = chosenBackend.value
-    } else if (!BACKEND_TARGETS[backend]) {
-      error(`Unknown export backend: ${backend}`)
+    } else if (backend !== 'none' && !BACKEND_TARGETS[backend]) {
+      error(`Unknown export backend: ${backend} (use: ${Object.keys(BACKEND_TARGETS).join(', ')}, none)`)
       return
     }
   } else if (stack === 'react-inertia') {

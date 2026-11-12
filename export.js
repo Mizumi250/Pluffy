@@ -19,8 +19,9 @@
 // Inertia exports land in a SINGLE folder (backend IS the project).
 // No frontend/ split for Inertia — pages are inside resources/js/ in Laravel.
 // Native exports skip the backend entirely (frontend-only).
+// --backend=none exports the frontend only, for any web or desktop stack.
 //
-// Usage:  node export.js <tatemono-name>
+// Usage:  node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>]
 // Output: projects/<tatemono-name>/
 // ============================================================
 
@@ -60,11 +61,21 @@ if (wantsDocker && !supportsDocker(activeStack)) {
 // Stack flags
 const isInertia = activeStack === 'react-inertia'
 const isNative  = activeStack === 'native' || activeStack === 'expo' || activeStack === 'react-native' || activeStack === 'lynx'
+// --backend=none: frontend-only export. No backend is copied, installed, migrated or started.
+const noBackend = selectedBackend === 'none'
+if (noBackend && isInertia) {
+  console.error('\n  ✗ react-inertia is a Laravel monolith and cannot be exported without a backend. Pick another stack.\n')
+  process.exit(1)
+}
+// 'none' keeps a real backend key ('laravel') internally so path and docker lookups stay valid.
+// Every backend step is gated by hasBackend, which is forced to false below.
 const activeBackend = isInertia
   ? 'laravel-inertia'
-  : (selectedBackend ?? arkzenJson.activeBackend ?? 'laravel')
-if (!isInertia && selectedBackend && !fs.existsSync(path.join(ENGINE_DIR, 'backend', selectedBackend))) {
-  console.error(`\n  ✗ Unknown export backend: ${selectedBackend}\n`)
+  : noBackend
+    ? 'laravel'
+    : (selectedBackend ?? arkzenJson.activeBackend ?? 'laravel')
+if (!isInertia && !noBackend && selectedBackend && !fs.existsSync(path.join(ENGINE_DIR, 'backend', selectedBackend))) {
+  console.error(`\n  ✗ Unknown export backend: ${selectedBackend} (use a folder name from engine/backend, or "none")\n`)
   process.exit(1)
 }
 const isExpress = activeBackend === 'express'
@@ -84,7 +95,7 @@ const TATEMONOS_DIR = path.join(ROOT_DIR, 'tatemonos')
 const noQueueProcess = isAspnet || isGo || isRust || isSpring
 
 // Database — each tatemono has its own sqlite file or Postgres database
-const isPg      = arkzenJson.activeDatabase === 'pgsql'
+const isPg      = !noBackend && arkzenJson.activeDatabase === 'pgsql'
 const engineEnv = fs.existsSync(path.join(BACKEND_DIR, '.env')) ? fs.readFileSync(path.join(BACKEND_DIR, '.env'), 'utf-8') : ''
 const engineEnvValue = (key, def) => engineEnv.match(new RegExp(`^${key}=(.*)$`, 'm'))?.[1]?.trim() || def
 const PROJECTS_DIR  = path.join(ROOT_DIR, 'projects')
@@ -129,7 +140,8 @@ function findSystemPython() {
 
 const tatName = process.argv.slice(2).find(a => !a.startsWith('--'))
 if (!tatName) {
-  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name>] [--docker]')
+  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>] [--docker]')
+  console.log('         node export.js <tatemono-name> --backend=none   (frontend only, no backend)')
   console.log('         node export.js <godot-tatemono> --stack=godot')
   console.log('         node export.js <unity-tatemono> --stack=unity')
   console.log('  Example: node export.js inventory-management\n')
@@ -217,7 +229,7 @@ const PROJ_BACK   = isInertia ? PROJECT_DIR : path.join(PROJECT_DIR, 'backend')
 // ─────────────────────────────────────────────
 
 const content     = fs.readFileSync(tatPath, 'utf-8')
-const hasBackend  = content.includes('auth: true')
+const tatUsesBackend = content.includes('auth: true')
   || content.includes('@arkzen:api')
   || content.includes('@arkzen:database:')
   || content.includes('@arkzen:jobs:')
@@ -227,8 +239,11 @@ const hasBackend  = content.includes('auth: true')
   || content.includes('@arkzen:mail:')
   || content.includes('@arkzen:console:')
   || content.includes('@arkzen:routes')
-const hasRealtime = content.includes('@arkzen:realtime') || content.includes('@arkzen:notifications')
-const hasJobs     = content.includes('@arkzen:jobs') || content.includes('@arkzen:events') || content.includes('@arkzen:console:')
+// With --backend=none every backend flag is off, so the export takes the same frontend-only path
+// a tatemono without backend blocks already takes.
+const hasBackend  = !noBackend && tatUsesBackend
+const hasRealtime = !noBackend && (content.includes('@arkzen:realtime') || content.includes('@arkzen:notifications'))
+const hasJobs     = !noBackend && (content.includes('@arkzen:jobs') || content.includes('@arkzen:events') || content.includes('@arkzen:console:'))
 const tatSnake    = tatName.replace(/-/g, '_')
 const pgDatabaseName = `${engineEnvValue('ARKZEN_DB_PREFIX', 'pluff')}_${tatSnake}`.toLowerCase()
 
@@ -239,11 +254,16 @@ console.log(`  Version:  v10`)
 console.log(`  Tatemono: ${tatName}`)
 console.log(`  Stack:    ${activeStack}`)
 console.log(`  Backend:  ${hasBackend}`)
-console.log(`  Backend target: ${activeBackend}`)
+console.log(`  Backend target: ${noBackend ? 'none (frontend only)' : activeBackend}`)
+if (noBackend && tatUsesBackend) {
+  console.log('  ⚠ This tatemono uses backend features (auth / api / database / jobs / realtime).')
+  console.log('    They are NOT exported. Pages that call /api/* will fail until you add your own backend.')
+}
 console.log(`  Realtime: ${hasRealtime}`)
 console.log(`  Jobs:     ${hasJobs}`)
 if (isInertia) console.log(`  Mode:     Inertia monolith — backend IS the project (no frontend/ folder)`)
 if (isNative)  console.log(`  Mode:     React Native (frontend only, no backend)`)
+if (noBackend) console.log(`  Mode:     Frontend only (--backend=none)`)
 if (isTauri)    console.log(`  Mode:     Tauri desktop — React+Vite renderer`)
 if (isElectron) console.log(`  Mode:     Electron desktop — React+Vite renderer`)
 
@@ -1173,8 +1193,17 @@ if (activeStack === 'nextjs') {
   )
   success(`app/page.tsx → redirects to /${tatName}`)
 
-  // next.config.js — proxy points at 8001 (engine uses 8000)
-  fs.writeFileSync(path.join(PROJ_FRONT, 'next.config.js'), `/** @type {import('next').NextConfig} */
+  // next.config.js — proxy points at 8001 (engine uses 8000). No proxy when there is no backend.
+  if (noBackend) {
+    fs.writeFileSync(path.join(PROJ_FRONT, 'next.config.js'), `/** @type {import('next').NextConfig} */
+const nextConfig = {
+  experimental: { forceSwcTransforms: false },
+}
+export default nextConfig
+`)
+    success('next.config.js (no backend proxy)')
+  } else {
+    fs.writeFileSync(path.join(PROJ_FRONT, 'next.config.js'), `/** @type {import('next').NextConfig} */
 const nextConfig = {
   experimental: { forceSwcTransforms: false },
   async rewrites() {
@@ -1186,7 +1215,8 @@ const nextConfig = {
 }
 export default nextConfig
 `)
-  success('next.config.js (proxy → localhost:8001)')
+    success('next.config.js (proxy → localhost:8001)')
+  }
 
   // package.json — rename + standalone dev scripts
   const pkgPath = path.join(PROJ_FRONT, 'package.json')
@@ -1241,7 +1271,10 @@ export default nextConfig
   //   3. remove arkzenApiPlugin entirely (engine-only, handles /api/arkzen/* internally)
   const vcPath = path.join(PROJ_FRONT, 'vite.config.ts')
   if (fs.existsSync(vcPath)) {
-    let vc = fs.readFileSync(vcPath, 'utf-8')
+    // Normalize CRLF first. On Windows the engine file has CRLF line endings, and the ^}\n
+    // patterns below silently fail on them, leaving arkzenApiPlugin (and its import of
+    // src/api/arkzen/registry) in the exported config.
+    let vc = fs.readFileSync(vcPath, 'utf-8').replace(/\r\n/g, '\n')
     // Patch proxy port
     vc = vc.replace(/target:\s*['"]http:\/\/127\.0\.0\.1:8000['"]/, `target: 'http://127.0.0.1:8001'`)
     // Remove arkzenReadyPlugin and arkzenApiPlugin function definitions + usages
@@ -1256,6 +1289,72 @@ export default nextConfig
     fs.writeFileSync(vcPath, vc)
     success('vite.config.ts patched (port + engine plugins removed)')
   }
+
+  // The engine hub is dev-only. src/api/arkzen/registry.ts reads arkzen.json and imports
+  // engine/shared/arkzen/hub, and src/App.tsx imports the same shared Hub. Neither folder exists
+  // in an export, so the build fails with "Could not resolve ../shared/arkzen/hub/...".
+  // Remove the registry endpoint and replace App.tsx with a version that has no hub.
+  const projApiDir = path.join(PROJ_FRONT, 'src', 'api', 'arkzen')
+  if (fs.existsSync(projApiDir)) {
+    fs.rmSync(projApiDir, { recursive: true, force: true })
+    const apiParent = path.join(PROJ_FRONT, 'src', 'api')
+    if (fs.existsSync(apiParent) && fs.readdirSync(apiParent).length === 0) fs.rmdirSync(apiParent)
+    success('src/api/arkzen removed (engine-only registry endpoint)')
+  }
+
+  const standaloneApp = `// ============================================================
+// ${tatName} — App Router (standalone export, no engine hub)
+// ============================================================
+import * as React from 'react'
+import { Suspense } from 'react'
+import { Routes, Route } from 'react-router'
+import { ARKZEN_ROUTES, ARKZEN_ERROR_BOUNDARIES } from '@/arkzen/generated/routes'
+
+function LoadingScreen() {
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', background: '#f5f5f0',
+    }}>
+      <div style={{ fontSize: '13px', color: '#aaa', fontFamily: 'system-ui' }}>
+        Loading...
+      </div>
+    </div>
+  )
+}
+
+function NotFoundScreen() {
+  return (
+    <div style={{
+      minHeight: '100vh', display: 'flex', flexDirection: 'column',
+      alignItems: 'center', justifyContent: 'center',
+      background: '#f5f5f0', fontFamily: 'system-ui',
+    }}>
+      <div style={{ fontSize: '48px', marginBottom: '16px' }}>404</div>
+      <div style={{ fontSize: '14px', color: '#aaa' }}>Page not found</div>
+    </div>
+  )
+}
+
+export default function App() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <Routes>
+        {ARKZEN_ROUTES.map(route => {
+          const Boundary = ARKZEN_ERROR_BOUNDARIES[route.tatemono]
+          const element  = Boundary
+            ? <Boundary><route.component /></Boundary>
+            : <route.component />
+          return <Route key={route.path} path={route.path} element={element} />
+        })}
+        <Route path="*" element={<NotFoundScreen />} />
+      </Routes>
+    </Suspense>
+  )
+}
+`
+  fs.writeFileSync(path.join(PROJ_FRONT, 'src', 'App.tsx'), standaloneApp)
+  success('src/App.tsx (standalone router, hub removed)')
 
   if (hasRealtime) {
     fs.writeFileSync(path.join(PROJ_FRONT, '.env'), [
@@ -1817,6 +1916,9 @@ const inertiaNote = isInertia
 const nativeNote = isNative
   ? `\n> **React Native stack:** No backend in this export. Run \`npm install\` then \`npx expo start\`.\n`
   : ''
+const noBackendNote = noBackend
+  ? `\n> **Frontend only:** This export has no backend. Run \`node start.js\` to start the frontend. ${tatUsesBackend ? 'The tatemono defined backend features (auth, API, database, jobs or realtime) that were not exported, so pages that call \`/api/*\` will not work until you connect your own backend.' : ''}\n`
+  : ''
 const tauriNote = isTauri
   ? `\n> **Tauri desktop:** Install Node.js, Rust, and the platform's Tauri prerequisites. Run \`npm install\` in \`frontend/\`, then \`node start.js\` to launch the desktop app.\n`
   : ''
@@ -1839,7 +1941,7 @@ const rustNote = isRust
 fs.writeFileSync(path.join(PROJECT_DIR, 'README.md'), `# ${tatName}
 
 Generated by Arkzen export.js v10.
-${inertiaNote}${nativeNote}${tauriNote}${fastapiNote}${aspnetNote}${springNote}${goNote}${rustNote}
+${inertiaNote}${nativeNote}${noBackendNote}${tauriNote}${fastapiNote}${aspnetNote}${springNote}${goNote}${rustNote}
 ## Start
 
 \`\`\`bash
@@ -1913,6 +2015,7 @@ divider()
 console.log(`\n  ✓ EXPORTED: ${tatName}`)
 console.log(`  Version:  v10`)
 console.log(`  Stack:    ${activeStack}`)
+if (noBackend) console.log(`  Backend:  none (frontend only)`)
 if (hasBackend) console.log(`  DB:       ${isPg ? `PostgreSQL database ${pgDatabaseName}` : `${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`}`)
 console.log(`  Run:      cd projects/${tatName} && node start.js`)
 console.log(`  Deploy:   projects/${tatName}/DEPLOY.md${wantsDocker ? '  (Docker: docker compose --env-file deploy.env up -d --build)' : ''}`)
