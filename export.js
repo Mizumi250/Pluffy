@@ -225,6 +225,102 @@ const PROJ_FRONT  = path.join(PROJECT_DIR, 'frontend')
 const PROJ_BACK   = isInertia ? PROJECT_DIR : path.join(PROJECT_DIR, 'backend')
 
 // ─────────────────────────────────────────────
+// SINGLE-TATEMONO SCOPING HELPERS
+//
+// The engine folders hold EVERY tatemono. An export must keep only the one being exported,
+// so the copy filters / cleanup steps below use these helpers to tell "mine" from "other".
+// ─────────────────────────────────────────────
+
+// --site-url=https://example.com → used by the generated sitemap.xml / robots.txt
+const siteUrlFlag = process.argv.find(a => a.startsWith('--site-url='))
+
+const ALL_TATEMONO_NAMES = fs.existsSync(TATEMONOS_DIR)
+  ? fs.readdirSync(TATEMONOS_DIR).filter(f => fs.existsSync(path.join(TATEMONOS_DIR, f, 'core.tsx')))
+  : []
+
+// "crud-test" / "CrudTest" / "crud_test" all normalize to "crudtest"
+const normName = (s) => String(s).toLowerCase().replace(/[^a-z0-9]/g, '')
+
+// true when `rel` is <base>/<tatName> (folder, or <tatName>.ext file) or something inside it.
+// Exact match, so exporting "shan-shan" no longer also keeps "shan-shan-2".
+function isThisTatemono(rel, base) {
+  const head = `${base}/${tatName}`
+  if (rel === head) return true
+  if (!rel.startsWith(head)) return false
+  const next = rel[head.length]
+  return next === '/' || next === '.'
+}
+
+// Which tatemono a generated file/folder name belongs to ("shan-shan.animations.ts",
+// "crud-test_index.tsx", "crud-test"). Longest tatemono name wins. null = shared file.
+function ownerOfGenerated(name) {
+  let owner = null
+  for (const t of ALL_TATEMONO_NAMES) {
+    if (name === t || name.startsWith(`${t}.`) || name.startsWith(`${t}_`)) {
+      if (!owner || t.length > owner.length) owner = t
+    }
+  }
+  return owner
+}
+// <tatemono>.animations.ts / .scripts.ts / .<x>.script.ts — always per-tatemono
+const PER_TATEMONO_GENERATED = /\.(animations|scripts|script)\.(ts|tsx|js)$/
+const belongsToOtherTatemono = (name) => {
+  const owner = ownerOfGenerated(name)
+  if (owner) return owner !== tatName
+  // A tatemono that was removed from tatemonos/ can leave generated files behind in the engine
+  // folders; they still carry its name as a prefix, so they are "other" too.
+  if (PER_TATEMONO_GENERATED.test(name)) return !name.startsWith(`${tatName}.`)
+  return false
+}
+
+// The engine's arkzen.json registers every tatemono. An export gets a registry with only its own.
+function scopeArkzenJson(file) {
+  if (!fs.existsSync(file)) return
+  try {
+    const json = JSON.parse(fs.readFileSync(file, 'utf-8'))
+    if (Array.isArray(json.modules)) json.modules = json.modules.filter(m => m.name === tatName)
+    fs.writeFileSync(file, JSON.stringify(json, null, 2) + '\n')
+    success(`${path.relative(PROJECT_DIR, file).replace(/\\/g, '/')} (registry scoped to ${tatName})`)
+  } catch (error) {
+    warn(`Could not scope ${path.basename(file)}: ${error.message}`)
+  }
+}
+
+// Move every entry of <dir>/<tatName>/ up into <dir>/ (used to drop the /<tatName> URL prefix)
+function hoistTatemonoDir(parentDir, label) {
+  const tatDir = path.join(parentDir, tatName)
+  if (!fs.existsSync(tatDir)) {
+    warn(`${label}/${tatName}/ not found — skipping folder hoist`)
+    return
+  }
+  for (const entry of fs.readdirSync(tatDir)) {
+    const dest = path.join(parentDir, entry)
+    if (fs.existsSync(dest)) {
+      warn(`${label}/${entry} already exists — not overwritten by hoist`)
+      continue
+    }
+    fs.renameSync(path.join(tatDir, entry), dest)
+  }
+  fs.rmSync(tatDir, { recursive: true, force: true })
+  success(`${label}/${tatName}/ → ${label}/ (folder hoisted)`)
+}
+
+// Patch a copied engine file. Warns (never throws) when the expected code is not there.
+function patchExportFile(file, patches, label) {
+  if (!fs.existsSync(file)) return false
+  const before = fs.readFileSync(file, 'utf-8')
+  let src = before
+  for (const [from, to] of patches) src = src.replace(from, to)
+  if (src === before) {
+    warn(`${label}: expected code not found — not patched`)
+    return false
+  }
+  fs.writeFileSync(file, src)
+  success(label)
+  return true
+}
+
+// ─────────────────────────────────────────────
 // READ TATEMONO META
 // ─────────────────────────────────────────────
 
@@ -386,9 +482,25 @@ if (isNative) {
     filter: (src) => {
       if (!BACKEND_EXCLUDE_FILTER(src)) return false
       const rel = path.relative(BACKEND_DIR, src).replace(/\\/g, '/')
-      // Scope Inertia pages to this tatemono only
+      // Scope Inertia pages to this tatemono only.
+      // Page folders are PascalCase (Pages/CrudTest) while tatemono names are kebab-case
+      // (crud-test), so compare normalized names. Pages/Hub.tsx (engine hub) is dropped too.
       if (rel.startsWith('resources/js/Pages/') && rel !== 'resources/js/Pages/') {
-        return rel.startsWith(`resources/js/Pages/${tatName}`)
+        return normName(rel.split('/')[3]) === normName(tatName)
+      }
+      // Engine sitemap/robots list every tatemono — regenerated for this one in step 15
+      if (rel === 'public/sitemap.xml' || rel === 'public/robots.txt') return false
+      // Other tatemonos' public assets
+      if (rel.startsWith('public/tatemonos/') && !isThisTatemono(rel, 'public/tatemonos')) return false
+      // bootstrap/app.php registers EVERY file in routes/modules — keep only <tatName>.php /
+      // <tatName>.pages.php. Drops other tatemonos' routes and the engine's hub.pages.php.
+      if (rel.startsWith('routes/modules/') && rel !== 'routes/modules/') {
+        return path.basename(rel).startsWith(`${tatName}.`)
+      }
+      // Other tatemonos' generated animations/scripts
+      if (rel.startsWith('resources/js/arkzen/generated/')) {
+        const generatedEntry = rel.split('/')[4]
+        if (generatedEntry && belongsToOtherTatemono(generatedEntry)) return false
       }
       // node_modules inside laravel-inertia (Vite deps) — skip, reinstalled later
       if (rel.startsWith('node_modules') || rel === 'node_modules') return false
@@ -396,6 +508,7 @@ if (isNative) {
     }
   })
   success('laravel-inertia monolith copied to project root')
+  scopeArkzenJson(path.join(PROJECT_DIR, 'arkzen.json'))
 } else if (hasBackend) {
   log(`Copying ${activeBackend} backend...`)
   fs.cpSync(BACKEND_DIR, PROJ_BACK, {
@@ -469,8 +582,11 @@ if (isInertia) {
       if (ENGINE_ONLY_FRONTEND.has(rel))                             return false
       if (rel.startsWith('tatemono/'))                               return false
       if (rel.startsWith('arkzen/generated/'))                       return false
+      // The engine's sitemap.xml / robots.txt list EVERY tatemono (and use /<tatName>/ URLs that
+      // no longer exist after the hoist). Never copy them — step 15 writes ones for this tatemono.
+      if (rel === 'public/sitemap.xml' || rel === 'public/robots.txt') return false
       // Scope public tatemono assets — exclude other tatemonos' assets entirely
-      if (rel.startsWith('public/tatemonos/') && !rel.startsWith(`public/tatemonos/${tatName}`)) return false
+      if (rel.startsWith('public/tatemonos/') && !isThisTatemono(rel, 'public/tatemonos')) return false
       // app/ pages — scope to this tatemono only
       // Next.js:    keep app/layout.tsx (root layout)
       // Expo:       keep app/_layout.tsx (root layout) + app/${tatName}/ routes
@@ -478,23 +594,61 @@ if (isInertia) {
       if (rel.startsWith('app/') && rel !== 'app/') {
         if (rel === 'app/layout.tsx')               return true   // Next.js root layout
         if (rel === 'app/_layout.tsx')              return true   // Expo root layout
-        if (rel.startsWith(`app/${tatName}`))       return true   // this tatemono's routes
+        if (isThisTatemono(rel, 'app'))             return true   // this tatemono's routes
         return false
       }
       // React-Vite / others: src/pages/ — only this tatemono's pages kept
       if (rel.startsWith('src/pages/') && rel !== 'src/pages/') {
-        if (rel.startsWith(`src/pages/${tatName}`)) return true
+        if (isThisTatemono(rel, 'src/pages')) return true
         return false
       }
       // Expo: src/screens/ — only this tatemono's screens kept
       if (rel.startsWith('src/screens/') && rel !== 'src/screens/') {
-        if (rel.startsWith(`src/screens/${tatName}`)) return true
+        if (isThisTatemono(rel, 'src/screens')) return true
         return false
+      }
+      // TanStack Start: file routes live in src/routes/<tatName>/. Other tatemonos' routes import
+      // pages that are not in the export (build error), and src/routes/index.tsx + api/ are the
+      // engine hub and its registry endpoint. routeTree.gen.ts is rebuilt by the TanStack plugin
+      // from whatever routes remain, so the engine's all-tatemono copy must not ship.
+      if (activeStack === 'tanstack-start') {
+        if (rel.startsWith('src/routes/') && rel !== 'src/routes/') {
+          if (rel === 'src/routes/__root.tsx') return true
+          return isThisTatemono(rel, 'src/routes')
+        }
+        if (rel === 'src/routeTree.gen.ts')                  return false
+        if (rel === 'src/arkzen/generated/routeTree.ts')     return false
+      }
+      // src/arkzen/generated/ (Astro / TanStack / Vite): drop other tatemonos' animations,
+      // scripts, islands, components and styles, plus the Astro hub island.
+      if (rel.startsWith('src/arkzen/generated/')) {
+        const gen = rel.split('/')            // src, arkzen, generated, <entry>, <child>
+        if (gen[3] && belongsToOtherTatemono(gen[3])) return false
+        // islands/<tatName>_<page>.tsx, components/<tatName>/, styles/<tatName>/ — keep only this tatemono's
+        // (this also drops islands/hub.tsx and leftovers of tatemonos that no longer exist)
+        if (gen[4] && ['islands', 'components', 'styles'].includes(gen[3])) {
+          const mine = gen[3] === 'islands' ? gen[4].startsWith(`${tatName}_`) : gen[4] === tatName
+          if (!mine) return false
+        }
       }
       return true
     }
   })
   success('Frontend base copied')
+
+  // The engine arkzen.json registers every tatemono — keep only this one
+  scopeArkzenJson(path.join(PROJ_FRONT, 'arkzen.json'))
+
+  // Astro: the route registry lists every tatemono's routes — keep only this tatemono's lines
+  if (activeStack === 'astro') {
+    const astroRoutesTs = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated', 'routes.ts')
+    if (fs.existsSync(astroRoutesTs)) {
+      const kept = fs.readFileSync(astroRoutesTs, 'utf-8').split('\n')
+        .filter(line => !/^\s*\{ name: '/.test(line) || line.includes(`{ name: '${tatName}/`))
+      fs.writeFileSync(astroRoutesTs, kept.join('\n'))
+      success(`astro routes.ts scoped to ${tatName}`)
+    }
+  }
 
   if (isTauri) {
     const engineTauriDir = path.join(ENGINE_DIR, 'frontend', 'tauri', 'src-tauri')
@@ -575,7 +729,9 @@ if (isInertia) {
   // then regenerate the file from scratch — no other tatemono imports, no
   // ARKZEN_ERROR_BOUNDARIES for tatemonos that don't exist in this export.
   const projRoutesTs = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated', 'routes.ts')
-  if (fs.existsSync(projRoutesTs)) {
+  // Astro's routes.ts has a different format ({ name, path, layout }, no // ROUTE: markers) and is
+  // scoped above — regenerating it here produced an empty React-Router style file.
+  if (fs.existsSync(projRoutesTs) && activeStack !== 'astro') {
     const routeSrc   = fs.readFileSync(projRoutesTs, 'utf-8')
 
     // Extract only ROUTE lines for this tatemono
@@ -672,13 +828,16 @@ if (isInertia) {
   // Remove other tatemonos' generated files (animations, scripts, etc.)
   const projGenDir = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated')
   if (fs.existsSync(projGenDir)) {
+    // Only remove entries that belong to ANOTHER tatemono. The old rule ("anything not named
+    // <tatName>.*") also deleted Astro's islands/, components/ and styles/ folders, which the
+    // exported pages import — an Astro export could never build.
     fs.readdirSync(projGenDir).forEach(f => {
       if (f === 'routes.ts' || f === '.arkzen-ready' || f === 'auth-tatemonos.ts') return
-      if (!f.startsWith(`${tatName}.`)) {
+      if (belongsToOtherTatemono(f)) {
         fs.rmSync(path.join(projGenDir, f), { recursive: true, force: true })
       }
     })
-    success(`generated/ cleaned (kept only ${tatName}.* files)`)
+    success(`generated/ cleaned (other tatemonos' files removed, ${tatName} kept)`)
   }
 
 
@@ -1175,6 +1334,7 @@ const engGenDir = path.join(
 if (fs.existsSync(engGenDir)) {
   fs.readdirSync(engGenDir).forEach(f => {
     if (f === 'auth-tatemonos.ts') return // already written above
+    if (belongsToOtherTatemono(f)) return // another tatemono's animations/scripts — not part of this export
     const src = path.join(engGenDir, f)
     if (fs.statSync(src).isFile()) {
       fs.copyFileSync(src, path.join(genDir, f))
@@ -1302,6 +1462,8 @@ export default nextConfig
     success('src/api/arkzen removed (engine-only registry endpoint)')
   }
 
+  // Routes are React.lazy chunks, so a Suspense boundary is required — but its fallback is null:
+  // no "Loading..." flash screen in the exported app.
   const standaloneApp = `// ============================================================
 // ${tatName} — App Router (standalone export, no engine hub)
 // ============================================================
@@ -1309,19 +1471,6 @@ import * as React from 'react'
 import { Suspense } from 'react'
 import { Routes, Route } from 'react-router'
 import { ARKZEN_ROUTES, ARKZEN_ERROR_BOUNDARIES } from '@/arkzen/generated/routes'
-
-function LoadingScreen() {
-  return (
-    <div style={{
-      minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', background: '#f5f5f0',
-    }}>
-      <div style={{ fontSize: '13px', color: '#aaa', fontFamily: 'system-ui' }}>
-        Loading...
-      </div>
-    </div>
-  )
-}
 
 function NotFoundScreen() {
   return (
@@ -1338,7 +1487,7 @@ function NotFoundScreen() {
 
 export default function App() {
   return (
-    <Suspense fallback={<LoadingScreen />}>
+    <Suspense fallback={null}>
       <Routes>
         {ARKZEN_ROUTES.map(route => {
           const Boundary = ARKZEN_ERROR_BOUNDARIES[route.tatemono]
@@ -1457,6 +1606,55 @@ export default function App() {
 }
 
 // ─────────────────────────────────────────────
+// STEP 9b — RUNTIME BACKEND BEHAVIOUR OF THE COPIED CORE HOOKS
+//
+// 1. useWebSocket reads process.env.NEXT_PUBLIC_REVERB_*. That only exists on Next.js. On Vite /
+//    TanStack / Astro (and desktop) `process` is undefined in the browser, and the VITE_/PUBLIC_
+//    REVERB_* values written to .env above were never read — so the export connected to the
+//    engine defaults (localhost:8080 / "arkzen") instead of the exported backend (8081 / arkzen-key).
+//    Point the hook at the env names this export actually writes.
+// 2. --backend=none (static frontend): there is no server, so the hooks must not keep calling one.
+//    The realtime hook never opens a socket (it used to retry every 3s forever) and useQuery stops
+//    retrying / refetching on every window focus.
+// ─────────────────────────────────────────────
+
+if (!isInertia && !isNative) {
+  const hookDir = path.join(PROJ_FRONT, 'arkzen', 'core', 'hooks')
+  const wsHook  = path.join(hookDir, 'useWebSocket.ts')
+
+  if (activeStack !== 'nextjs') {
+    const envPrefix = activeStack === 'astro' ? 'PUBLIC' : 'VITE'
+    patchExportFile(
+      wsHook,
+      ['HOST', 'PORT', 'SCHEME', 'APP_KEY'].map(key => [
+        new RegExp(`process\\.env\\.NEXT_PUBLIC_REVERB_${key}`),
+        `(import.meta as any).env.${envPrefix}_REVERB_${key}`,
+      ]),
+      `useWebSocket reads ${envPrefix}_REVERB_* (was NEXT_PUBLIC_REVERB_*)`
+    )
+  }
+
+  if (noBackend) {
+    patchExportFile(
+      wsHook,
+      [
+        [/(\n)(const REVERB_HOST)/, `$1// Static export (--backend=none): there is no realtime server to connect to.\nconst STATIC_NO_BACKEND = true\n$2`],
+        [/(if \(wsRef\.current\?\.readyState === WebSocket\.OPEN\) return\n)/, `$1    if (STATIC_NO_BACKEND) { setIsConnecting(false); return }\n`],
+      ],
+      'useWebSocket disabled (--backend=none, no socket / no 3s reconnect loop)'
+    )
+    patchExportFile(
+      path.join(hookDir, 'useQuery.ts'),
+      [
+        [/(retry\s*=\s*)3,/, (_match, lead) => `${lead}0,`],
+        [/(refetchOnFocus\s*=\s*)true,/, (_match, lead) => `${lead}false,`],
+      ],
+      'useQuery defaults: retry 0, no refetch on focus (--backend=none)'
+    )
+  }
+}
+
+// ─────────────────────────────────────────────
 // STEP 10 — STRIP TATEMONO URL PREFIX FROM FRONTEND PAGES
 //
 // WHY: In the engine, pages live at app/<tatName>/... because multiple
@@ -1557,6 +1755,21 @@ if (!isInertia && !isNative) {
       success(`src/pages/${tatName}/ → src/pages/ (folder hoisted)`)
     } else {
       warn(`src/pages/${tatName}/ not found — skipping folder hoist`)
+    }
+  }
+
+  // TanStack Start: file routes live in src/routes/<tatName>/ — hoist to src/routes/ so the
+  // exported site serves them at / (the engine hub that owned src/routes/index.tsx is not copied).
+  if (activeStack === 'tanstack-start') {
+    hoistTatemonoDir(path.join(PROJ_FRONT, 'src', 'routes'), 'src/routes')
+  }
+
+  // Astro: islands import @/arkzen/generated/components/<tatName>/… and styles/<tatName>/….
+  // The prefix rewrite below turns those into …/components/… and …/styles/…, so hoist the folders.
+  if (activeStack === 'astro') {
+    for (const sub of ['components', 'styles']) {
+      const subDir = path.join(PROJ_FRONT, 'src', 'arkzen', 'generated', sub)
+      if (fs.existsSync(path.join(subDir, tatName))) hoistTatemonoDir(subDir, `src/arkzen/generated/${sub}`)
     }
   }
 
@@ -1886,23 +2099,62 @@ success('package.json (ES module project scripts)')
 // STEP 15 — SITEMAP GENERATION
 // ─────────────────────────────────────────────
 
-try {
-  const sitemapPath = isInertia
-    ? path.join(PROJECT_DIR, 'resources', 'js', 'arkzen', 'core', 'sitemap.ts')
-    : path.join(PROJ_FRONT, 'arkzen', 'core', 'sitemap.ts')
+// The engine's sitemap.xml / robots.txt (all tatemonos, /<tatName>/… URLs) are not copied into
+// the export (see the copy filters). This step writes ones for THIS tatemono only, using the
+// exported root URLs (pages are hoisted, so /<tatName>/login is just /login).
+//
+// The old version imported the engine's sitemap.ts with plain node (cannot load .ts) and called
+// writeSitemap(publicDir) with the wrong arguments, and an empty catch hid the failure — so the
+// stale engine sitemap was shipped. Generated directly here instead.
+//
+// Site URL: --site-url=https://example.com, else ARKZEN_SITE_URL / NEXT_PUBLIC_SITE_URL /
+// VITE_SITE_URL, else the exported dev server (localhost:3001, Inertia: localhost:8000).
+// ─────────────────────────────────────────────
 
-  if (fs.existsSync(sitemapPath)) {
-    const sitemapModule = await import(pathToFileURL(sitemapPath).href)
-    if (sitemapModule.writeSitemap) {
-      const publicDir = isInertia
-        ? path.join(PROJECT_DIR, 'public')
-        : path.join(PROJ_FRONT, 'public')
-      sitemapModule.writeSitemap(publicDir)
-      success('Sitemap generated → public/sitemap.xml')
-    }
+if (isNative || isDesktop) {
+  skip('Sitemap (native / desktop export has no website)')
+} else {
+  try {
+    const siteUrl = (
+      (siteUrlFlag ? siteUrlFlag.slice('--site-url='.length) : '') ||
+      process.env.ARKZEN_SITE_URL ||
+      process.env.NEXT_PUBLIC_SITE_URL ||
+      process.env.VITE_SITE_URL ||
+      `http://localhost:${isInertia ? 8000 : 3001}`
+    ).replace(/\/+$/, '')
+
+    const tatModule = (arkzenJson.modules ?? []).find(m => m.name === tatName)
+    const pageNames = Array.isArray(tatModule?.pages) && tatModule.pages.length ? tatModule.pages : ['index']
+    // Web stacks hoist pages to the root: 'index' → '/', everything else → '/<page>'.
+    // Inertia is NOT hoisted (Laravel keeps Route::get('/<tatName>/…')), so it keeps the prefix.
+    // Skip dynamic routes (/[id], /:id) — not crawlable.
+    const prefix = isInertia ? `/${tatName}` : ''
+    const routes = [...new Set(
+      pageNames
+        .filter(page => !/[\[\]:]/.test(page))
+        .map(page => (page === 'index' ? (prefix || '/') : `${prefix}/${page}`))
+    )]
+    const xmlEscape = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+    const sitemapXml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${routes.map(route => `  <url>
+    <loc>${xmlEscape(siteUrl + route)}</loc>
+    <changefreq>weekly</changefreq>
+    <priority>${route === '/' ? '1.0' : '0.8'}</priority>
+  </url>`).join('\n')}
+</urlset>
+`
+    const robotsTxt = `User-agent: *\nAllow: /\n\nSitemap: ${siteUrl}/sitemap.xml\n`
+
+    const publicDir = isInertia ? path.join(PROJECT_DIR, 'public') : path.join(PROJ_FRONT, 'public')
+    fs.mkdirSync(publicDir, { recursive: true })
+    fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemapXml)
+    fs.writeFileSync(path.join(publicDir, 'robots.txt'), robotsTxt)
+    success(`public/sitemap.xml + robots.txt (${routes.length} URL(s), only ${tatName}, base ${siteUrl})`)
+  } catch (error) {
+    warn(`Sitemap generation failed: ${error.message}`)
   }
-} catch {
-  // Sitemap is non-critical — skip silently
 }
 
 // ─────────────────────────────────────────────
