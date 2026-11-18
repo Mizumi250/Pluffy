@@ -475,7 +475,12 @@ public function index(Request $request): JsonResponse
 /* @arkzen:endpoint:php:index:end */
 
 /* @arkzen:endpoint:ts:index */
-return response.json({ ok: true, endpoint: 'index', input: request.all() })
+const results = await EventLog.query().latest().paginate(
+  request.input('per_page', 100),
+  request.input('page', 1),
+  request.url(),
+)
+return response.json(results)
 /* @arkzen:endpoint:ts:index:end */
 
 /* @arkzen:endpoint:php:clearLog */
@@ -487,7 +492,8 @@ public function clearLog(Request $request): JsonResponse
 /* @arkzen:endpoint:php:clearLog:end */
 
 /* @arkzen:endpoint:ts:clearLog */
-return response.json({ ok: true, endpoint: 'clearLog', input: request.all() })
+await EventLog.query().delete()
+return response.json({ message: 'Log cleared' })
 /* @arkzen:endpoint:ts:clearLog:end */
 
 /* @arkzen:endpoint:py:index
