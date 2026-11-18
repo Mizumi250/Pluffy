@@ -248,7 +248,19 @@ return response()->json($records);
 
 /* @arkzen:endpoint:ts:my_records
 */
-return response.json({ ok: true, endpoint: 'my_records', input: request.all() })
+const employeeId = request.route('employee_id')
+const records = await TimeRecord.where('employee_id', employeeId).orderBy('timestamp', 'desc').limit(50).get()
+const employees = new Map<any, any>()
+const data: any[] = []
+for (const record of records) {
+  const key = record.employee_id
+  if (!employees.has(key)) {
+    const employee = await Employee.find(key)
+    employees.set(key, employee ? employee.toJSON() : null)
+  }
+  data.push({ ...record.toJSON(), employee: employees.get(key) })
+}
+return response.json(data)
 /* @arkzen:endpoint:ts:my_records:end */
 
 /* @arkzen:endpoint:py:my_records
@@ -320,7 +332,56 @@ return response()->json([
 
 /* @arkzen:endpoint:ts:check_in
 */
-return response.json({ ok: true, endpoint: 'check_in', input: request.all() })
+const employeeId = request.input('employee_id')
+const latitude = request.input('latitude')
+const longitude = request.input('longitude')
+const notes = request.input('notes')
+
+const geofencingSetting = await DtrSetting.where('key', 'geofencing_enabled').first()
+const geofencingEnabled = geofencingSetting?.value === 'true'
+let withinGeofence = true
+
+if (geofencingEnabled && latitude !== null && longitude !== null) {
+  const settingValue = async (key: string) => Number((await DtrSetting.where('key', key).first())?.value ?? 0)
+  const officeLat = await settingValue('office_latitude')
+  const officeLng = await settingValue('office_longitude')
+  const radius = await settingValue('geofence_radius_meters')
+
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const lat1 = toRad(officeLat)
+  const lat2 = toRad(Number(latitude))
+  const dlat = lat2 - lat1
+  const dlon = toRad(Number(longitude)) - toRad(officeLng)
+  const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2
+  const distance = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)))
+
+  withinGeofence = distance <= radius
+  if (!withinGeofence) {
+    return response.json({
+      error: 'Geofence violation',
+      message: `You must be within ${radius} meters of the office to check in.`,
+      distance: Math.round(distance * 10) / 10,
+    }, 403)
+  }
+}
+
+const record = await TimeRecord.create({
+  employee_id: employeeId,
+  type: 'in',
+  timestamp: now(),
+  latitude,
+  longitude,
+  within_geofence: withinGeofence,
+  notes,
+})
+const employee = await Employee.find(employeeId)
+
+return response.json({
+  success: true,
+  record: { ...record.toJSON(), employee: employee ? employee.toJSON() : null },
+  within_geofence: withinGeofence,
+  geofencing_enabled: geofencingEnabled,
+})
 /* @arkzen:endpoint:ts:check_in:end */
 
 /* @arkzen:endpoint:py:check_in
@@ -432,7 +493,56 @@ return response()->json([
 
 /* @arkzen:endpoint:ts:check_out
 */
-return response.json({ ok: true, endpoint: 'check_out', input: request.all() })
+const employeeId = request.input('employee_id')
+const latitude = request.input('latitude')
+const longitude = request.input('longitude')
+const notes = request.input('notes')
+
+const geofencingSetting = await DtrSetting.where('key', 'geofencing_enabled').first()
+const geofencingEnabled = geofencingSetting?.value === 'true'
+let withinGeofence = true
+
+if (geofencingEnabled && latitude !== null && longitude !== null) {
+  const settingValue = async (key: string) => Number((await DtrSetting.where('key', key).first())?.value ?? 0)
+  const officeLat = await settingValue('office_latitude')
+  const officeLng = await settingValue('office_longitude')
+  const radius = await settingValue('geofence_radius_meters')
+
+  const toRad = (deg: number) => (deg * Math.PI) / 180
+  const lat1 = toRad(officeLat)
+  const lat2 = toRad(Number(latitude))
+  const dlat = lat2 - lat1
+  const dlon = toRad(Number(longitude)) - toRad(officeLng)
+  const a = Math.sin(dlat / 2) ** 2 + Math.cos(lat1) * Math.cos(lat2) * Math.sin(dlon / 2) ** 2
+  const distance = 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(Math.max(0, 1 - a)))
+
+  withinGeofence = distance <= radius
+  if (!withinGeofence) {
+    return response.json({
+      error: 'Geofence violation',
+      message: `You must be within ${radius} meters of the office to check out.`,
+      distance: Math.round(distance * 10) / 10,
+    }, 403)
+  }
+}
+
+const record = await TimeRecord.create({
+  employee_id: employeeId,
+  type: 'out',
+  timestamp: now(),
+  latitude,
+  longitude,
+  within_geofence: withinGeofence,
+  notes,
+})
+const employee = await Employee.find(employeeId)
+
+return response.json({
+  success: true,
+  record: { ...record.toJSON(), employee: employee ? employee.toJSON() : null },
+  within_geofence: withinGeofence,
+  geofencing_enabled: geofencingEnabled,
+})
 /* @arkzen:endpoint:ts:check_out:end */
 
 /* @arkzen:endpoint:py:check_out
@@ -504,7 +614,10 @@ return response()->json(['success' => true, 'geofencing_enabled' => $enabled]);
 
 /* @arkzen:endpoint:ts:toggle_geofencing
 */
-return response.json({ ok: true, endpoint: 'toggle_geofencing', input: request.all() })
+const enabled = request.input('enabled')
+const on = Boolean(enabled) && enabled !== '0'
+await DtrSetting.updateOrCreate({ key: 'geofencing_enabled' }, { value: on ? 'true' : 'false' })
+return response.json({ success: true, geofencing_enabled: enabled })
 /* @arkzen:endpoint:ts:toggle_geofencing:end */
 
 /* @arkzen:endpoint:py:toggle_geofencing
@@ -531,7 +644,11 @@ return response()->json(['success' => true]);
 
 /* @arkzen:endpoint:ts:update_office
 */
-return response.json({ ok: true, endpoint: 'update_office', input: request.all() })
+const text = (value: any) => (value === null || value === undefined ? '' : String(value))
+await DtrSetting.updateOrCreate({ key: 'office_latitude' }, { value: text(request.input('lat')) })
+await DtrSetting.updateOrCreate({ key: 'office_longitude' }, { value: text(request.input('lng')) })
+await DtrSetting.updateOrCreate({ key: 'geofence_radius_meters' }, { value: text(request.input('radius')) })
+return response.json({ success: true })
 /* @arkzen:endpoint:ts:update_office:end */
 
 /* @arkzen:web:layout:app */
