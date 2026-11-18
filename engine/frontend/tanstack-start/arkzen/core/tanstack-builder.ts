@@ -100,19 +100,16 @@ export async function buildTanStackTatemono(corePath: string): Promise<TanStackB
   }
 
   // ── Backend build ────────────────────────────────────────────
-  const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
-  if (isStatic) {
-    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Static tatemono — no backend' })
-  } else {
-    try {
-      await triggerBackendBuild(parsed)
-      steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Laravel backend updated' })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
-      errors.push(message)
-      console.error(`[Arkzen TanStack] ✗ Backend build failed:`, message)
-    }
+  // triggerBackendBuild() owns the static/backend decision (see backend-bridge.ts).
+  // Do NOT re-guard here with a narrower check.
+  try {
+    await triggerBackendBuild(parsed)
+    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Backend build complete' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
+    errors.push(message)
+    console.error(`[Arkzen TanStack] ✗ Backend build failed:`, message)
   }
 
   // ── PWA ──────────────────────────────────────────────────────
