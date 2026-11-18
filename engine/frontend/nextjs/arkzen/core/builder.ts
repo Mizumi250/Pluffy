@@ -82,13 +82,12 @@ export async function buildTatemono(filePath: string): Promise<BuildResult> {
   try {
     await triggerBackendBuild(parsed)
 
-    const isStatic    = parsed.databases.length === 0 && parsed.apis.length === 0
     const controllers = parsed.apis.map(a => a.controller).join(', ')
 
     steps.push({
       name:    'Trigger Backend Build',
       status:  'success',
-      message: isStatic ? 'Static tatemono — no backend' : `Backend built: ${controllers}`,
+      message: controllers ? `Backend built: ${controllers}` : 'Backend build complete',
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
