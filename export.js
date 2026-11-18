@@ -21,8 +21,11 @@
 // Native exports skip the backend entirely (frontend-only).
 // --backend=none exports the frontend only, for any web or desktop stack.
 //
-// Usage:  node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>]
+// Usage:  node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>] [--docker] [--openapi] [--api-url=<url>]
 // Output: projects/<tatemono-name>/
+//
+// --openapi  also writes projects/<tatemono-name>/openapi/ (openapi.json + api-docs.html, a Swagger UI page),
+//            generated from the tatemono's @arkzen:api / @arkzen:routes / auth blocks. Nothing extra to declare.
 // ============================================================
 
 import { execSync, spawnSync } from 'node:child_process'
@@ -30,6 +33,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath, pathToFileURL } from 'node:url'
 import { supportsDocker, dockerRejectionMessage, writeDockerFiles, writeDeployGuide } from './export-docker.js'
+import { exportOpenApi } from './export-openapi.js'
 
 const ROOT_DIR   = path.dirname(fileURLToPath(import.meta.url))
 const ENGINE_DIR = path.join(ROOT_DIR, 'engine')
@@ -53,6 +57,12 @@ const isDesktop  = isTauri || isElectron
 // --docker: add Dockerfile(s) + docker-compose.yml. Web stacks only — mobile and desktop
 // are built with their own tools, so reject it BEFORE doing any work.
 const wantsDocker = process.argv.includes('--docker')
+
+// --openapi: also write openapi.json + a Swagger UI page (api-docs.html) for the API the tatemono declares.
+// --api-url=<url> sets the server URL written into the spec (default http://localhost:8000).
+const wantsOpenApi = process.argv.includes('--openapi')
+const apiUrlFlag = process.argv.find(a => a.startsWith('--api-url='))
+const openApiServerUrl = apiUrlFlag ? apiUrlFlag.slice('--api-url='.length) : undefined
 if (wantsDocker && !supportsDocker(activeStack)) {
   console.log(`\n  ✗ ${dockerRejectionMessage(activeStack)}\n`)
   process.exit(1)
@@ -140,7 +150,8 @@ function findSystemPython() {
 
 const tatName = process.argv.slice(2).find(a => !a.startsWith('--'))
 if (!tatName) {
-  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>] [--docker]')
+  console.log('\n  Usage: node export.js <tatemono-name> [--stack=<name>] [--backend=<name|none>] [--docker] [--openapi] [--api-url=<url>]')
+  console.log('         node export.js <tatemono-name> --openapi        (also write openapi.json + Swagger UI page)')
   console.log('         node export.js <tatemono-name> --backend=none   (frontend only, no backend)')
   console.log('         node export.js <godot-tatemono> --stack=godot')
   console.log('         node export.js <unity-tatemono> --stack=unity')
@@ -2260,6 +2271,37 @@ fs.writeFileSync(path.join(PROJECT_DIR, '.gitignore'), [
 ].join('\n'))
 
 // ─────────────────────────────────────────────
+// STEP 16c — OPENAPI (--openapi): openapi.json + api-docs.html from the tatemono's API blocks
+// A failure here only warns — it never fails the export.
+// ─────────────────────────────────────────────
+
+let openApiResult = null
+if (wantsOpenApi) {
+  log('Generating OpenAPI docs...')
+  openApiResult = exportOpenApi({
+    rootDir: ROOT_DIR,
+    tatName,
+    outDir: path.join(PROJECT_DIR, 'openapi'),
+    stack: activeStack,
+    backend: activeBackend,
+    apiUrl: openApiServerUrl,
+  })
+  if (openApiResult.ok) {
+    success(`OpenAPI: ${openApiResult.operations} operations, ${openApiResult.schemas} schemas → openapi/openapi.json + openapi/api-docs.html`)
+    fs.appendFileSync(path.join(PROJECT_DIR, 'README.md'), `
+## API docs
+
+\`openapi/openapi.json\` is an OpenAPI 3.1 spec (import it into Postman, Insomnia or a client generator).
+Open \`openapi/api-docs.html\` in a browser for an interactive Swagger UI page.
+`)
+  } else if (openApiResult.skipped) {
+    skip(`OpenAPI — ${openApiResult.reason}`)
+  } else {
+    warn(`OpenAPI docs not generated: ${openApiResult.reason}`)
+  }
+}
+
+// ─────────────────────────────────────────────
 // DONE
 // ─────────────────────────────────────────────
 
@@ -2271,4 +2313,5 @@ if (noBackend) console.log(`  Backend:  none (frontend only)`)
 if (hasBackend) console.log(`  DB:       ${isPg ? `PostgreSQL database ${pgDatabaseName}` : `${isInertia ? '' : 'backend/'}${isGo ? `storage/databases/${tatName}.sqlite` : `database/arkzen/${tatName}.sqlite`}`}`)
 console.log(`  Run:      cd projects/${tatName} && node start.js`)
 console.log(`  Deploy:   projects/${tatName}/DEPLOY.md${wantsDocker ? '  (Docker: docker compose --env-file deploy.env up -d --build)' : ''}`)
+if (openApiResult?.ok) console.log(`  API docs: projects/${tatName}/openapi/api-docs.html  (spec: openapi/openapi.json)`)
 divider()
