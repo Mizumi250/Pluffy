@@ -745,7 +745,18 @@ ${constChunks.join('\n\n')}
       })
 
     if (utilChunks.length > 0) {
-      const utilsContent = `// ============================================================\n// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n${sharedTypeImports}\n${utilChunks.join('\n\n')}\n`
+      // Utilities may reference ALL_CAPS constants and use* hooks that live in
+      // sibling files; import them or they throw ReferenceError at runtime.
+      const utilSrc = utilChunks.join('\n')
+      const utilConstants = findReferencedNames(utilSrc, sharedConstants).sort()
+      const constantsImport = utilConstants.length > 0
+        ? `import { ${utilConstants.join(', ')} } from './constants'\n`
+        : ''
+      const utilHooks = findReferencedNames(utilSrc, customHooks).sort()
+      const hooksImport = utilHooks.length > 0
+        ? `import { ${utilHooks.join(', ')} } from './hooks'\n`
+        : ''
+      const utilsContent = `// ============================================================\n// ARKZEN GENERATED UTILITIES — ${tatemono.meta.name}\n// Source: @arkzen:components (${tatemono.meta.name})\n// DO NOT EDIT DIRECTLY. Edit the tatemono file instead.\n// Generated: ${new Date().toISOString()}\n// ============================================================\n\n${canonicalBlock}\n${sharedTypeImports}\n${constantsImport}${hooksImport}\n${utilChunks.join('\n\n')}\n`
       atomicWrite(path.join(componentsDir, 'utils.tsx'), utilsContent)
       const staleUtils = path.join(componentsDir, 'utils.ts')
       if (fs.existsSync(staleUtils)) fs.unlinkSync(staleUtils)
