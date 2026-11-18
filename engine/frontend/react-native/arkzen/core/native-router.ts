@@ -548,7 +548,18 @@ function generateIndividualNativeComponentFiles(
       engineNamespaces: Object.fromEntries(nsImports),
       arkzenImportPrefix: '../../../../arkzen/',
     })
-    const out = `// ARKZEN GENERATED — ${tatName}/components/utils\n// DO NOT EDIT\n\n${canonicalBlock}\n\n${strippedSources[0].trim()}\n`
+    // Utilities may reference ALL_CAPS constants, use* hooks and shared types that
+    // live in sibling files; import them or they throw ReferenceError at runtime.
+    const utilBody = strippedSources[0]
+    const utilConstants = constDecls.size > 0 ? findReferencedNames(utilBody, new Set(constDecls.keys())) : []
+    const utilHooks = findReferencedNames(utilBody, hookNames)
+    const utilTypes = typeSrc ? findReferencedNames(utilBody, typeNames) : []
+    const siblingImports = [
+      ...(utilConstants.length ? [`import { ${utilConstants.sort().join(', ')} } from './constants'`] : []),
+      ...(utilHooks.length ? [`import { ${utilHooks.sort().join(', ')} } from './hooks'`] : []),
+      ...(utilTypes.length ? [`import type { ${utilTypes.sort().join(', ')} } from './types'`] : []),
+    ].join('\n')
+    const out = `// ARKZEN GENERATED — ${tatName}/components/utils\n// DO NOT EDIT\n\n${canonicalBlock}\n${siblingImports ? siblingImports + '\n' : ''}\n${utilBody.trim()}\n`
     const sibling = path.join(componentsDir, 'utils.ts')
     if (fs.existsSync(sibling)) fs.unlinkSync(sibling)
     writeIfChanged(path.join(componentsDir, 'utils.tsx'), out)
