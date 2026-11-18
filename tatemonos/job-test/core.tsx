@@ -69,7 +69,10 @@ return response()->json($results);
 
 /* @arkzen:endpoint:ts:index
 */
-return response.json({ ok: true, endpoint: 'index', input: request.all() })
+const results = await JobResult.query()
+  .orderBy('created_at', 'desc')
+  .paginate(request.input('per_page', 15), request.input('page', 1), request.url())
+return response.json(results)
 /* @arkzen:endpoint:ts:index:end */
 
 /* @arkzen:endpoint:java:index
