@@ -12,6 +12,8 @@
 //    node mizumi.js export <name>
 //    node mizumi.js export dino-runner unity
 //    node mizumi.js export <name> --backend=none   ← frontend only, no backend
+//    node mizumi.js export <name> <stack> --openapi ← also write openapi.json + Swagger UI page
+//    node mizumi.js openapi <name>  ← generate OpenAPI docs only → projects/openapi/<name>/
 //    node mizumi.js web <stack>  ← switch web stack
 //    node mizumi.js app <stack>  ← switch app stack
 //    node mizumi.js desktop <stack> ← switch desktop stack
@@ -533,7 +535,7 @@ function cmdSetup() {
   })
 }
 
-async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
+async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg, openapiFlag = false, apiUrlArg) {
   const config = readConfig()
 
   // --docker is for web stacks only. Reject early when the stack is already known.
@@ -598,6 +600,16 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
         ])
         dockerFlag = withDocker.value
       }
+
+      // OpenAPI is offered only when the tatemono actually declares an API (or auth).
+      if (!openapiFlag && tatemonoDeclaresApi(tatName)) {
+        divider()
+        const withOpenApi = await picker('OpenAPI？ Also generate API docs (openapi.json + Swagger UI page)?', [
+          { label: 'No',  sub: 'skip',                                         value: false },
+          { label: 'Yes', sub: 'openapi/openapi.json + openapi/api-docs.html', value: true },
+        ])
+        openapiFlag = withOpenApi.value
+      }
     }
   }
 
@@ -641,6 +653,8 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
     `--stack=${stack}`,
     ...(backend && !gameStack ? [`--backend=${backend}`] : []),
     ...(dockerFlag ? ['--docker'] : []),
+    ...(openapiFlag && !gameStack ? ['--openapi'] : []),
+    ...(openapiFlag && !gameStack && apiUrlArg ? [`--api-url=${apiUrlArg}`] : []),
   ]
   const child = spawn(process.execPath, exportArgs, { cwd: ROOT_DIR, stdio: 'inherit' })
   child.on('exit', async code => {
@@ -654,10 +668,41 @@ async function cmdExport(tatName, stackArg, dockerFlag = false, backendArg) {
       } else {
         success(`Exported → projects/${tatName}/  ${paint(c.gray, `(${stack})`)}`)
         info(`Deploy steps: projects/${tatName}/DEPLOY.md${dockerFlag ? '   Docker: docker compose --env-file deploy.env up -d --build' : ''}`)
+        if (openapiFlag && fs.existsSync(path.join(ROOT_DIR, 'projects', tatName, 'openapi', 'api-docs.html'))) info(`API docs: projects/${tatName}/openapi/api-docs.html`)
       }
     }
     else error(`Export failed with code ${code}`)
   })
+}
+
+// True when a tatemono declares something OpenAPI can describe: @arkzen:api, @arkzen:routes, or meta auth: true.
+function tatemonoDeclaresApi(tatName) {
+  try {
+    const src = fs.readFileSync(path.join(TATEMONOS_DIR, tatName, 'core.tsx'), 'utf-8')
+    return src.includes('/* @arkzen:api') || src.includes('/* @arkzen:routes') || /@arkzen:meta[\s\S]*?\bauth:\s*true/.test(src)
+  } catch { return false }
+}
+
+// `mizumi openapi [name] [--backend=<name>] [--stack=<name>] [--api-url=<url>] [--out=<dir>]`
+// Generates openapi.json + api-docs.html (Swagger UI) without exporting the whole project.
+async function cmdOpenApi(tatName, passthrough = []) {
+  const config = readConfig()
+  if (!tatName) {
+    const modules = discoverTatemonos(config).map(m => m.name).filter(tatemonoDeclaresApi)
+    if (modules.length === 0) { warn('API を持つタテモノなし — No tatemono declares an API yet.'); return }
+    divider()
+    const chosen = await picker('どのタテモノ？ Which tatemono needs API docs?', modules.map(m => ({ label: m, value: m })))
+    tatName = chosen.value
+  }
+  if (!fs.existsSync(path.join(ROOT_DIR, 'export-openapi.js'))) { error('export-openapi.js not found in the repo root'); return }
+
+  console.log()
+  log(`OpenAPI 生成中... Generating API docs for ${paint(c.cyan, tatName)} ${paint(c.gray, pick(KAOMOJI_WAIT))}`)
+  console.log()
+  const code = await runNode('export-openapi.js', [tatName, ...passthrough])
+  console.log()
+  if (code === 0) info('Open api-docs.html in a browser, or import openapi.json into Postman / Insomnia.')
+  else error(`export-openapi.js exited with code ${code}`)
 }
 
 async function cmdSwitchWeb(stackArg) {
@@ -1229,6 +1274,7 @@ async function interactiveMenu() {
     
     { label: 'セットアップ     Setup',                   sub: 'node setup.js',             value: 'setup'      },
     { label: 'プロジェクト出力  Export project',          sub: 'tatemono → web/app/desktop/Godot → stack',value: 'export'     },
+    { label: 'API文書          OpenAPI docs',            sub: 'openapi.json + Swagger UI page for a tatemono', value: 'openapi' },
     { label: 'GitHub公開       Publish to GitHub',         sub: 'publish an existing projects/ folder', value: 'publish'    },
     { label: 'Webスタック切替  Switch web stack',        sub: 'nextjs / vite / astro ...',  value: 'web'        },
     { label: 'Appスタック切替  Switch app stack',        sub: 'expo / react-native',        value: 'app'        },
@@ -1255,6 +1301,7 @@ async function interactiveMenu() {
     case 'setup':     cmdSetup();              break
     case 'export':    await cmdExport();       break
     case 'publish':   await cmdPublish();      break
+    case 'openapi':   await cmdOpenApi();      break
     case 'web':       await cmdSwitchWeb();    break
     case 'app':       await cmdSwitchApp();    break
     case 'desktop':   await cmdSwitchDesktop(); break
@@ -1294,6 +1341,9 @@ function printHelp() {
     ['mizumi export <godot-tatemono> godot', '→ Generate isolated Godot 4 project'],
     ['mizumi export <unity-tatemono> unity', '→ Generate isolated Unity project'],
     ['mizumi export <name> <stack> --docker', '→ Also write Dockerfile + docker-compose (web stacks only)'],
+    ['mizumi export <name> <stack> --openapi', '→ Also write openapi.json + Swagger UI page (openapi/)'],
+    ['mizumi openapi',          '→ OpenAPI docs for one tatemono (openapi.json + api-docs.html)'],
+    ['mizumi openapi <name> --backend=<name>', '→ Same, with that backend\'s response shapes'],
     ['mizumi publish',           '→ Publish an existing projects/ export to GitHub'],
     ['mizumi publish <name>',    '→ Publish projects/<name> to GitHub'],
     ['mizumi web <stack>',       '→ Switch web stack'],
@@ -1342,7 +1392,14 @@ switch (command) {
     const positional = args.slice(1).filter(a => !a.startsWith('--'))
     const backendFlag = args.find(a => a.startsWith('--backend='))
     const backendArg = backendFlag ? backendFlag.slice('--backend='.length) : undefined
-    cmdExport(positional[0], positional[1], args.includes('--docker'), backendArg)
+    const apiUrlFlag = args.find(a => a.startsWith('--api-url='))
+    const apiUrlArg = apiUrlFlag ? apiUrlFlag.slice('--api-url='.length) : undefined
+    cmdExport(positional[0], positional[1], args.includes('--docker'), backendArg, args.includes('--openapi'), apiUrlArg)
+    break
+  }
+  case 'openapi': {
+    const positional = args.slice(1).filter(a => !a.startsWith('--'))
+    cmdOpenApi(positional[0], args.slice(1).filter(a => a.startsWith('--')))
     break
   }
   case 'publish': cmdPublish(arg);             break
