@@ -3543,167 +3543,3026 @@ return response.json(Support.mapOf("profile", profile, "series", series, "stats"
 
 /* @arkzen:handler:cs:me
 */
-return await KotobaHandlers.ExecuteAsync("me", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task<bool> Seed()
+{
+    if (await Cnt("SELECT COUNT(*) FROM kotoba_posts") > 0) return false;
+    var people = new (string Email, string Name, string Native, string Learning, string Level, string Country, string Bio, string Interests, string Color, long Xp, long Streak)[]
+    {
+        ("aiko@kotoba.app", "Aiko Tanaka", "ja", "en", "A2", "Japan", "Osaka native. I love ramen, film cameras and teaching Japanese.", "travel,food,photography", "#7a3b34", 240, 12),
+        ("mateo@kotoba.app", "Mateo Rivera", "es", "en", "B1", "Mexico", "From Mexico City. Football, tacos and bad puns in two languages.", "football,food,music", "#3f6b4f", 180, 6),
+        ("sofia@kotoba.app", "Sofia Laurent", "en", "ja", "A2", "Canada", "English teacher learning Japanese. Coffee first, grammar second.", "books,coffee,anime", "#4a4a4a", 320, 21),
+    };
+    var by = new Dictionary<string, JsonObject>();
+    foreach (var person in people)
+    {
+        var account = await One("SELECT id FROM kotoba_users WHERE email = @e LIMIT 1", ("e", person.Email));
+        if (account is null) continue;
+        var accountId = L(account["id"]);
+        var have = await One("SELECT id FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", accountId));
+        if (have is null)
+        {
+            by[person.Email] = await Ins("profiles", ("user_id", accountId), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", true));
+        }
+        else
+        {
+            await Upd("profiles", L(have["id"]), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("onboarded", true));
+            by[person.Email] = (await One("SELECT * FROM kotoba_profiles WHERE id = @i", ("i", L(have["id"]))))!;
+        }
+    }
+    if (by.Count == 0) return false;
+
+    async Task<JsonObject?> Mk(string email, string lang, string kind, string body, string? translation, long likes)
+    {
+        if (!by.TryGetValue(email, out var author)) return null;
+        return await Ins("posts", ("user_id", L(author["user_id"])), ("author_name", S(author["display_name"])), ("author_color", S(author["avatar_color"])), ("author_native", S(author["native_lang"])), ("lang", lang), ("kind", kind), ("body", body), ("translation", translation), ("likes_count", likes), ("comments_count", 0L), ("corrections_count", 0L));
+    }
+
+    var p1 = await Mk("aiko@kotoba.app", "en", "moment", "Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!", null, 4);
+    await Mk("mateo@kotoba.app", "en", "moment", "Today I learned a new word: serendipity. It means finding something good by luck.", null, 7);
+    var p3 = await Mk("sofia@kotoba.app", "ja", "moment", "きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。", "It is raining today. I will read a book while drinking coffee.", 5);
+    await Mk("mateo@kotoba.app", "es", "question", "Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.", "Question for you all: what is your favorite food? Mine is tacos al pastor.", 3);
+    await Mk("aiko@kotoba.app", "ja", "moment", "こんにちは！わたしは アイコです。にほんの おおさかから きました。", "Hello! I am Aiko. I came from Osaka, Japan.", 9);
+
+    if (p1 is not null && by.TryGetValue("sofia@kotoba.app", out var sofiaProfile))
+    {
+        await Ins("comments", ("post_id", L(p1["id"])), ("user_id", L(sofiaProfile["user_id"])), ("author_name", S(sofiaProfile["display_name"])), ("author_color", S(sofiaProfile["avatar_color"])), ("body", "Nice story! A few small fixes:"), ("is_correction", true), ("corrected", "Yesterday I went to the park with my friend. We ate ice cream and it was delicious!"), ("explanation", "Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very."), ("accepted", false));
+        await Upd("posts", L(p1["id"]), ("comments_count", 1L), ("corrections_count", 1L));
+    }
+    if (p3 is not null && by.TryGetValue("aiko@kotoba.app", out var aikoProfile))
+    {
+        await Ins("comments", ("post_id", L(p3["id"])), ("user_id", L(aikoProfile["user_id"])), ("author_name", S(aikoProfile["display_name"])), ("author_color", S(aikoProfile["avatar_color"])), ("body", "すてきですね！Very cozy. Your sentence is perfect."), ("is_correction", false), ("accepted", false));
+        await Upd("posts", L(p3["id"]), ("comments_count", 1L));
+    }
+    if (by.TryGetValue("aiko@kotoba.app", out var aikoFollow) && by.TryGetValue("sofia@kotoba.app", out var sofiaFollow))
+    {
+        foreach (var (follower, following) in new[] { (L(aikoFollow["user_id"]), L(sofiaFollow["user_id"])), (L(sofiaFollow["user_id"]), L(aikoFollow["user_id"])) })
+        {
+            if (await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE follower_id = @a AND following_id = @b", ("a", follower), ("b", following)) == 0)
+                await Ins("follows", ("follower_id", follower), ("following_id", following));
+        }
+    }
+
+    var circles = new (string Name, string Emoji, string Lang, string Level, string Desc, string Owner)[]
+    {
+        ("English Morning Club", "sun", "en", "A2", "Short daily check-ins in English. Be kind and correct gently.", "sofia@kotoba.app"),
+        ("Japanese for Beginners", "flower", "ja", "A1", "Hiragana, greetings and first sentences. Ask anything.", "aiko@kotoba.app"),
+        ("Spanish Cafe Talk", "coffee", "es", "A2", "Relaxed conversation practice over virtual coffee.", "mateo@kotoba.app"),
+    };
+    foreach (var spec in circles)
+    {
+        if (!by.TryGetValue(spec.Owner, out var owner)) continue;
+        var circle = await Ins("circles", ("name", spec.Name), ("emoji", spec.Emoji), ("lang", spec.Lang), ("level", spec.Level), ("description", spec.Desc), ("owner_id", L(owner["user_id"])), ("members_count", 1L), ("weekly_goal", 50L));
+        await Ins("circle_members", ("circle_id", L(circle["id"])), ("user_id", L(owner["user_id"])));
+        await Ins("messages", ("circle_id", L(circle["id"])), ("sender_id", L(owner["user_id"])), ("sender_name", S(owner["display_name"])), ("sender_color", S(owner["avatar_color"])), ("body", "Welcome to " + spec.Name + "! Introduce yourself in your target language."), ("lang", spec.Lang));
+    }
+    return true;
+}
+
+if (await Cnt("SELECT COUNT(*) FROM kotoba_posts") == 0) await Seed();
+var palette = new[] { "#121212", "#4a4a4a", "#3f6b4f", "#8a6a2f", "#7a3b34", "#4a5a6a", "#6b5a7a" };
+var profile = await Prof(uid, uname, palette[(int)(uid % palette.Length)]);
+return Results.Json(new { data = profile, user = new { id = uid, name = uname, email = S(user["email"]) } });
 /* @arkzen:handler:cs:me:end */
 
 /* @arkzen:handler:cs:update_me
 */
-return await KotobaHandlers.ExecuteAsync("update_me", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vi(string field, bool required, long min = long.MinValue, long max = long.MaxValue)
+{
+    var node = Body[field];
+    var label = field.Replace('_', ' ');
+    if (node is null || S(node).Trim() == "") return required ? "The " + label + " field is required." : null;
+    if (!long.TryParse(S(node).Trim(), out var number)) return "The " + label + " field must be an integer.";
+    if (number < min) return "The " + label + " field must be at least " + min + ".";
+    if (number > max) return "The " + label + " field must not be greater than " + max + ".";
+    return null;
+}
+
+string? Vb(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    return S(node) is "1" or "0" or "true" or "false" or "True" or "False" ? null : "The " + field.Replace('_', ' ') + " field must be true or false.";
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+Chk("display_name", Vs("display_name", 60, false));
+Chk("bio", Vs("bio", 300, false));
+Chk("native_lang", Vs("native_lang", 8, false));
+Chk("learning_lang", Vs("learning_lang", 8, false));
+Chk("level", Vs("level", 4, false, new[] { "A1", "A2", "B1", "B2", "C1", "C2" }));
+Chk("country", Vs("country", 60, false));
+Chk("interests", Vs("interests", 500, false));
+Chk("avatar_color", Vs("avatar_color", 16, false));
+Chk("daily_goal", Vi("daily_goal", false, 1, 20));
+Chk("onboarded", Vb("onboarded"));
+if (errs.Count > 0) return Fail();
+var profile = await Prof(uid, uname);
+var cols = new List<(string, object?)>();
+foreach (var field in new[] { "display_name", "native_lang", "learning_lang", "level", "avatar_color" })
+    if (Sv(field) is { } text) cols.Add((field, text));
+foreach (var field in new[] { "bio", "country", "interests" })
+    if (Body.ContainsKey(field)) cols.Add((field, Sv(field)));
+if (Sv("daily_goal") is { } goal) cols.Add(("daily_goal", N(goal)));
+if (Body["onboarded"] is not null) cols.Add(("onboarded", Tr(Body["onboarded"])));
+if (cols.Count > 0) await Upd("profiles", L(profile["id"]), cols.ToArray());
+return Results.Json(new { data = await Prof(uid, uname) });
 /* @arkzen:handler:cs:update_me:end */
 
 /* @arkzen:handler:cs:bump
 */
-return await KotobaHandlers.ExecuteAsync("bump", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+await Bump(N(In("xp")), N(In("words")), N(In("messages")));
+return Results.Json(new { data = await Prof(uid, uname) });
 /* @arkzen:handler:cs:bump:end */
 
 /* @arkzen:handler:cs:notify
 */
-return await KotobaHandlers.ExecuteAsync("notify", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+var to = N(In("to") ?? In("user_id"));
+var kind = In("kind") ?? "";
+var text = In("text") ?? "";
+var refText = In("ref");
+if (!await Notify(to, kind, text, refText is null ? null : N(refText))) return Results.Json(new { ok = false }, statusCode: 422);
+return Results.Json(new { ok = true });
 /* @arkzen:handler:cs:notify:end */
 
 /* @arkzen:handler:cs:community_seed
 */
-return await KotobaHandlers.ExecuteAsync("community_seed", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+async Task<bool> Seed()
+{
+    if (await Cnt("SELECT COUNT(*) FROM kotoba_posts") > 0) return false;
+    var people = new (string Email, string Name, string Native, string Learning, string Level, string Country, string Bio, string Interests, string Color, long Xp, long Streak)[]
+    {
+        ("aiko@kotoba.app", "Aiko Tanaka", "ja", "en", "A2", "Japan", "Osaka native. I love ramen, film cameras and teaching Japanese.", "travel,food,photography", "#7a3b34", 240, 12),
+        ("mateo@kotoba.app", "Mateo Rivera", "es", "en", "B1", "Mexico", "From Mexico City. Football, tacos and bad puns in two languages.", "football,food,music", "#3f6b4f", 180, 6),
+        ("sofia@kotoba.app", "Sofia Laurent", "en", "ja", "A2", "Canada", "English teacher learning Japanese. Coffee first, grammar second.", "books,coffee,anime", "#4a4a4a", 320, 21),
+    };
+    var by = new Dictionary<string, JsonObject>();
+    foreach (var person in people)
+    {
+        var account = await One("SELECT id FROM kotoba_users WHERE email = @e LIMIT 1", ("e", person.Email));
+        if (account is null) continue;
+        var accountId = L(account["id"]);
+        var have = await One("SELECT id FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", accountId));
+        if (have is null)
+        {
+            by[person.Email] = await Ins("profiles", ("user_id", accountId), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", true));
+        }
+        else
+        {
+            await Upd("profiles", L(have["id"]), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("onboarded", true));
+            by[person.Email] = (await One("SELECT * FROM kotoba_profiles WHERE id = @i", ("i", L(have["id"]))))!;
+        }
+    }
+    if (by.Count == 0) return false;
+
+    async Task<JsonObject?> Mk(string email, string lang, string kind, string body, string? translation, long likes)
+    {
+        if (!by.TryGetValue(email, out var author)) return null;
+        return await Ins("posts", ("user_id", L(author["user_id"])), ("author_name", S(author["display_name"])), ("author_color", S(author["avatar_color"])), ("author_native", S(author["native_lang"])), ("lang", lang), ("kind", kind), ("body", body), ("translation", translation), ("likes_count", likes), ("comments_count", 0L), ("corrections_count", 0L));
+    }
+
+    var p1 = await Mk("aiko@kotoba.app", "en", "moment", "Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!", null, 4);
+    await Mk("mateo@kotoba.app", "en", "moment", "Today I learned a new word: serendipity. It means finding something good by luck.", null, 7);
+    var p3 = await Mk("sofia@kotoba.app", "ja", "moment", "きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。", "It is raining today. I will read a book while drinking coffee.", 5);
+    await Mk("mateo@kotoba.app", "es", "question", "Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.", "Question for you all: what is your favorite food? Mine is tacos al pastor.", 3);
+    await Mk("aiko@kotoba.app", "ja", "moment", "こんにちは！わたしは アイコです。にほんの おおさかから きました。", "Hello! I am Aiko. I came from Osaka, Japan.", 9);
+
+    if (p1 is not null && by.TryGetValue("sofia@kotoba.app", out var sofiaProfile))
+    {
+        await Ins("comments", ("post_id", L(p1["id"])), ("user_id", L(sofiaProfile["user_id"])), ("author_name", S(sofiaProfile["display_name"])), ("author_color", S(sofiaProfile["avatar_color"])), ("body", "Nice story! A few small fixes:"), ("is_correction", true), ("corrected", "Yesterday I went to the park with my friend. We ate ice cream and it was delicious!"), ("explanation", "Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very."), ("accepted", false));
+        await Upd("posts", L(p1["id"]), ("comments_count", 1L), ("corrections_count", 1L));
+    }
+    if (p3 is not null && by.TryGetValue("aiko@kotoba.app", out var aikoProfile))
+    {
+        await Ins("comments", ("post_id", L(p3["id"])), ("user_id", L(aikoProfile["user_id"])), ("author_name", S(aikoProfile["display_name"])), ("author_color", S(aikoProfile["avatar_color"])), ("body", "すてきですね！Very cozy. Your sentence is perfect."), ("is_correction", false), ("accepted", false));
+        await Upd("posts", L(p3["id"]), ("comments_count", 1L));
+    }
+    if (by.TryGetValue("aiko@kotoba.app", out var aikoFollow) && by.TryGetValue("sofia@kotoba.app", out var sofiaFollow))
+    {
+        foreach (var (follower, following) in new[] { (L(aikoFollow["user_id"]), L(sofiaFollow["user_id"])), (L(sofiaFollow["user_id"]), L(aikoFollow["user_id"])) })
+        {
+            if (await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE follower_id = @a AND following_id = @b", ("a", follower), ("b", following)) == 0)
+                await Ins("follows", ("follower_id", follower), ("following_id", following));
+        }
+    }
+
+    var circles = new (string Name, string Emoji, string Lang, string Level, string Desc, string Owner)[]
+    {
+        ("English Morning Club", "sun", "en", "A2", "Short daily check-ins in English. Be kind and correct gently.", "sofia@kotoba.app"),
+        ("Japanese for Beginners", "flower", "ja", "A1", "Hiragana, greetings and first sentences. Ask anything.", "aiko@kotoba.app"),
+        ("Spanish Cafe Talk", "coffee", "es", "A2", "Relaxed conversation practice over virtual coffee.", "mateo@kotoba.app"),
+    };
+    foreach (var spec in circles)
+    {
+        if (!by.TryGetValue(spec.Owner, out var owner)) continue;
+        var circle = await Ins("circles", ("name", spec.Name), ("emoji", spec.Emoji), ("lang", spec.Lang), ("level", spec.Level), ("description", spec.Desc), ("owner_id", L(owner["user_id"])), ("members_count", 1L), ("weekly_goal", 50L));
+        await Ins("circle_members", ("circle_id", L(circle["id"])), ("user_id", L(owner["user_id"])));
+        await Ins("messages", ("circle_id", L(circle["id"])), ("sender_id", L(owner["user_id"])), ("sender_name", S(owner["display_name"])), ("sender_color", S(owner["avatar_color"])), ("body", "Welcome to " + spec.Name + "! Introduce yourself in your target language."), ("lang", spec.Lang));
+    }
+    return true;
+}
+
+return Results.Json(new { seeded = await Seed() });
 /* @arkzen:handler:cs:community_seed:end */
 
 /* @arkzen:handler:cs:home
 */
-return await KotobaHandlers.ExecuteAsync("home", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task<bool> Seed()
+{
+    if (await Cnt("SELECT COUNT(*) FROM kotoba_posts") > 0) return false;
+    var people = new (string Email, string Name, string Native, string Learning, string Level, string Country, string Bio, string Interests, string Color, long Xp, long Streak)[]
+    {
+        ("aiko@kotoba.app", "Aiko Tanaka", "ja", "en", "A2", "Japan", "Osaka native. I love ramen, film cameras and teaching Japanese.", "travel,food,photography", "#7a3b34", 240, 12),
+        ("mateo@kotoba.app", "Mateo Rivera", "es", "en", "B1", "Mexico", "From Mexico City. Football, tacos and bad puns in two languages.", "football,food,music", "#3f6b4f", 180, 6),
+        ("sofia@kotoba.app", "Sofia Laurent", "en", "ja", "A2", "Canada", "English teacher learning Japanese. Coffee first, grammar second.", "books,coffee,anime", "#4a4a4a", 320, 21),
+    };
+    var by = new Dictionary<string, JsonObject>();
+    foreach (var person in people)
+    {
+        var account = await One("SELECT id FROM kotoba_users WHERE email = @e LIMIT 1", ("e", person.Email));
+        if (account is null) continue;
+        var accountId = L(account["id"]);
+        var have = await One("SELECT id FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", accountId));
+        if (have is null)
+        {
+            by[person.Email] = await Ins("profiles", ("user_id", accountId), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", true));
+        }
+        else
+        {
+            await Upd("profiles", L(have["id"]), ("display_name", person.Name), ("native_lang", person.Native), ("learning_lang", person.Learning), ("level", person.Level), ("country", person.Country), ("bio", person.Bio), ("interests", person.Interests), ("avatar_color", person.Color), ("xp", person.Xp), ("streak", person.Streak), ("best_streak", person.Streak), ("last_active", todayD), ("onboarded", true));
+            by[person.Email] = (await One("SELECT * FROM kotoba_profiles WHERE id = @i", ("i", L(have["id"]))))!;
+        }
+    }
+    if (by.Count == 0) return false;
+
+    async Task<JsonObject?> Mk(string email, string lang, string kind, string body, string? translation, long likes)
+    {
+        if (!by.TryGetValue(email, out var author)) return null;
+        return await Ins("posts", ("user_id", L(author["user_id"])), ("author_name", S(author["display_name"])), ("author_color", S(author["avatar_color"])), ("author_native", S(author["native_lang"])), ("lang", lang), ("kind", kind), ("body", body), ("translation", translation), ("likes_count", likes), ("comments_count", 0L), ("corrections_count", 0L));
+    }
+
+    var p1 = await Mk("aiko@kotoba.app", "en", "moment", "Yesterday I go to the park with my friend. We eated ice cream and it was very delicious!", null, 4);
+    await Mk("mateo@kotoba.app", "en", "moment", "Today I learned a new word: serendipity. It means finding something good by luck.", null, 7);
+    var p3 = await Mk("sofia@kotoba.app", "ja", "moment", "きょうは あめが ふっています。コーヒーを のみながら ほんを よみます。", "It is raining today. I will read a book while drinking coffee.", 5);
+    await Mk("mateo@kotoba.app", "es", "question", "Pregunta para ustedes: cual es su comida favorita? La mia son los tacos al pastor.", "Question for you all: what is your favorite food? Mine is tacos al pastor.", 3);
+    await Mk("aiko@kotoba.app", "ja", "moment", "こんにちは！わたしは アイコです。にほんの おおさかから きました。", "Hello! I am Aiko. I came from Osaka, Japan.", 9);
+
+    if (p1 is not null && by.TryGetValue("sofia@kotoba.app", out var sofiaProfile))
+    {
+        await Ins("comments", ("post_id", L(p1["id"])), ("user_id", L(sofiaProfile["user_id"])), ("author_name", S(sofiaProfile["display_name"])), ("author_color", S(sofiaProfile["avatar_color"])), ("body", "Nice story! A few small fixes:"), ("is_correction", true), ("corrected", "Yesterday I went to the park with my friend. We ate ice cream and it was delicious!"), ("explanation", "Use the past tense: go becomes went and eat becomes ate. Also, delicious already means very tasty, so you do not need very."), ("accepted", false));
+        await Upd("posts", L(p1["id"]), ("comments_count", 1L), ("corrections_count", 1L));
+    }
+    if (p3 is not null && by.TryGetValue("aiko@kotoba.app", out var aikoProfile))
+    {
+        await Ins("comments", ("post_id", L(p3["id"])), ("user_id", L(aikoProfile["user_id"])), ("author_name", S(aikoProfile["display_name"])), ("author_color", S(aikoProfile["avatar_color"])), ("body", "すてきですね！Very cozy. Your sentence is perfect."), ("is_correction", false), ("accepted", false));
+        await Upd("posts", L(p3["id"]), ("comments_count", 1L));
+    }
+    if (by.TryGetValue("aiko@kotoba.app", out var aikoFollow) && by.TryGetValue("sofia@kotoba.app", out var sofiaFollow))
+    {
+        foreach (var (follower, following) in new[] { (L(aikoFollow["user_id"]), L(sofiaFollow["user_id"])), (L(sofiaFollow["user_id"]), L(aikoFollow["user_id"])) })
+        {
+            if (await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE follower_id = @a AND following_id = @b", ("a", follower), ("b", following)) == 0)
+                await Ins("follows", ("follower_id", follower), ("following_id", following));
+        }
+    }
+
+    var circles = new (string Name, string Emoji, string Lang, string Level, string Desc, string Owner)[]
+    {
+        ("English Morning Club", "sun", "en", "A2", "Short daily check-ins in English. Be kind and correct gently.", "sofia@kotoba.app"),
+        ("Japanese for Beginners", "flower", "ja", "A1", "Hiragana, greetings and first sentences. Ask anything.", "aiko@kotoba.app"),
+        ("Spanish Cafe Talk", "coffee", "es", "A2", "Relaxed conversation practice over virtual coffee.", "mateo@kotoba.app"),
+    };
+    foreach (var spec in circles)
+    {
+        if (!by.TryGetValue(spec.Owner, out var owner)) continue;
+        var circle = await Ins("circles", ("name", spec.Name), ("emoji", spec.Emoji), ("lang", spec.Lang), ("level", spec.Level), ("description", spec.Desc), ("owner_id", L(owner["user_id"])), ("members_count", 1L), ("weekly_goal", 50L));
+        await Ins("circle_members", ("circle_id", L(circle["id"])), ("user_id", L(owner["user_id"])));
+        await Ins("messages", ("circle_id", L(circle["id"])), ("sender_id", L(owner["user_id"])), ("sender_name", S(owner["display_name"])), ("sender_color", S(owner["avatar_color"])), ("body", "Welcome to " + spec.Name + "! Introduce yourself in your target language."), ("lang", spec.Lang));
+    }
+    return true;
+}
+
+DateTime DayStart(DateOnly day) => day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+if (await Cnt("SELECT COUNT(*) FROM kotoba_posts") == 0) await Seed();
+var profile = await Prof(uid, uname);
+var lang = S(profile["learning_lang"]);
+var missions = await Q("SELECT * FROM kotoba_missions WHERE lang IN (@lang, 'any') ORDER BY position", ("lang", lang));
+var mission = missions.Count > 0 ? missions[nowUtc.DayOfYear % missions.Count] : null;
+var dayStart = DayStart(todayD);
+var dayEnd = dayStart.AddDays(1);
+var due = await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE user_id = @u AND (due_date IS NULL OR due_date <= @today)", ("u", uid), ("today", todayD));
+var next = await One("SELECT * FROM kotoba_lessons WHERE lang = @lang AND id NOT IN (SELECT lesson_id FROM kotoba_lesson_results WHERE user_id = @u) ORDER BY position LIMIT 1", ("lang", lang), ("u", uid));
+var unread = await Cnt("SELECT COUNT(*) FROM kotoba_alerts WHERE user_id = @u AND is_read = @f", ("u", uid), ("f", false));
+var acts = await Cnt("SELECT COUNT(*) FROM kotoba_posts WHERE user_id = @u AND created_at >= @a AND created_at < @b", ("u", uid), ("a", dayStart), ("b", dayEnd))
+         + await Cnt("SELECT COUNT(*) FROM kotoba_messages WHERE sender_id = @u AND created_at >= @a AND created_at < @b", ("u", uid), ("a", dayStart), ("b", dayEnd))
+         + await Cnt("SELECT COUNT(*) FROM kotoba_lesson_results WHERE user_id = @u AND updated_at >= @a AND updated_at < @b", ("u", uid), ("a", dayStart), ("b", dayEnd));
+var help = await Cnt("SELECT COUNT(*) FROM kotoba_posts WHERE corrections_count = 0 AND user_id <> @u AND lang = @nl", ("u", uid), ("nl", S(profile["native_lang"])));
+var missionDone = await Cnt("SELECT COUNT(*) FROM kotoba_posts WHERE user_id = @u AND mission_id = @m AND created_at >= @a AND created_at < @b", ("u", uid), ("m", mission is null ? 0L : L(mission["id"])), ("a", dayStart), ("b", dayEnd)) > 0;
+var circles = await Cnt("SELECT COUNT(*) FROM kotoba_circle_members WHERE user_id = @u", ("u", uid));
+object? nextLesson = next is null ? null : new { id = L(next["id"]), title = S(next["title"]), unit = S(next["unit"]), emoji = next["emoji"] is null ? null : S(next["emoji"]) };
+return Results.Json(new { profile, mission, mission_done = missionDone, due, next_lesson = nextLesson, unread, today_activity = acts, help_needed = help, circles });
 /* @arkzen:handler:cs:home:end */
 
 /* @arkzen:handler:cs:feed
 */
-return await KotobaHandlers.ExecuteAsync("feed", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+string IdList(IEnumerable<long> ids) { var list = ids.Distinct().ToList(); return list.Count == 0 ? "-1" : string.Join(",", list); }
+
+var me = await Prof(uid, uname);
+var where = new List<string>();
+var args = new List<(string, object?)>();
+if (Has("lang")) { where.Add("lang = @lang"); args.Add(("lang", In("lang"))); }
+var scope = In("scope") ?? "all";
+if (scope == "following")
+{
+    var followed = (await Q("SELECT following_id FROM kotoba_follows WHERE follower_id = @u", ("u", uid))).Select(r => L(r["following_id"])).ToList();
+    followed.Add(uid);
+    where.Add("user_id IN (" + IdList(followed) + ")");
+}
+else if (scope == "mine") { where.Add("user_id = @me"); args.Add(("me", uid)); }
+else if (scope == "help") { where.Add("lang = @native AND user_id <> @me AND corrections_count = 0"); args.Add(("native", S(me["native_lang"]))); args.Add(("me", uid)); }
+if (Has("mission_id")) { where.Add("mission_id = @mission"); args.Add(("mission", N(In("mission_id")))); }
+var posts = await Q("SELECT * FROM kotoba_posts" + (where.Count > 0 ? " WHERE " + string.Join(" AND ", where) : "") + " ORDER BY id DESC LIMIT 40", args.ToArray());
+var liked = (await Q("SELECT post_id FROM kotoba_likes WHERE user_id = @u AND post_id IN (" + IdList(posts.Select(r => L(r["id"]))) + ")", ("u", uid))).Select(r => L(r["post_id"])).ToHashSet();
+foreach (var post in posts) post["liked"] = liked.Contains(L(post["id"]));
+return Results.Json(new { data = posts });
 /* @arkzen:handler:cs:feed:end */
 
 /* @arkzen:handler:cs:create_post
 */
-return await KotobaHandlers.ExecuteAsync("create_post", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vi(string field, bool required, long min = long.MinValue, long max = long.MaxValue)
+{
+    var node = Body[field];
+    var label = field.Replace('_', ' ');
+    if (node is null || S(node).Trim() == "") return required ? "The " + label + " field is required." : null;
+    if (!long.TryParse(S(node).Trim(), out var number)) return "The " + label + " field must be an integer.";
+    if (number < min) return "The " + label + " field must be at least " + min + ".";
+    if (number > max) return "The " + label + " field must not be greater than " + max + ".";
+    return null;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+long Words(string text) => Math.Max(1, text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length);
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+Chk("body", Vs("body", 1500, true));
+Chk("lang", Vs("lang", 8, true));
+Chk("kind", Vs("kind", 16, false, new[] { "moment", "question", "mission" }));
+Chk("mission_id", Vi("mission_id", false));
+Chk("translation", Vs("translation", 1500, false));
+if (errs.Count > 0) return Fail();
+var me = await Prof(uid, uname);
+var kind = Sv("kind") ?? "moment";
+var bodyText = Sv("body")!;
+var post = await Ins("posts", ("user_id", uid), ("author_name", S(me["display_name"])), ("author_color", S(me["avatar_color"])), ("author_native", S(me["native_lang"])), ("lang", Sv("lang")), ("kind", kind), ("mission_id", Sv("mission_id") is { } missionText ? N(missionText) : (long?)null), ("body", bodyText), ("translation", Sv("translation")), ("likes_count", 0L), ("comments_count", 0L), ("corrections_count", 0L));
+await Bump(kind == "mission" ? 20 : 10, Words(bodyText), 0);
+post["liked"] = false;
+return Results.Json(new { data = post }, statusCode: 201);
 /* @arkzen:handler:cs:create_post:end */
 
 /* @arkzen:handler:cs:delete_post
 */
-return await KotobaHandlers.ExecuteAsync("delete_post", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var postId = Rid();
+var post = await One("SELECT id FROM kotoba_posts WHERE id = @i AND user_id = @u", ("i", postId), ("u", uid));
+if (post is null) return NotFound("Post", postId);
+await Run("DELETE FROM kotoba_posts WHERE id = @i", ("i", postId));
+return Results.Json(new { message = "Post deleted" });
 /* @arkzen:handler:cs:delete_post:end */
 
 /* @arkzen:handler:cs:toggle_like
 */
-return await KotobaHandlers.ExecuteAsync("toggle_like", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+async Task<string> MyName()
+{
+    var mine = await One("SELECT display_name FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", uid));
+    return mine is null ? uname : S(mine["display_name"]);
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var postId = Rid();
+var post = await One("SELECT * FROM kotoba_posts WHERE id = @i", ("i", postId));
+if (post is null) return NotFound("Post", postId);
+var count = L(post["likes_count"]);
+var existing = await One("SELECT id FROM kotoba_likes WHERE post_id = @p AND user_id = @u", ("p", postId), ("u", uid));
+bool liked;
+if (existing is not null)
+{
+    await Run("DELETE FROM kotoba_likes WHERE id = @i", ("i", L(existing["id"])));
+    count = Math.Max(0, count - 1);
+    liked = false;
+}
+else
+{
+    await Ins("likes", ("post_id", postId), ("user_id", uid));
+    count += 1;
+    liked = true;
+    await Notify(L(post["user_id"]), "like", await MyName() + " liked your post", postId);
+}
+await Upd("posts", postId, ("likes_count", count));
+return Results.Json(new { liked, likes_count = count });
 /* @arkzen:handler:cs:toggle_like:end */
 
 /* @arkzen:handler:cs:list_comments
 */
-return await KotobaHandlers.ExecuteAsync("list_comments", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+var rows = await Q("SELECT * FROM kotoba_comments WHERE post_id = @p ORDER BY id", ("p", Rid()));
+foreach (var row in rows) Bools(row, "is_correction", "accepted");
+return Results.Json(new { data = rows });
 /* @arkzen:handler:cs:list_comments:end */
 
 /* @arkzen:handler:cs:add_comment
 */
-return await KotobaHandlers.ExecuteAsync("add_comment", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vb(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    return S(node) is "1" or "0" or "true" or "false" or "True" or "False" ? null : "The " + field.Replace('_', ' ') + " field must be true or false.";
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+Chk("body", Vs("body", 1000, true));
+Chk("is_correction", Vb("is_correction"));
+Chk("corrected", Vs("corrected", 1500, false));
+Chk("explanation", Vs("explanation", 1000, false));
+if (errs.Count > 0) return Fail();
+var postId = Rid();
+var post = await One("SELECT * FROM kotoba_posts WHERE id = @i", ("i", postId));
+if (post is null) return NotFound("Post", postId);
+var me = await Prof(uid, uname);
+var isFix = Tr(Body["is_correction"]) && Sv("corrected") is not null;
+var comment = await Ins("comments", ("post_id", postId), ("user_id", uid), ("author_name", S(me["display_name"])), ("author_color", S(me["avatar_color"])), ("body", Sv("body")), ("is_correction", isFix), ("corrected", isFix ? Sv("corrected") : null), ("explanation", isFix ? Sv("explanation") : null), ("accepted", false));
+await Upd("posts", postId, ("comments_count", L(post["comments_count"]) + 1), ("corrections_count", L(post["corrections_count"]) + (isFix ? 1 : 0)));
+await Notify(L(post["user_id"]), isFix ? "correction" : "comment", S(me["display_name"]) + (isFix ? " corrected your post" : " commented on your post"), postId);
+await Bump(isFix ? 15 : 5, 0, 0);
+return Results.Json(new { data = Bools(comment, "is_correction", "accepted") }, statusCode: 201);
 /* @arkzen:handler:cs:add_comment:end */
 
 /* @arkzen:handler:cs:accept_correction
 */
-return await KotobaHandlers.ExecuteAsync("accept_correction", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+async Task<string> MyName()
+{
+    var mine = await One("SELECT display_name FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", uid));
+    return mine is null ? uname : S(mine["display_name"]);
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var commentId = Rid();
+var comment = await One("SELECT * FROM kotoba_comments WHERE id = @i", ("i", commentId));
+if (comment is null) return NotFound("Comment", commentId);
+var post = await One("SELECT * FROM kotoba_posts WHERE id = @i", ("i", L(comment["post_id"])));
+if (post is null) return NotFound("Post", L(comment["post_id"]));
+if (L(post["user_id"]) != uid) return Err(403, "Only the author can accept a correction");
+await Upd("comments", commentId, ("accepted", true));
+await Notify(L(comment["user_id"]), "accepted", await MyName() + " accepted your correction. Thank you!", L(post["id"]));
+var fresh = (await One("SELECT * FROM kotoba_comments WHERE id = @i", ("i", commentId)))!;
+return Results.Json(new { data = Bools(fresh, "is_correction", "accepted") });
 /* @arkzen:handler:cs:accept_correction:end */
 
 /* @arkzen:handler:cs:list_lessons
 */
-return await KotobaHandlers.ExecuteAsync("list_lessons", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+var me = await Prof(uid, uname);
+var lang = Has("lang") ? In("lang")! : S(me["learning_lang"]);
+var results = (await Q("SELECT lesson_id, best FROM kotoba_lesson_results WHERE user_id = @u", ("u", uid))).ToDictionary(r => L(r["lesson_id"]), r => L(r["best"]));
+var rows = await Q("SELECT * FROM kotoba_lessons WHERE lang = @lang ORDER BY position", ("lang", lang));
+foreach (var row in rows)
+{
+    var done = results.TryGetValue(L(row["id"]), out var best);
+    row["done"] = done;
+    row["best"] = done ? best : 0;
+}
+return Results.Json(new { data = rows, lang });
 /* @arkzen:handler:cs:list_lessons:end */
 
 /* @arkzen:handler:cs:complete_lesson
 */
-return await KotobaHandlers.ExecuteAsync("complete_lesson", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vi(string field, bool required, long min = long.MinValue, long max = long.MaxValue)
+{
+    var node = Body[field];
+    var label = field.Replace('_', ' ');
+    if (node is null || S(node).Trim() == "") return required ? "The " + label + " field is required." : null;
+    if (!long.TryParse(S(node).Trim(), out var number)) return "The " + label + " field must be an integer.";
+    if (number < min) return "The " + label + " field must be at least " + min + ".";
+    if (number > max) return "The " + label + " field must not be greater than " + max + ".";
+    return null;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+Chk("score", Vi("score", true, 0, 100));
+if (errs.Count > 0) return Fail();
+var lessonId = Rid();
+var lesson = await One("SELECT * FROM kotoba_lessons WHERE id = @i", ("i", lessonId));
+if (lesson is null) return NotFound("Lesson", lessonId);
+var score = N(Sv("score"));
+var result = await One("SELECT * FROM kotoba_lesson_results WHERE user_id = @u AND lesson_id = @l", ("u", uid), ("l", lessonId));
+var first = result is null;
+if (result is null) await Ins("lesson_results", ("user_id", uid), ("lesson_id", lessonId), ("score", score), ("best", score));
+else await Upd("lesson_results", L(result["id"]), ("score", score), ("best", Math.Max(L(result["best"]), score)));
+var xp = first ? (long)Math.Round(L(lesson["xp"]) * Math.Max(0.4, score / 100.0), MidpointRounding.AwayFromZero) : 5;
+var added = 0;
+JsonNode? content = null;
+try { content = JsonNode.Parse(S(lesson["content"])); } catch { }
+if (content?["v"] is JsonArray vocab)
+{
+    foreach (var pair in vocab)
+    {
+        if (pair is not JsonArray entry || entry.Count < 2) continue;
+        var term = S(entry[0]);
+        var meaning = S(entry[1]);
+        if (await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE user_id = @u AND lang = @lang AND term = @term", ("u", uid), ("lang", S(lesson["lang"])), ("term", term)) > 0) continue;
+        await Ins("vocab_cards", ("user_id", uid), ("lang", S(lesson["lang"])), ("term", term), ("meaning", meaning), ("source", "lesson"), ("ease", 2.5), ("interval_days", 0L), ("reps", 0L), ("lapses", 0L), ("due_date", todayD));
+        added++;
+    }
+}
+await Bump(xp, 0, 0);
+return Results.Json(new { xp, cards_added = added, first });
 /* @arkzen:handler:cs:complete_lesson:end */
 
 /* @arkzen:handler:cs:list_cards
 */
-return await KotobaHandlers.ExecuteAsync("list_cards", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+string Like(string text) => "%" + text.ToLowerInvariant() + "%";
+
+var where = new List<string> { "user_id = @u" };
+var args = new List<(string, object?)> { ("u", uid) };
+if (Has("lang")) { where.Add("lang = @lang"); args.Add(("lang", In("lang"))); }
+var baseWhere = string.Join(" AND ", where);
+var total = await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE " + baseWhere, args.ToArray());
+var dueArgs = args.Concat(new (string, object?)[] { ("today", todayD) }).ToArray();
+var dueCount = await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE " + baseWhere + " AND (due_date IS NULL OR due_date <= @today)", dueArgs);
+var listWhere = baseWhere;
+var listArgs = args.ToList();
+if (In("due") == "1") { listWhere += " AND (due_date IS NULL OR due_date <= @today)"; listArgs.Add(("today", todayD)); }
+if (Has("q")) { listWhere += " AND (LOWER(term) LIKE @term OR LOWER(meaning) LIKE @term)"; listArgs.Add(("term", Like(In("q")!))); }
+var rows = await Q("SELECT * FROM kotoba_vocab_cards WHERE " + listWhere + " ORDER BY due_date, id LIMIT 200", listArgs.ToArray());
+return Results.Json(new { data = rows, total, due_count = dueCount });
 /* @arkzen:handler:cs:list_cards:end */
 
 /* @arkzen:handler:cs:add_card
 */
-return await KotobaHandlers.ExecuteAsync("add_card", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+Chk("term", Vs("term", 255, true));
+Chk("meaning", Vs("meaning", 255, true));
+Chk("lang", Vs("lang", 8, true));
+Chk("example", Vs("example", 500, false));
+Chk("source", Vs("source", 16, false));
+if (errs.Count > 0) return Fail();
+var existing = await One("SELECT * FROM kotoba_vocab_cards WHERE user_id = @u AND lang = @lang AND term = @term LIMIT 1", ("u", uid), ("lang", Sv("lang")), ("term", Sv("term")));
+if (existing is not null) return Results.Json(new { data = existing, created = false });
+var card = await Ins("vocab_cards", ("user_id", uid), ("lang", Sv("lang")), ("term", Sv("term")), ("meaning", Sv("meaning")), ("example", Sv("example")), ("source", Sv("source") ?? "manual"), ("ease", 2.5), ("interval_days", 0L), ("reps", 0L), ("lapses", 0L), ("due_date", todayD));
+return Results.Json(new { data = card, created = true }, statusCode: 201);
 /* @arkzen:handler:cs:add_card:end */
 
 /* @arkzen:handler:cs:review_card
 */
-return await KotobaHandlers.ExecuteAsync("review_card", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+double D(JsonNode? n, double d = 0) => n is not null && double.TryParse(n.ToString(), System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : d;
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var cardId = Rid();
+var card = await One("SELECT * FROM kotoba_vocab_cards WHERE id = @i AND user_id = @u", ("i", cardId), ("u", uid));
+if (card is null) return NotFound("VocabCard", cardId);
+var grade = Math.Max(0, Math.Min(3, N(In("grade"), 2)));
+var reps = L(card["reps"]);
+var lapses = L(card["lapses"]);
+var ease = D(card["ease"], 2.5);
+var interval = L(card["interval_days"]);
+DateOnly due;
+if (grade == 0)
+{
+    lapses += 1;
+    reps = 0;
+    ease = Math.Max(1.3, ease - 0.2);
+    interval = 0;
+    due = todayD;
+}
+else
+{
+    reps += 1;
+    if (reps == 1) interval = grade == 3 ? 3 : 1;
+    else if (reps == 2) interval = grade == 1 ? 2 : (grade == 3 ? 7 : 4);
+    else
+    {
+        var mult = grade == 1 ? 1.2 : (grade == 3 ? ease * 1.3 : ease);
+        interval = Math.Max(1, (long)Math.Round(interval * mult, MidpointRounding.AwayFromZero));
+    }
+    if (grade == 1) ease = Math.Max(1.3, ease - 0.15);
+    if (grade == 3) ease += 0.15;
+    due = todayD.AddDays((int)interval);
+}
+await Upd("vocab_cards", cardId, ("lapses", lapses), ("reps", reps), ("ease", ease), ("interval_days", interval), ("due_date", due));
+await Bump(2, 0, 0);
+return Results.Json(new { data = await One("SELECT * FROM kotoba_vocab_cards WHERE id = @i", ("i", cardId)) });
 /* @arkzen:handler:cs:review_card:end */
 
 /* @arkzen:handler:cs:delete_card
 */
-return await KotobaHandlers.ExecuteAsync("delete_card", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+await Run("DELETE FROM kotoba_vocab_cards WHERE id = @i AND user_id = @u", ("i", Rid()), ("u", uid));
+return Results.Json(new { message = "Card deleted" });
 /* @arkzen:handler:cs:delete_card:end */
 
 /* @arkzen:handler:cs:partners
 */
-return await KotobaHandlers.ExecuteAsync("partners", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+string Like(string text) => "%" + text.ToLowerInvariant() + "%";
+
+var me = await Prof(uid, uname);
+var following = (await Q("SELECT following_id FROM kotoba_follows WHERE follower_id = @u", ("u", uid))).Select(r => L(r["following_id"])).ToHashSet();
+var where = new List<string> { "user_id <> @u" };
+var args = new List<(string, object?)> { ("u", uid) };
+if (In("mode") == "exchange") { where.Add("native_lang = @learning"); args.Add(("learning", S(me["learning_lang"]))); }
+if (Has("lang")) { where.Add("native_lang = @lang"); args.Add(("lang", In("lang"))); }
+if (Has("q")) { where.Add("(LOWER(display_name) LIKE @term OR LOWER(COALESCE(interests, '')) LIKE @term OR LOWER(COALESCE(country, '')) LIKE @term)"); args.Add(("term", Like(In("q")!))); }
+var rows = await Q("SELECT * FROM kotoba_profiles WHERE " + string.Join(" AND ", where) + " LIMIT 60", args.ToArray());
+static List<string> Tags(JsonNode? raw) => (raw is null ? "" : raw.ToString()).ToLowerInvariant().Split(',').Select(tag => tag.Trim()).Where(tag => tag != "").ToList();
+var mine = Tags(me["interests"]);
+var levels = new Dictionary<string, int> { ["A1"] = 1, ["A2"] = 2, ["B1"] = 3, ["B2"] = 4, ["C1"] = 5, ["C2"] = 6 };
+var scored = new List<(long Score, JsonObject Row)>();
+foreach (var row in rows)
+{
+    long score = 0;
+    if (S(row["native_lang"]) == S(me["learning_lang"])) score += 50;
+    if (S(row["learning_lang"]) == S(me["native_lang"])) score += 30;
+    var shared = mine.Intersect(Tags(row["interests"])).ToList();
+    score += Math.Min(20, shared.Count * 7);
+    score += Math.Max(0, 5 - Math.Abs((levels.GetValueOrDefault(S(row["level"]), 1)) - (levels.GetValueOrDefault(S(me["level"]), 1))));
+    var sharedNode = new JsonArray();
+    foreach (var tag in shared) sharedNode.Add(tag);
+    row["score"] = Math.Min(100, score);
+    row["shared"] = sharedNode;
+    row["following"] = following.Contains(L(row["user_id"]));
+    Bools(row, "onboarded");
+    scored.Add((Math.Min(100, score), row));
+}
+return Results.Json(new { data = scored.OrderByDescending(item => item.Score).Select(item => item.Row).ToList() });
 /* @arkzen:handler:cs:partners:end */
 
 /* @arkzen:handler:cs:view_profile
 */
-return await KotobaHandlers.ExecuteAsync("view_profile", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var target = Rid();
+var profile = await One("SELECT * FROM kotoba_profiles WHERE user_id = @t", ("t", target));
+if (profile is null) return NotFound("Profile", target);
+var posts = await Q("SELECT * FROM kotoba_posts WHERE user_id = @t ORDER BY id DESC LIMIT 5", ("t", target));
+var followers = await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE following_id = @t", ("t", target));
+var followingCount = await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE follower_id = @t", ("t", target));
+var iFollow = await Cnt("SELECT COUNT(*) FROM kotoba_follows WHERE follower_id = @u AND following_id = @t", ("u", uid), ("t", target)) > 0;
+var postCount = await Cnt("SELECT COUNT(*) FROM kotoba_posts WHERE user_id = @t", ("t", target));
+return Results.Json(new { data = Bools(profile, "onboarded"), posts, followers, following_count = followingCount, following = iFollow, post_count = postCount });
 /* @arkzen:handler:cs:view_profile:end */
 
 /* @arkzen:handler:cs:toggle_follow
 */
-return await KotobaHandlers.ExecuteAsync("toggle_follow", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+async Task<string> MyName()
+{
+    var mine = await One("SELECT display_name FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", uid));
+    return mine is null ? uname : S(mine["display_name"]);
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+var target = Rid();
+if (target == uid) return Err(422, "You cannot follow yourself");
+var existing = await One("SELECT id FROM kotoba_follows WHERE follower_id = @u AND following_id = @t", ("u", uid), ("t", target));
+if (existing is not null)
+{
+    await Run("DELETE FROM kotoba_follows WHERE id = @i", ("i", L(existing["id"])));
+    return Results.Json(new { following = false });
+}
+await Ins("follows", ("follower_id", uid), ("following_id", target));
+await Notify(target, "follow", await MyName() + " started following you", uid);
+return Results.Json(new { following = true });
 /* @arkzen:handler:cs:toggle_follow:end */
 
 /* @arkzen:handler:cs:list_conversations
 */
-return await KotobaHandlers.ExecuteAsync("list_conversations", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+string IdList(IEnumerable<long> ids) { var list = ids.Distinct().ToList(); return list.Count == 0 ? "-1" : string.Join(",", list); }
+
+var rows = await Q("SELECT * FROM kotoba_conversations WHERE user_a = @u OR user_b = @u ORDER BY CASE WHEN last_at IS NULL THEN 1 ELSE 0 END, last_at DESC, id DESC", ("u", uid));
+long OtherOf(JsonObject conv) => L(conv["user_a"]) == uid ? L(conv["user_b"]) : L(conv["user_a"]);
+var profiles = (await Q("SELECT * FROM kotoba_profiles WHERE user_id IN (" + IdList(rows.Select(OtherOf)) + ")")).ToDictionary(r => L(r["user_id"]));
+var data = new List<object>();
+foreach (var conv in rows)
+{
+    var other = OtherOf(conv);
+    var entry = new Dictionary<string, object?> { ["id"] = L(conv["id"]), ["last_message"] = conv["last_message"], ["last_at"] = conv["last_at"] };
+    entry["with"] = profiles.TryGetValue(other, out var profile) ? Bools(profile, "onboarded") : new Dictionary<string, object?> { ["user_id"] = other, ["display_name"] = "Member", ["avatar_color"] = "#6b655b" };
+    data.Add(entry);
+}
+return Results.Json(new { data });
 /* @arkzen:handler:cs:list_conversations:end */
 
 /* @arkzen:handler:cs:start_conversation
 */
-return await KotobaHandlers.ExecuteAsync("start_conversation", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vi(string field, bool required, long min = long.MinValue, long max = long.MaxValue)
+{
+    var node = Body[field];
+    var label = field.Replace('_', ' ');
+    if (node is null || S(node).Trim() == "") return required ? "The " + label + " field is required." : null;
+    if (!long.TryParse(S(node).Trim(), out var number)) return "The " + label + " field must be an integer.";
+    if (number < min) return "The " + label + " field must be at least " + min + ".";
+    if (number > max) return "The " + label + " field must not be greater than " + max + ".";
+    return null;
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+Chk("user_id", Vi("user_id", true));
+if (errs.Count > 0) return Fail();
+var other = N(Sv("user_id"));
+if (other == uid) return Err(422, "Pick someone else to talk to");
+var profile = await One("SELECT * FROM kotoba_profiles WHERE user_id = @o", ("o", other));
+if (profile is null) return NotFound("Profile", other);
+var a = Math.Min(uid, other);
+var b = Math.Max(uid, other);
+var conv = await One("SELECT * FROM kotoba_conversations WHERE user_a = @a AND user_b = @b", ("a", a), ("b", b)) ?? await Ins("conversations", ("user_a", a), ("user_b", b));
+return Results.Json(new { data = new Dictionary<string, object?> { ["id"] = L(conv["id"]), ["last_message"] = conv["last_message"], ["last_at"] = conv["last_at"], ["with"] = Bools(profile, "onboarded") } });
 /* @arkzen:handler:cs:start_conversation:end */
 
 /* @arkzen:handler:cs:list_messages
 */
-return await KotobaHandlers.ExecuteAsync("list_messages", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var where = "";
+var args = new List<(string, object?)>();
+if (Has("conversation_id"))
+{
+    var convId = N(In("conversation_id"));
+    var conv = await One("SELECT * FROM kotoba_conversations WHERE id = @i", ("i", convId));
+    if (conv is null) return NotFound("Conversation", convId);
+    if (L(conv["user_a"]) != uid && L(conv["user_b"]) != uid) return Err(403, "Not your conversation");
+    where = "conversation_id = @scope";
+    args.Add(("scope", convId));
+}
+else if (Has("circle_id"))
+{
+    var circleId = N(In("circle_id"));
+    if (await Cnt("SELECT COUNT(*) FROM kotoba_circle_members WHERE circle_id = @c AND user_id = @u", ("c", circleId), ("u", uid)) == 0) return Err(403, "Join this circle first");
+    where = "circle_id = @scope";
+    args.Add(("scope", circleId));
+}
+else return Err(422, "conversation_id or circle_id required");
+if (Has("after_id")) { where += " AND id > @after"; args.Add(("after", N(In("after_id")))); }
+var rows = await Q("SELECT * FROM kotoba_messages WHERE " + where + " ORDER BY id DESC LIMIT 100", args.ToArray());
+rows.Reverse();
+return Results.Json(new { data = rows });
 /* @arkzen:handler:cs:list_messages:end */
 
 /* @arkzen:handler:cs:send_message
 */
-return await KotobaHandlers.ExecuteAsync("send_message", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+string? Vi(string field, bool required, long min = long.MinValue, long max = long.MaxValue)
+{
+    var node = Body[field];
+    var label = field.Replace('_', ' ');
+    if (node is null || S(node).Trim() == "") return required ? "The " + label + " field is required." : null;
+    if (!long.TryParse(S(node).Trim(), out var number)) return "The " + label + " field must be an integer.";
+    if (number < min) return "The " + label + " field must be at least " + min + ".";
+    if (number > max) return "The " + label + " field must not be greater than " + max + ".";
+    return null;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+long Words(string text) => Math.Max(1, text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length);
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+JsonObject Scoped(JsonObject row, string scope, bool updated = false) { row["scope"] = scope; if (updated) row["updated"] = true; return row; }
+
+async Task Push(IEnumerable<long> recipients, JsonObject payload)
+{
+    foreach (var recipient in recipients.Distinct())
+    {
+        if (recipient == uid) continue;
+        try { await BroadcastHub.BroadcastToAsync("private-kotoba." + recipient, "kotoba.message-created", payload, ct); } catch { }
+    }
+}
+
+Chk("body", Vs("body", 2000, true));
+Chk("lang", Vs("lang", 8, false));
+Chk("conversation_id", Vi("conversation_id", false));
+Chk("circle_id", Vi("circle_id", false));
+if (errs.Count > 0) return Fail();
+var me = await Prof(uid, uname);
+var recipients = new List<long>();
+long? convId = null;
+long? circleId = null;
+if (Sv("conversation_id") is { } convText && N(convText) != 0)
+{
+    var conv = await One("SELECT * FROM kotoba_conversations WHERE id = @i", ("i", N(convText)));
+    if (conv is null) return NotFound("Conversation", N(convText));
+    if (L(conv["user_a"]) != uid && L(conv["user_b"]) != uid) return Err(403, "Not your conversation");
+    convId = L(conv["id"]);
+    recipients.Add(L(conv["user_a"]));
+    recipients.Add(L(conv["user_b"]));
+}
+else if (Sv("circle_id") is { } circleText && N(circleText) != 0)
+{
+    circleId = N(circleText);
+    if (await Cnt("SELECT COUNT(*) FROM kotoba_circle_members WHERE circle_id = @c AND user_id = @u", ("c", circleId), ("u", uid)) == 0) return Err(403, "Join this circle first");
+    recipients.AddRange((await Q("SELECT user_id FROM kotoba_circle_members WHERE circle_id = @c", ("c", circleId))).Select(r => L(r["user_id"])));
+}
+else return Err(422, "conversation_id or circle_id required");
+var text = Sv("body")!;
+var message = await Ins("messages", ("conversation_id", convId), ("circle_id", circleId), ("sender_id", uid), ("sender_name", S(me["display_name"])), ("sender_color", S(me["avatar_color"])), ("body", text), ("lang", Sv("lang")));
+if (convId is not null) await Upd("conversations", convId.Value, ("last_message", text.Length > 200 ? text[..200] : text), ("last_at", DateTime.UtcNow));
+var payload = Scoped(message, circleId is not null ? "circle" : "dm");
+await Push(recipients, payload);
+await Bump(3, Words(text), 1);
+return Results.Json(new { data = payload }, statusCode: 201);
 /* @arkzen:handler:cs:send_message:end */
 
 /* @arkzen:handler:cs:correct_message
 */
-return await KotobaHandlers.ExecuteAsync("correct_message", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+async Task<string> MyName()
+{
+    var mine = await One("SELECT display_name FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", uid));
+    return mine is null ? uname : S(mine["display_name"]);
+}
+
+async Task Bump(long xp, long words, long msgs)
+{
+    var prof = await Prof(uid, uname);
+    var lastRaw = prof["last_active"] is null ? null : S(prof["last_active"]);
+    var last = lastRaw is { Length: >= 10 } ? lastRaw[..10] : lastRaw;
+    var streak = L(prof["streak"]);
+    if (last != Day(todayD)) streak = last == Day(todayD.AddDays(-1)) ? streak + 1 : 1;
+    var best = Math.Max(L(prof["best_streak"]), streak);
+    await Upd("profiles", L(prof["id"]), ("streak", streak), ("last_active", todayD), ("best_streak", best), ("xp", L(prof["xp"]) + xp), ("words_written", L(prof["words_written"]) + words), ("messages_sent", L(prof["messages_sent"]) + msgs));
+}
+
+async Task<bool> Notify(long to, string kind, string text, long? refId)
+{
+    if (to <= 0 || kind == "" || to == uid) return false;
+    var alert = await Ins("alerts", ("user_id", to), ("kind", kind), ("text", text.Length > 480 ? text[..480] : text), ("ref", refId), ("is_read", false));
+    try { await BroadcastHub.BroadcastToAsync("private-kotoba." + to, "kotoba.alert-created", Bools(alert, "is_read"), ct); } catch { }
+    return true;
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+JsonObject Scoped(JsonObject row, string scope, bool updated = false) { row["scope"] = scope; if (updated) row["updated"] = true; return row; }
+
+async Task Push(IEnumerable<long> recipients, JsonObject payload)
+{
+    foreach (var recipient in recipients.Distinct())
+    {
+        if (recipient == uid) continue;
+        try { await BroadcastHub.BroadcastToAsync("private-kotoba." + recipient, "kotoba.message-created", payload, ct); } catch { }
+    }
+}
+
+Chk("corrected", Vs("corrected", 2000, true));
+Chk("note", Vs("note", 500, false));
+if (errs.Count > 0) return Fail();
+var messageId = Rid();
+var message = await One("SELECT * FROM kotoba_messages WHERE id = @i", ("i", messageId));
+if (message is null) return NotFound("Message", messageId);
+if (L(message["sender_id"]) == uid) return Err(422, "You cannot correct your own message");
+var recipients = new List<long>();
+if (message["conversation_id"] is not null)
+{
+    var conv = await One("SELECT * FROM kotoba_conversations WHERE id = @i", ("i", L(message["conversation_id"])));
+    if (conv is not null) { recipients.Add(L(conv["user_a"])); recipients.Add(L(conv["user_b"])); }
+}
+else if (message["circle_id"] is not null)
+{
+    recipients.AddRange((await Q("SELECT user_id FROM kotoba_circle_members WHERE circle_id = @c", ("c", L(message["circle_id"])))).Select(r => L(r["user_id"])));
+}
+if (!recipients.Contains(uid)) return Err(403, "Not allowed");
+await Upd("messages", messageId, ("corrected", Sv("corrected")), ("note", Sv("note")), ("corrected_by", uid));
+var fresh = (await One("SELECT * FROM kotoba_messages WHERE id = @i", ("i", messageId)))!;
+var payload = Scoped(fresh, fresh["circle_id"] is not null ? "circle" : "dm", true);
+await Push(recipients, payload);
+await Notify(L(message["sender_id"]), "correction", await MyName() + " suggested a correction in chat", messageId);
+await Bump(10, 0, 0);
+return Results.Json(new { data = payload });
 /* @arkzen:handler:cs:correct_message:end */
 
 /* @arkzen:handler:cs:list_circles
 */
-return await KotobaHandlers.ExecuteAsync("list_circles", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+string? In(string key)
+{
+    var node = Body[key];
+    if (node is not null) return node.ToString();
+    return Context.Request.Query.TryGetValue(key, out var queryValue) && queryValue.Count > 0 ? queryValue[0] : null;
+}
+
+bool Has(string key) => !string.IsNullOrEmpty(In(key));
+
+var mine = (await Q("SELECT circle_id FROM kotoba_circle_members WHERE user_id = @u", ("u", uid))).Select(r => L(r["circle_id"])).ToHashSet();
+var rows = await Q("SELECT * FROM kotoba_circles" + (Has("lang") ? " WHERE lang = @lang" : "") + " ORDER BY members_count DESC, id DESC LIMIT 60", Has("lang") ? new (string, object?)[] { ("lang", In("lang")) } : new (string, object?)[0]);
+foreach (var row in rows) row["joined"] = mine.Contains(L(row["id"]));
+return Results.Json(new { data = rows });
 /* @arkzen:handler:cs:list_circles:end */
 
 /* @arkzen:handler:cs:create_circle
 */
-return await KotobaHandlers.ExecuteAsync("create_circle", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+string? Vs(string field, int max, bool required, string[]? oneOf = null)
+{
+    var node = Body[field];
+    var text = node is null ? "" : S(node).Trim();
+    var label = field.Replace('_', ' ');
+    if (node is null || text == "") return required ? "The " + label + " field is required." : null;
+    if (node is JsonObject or JsonArray) return "The " + label + " field must be a string.";
+    if (text.Length > max) return "The " + label + " field must not be greater than " + max + " characters.";
+    if (oneOf is not null && !oneOf.Contains(text)) return "The selected " + label + " is invalid.";
+    return null;
+}
+
+string? Sv(string field)
+{
+    var node = Body[field];
+    if (node is null) return null;
+    var text = S(node).Trim();
+    return text == "" ? null : text;
+}
+
+var errs = new Dictionary<string, string[]>();
+void Chk(string field, string? message) { if (message is not null) errs[field] = new[] { message }; }
+
+IResult Fail() => Results.Json(new { message = errs.First().Value[0], errors = errs }, statusCode: 422);
+
+Chk("name", Vs("name", 80, true));
+Chk("emoji", Vs("emoji", 24, false));
+Chk("lang", Vs("lang", 8, true));
+Chk("level", Vs("level", 4, false, new[] { "A1", "A2", "B1", "B2", "C1", "C2" }));
+Chk("description", Vs("description", 400, false));
+if (errs.Count > 0) return Fail();
+var circle = await Ins("circles", ("name", Sv("name")), ("emoji", Sv("emoji") ?? "message-circle"), ("lang", Sv("lang")), ("level", Sv("level") ?? "A1"), ("description", Sv("description")), ("owner_id", uid), ("members_count", 1L), ("weekly_goal", 50L));
+await Ins("circle_members", ("circle_id", L(circle["id"])), ("user_id", uid));
+circle["joined"] = true;
+return Results.Json(new { data = circle }, statusCode: 201);
 /* @arkzen:handler:cs:create_circle:end */
 
 /* @arkzen:handler:cs:toggle_join
 */
-return await KotobaHandlers.ExecuteAsync("toggle_join", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+long Rid() => RouteValues.TryGetValue("id", out var idText) && long.TryParse(idText, out var idValue) ? idValue : 0;
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+async Task Upd(string table, long rowId, params (string, object?)[] cols)
+{
+    var all = cols.Concat(new (string, object?)[] { ("updated_at", DateTime.UtcNow) }).ToArray();
+    var sets = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\" = @" + col.Item1));
+    await Run("UPDATE kotoba_" + table + " SET " + sets + " WHERE id = @row_id", all.Concat(new (string, object?)[] { ("row_id", rowId) }).ToArray());
+}
+
+IResult Err(int code, string message) => Results.Json(new { message }, statusCode: code);
+
+IResult NotFound(string model, long rowId) => Results.Json(new { message = "No query results for model [" + model + "] " + rowId }, statusCode: 404);
+
+var circleId = Rid();
+var circle = await One("SELECT * FROM kotoba_circles WHERE id = @i", ("i", circleId));
+if (circle is null) return NotFound("Circle", circleId);
+var members = L(circle["members_count"]);
+var existing = await One("SELECT id FROM kotoba_circle_members WHERE circle_id = @c AND user_id = @u", ("c", circleId), ("u", uid));
+if (existing is not null)
+{
+    if (L(circle["owner_id"]) == uid) return Err(422, "Owners cannot leave their own circle");
+    await Run("DELETE FROM kotoba_circle_members WHERE id = @i", ("i", L(existing["id"])));
+    members = Math.Max(1, members - 1);
+    await Upd("circles", circleId, ("members_count", members));
+    return Results.Json(new { joined = false, members_count = members });
+}
+await Ins("circle_members", ("circle_id", circleId), ("user_id", uid));
+members += 1;
+await Upd("circles", circleId, ("members_count", members));
+return Results.Json(new { joined = true, members_count = members });
 /* @arkzen:handler:cs:toggle_join:end */
 
 /* @arkzen:handler:cs:list_alerts
 */
-return await KotobaHandlers.ExecuteAsync("list_alerts", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+var rows = await Q("SELECT * FROM kotoba_alerts WHERE user_id = @u ORDER BY id DESC LIMIT 40", ("u", uid));
+foreach (var row in rows) Bools(row, "is_read");
+var unread = await Cnt("SELECT COUNT(*) FROM kotoba_alerts WHERE user_id = @u AND is_read = @f", ("u", uid), ("f", false));
+return Results.Json(new { data = rows, unread });
 /* @arkzen:handler:cs:list_alerts:end */
 
 /* @arkzen:handler:cs:read_alerts
 */
-return await KotobaHandlers.ExecuteAsync("read_alerts", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+async Task Run(string sql, params (string, object?)[] kv) => await ScriptDatabase.ExecuteAsync(Database, sql, P(kv), ct);
+
+await Run("UPDATE kotoba_alerts SET is_read = @t, updated_at = @now WHERE user_id = @u AND is_read = @f", ("t", true), ("f", false), ("u", uid), ("now", DateTime.UtcNow));
+return Results.Json(new { ok = true });
 /* @arkzen:handler:cs:read_alerts:end */
 
 /* @arkzen:handler:cs:progress
 */
-return await KotobaHandlers.ExecuteAsync("progress", Context, Body, Database, RouteValues, user);
+// Kotoba :cs - full implementation, mirrors the :php reference handler.
+// Mirrors the :php reference handler. Script globals: Context, Body, Database, RouteValues, user.
+if (user is null) return Results.Json(new { message = "Unauthenticated." }, statusCode: 401);
+var ct = Context.RequestAborted;
+var uid = L(user["id"]);
+var uname = S(user["name"]);
+var nowUtc = DateTime.UtcNow;
+var todayD = DateOnly.FromDateTime(nowUtc);
+
+long N(string? s, long d = 0) => long.TryParse(s, out var v) ? v : d;
+
+long L(JsonNode? n, long d = 0) => n is null ? d : N(n.ToString(), d);
+
+string S(JsonNode? n) => n is null ? "" : n.ToString();
+
+bool Tr(JsonNode? n) => n is not null && n.ToString() is "1" or "true" or "True";
+
+string Day(DateOnly day) => day.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture);
+
+Dictionary<string, object?> P((string, object?)[] kv)
+{
+    var map = new Dictionary<string, object?>();
+    foreach (var (key, value) in kv) map[key.StartsWith('@') ? key : "@" + key] = value;
+    return map;
+}
+
+Task<List<JsonObject>> Q(string sql, params (string, object?)[] kv) => ScriptDatabase.QueryAsync(Database, sql, P(kv), ct);
+
+async Task<JsonObject?> One(string sql, params (string, object?)[] kv)
+{
+    var found = await Q(sql, kv);
+    return found.Count > 0 ? found[0] : null;
+}
+
+async Task<long> Cnt(string sql, params (string, object?)[] kv)
+{
+    var scalar = await ScriptDatabase.ScalarAsync(Database, sql, P(kv), ct);
+    return scalar is null or DBNull ? 0 : Convert.ToInt64(scalar, System.Globalization.CultureInfo.InvariantCulture);
+}
+
+async Task<JsonObject> Ins(string table, params (string, object?)[] cols)
+{
+    var stamp = DateTime.UtcNow;
+    var all = cols.Concat(new (string, object?)[] { ("created_at", stamp), ("updated_at", stamp) }).ToArray();
+    var names = string.Join(", ", all.Select(col => "\"" + col.Item1 + "\""));
+    var marks = string.Join(", ", all.Select(col => "@" + col.Item1));
+    var inserted = await Q("INSERT INTO kotoba_" + table + " (" + names + ") VALUES (" + marks + ") RETURNING *", all);
+    return inserted[0];
+}
+
+JsonObject Bools(JsonObject row, params string[] cols)
+{
+    foreach (var col in cols) if (row.ContainsKey(col)) row[col] = Tr(row[col]);
+    return row;
+}
+
+async Task<JsonObject> Prof(long forUser, string displayName, string? color = null)
+{
+    var found = await One("SELECT * FROM kotoba_profiles WHERE user_id = @u LIMIT 1", ("u", forUser));
+    if (found is not null) return Bools(found, "onboarded");
+    var made = await Ins("profiles", ("user_id", forUser), ("display_name", displayName), ("native_lang", "en"), ("learning_lang", "es"), ("level", "A1"), ("avatar_color", color ?? "#121212"), ("xp", 0L), ("streak", 0L), ("best_streak", 0L), ("daily_goal", 3L), ("words_written", 0L), ("messages_sent", 0L), ("onboarded", false));
+    return Bools(made, "onboarded");
+}
+
+string IdList(IEnumerable<long> ids) { var list = ids.Distinct().ToList(); return list.Count == 0 ? "-1" : string.Join(",", list); }
+
+DateTime DayStart(DateOnly day) => day.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+var profile = await Prof(uid, uname);
+var days = new List<DateOnly>();
+for (var i = 13; i >= 0; i--) days.Add(todayD.AddDays(-i));
+var counts = days.ToDictionary(day => Day(day), day => 0);
+var since = DayStart(days[0]);
+foreach (var (sql, column) in new[]
+{
+    ("SELECT created_at AS at FROM kotoba_posts WHERE user_id = @u AND created_at >= @since", "at"),
+    ("SELECT created_at AS at FROM kotoba_messages WHERE sender_id = @u AND created_at >= @since", "at"),
+    ("SELECT updated_at AS at FROM kotoba_lesson_results WHERE user_id = @u AND updated_at >= @since", "at"),
+})
+{
+    foreach (var row in await Q(sql, ("u", uid), ("since", since)))
+    {
+        var stamp = S(row[column]);
+        var key = stamp.Length >= 10 ? stamp[..10] : stamp;
+        if (counts.ContainsKey(key)) counts[key]++;
+    }
+}
+var series = days.Select(day => new { date = Day(day), count = counts[Day(day)] }).ToList();
+var myPosts = (await Q("SELECT id FROM kotoba_posts WHERE user_id = @u", ("u", uid))).Select(r => L(r["id"])).ToList();
+var postIds = IdList(myPosts);
+var xp = L(profile["xp"]);
+var stats = new
+{
+    cards = await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE user_id = @u", ("u", uid)),
+    mastered = await Cnt("SELECT COUNT(*) FROM kotoba_vocab_cards WHERE user_id = @u AND reps >= 4", ("u", uid)),
+    lessons = await Cnt("SELECT COUNT(*) FROM kotoba_lesson_results WHERE user_id = @u", ("u", uid)),
+    posts = myPosts.Count,
+    corrections_given = await Cnt("SELECT COUNT(*) FROM kotoba_comments WHERE user_id = @u AND is_correction = @t", ("u", uid), ("t", true)),
+    corrections_received = await Cnt("SELECT COUNT(*) FROM kotoba_comments WHERE is_correction = @t AND post_id IN (" + postIds + ")", ("t", true)),
+    corrections_accepted = await Cnt("SELECT COUNT(*) FROM kotoba_comments WHERE is_correction = @t AND accepted = @t AND post_id IN (" + postIds + ")", ("t", true)),
+    words_written = L(profile["words_written"]),
+    messages_sent = L(profile["messages_sent"]),
+};
+return Results.Json(new { profile, series, stats, level = xp / 100 + 1, level_progress = xp % 100 });
 /* @arkzen:handler:cs:progress:end */
 
 /* @arkzen:web:style */
