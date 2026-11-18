@@ -641,6 +641,21 @@ ${hookChunks.join('\n\n')}
         )
       })
     if (utilChunks.length > 0) {
+      // Utilities may reference ALL_CAPS constants, use* hooks and shared types
+      // that live in sibling files; import them or they throw ReferenceError.
+      const utilSrc = utilChunks.join('\n')
+      const utilConstants = findReferencedNames(utilSrc, sharedConstants).sort()
+      const constantsImport = utilConstants.length > 0
+        ? `import { ${utilConstants.join(', ')} } from './constants'\n`
+        : ''
+      const utilHooks = findReferencedNames(utilSrc, customHooks).sort()
+      const hooksImport = utilHooks.length > 0
+        ? `import { ${utilHooks.join(', ')} } from './hooks'\n`
+        : ''
+      const utilTypes = findReferencedNames(utilSrc, sharedTypes).sort()
+      const typesImport = utilTypes.length > 0
+        ? `import type { ${utilTypes.join(', ')} } from './types'\n`
+        : ''
       const content = `// ============================================================
 // ARKZEN GENERATED UTILITIES — ${tatemono.meta.name} [TanStack]
 // Source: @arkzen:components (${tatemono.meta.name})
@@ -649,7 +664,7 @@ ${hookChunks.join('\n\n')}
 // ============================================================
 
 ${canonicalBlock}
-
+${constantsImport}${hooksImport}${typesImport}
 ${utilChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
