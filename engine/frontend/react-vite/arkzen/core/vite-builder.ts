@@ -64,20 +64,18 @@ export async function buildViteTatemono(corePath: string): Promise<ViteBuildResu
     console.error(`[Arkzen Vite Builder] ✗ Page registration failed:`, message)
   }
 
-  const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
-  if (isStatic) {
-    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Static tatemono — no backend' })
-    console.log(`[Arkzen Vite Bridge] ✓ Static tatemono — skipping backend build`)
-  } else {
-    try {
-      await triggerBackendBuild(parsed)
-      steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Laravel backend updated' })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
-      errors.push(message)
-      console.error(`[Arkzen Vite Builder] ✗ Backend build failed:`, message)
-    }
+  // triggerBackendBuild() owns the static/backend decision (databases, apis,
+  // customRoutes, events, jobs, mail, notifications, console, auth, middleware,
+  // policies) and logs + returns early for static tatemonos. Do NOT re-guard here
+  // with a narrower check, or routes-only tatemonos silently skip the backend.
+  try {
+    await triggerBackendBuild(parsed)
+    steps.push({ name: 'Trigger Backend Build', status: 'success', message: 'Backend build complete' })
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
+    errors.push(message)
+    console.error(`[Arkzen Vite Builder] ✗ Backend build failed:`, message)
   }
 
   // ── PWA generation ─────────────────────────────────────────
