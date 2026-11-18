@@ -569,7 +569,9 @@ return response()->json($orders);
 
 /* @arkzen:endpoint:ts:byGroup
 */
-return response.json({ ok: true, endpoint: 'byGroup', input: request.all() })
+const group = request.route('group')
+const orders = await JobOrder.where('jor_pyrl_group', group).where('status', 'active').orderBy('jor_number').get()
+return response.json(orders)
 /* @arkzen:endpoint:ts:byGroup:end */
 
 /* @arkzen:endpoint:java:byGroup
@@ -598,7 +600,8 @@ return response()->json($orders);
 
 /* @arkzen:endpoint:ts:appointments
 */
-return response.json({ ok: true, endpoint: 'appointments', input: request.all() })
+const orders = await JobOrder.query().whereNotNull('appointment_order').orderBy('appointment_order').get()
+return response.json(orders)
 /* @arkzen:endpoint:ts:appointments:end */
 
 /* @arkzen:endpoint:java:appointments
