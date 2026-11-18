@@ -911,7 +911,19 @@ ${hookChunks.join('\n\n')}
         )
       })
     if (utilChunks.length > 0) {
-      const typeImport = typeImportFor(utilChunks.join('\n'))
+      const utilSrc = utilChunks.join('\n')
+      const typeImport = typeImportFor(utilSrc)
+      // Utilities may reference ALL_CAPS constants and use* hooks that live in
+      // sibling files. Without these imports Vite compiles fine but the function
+      // throws ReferenceError at runtime.
+      const utilConstants = findReferencedNames(utilSrc, sharedConstants).sort()
+      const constantsImport = utilConstants.length > 0
+        ? `import { ${utilConstants.join(', ')} } from './constants'\n`
+        : ''
+      const utilHooks = findReferencedNames(utilSrc, customHooks).sort()
+      const hooksImport = utilHooks.length > 0
+        ? `import { ${utilHooks.join(', ')} } from './hooks'\n`
+        : ''
       const content = `// ============================================================
 // ARKZEN GENERATED UTILITIES — ${tatemono.meta.name} [React+Vite]
 // Source: @arkzen:components (${tatemono.meta.name})
@@ -921,7 +933,7 @@ ${hookChunks.join('\n\n')}
 
 ${canonicalBlock}
 ${typeImport}
-
+${constantsImport}${hooksImport}
 ${utilChunks.join('\n\n')}
 `
       fs.writeFileSync(path.join(componentsDir, 'utils.tsx'), content, 'utf-8')
