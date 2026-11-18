@@ -15,7 +15,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-const ROOT_DIR    = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..')
+const ROOT_DIR    = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..')
 const MODULES_DIR = path.join(ROOT_DIR, 'tatemonos')
 
 const tatemononName = process.argv[2]
