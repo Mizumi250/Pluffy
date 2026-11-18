@@ -27,6 +27,9 @@ const styles = `
 .arkhub-cardpills{display:flex;flex-wrap:wrap;gap:5px}.arkhub-cardpill{border:1px solid #e9e9e9;border-radius:999px;padding:3px 8px;color:#777;background:#fff;font-size:9px}
 .arkhub-actions{display:flex;gap:8px;margin-top:auto;padding-top:18px}.arkhub-open{flex:1;border:0;border-radius:12px;background:#151515;color:#fff;text-align:center;padding:9px 12px;text-decoration:none;font-size:11px;font-weight:600;cursor:pointer}
 .arkhub-open:hover{background:#414141}.arkhub-copy{border:1px solid #e7e7e7;border-radius:12px;background:white;color:#666;padding:8px 11px;font-size:11px;cursor:pointer}
+.arkhub-skel{height:256px;border-radius:26px;background:#e5e5e199;animation:arkhub-pulse 1.4s ease-in-out infinite}@keyframes arkhub-pulse{50%{opacity:.5}}
+.arkhub-card{animation:arkhub-in .35s ease both}@keyframes arkhub-in{from{opacity:0;transform:translateY(14px)}}
+.arkhub-state-title{color:#222;font-size:13px;font-weight:600}.arkhub-state-sub{margin-top:4px;color:#aaa;font-size:11px}
 .arkhub-state{grid-column:1/-1;border:1px dashed #d9d9d9;border-radius:22px;padding:64px 20px;text-align:center;color:#8a8a8a;background:#ffffff80}
 .arkhub-error{margin:18px 0 0;border:1px solid #f1d29b;border-radius:13px;background:#fff9ed;padding:10px 13px;color:#8f5b0a;font-size:11px}
 @media(max-width:900px){.arkhub-top{grid-template-columns:1fr}.arkhub-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
@@ -34,7 +37,7 @@ const styles = `
 `
 
 const stackGroups = [
-  { label: 'Frontend', key: 'activeStack', tone: '#007aff', options: [['nextjs', 'Next.js'], ['react-vite', 'React + Vite'], ['react-inertia', 'React + Inertia'], ['astro', 'Astro'], ['tanstack-start', 'TanStack Start']] },
+  { label: 'Frontend', key: 'activeStack', tone: '#007aff', options: [['nextjs', 'Next.js'], ['react-vite', 'React + Vite'], ['react-inertia', 'React + Inertia'], ['astro', 'Astro'], ['tanstack-start', 'TanStack Start'], ['expo', 'Expo'], ['react-native', 'React Native'], ['lynx', 'Lynx'], ['tauri', 'Tauri'], ['electron', 'Electron']] },
   { label: 'Backend', key: 'activeBackend', tone: '#30c75a', options: [['laravel', 'Laravel'], ['laravel-inertia', 'Laravel + Inertia'], ['express', 'Express'], ['fastapi', 'FastAPI'], ['django', 'Django'], ['spring-boot', 'Spring Boot'], ['aspnet', 'ASP.NET'], ['go', 'Go'], ['rust', 'Rust']] },
   { label: 'Database', key: 'activeDatabase', tone: '#af52de', options: [['sqlite', 'SQLite'], ['pgsql', 'PostgreSQL']] },
 ]
@@ -100,11 +103,11 @@ export function createArkzenHub(React, { registryPath = '/api/arkzen/registry', 
       )),
     ))
 
-    const cards = filtered.map(module => {
+    const cards = filtered.map((module, index) => {
       const frontend = module.frontend ?? []
       const backend = module.backend ?? []
       const status = module.status ?? 'active'
-      return h('article', { className: 'arkhub-card', key: module.name },
+      return h('article', { className: 'arkhub-card', key: module.name, style: { animationDelay: `${Math.min(index, 12) * 45}ms` } },
         h('div', { className: 'arkhub-cardtop' },
           h('div', { className: 'arkhub-avatar', 'aria-hidden': true }, String(module.name ?? '?').slice(0, 1).toUpperCase()),
           h('span', { className: `arkhub-status ${status}` }, status),
@@ -175,10 +178,10 @@ export function createArkzenHub(React, { registryPath = '/api/arkzen/registry', 
           h('div', { className: 'arkhub-title' }, 'All Tatemono', h('span', { className: 'arkhub-total' }, filtered.length)),
         ),
         h('div', { className: 'arkhub-grid' },
-          loading ? h('div', { className: 'arkhub-state' }, 'Loading registry…')
-            : error && modules.length === 0 ? h('div', { className: 'arkhub-state' }, error)
+          loading ? Array.from({ length: 6 }, (_, index) => h('div', { className: 'arkhub-skel', key: index }))
+            : error && !registry ? h('div', { className: 'arkhub-state' }, h('div', { className: 'arkhub-state-title' }, 'Registry unavailable'), h('div', { className: 'arkhub-state-sub' }, error))
               : filtered.length ? cards
-                : h('div', { className: 'arkhub-state' }, 'No matching Tatemono. Try another name or framework.'),
+                : h('div', { className: 'arkhub-state' }, h('div', { className: 'arkhub-state-title' }, 'No matching Tatemono'), h('div', { className: 'arkhub-state-sub' }, 'Try another name or framework.')),
         ),
       ),
     )
