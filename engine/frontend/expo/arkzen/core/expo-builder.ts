@@ -96,28 +96,21 @@ export async function buildExpoTatemono(corePath: string): Promise<BuildResult> 
   }
 
   // ─── Step 4: Trigger Backend Build ───────────────────────
-  const isStatic = parsed.databases.length === 0 && parsed.apis.length === 0
-  if (isStatic) {
+  // triggerBackendBuild() owns the static/backend decision (see backend-bridge.ts).
+  // Do NOT re-guard here with a narrower check.
+  try {
+    await triggerBackendBuild(parsed)
+    const controllers = parsed.apis.map(a => a.controller).join(', ')
     steps.push({
       name:    'Trigger Backend Build',
       status:  'success',
-      message: 'Static tatemono — no backend',
+      message: controllers ? `Backend built: ${controllers}` : 'Backend build complete',
     })
-  } else {
-    try {
-      await triggerBackendBuild(parsed)
-      const controllers = parsed.apis.map(a => a.controller).join(', ')
-      steps.push({
-        name:    'Trigger Backend Build',
-        status:  'success',
-        message: `Backend built: ${controllers}`,
-      })
-    } catch (err) {
-      const message = err instanceof Error ? err.message : String(err)
-      steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
-      errors.push(message)
-      console.error(`[Arkzen Expo] ✗ Backend build failed:`, message)
-    }
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err)
+    steps.push({ name: 'Trigger Backend Build', status: 'failed', message })
+    errors.push(message)
+    console.error(`[Arkzen Expo] ✗ Backend build failed:`, message)
   }
 
   // ─── Step 5: Update Registry ─────────────────────────────
