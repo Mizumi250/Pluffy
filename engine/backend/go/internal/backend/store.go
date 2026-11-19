@@ -15,6 +15,7 @@ type Registration struct {
 	Name            string               `json:"name"`
 	BackendVariant  string               `json:"backendVariant"`
 	Auth            bool                 `json:"auth,omitempty"`
+	OAuth           *OAuthConfig         `json:"oauth,omitempty"`
 	Tables          []string             `json:"tables"`
 	Databases       []DatabaseDefinition `json:"databases,omitempty"`
 	APIs            []APIBlock           `json:"apis,omitempty"`
