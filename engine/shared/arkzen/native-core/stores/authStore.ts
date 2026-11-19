@@ -1,6 +1,11 @@
 // ============================================================
-// ARKZEN ENGINE — NATIVE AUTH STORE v1.2
+// ARKZEN ENGINE — NATIVE AUTH STORE v1.3
 // React Native specific. No window/document/localStorage.
+//
+// v1.3: Social sign-in helpers (getOAuthProviders, oauthLoginUrl,
+//       oauthSignIn, completeOAuthFromUrl, consumeOAuthError) for
+//       tatemonos that declare @arkzen:oauth. See the OAuth section
+//       at the bottom of this file.
 //
 // v1.2: Fixed cross-tatemono user/isAuthenticated bleed.
 //       v1.1 persisted { user, isAuthenticated } under the fixed
@@ -306,4 +311,108 @@ export function setActiveTatemono(slug: string): void {
       isLoading:       false,
     })
   }
+}
+
+// ─────────────────────────────────────────────
+// SOCIAL SIGN-IN (OAuth) — opt-in via @arkzen:oauth
+// ─────────────────────────────────────────────
+//
+// Native apps have no URL hash, so the browser round trip works like this:
+//   1. oauthSignIn('google', opener) hands oauthLoginUrl('google') to `opener`,
+//      which opens the system browser (Expo: WebBrowser.openAuthSessionAsync,
+//      bare RN / Lynx: your own in-app browser or deep-link handler).
+//   2. The backend talks to the provider, then redirects to
+//      OAUTH_FRONTEND_URL + redirect path + #arkzen_oauth_token=...&arkzen_oauth_slug=...
+//      (or #arkzen_oauth_error=...). Set OAUTH_FRONTEND_URL in the backend
+//      .env to the app's deep-link base, e.g. arkzen://oauth
+//   3. `opener` resolves with that final URL and completeOAuthFromUrl() stores
+//      the token in the per-tatemono token map, then calls fetchMe().
+// The opener is injected so this file keeps zero extra dependencies.
+
+export type OAuthOpener = (loginUrl: string) => Promise<string | null | undefined>
+
+const OAUTH_SLUG_RE = /^[a-z0-9][a-z0-9-]*$/
+let lastOAuthError: string | null = null
+
+function parseOAuthFragment(url: string): Record<string, string> {
+  const out: Record<string, string> = {}
+  const hash = url.indexOf('#')
+  if (hash === -1) return out
+  for (const pair of url.slice(hash + 1).split('&')) {
+    if (!pair) continue
+    const eq  = pair.indexOf('=')
+    const key = eq === -1 ? pair : pair.slice(0, eq)
+    const raw = eq === -1 ? ''   : pair.slice(eq + 1)
+    try {
+      out[decodeURIComponent(key)] = decodeURIComponent(raw.replace(/\+/g, ' '))
+    } catch {
+      // malformed escape: skip this pair
+    }
+  }
+  return out
+}
+
+/** Providers the backend has configured (client id + secret present in its .env). */
+export async function getOAuthProviders(): Promise<string[]> {
+  try {
+    const res  = await fetch(`${getAuthBase()}/oauth/providers`, { headers: { 'Accept': 'application/json' } })
+    if (!res.ok) return []
+    const data = await safeJson<{ providers?: { id: string; enabled?: boolean }[] }>(res)
+    return (data.providers ?? []).filter(p => p.enabled !== false).map(p => p.id)
+  } catch {
+    return []
+  }
+}
+
+/** URL to open in the system browser to start sign-in. */
+export function oauthLoginUrl(provider: string): string {
+  return `${getAuthBase()}/oauth/${encodeURIComponent(provider)}/redirect`
+}
+
+/** Returns the message from a failed sign-in once, then forgets it. */
+export function consumeOAuthError(): string | null {
+  const msg = lastOAuthError
+  lastOAuthError = null
+  return msg
+}
+
+/**
+ * Call with the URL the backend redirected to (from the opener's result or a
+ * deep-link listener). Returns true when a session was established.
+ * Returns false for cancelled or failed sign-ins; read the reason with
+ * consumeOAuthError().
+ */
+export async function completeOAuthFromUrl(url: string): Promise<boolean> {
+  const params = parseOAuthFragment(url)
+  const token  = params['arkzen_oauth_token']
+  const slug   = params['arkzen_oauth_slug']
+  const error  = params['arkzen_oauth_error']
+
+  if (error) { lastOAuthError = error; return false }
+  if (!token || !slug) return false
+
+  const active = global.__ARKZEN_TATEMONO__
+  if (!OAUTH_SLUG_RE.test(slug) || slug !== active) {
+    lastOAuthError = 'Sign-in finished for a different app. Please try again.'
+    return false
+  }
+
+  await writeTokenToMap(slug, token)
+  useAuthStore.setState({ token })
+  await useAuthStore.getState().fetchMe()
+  return useAuthStore.getState().isAuthenticated
+}
+
+/**
+ * Full sign-in: open the browser, wait for the redirect, store the session.
+ * Expo example:
+ *   await oauthSignIn('google', url =>
+ *     WebBrowser.openAuthSessionAsync(url, Linking.createURL('oauth'))
+ *       .then(r => (r.type === 'success' ? r.url : null)))
+ */
+export async function oauthSignIn(provider: string, openAuthSession: OAuthOpener): Promise<boolean> {
+  lastOAuthError = null
+  const finalUrl = await openAuthSession(oauthLoginUrl(provider))
+  if (!finalUrl) return false
+  return completeOAuthFromUrl(finalUrl)
 }
