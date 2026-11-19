@@ -215,6 +215,38 @@ public sealed class TatemonoDatabase
         }
     }
 
+    /// <summary>Identity links for social sign-in (`@arkzen:oauth`): one row per provider account, per tatemono.</summary>
+    public async Task EnsureOAuthTableAsync(DbConnection connection, string slug, CancellationToken cancellationToken)
+    {
+        var tableName = PrefixedTable(slug, "oauth_accounts");
+        var accounts = Quote(tableName);
+        var id = _driver == "pgsql" ? "\"id\" BIGSERIAL PRIMARY KEY" : "\"id\" INTEGER PRIMARY KEY AUTOINCREMENT";
+        var timestamp = _driver == "pgsql" ? "TIMESTAMPTZ" : "TEXT";
+
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"""
+                CREATE TABLE IF NOT EXISTS {accounts} (
+                    {id},
+                    "user_id" BIGINT NOT NULL,
+                    "provider" VARCHAR(32) NOT NULL,
+                    "provider_user_id" VARCHAR(255) NOT NULL,
+                    "email" VARCHAR(255) NULL,
+                    "avatar" TEXT NULL,
+                    "created_at" {timestamp} NULL,
+                    "updated_at" {timestamp} NULL,
+                    UNIQUE ("provider", "provider_user_id")
+                )
+                """;
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+        await using (var command = connection.CreateCommand())
+        {
+            command.CommandText = $"CREATE INDEX IF NOT EXISTS {Quote(tableName + "_user_id_index")} ON {accounts} (\"user_id\")";
+            await command.ExecuteNonQueryAsync(cancellationToken);
+        }
+    }
+
     public async Task EnsureNotificationsTableAsync(DbConnection connection, string slug, CancellationToken cancellationToken)
     {
         var table = Quote(PrefixedTable(slug, "notifications"));
