@@ -144,7 +144,7 @@ def apply_schema(db: Connection, slug: str, dbs: list[Any], steps: list[str]) ->
         _ensure_table(db, slug, d, steps)
 
 
-def apply_auth_tables(db: Connection, slug: str, has_notifications: bool, steps: list[str]) -> None:
+def apply_auth_tables(db: Connection, slug: str, has_notifications: bool, steps: list[str], has_oauth: bool = False) -> None:
     users = prefixed_table(slug, "users")
     tokens = prefixed_table(slug, "personal_access_tokens")
     notifs = prefixed_table(slug, "notifications")
@@ -167,6 +167,16 @@ def apply_auth_tables(db: Connection, slug: str, has_notifications: bool, steps:
   "last_used_at" {ts} NULL, "expires_at" {ts} NULL, "created_at" {ts} NULL, "updated_at" {ts} NULL)""")
         db.execute(f'CREATE INDEX {qi(tokens + "_tokenable_id_index")} ON {qi(tokens)} ("tokenable_id")')
         steps.append(f"Auth table created: {tokens}")
+    if has_oauth:
+        # One user can link several providers; (provider, provider_user_id) identifies the external identity.
+        accounts = prefixed_table(slug, "oauth_accounts")
+        if not db.has_table(accounts):
+            db.execute(f"""CREATE TABLE {qi(accounts)} (
+  "id" {pk}, "user_id" BIGINT NOT NULL, "provider" VARCHAR(32) NOT NULL, "provider_user_id" VARCHAR(191) NOT NULL,
+  "email" VARCHAR(255) NULL, "avatar" TEXT NULL, "created_at" {ts} NULL, "updated_at" {ts} NULL,
+  UNIQUE ("provider", "provider_user_id"))""")
+            db.execute(f'CREATE INDEX {qi(accounts + "_user_id_index")} ON {qi(accounts)} ("user_id")')
+            steps.append(f"Auth table created: {accounts}")
     if has_notifications and not db.has_table(notifs):
         db.execute(f"""CREATE TABLE {qi(notifs)} (
   "id" {"UUID" if is_pg() else "VARCHAR(36)"} PRIMARY KEY, "type" VARCHAR(255) NOT NULL,
