@@ -52,6 +52,7 @@ public final class Build {
     Object variant = payload.get("backendVariant");
     if (variant != null && !"java".equals(variant))
       errors.add("Payload was parsed for the :" + variant + " variant but this backend (spring-boot) reads :java. Switch the active backend and let the watcher rebuild.");
+    errors.addAll(dev.pluff.runtime.OAuth.validate(payload));
     for (Object raw : list(payload.get("databases")))
       if (map(raw).get("table") == null) errors.add("database block without a table");
     for (Object raw : list(payload.get("apis"))) {
@@ -80,6 +81,10 @@ public final class Build {
         steps.add("Auth tables");
         Schema.seedAuthUsers(Database.connection(slug), slug, payload.get("authSeed"), dbSteps);
         steps.add("Auth seed");
+        if (payload.get("oauth") != null) {
+          Schema.applyOAuthTables(Database.connection(slug), slug, dbSteps);
+          steps.add("OAuth tables");
+        }
       } else if (!list(payload.get("notifications")).isEmpty()) {
         Schema.applyAuthTables(Database.connection(slug), slug, true, dbSteps);
         steps.add("Notification table");
