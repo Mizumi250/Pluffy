@@ -6,6 +6,7 @@ from .model import *             # noqa: F401,F403
 from .validation import *        # noqa: F401,F403
 from .http import *              # noqa: F401,F403
 from .auth import *              # noqa: F401,F403
+from .oauth import *             # noqa: F401,F403
 from .gate import *              # noqa: F401,F403
 from .queue import *             # noqa: F401,F403
 from .commands import *          # noqa: F401,F403
