@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Magnetic button</title>
+<!--
+  MAGNETIC BUTTON
+  Concept: the button leans toward your cursor like a magnet, and its label
+  travels further than its body, so the word reaches for you first.
+  Signature device: the hand-cut body shape. It is two slightly different
+  wobbly outlines, and the second one fills in on hover or focus.
+
+  No CDN and no library. Plain HTML, CSS and about 50 lines of JS.
+  Edit the tokens below, and the data-* values on the button:
+    data-radius      how far outside the button the pull starts (px)
+    data-pull        how far the body follows the cursor (0 to 1)
+    data-label-pull  extra distance the label travels inside the body (0 to 1)
+
+  Look: near-monotone fallback from guideline Section 2C. For the colorful
+  house style, change --fill and --ink (and --paper if you like).
+  Only transform and opacity animate. The pull is skipped on touch screens
+  and when the user asks for reduced motion. Focus gets the same state as hover.
+-->
+<style>
+  :root {
+    --ink: #111111;
+    --paper: #f5f5f5;
+    --fill: var(--ink);        /* body color when active */
+    --on-fill: var(--paper);   /* label color when active */
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body { height: 100%; margin: 0; }
+
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--serif);
+    font-size: 1rem;
+    line-height: 1.55;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 22rem);
+    grid-template-rows: auto 1fr;
+    padding: 2.5rem clamp(1.25rem, 6vw, 5rem);
+    gap: 0 3rem;
+  }
+
+  .title { grid-column: 1; margin: 0; font-size: 1rem; font-weight: 400; font-style: italic; }
+  .notes { grid-column: 2; grid-row: 1 / 3; align-self: end; max-width: 65ch; margin: 0; }
+  .stage { grid-column: 1; grid-row: 2; align-self: end; padding: 0 0 12vh 8vw; }
+
+  /* ---------- the component ---------- */
+  .mag-wrap { display: inline-block; padding: 0; }   /* never transformed, anchors the pull */
+
+  .mag {
+    position: relative;
+    display: inline-block;
+    padding: 1.15rem 2.6rem;
+    border: 0;
+    background: none;
+    color: var(--ink);
+    font: inherit;
+    font-size: 1.25rem;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: color 0.18s ease;
+    will-change: transform;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mag__shape {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .mag__rest { fill: none; stroke: var(--ink); stroke-width: 1.5; vector-effect: non-scaling-stroke; }
+  .mag__hot  { fill: var(--fill); opacity: 0; transition: opacity 0.18s ease; }
+
+  .mag__label { position: relative; display: block; will-change: transform; }
+
+  .mag:hover,
+  .mag:focus-visible,
+  .mag.is-near { color: var(--on-fill); }
+
+  .mag:hover .mag__hot,
+  .mag:focus-visible .mag__hot,
+  .mag.is-near .mag__hot { opacity: 1; }
+
+  .mag:focus-visible { outline: 2px solid var(--ink); outline-offset: 6px; }
+  .mag:active .mag__label { opacity: 0.85; }
+
+  @media (max-width: 40rem) {
+    body { grid-template-columns: minmax(0, 1fr); }
+    .notes { grid-column: 1; grid-row: auto; margin-top: 2rem; }
+    .stage { padding-left: 0; padding-bottom: 2rem; }
+  }
+</style>
+</head>
+<body>
+
+  <h1 class="title">Component sheet: button</h1>
+
+  <div class="stage">
+    <span class="mag-wrap">
+      <button type="button" class="mag" data-magnetic data-radius="90" data-pull="0.35" data-label-pull="0.5">
+        <svg class="mag__shape" viewBox="0 0 200 64" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+          <path class="mag__rest" d="M4 7 C40 3 120 6 196 4 C198 22 197 44 195 59 C150 62 70 60 5 61 C3 44 6 24 4 7 Z"/>
+          <path class="mag__hot"  d="M2 5 C50 2 130 5 197 3 C199 24 198 45 196 60 C140 63 60 61 3 62 C1 42 4 22 2 5 Z"/>
+        </svg>
+        <span class="mag__label">Send a note</span>
+      </button>
+    </span>
+  </div>
+
+  <p class="notes">
+    Move your cursor near the button. The body leans toward you and the word leans further.
+    Tab to it with the keyboard and it takes the same filled state. On a touch screen or with
+    reduced motion turned on, only that filled state remains.
+  </p>
+
+<script>
+(function () {
+  var fine = window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+  var calm = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!fine || calm) return;
+
+  document.querySelectorAll('[data-magnetic]').forEach(function (btn) {
+    var wrap = btn.parentElement;
+    var label = btn.querySelector('.mag__label');
+    var radius = parseFloat(btn.dataset.radius) || 90;
+    var pull = parseFloat(btn.dataset.pull) || 0.35;
+    var labelPull = parseFloat(btn.dataset.labelPull) || 0.5;
+    var follow = 0.16;               /* how fast it chases the target, 0 to 1 */
+    var tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+
+    function paint() {
+      btn.style.transform = 'translate3d(' + x.toFixed(2) + 'px,' + y.toFixed(2) + 'px,0)';
+      label.style.transform = 'translate3d(' + (x * labelPull).toFixed(2) + 'px,' + (y * labelPull).toFixed(2) + 'px,0)';
+    }
+
+    function frame() {
+      x += (tx - x) * follow;
+      y += (ty - y) * follow;
+      paint();
+      var settled = Math.abs(tx - x) < 0.05 && Math.abs(ty - y) < 0.05;
+      if (settled && tx === 0 && ty === 0) { x = y = 0; paint(); raf = 0; return; }
+      raf = requestAnimationFrame(frame);
+    }
+
+    function kick() { if (!raf) raf = requestAnimationFrame(frame); }
+
+    window.addEventListener('pointermove', function (e) {
+      var r = wrap.getBoundingClientRect();
+      var dx = e.clientX - (r.left + r.width / 2);
+      var dy = e.clientY - (r.top + r.height / 2);
+      var outX = Math.max(Math.abs(dx) - r.width / 2, 0);
+      var outY = Math.max(Math.abs(dy) - r.height / 2, 0);
+      var near = Math.hypot(outX, outY) < radius;
+      btn.classList.toggle('is-near', near);
+      tx = near ? dx * pull : 0;
+      ty = near ? dy * pull : 0;
+      kick();
+    }, { passive: true });
+
+    document.addEventListener('pointerleave', function () {
+      btn.classList.remove('is-near');
+      tx = ty = 0;
+      kick();
+    });
+  });
+})();
+</script>
+</body>
+</html>
