@@ -109,10 +109,22 @@ function similar(request, tag, n) {
  * @param request  the user's app idea
  * @param opts     { examples: 2, exampleChars: 2200, guideChars: 2500 }
  */
+// UI blocks need the design defaults (Section 2E digest), but guideFor() only matches headings that
+// mention "@arkzen:<base>", so Sections 2C/2D were never retrieved for pages and components.
+const DESIGN_BASES = new Set(['web:page', 'web:components', 'web:layout', 'web:style', 'web:error',
+  'native:page', 'native:components', 'native:layout', 'native:style', 'native:error']);
+function designDigest() {
+  const s = loadGuide().find((x) => /^## SECTION 2E\b/.test(x.heading));
+  return s ? s.text : '';
+}
+
 export function buildReference(tag, request, opts = {}) {
   const { examples = 2, exampleChars = 2200, guideChars = 2500 } = opts;
   const parts = [];
-  const g = guideFor(tag, guideChars);
+  // The digest is added separately and is never cut by guideChars.
+  const g = guideFor(tag, guideChars).replace(/## SECTION 2E[\s\S]*?(?=\n## |$)/, '').trim();
+  const dd = DESIGN_BASES.has(baseOf(tag)) ? designDigest() : '';
+  if (dd) parts.push(`Design defaults (follow unless the request says otherwise):\n${dd.replace(/^## [^\n]*\n/, '').replace(/\n\s*\* \* \*\s*$/, '').trim()}`);
   if (g) parts.push(`Guideline excerpt:\n${g}`);
   for (const { t, hasTag } of similar(request, tag, examples)) {
     // prefer the block whose full tag is closest to the requested one
