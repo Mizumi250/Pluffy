@@ -1,3 +1,4 @@
+use axum::{http::header, response::IntoResponse, Json};
 use crate::db::{
     types::{Value as SqlValue, ValueRef},
     Connection, OptionalExtension,
@@ -563,11 +564,28 @@ struct MultipartUpload {
     data: Vec<u8>,
 }
 
+/// `<[u8]>::split` takes a predicate and `split_once` is unstable, so multipart parsing needs its own subslice search.
+fn split_once_bytes<'a>(haystack: &'a [u8], needle: &[u8]) -> Option<(&'a [u8], &'a [u8])> {
+    let at = haystack.windows(needle.len()).position(|window| window == needle)?;
+    Some((&haystack[..at], &haystack[at + needle.len()..]))
+}
+
+fn split_bytes<'a>(haystack: &'a [u8], needle: &[u8]) -> Vec<&'a [u8]> {
+    let mut parts = Vec::new();
+    let mut rest = haystack;
+    while let Some((head, tail)) = split_once_bytes(rest, needle) {
+        parts.push(head);
+        rest = tail;
+    }
+    parts.push(rest);
+    parts
+}
+
 fn parse_multipart(boundary: Option<&str>, bytes: &[u8]) -> Result<Vec<MultipartUpload>, String> {
     let boundary = boundary.ok_or_else(|| "Missing multipart boundary".to_owned())?;
     let marker = format!("--{boundary}");
     let mut parts = Vec::new();
-    for part in bytes.split(marker.as_bytes()) {
+    for part in split_bytes(bytes, marker.as_bytes()) {
         if part.len() < 4 {
             continue;
         }
@@ -577,7 +595,7 @@ fn parse_multipart(boundary: Option<&str>, bytes: &[u8]) -> Result<Vec<Multipart
         } else if let Some(rest) = body.strip_prefix(b"\n") {
             body = rest;
         }
-        let Some((headers, content)) = body.split_once(b"\r\n\r\n") else {
+        let Some((headers, content)) = split_once_bytes(body, b"\r\n\r\n") else {
             continue;
         };
         let headers_text = String::from_utf8_lossy(headers);
@@ -656,7 +674,7 @@ pub fn execute_upload(
                 Ok(value) => value,
                 Err(error) => return internal_error(format!("Unable to read records: {error}")),
             };
-            let rows = match statement.query_map([], |row| row_to_json(row, &json!({}))) {
+            let rows = match statement.query_map(crate::db::params![], |row| row_to_json(row, &json!({}))) {
                 Ok(value) => value,
                 Err(error) => return internal_error(format!("Unable to read records: {error}")),
             };
@@ -684,7 +702,7 @@ pub fn execute_upload(
                 row.get::<_, String>(0)
             }) {
                 Ok(value) => value,
-                Err(rusqlite::Error::QueryReturnedNoRows) => {
+                Err(error) if error.is_no_rows() => {
                     return (
                         axum::http::StatusCode::NOT_FOUND,
                         json!({"message":"Record not found"}),
@@ -710,7 +728,7 @@ pub fn execute_upload(
                 row.get::<_, String>(0)
             }) {
                 Ok(value) => value,
-                Err(rusqlite::Error::QueryReturnedNoRows) => {
+                Err(error) if error.is_no_rows() => {
                     return (
                         axum::http::StatusCode::NOT_FOUND,
                         json!({"message":"Record not found"}),
@@ -934,7 +952,7 @@ pub fn execute_upload_download(
         ))
     }) {
         Ok(value) => value,
-        Err(rusqlite::Error::QueryReturnedNoRows) => {
+        Err(error) if error.is_no_rows() => {
             return (
                 axum::http::StatusCode::NOT_FOUND,
                 Json(json!({"message":"Record not found"})),
