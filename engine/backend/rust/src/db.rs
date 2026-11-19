@@ -478,6 +478,19 @@ impl Statement<'_> {
         Ok(rows.iter().map(&mut mapper).collect::<Vec<_>>().into_iter())
     }
 
+    /// First row mapped through `mapper`; `Error::is_no_rows()` when the query returns nothing.
+    pub fn query_row<T, P, F>(&mut self, params: P, mapper: F) -> Result<T>
+    where
+        P: Params,
+        F: FnOnce(&Row) -> Result<T>,
+    {
+        let rows = self.connection.fetch(&self.sql, &params.into_values())?;
+        match rows.first() {
+            Some(row) => mapper(row),
+            None => Err(Error::no_rows()),
+        }
+    }
+
     pub fn execute<P: Params>(&mut self, params: P) -> Result<usize> {
         self.connection.run(&self.sql, &params.into_values())
     }
