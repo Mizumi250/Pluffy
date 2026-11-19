@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>OAuth Test</title>
+  <rect width="32" height="32" rx="7" fill="#1f3a34"/>
+  <circle cx="16" cy="12.5" r="5.4" fill="#f4c95d"/>
+  <path d="M13.1 17.2h5.8l1.7 9.1h-9.2z" fill="#f4c95d"/>
+  <circle cx="16" cy="12.5" r="1.9" fill="#1f3a34"/>
+</svg>
