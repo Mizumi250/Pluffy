@@ -7,5 +7,7 @@ python-multipart>=0.0.9
 bcrypt>=4.1
 croniter>=2.0
 websockets>=13.0
+# Only needed for Sign in with Apple (@arkzen:oauth): signs the ES256 client secret.
+cryptography>=42
 # PostgreSQL driver used when ARKZEN_DB_DRIVER=pgsql.
 psycopg[binary]>=3.1
