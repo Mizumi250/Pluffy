@@ -216,6 +216,22 @@ public final class Schema {
     }
   }
 
+  /** Identity links for social sign-in (`@arkzen:oauth`): one row per provider account, per tatemono. */
+  public static void applyOAuthTables(Conn db, String slug, List<String> steps) {
+    boolean pg = Database.isPg();
+    String accounts = Support.prefixedTable(slug, "oauth_accounts");
+    if (db.hasTable(accounts)) return;
+    String pk = pg ? "SERIAL PRIMARY KEY" : "INTEGER PRIMARY KEY AUTOINCREMENT";
+    String ts = pg ? "TIMESTAMP" : "DATETIME";
+    db.execute("CREATE TABLE " + qi(accounts) + " (\n"
+        + "  \"id\" " + pk + ", \"user_id\" BIGINT NOT NULL, \"provider\" VARCHAR(32) NOT NULL,\n"
+        + "  \"provider_user_id\" VARCHAR(255) NOT NULL, \"email\" VARCHAR(255) NULL, \"avatar\" TEXT NULL,\n"
+        + "  \"created_at\" " + ts + " NULL, \"updated_at\" " + ts + " NULL,\n"
+        + "  UNIQUE (\"provider\", \"provider_user_id\"))");
+    db.execute("CREATE INDEX " + qi(accounts + "_user_id_index") + " ON " + qi(accounts) + " (\"user_id\")");
+    steps.add("Auth table created: " + accounts);
+  }
+
   public static void seedAuthUsers(Conn db, String slug, Object seed, List<String> steps) {
     List<Object> usersSeed = seed instanceof List ? list(seed) : seed instanceof Map && map(seed).get("users") instanceof List ? list(map(seed).get("users")) : null;
     if (usersSeed == null) return;
