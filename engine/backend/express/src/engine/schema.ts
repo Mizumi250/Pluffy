@@ -98,7 +98,7 @@ export async function applySchema(db: Knex, slug: string, dbs: Any[], steps: str
   for (const d of sortByDependency(dbs)) await ensureTable(db, slug, d, steps)
 }
 
-export async function applyAuthTables(db: Knex, slug: string, hasNotifications: boolean, steps: string[]) {
+export async function applyAuthTables(db: Knex, slug: string, hasNotifications: boolean, steps: string[], hasOAuth = false) {
   const users = prefixedTable(slug, 'users'), tokens = prefixedTable(slug, 'personal_access_tokens'), notifs = prefixedTable(slug, 'notifications')
   if (!(await db.schema.hasTable(users))) {
     await db.schema.createTable(users, t => {
@@ -119,6 +119,20 @@ export async function applyAuthTables(db: Knex, slug: string, hasNotifications: 
       t.timestamp('created_at').nullable(); t.timestamp('updated_at').nullable()
     })
     steps.push(`Auth table created: ${tokens}`)
+  }
+  if (hasOAuth) {
+    // One user can link several providers; (provider, provider_user_id) identifies the external identity.
+    const accounts = prefixedTable(slug, 'oauth_accounts')
+    if (!(await db.schema.hasTable(accounts))) {
+      await db.schema.createTable(accounts, t => {
+        t.increments('id'); t.bigInteger('user_id').notNullable().index()
+        t.string('provider', 32).notNullable(); t.string('provider_user_id', 191).notNullable()
+        t.string('email').nullable(); t.text('avatar').nullable()
+        t.timestamp('created_at').nullable(); t.timestamp('updated_at').nullable()
+        t.unique(['provider', 'provider_user_id'])
+      })
+      steps.push(`Auth table created: ${accounts}`)
+    }
   }
   if (hasNotifications && !(await db.schema.hasTable(notifs))) {
     await db.schema.createTable(notifs, t => {
