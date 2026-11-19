@@ -567,6 +567,12 @@ public final class Generate {
       out.append("    router.add(\"POST\", ").append(quote("/api/" + slug + "/auth/broadcasting/auth"))
           .append(", List.of(Auth.authMiddleware(").append(quote(slug)).append(")), Auth.broadcastingAuth(")
           .append(quote(slug)).append(", ").append(authRuleLiteral(rules)).append("));\n");
+      Map<String, Object> oauth = map(payload.get("oauth"));
+      if (!list(oauth.get("providers")).isEmpty()) {
+        // Opt-in social sign-in (@arkzen:oauth). Secrets stay in .env; only providers and redirect paths are baked in.
+        out.append("    OAuth.mount(router, ").append(quote(slug)).append(", ")
+            .append(quote(Json.stringify(oauth))).append(");\n");
+      }
     }
     for (RouterRoute route : routes) {
       List<String> middleware = new ArrayList<>();
