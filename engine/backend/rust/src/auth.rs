@@ -39,6 +39,9 @@ pub fn prepare_module(database_dir: &Path, module: &str, payload: &Value) -> Res
         .transaction()
         .map_err(|error| format!("Could not start auth schema transaction: {error}"))?;
     ensure_auth_tables(&transaction)?;
+    if crate::oauth::module_config(payload).is_some() {
+        crate::oauth::ensure_tables(&transaction)?; // v16.0: identities for @arkzen:oauth
+    }
     seed_users(&transaction, payload.get("authSeed"))?;
     transaction
         .commit()
@@ -493,7 +496,7 @@ fn resolve_user(connection: &Connection, token: &str) -> Result<Option<(User, i6
     Ok(result)
 }
 
-fn write_token(
+pub(crate) fn write_token(
     connection: &Connection,
     user: &User,
     status: StatusCode,
@@ -516,7 +519,7 @@ fn write_token(
     ))
 }
 
-fn get_user(connection: &Connection, id: i64) -> Result<Option<User>, String> {
+pub(crate) fn get_user(connection: &Connection, id: i64) -> Result<Option<User>, String> {
     connection
         .query_row(
             r#"SELECT "id","name","email","role","email_verified_at","created_at","updated_at"
@@ -580,6 +583,11 @@ fn random_token() -> Result<String, String> {
     getrandom::getrandom(&mut bytes)
         .map_err(|error| format!("Unable to generate access token: {error}"))?;
     Ok(bytes.iter().map(|byte| format!("{byte:02x}")).collect())
+}
+
+/// Hashes a password for rows the OAuth flow creates (random, never shown to anyone).
+pub(crate) fn hash_password_public(password: &str) -> Result<String, String> {
+    hash_password(password).map_err(|error| format!("Unable to hash password: {error}"))
 }
 
 fn hash_password(password: &str) -> Result<String, bcrypt::BcryptError> {
