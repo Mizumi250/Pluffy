@@ -75,7 +75,7 @@ export async function buildTatemono(p: Any) {
   const dbSteps: string[] = []
   await run('Migrations', async () => { await applySchema(db, slug, dbs, dbSteps) })
   if (p.auth) {
-    await run('Auth tables', async () => { await applyAuthTables(db, slug, hasNotifications, dbSteps) })
+    await run('Auth tables', async () => { await applyAuthTables(db, slug, hasNotifications, dbSteps, !!p.oauth?.providers?.length) })
     await run('Auth seed', async () => { await seedAuthUsers(db, slug, p.authSeed, dbSteps) })
   } else if (hasNotifications) {
     await run('Notification table', async () => { await applyAuthTables(db, slug, true, dbSteps) })
