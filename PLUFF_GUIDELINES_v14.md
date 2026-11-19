@@ -11,8 +11,9 @@
 
   This document is long. You do not need all of it for every task.
 
+  0. **Optional, second tier:** if the repo has a `Library/` folder with a relevant reference for the UI task, use it to learn the owner's taste (Section 2C, Design Rule #2). This guideline and the tatemono index (Section 31) come first. Skip `Library/` silently if it is missing or has nothing relevant.
   1. **Always read Part A** (core rules, especially Sections 3D, 2D and 29).
-     **For all design, copy and sample data, follow Section 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
+     **For all design, copy and sample data, follow Sections 2C and 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
   2. Find your task in the table below and read only the sections listed.
   3. Section numbers are stable labels, not a sequence. The document is grouped into Parts, so numbers are not in numeric order (for example Section 18 sits in Part C beside the other backend blocks). "SECTION 8" always means the same section.
   4. If you can open files, jump with the links. If this text was pasted into a chat, search for the heading text, for example `SECTION 8 -`.
@@ -33,7 +34,7 @@
   | Login, register, protected pages | [4](#section-4--auth), [8](#section-8--arkzenapi) |
   | Social sign-in (Google, GitHub, Apple, ...) | [4](#section-4--auth), [4B](#section-4b--arkzenoauth-social-sign-in), [26B](#section-26b--frontend-data-fetching) |
   | Web pages, layouts, error pages, components | [19](#section-19--arkzenweblayoutname), [21](#section-21--arkzenwebpagename), [22](#️-section-22--weberror404--weberror500), [23](#section-23--arkzenwebcomponentsidentifier) |
-  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
+  | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [2E](#section-2e--design-defaults-digest), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
@@ -53,6 +54,7 @@
     - [SECTION 2 - STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
+    - [SECTION 2E - DESIGN DEFAULTS DIGEST](#section-2e--design-defaults-digest)
     - [SECTION 3 - TATEMONO FILE RULES](#section-3--tatemono-file-rules)
     - [⚠️ SECTION 3D - DSL TAG FORMAT RULES (CRITICAL)](#️-section-3d--dsl-tag-format-rules-critical)
     - [SECTION 3A - IMPORT PLACEMENT](#section-3a--import-placement)
@@ -123,6 +125,8 @@
     - [SECTION 31 - ONLINE TATEMONO INDEX (FETCH REAL EXAMPLES)](#section-31--online-tatemono-index-fetch-real-examples)
 
   * * *
+
+  **DESIGN (v14.1 revision):** Section 2C now has a priority order (request, then identity and the colorful handmade house preference, then a near-monotone fallback), points to an optional, second-tier root `Library/` folder for the owner's taste, and requires a concept line and signature device. The 2D house preference and all 2D bans are unchanged, including pure #000, cream, indigo and emoji. New Section 2E is a short digest for small-context tools. Example color tokens that used indigo, violet, cream and an emoji were replaced.
 
   **LAYOUT (v14.0 revision):** the document is now grouped into Parts A-H with a quick-lookup table and table of contents at the top. No section was renamed or renumbered; sections only moved. Section 18 gained a note: a custom body on `index`, `show`, `update` or `destroy` now replaces the generated default on every backend.
 
@@ -301,11 +305,40 @@
 
 ## SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)
 
-  **DESIGN RULE #1:** When design inspiration is needed, get it from **awwwards.com** first. Use it for ideas and direction, then fit the result to the product's own identity. Always check Section 2D before finalizing any UI.
+  **DESIGN RULE #1:** When design inspiration is needed, get it from **awwwards.com** first. Take the thinking (concept, story, rhythm, typography, layout), not the effects. Awwwards sites lean on heavy WebGL and scroll tricks, and Section 2D still limits motion. Then fit the result to the product's own identity. Always check Section 2D before finalizing any UI. If you cannot browse, work from the concept line below instead of guessing at what Awwwards looks like.
 
-  Default to Awwwards-quality design. Pick in order of best fit:
+  **DESIGN RULE #2: `Library/` IS OPTIONAL SECOND-TIER REFERENCE.** The repo root may have a folder called `Library/` with the owner's own handwritten design components and files. It is not mandatory and not everything exists in it. Order of reference: (1) this guideline and the tatemono index (Section 31) with the real tatemonos, (2) `Library/`, only if it has something relevant to the task. When the task is UI work and `Library/README.md` exists, glance at its index. If a listed piece fits, use it to learn the owner's taste: type, spacing, proportions, handmade quality. If nothing fits, or the folder is missing or empty, skip it silently and carry on. Never copy a piece verbatim into a new product, and it never overrides the guideline or the bans in Section 2D.
 
-  1. **Minimalism** (default) - whitespace, typography-focused, neutral palette (neutral does not mean cream or beige by default, see Section 2D), high contrast
+  ### Priority order (which look wins)
+
+  1. **The person's instruction or the brief.** Always first.
+  2. **The product's own identity plus the house preference in Section 2D:** colorful, handmade, human-looking, a bit weird but unique, in the spirit of the personality-driven web of around 2007. This is the preferred direction whenever the product has any personality to express.
+  3. **The fallback look below.** Used only when 1 and 2 give nothing to go on. It is a default, not the priority. It never overrides 1 or 2.
+
+  ### Fallback look: near-monotone, flat, minimalist (Awwwards level, never generic AI monotone)
+
+  - Palette: near-black and near-white plus neutral grays. Never pure `#000000` or `#ffffff` (Section 2D item 130 stands), and no cream or beige (item 128). Starting tokens: ink `#111111`, paper `#f5f5f5`. If the product has a hue, tint the neutrals slightly toward it.
+  - Dark mode, when asked for, is near-black `#111111` with near-white text, not a navy or purple-black.
+  - Gray steps are for secondary text, rules and disabled states. Body text stays 4.5:1 and helper text 3:1 against its background (WCAG). Never use a gray lighter than `#6b6b6b` for text on a light background.
+  - Flat: no shadows, no gradients, no glass, no glow. Build depth and hierarchy with type size and weight, spacing, 1px rules, and inversion (a full near-black block on a light page is a strong tool).
+  - Corners: square, or one small radius used everywhere. No pill buttons by default.
+  - No accent color by default. Color appears in content that carries its own color (photos, art, data charts) and in semantic states that also have text or an icon.
+  - What separates Awwwards level from generic AI monotone is not the palette. It is a clear concept, confident type and scale, an unexpected but readable composition, and small details that feel made by a person. A near-black and near-white page built from the same centered hero, three cards and footer is slop, whatever the palette.
+
+  ### Authored, not templated (applies to every look, including the colorful one)
+
+  - Before writing any new web UI, decide two things and let them drive the layout: **(a) a concept line**, one sentence about what this product is and how it should feel, and **(b) one signature device** that makes it unmistakable, such as an unusual grid, oversized cropped type, an index or table of contents as navigation, a strong asymmetric split, a hand-drawn element, or an unexpected reading order.
+  - If a page could be swapped into another product unchanged, it is a template, so redesign it.
+  - Typefaces: choose the display face and the text face for this product, from outside the overused list in Section 2D, with a defined type scale and real contrast of scale and weight.
+  - Uniqueness and story come before SaaS convention. Where SaaS conventions are necessary (sidebar, table, form, list-detail inside the working parts of an app), use them plainly and put the story and the signature device in the entry points: landing, home, portfolio, brand and empty states. Never trade clarity of a task for an idea.
+
+  Accessibility (contrast, readability, keyboard focus) always wins.
+
+  When Section 2C and Section 2D conflict, Section 2D wins.
+
+  ### Style list (pick in order of best fit when the brief or identity does not decide)
+
+  1. **Minimalism** (the fallback look above) - whitespace, typography-focused, near-monotone, high contrast
   2. **Glassmorphism** - `rgba` + `backdrop-filter: blur`
   3. **Skeuomorphism** - textured, realistic depth (finance, familiar UI)
   4. **Claymorphism** - soft, rounded, 3D-plastic (friendly/creative)
@@ -313,10 +346,6 @@
   6. **Liquid Glass** - flowing shapes, soft gradients, smooth motion (premium)
 
   Apply the chosen style sparingly. Glass, gradients and glow only where they have a reason (Section 2D).
-
-  Accessibility (contrast, readability) always wins.
-
-  When Section 2C and Section 2D conflict, Section 2D wins.
 
   **Transitions:** page fade+slide (`opacity .3s`, `transform .4s`); modal/overlay .25–.35s; buttons .15–.2s; list items may be staggered (`index * 50ms`) where it helps, not on every list. Keep under 500ms; respect `prefers-reduced-motion`.
 
@@ -383,6 +412,7 @@
   - Prefer rainbow-style, colorful, human-looking UI over sterile, template-looking UI.
   - Color itself is not the problem. What 2D warns against is color with no meaning and the same template repeated everywhere.
   - Where this preference conflicts with an item in the pattern list (for example item 4 or item 24), this preference wins.
+  - The near-monotone fallback in Section 2C applies only when the brief and the product give no direction. It is not the priority and does not outrank this preference.
 
   ### Data and content rules (always)
 
@@ -479,6 +509,8 @@
   62. Artificially spaced-out text like "W E L C O M E"
   63. Huge headlines that say very little
   64. Fake technical-looking typography to make products feel futuristic
+
+  Note for the near-monotone fallback: small uppercase labels, mono captions and italic serif accents are normal in an editorial type system. They are only a problem when added above every heading as decoration. Use them as part of one consistent system or not at all.
 
   Also recognized as an AI design look: repetitive typography, cream backgrounds, rust-colored accents, ticker-like bars and rounded dashboard elements.
 
@@ -588,6 +620,22 @@
   Copy
 
   140. Em dashes in copy, including overuse (the house rule above says never use them at all)
+
+  * * *
+
+## SECTION 2E - DESIGN DEFAULTS DIGEST (short form of 2C and 2D, for @arkzen:web:page, @arkzen:web:components, @arkzen:web:layout, @arkzen:web:style, @arkzen:native:page, @arkzen:native:components, @arkzen:native:layout, @arkzen:native:style)
+
+  Short version for tools that only send a small excerpt. Sections 2C and 2D are the full rules and win on any difference.
+
+  - Priority: 1) the request, 2) the product's own identity and the house preference (colorful, handmade, human, a bit weird but unique, spirit of the 2007 web), 3) the fallback look only when nothing else decides.
+  - Fallback look: near-black (`#111111`) and near-white (`#f5f5f5`) with neutral grays. Never pure `#000` or `#fff`, no cream, no accent color, no shadows, gradients, glass or glow, square corners or one small radius.
+  - Authored, not templated: write a concept line (one sentence) and pick one signature device before writing the UI. Never reuse the centered hero, three feature cards and footer pattern.
+  - Never use indigo or purple-blue gradients, or emoji as icons (Section 2D).
+  - Inside working app screens use plain familiar patterns. Put the story in landing, home, portfolio and empty states.
+  - Choose the product's own fonts, not Inter, Roboto, Open Sans, Lato, Montserrat, Arial or Syne. Defined type scale, body 16px or more, lines 65ch to 75ch.
+  - Real-looking sample data with Japanese (romaji), German, Russian, Indonesian or Korean names. No em dashes in copy. Hand-authored SVG favicon for new tatemonos.
+  - Every hover effect has a keyboard focus equivalent. Animate only transform and opacity, and only with a purpose.
+  - Second tier, optional: if `Library/` has a relevant reference, use it for taste. Guideline and tatemono index come first.
 
   * * *
 
@@ -1045,6 +1093,9 @@
 
   **WEB**
   - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
+  - [ ] If `Library/` has a relevant reference, it informed the taste without being copied verbatim; the guideline and tatemono index still came first (Section 2C, Design Rule #2)
+  - [ ] Look chosen by priority: request first, then the product's identity and the house preference, then the near-monotone fallback only if nothing else decides (Section 2C)
+  - [ ] A concept line and one signature device chosen before the UI was written; the page would not work unchanged as another product's page (Section 2C)
   - [ ] Sample data and seeders use real-looking entries with Japanese (romaji), German, Russian, Indonesian or Korean names, no generic placeholder names (Section 2D)
   - [ ] No em dashes in any generated copy (Section 2D)
   - [ ] Put shared imports in components/layouts; Next.js normalizes imports from pages and error blocks, and keeps animation/script imports in their own blocks
@@ -1120,8 +1171,8 @@
     name: MyApp
     short_name: App
     description: ...
-    theme_color: "#0f0f1a"
-    background_color: "#0f0f1a"
+    theme_color: "#111111"
+    background_color: "#f5f5f5"
     display: standalone            # standalone | fullscreen | minimal-ui | browser
     orientation: any               # portrait | landscape | any
     start_url: /my-app             # default /<name>
@@ -1205,11 +1256,11 @@
   ```
   /* @arkzen:native:config
   theme:
-    primary: "#6366f1"
-    background: "#fafaf9"
+    primary: "#111111"
+    background: "#f5f5f5"
     surface: "#ffffff"
-    text: "#0f172a"
-    muted: "#94a3b8"
+    text: "#111111"
+    muted: "#6b6b6b"
   fonts:
     heading: Inter_700Bold
   */
@@ -2271,7 +2322,7 @@
 
   ```
   /* @arkzen:web:script */
-  export const Colors = { primary: '#a78bfa' }
+  export const Colors = { primary: '#111111' }
   /* @arkzen:web:script:end */
 
   /* @arkzen:web:script:three-scene */
@@ -2383,8 +2434,8 @@
   /* @arkzen:import:rn:end */
 
   export const Badge = ({ label }: { label: string }) => (
-    <View className="px-3 py-1 bg-indigo-100 rounded-full self-start">
-      <Text className="text-xs font-semibold text-indigo-600">{label}</Text>
+    <View className="px-2 py-1 border border-black self-start">
+      <Text className="text-xs font-medium text-black">{label}</Text>
     </View>
   )
 
@@ -2540,7 +2591,7 @@
   ```
   /* @arkzen:native:style */                       ← GLOBAL (v10.6): CSS-like rules, engine converts/wraps them
   :root {
-    --color-primary: #2563eb;
+    --color-primary: #111111;
     --radius-default: 0.75rem;
   }
   .arkzen-btn {
@@ -2570,7 +2621,7 @@
     const router = useRouter()
     return (
       <View className="flex-1 bg-neutral-50 px-6 pt-14">
-        <Text className="text-4xl font-bold">Hello, Native 👋</Text>
+        <Text className="text-4xl font-bold">Hello, Native</Text>
         <PrimaryButton label="Go to About" onPress={() => router.push('/my-app/about' as any)} />
       </View>
     )
@@ -2817,8 +2868,8 @@
   /* @arkzen:import:rn:end */
 
   export const Badge = ({ label }: { label: string }) => (
-    <View className="px-3 py-1 bg-indigo-100 rounded-full self-start">
-      <Text className="text-xs font-semibold text-indigo-600 tracking-wide">
+    <View className="px-2 py-1 border border-black self-start">
+      <Text className="text-xs font-medium text-black">
         {label}
       </Text>
     </View>
@@ -2985,8 +3036,8 @@
 
   /* @arkzen:native:config
   theme:
-    primary: "#6366f1"
-    background: "#fafaf9"
+    primary: "#111111"
+    background: "#f5f5f5"
   */
 
   /* @arkzen:native:components:shared */
@@ -3002,7 +3053,7 @@
   /* @arkzen:import:rn:end */
 
   export const PrimaryButton = ({ label, onPress }: { label: string; onPress: () => void }) => (
-    <TouchableOpacity onPress={onPress} className="rounded-2xl py-4 px-6 items-center bg-indigo-500">
+    <TouchableOpacity onPress={onPress} className="py-4 px-6 items-center bg-black">
       <Text className="text-white font-semibold">{label}</Text>
     </TouchableOpacity>
   )
@@ -3033,7 +3084,7 @@
     /* @arkzen:import:rn:end */
     return (
       <View className="flex-1 bg-neutral-50 px-6 pt-14">
-        <Text className="text-4xl font-bold">Hello, Native 👋</Text>
+        <Text className="text-4xl font-bold">Hello, Native</Text>
         <PrimaryButton label="Go to About" onPress={() => {
           /* @arkzen:import:expo */
           router.push('/hello-native/about' as any)
