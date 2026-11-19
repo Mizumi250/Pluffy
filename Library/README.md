@@ -5,7 +5,7 @@ My own handwritten design components, layouts and files. Optional, second-tier r
 How to use this folder:
 
 - Glance at the index, then open only a piece that fits the task. If nothing fits, skip this folder.
-- Match the taste: the type, spacing, proportions and handmade quality. Do not copy a piece verbatim into a new product.
+- Match the taste: the type, spacing, proportions and handmade quality. Do not copy a piece verbatim into a new product unless I ask for it by name.
 - If a piece conflicts with a guideline rule, the piece shows the taste and the guideline still wins on the bans in Section 2D.
 
 ## Index
@@ -14,4 +14,4 @@ One line per piece, in this format:
 
 `path/to/file` | what it is | the idea behind it | when to use it | screenshot (optional)
 
-(No pieces added yet.)
+`button/magnetic_button.html` | magnetic button | the body leans toward the cursor and the label leans further, hand-cut wobbly shape fills on hover or focus | any primary action that should feel physical, sparingly | none yet
