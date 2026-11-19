@@ -16,6 +16,7 @@ generator.
 | `@arkzen:web:config` | Web runtime configuration. |
 | `@arkzen:native:config` | Native theme, fonts, and other native configuration. |
 | `@arkzen:desktop:config` | Shared desktop window settings used by Electron and Tauri shells. |
+| `@arkzen:oauth` | Optional social sign-in (Google, GitHub, X, Apple, Microsoft, Facebook, Instagram, Discord) on top of `auth: true`. Provider secrets live in the backend `.env`. |
 
 ## Data, APIs, and backend behavior
 
