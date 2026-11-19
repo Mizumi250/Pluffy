@@ -17,6 +17,7 @@ type BuildPayload struct {
 	BackendVariant string               `json:"backendVariant"`
 	Auth           bool                 `json:"auth"`
 	AuthSeed       *AuthSeed            `json:"authSeed"`
+	OAuth          *OAuthConfig         `json:"oauth"`
 	Databases      []DatabaseDefinition `json:"databases"`
 	APIs           []APIBlock           `json:"apis"`
 	CustomRoutes   []CustomRoute        `json:"customRoutes"`
@@ -111,6 +112,7 @@ func ValidateBuild(payload BuildPayload) []string {
 	if payload.BackendVariant != "" && payload.BackendVariant != "go" {
 		problems = append(problems, fmt.Sprintf("Payload was parsed for the :%s variant but this backend (go) reads :go. Switch the active backend and let the watcher rebuild.", payload.BackendVariant))
 	}
+	problems = append(problems, validateOAuthConfig(payload)...)
 	if payload.AuthSeed != nil && len(payload.AuthSeed.Users) > 0 && !payload.Auth {
 		problems = append(problems, "authSeed requires auth to be enabled")
 	}
