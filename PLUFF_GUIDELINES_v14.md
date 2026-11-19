@@ -3810,13 +3810,13 @@
   | Scripts | `visual-lab` |
   | Styles | `new-updates-styles` |
   | Components | `visual-lab` |
-  | Desktop window config | `frame-lab`, `kotoba` |
+  | Desktop window config | `frame-lab`, `oauth-test`, `kotoba` |
   | Modules | `queue-flow`, `kotoba` |
   | Free files (@arkzen:file) | `free-demo` |
   | Godot game | `godot-game` |
   | Unity game | `dino-runner`, `unity-scene-starter` |
 
-  Full index of 52 tatemonos (title · description · block families · stacks · size · raw URL):
+  Full index of 53 tatemonos (title · description · block families · stacks · size · raw URL):
 
   - **animation-lab** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web, native, lynx · L (~51k tokens, 158 KB)
@@ -3855,7 +3855,7 @@
     families: unity · stacks: - · S (~0k tokens, 1 KB) · has assets/
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/dino-runner/core.tsx
   - **dtr-geofencing** — (no description in meta)
-    families: api, database, endpoint · stacks: web, native · L (~42k tokens, 130 KB)
+    families: api, database, endpoint · stacks: web, native · L (~43k tokens, 134 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/dtr-geofencing/core.tsx
   - **errors-test** — (no description in meta)
     families: routes · stacks: web, native, lynx · M (~10k tokens, 31 KB)
@@ -3909,7 +3909,7 @@
     families: api, database, endpoint, jobs · stacks: web, native, lynx · M (~10k tokens, 31 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/job-test/core.tsx
   - **kotoba** — (no description in meta)
-    families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~178k tokens, 557 KB)
+    families: api, database, desktop, handler, module, realtime, routes · stacks: web, native · XL (never fetch in full) (~225k tokens, 703 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/kotoba/core.tsx
   - **lain098** — (no description in meta)
     families: UI only (no backend blocks) · stacks: web · M (~30k tokens, 93 KB)
@@ -3932,6 +3932,9 @@
   - **notification-test** — (no description in meta)
     families: api, notifications · stacks: web, native, lynx · M (~24k tokens, 75 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/notification-test/core.tsx
+  - **oauth-test** — (no description in meta)
+    families: desktop, oauth · stacks: web, native, lynx · M (~20k tokens, 61 KB) · has assets/
+    https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/oauth-test/core.tsx
   - **ollama-studio** — (no description in meta)
     families: api, endpoint · stacks: web · S (~2k tokens, 8 KB)
     https://raw.githubusercontent.com/Mizumi250/Pluffy/main/tatemonos/ollama-studio/core.tsx
