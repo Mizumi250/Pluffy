@@ -37,6 +37,22 @@ pub fn validate_payload(payload: &Value) -> Vec<String> {
             errors.push("\"auth\" must be a boolean".to_owned());
         }
     }
+    if let Some(oauth) = payload.get("oauth").filter(|value| !value.is_null()) {
+        if payload.get("auth").and_then(Value::as_bool) != Some(true) {
+            errors.push("oauth requires auth to be enabled".to_owned());
+        }
+        match oauth.get("providers").and_then(Value::as_array) {
+            Some(list) if !list.is_empty() => {
+                for provider in list {
+                    match provider.as_str() {
+                        Some(id) if super::oauth::PROVIDER_IDS.contains(&id) => {}
+                        _ => errors.push(format!("Unknown OAuth provider {provider}")),
+                    }
+                }
+            }
+            _ => errors.push("oauth.providers must be a non-empty array".to_owned()),
+        }
+    }
     if let Some(seed) = payload.get("authSeed").filter(|value| !value.is_null()) {
         let users = if let Some(seed) = seed.as_object() {
             match seed.get("users").filter(|value| !value.is_null()) {
