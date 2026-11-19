@@ -31,6 +31,7 @@
   | Jobs and scheduled commands | [14](#section-14--arkzenjobsidentifier-shared--arkzenjobsphpidentifier--arkzenjobstsidentifier), [17](#section-17--arkzenconsoleidentifier-shared--arkzenconsolephpidentifier--arkzenconsoletsidentifier-artisan--scheduler) |
   | Mail and notifications | [16](#section-16--arkzenmailidentifier-shared-php--ts--py--java--cs--go--rs-bodies), [15](#section-15--arkzennotificationsidentifier-shared-php--ts-only-with-a-body) |
   | Login, register, protected pages | [4](#section-4--auth), [8](#section-8--arkzenapi) |
+  | Social sign-in (Google, GitHub, Apple, ...) | [4](#section-4--auth), [4B](#section-4b--arkzenoauth-social-sign-in), [26B](#section-26b--frontend-data-fetching) |
   | Web pages, layouts, error pages, components | [19](#section-19--arkzenweblayoutname), [21](#section-21--arkzenwebpagename), [22](#️-section-22--weberror404--weberror500), [23](#section-23--arkzenwebcomponentsidentifier) |
   | Styling, animation, scripts, assets | [2](#section-2--styling-policy), [2C](#section-2c--design-aesthetic--fallback-defaults-always-overrideable), [2D](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned), [20](#section-20--arkzenwebstyle--arkzenwebstylename), [24](#section-24--arkzenwebanimation), [24C/D](#section-24cd--arkzenwebscript--arkzenwebscriptname), [25](#section-25--assets) |
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
@@ -60,6 +61,7 @@
     - [⚠️ SECTION 3E - NULL SAFETY](#️-section-3e--null-safety)
     - [SECTION 3F - LOCALSTORAGE SAFETY](#section-3f--localstorage-safety)
     - [SECTION 4 - AUTH](#section-4--auth)
+    - [SECTION 4B - @arkzen:oauth (SOCIAL SIGN-IN)](#section-4b--arkzenoauth-social-sign-in)
     - [SECTION 29 - AI GENERATION CHECKLIST](#section-29--ai-generation-checklist)
   - **[PART B - FILE SETUP - META, CONFIG & FREE FILES](#part-b--file-setup--meta-config--free-files)**
     - [SECTION 5 - @arkzen:meta](#section-5--arkzenmeta)
@@ -609,6 +611,7 @@
   @arkzen:meta:native                  (optional, once)
   @arkzen:web:config                   (optional, once)
   @arkzen:native:config                (optional, once)
+  @arkzen:oauth                        (optional, once; needs auth: true)
   @arkzen:database[:identifier]        (REPEAT)
   @arkzen:api[:identifier]             (REPEAT)
   @arkzen:routes                       (optional, REPEAT)
@@ -681,6 +684,7 @@
   /* @arkzen:database[:identifier]
   /* @arkzen:api[:identifier]
   /* @arkzen:routes
+  /* @arkzen:oauth
   ```
 
   ```
@@ -868,6 +872,105 @@
 
   * * *
 
+## SECTION 4B - @arkzen:oauth (SOCIAL SIGN-IN)
+
+  Optional. Adds "Sign in with Google / GitHub / ..." on top of `auth: true`. It never replaces email + password. A tatemono without this block has no OAuth routes and no OAuth table.
+
+  ```
+  /* @arkzen:meta
+  name: my-app
+  auth: true
+  */
+
+  /* @arkzen:oauth
+  providers: [google, github, discord]
+  redirect: /dashboard
+  error_redirect: /login
+  link_verified_email: true
+  */
+  ```
+
+  **Shape A** (YAML only): no `*/` on the opening line, closed by a bare `*/`, no `:end`. Write it once per tatemono.
+
+  | Field | Rules |
+  |---|---|
+  | `providers` | Required, non-empty. Allowed: `google`, `github`, `twitter` (alias `x`), `apple`, `microsoft`, `facebook`, `instagram`, `discord`. Unknown names fail the parse. Duplicates are dropped. |
+  | `redirect` | Frontend path after a successful sign-in. Default `/`. Must start with a single `/`; anything else (including a full URL) falls back to `/`. |
+  | `error_redirect` | Frontend path after a failed sign-in. Same rules. Default `/`. |
+  | `link_verified_email` | Default `true`. When true, a provider sign-in links to an existing account with the same email only if the provider says the email is verified. Microsoft emails are never auto-linked. Set `false` to never auto-link. |
+
+  **Rules**
+  - `@arkzen:oauth` requires `auth: true` in `@arkzen:meta`; without it the parse fails.
+  - Never put a client id or secret in the tatemono. They come only from the backend `.env` (below). Do not invent `client_id:` / `client_secret:` fields.
+  - The block adds no frontend pages. Build the login buttons yourself in a `@arkzen:web:page` or `@arkzen:native:page` (usage below).
+
+  **Backend support.** All seven backends (`laravel`, `express`, `fastapi`, `spring-boot`, `aspnet`, `go`, `rust`) serve the same routes and use the same table.
+  - Routes: `GET /api/<slug>/auth/oauth/providers`, `GET /api/<slug>/auth/oauth/{provider}/redirect`, and `/api/<slug>/auth/oauth/{provider}/callback` (Apple posts to the callback; the others use GET).
+  - Table: `<slug>_oauth_accounts`, unique on `(provider, provider_user_id)`.
+  - The `providers` route returns every declared provider with an `enabled` flag, true only when its client id and secret are present in the backend `.env`. `getOAuthProviders()` in the store returns just the enabled ones.
+
+  **Backend `.env`** (the developer fills these in, not the tatemono)
+
+  ```
+  OAUTH_REDIRECT_BASE=http://localhost:8000     # public URL of the backend
+  OAUTH_FRONTEND_URL=http://localhost:3000      # where the user lands afterwards
+  OAUTH_STATE_SECRET=<long random value>
+  OAUTH_GOOGLE_CLIENT_ID=
+  OAUTH_GOOGLE_CLIENT_SECRET=
+  # same pair for GITHUB, TWITTER, MICROSOFT (+ OAUTH_MICROSOFT_TENANT),
+  # FACEBOOK, INSTAGRAM, DISCORD. APPLE uses OAUTH_APPLE_CLIENT_ID,
+  # OAUTH_APPLE_TEAM_ID, OAUTH_APPLE_KEY_ID and OAUTH_APPLE_PRIVATE_KEY.
+  ```
+
+  Register this redirect URI with each provider: `<OAUTH_REDIRECT_BASE>/api/<slug>/auth/oauth/<provider>/callback`. Apple needs HTTPS and a real domain.
+
+  **How the token comes back.** After the provider round trip the backend redirects to `OAUTH_FRONTEND_URL` + `redirect` with the result in the URL hash: `#arkzen_oauth_token=...&arkzen_oauth_slug=...`, or `#arkzen_oauth_error=...` on failure. The hash never reaches a server log.
+
+  **Web usage** (imports come from `@/arkzen/core/stores/authStore`)
+
+  ```tsx
+  import { getOAuthProviders, oauthLoginUrl, consumeOAuthError } from '@/arkzen/core/stores/authStore'
+
+  // inside a component on the login page
+  const [providers, setProviders] = useState<string[]>([])
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    getOAuthProviders().then(setProviders)
+    setError(consumeOAuthError())
+  }, [])
+
+  // a button per provider
+  <button onClick={() => { window.location.href = oauthLoginUrl('google') }}>Continue with Google</button>
+  ```
+
+  The store picks the token out of the hash when it loads, saves it, and removes the hash from the address bar. The `+auth` layout then calls `fetchMe()` as usual, so no extra code is needed after sign-in.
+
+  **Native usage** (Expo, bare React Native, Lynx; same store exports plus `oauthSignIn`)
+
+  ```tsx
+  import * as WebBrowser from 'expo-web-browser'
+  import * as Linking from 'expo-linking'
+  import { oauthSignIn, getOAuthProviders, consumeOAuthError } from '@/arkzen/core/stores/authStore'
+
+  const ok = await oauthSignIn('google', async (loginUrl) => {
+    const result = await WebBrowser.openAuthSessionAsync(loginUrl, Linking.createURL('oauth'))
+    return result.type === 'success' ? result.url : null
+  })
+  if (!ok) setError(consumeOAuthError())
+  ```
+
+  - `oauthSignIn(provider, opener)` takes an `opener` function that opens the system browser and resolves with the final redirect URL (or `null` if cancelled). The store has no browser dependency of its own.
+  - Set `OAUTH_FRONTEND_URL` in the backend `.env` to the app's deep-link base, for example `arkzen://oauth` (Expo app scheme `arkzen`). Expo Go uses a different `exp://` URL; a development build is simpler.
+  - If the deep link arrives some other way (bare RN `Linking` listener), pass that URL to `completeOAuthFromUrl(url)`.
+  - Expo can use `expo-web-browser` and `expo-linking`, which the Expo stack already includes. Bare RN and Lynx have no browser package preinstalled, so the `opener` is yours to supply.
+
+  **Do not**
+  - Do not add `@arkzen:oauth` to a tatemono with `auth: false`.
+  - Do not read or write `arkzen_oauth_*` hash values yourself on web; the store does it.
+  - Do not render a provider button without checking `getOAuthProviders()` first; an unconfigured provider returns an error.
+
+  * * *
+
 ## SECTION 29 - AI GENERATION CHECKLIST
 
   Before finalizing any tatemono, verify:
@@ -879,6 +982,12 @@
 
   **NATIVE LAYOUTS**
   - [ ] Expo/bare-RN page layout names resolve to `@arkzen:native:layout:<name>`; Lynx page layouts resolve to `@arkzen:native:layout:lynx:<name>`. Built-in `default`, `auth`, and `guest` layouts do not need custom blocks.
+
+  **OAUTH** (only if the Tatemono offers social sign-in)
+  - [ ] `@arkzen:meta` has `auth: true`; one `@arkzen:oauth` block (Shape A, no `:end`)
+  - [ ] `providers` only from google, github, twitter/x, apple, microsoft, facebook, instagram, discord
+  - [ ] `redirect` / `error_redirect` are frontend paths starting with `/`; no client ids or secrets anywhere in the tatemono
+  - [ ] Login page builds its buttons from `getOAuthProviders()` and uses `oauthLoginUrl()` (web) or `oauthSignIn()` (native)
 
   **FRAMES** (only if the Tatemono needs its own navigator, header, menu or tray)
   - [ ] One `@arkzen:native:frame:expo|rn|lynx` or `@arkzen:desktop:frame:electron|tauri` block per target, with `*/` on the opening line and a closing `:end */`
