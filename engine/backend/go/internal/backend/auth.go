@@ -33,6 +33,11 @@ func (h *Handler) serveAuthRoute(w http.ResponseWriter, r *http.Request, registr
 		return false
 	}
 
+	if rest, isOAuth := strings.CutPrefix(path, prefix+"oauth/"); isOAuth && registration.OAuth != nil {
+		h.serveOAuthRoute(w, r, registration, rest)
+		return true
+	}
+
 	switch strings.TrimPrefix(path, prefix) {
 	case "register":
 		if r.Method != http.MethodPost {
