@@ -112,7 +112,7 @@ async def build_tatemono(p: Any) -> tuple[int, Any]:
     db = connection(slug)
     run("Migrations", lambda: apply_schema(db, slug, dbs, db_steps))
     if p.get("auth"):
-        run("Auth tables", lambda: apply_auth_tables(db, slug, has_notifications, db_steps))
+        run("Auth tables", lambda: apply_auth_tables(db, slug, has_notifications, db_steps, bool((p.get("oauth") or {}).get("providers"))))
         run("Auth seed", lambda: seed_auth_users(db, slug, p.get("authSeed"), db_steps))
     elif has_notifications:
         run("Notification table", lambda: apply_auth_tables(db, slug, True, db_steps))
