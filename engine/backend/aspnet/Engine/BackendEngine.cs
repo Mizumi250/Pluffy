@@ -72,6 +72,11 @@ public sealed class BackendEngine
             {
                 await _database.EnsureAuthTablesAsync(connection, slug, payload["authSeed"], cancellationToken);
                 steps.Add("Auth tables and seed users ready");
+                if (OAuth.IsEnabled(payload))
+                {
+                    await _database.EnsureOAuthTableAsync(connection, slug, cancellationToken);
+                    steps.Add("OAuth accounts table ready");
+                }
             }
             if (payload["notifications"] is JsonArray { Count: > 0 })
             {
@@ -149,6 +154,7 @@ public sealed class BackendEngine
             foreach (var (slug, module) in Modules)
             {
                 if (await TryBroadcastAuthAsync(context, module, method, path, slug)) return;
+                if (await OAuth.TryHandleAsync(context, module, method, path, slug, token => _database.OpenAsync(slug, token))) return;
                 if (await TryAuthRouteAsync(context, module, method, path, slug)) return;
                 if (await TryApiRoutesAsync(context, module, method, path, slug)) return;
                 if (await TryCustomRoutesAsync(context, module, method, path, slug)) return;
@@ -1134,6 +1140,7 @@ public sealed class BackendEngine
         if (!IsSlug(slug)) errors.Add("Missing or invalid \"name\" (use lowercase letters, digits, and dashes).");
         if (StringValue(payload["backendVariant"]) is { } variant && variant != "cs")
             errors.Add($"This backend reads :cs variants; received :{variant}.");
+        errors.AddRange(OAuth.Validate(payload));
         foreach (var database in (payload["databases"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
             if (string.IsNullOrWhiteSpace(StringValue(database["table"]))) errors.Add("database block without a table");
         foreach (var api in (payload["apis"] as JsonArray ?? new JsonArray()).OfType<JsonObject>())
