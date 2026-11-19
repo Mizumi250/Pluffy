@@ -29,7 +29,7 @@ const resourceFields = (api: Any) => {
 const IMPORTS = `import {
   Model, QueryBuilder, response, Hash, DB, abort, authorize, dispatch, event, broadcast, Mail, notify, Storage, Log,
   validate, now, Command, Job, Event, Listener, Mailable, Notification, MailMessage, BroadcastEvent, createToken,
-  connection, userModelFor, authMiddleware, optionalAuth, roleMiddleware, authCookie, clearAuthCookie, handle, middleware as wrapMiddleware,
+  connection, userModelFor, registerOAuth, authMiddleware, optionalAuth, roleMiddleware, authCookie, clearAuthCookie, handle, middleware as wrapMiddleware,
   registerCommand, ValidationException, HttpException, AuthorizationException, ModelNotFoundException,
   resourceTransform, factoryFor, runCommand, type Request, type ResponseFactory,
 } from '@pluff/runtime'
@@ -495,6 +495,10 @@ ${mailBody ? `  toMail(notifiable: any) {\n${ind(mailBody, 2)}\n  }\n` : `  toMa
     })
   }))
 `
+    if (p.oauth?.providers?.length) {
+      // Opt-in social sign-in (@arkzen:oauth). Secrets stay in .env; only the provider list and redirects are baked in.
+      rts += `  registerOAuth(r, S, ${JSON.stringify(p.oauth)}, ${q(prefixOf)})\n`
+    }
   }
   for (const api of apis) {
     for (const [name, ep] of Object.entries(api.endpoints ?? {}) as [string, Any][]) {
