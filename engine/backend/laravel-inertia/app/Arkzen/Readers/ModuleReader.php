@@ -153,6 +153,7 @@ class ModuleReader
             'version'            => $payload['version'] ?? '1.0.0',
             'auth'               => (bool) ($payload['auth'] ?? false),
             'authSeed'           => $payload['authSeed'] ?? null,
+            'oauth'              => $payload['oauth'] ?? null,   // v16.0: optional @arkzen:oauth config
             'databases'          => $databases,
             'apis'               => $apis,
             'customRoutes'       => $customRoutes,
