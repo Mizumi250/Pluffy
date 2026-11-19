@@ -496,6 +496,10 @@ def generate(p: Any) -> Any:
         if notifs:
             auth_channels.setdefault(f"{slug}.{{id}}", {"type": "private", "auth": "owner"})
         rts += f"    register_auth_routes(r, S, {q(prefix)}, {auth_channels!r})\n"
+        oauth_cfg = p.get("oauth") or {}
+        if oauth_cfg.get("providers"):
+            # Opt-in social sign-in (@arkzen:oauth). Secrets stay in .env; only the provider list and redirects are baked in.
+            rts += f"    register_oauth_routes(r, S, {q(prefix)}, {oauth_cfg!r})\n"
     for api in apis:
         endpoints = list((api.get("endpoints") or {}).items())
         endpoints.sort(key=lambda item: bool(re.search(r"\{\w+\??\}", str((item[1] or {}).get("route") or ""))))
