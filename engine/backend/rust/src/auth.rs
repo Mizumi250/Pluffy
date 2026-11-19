@@ -107,7 +107,8 @@ pub fn bearer_is_authenticated(
         return Ok(false);
     };
     let connection = open_database(database_dir, module)?;
-    Ok(resolve_user(&connection, &token).map(|_| true)?)
+    // resolve_user returns Ok(None) for an unknown or revoked token: that must NOT count as authenticated.
+    Ok(resolve_user(&connection, &token)?.is_some())
 }
 
 pub fn authenticated_user(
