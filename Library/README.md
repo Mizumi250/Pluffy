@@ -12,6 +12,6 @@ How to use this folder:
 
 One line per piece, in this format:
 
-`path/to/file` | what it is | the idea behind it | when to use it | screenshot (optional)
+`path/to/file` | what it is | the idea behind it | when to use it 
 
-`button/magnetic_button.html` | magnetic button | the body leans toward the cursor and the label leans further, hand-cut wobbly shape fills on hover or focus | any primary action that should feel physical, sparingly | none yet
+`button/magnetic_button.html` | magnetic button | the body leans toward the cursor and the label leans further, hand-cut wobbly shape fills on hover or focus | any primary action that should feel physical, sparingly
