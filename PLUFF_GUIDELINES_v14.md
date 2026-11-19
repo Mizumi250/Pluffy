@@ -391,6 +391,10 @@
   - For sample names, use Japanese (romaji), German, Russian, Indonesian and Korean names.
   - Applies to seeders (Section 7C), mock UI and any other sample content.
 
+  ### Favicon (new tatemonos)
+
+  - Never use an emoji or an AI-generated image as the favicon of a new tatemono. Hand-author an SVG (see Section 5B). Older tatemonos are exempt.
+
   ### No em dashes
 
   - Never use em dashes in UI copy or any generated text. Use commas, periods, colons or parentheses instead.
@@ -978,6 +982,7 @@
   **META**
   - [ ] `@arkzen:meta` first; `name` = folder name; `auth_seed` only with `auth: true`
   - [ ] `@arkzen:meta:web` if web pages (favicon/title/description; PWA + og here)
+  - [ ] Favicon of a new tatemono is a hand-authored SVG in `assets/images/`, not an emoji and not AI-generated (Section 5B)
   - [ ] `@arkzen:meta:native` + `@arkzen:native:config` if native screens
 
   **NATIVE LAYOUTS**
@@ -1126,6 +1131,15 @@
       - { src: /tatemonos/my-app/icon-mask.png, sizes: 512x512, type: image/png, purpose: maskable }
   */
   ```
+
+  **Favicon rule (from 2026-11-19, new tatemonos only).** The favicon of a newly generated tatemono must not be AI-made. Do not use an emoji and do not use an AI-generated image. Hand-author a small SVG, save it as `tatemonos/<name>/assets/images/favicon.svg`, and point to it:
+
+  ```
+  favicon: /tatemonos/my-app/assets/images/favicon.svg
+  ```
+
+  A glyph from a real icon set (for example an Iconify URL, as `kotoba` does) is also fine. Tatemonos created before this date keep their emoji or image favicons; do not rewrite them.
+
 
 ## SECTION 5C - @arkzen:meta:native
 
@@ -2665,7 +2679,7 @@
   /* @arkzen:native:page:lynx:index:end */
   ```
 
-  **Page layout line for Lynx:** both `/* @arkzen:native:page:lynx:layout:<name> */` and the shorter `/* @arkzen:native:page:layout:<name> */` are accepted inside Lynx pages. Prefer the explicit `lynx:layout` form in new files.
+  **Page layout line for Lynx:** write `/* @arkzen:native:page:layout:<name> */` (the shorter form) inside Lynx pages. The tag validator currently rejects `/* @arkzen:native:page:lynx:layout:<name> */` with a "Missing closing tag" error, so do not use that form until the validator learns it.
 
   **Lynx has no WebSocket** - live updates use SSE (auto-generated, see Section 11).
 
