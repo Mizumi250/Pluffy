@@ -148,6 +148,11 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 	if err := ensureModuleSchema(s.storageDir, payload.Name, payload.Databases, payload.Auth, payload.AuthSeed, hasNotifications); err != nil {
 		return Registration{}, fmt.Errorf("initialize isolated %s database: %w", configuredDialect(), err)
 	}
+	if payload.OAuth != nil {
+		if err := ensureOAuthTables(s.storageDir, payload.Name); err != nil {
+			return Registration{}, fmt.Errorf("initialize OAuth tables: %w", err)
+		}
+	}
 	tables := make([]string, 0, len(payload.Databases))
 	databaseByTable := make(map[string]DatabaseDefinition, len(payload.Databases))
 	for _, database := range payload.Databases {
@@ -176,6 +181,7 @@ func (s *Service) Build(payload BuildPayload) (Registration, error) {
 		Name:           payload.Name,
 		BackendVariant: "go",
 		Auth:           payload.Auth,
+		OAuth:          payload.OAuth,
 		Tables:         tables,
 		Databases:      payload.Databases,
 		APIs:           apis,
