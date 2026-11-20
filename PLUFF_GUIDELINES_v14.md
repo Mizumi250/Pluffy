@@ -14,6 +14,7 @@
   0. **Optional, second tier:** if the repo has a `Library/` folder with a relevant reference for the UI task, use it to learn the owner's taste (Section 2C, Design Rule #2). This guideline and the tatemono index (Section 31) come first. Skip `Library/` silently if it is missing or has nothing relevant.
   1. **Always read Part A** (core rules, especially Sections 3D, 2D and 29).
      **For all design, copy and sample data, follow Sections 2C and 2D on every task:** anti-AI-looking UI, real-looking data entries with Japanese (romaji), German, Russian, Indonesian or Korean names, and no em dashes.
+  1b. **Optional, if you can run shell commands:** if you are unsure of a block's shape or want boilerplate fast, `node mizumi.js block <tatemono> <block> --dry` prints a correct starting block, and `node mizumi.js new <name> --template=<id>` creates a tatemono. See Section 1H. This never replaces this document; it is a shortcut.
   2. Find your task in the table below and read only the sections listed.
   3. Section numbers are stable labels, not a sequence. The document is grouped into Parts, so numbers are not in numeric order (for example Section 18 sits in Part C beside the other backend blocks). "SECTION 8" always means the same section.
   4. If you can open files, jump with the links. If this text was pasted into a chat, search for the heading text, for example `SECTION 8 -`.
@@ -38,6 +39,7 @@
   | Imports and calling the API from the frontend | [26](#section-26--available-imports), [26B](#section-26b--frontend-data-fetching) |
   | Mobile app (Expo / React Native) | [23B](#section-23b--expo--bare-rn-arkzenimportexpo--arkzenimportrn), [19B](#section-19b--arkzennativelayoutname-expo--bare-rn), [20B](#section-20b--native-styles), [21B](#section-21b--arkzennativepagename-expo--bare-rn), [22B](#section-22b--arkzennativeerror404--500-expo--bare-rn), [24B](#section-24b--native-animation-stack-split), [24E](#section-24e--native-scripts-stack-split) |
   | Lynx | [25L](#section-25l--lynx-blocks) |
+  | Lost, or need correct DSL boilerplate fast (optional, needs a shell) | [1H](#section-1h--optional-scaffold-commands-mizumi-new--mizumi-block) |
   | Desktop window (Electron / Tauri) | [1D](#section-1d--desktop-window-configuration) |
   | Navigator, header, tab bar, status bar, desktop menu / tray (frames) | [19C](#section-19c--frames-native-and-desktop) |
   | Plain files written anywhere (HTML, config, scripts) | [30](#section-30--free-files-arkzenfile) |
@@ -51,6 +53,7 @@
     - [SECTION 1B - STACKS & CLI](#section-1b--stacks--cli)
     - [SECTION 1C - DATABASE PROVIDER (project-level, NOT in the DSL)](#section-1c--database-provider-project-level-not-in-the-dsl)
     - [SECTION 1D - DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
+    - [SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block)](#section-1h--optional-scaffold-commands-mizumi-new--mizumi-block)
     - [SECTION 2 - STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
@@ -127,6 +130,8 @@
   * * *
 
   **DESIGN (v14.1 revision):** Section 2C now has a priority order (request, then identity and the colorful handmade house preference, then a near-monotone fallback), points to an optional, second-tier root `Library/` folder for the owner's taste, and requires a concept line and signature device. The 2D house preference and all 2D bans are unchanged, including pure #000, cream, indigo and emoji. New Section 2E is a short digest for small-context tools. Example color tokens that used indigo, violet, cream and an emoji were replaced.
+
+  **SCAFFOLD COMMANDS (optional, added to v14):** Section 1H documents `node mizumi.js new` and `node mizumi.js block`, which write correct block boilerplate for every DSL block. AI that can run shell commands may use them when lost; they are optional and this document stays the source of truth.
 
   **LAYOUT (v14.0 revision):** the document is now grouped into Parts A-H with a quick-lookup table and table of contents at the top. No section was renamed or renumbered; sections only moved. Section 18 gained a note: a custom body on `index`, `show`, `update` or `destroy` now replaces the generated default on every backend.
 
@@ -241,6 +246,8 @@
   node start.js                         # start Laravel + queue worker + Reverb + active frontends
   node mizumi.js                        # interactive menu
   node mizumi.js start | setup | stack | stacks | modules
+  node mizumi.js new <name> --template=<id>   # create a tatemono from a template (Section 1H)
+  node mizumi.js block <tatemono> <block> [name]   # add one DSL block, optional (Section 1H)
   node mizumi.js web <stack>            # switch web stack
   node mizumi.js app <stack>            # switch app stack (expo | react-native | lynx)
   node mizumi.js desktop <stack>        # switch desktop stack (tauri | electron)
@@ -290,6 +297,67 @@
   `width`, `height`, `min_width`, and `min_height` must be positive integers. Minimum dimensions cannot exceed their corresponding starting dimensions. `resizable` and `fullscreenable` must be booleans. `title` must be a non-empty string.
 
   The Electron and Tauri shells wrap the whole web app, so this setting is shared rather than isolated to a single route. Partial settings from active Tatemonos are combined; if two Tatemonos set different values for the same property, the alphabetically earlier Tatemono wins and the shell logs a warning. Tauri applies the size, minimum size, title, and resizing settings. A Tauri export includes only its selected Tatemono's settings. Tauri has no portable API for disabling a window's fullscreen controls, so `fullscreenable: false` is warned about but cannot be enforced.
+
+## SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block)
+
+  **Optional.** Only for an AI or human that can run shell commands in the repo root (Claude Code, Codex, a terminal). If you cannot run commands, ignore this section and write the tags by hand using Section 3D. This section never replaces the rest of the guideline.
+
+  **When to use it**
+  - You are lost on a block's exact shape (YAML only, YAML + body, code block, or body-separator, see Section 3D).
+  - You need a correct starting block for a backend variant (`:php :ts :py :java :cs :go :rs`).
+  - You are adding a new block to an existing tatemono and want the opening and closing tags right.
+
+  **What it gives you.** A valid, minimal starting block. It is a placeholder, not the finished feature. After it writes the block you still replace the body, columns, endpoints, text and sample data with the real feature, and you still follow Sections 2C and 2D for every UI block. A scaffolded page is a plain skeleton, not a design.
+
+  **Commands**
+
+  ```
+  node mizumi.js block --list                                  # every block key and what it is for
+  node mizumi.js new my-app --template=crud --resource=notes   # create tatemonos/my-app/core.tsx
+  node mizumi.js block my-app web:page about                   # append a block to core.tsx
+  node mizumi.js block my-app endpoint stats --variant=ts      # backend body: --variant=php|ts|py|java|cs|go|rs
+  node mizumi.js block my-app jobs cleanup --shared            # shared YAML-only form (jobs, console, mail, notifications)
+  node mizumi.js block my-app web:page checkout --layout=+auth # page with a layout / guard line
+  node mizumi.js block my-app web:layout admin --parent=app    # nested layout
+  node mizumi.js block my-app endpoint stats --dry             # print the block, do not write
+  ```
+
+  Run `node mizumi.js block` with no arguments for the interactive picker (tatemono, DSL group, block, backend variant). Without `--variant`, the active backend's variant is used. Always pass every argument when you are an AI, so nothing waits for input.
+
+  **Templates for `new`:** `web`, `crud`, `routes`, `auth`, `native`, `multi` (web + Expo/RN + Lynx), `lynx`, `files`, `godot`, `unity`.
+
+  **Block keys**
+
+  | Group | Keys |
+  |---|---|
+  | Config and meta | `meta:web`, `meta:native`, `web:config`, `native:config`, `desktop:config`, `oauth` |
+  | Data and API | `database`, `api`, `routes` |
+  | Backend code | `endpoint`, `handler`, `policy`, `middleware`, `listener`, `events`, `realtime`, `realtime:event`, `jobs`, `console`, `mail`, `notifications`, `module:rs` |
+  | Web | `web:page`, `web:layout`, `web:components`, `web:style`, `web:style:name`, `web:animation`, `web:script`, `web:script:name`, `web:error:404`, `web:error:500` |
+  | Expo / bare RN | `native:page`, `native:layout`, `native:components`, `native:style`, `native:style:name`, `native:error:404`, `native:error:500`, `native:animation`, `native:script` (the last two take `--variant=expo\|rn`) |
+  | Lynx | `lynx:page`, `lynx:layout`, `lynx:components`, `lynx:style`, `lynx:style:name`, `lynx:error:404`, `lynx:error:500`, `lynx:animation`, `lynx:script` |
+  | Frames | `native:frame:expo`, `native:frame:rn`, `native:frame:lynx`, `desktop:frame:electron`, `desktop:frame:tauri` |
+  | Free files | `file` (with `--path=...`) |
+  | Godot | `godot:project`, `godot:input`, `godot:assets`, `godot:world`, `godot:scene`, `godot:behavior:player`, `godot:behavior:camera`, `godot:multiplayer`, `godot:export` |
+  | Unity | `unity:project`, `unity:game`, `unity:visuals`, `unity:controls`, `unity:scene`, `unity:environment`, `unity:assets`, `unity:export` |
+
+  A Lynx key writes the real tag, for example `lynx:page` writes `@arkzen:native:page:lynx:<name>`.
+
+  **Rules the command enforces**
+  - It appends to the end of `core.tsx`. Order between blocks does not matter, except that `@arkzen:meta` stays first (created by `new`).
+  - It refuses a block whose tag already exists, and a once-per-tatemono block that is already present.
+  - `oauth` is refused unless `@arkzen:meta` has `auth: true`.
+  - A godot tatemono only accepts `godot:*` blocks, a unity tatemono only `unity:*` blocks, and a normal tatemono accepts neither.
+  - A variant the guideline has no body for is refused (for example `:rs` bodies are documentary comments only, see Section 1F).
+
+  **What it does not check**
+  - `endpoint:<variant>:<name>` must match a method in an `@arkzen:api` block, and `handler:<variant>:<name>` must match a handler in `@arkzen:routes`. `policy` needs `policy: true` on the api block. The command prints a reminder but cannot verify it.
+  - Asset files must exist. `godot:world` and `godot:assets` reference images under `assets/images/`; the generator fails if they are missing.
+  - `meta:web` points the favicon at `assets/images/favicon.svg`. You must supply that file by hand (Section 5B).
+
+  **After using it:** edit the generated bodies, then run the checks in Section 29 and build as usual.
+
+  * * *
 
 ## SECTION 2 - STYLING POLICY
 
