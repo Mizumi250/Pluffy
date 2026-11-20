@@ -102,3 +102,53 @@ Explore the [tatemono examples](./tatemonos/) or browse the [language reference]
 Pluffy is made by **Mizumi**, an independent developer and digital artist. It's a personal project that keeps growing, so some corners are newer than others. Feedback and curiosity are always welcome.
 
 Thanks for stopping by.
+
+---
+
+## Everything through `mizumi.js`
+
+You don't have to remember a pile of scripts. Run one command and pick what you want from the menu:
+
+```
+node mizumi.js
+```
+
+Almost everything Pluffy can do is in that menu, and each item also works as a direct command if you'd rather type it. `node mizumi.js help` lists them all.
+
+**Run it**
+- **Setup** installs what Pluffy needs the first time.
+- **Start engine** runs the engine. You choose web, app, desktop, or any mix, and it rebuilds when you save a tatemono.
+- **Screenshot** takes a screenshot of a tatemono's web page.
+
+**Write it**
+- **New tatemono** creates a `core.tsx` from a template: web, crud, routes, auth, native, multi, lynx, files, godot or unity.
+- **Add DSL block** adds a block to a tatemono. You pick the tatemono, the kind of block (data, backend code, web, native, Lynx, frames, files, Godot, Unity), the block, and the backend language if it needs one. Pluffy writes the starting block with the right tags, and you fill in the rest.
+- **List modules** shows every tatemono Pluffy knows about.
+
+**Choose your stack**
+- Switch the web stack, app stack or desktop stack.
+- Switch the backend: Laravel, Express, FastAPI, Spring Boot, ASP.NET Core, Go or Rust.
+- Switch the database between SQLite and PostgreSQL.
+- Install or remove the packages for each stack, and see which stacks are active.
+
+**Take it with you**
+- **Export project** turns a tatemono into a standalone web, app, desktop, Godot or Unity project. You can add Docker files and OpenAPI docs while you export.
+- **OpenAPI docs** writes `openapi.json` and a Swagger page for a tatemono, so tools like Postman can import it.
+- **Publish to GitHub** pushes an exported project using the Git login you already have.
+
+**Use the AI**
+- **Pluffy AI** writes a tatemono from a plain description of your app, using the model you point it at.
+- **Review** has a second AI read the whole project and suggest edits, which you approve one by one.
+- **Chat** opens the chat window.
+- **Scan training data** turns the tatemonos into training data.
+- **Update tatemono index** refreshes the list of online examples in the language reference.
+
+A few direct commands to get the feel of it:
+
+```
+node mizumi.js new my-app --template=crud
+node mizumi.js block my-app web:page about
+node mizumi.js backend express
+node mizumi.js export my-app nextjs
+node mizumi.js start --only=web
+```
