@@ -131,6 +131,8 @@
 
   **DESIGN (v14.1 revision):** Section 2C now has a priority order (request, then identity and the colorful handmade house preference, then a near-monotone fallback), points to an optional, second-tier root `Library/` folder for the owner's taste, and requires a concept line and signature device. The 2D house preference and all 2D bans are unchanged, including pure #000, cream, indigo and emoji. New Section 2E is a short digest for small-context tools. Example color tokens that used indigo, violet, cream and an emoji were replaced.
 
+  **DESIGN (v14.1 addendum):** Design Rule #3 in Section 2C gained step 6 (brand and subject color). It is a color-only layer for requests that name a product plus a brand or subject. It does not change the priority order, the 2D bans, the house preference or the fallback look, and Section 2E and the Section 29 checklist mirror it. Section 2D also gained item 141 (gradient fills on avatars and icon badges: avoid by default, not banned), mirrored in the avoid-by-default list and Section 2E. Design Rule #3 gained step 7 (recognition check), and Section 2D gained item 142 (cream or warm off-white with a rust accent: avoid by default, not banned), both mirrored in Section 2E and, for step 7, the Section 29 checklist.
+
   **SCAFFOLD COMMANDS (optional, added to v14):** Section 1H documents `node mizumi.js new` and `node mizumi.js block`, which write correct block boilerplate for every DSL block. AI that can run shell commands may use them when lost; they are optional and this document stays the source of truth.
 
   **LAYOUT (v14.0 revision):** the document is now grouped into Parts A-H with a quick-lookup table and table of contents at the top. No section was renamed or renumbered; sections only moved. Section 18 gained a note: a custom body on `index`, `show`, `update` or `destroy` now replaces the generated default on every backend.
@@ -381,8 +383,10 @@
   1. If you can browse, look up the real layout and the real visual identity of what was named (for example both the platform's UI and the brand's own colors, type feel and art style). If you cannot browse, say which parts you are working from memory.
   2. Keep its structure and recognizable look: its layout, navigation, component shapes, color family and tone. Someone who knows it must recognize it at a glance.
   3. Name only what the request names. Do not invent a replacement brand, agency or product when a real one was asked for. If real names or characters cannot be used, say so in one line and use clearly marked stand-ins, still in the named product's look.
-  4. Section 2D still applies as guardrails: no emoji as icons, none of the overused fonts unless the named product itself uses one, real-looking data, no em dashes, accessibility. The house preference (colorful, handmade, 2007-web weird) and the near-monotone fallback do not apply here, because the named product's identity decides the look.
+  4. Section 2D still applies as guardrails: no emoji as icons, none of the overused fonts unless the named product itself uses one, real-looking data, no em dashes, accessibility. The house preference (colorful, handmade, 2007-web weird) and the near-monotone fallback do not apply here, because the named product's identity decides the look. The only color addition allowed here is step 6 below.
   5. A concept line and a signature device are optional in this case. Add one small authored detail only if it does not change how the product reads. Never let an authored idea replace the named layout.
+  6. **Brand and subject color (optional layer on top of steps 1 to 5; it changes color only).** The named product's layout, component shapes, type feel and navigation stay exactly as steps 1 and 2 require. Two color substitutions are allowed when the request also names a brand or a subject (a talent, character, team or franchise): (a) the platform's own accent color (for example YouTube red) may be replaced by one accent from the brand's own identity; (b) a flat tint from the subject's own official color may mark that subject, on its thumbnail, avatar and its own tag. Limits: color is used only where it identifies something (Section 2D items 4, 21 and 31 still apply); flat only, with no gradients, glow, glass or colored shadows (Section 2D items 11 to 24 still apply); one brand accent plus the per-subject tints, never a different color per section; text on any color keeps 4.5:1 and status states keep their text or icon. If you do not know the brand's or subject's real colors and cannot browse, keep the platform's neutral look and say so in one line instead of guessing. If the request names a platform but no brand or subject, this step does not apply. If any bullet in 2C or 2D seems to conflict with this step, steps 1 to 5 win and this step adds only color.
+  7. **Recognition check (run before finalizing).** Ask: would someone who knows the named product recognize this page within two seconds, from its layout, navigation and component shapes? If not, undo the authored changes to layout, navigation and component shapes (new reading order, numbered or restyled nav, a different page structure) until the answer is yes. Only color may differ, and only as step 6 allows. "Authored, not templated" never outranks this check.
 
   ### Priority order (which look wins)
 
@@ -455,9 +459,11 @@
   - [ ] Purple/blue gradient hero backgrounds
   - [ ] Gradient text headings
   - [ ] Sparkle icons as generic decoration
+  - [ ] Gradient fills on avatars and icon badges when nothing needs them (initials in a circle are fine; a flat color is the default)
   - [ ] Emoji replacing proper icons
   - [ ] Announcement pills above every hero
   - [ ] Excessive badge and chip usage
+  - [ ] Cream or warm off-white background paired with a rust, terracotta or burnt-orange accent
   - [ ] Nested rounded cards
   - [ ] Three identical feature cards by default
   - [ ] Glassmorphism without a functional reason
@@ -680,6 +686,8 @@
   130. Pure #000 backgrounds (tint toward the brand hue)
   131. Radial-gradient background halos
   132. Decorative grid-line backgrounds
+  141. Gradient fills on avatars, initials circles and icon badges with no reason for them (avoid by default, not banned: the initials-in-a-circle pattern itself is a normal, accepted pattern, and a flat fill, or a flat tint that identifies a person, brand or subject per Section 2C Design Rule #3 step 6, is the default)
+  142. Cream or warm off-white background (for example `#eeede8` or `#f5f0e8`) paired with a rust, terracotta or burnt-orange accent (avoid by default, not banned: fine when the product's or brand's own real colors are exactly that, and not a stand-in for a design decision; this is the combination, not any single warm neutral or any single orange)
 
   Layout and quality
 
@@ -704,11 +712,11 @@
 
   Short version for tools that only send a small excerpt. Sections 2C and 2D are the full rules and win on any difference.
 
-  - If the request names an existing product, brand or platform ("like X", "an X homescreen"), match it (Section 2C, Design Rule #3): look up its real layout and identity, keep its recognizable look, do not invent a replacement brand, and use 2D only as guardrails. The house preference and fallback look do not apply.
+  - If the request names an existing product, brand or platform ("like X", "an X homescreen"), match it (Section 2C, Design Rule #3): look up its real layout and identity, keep its recognizable look, do not invent a replacement brand, and use 2D only as guardrails. The house preference and fallback look do not apply. If the request also names a brand or subject (talent, character, team), its official color may replace the platform accent and tint that subject flat, with the named layout unchanged and still no gradients, glow or emoji (Design Rule #3, step 6). Before finalizing, run the recognition check (step 7): would someone who knows the product recognize it in two seconds? If not, undo the authored layout changes.
   - Priority: 1) the request, 2) the product's own identity and the house preference (colorful, handmade, human, a bit weird but unique, spirit of the 2007 web), 3) the fallback look only when nothing else decides.
   - Fallback look: near-black (`#111111`) and near-white (`#f5f5f5`) with neutral grays. Never pure `#000` or `#fff`, no cream, no accent color, no shadows, gradients, glass or glow, square corners or one small radius.
   - Authored, not templated: write a concept line (one sentence) and pick one signature device before writing the UI. Never reuse the centered hero, three feature cards and footer pattern.
-  - Never use indigo or purple-blue gradients, or emoji as icons (Section 2D).
+  - Never use indigo or purple-blue gradients, or emoji as icons (Section 2D). Avoid the cream or warm off-white plus rust accent pairing unless it is the brand's own. Avoid gradient fills on avatars and icon badges unless something needs them; flat is the default.
   - Inside working app screens use plain familiar patterns. Put the story in landing, home, portfolio and empty states.
   - Choose the product's own fonts, not Inter, Roboto, Open Sans, Lato, Montserrat, Arial or Syne. Defined type scale, body 16px or more, lines 65ch to 75ch.
   - Real-looking sample data with Japanese (romaji), German, Russian, Indonesian or Korean names. No em dashes in copy. Hand-authored SVG favicon for new tatemonos.
@@ -1173,6 +1181,8 @@
   - [ ] Design checked against Section 2D: no pattern used only because it looks modern or AI-generated; inspiration from awwwards.com when needed (Section 2C)
   - [ ] If `Library/` has a relevant reference, it informed the taste without being copied verbatim; the guideline and tatemono index still came first (Section 2C, Design Rule #2)
   - [ ] Look chosen by priority: request first, then the product's identity and the house preference, then the near-monotone fallback only if nothing else decides (Section 2C)
+  - [ ] If the request named a product: the recognition check passed (someone who knows it would recognize the layout, navigation and component shapes in two seconds) (Section 2C, Design Rule #3 step 7)
+  - [ ] If the request named a product plus a brand or subject: the named layout is unchanged, and only the platform accent and flat per-subject tints took on the brand's colors, with no gradients, glow or emoji (Section 2C, Design Rule #3 step 6)
   - [ ] A concept line and one signature device chosen before the UI was written; the page would not work unchanged as another product's page (Section 2C)
   - [ ] Sample data and seeders use real-looking entries with Japanese (romaji), German, Russian, Indonesian or Korean names, no generic placeholder names (Section 2D)
   - [ ] No em dashes in any generated copy (Section 2D)
