@@ -22,6 +22,8 @@
 //    node mizumi.js stack        ← show active web + app + desktop stack + backend + database
 //    node mizumi.js stacks       ← list all stacks
 //    node mizumi.js modules      ← list registered tatemonos
+//    node mizumi.js new <name>   ← create a hand-written tatemono from a template
+//    node mizumi.js block        ← add a DSL block (with backend variant) to a tatemono
 //    node mizumi.js ai           ← Pluffy AI (checkbox options, then your app idea)
 //    node mizumi.js scan         ← scan tatemonos into training data
 //    node mizumi.js chat         ← open the Pluffy chat window (Electron)
@@ -33,6 +35,7 @@ import fs from 'node:fs'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { supportsDocker, dockerRejectionMessage } from './export-docker.js'
+import { cmdNew as scaffoldNew, cmdBlock as scaffoldBlock } from './scaffold.js'
 
 const ROOT_DIR  = path.dirname(fileURLToPath(import.meta.url))
 const JSON_PATH = path.join(ROOT_DIR, 'arkzen.json')
@@ -1067,6 +1070,14 @@ async function cmdScreenshot(moduleArg, waitArg) {
   process.exitCode = await runNode('screenshots.js', screenshotArgs)
 }
 
+// ─── SCAFFOLD (hand-written tatemonos) ────────────────────────
+const scaffoldCtx = () => ({
+  ROOT_DIR, TATEMONOS_DIR, BACKEND_ALIASES, backendVariant, resolveBackend, readConfig,
+  picker, prompt, log, success, error, warn, info, divider, paint, c,
+})
+const cmdNewTatemono = (rest = []) => scaffoldNew(scaffoldCtx(), rest)
+const cmdAddBlock    = (rest = []) => scaffoldBlock(scaffoldCtx(), rest)
+
 // ─── INTERACTIVE MENU ─────────────────────────────────────────
 function readEnvFile(file) {
   const out = {}
@@ -1283,6 +1294,8 @@ async function interactiveMenu() {
     { label: 'Database切替     Switch database',         sub: 'sqlite / postgresql',          value: 'db'         },
     { label: 'パッケージ管理    Install / uninstall deps', sub: 'frontend node_modules + backend vendor', value: 'deps' },
     { label: 'スタック情報     Stack info',              sub: 'web + app + desktop active stacks',    value: 'stacks'     },
+    { label: '新規タテモノ     New tatemono',            sub: 'hand-write from a template (web / crud / routes / native / files)', value: 'new' },
+    { label: 'ブロック追加     Add DSL block',           sub: 'insert a block + backend variant into a tatemono', value: 'block' },
     { label: 'タテモノ一覧     List modules',            sub: 'registered tatemonos',       value: 'modules'    },
     { label: 'AI生成           Pluffy AI',               sub: 'generate a tatemono with your model (toggle options)', value: 'ai' },
     { label: 'レビュー         Review project',          sub: 'a second AI reviews the whole folder', value: 'review' },
@@ -1310,6 +1323,8 @@ async function interactiveMenu() {
     case 'deps':      await cmdDeps();         break
     case 'stacks':    cmdStacks();             break
     case 'modules':   cmdModules();            break
+    case 'new':       await cmdNewTatemono();  break
+    case 'block':     await cmdAddBlock();     break
     case 'ai':        await cmdAi();           break
     case 'scan':      await cmdScan();         break
     case 'index':     await cmdIndex();        break
@@ -1360,6 +1375,9 @@ function printHelp() {
     ['mizumi stack',             '→ Show active web + app + desktop stacks'],
     ['mizumi stacks',            '→ List all stacks'],
     ['mizumi modules',           '→ List tatemonos'],
+    ['mizumi new <name>',        '→ Create a tatemono (--template=web|crud|routes|native|files)'],
+    ['mizumi block',             '→ Add a DSL block to a tatemono (pick tatemono, DSL, block, backend)'],
+    ['mizumi block <t> <block> [name] --variant=ts', '→ Same, no prompts (--list shows every block, --dry prints only)'],
     ['mizumi ai',                '→ Pluffy AI: option checkboxes, then ask for apps'],
     ['mizumi ai "idea" --ref on','→ Pluffy AI direct (flags go to pluffy-ai.js)'],
     ['mizumi scan',              '→ Scan tatemonos → training data (scan.js)'],
@@ -1419,6 +1437,8 @@ switch (command) {
     break
   }
   case 'modules': cmdModules();                break
+  case 'new':     cmdNewTatemono(args.slice(1)); break
+  case 'block':   cmdAddBlock(args.slice(1));  break
   case 'ai':      cmdAi(args.slice(1));        break
   case 'scan':    cmdScan();                   break
   case 'index':   cmdIndex(args.slice(1));     break
