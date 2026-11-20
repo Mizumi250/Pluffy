@@ -309,9 +309,16 @@
 
   **DESIGN RULE #2: `Library/` IS OPTIONAL SECOND-TIER REFERENCE.** The repo root may have a folder called `Library/` with the owner's own handwritten design components and files. It is not mandatory and not everything exists in it. Order of reference: (1) this guideline and the tatemono index (Section 31) with the real tatemonos, (2) `Library/`, only if it has something relevant to the task. When the task is UI work and `Library/README.md` exists, glance at its index. If a listed piece fits, use it to learn the owner's taste: type, spacing, proportions, handmade quality. If nothing fits, or the folder is missing or empty, skip it silently and carry on. Do not copy a piece verbatim into a new product unless the person asks for it by name. A `Library/` piece is a reference, not a template that ships: nothing in the engine reads or builds it, and it never overrides the request, the product's identity, the guideline or the bans in Section 2D.
 
+  **DESIGN RULE #3: WHEN THE REQUEST NAMES AN EXISTING PRODUCT, BRAND OR PLATFORM, MATCH IT.** If the request says "like X", "a clone of X", "an X homescreen", "X style" or names a real brand, platform or franchise, the named thing is the brief. Do these steps in order:
+  1. If you can browse, look up the real layout and the real visual identity of what was named (for example both the platform's UI and the brand's own colors, type feel and art style). If you cannot browse, say which parts you are working from memory.
+  2. Keep its structure and recognizable look: its layout, navigation, component shapes, color family and tone. Someone who knows it must recognize it at a glance.
+  3. Name only what the request names. Do not invent a replacement brand, agency or product when a real one was asked for. If real names or characters cannot be used, say so in one line and use clearly marked stand-ins, still in the named product's look.
+  4. Section 2D still applies as guardrails: no emoji as icons, none of the overused fonts unless the named product itself uses one, real-looking data, no em dashes, accessibility. The house preference (colorful, handmade, 2007-web weird) and the near-monotone fallback do not apply here, because the named product's identity decides the look.
+  5. A concept line and a signature device are optional in this case. Add one small authored detail only if it does not change how the product reads. Never let an authored idea replace the named layout.
+
   ### Priority order (which look wins)
 
-  1. **The person's instruction or the brief.** Always first.
+  1. **The person's instruction or the brief.** Always first. If the brief names an existing product, brand or platform, Design Rule #3 above applies and items 2 and 3 below do not.
   2. **The product's own identity plus the house preference in Section 2D:** colorful, handmade, human-looking, a bit weird but unique, in the spirit of the personality-driven web of around 2007. This is the preferred direction whenever the product has any personality to express.
   3. **The fallback look below.** Used only when 1 and 2 give nothing to go on. It is a default, not the priority. It never overrides 1 or 2.
 
@@ -326,6 +333,8 @@
   - What separates Awwwards level from generic AI monotone is not the palette. It is a clear concept, confident type and scale, an unexpected but readable composition, and small details that feel made by a person. A near-black and near-white page built from the same centered hero, three cards and footer is slop, whatever the palette.
 
   ### Authored, not templated (applies to every look, including the colorful one)
+
+  _Exception: when the request names an existing product, brand or platform, Design Rule #3 applies instead of the bullets below that require a concept line, a signature device or the swap test. The named product's own layout and look come first, and the concept line and signature device are optional._
 
   - Before writing any new web UI, decide two things and let them drive the layout: **(a) a concept line**, one sentence about what this product is and how it should feel, and **(b) one signature device** that makes it unmistakable, such as an unusual grid, oversized cropped type, an index or table of contents as navigation, a strong asymmetric split, a hand-drawn element, or an unexpected reading order.
   - If a page could be swapped into another product unchanged, it is a template, so redesign it.
@@ -627,6 +636,7 @@
 
   Short version for tools that only send a small excerpt. Sections 2C and 2D are the full rules and win on any difference.
 
+  - If the request names an existing product, brand or platform ("like X", "an X homescreen"), match it (Section 2C, Design Rule #3): look up its real layout and identity, keep its recognizable look, do not invent a replacement brand, and use 2D only as guardrails. The house preference and fallback look do not apply.
   - Priority: 1) the request, 2) the product's own identity and the house preference (colorful, handmade, human, a bit weird but unique, spirit of the 2007 web), 3) the fallback look only when nothing else decides.
   - Fallback look: near-black (`#111111`) and near-white (`#f5f5f5`) with neutral grays. Never pure `#000` or `#fff`, no cream, no accent color, no shadows, gradients, glass or glow, square corners or one small radius.
   - Authored, not templated: write a concept line (one sentence) and pick one signature device before writing the UI. Never reuse the centered hero, three feature cards and footer pattern.
