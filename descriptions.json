@@ -30,8 +30,8 @@
       "native:script:rn",
       "native:script:lynx"
     ],
-    "lines": 3858,
-    "estimated_tokens": 48881
+    "lines": 3885,
+    "estimated_tokens": 49272
   },
   "aspnet-ledger": {
     "description": "ASP.NET Core showcase: atomic ledger transfers in C# with decimal arithmetic, per-Tatemono database transactions, a rollback proof, validation and a live transfer history.",
@@ -349,6 +349,20 @@
     "lines": 1144,
     "estimated_tokens": 13748
   },
+  "dino-runner": {
+    "description": "Unity SVG dinosaur runner game. Jump over cactus obstacles and survive as long as possible.",
+    "meta_description": "Unity SVG dinosaur runner game. Jump over cactus obstacles and survive as long as possible.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:game",
+      "unity:visuals",
+      "unity:controls",
+      "unity:assets"
+    ],
+    "lines": 53,
+    "estimated_tokens": 387
+  },
   "dtr-geofencing": {
     "description": "Build a staff time-and-attendance app with employee records, GPS-verified clock-ins, a map of attendance locations, and admin controls for the office geofence.",
     "meta_description": "",
@@ -411,8 +425,8 @@
       "endpoint:rs:toggle_geofencing",
       "endpoint:rs:update_office"
     ],
-    "lines": 3144,
-    "estimated_tokens": 43063
+    "lines": 3262,
+    "estimated_tokens": 44532
   },
   "errors-test": {
     "description": "Create a diagnostic app with custom not-found and error screens, plus controls that trigger common API errors and show user-friendly toast messages.",
@@ -468,7 +482,7 @@
   },
   "events-test": {
     "description": "Create an event-processing dashboard where I can trigger events, inspect listener activity, and follow each event through its processing history.",
-    "meta_description": "Tests event and listener dispatch. Fire events manually, inspect each listener execution.",
+    "meta_description": "Tests event and listener dispatch. Fire events manually, inspect each listener execution. All backends use singular @arkzen:listener blocks with method bodies.",
     "blocks": [
       "meta",
       "web:config",
@@ -477,14 +491,14 @@
       "events:user-signed-up",
       "events:order-placed",
       "events:data-exported",
-      "listeners:SendWelcomeEmail",
-      "listeners:UpdateUserStats",
-      "listeners:NotifyAdmins",
-      "listeners:ProcessPayment",
-      "listeners:UpdateInventory",
-      "listeners:SendOrderConfirmation",
-      "listeners:LogExportActivity",
-      "listeners:CleanupTempFiles",
+      "listener:php:SendWelcomeEmail",
+      "listener:php:UpdateUserStats",
+      "listener:php:NotifyAdmins",
+      "listener:php:ProcessPayment",
+      "listener:php:UpdateInventory",
+      "listener:php:SendOrderConfirmation",
+      "listener:php:LogExportActivity",
+      "listener:php:CleanupTempFiles",
       "listener:py:SendWelcomeEmail",
       "listener:py:UpdateUserStats",
       "listener:py:NotifyAdmins",
@@ -509,9 +523,9 @@
       "listener:cs:SendOrderConfirmation",
       "listener:cs:LogExportActivity",
       "listener:cs:CleanupTempFiles",
-      "endpoint:index",
+      "endpoint:php:index",
       "endpoint:ts:index",
-      "endpoint:clearLog",
+      "endpoint:php:clearLog",
       "endpoint:ts:clearLog",
       "endpoint:py:index",
       "endpoint:py:clearLog",
@@ -546,8 +560,8 @@
       "listener:rs:LogExportActivity",
       "listener:rs:CleanupTempFiles"
     ],
-    "lines": 1680,
-    "estimated_tokens": 19275
+    "lines": 1566,
+    "estimated_tokens": 18232
   },
   "express-test": {
     "description": "Exercises the Express backend (:ts variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener, console command, mail, notification and realtime.",
@@ -632,7 +646,7 @@
       "web:page:index"
     ],
     "lines": 611,
-    "estimated_tokens": 6856
+    "estimated_tokens": 6876
   },
   "fastapi-test": {
     "description": "Exercises the FastAPI backend (:py variants) end to end: auth, CRUD, policy, middleware, custom endpoint, custom route, job, event/listener, console command, mail, notification and realtime.",
@@ -664,6 +678,40 @@
     ],
     "lines": 394,
     "estimated_tokens": 4539
+  },
+  "frame-lab": {
+    "description": "Test bed for @arkzen:native:frame (expo, rn, lynx) and @arkzen:desktop:frame (electron, tauri). Two screens per target, each wrapped by that target's own frame.",
+    "meta_description": "Test bed for @arkzen:native:frame (expo, rn, lynx) and @arkzen:desktop:frame (electron, tauri). Two screens per target, each wrapped by that target's own frame.",
+    "blocks": [
+      "meta",
+      "meta:native",
+      "native:frame:expo",
+      "native:frame:rn",
+      "native:frame:lynx",
+      "desktop:frame:electron",
+      "desktop:frame:tauri",
+      "native:components:shared",
+      "native:page:index",
+      "native:page:settings",
+      "native:components:lynx:shared",
+      "native:page:lynx:index",
+      "native:page:lynx:settings",
+      "web:page:index"
+    ],
+    "lines": 353,
+    "estimated_tokens": 4195
+  },
+  "free-demo": {
+    "description": "Free file blocks only — plain HTML, a package, and a stack file. No pages, no backend.",
+    "meta_description": "Free file blocks only — plain HTML, a package, and a stack file. No pages, no backend.",
+    "blocks": [
+      "meta",
+      "file:landing",
+      "file:lib",
+      "file:robots"
+    ],
+    "lines": 30,
+    "estimated_tokens": 296
   },
   "go-backend-test": {
     "description": "Exercises the Go (Chi) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.",
@@ -702,10 +750,11 @@
       "godot:scene:player",
       "godot:behavior:player",
       "godot:behavior:camera",
+      "godot:multiplayer",
       "godot:export"
     ],
-    "lines": 224,
-    "estimated_tokens": 1765
+    "lines": 291,
+    "estimated_tokens": 2245
   },
   "hello-native": {
     "description": "Create a simple native mobile starter app with a home screen and an about screen, reusable UI components, and straightforward navigation.",
@@ -823,8 +872,8 @@
       "endpoint:rs:byGroup",
       "endpoint:rs:appointments"
     ],
-    "lines": 4318,
-    "estimated_tokens": 61011
+    "lines": 4321,
+    "estimated_tokens": 61063
   },
   "job-test": {
     "description": "Build a job queue demo where I can dispatch background jobs, compare sync and queued execution, and inspect completed and failed job results.",
@@ -853,6 +902,10 @@
       "jobs:go:process-data",
       "jobs:go:heavy-computation",
       "jobs:go:always-fails",
+      "endpoint:cs:index",
+      "jobs:cs:process-data",
+      "jobs:cs:heavy-computation",
+      "jobs:cs:always-fails",
       "web:components:shared",
       "web:page:dashboard",
       "native:components:shared",
@@ -864,8 +917,8 @@
       "jobs:rs:heavy-computation",
       "jobs:rs:always-fails"
     ],
-    "lines": 948,
-    "estimated_tokens": 10222
+    "lines": 974,
+    "estimated_tokens": 10505
   },
   "kotoba": {
     "description": "Kotoba — a social language-learning network. Learn by using the language: daily missions, a community feed with native-speaker corrections, spaced-repetition vocab built from what you actually read and write, short lessons, partner matching, 1:1 and group chat with in-message corrections, and honest progress tracking.",
@@ -1172,8 +1225,8 @@
       "handler:rs:progress",
       "module:rs"
     ],
-    "lines": 10472,
-    "estimated_tokens": 185903
+    "lines": 13331,
+    "estimated_tokens": 234575
   },
   "lain098": {
     "description": "Create a visual art portfolio with an immersive, full-screen image slider that moves upward from the bottom and lets viewers browse works in a centered orbit.",
@@ -1221,6 +1274,9 @@
       "web:error:404",
       "native:error:404",
       "native:components:lynx:shared",
+      "native:layout:lynx:app-shell",
+      "native:layout:lynx:tab-panel",
+      "native:layout:lynx:card-modal",
       "native:page:lynx:index",
       "native:page:lynx:single",
       "native:page:lynx:chain",
@@ -1230,12 +1286,12 @@
       "native:page:lynx:native-guest",
       "native:error:404:lynx"
     ],
-    "lines": 1034,
-    "estimated_tokens": 12444
+    "lines": 1126,
+    "estimated_tokens": 13561
   },
   "mail-test": {
     "description": "Create an email testing dashboard where I can send sample messages, configure recipients and content, and review delivery attempts.",
-    "meta_description": "Tests backend email delivery with configurable SMTP and mail logs.",
+    "meta_description": "Tests backend email delivery with configurable SMTP and mail logs; the welcome-mail identifier also verifies generated names normalize to WelcomeMail instead of WelcomeMailMail.",
     "blocks": [
       "meta",
       "web:config",
@@ -1276,7 +1332,7 @@
       "native:page:lynx:dashboard"
     ],
     "lines": 1722,
-    "estimated_tokens": 19718
+    "estimated_tokens": 19755
   },
   "middleware-test": {
     "description": "Build a middleware demo with a protected API route that validates incoming JSON requests and a screen for testing successful and rejected requests.",
@@ -1416,6 +1472,33 @@
     "lines": 2037,
     "estimated_tokens": 24515
   },
+  "oauth-test": {
+    "description": "End to end test for social sign-in (@arkzen:oauth) on every web, mobile and desktop frontend, against every backend.",
+    "meta_description": "End to end test for social sign-in (@arkzen:oauth) on every web, mobile and desktop frontend, against every backend.",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "meta:native",
+      "web:config",
+      "desktop:config",
+      "oauth",
+      "web:components:shared",
+      "web:page:login",
+      "web:page:register",
+      "web:page:setup",
+      "web:page:dashboard",
+      "native:components:shared",
+      "native:page:login",
+      "native:page:register",
+      "native:page:dashboard",
+      "native:components:lynx:shared",
+      "native:page:lynx:login",
+      "native:page:lynx:register",
+      "native:page:lynx:dashboard"
+    ],
+    "lines": 1266,
+    "estimated_tokens": 20637
+  },
   "ollama-studio": {
     "description": "A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.",
     "meta_description": "A small AI chat Tatemono powered by a server-configured OpenAI-compatible API through the FastAPI backend.",
@@ -1515,8 +1598,8 @@
       "handler:rs:my_ticket",
       "module:rs"
     ],
-    "lines": 3709,
-    "estimated_tokens": 48096
+    "lines": 3710,
+    "estimated_tokens": 48093
   },
   "roles-test": {
     "description": "Create a role-based dashboard with separate admin and user access, protected routes, and controls that demonstrate which actions each role is allowed to perform.",
@@ -1569,6 +1652,20 @@
     ],
     "lines": 1793,
     "estimated_tokens": 20341
+  },
+  "rubik-solver": {
+    "description": "Rubik's cube solver with no AI. Scan the six faces with the camera, fix misreads by tapping stickers, then follow a short two-phase solution move by move from one fixed holding position.",
+    "meta_description": "Rubik's cube solver with no AI. Scan the six faces with the camera, fix misreads by tapping stickers, then follow a short two-phase solution move by move from one fixed holding position.",
+    "blocks": [
+      "meta",
+      "meta:web",
+      "web:script",
+      "web:style",
+      "web:components:shared",
+      "web:page:index"
+    ],
+    "lines": 3772,
+    "estimated_tokens": 54619
   },
   "rust-backend-test": {
     "description": "Exercises the Rust (Axum) backend's shared SQLite schema, paginated CRUD routes, validation, and persistence.",
@@ -1625,8 +1722,8 @@
       "console:rs:ping-health",
       "console:rs:sync-data"
     ],
-    "lines": 1180,
-    "estimated_tokens": 14230
+    "lines": 1244,
+    "estimated_tokens": 14983
   },
   "shan-shan": {
     "description": "Create an expressive artist portfolio with an animated logo, layered story sections, parallax imagery, and scroll-triggered transitions.",
@@ -1719,6 +1816,19 @@
     ],
     "lines": 184,
     "estimated_tokens": 2313
+  },
+  "unity-scene-starter": {
+    "description": "A Unity scene-based starter showing 3D game objects, lighting, physics, and camera-follow controls.",
+    "meta_description": "A Unity scene-based starter showing 3D game objects, lighting, physics, and camera-follow controls.",
+    "blocks": [
+      "meta",
+      "unity:project",
+      "unity:environment",
+      "unity:scene:main",
+      "unity:export"
+    ],
+    "lines": 82,
+    "estimated_tokens": 641
   },
   "upload-test": {
     "description": "Create a file-upload dashboard that supports single and multiple uploads, previews images, lists stored files, and lets users download or delete them.",
