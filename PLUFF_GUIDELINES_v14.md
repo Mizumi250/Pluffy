@@ -53,7 +53,7 @@
     - [SECTION 1B - STACKS & CLI](#section-1b--stacks--cli)
     - [SECTION 1C - DATABASE PROVIDER (project-level, NOT in the DSL)](#section-1c--database-provider-project-level-not-in-the-dsl)
     - [SECTION 1D - DESKTOP WINDOW CONFIGURATION](#section-1d--desktop-window-configuration)
-    - [SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block)](#section-1h--optional-scaffold-commands-mizumi-new--mizumi-block)
+    - [SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block / mizumi check)](#section-1h--optional-scaffold-commands-mizumi-new--mizumi-block--mizumi-check)
     - [SECTION 2 - STYLING POLICY](#section-2--styling-policy)
     - [SECTION 2C - DESIGN AESTHETIC & FALLBACK (defaults, always overrideable)](#section-2c--design-aesthetic--fallback-defaults-always-overrideable)
     - [⚠️ SECTION 2D: ANTI-AI-LOOKING UI GUARDRAILS (avoid by default, never banned)](#️-section-2d-anti-ai-looking-ui-guardrails-avoid-by-default-never-banned)
@@ -134,7 +134,7 @@
 
   **DESIGN (v14.1 addendum):** Design Rule #3 in Section 2C gained step 6 (brand and subject color). It is a color-only layer for requests that name a product plus a brand or subject. It does not change the priority order, the 2D bans, the house preference or the fallback look, and Section 2E and the Section 29 checklist mirror it. Section 2D also gained item 141 (gradient fills on avatars and icon badges: avoid by default, not banned), mirrored in the avoid-by-default list and Section 2E. Design Rule #3 gained step 7 (recognition check), and Section 2D gained item 142 (cream or warm off-white with a rust accent: avoid by default, not banned), both mirrored in Section 2E and, for step 7, the Section 29 checklist.
 
-  **SCAFFOLD COMMANDS (optional, added to v14):** Section 1H documents `node mizumi.js new` and `node mizumi.js block`, which write correct block boilerplate for every DSL block. AI that can run shell commands may use them when lost; they are optional and this document stays the source of truth.
+  **SCAFFOLD COMMANDS (optional, added to v14):** Section 1H documents `node mizumi.js new`, `node mizumi.js block` (correct block boilerplate for every DSL block) and `node mizumi.js check` (lint a tatemono without the engine). AI that can run shell commands may use them when lost; they are optional and this document stays the source of truth.
 
   **LAYOUT (v14.0 revision):** the document is now grouped into Parts A-H with a quick-lookup table and table of contents at the top. No section was renamed or renumbered; sections only moved. Section 18 gained a note: a custom body on `index`, `show`, `update` or `destroy` now replaces the generated default on every backend.
 
@@ -301,31 +301,38 @@
 
   The Electron and Tauri shells wrap the whole web app, so this setting is shared rather than isolated to a single route. Partial settings from active Tatemonos are combined; if two Tatemonos set different values for the same property, the alphabetically earlier Tatemono wins and the shell logs a warning. Tauri applies the size, minimum size, title, and resizing settings. A Tauri export includes only its selected Tatemono's settings. Tauri has no portable API for disabling a window's fullscreen controls, so `fullscreenable: false` is warned about but cannot be enforced.
 
-## SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block)
+## SECTION 1H - OPTIONAL SCAFFOLD COMMANDS (mizumi new / mizumi block / mizumi check)
 
   **Optional.** Only for an AI or human that can run shell commands in the repo root (Claude Code, Codex, a terminal). If you cannot run commands, ignore this section and write the tags by hand using Section 3D. This section never replaces the rest of the guideline.
 
   **When to use it**
   - You are lost on a block's exact shape (YAML only, YAML + body, code block, or body-separator, see Section 3D).
   - You need a correct starting block for a backend variant (`:php :ts :py :java :cs :go :rs`).
-  - You are adding a new block to an existing tatemono and want the opening and closing tags right.
+  - You are adding blocks to an existing tatemono and want the tags, names and cross-references right.
+  - You want to lint a hand-written tatemono without the engine (`mizumi check`).
 
   **What it gives you.** A valid, minimal starting block. It is a placeholder, not the finished feature. After it writes the block you still replace the body, columns, endpoints, text and sample data with the real feature, and you still follow Sections 2C and 2D for every UI block. A scaffolded page is a plain skeleton, not a design.
 
   **Commands**
 
   ```
-  node mizumi.js block --list                                  # every block key and what it is for
-  node mizumi.js new my-app --template=crud --resource=notes   # create tatemonos/my-app/core.tsx
-  node mizumi.js block my-app web:page about                   # append a block to core.tsx
-  node mizumi.js block my-app endpoint stats --variant=ts      # backend body: --variant=php|ts|py|java|cs|go|rs
+  node mizumi.js block --list                                  # every block key and shortcut
+  node mizumi.js new my-app crud notes --auth                  # name, template, resource; --auth sets auth: true
+  node mizumi.js block my-app crud notes                       # database + api for one resource
+  node mizumi.js block my-app page about contact pricing       # several names = several blocks
+  node mizumi.js block page about                              # tatemono omitted = the most recently edited one
+  node mizumi.js block my-app endpoint stats --ts              # --ts, --variant=ts and --variant ts all work
+  node mizumi.js block my-app endpoint --ts                    # name omitted: picks from the api endpoints still missing a body
   node mizumi.js block my-app jobs cleanup --shared            # shared YAML-only form (jobs, console, mail, notifications)
-  node mizumi.js block my-app web:page checkout --layout=+auth # page with a layout / guard line
-  node mizumi.js block my-app web:layout admin --parent=app    # nested layout
+  node mizumi.js block my-app page checkout --layout=+auth     # layout / guard line (--layout=none to skip)
+  node mizumi.js block my-app layout admin --parent=app        # nested layout
   node mizumi.js block my-app endpoint stats --dry             # print the block, do not write
+  node mizumi.js check [my-app ...]                            # lint one, several or every tatemono
   ```
 
-  Run `node mizumi.js block` with no arguments for the interactive picker (tatemono, DSL group, block, backend variant). Without `--variant`, the active backend's variant is used. Always pass every argument when you are an AI, so nothing waits for input.
+  Run `node mizumi.js block` with no arguments for the interactive picker. Always pass every argument when you are an AI, so nothing waits for input.
+
+  **Shortcuts.** `page layout components style script animation 404 500 db table route ep job event notif cmd email channel screen resource`, or any unique prefix of a block key.
 
   **Templates for `new`:** `web`, `crud`, `routes`, `auth`, `native`, `multi` (web + Expo/RN + Lynx), `lynx`, `files`, `godot`, `unity`.
 
@@ -334,7 +341,7 @@
   | Group | Keys |
   |---|---|
   | Config and meta | `meta:web`, `meta:native`, `web:config`, `native:config`, `desktop:config`, `oauth` |
-  | Data and API | `database`, `api`, `routes` |
+  | Data and API | `database`, `api`, `crud` (both), `routes` |
   | Backend code | `endpoint`, `handler`, `policy`, `middleware`, `listener`, `events`, `realtime`, `realtime:event`, `jobs`, `console`, `mail`, `notifications`, `module:rs` |
   | Web | `web:page`, `web:layout`, `web:components`, `web:style`, `web:style:name`, `web:animation`, `web:script`, `web:script:name`, `web:error:404`, `web:error:500` |
   | Expo / bare RN | `native:page`, `native:layout`, `native:components`, `native:style`, `native:style:name`, `native:error:404`, `native:error:500`, `native:animation`, `native:script` (the last two take `--variant=expo\|rn`) |
@@ -344,21 +351,24 @@
   | Godot | `godot:project`, `godot:input`, `godot:assets`, `godot:world`, `godot:scene`, `godot:behavior:player`, `godot:behavior:camera`, `godot:multiplayer`, `godot:export` |
   | Unity | `unity:project`, `unity:game`, `unity:visuals`, `unity:controls`, `unity:scene`, `unity:environment`, `unity:assets`, `unity:export` |
 
-  A Lynx key writes the real tag, for example `lynx:page` writes `@arkzen:native:page:lynx:<name>`.
+  A Lynx key writes the real tag, for example `lynx:page` writes `@arkzen:native:page:lynx:<n>`.
 
   **Rules the command enforces**
-  - It appends to the end of `core.tsx`. Order between blocks does not matter, except that `@arkzen:meta` stays first (created by `new`).
-  - It refuses a block whose tag already exists, and a once-per-tatemono block that is already present.
-  - `oauth` is refused unless `@arkzen:meta` has `auth: true`.
-  - A godot tatemono only accepts `godot:*` blocks, a unity tatemono only `unity:*` blocks, and a normal tatemono accepts neither.
-  - A variant the guideline has no body for is refused (for example `:rs` bodies are documentary comments only, see Section 1F).
+  - Flags are strict: an unknown or mistyped flag is an error with a suggestion, and a flag the block does not use (for example `--layout` on `endpoint`) is an error.
+  - Names are converted to the block's style and the change is printed: database and api to snake_case plurals, pages and most identifiers to kebab-case, listeners to PascalCase. `--exact` keeps a name as typed.
+  - `endpoint`, `handler` and `listener` names must exist in the file's `api`, `routes` and `events` blocks, and `policy` needs `policy: true`. Missing names are listed; `--force` overrides.
+  - Layouts named by `--layout` and `--parent` must exist.
+  - A block is only written if it adds no new error (the `check` rules below). `--force` writes it anyway.
+  - It refuses a block whose tag already exists, `oauth` without `auth: true`, and a block of the wrong kind (godot / unity tatemonos only take their own blocks).
+  - It preserves the file's line endings. `@arkzen:meta` stays first (created by `new`).
+
+  **What `mizumi check` covers.** Tag shapes (Section 3D), missing `:end`, duplicate blocks, table, column and foreign-key rules, api rules, layouts and parents, frame contracts, oauth, and the validator's missing-backend-variant rule (reported as a warning). It has no dependencies and agrees with the engine validator on the fixtures. It does not replace the engine validator or a build.
 
   **What it does not check**
-  - `endpoint:<variant>:<name>` must match a method in an `@arkzen:api` block, and `handler:<variant>:<name>` must match a handler in `@arkzen:routes`. `policy` needs `policy: true` on the api block. The command prints a reminder but cannot verify it.
-  - Asset files must exist. `godot:world` and `godot:assets` reference images under `assets/images/`; the generator fails if they are missing.
-  - `meta:web` points the favicon at `assets/images/favicon.svg`. You must supply that file by hand (Section 5B).
+  - Asset files must exist (`check` warns about the favicon and godot / unity assets).
+  - Generated TypeScript or app behaviour.
 
-  **After using it:** edit the generated bodies, then run the checks in Section 29 and build as usual.
+  **After using it:** edit the generated bodies, then run `mizumi check`, the checks in Section 29, and build as usual.
 
   * * *
 
